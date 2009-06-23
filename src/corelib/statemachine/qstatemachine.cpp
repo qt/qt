@@ -1316,11 +1316,15 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     QByteArray signal = QSignalTransitionPrivate::get(transition)->signal;
     if (signal.startsWith('0'+QSIGNAL_CODE))
         signal.remove(0, 1);
-    int signalIndex = sender->metaObject()->indexOfSignal(signal);
+    const QMetaObject *meta = sender->metaObject();
+    int signalIndex = meta->indexOfSignal(signal);
     if (signalIndex == -1) {
-        qWarning("QSignalTransition: no such signal: %s::%s",
-                 sender->metaObject()->className(), signal.constData());
-        return;
+        signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal));
+        if (signalIndex == -1) {
+            qWarning("QSignalTransition: no such signal: %s::%s",
+                     meta->className(), signal.constData());
+            return;
+        }
     }
     QVector<int> &connectedSignalIndexes = connections[sender];
     if (connectedSignalIndexes.size() <= signalIndex)

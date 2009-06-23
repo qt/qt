@@ -198,7 +198,7 @@ QT_BEGIN_NAMESPACE
   QMatrix member functions
  *****************************************************************************/
 /*!
-    \fn QMatrix::QMatrix(Qt::Uninitialized)
+    \fn QMatrix::QMatrix(Qt::Initialization)
     \internal
 */
 

@@ -48,6 +48,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QtWebKit/QWebPage>
 #include <QtWebKit/QWebFrame>
+#include <QtWebKit/QWebElement>
 
 #include "qml.h"
 #include "qmlbindablevalue.h"
@@ -149,47 +150,17 @@ class QFxWebViewPrivate : public QFxPaintedItemPrivate
 public:
     QFxWebViewPrivate()
       : QFxPaintedItemPrivate(), page(0), idealwidth(0), idealheight(0), interactive(true), lastPress(0), lastRelease(0), mouseX(0), mouseY(0),
-            max_imagecache_size(100000), progress(1.0), pending(PendingNone)
+            progress(1.0), pending(PendingNone)
     {
     }
 
     QWebPage *page;
-
-    struct ImageCacheItem {
-        ImageCacheItem() : age(0) {}
-        ~ImageCacheItem() { }
-        int age;
-        QRect area;
-#if defined(QFX_RENDER_QPAINTER)
-        QPixmap image;
-#else
-        GLTexture image;
-#endif
-    };
-    QList<ImageCacheItem*> imagecache;
-    void dirtyCache(const QRect& dirt)
-    {
-        for (int i=0; i<imagecache.count(); ) {
-            if (imagecache[i]->area.intersects(dirt)) {
-                imagecache.removeAt(i);
-            } else {
-                ++i;
-            }
-        }
-    }
-    void clearCache()
-    {
-        foreach (ImageCacheItem* i, imagecache)
-            delete i;
-        imagecache.clear();
-    }
 
     int idealwidth;
     int idealheight;
     bool interactive;
     QMouseEvent *lastPress, *lastRelease;
     int mouseX, mouseY;
-    int max_imagecache_size;
     qreal progress;
     QBasicTimer dcTimer;
     QString statusBarMessage;
@@ -459,9 +430,8 @@ void QFxWebView::setInteractive(bool i)
 
 void QFxWebView::updateCacheForVisibility()
 {
-    Q_D(QFxWebView);
     if (!isVisible())
-        d->clearCache();
+        clearCache();
 }
 
 void QFxWebView::expandToWebPage()
@@ -478,7 +448,7 @@ void QFxWebView::expandToWebPage()
         cs.setHeight(height());
     if (cs != page()->viewportSize()) {
         page()->setViewportSize(cs);
-        d->clearCache();
+        clearCache();
         setImplicitWidth(cs.width());
         setImplicitHeight(cs.height());
     }
@@ -499,53 +469,6 @@ void QFxWebView::paintPage(const QRect& r)
         setContentsSize(d->page->mainFrame()->contentsSize());
     dirtyCache(r);
     update();
-}
-
-/*!
-  \qmlproperty int WebView::cacheSize
-
-  This property holds the maximum number of pixels of image cache to
-  allow. The default is 0.1 megapixels. The cache will not be larger
-  than the (unscaled) size of the WebView.
-*/
-
-/*!
-  \property QFxWebView::cacheSize
-
-  The maximum number of pixels of image cache to allow. The default
-  is 0.1 megapixels. The cache will not be larger than the (unscaled)
-  size of the QFxWebView.
-*/
-int QFxWebView::cacheSize() const
-{
-    Q_D(const QFxWebView);
-    return d->max_imagecache_size;
-}
-
-void QFxWebView::setCacheSize(int pixels)
-{
-    Q_D(QFxWebView);
-    if (pixels < d->max_imagecache_size) {
-        int cachesize=0;
-        for (int i=0; i<d->imagecache.count(); ++i) {
-            QRect area = d->imagecache[i]->area;
-            cachesize += area.width()*area.height();
-        }
-        while (d->imagecache.count() && cachesize > pixels) {
-            int oldest=-1;
-            int age=-1;
-            for (int i=0; i<d->imagecache.count(); ++i) {
-                int a = d->imagecache[i]->age;
-                if (a > age) {
-                    oldest = i;
-                    age = a;
-                }
-            }
-            cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
-            d->imagecache.removeAt(oldest);
-        }
-    }
-    d->max_imagecache_size = pixels;
 }
 
 void QFxWebView::dump(int depth)
@@ -787,7 +710,7 @@ QPixmap QFxWebView::icon() const
 
 /*!
     \qmlproperty real WebView::textSizeMultiplier
-    This property holds multiplier used to scale the text in a Web page
+    This property holds the multiplier used to scale the text in a Web page
 */
 /*!
     Sets the value of the multiplier used to scale the text in a Web page to
@@ -804,6 +727,31 @@ void QFxWebView::setTextSizeMultiplier(qreal factor)
 qreal QFxWebView::textSizeMultiplier() const
 {
     return page()->mainFrame()->textSizeMultiplier();
+}
+
+/*!
+    \qmlproperty real WebView::zoomFactor
+    This property holds the multiplier used to scale the contents of a Web page.
+*/
+void QFxWebView::setZoomFactor(qreal factor)
+{
+    Q_D(QFxWebView);
+    if (factor == page()->mainFrame()->zoomFactor())
+        return;
+
+    //reset viewport size so we resize correctly
+    page()->setViewportSize(QSize(
+        d->idealwidth>0 ? d->idealwidth : -1,
+        d->idealheight>0 ? d->idealheight : -1));
+
+    page()->mainFrame()->setZoomFactor(factor);
+    expandToWebPage();
+    emit zoomFactorChanged();
+}
+
+qreal QFxWebView::zoomFactor() const
+{
+    return page()->mainFrame()->zoomFactor();
 }
 
 void QFxWebView::setStatusBarMessage(const QString& s)

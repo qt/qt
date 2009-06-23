@@ -202,6 +202,7 @@ private slots:
 
     void drawImage_task217400_data();
     void drawImage_task217400();
+    void drawImage_1x1();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -4235,6 +4236,26 @@ void tst_QPainter::emptyClip()
     path.lineTo(0, 80);
 
     p.fillPath(path, Qt::green);
+}
+
+void tst_QPainter::drawImage_1x1()
+{
+    QImage source(1, 1, QImage::Format_ARGB32_Premultiplied);
+    source.fill(0xffffffff);
+
+    QImage img(32, 32, QImage::Format_ARGB32_Premultiplied);
+    img.fill(0xff000000);
+    QPainter p(&img);
+    p.drawImage(QRectF(0.9, 0.9, 32, 32), source);
+    p.end();
+
+    QImage expected = img;
+    expected.fill(0xff000000);
+    p.begin(&expected);
+    p.fillRect(1, 1, 31, 31, Qt::white);
+    p.end();
+
+    QCOMPARE(img, expected);
 }
 
 QTEST_MAIN(tst_QPainter)

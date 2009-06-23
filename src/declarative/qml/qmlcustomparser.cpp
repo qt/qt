@@ -136,6 +136,7 @@ QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
     } else {
         for(int ii = 0; ii < p->values.count(); ++ii) {
             Value *v = p->values.at(ii);
+            v->type = QmlParser::Value::Literal;
 
             if(v->object) {
                 QmlCustomParserNode node = fromObject(v->object);

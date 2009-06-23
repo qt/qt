@@ -471,8 +471,7 @@ QByteArray QUtf32Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BE : LE;
     }
 
-    QByteArray d;
-    d.resize(length);
+    QByteArray d(length, Qt::Uninitialized);
     char *data = d.data();
     if (!state || !(state->flags & IgnoreHeader)) {
         if (endian == BE) {

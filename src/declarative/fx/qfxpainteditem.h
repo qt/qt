@@ -56,12 +56,14 @@ class QFxPaintedItemPrivate;
 class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
 {
     Q_OBJECT
-public:
-    QFxPaintedItem(QFxItem *parent=0);
-    ~QFxPaintedItem();
 
     Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
     Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth)
+    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
+
+public:
+    QFxPaintedItem(QFxItem *parent=0);
+    ~QFxPaintedItem();
 
 #if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
@@ -74,6 +76,10 @@ public:
 
     void setSmooth(bool);
     void setContentsSize(const QSize &);
+
+    int cacheSize() const;
+    void setCacheSize(int pixels);
+
 protected:
     QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);
 
