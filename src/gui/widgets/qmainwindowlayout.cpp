@@ -1304,22 +1304,8 @@ bool QMainWindowLayout::separatorMove(const QPoint &pos)
     if (movingSeparator.isEmpty())
         return false;
     movingSeparatorPos = pos;
-    separatorMoveTimer->start();
+    separatorMoveTimer.start(0, this);
     return true;
-}
-
-void QMainWindowLayout::doSeparatorMove()
-{
-    if (movingSeparator.isEmpty())
-        return;
-    if (movingSeparatorOrigin == movingSeparatorPos)
-        return;
-
-    layoutState = savedState;
-    layoutState.dockAreaLayout.separatorMove(movingSeparator, movingSeparatorOrigin,
-                                                movingSeparatorPos,
-                                                &separatorMoveCache);
-    movingSeparatorPos = movingSeparatorOrigin;
 }
 
 bool QMainWindowLayout::endSeparatorMove(const QPoint&)
@@ -1327,7 +1313,6 @@ bool QMainWindowLayout::endSeparatorMove(const QPoint&)
     bool result = !movingSeparator.isEmpty();
     movingSeparator.clear();
     savedState.clear();
-    separatorMoveCache.clear();
     return result;
 }
 
@@ -1687,10 +1672,6 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 #ifndef QT_NO_TABBAR
     sep = mainwindow->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, mainwindow);
 #endif
-    separatorMoveTimer = new QTimer(this);
-    separatorMoveTimer->setSingleShot(true);
-    separatorMoveTimer->setInterval(0);
-    connect(separatorMoveTimer, SIGNAL(timeout()), this, SLOT(doSeparatorMove()));
 
 #ifndef QT_NO_TABWIDGET
     for (int i = 0; i < QInternal::DockCount; ++i)
@@ -1981,6 +1962,27 @@ bool QMainWindowLayout::usesHIToolBar(QToolBar *toolbar) const
                 && layoutState.mainWindow->unifiedTitleAndToolBarOnMac());
 #endif
 }
+
+void QMainWindowLayout::timerEvent(QTimerEvent *e)
+{
+#ifndef QT_NO_DOCKWIDGET
+    if (e->timerId() == separatorMoveTimer.timerId()) {
+        //let's move the separators
+        separatorMoveTimer.stop();
+        if (movingSeparator.isEmpty())
+            return;
+        if (movingSeparatorOrigin == movingSeparatorPos)
+            return;
+
+        layoutState = savedState;
+        layoutState.dockAreaLayout.separatorMove(movingSeparator, movingSeparatorOrigin,
+                                                    movingSeparatorPos);
+        movingSeparatorPos = movingSeparatorOrigin;
+    }
+#endif
+    QLayout::timerEvent(e);
+}
+
 
 QT_END_NAMESPACE
 
