@@ -57,6 +57,8 @@ public:
 
     bool isJSC() const;
 
+    QVariant &variantValue() const;
+
     static QScriptValuePrivate *get(const QScriptValue &q);
 
     QScriptValue property(const QString &name, int resolveMode) const;

@@ -342,6 +342,11 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
     return eng_p->scriptValueFromJSCValue(result);
 }
 
+QVariant &QScriptValuePrivate::variantValue() const
+{
+    return static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(jscValue))->value();
+}
+
 /*!
   Constructs an invalid QScriptValue.
 */
@@ -821,8 +826,13 @@ void QScriptValue::setScope(const QScriptValue &scope)
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(scope);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
-    // ### make hidden property
-    JSC::asObject(d->jscValue)->putDirect(JSC::Identifier(exec, "__qt_scope__"), other);
+    JSC::Identifier id = JSC::Identifier(exec, "__qt_scope__");
+    if (!scope.isValid()) {
+        JSC::asObject(d->jscValue)->removeDirect(id);
+    } else {
+        // ### make hidden property
+        JSC::asObject(d->jscValue)->putDirect(id, other);
+    }
 }
 
 /*!
@@ -1076,11 +1086,8 @@ bool QScriptValue::equals(const QScriptValue &other) const
             eng_p = QScriptEnginePrivate::get(other.d_ptr->engine);
         if (eng_p) {
             JSC::ExecState *exec = eng_p->globalObject->globalExec();
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-            if (JSC::equal(exec, d->jscValue, other.d_ptr->jscValue))
+            if (JSC::JSValue::equal(exec, d->jscValue, other.d_ptr->jscValue))
                 return true;
-#endif
         }
     }
     return QScript::Equals(*this, other);
@@ -1406,7 +1413,7 @@ QVariant QScriptValue::toVariant() const
     case QScriptValuePrivate::JSC:
         if (isObject()) {
             if (isVariant())
-                return static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(d->jscValue))->value();
+                return d->variantValue();
 #ifndef QT_NO_QOBJECT
             else if (isQObject())
                 return qVariantFromValue(toQObject());
@@ -1833,22 +1840,47 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     Q_D(const QScriptValue);
     if (!isFunction())
         return QScriptValue();
+
+    if (thisObject.engine() && (thisObject.engine() != engine())) {
+        qWarning("QScriptValue::call() failed: "
+                 "cannot call function with thisObject created in "
+                 "a different engine");
+        return QScriptValue();
+    }
+
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
-    JSC::ArgList jscArgs;
-    for (int i = 0; i < args.size(); ++i) {
-        Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-        if (!args.at(i).isValid())
-            jscArgs.append(JSC::jsUndefined());
-        else
-            jscArgs.append(eng_p->scriptValueToJSCValue(args.at(i)));
-#endif
-    }
+
     JSC::JSValue jscThisObject = eng_p->scriptValueToJSCValue(thisObject);
     if (!jscThisObject || !jscThisObject.isObject())
         jscThisObject = eng_p->globalObject;
-    JSC::JSValue result = JSC::asFunction(d->jscValue)->call(exec, jscThisObject, jscArgs);
+
+    QVector<JSC::JSValue> argsVector;
+    argsVector.resize(args.size());
+    for (int i = 0; i < args.size(); ++i) {
+        const QScriptValue &arg = args.at(i);
+        if (!arg.isValid()) {
+            argsVector[i] = JSC::jsUndefined();
+        } else if (arg.engine() && (arg.engine() != engine())) {
+            qWarning("QScriptValue::call() failed: "
+                     "cannot call function with argument created in "
+                     "a different engine");
+            return QScriptValue();
+        } else {
+            argsVector[i] = eng_p->scriptValueToJSCValue(arg);
+        }
+    }
+    JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
+
+    JSC::JSValue callee = d->jscValue;
+    JSC::JSValue result;
+    JSC::CallData callData;
+    JSC::CallType callType = callee.getCallData(callData);
+    if (callType == JSC::CallTypeJS) {
+        result = JSC::asFunction(callee)->call(exec, jscThisObject, jscArgs);
+    } else if (callType == JSC::CallTypeHost) {
+        result = callData.native.function(exec, JSC::asObject(callee), jscThisObject, jscArgs);
+    }
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
@@ -1883,6 +1915,14 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     Q_D(QScriptValue);
     if (!isFunction())
         return QScriptValue();
+
+    if (thisObject.engine() && (thisObject.engine() != engine())) {
+        qWarning("QScriptValue::call() failed: "
+                 "cannot call function with thisObject created in "
+                 "a different engine");
+        return QScriptValue();
+    }
+
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
 
@@ -1890,32 +1930,39 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (!jscThisObject || !jscThisObject.isObject())
         jscThisObject = eng_p->globalObject;
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-    // copied from kjs/FunctionPrototype.cpp, functionProtoFuncApply()
-    JSC::JSValue argArray = eng_p->scriptValueToJSCValue(arguments);
-    JSC::ArgList applyArgs;
-    if (!argArray.isUndefinedOrNull()) {
-        if (argArray.isObject()) {
-            if (static_cast<JSC::JSObject*>(argArray.getObject())->classInfo() == &JSC::Arguments::info)
-                static_cast<JSC::Arguments*>(asArguments(argArray))->fillArgList(exec, applyArgs);
-            else if (exec->interpreter()->isJSArray(argArray))
-                static_cast<JSC::JSArray*>(JSC::asArray(argArray))->fillArgList(exec, applyArgs);
-            else if (static_cast<JSC::JSObject*>(argArray.getObject())->inherits(&JSC::JSArray::info)) {
-                unsigned length = static_cast<JSC::JSObject*>(argArray.getObject())->get(exec, exec->propertyNames().length)->toUInt32(exec);
-                for (unsigned i = 0; i < length; ++i)
-                    applyArgs.append(static_cast<JSC::JSObject*>(argArray.getObject())->get(exec, i));
-            } else
-                return QScriptValue(); // ### throwError(exec, TypeError);
-        } else
-            return QScriptValue(); // ### throwError(exec, TypeError);
+    JSC::JSValue array = eng_p->scriptValueToJSCValue(arguments);
+    // copied from runtime/FunctionPrototype.cpp, functionProtoFuncApply()
+    JSC::MarkedArgumentBuffer applyArgs;
+    if (!array.isUndefinedOrNull()) {
+        if (!array.isObject()) {
+            return eng_p->scriptValueFromJSCValue(JSC::throwError(exec, JSC::TypeError));
+        }
+        if (JSC::asObject(array)->classInfo() == &JSC::Arguments::info)
+            JSC::asArguments(array)->fillArgList(exec, applyArgs);
+        else if (JSC::isJSArray(&exec->globalData(), array))
+            JSC::asArray(array)->fillArgList(exec, applyArgs);
+        else if (JSC::asObject(array)->inherits(&JSC::JSArray::info)) {
+            unsigned length = JSC::asArray(array)->get(exec, exec->propertyNames().length).toUInt32(exec);
+            for (unsigned i = 0; i < length; ++i)
+                applyArgs.append(JSC::asArray(array)->get(exec, i));
+        } else {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+//            return JSC::throwError(exec, JSC::TypeError);
+        }
     }
 
-    JSC::JSValue result = static_cast<JSC::JSFunction*>(asFunction(d->jscValue))->call(exec, jscThisObject, applyArgs);
+    JSC::JSValue callee = d->jscValue;
+    JSC::JSValue result;
+    JSC::CallData callData;
+    JSC::CallType callType = callee.getCallData(callData);
+    if (callType == JSC::CallTypeJS) {
+        result = JSC::asFunction(callee)->call(exec, jscThisObject, applyArgs);
+    } else if (callType == JSC::CallTypeHost) {
+        result = callData.native.function(exec, JSC::asObject(callee), jscThisObject, applyArgs);
+    }
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
-#endif
 }
 
 /*!
@@ -1943,17 +1990,26 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
         return QScriptValue();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
-    JSC::ArgList jscArgs;
+
+    QVector<JSC::JSValue> argsVector;
+    argsVector.resize(args.size());
     for (int i = 0; i < args.size(); ++i) {
-#if 0
-        Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
         if (!args.at(i).isValid())
-            jscArgs.append(JSC::jsUndefined());
+            argsVector[i] = JSC::jsUndefined();
         else
-            jscArgs.append(eng_p->scriptValueToJSCValue(args.at(i)));
-#endif
+            argsVector[i] = eng_p->scriptValueToJSCValue(args.at(i));
     }
-    JSC::JSValue result = JSC::asFunction(d->jscValue)->construct(exec, jscArgs);
+    JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
+
+    JSC::JSValue callee = d->jscValue;
+    JSC::JSValue result;
+    JSC::ConstructData constructData;
+    JSC::ConstructType constructType = callee.getConstructData(constructData);
+    if (constructType == JSC::ConstructTypeJS) {
+        result = JSC::asFunction(callee)->construct(exec, jscArgs);
+    } else if (constructType == JSC::ConstructTypeHost) {
+        result = constructData.native.function(exec, JSC::asObject(callee), jscArgs);
+    }
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
@@ -1982,32 +2038,40 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-    // copied from kjs/FunctionPrototype.cpp, functionProtoFuncApply()
-    JSC::JSValue argArray = eng_p->scriptValueToJSCValue(arguments);
-    JSC::ArgList applyArgs;
-    if (!argArray.isUndefinedOrNull()) {
-        if (argArray.isObject()) {
-            if (static_cast<JSC::JSObject*>(argArray.getObject())->classInfo() == &JSC::Arguments::info)
-                static_cast<JSC::Arguments*>(JSC::asArguments(argArray))->fillArgList(exec, applyArgs);
-            else if (exec->interpreter()->isJSArray(argArray))
-                static_cast<JSC::JSArray*>(JSC::asArray(argArray))->fillArgList(exec, applyArgs);
-            else if (static_cast<JSC::JSObject*>(argArray.getObject())->inherits(&JSC::JSArray::info)) {
-                unsigned length = static_cast<JSC::JSObject*>(argArray.getObject())->get(exec, exec->propertyNames().length)->toUInt32(exec);
-                for (unsigned i = 0; i < length; ++i)
-                    applyArgs.append(static_cast<JSC::JSObject*>(argArray.getObject())->get(exec, i));
-            } else
-                return QScriptValue(); // ### throwError(exec, TypeError);
-        } else
-            return QScriptValue(); // ### throwError(exec, TypeError);
+    JSC::JSValue array = eng_p->scriptValueToJSCValue(arguments);
+    // copied from runtime/FunctionPrototype.cpp, functionProtoFuncApply()
+    JSC::MarkedArgumentBuffer applyArgs;
+    if (!array.isUndefinedOrNull()) {
+        if (!array.isObject()) {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+//            return JSC::throwError(exec, JSC::TypeError);
+        }
+        if (JSC::asObject(array)->classInfo() == &JSC::Arguments::info)
+            JSC::asArguments(array)->fillArgList(exec, applyArgs);
+        else if (JSC::isJSArray(&exec->globalData(), array))
+            JSC::asArray(array)->fillArgList(exec, applyArgs);
+        else if (JSC::asObject(array)->inherits(&JSC::JSArray::info)) {
+            unsigned length = JSC::asArray(array)->get(exec, exec->propertyNames().length).toUInt32(exec);
+            for (unsigned i = 0; i < length; ++i)
+                applyArgs.append(JSC::asArray(array)->get(exec, i));
+        } else {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+//            return JSC::throwError(exec, JSC::TypeError);
+        }
     }
 
-    JSC::JSValue result = JSC::asFunction(d->jscValue)->construct(exec, applyArgs);
+    JSC::JSValue callee = d->jscValue;
+    JSC::JSValue result;
+    JSC::ConstructData constructData;
+    JSC::ConstructType constructType = callee.getConstructData(constructData);
+    if (constructType == JSC::ConstructTypeJS) {
+        result = JSC::asFunction(callee)->construct(exec, applyArgs);
+    } else if (constructType == JSC::ConstructTypeHost) {
+        result = constructData.native.function(exec, JSC::asObject(callee), applyArgs);
+    }
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
-#endif
 }
 
 /*!
@@ -2236,8 +2300,13 @@ void QScriptValue::setData(const QScriptValue &data)
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(data);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
-    // ### make hidden property
-    JSC::asObject(d->jscValue)->putDirect(JSC::Identifier(exec, "__qt_data__"), other);
+    JSC::Identifier id = JSC::Identifier(exec, "__qt_data__");
+    if (!data.isValid()) {
+        JSC::asObject(d->jscValue)->removeDirect(id);
+    } else {
+        // ### make hidden property
+        JSC::asObject(d->jscValue)->putDirect(id, other);
+    }
 }
 
 /*!

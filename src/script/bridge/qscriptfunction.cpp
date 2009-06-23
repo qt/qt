@@ -59,6 +59,8 @@ JSC::JSValue FunctionWrapper::proxyCall(JSC::ExecState *, JSC::JSObject *callee,
                                 /*calledAsConstructor=*/false, eng_p);
     QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
     QScriptValue result = self->data->function(ctx, self->data->engine);
+    if (!result.isValid())
+        result = QScriptValue(QScriptValue::UndefinedValue);
     delete ctx;
     return eng_p->scriptValueToJSCValue(result);
 }
@@ -73,10 +75,12 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *, JSC::JSObject *
                                 args, /*calledAsConstructor=*/true, eng_p);
     QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
     QScriptValue result = self->data->function(ctx, self->data->engine);
+    if (!result.isValid())
+        result = QScriptValue(QScriptValue::UndefinedValue);
     delete ctx;
     if (result.isObject())
-        return static_cast<JSC::JSObject*>(JSC::asObject(eng_p->scriptValueToJSCValue(result)));
-    return static_cast<JSC::JSObject*>(JSC::asObject(eng_p->scriptValueToJSCValue(object)));
+        return JSC::asObject(eng_p->scriptValueToJSCValue(result));
+    return JSC::asObject(eng_p->scriptValueToJSCValue(object));
 }
 
 FunctionWithArgWrapper::FunctionWithArgWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,

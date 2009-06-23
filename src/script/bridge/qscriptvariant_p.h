@@ -49,7 +49,7 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
 
-    inline const QVariant &value() const { return data->value; }
+    inline QVariant &value() const { return data->value; }
     inline void setValue(const QVariant &value) { data->value = value; }
 
 private:

@@ -842,8 +842,8 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
     if (regexp.caseSensitivity() == Qt::CaseInsensitive)
         flags.append(QLatin1Char('i'));
     JSC::UString jscFlags = QScript::qtStringToJSCUString(flags);
-    buf[0] = JSC::jsNontrivialString(exec, jscPattern);
-    buf[1] = JSC::jsNontrivialString(exec, jscFlags);
+    buf[0] = JSC::jsString(exec, jscPattern);
+    buf[1] = JSC::jsString(exec, jscFlags);
     JSC::JSObject* result = JSC::constructRegExp(exec, args);
     return d->scriptValueFromJSCValue(result);
 }
@@ -1128,8 +1128,8 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
     JSC::ArgList args(buf, sizeof(buf));
     JSC::UString jscPattern = QScript::qtStringToJSCUString(pattern);
     JSC::UString jscFlags = QScript::qtStringToJSCUString(flags);
-    buf[0] = JSC::jsNontrivialString(exec, jscPattern);
-    buf[1] = JSC::jsNontrivialString(exec, jscFlags);
+    buf[0] = JSC::jsString(exec, jscPattern);
+    buf[1] = JSC::jsString(exec, jscFlags);
     JSC::JSObject* result = JSC::constructRegExp(exec, args);
     return d->scriptValueFromJSCValue(result);
 }
@@ -1332,6 +1332,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::UString jscFileName = QScript::qtStringToJSCUString(fileName);
 
     JSC::ExecState* exec = d->globalObject->globalExec();
+    exec->clearException();
     JSC::Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(),
                                          JSC::makeSource(jscProgram, jscFileName, lineNumber));
     if ((comp.complType() == JSC::Normal) || (comp.complType() == JSC::ReturnValue)) {
@@ -1801,7 +1802,7 @@ bool QScriptEnginePrivate::convert(const QScriptValue &value,
 #endif
     if (value.isVariant() && name.endsWith('*')) {
         int valueType = QMetaType::type(name.left(name.size()-1));
-        QVariant var = value.toVariant();
+        QVariant &var = QScriptValuePrivate::get(value)->variantValue();
         if (valueType == var.userType()) {
             *reinterpret_cast<void* *>(ptr) = var.data();
             return true;
