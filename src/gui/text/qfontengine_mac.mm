@@ -1019,11 +1019,6 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
                                        | kATSLineDisableAllJustification
                                        ;
 
-        if (!(flags & QTextEngine::DesignMetrics)) {
-            layopts |= kATSLineFractDisable | kATSLineUseDeviceMetrics
-                       | kATSLineDisableAutoAdjustDisplayPos;
-        }
-
         if (fontDef.styleStrategy & QFont::NoAntialias)
             layopts |= kATSLineNoAntiAliasing;
 
