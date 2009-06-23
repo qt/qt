@@ -701,7 +701,7 @@ bool QScriptValue::isError() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return static_cast<JSC::JSObject*>(d->jscValue.getObject())->isObject(&JSC::ErrorInstance::info);
+    return JSC::asObject(d->jscValue)->isObject(&JSC::ErrorInstance::info);
 }
 
 /*!
@@ -715,7 +715,7 @@ bool QScriptValue::isArray() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return static_cast<JSC::JSObject*>(d->jscValue.getObject())->isObject(&JSC::JSArray::info);
+    return JSC::asObject(d->jscValue)->isObject(&JSC::JSArray::info);
 }
 
 /*!
@@ -729,7 +729,7 @@ bool QScriptValue::isDate() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return static_cast<JSC::JSObject*>(d->jscValue.getObject())->isObject(&JSC::DateInstance::info);
+    return JSC::asObject(d->jscValue)->isObject(&JSC::DateInstance::info);
 }
 
 /*!
@@ -743,7 +743,7 @@ bool QScriptValue::isRegExp() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return static_cast<JSC::JSObject*>(d->jscValue.getObject())->isObject(&JSC::RegExpObject::info);
+    return JSC::asObject(d->jscValue)->isObject(&JSC::RegExpObject::info);
 }
 
 /*!
@@ -759,7 +759,7 @@ QScriptValue QScriptValue::prototype() const
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return QScriptValue();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    return eng_p->scriptValueFromJSCValue(static_cast<JSC::JSObject*>(d->jscValue.getObject())->prototype());
+    return eng_p->scriptValueFromJSCValue(JSC::asObject(d->jscValue)->prototype());
 }
 
 /*!
@@ -788,7 +788,7 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
     // ### check for cycle
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(prototype);
-    static_cast<JSC::JSObject*>(d->jscValue.getObject())->setPrototype(other);
+    JSC::asObject(d->jscValue)->setPrototype(other);
 }
 
 /*!
@@ -822,7 +822,7 @@ void QScriptValue::setScope(const QScriptValue &scope)
     JSC::JSValue other = eng_p->scriptValueToJSCValue(scope);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
     // ### make hidden property
-    static_cast<JSC::JSObject*>(d->jscValue.getObject())->putDirect(JSC::Identifier(exec, "__qt_scope__"), other);
+    JSC::asObject(d->jscValue)->putDirect(JSC::Identifier(exec, "__qt_scope__"), other);
 }
 
 /*!
@@ -851,7 +851,7 @@ bool QScriptValue::instanceOf(const QScriptValue &other) const
         return false;
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
     JSC::JSValue jscOther = eng_p->scriptValueToJSCValue(other);
-    return static_cast<JSC::JSObject*>(jscOther.getObject())->hasInstance(exec, d->jscValue, jscProto);
+    return JSC::asObject(jscOther)->hasInstance(exec, d->jscValue, jscProto);
 }
 
 // ### move
@@ -890,7 +890,7 @@ QScriptValue ToPrimitive(const QScriptValue &object, JSC::PreferredPrimitiveType
     QScriptValuePrivate *pp = QScriptValuePrivate::get(object);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(pp->engine);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
-    return eng_p->scriptValueFromJSCValue(static_cast<JSC::JSObject*>(pp->jscValue.getObject())->toPrimitive(exec, hint));
+    return eng_p->scriptValueFromJSCValue(JSC::asObject(pp->jscValue)->toPrimitive(exec, hint));
 }
 
 static bool IsNumerical(const QScriptValue &value)
@@ -1406,7 +1406,7 @@ QVariant QScriptValue::toVariant() const
     case QScriptValuePrivate::JSC:
         if (isObject()) {
             if (isVariant())
-                return static_cast<QScript::QVariantWrapperObject*>(d->jscValue.getObject())->value();
+                return static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(d->jscValue))->value();
 #ifndef QT_NO_QOBJECT
             else if (isQObject())
                 return qVariantFromValue(toQObject());
@@ -1479,7 +1479,7 @@ QDateTime QScriptValue::toDateTime() const
     Q_D(const QScriptValue);
     if (!isDate())
         return QDateTime();
-    qsreal t = static_cast<JSC::DateInstance*>(d->jscValue.getObject())->internalNumber();
+    qsreal t = static_cast<JSC::DateInstance*>(JSC::asObject(d->jscValue))->internalNumber();
     return QScript::ToDateTime(t, Qt::LocalTime);
 }
 
@@ -1518,7 +1518,7 @@ QObject *QScriptValue::toQObject() const
 {
     Q_D(const QScriptValue);
     if (isQObject()) {
-        return static_cast<QScript::QObjectWrapperObject*>(d->jscValue.getObject())->value();
+        return static_cast<QScript::QObjectWrapperObject*>(JSC::asObject(d->jscValue))->value();
     } else if (isVariant()) {
         QVariant var = toVariant();
         int type = var.userType();
@@ -1539,7 +1539,7 @@ const QMetaObject *QScriptValue::toQMetaObject() const
     Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
 //    Q_D(const QScriptValue);
 //    if (isQMetaObject())
-//        return static_cast<QScript::QMetaObjectWrapperObject*>(d->jscValue)->value();
+//        return static_cast<QScript::QMetaObjectWrapperObject*>(JSC::asObject(d->jscValue))->value();
     return 0;
 }
 
@@ -1585,19 +1585,19 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
     JSC::Identifier id = JSC::Identifier(exec, jscName);
     if (!jscValue) {
-        static_cast<JSC::JSObject*>(d->jscValue.getObject())->deleteProperty(exec, id);
+        JSC::asObject(d->jscValue)->deleteProperty(exec, id);
     } else {
         if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
             if (jscValue.isObject()) {
                 if (flags & QScriptValue::PropertyGetter)
-                    static_cast<JSC::JSObject*>(d->jscValue.getObject())->defineGetter(exec, id, static_cast<JSC::JSObject*>(jscValue.getObject()));
+                    JSC::asObject(d->jscValue)->defineGetter(exec, id, JSC::asObject(jscValue));
                 if (flags & QScriptValue::PropertySetter)
-                    static_cast<JSC::JSObject*>(d->jscValue.getObject())->defineSetter(exec, id, static_cast<JSC::JSObject*>(jscValue.getObject()));
+                    JSC::asObject(d->jscValue)->defineSetter(exec, id, JSC::asObject(jscValue));
             }
         } else {
             if (flags != QScriptValue::KeepExistingFlags) {
-                if (static_cast<JSC::JSObject*>(d->jscValue.getObject())->hasOwnProperty(exec, id))
-                    static_cast<JSC::JSObject*>(d->jscValue.getObject())->deleteProperty(exec, id);
+                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, id))
+                    JSC::asObject(d->jscValue)->deleteProperty(exec, id);
                 unsigned attribs = 0;
                 if (flags & QScriptValue::ReadOnly)
                     attribs |= JSC::ReadOnly;
@@ -1606,10 +1606,10 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
                 if (flags & QScriptValue::Undeletable)
                     attribs |= JSC::DontDelete;
                 attribs |= flags & QScriptValue::UserRange;
-                static_cast<JSC::JSObject*>(d->jscValue.getObject())->putWithAttributes(exec, id, jscValue, attribs);
+                JSC::asObject(d->jscValue)->putWithAttributes(exec, id, jscValue, attribs);
             } else {
                 JSC::PutPropertySlot slot;
-                static_cast<JSC::JSObject*>(d->jscValue.getObject())->put(exec, id, jscValue, slot);
+                JSC::asObject(d->jscValue)->put(exec, id, jscValue, slot);
             }
         }
     }
@@ -1688,14 +1688,14 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
     JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
     if (!jscValue) {
-        static_cast<JSC::JSObject*>(d->jscValue.getObject())->deleteProperty(exec, arrayIndex);
+        JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex);
     } else {
         if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
             Q_ASSERT_X(false, Q_FUNC_INFO, "property getters and setters not implemented");
         } else {
             if (flags != QScriptValue::KeepExistingFlags) {
-//                if (static_cast<JSC::JSObject*>(d->jscValue->getObject())->hasOwnProperty(exec, arrayIndex))
-//                    static_cast<JSC::JSObject*>(d->jscValue->getObject())->deleteProperty(exec, arrayIndex);
+//                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, arrayIndex))
+//                    JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex);
                 unsigned attribs = 0;
                 if (flags & QScriptValue::ReadOnly)
                     attribs |= JSC::ReadOnly;
@@ -1704,9 +1704,9 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
                 if (flags & QScriptValue::Undeletable)
                     attribs |= JSC::DontDelete;
                 attribs |= flags & QScriptValue::UserRange;
-                static_cast<JSC::JSObject*>(d->jscValue.getObject())->putWithAttributes(exec, arrayIndex, jscValue, attribs);
+                JSC::asObject(d->jscValue)->putWithAttributes(exec, arrayIndex, jscValue, attribs);
             } else {
-                static_cast<JSC::JSObject*>(d->jscValue.getObject())->put(exec, arrayIndex, jscValue);
+                JSC::asObject(d->jscValue)->put(exec, arrayIndex, jscValue);
             }
         }
     }
@@ -1769,7 +1769,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
     JSC::UString jscName = QScript::qtStringToJSCUString(name);
     JSC::Identifier id = JSC::Identifier(exec, jscName);
     unsigned attribs = 0;
-    if (!static_cast<JSC::JSObject*>(d->jscValue.getObject())->getPropertyAttributes(exec, id, attribs))
+    if (!JSC::asObject(d->jscValue)->getPropertyAttributes(exec, id, attribs))
         return 0;
     QScriptValue::PropertyFlags result = 0;
     if (attribs & JSC::ReadOnly)
@@ -1779,15 +1779,11 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
     if (attribs & JSC::DontDelete)
         result |= QScriptValue::Undeletable;
 
-// ### FIXME
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-#if 0
     // ### faster/better way?
-    if (static_cast<JSC::JSObject*>(d->jscValue.getObject())->lookupGetter(exec, id) != 0)
+    if (JSC::asObject(d->jscValue)->lookupGetter(exec, id))
         result |= QScriptValue::PropertyGetter;
-    if (static_cast<JSC::JSObject*>(d->jscValue.getObject())->lookupSetter(exec, id) != 0)
+    if (JSC::asObject(d->jscValue)->lookupSetter(exec, id))
         result |= QScriptValue::PropertySetter;
-#endif
 
     result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
     return result;
@@ -1852,7 +1848,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     JSC::JSValue jscThisObject = eng_p->scriptValueToJSCValue(thisObject);
     if (!jscThisObject || !jscThisObject.isObject())
         jscThisObject = eng_p->globalObject;
-    JSC::JSValue result = static_cast<JSC::JSFunction*>(JSC::asFunction(d->jscValue))->call(exec, jscThisObject, jscArgs);
+    JSC::JSValue result = JSC::asFunction(d->jscValue)->call(exec, jscThisObject, jscArgs);
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
@@ -1957,7 +1953,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
             jscArgs.append(eng_p->scriptValueToJSCValue(args.at(i)));
 #endif
     }
-    JSC::JSValue result = static_cast<JSC::JSFunction*>(asFunction(d->jscValue))->construct(exec, jscArgs);
+    JSC::JSValue result = JSC::asFunction(d->jscValue)->construct(exec, jscArgs);
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
@@ -2007,7 +2003,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
             return QScriptValue(); // ### throwError(exec, TypeError);
     }
 
-    JSC::JSValue result = static_cast<JSC::JSFunction*>(JSC::asFunction(d->jscValue))->construct(exec, applyArgs);
+    JSC::JSValue result = JSC::asFunction(d->jscValue)->construct(exec, applyArgs);
     if (exec->hadException())
         result = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
@@ -2108,7 +2104,7 @@ bool QScriptValue::isFunction() const
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
     JSC::CallData callData;
-    return (static_cast<JSC::JSObject*>(d->jscValue.getObject())->getCallData(callData) != JSC::CallTypeNone);
+    return (JSC::asObject(d->jscValue)->getCallData(callData) != JSC::CallTypeNone);
 }
 
 /*!
@@ -2161,7 +2157,7 @@ bool QScriptValue::isVariant() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return static_cast<JSC::JSObject*>(d->jscValue.getObject())->isObject(&QScript::QVariantWrapperObject::info);
+    return JSC::asObject(d->jscValue)->isObject(&QScript::QVariantWrapperObject::info);
 }
 
 /*!
@@ -2178,7 +2174,7 @@ bool QScriptValue::isQObject() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return static_cast<JSC::JSObject*>(d->jscValue.getObject())->isObject(&QScript::QObjectWrapperObject::info);
+    return JSC::asObject(d->jscValue)->isObject(&QScript::QObjectWrapperObject::info);
 }
 
 /*!
@@ -2193,7 +2189,7 @@ bool QScriptValue::isQMetaObject() const
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
     Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-//    return static_cast<JSC::JSObject*>(d->jscValue->getObject())->isObject(&QScript::QMetaObjectWrapperObject::info);
+//    return JSC::asObject(d->jscValue)->isObject(&QScript::QMetaObjectWrapperObject::info);
     return false;
 }
 
@@ -2241,7 +2237,7 @@ void QScriptValue::setData(const QScriptValue &data)
     JSC::JSValue other = eng_p->scriptValueToJSCValue(data);
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
     // ### make hidden property
-    static_cast<JSC::JSObject*>(d->jscValue.getObject())->putDirect(JSC::Identifier(exec, "__qt_data__"), other);
+    JSC::asObject(d->jscValue)->putDirect(JSC::Identifier(exec, "__qt_data__"), other);
 }
 
 /*!
