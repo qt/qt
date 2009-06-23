@@ -1,3 +1,40 @@
+2009-06-23  Thiago Macieira  <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix Qt build with Phonon.
+
+        The #include <phonon> header no longer exists. And the <Phonon> or
+        <Phonon/Phonon> headers have never existed (neither for us nor for the
+        Phonon sources). You have to select each and every header that you do
+        want now.
+
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.cpp:
+
+2009-06-23  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix NPAPI mouse translation issues on Mac
+
+        The WindowRef we pass to the plugin refers to the the top level window,
+        so the x and y positions have to be relative to this position, but we
+        have to manually compensate for title bar decorations and other parents
+        of the QWebView since contentsToWindow() only traverses to the QWebView.
+
+        Previously we did this compensation when passing on mouse coordinates to
+        the plugin, which caused various issues with translations such as not
+        being able to close the Flash settings dialog, or the hand cursor not
+        appearing over links.
+
+        We now do the compensation as part of the call to NPP_SetWindow, and
+        then pass mouse coordinates in global context without any compensation,
+        similar to how both Safari and Mozilla does it.
+
+        * plugins/mac/PluginViewMac.cpp:
+        (WebCore::PluginView::updatePluginWidget):
+        (WebCore::PluginView::globalMousePosForPlugin):
+
 2009-05-21  Geoffrey Garen  <ggaren@apple.com>
 
         Reviewed by Sam Weinig.
