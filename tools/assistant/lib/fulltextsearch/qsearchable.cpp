@@ -26,6 +26,7 @@ QCLuceneSearchablePrivate::QCLuceneSearchablePrivate(const QCLuceneSearchablePri
     : QSharedData()
 {
     searchable = _CL_POINTER(other.searchable);
+    deleteCLuceneSearchable = other.deleteCLuceneSearchable;
 }
 
 QCLuceneSearchablePrivate::~QCLuceneSearchablePrivate()

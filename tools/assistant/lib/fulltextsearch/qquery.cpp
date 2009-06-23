@@ -28,6 +28,7 @@ QCLuceneQueryPrivate::QCLuceneQueryPrivate(const QCLuceneQueryPrivate &other)
     : QSharedData()
 {
     query = _CL_POINTER(other.query);
+    deleteCLuceneQuery = other.deleteCLuceneQuery;
 }
 
 QCLuceneQueryPrivate::~QCLuceneQueryPrivate()

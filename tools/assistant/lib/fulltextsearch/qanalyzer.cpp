@@ -27,6 +27,7 @@ QCLuceneAnalyzerPrivate::QCLuceneAnalyzerPrivate(const QCLuceneAnalyzerPrivate &
     : QSharedData()
 {
     analyzer = _CL_POINTER(other.analyzer);
+    deleteCLuceneAnalyzer = other.deleteCLuceneAnalyzer;
 }
 
 QCLuceneAnalyzerPrivate::~QCLuceneAnalyzerPrivate()
