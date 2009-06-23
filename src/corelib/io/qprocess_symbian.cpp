@@ -65,6 +65,7 @@
 #include "qstring.h"
 #include "qprocess.h"
 #include "qprocess_p.h"
+#include "qeventdispatcher_symbian_p.h"
 
 #include <private/qthread_p.h>
 #include <qmutex.h>
@@ -594,7 +595,7 @@ TInt processManagerThreadFunction(TAny* param)
 
     QProcessManager* manager = reinterpret_cast<QProcessManager*>(param);
 
-    CActiveScheduler* scheduler = new CActiveScheduler();
+    CActiveScheduler* scheduler = new CQtActiveScheduler();
 
     QPROCESS_ASSERT(scheduler,
         EProcessManagerSchedulerCreationFail,

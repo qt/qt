@@ -85,29 +85,62 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
         if (isEqual(old, softkeys ))
             return;
     }
-    CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
-    CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
-    CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();
+    CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
     nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
-    int placeInScreen=0;
+    int position = -1;
+    int command;
+    bool needsExitButton = true;
+
     for (int index = 0; index < softkeys.count(); index++) {
         const QAction* softKeyAction = softkeys.at(index);
-        if (softKeyAction->softKeyRole() != QAction::ContextMenuSoftKey) {
-
-            HBufC* text = qt_QString2HBufC(softKeyAction->text());
-            CleanupStack::PushL(text);
-            if (softKeyAction->softKeyRole() == QAction::MenuSoftKey) {
-                nativeContainer->SetCommandL(placeInScreen, EAknSoftkeyOptions, *text);
-            } else {
-                nativeContainer->SetCommandL(placeInScreen, SOFTKEYSTART + index, *text);
-            }
-            CleanupStack::PopAndDestroy();
-            placeInScreen++;
+        switch (softKeyAction->softKeyRole()) {
+        // Positive Actions go on LSK
+        case QAction::OptionsSoftKey:
+        case QAction::MenuSoftKey:
+        case QAction::ContextMenuSoftKey:
+            command = EAknSoftkeyOptions; //Calls DynInitMenuPane in AppUI
+            position = 0;
+            break;
+        case QAction::SelectSoftKey:
+        case QAction::PreviousSoftKey:
+        case QAction::OkSoftKey:
+        case QAction::EditSoftKey:
+        case QAction::ViewSoftKey:
+        case QAction::EndEditSoftKey:
+        case QAction::FinishSoftKey:
+            command = SOFTKEYSTART + index;
+            position = 0;
+            break;
+        // Negative Actions on the RSK
+        case QAction::BackSoftKey:
+        case QAction::NextSoftKey:
+        case QAction::CancelSoftKey:
+        case QAction::BackSpaceSoftKey:
+        case QAction::RevertEditSoftKey:
+        case QAction::DeselectSoftKey:
+            needsExitButton = false;
+            command = SOFTKEYSTART + index;
+            position = 2;
+            break;
+        case QAction::ExitSoftKey:
+            needsExitButton = false;
+            command = EAknSoftkeyExit; //Calls HandleCommand in AppUI
+            position = 2;
+            break;
+        default:
+            break;
         }
-    if (placeInScreen==1)
-        placeInScreen=2;
+
+        if (position != -1) {
+            TPtrC text = qt_QString2TPtrC(softKeyAction->text());
+            nativeContainer->SetCommandL(position, command, text);
+        }
     }
+
+    if (needsExitButton)
+        nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit")));
+
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }
 

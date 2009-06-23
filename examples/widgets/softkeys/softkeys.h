@@ -50,13 +50,13 @@ class MainWindow : public QMainWindow
 public:
 
 private slots:
-    void fillTextEditor();
     void clearTextEditor();
     void openDialog();
     void addSoftKeys();
     void exitApplication();
     void okPressed();
     void cancelPressed();
+    void setCustomSoftKeys();
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -65,6 +65,7 @@ private:
     QWidget *central;
     QTextEdit* textEditor;
     QLabel *infoLabel;
+    QPushButton* toggleButton;
     QPushButton* pushButton;
     QMenu* fileMenu;
     QAction* addSoftKeysAct;

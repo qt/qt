@@ -1,4 +1,4 @@
-QT      +=  webkit
+QT      +=  webkit network
 HEADERS =   previewer.h \
             mainwindow.h
 SOURCES =   main.cpp \
@@ -13,3 +13,5 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/webkit/previewer
 INSTALLS += target sources
 
 include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+symbian:TARGET.UID3 = 0xA000CF6F

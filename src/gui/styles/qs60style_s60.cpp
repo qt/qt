@@ -318,16 +318,16 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideLInactive */    {KAknsIIDQsnFrButtonTbSideL,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b7},
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
     /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},  
-    
-    /*SP_QsnFrNotepadCornerTl */         {KAknsIIDQsnFrNotepadCornerTl,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadCornerTr,         ENoDraw,     ES60_AllReleases,    -1,-1},
+
+    /* SP_QsnFrNotepadCornerTl */        {KAknsIIDQsnFrNotepadContCornerTl,     ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadContCornerTr,     ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadCornerBl */        {KAknsIIDQsnFrNotepadCornerBl,         ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadCornerBr */        {KAknsIIDQsnFrNotepadCornerBr,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideT */           {KAknsIIDQsnFrNotepadSideT,            ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadSideT */           {KAknsIIDQsnFrNotepadContSideT,        ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadSideB */           {KAknsIIDQsnFrNotepadSideB,            ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadSideL */           {KAknsIIDQsnFrNotepadSideL,            ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadSideR */           {KAknsIIDQsnFrNotepadSideR,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCenter */          {KAknsIIDQsnFrNotepadCenter,           EDrawIcon,   ES60_AllReleases,    -1,-1}
+    /* SP_QsnFrNotepadCenter */          {KAknsIIDQsnFrNotepadCenter,           EDrawIcon,   ES60_AllReleases,    -1,-1},
 
 };
 
@@ -828,6 +828,10 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             centerId.Set(KAknsIIDNone);
             frameId.Set(KAknsIIDQsnFrSetOpt);
             break;
+        case QS60StylePrivate::SF_Editor:
+            centerId.Set(KAknsIIDQsnFrNotepadCenter);
+            frameId.Set(KAknsIIDQsnFrNotepadCont);
+            break;
         default:
             // center should be correct here
             frameId.iMinor = centerId.iMinor - 9;
@@ -848,6 +852,10 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
         case QS60StylePrivate::SF_ToolTip:
             widthShrink = widthShrink>>1;
             heightShrink = heightShrink>>1;
+            break;
+        case QS60StylePrivate::SF_ListHighlight:
+            widthShrink = widthShrink-2;
+            heightShrink = heightShrink-2;
             break;
         default:
             break;

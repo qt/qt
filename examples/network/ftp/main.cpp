@@ -44,100 +44,13 @@
 
 #ifdef Q_OS_SYMBIAN
 #include <QDir>
-#include <QDesktopWidget> 
-
-#include <es_sock.h>
-#include <sys/socket.h>
-#include <rconnmon.h>
-#include <net/if.h>
-
-QString qt_TDesC2QStringL(const TDesC& aDescriptor) {
-#ifdef QT_NO_UNICODE
-    return QString::fromLocal8Bit(aDescriptor.Ptr(), aDescriptor.Length());
-#else
-    return QString::fromUtf16(aDescriptor.Ptr(), aDescriptor.Length());
-#endif
-}
-
-static void setDefaultIapL() {
-    RConnectionMonitor monitor;
-    CleanupClosePushL(monitor);
-    monitor.ConnectL();
-    TUint          count;
-    TRequestStatus status;
-    TUint          ids[ 15 ];
-    
-    monitor.GetConnectionCount( count, status );
-    User::WaitForRequest( status );
-    if(status.Int() != KErrNone) {
-        User::Leave(status.Int());
-    }
-
-    TUint numSubConnections;
-
-    if(count > 0) {
-        for ( TInt i = 1; i <= count; i++ ) {
-            User::LeaveIfError(monitor.GetConnectionInfo( i, ids[ i-1 ], numSubConnections ));
-        }
-        /*
-         * get IAP value for first active connection
-         */
-        TBuf< 50 > iapName;
-        monitor.GetStringAttribute( ids[ 0 ], 0, KIAPName, iapName, status );
-        User::WaitForRequest( status );
-        if ( status.Int() != KErrNone ) {
-            User::Leave(status.Int());
-        } else {
-            QString strIapName = qt_TDesC2QStringL(iapName);
-            struct ifreq ifReq;
-            strcpy( ifReq.ifr_name, strIapName.toLatin1().data());
-            User::LeaveIfError(setdefaultif( &ifReq ));
-        }
-    } else {
-        /*
-         * no active connections yet
-         * use IAP dialog to select one
-         */
-        RSocketServ serv;
-        CleanupClosePushL(serv);
-        User::LeaveIfError(serv.Connect());
-
-        RConnection conn;
-        CleanupClosePushL(conn);
-        User::LeaveIfError(conn.Open(serv));
-        User::LeaveIfError(conn.Start());
-
-        _LIT(KIapNameSetting, "IAP\\Name");
-        TBuf8<50> iap8Name;
-        User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name));
-        iap8Name.ZeroTerminate();
-
-        struct ifreq ifReq;
-        strcpy( ifReq.ifr_name, (char*)iap8Name.Ptr());
-        User::LeaveIfError(setdefaultif( &ifReq ));
-
-        conn.Stop();
-        conn.Close();
-        serv.Close();
-        CleanupStack::PopAndDestroy(&conn);
-        CleanupStack::PopAndDestroy(&serv);
-    }
-    monitor.Close();
-    CleanupStack::PopAndDestroy(&monitor);
-}
-
-static int setDefaultIap()
-{
-    TRAPD(err, setDefaultIapL());
-    return err;
-}
+#include <QDesktopWidget>
 #endif
 
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(ftp);
 #ifdef Q_OS_SYMBIAN
-    setDefaultIap(); 
     // Change current directory from default private to c:\data
     // in order that user can access the downloaded content
     QDir::setCurrent( "c:\\data" );

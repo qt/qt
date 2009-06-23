@@ -13,6 +13,7 @@
     <example filename="fridgemagnets" name="Fridge Magnets" image="screenshots/fridgemagnets_s60.png" args="-small-screen"/>
     <example filename="drilldown" name="Drilldown" image="screenshots/drilldown_s60.png"/>
     <example filename="softkeys" name="Softkeys" image="screenshots/softkeys_s60.png"/>
+    <example filename="anomaly" name="Anomaly Browser" image="screenshots/anomaly_s60.png"/>    
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>

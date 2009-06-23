@@ -13,6 +13,7 @@ INSTALLS += target sources
 include($$QT_SOURCE_TREE/examples/examplebase.pri)
 
 symbian {
+    HEADERS +=  sym_iap_util.h
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     TARGET.CAPABILITY="NetworkServices"
     TARGET.UID3 = 0xA000A648

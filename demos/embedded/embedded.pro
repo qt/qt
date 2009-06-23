@@ -7,6 +7,10 @@ contains(QT_CONFIG, svg) {
                desktopservices
 }
 
+contains(QT_CONFIG, webkit) {
+    SUBDIRS += anomaly
+}
+
 # install
 sources.files = README *.pro
 sources.path = $$[QT_INSTALL_DEMOS]/embedded

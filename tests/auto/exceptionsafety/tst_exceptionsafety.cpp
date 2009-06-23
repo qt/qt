@@ -617,6 +617,12 @@ public:
     {}
 };
 
+struct IntEx : public std::exception
+{
+    IntEx(int aEx) : ex(aEx) {}
+    int ex;
+};
+
 class TestObject : public QObject
 {
 public:
@@ -630,7 +636,7 @@ protected:
     bool event(QEvent *event)
     {
         if (int(event->type()) == ThrowEventId) {
-            throw ++throwEventCount;
+             throw IntEx(++throwEventCount);
         } else if (int(event->type()) == NoThrowEventId) {
             ++noThrowEventCount;
         }
@@ -645,8 +651,8 @@ void tst_ExceptionSafety::exceptionEventLoop()
     ThrowEvent throwEvent;
     try {
         qApp->sendEvent(&obj, &throwEvent);
-    } catch (int code) {
-        QCOMPARE(code, 1);
+    } catch (IntEx code) {
+        QCOMPARE(code.ex, 1);
     }
     QCOMPARE(obj.throwEventCount, 1);
 
@@ -655,8 +661,8 @@ void tst_ExceptionSafety::exceptionEventLoop()
 
     try {
         qApp->processEvents();
-    } catch (int code) {
-        QCOMPARE(code, 2);
+    } catch (IntEx code) {
+        QCOMPARE(code.ex, 2);
     }
     QCOMPARE(obj.throwEventCount, 2);
 
@@ -669,12 +675,15 @@ void tst_ExceptionSafety::exceptionEventLoop()
 
     try {
         qApp->processEvents();
-    } catch (int code) {
-        QCOMPARE(code, 3);
+    } catch (IntEx code) {
+        QCOMPARE(code.ex, 3);
     }
     // here, we should have received on non-throwing event and one throwing one
     QCOMPARE(obj.throwEventCount, 3);
+#ifndef __SYMBIAN32__
+    // symbian event loops will have absorbed the exceptions
     QCOMPARE(obj.noThrowEventCount, 1);
+#endif
 
     // spin the event loop again
     qApp->processEvents();

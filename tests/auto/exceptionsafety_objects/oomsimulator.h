@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include <malloc.h>
+#include <limits.h>
+#include "3rdparty/memcheck.h"
 
 /* Use glibc's memory allocation hooks */
 
@@ -89,18 +91,41 @@ void my_init_hook()
 static bool mallocFailActive = false;
 static int mallocFailIndex = 0;
 static int mallocCount = 0;
-static int freeCount = 0;
 
-struct AllocFailActivator
+struct AllocFailer
 {
-    inline AllocFailActivator() { mallocFailActive = true; }
-    inline ~AllocFailActivator() { mallocFailActive = false; }
+    inline AllocFailer() { mallocFailActive = true; setAllocFailIndex(0); }
+    inline ~AllocFailer() { deactivate(); }
 
-    inline void deactivate() { mallocFailActive = false; }
+    inline void setAllocFailIndex(int index)
+    {
+        if (RUNNING_ON_VALGRIND) {
+            VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(VALGRIND_GET_ALLOC_INDEX + index + 1);
+        } else {
+            mallocFailIndex = index;
+        }
+    }
+
+    inline void deactivate()
+    {
+        mallocFailActive = false;
+        VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(INT_MAX);
+    }
+
+    inline int currentAllocIndex() const
+    {
+        if (RUNNING_ON_VALGRIND) {
+            return VALGRIND_GET_ALLOC_INDEX;
+        } else {
+            return mallocCount;
+        }
+    }
 };
 
 void *my_malloc_hook(size_t size, const void *)
 {
+    ++mallocCount;
+
     if (mallocFailActive && --mallocFailIndex < 0)
         return 0; // simulate OOM
 
@@ -108,12 +133,13 @@ void *my_malloc_hook(size_t size, const void *)
     void *result = ::malloc (size);
     __malloc_hook = my_malloc_hook;
 
-    ++mallocCount;
     return result;
 }
 
 void *my_memalign_hook(size_t alignment, size_t size, const void *)
 {
+    ++mallocCount;
+
     if (mallocFailActive && --mallocFailIndex < 0)
         return 0; // simulate OOM
 
@@ -121,12 +147,13 @@ void *my_memalign_hook(size_t alignment, size_t size, const void *)
     void *result = ::memalign(alignment, size);
     __memalign_hook = my_memalign_hook;
 
-    ++mallocCount;
     return result;
 }
 
 void *my_realloc_hook(void *ptr, size_t size, const void *)
 {
+    ++mallocCount;
+
     if (mallocFailActive && --mallocFailIndex < 0)
         return 0; // simulate OOM
 
@@ -136,8 +163,6 @@ void *my_realloc_hook(void *ptr, size_t size, const void *)
     __malloc_hook = my_malloc_hook;
     __realloc_hook = my_realloc_hook;
 
-    if (!ptr) // realloc on a 0 pointer equals a new allocation
-        ++mallocCount;
     return result;
 }
 
@@ -146,8 +171,6 @@ void my_free_hook(void *ptr, const void *)
     __free_hook = old_free_hook;
     ::free(ptr);
     __free_hook = my_free_hook;
-
-    ++freeCount;
 }
 
 static void *new_helper(std::size_t size)

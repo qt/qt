@@ -523,8 +523,10 @@ in the \l{Qt for S60 Requirements} document.
         to try out. An excellent starting point is the "fluidlauncher"
         demo. To run the demo on a real device, you first have to install
         \c{qt_libs.sis} and \c{fluidlauncher.sis} found in the Qt installation
-        directory. In Windows Explorer right click on the \c{.sis} files and select
-        "Install with Nokia Application Installer" and follow the instructions.
+        directory. Begin by connecting your phone using the USB cable and
+        selecting "PC Suite mode". In Windows Explorer right click on the
+        \c{.sis} files and select "Install with Nokia Application Installer"
+        and follow the instructions.
 
         To run the demos and examples on the emulator, you need to build them first.
         Open the "Qt for S60 Command Prompt" from the Start menu and type:
@@ -906,8 +908,9 @@ If you are using pre-built binaries, follow the instructions
     \list
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
            \list
-           \o \bold{Note:} It is necessary to update Carbide compiler if you are using Carbide 2.0.2 or older. 
-              You can find a compiler patch \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
+           \o \bold{Note:} It may be necessary to update the Carbide compiler.
+              See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
+              compiler version and how to patch it, if needed.
            \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
         \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 

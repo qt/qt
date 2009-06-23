@@ -44,6 +44,10 @@
 
 #include "ftpwindow.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "sym_iap_util.h"
+#endif
+
 FtpWindow::FtpWindow(QWidget *parent)
     : QDialog(parent), ftp(0)
 {
@@ -115,6 +119,10 @@ FtpWindow::FtpWindow(QWidget *parent)
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
 
+#ifdef Q_OS_SYMBIAN
+    bDefaultIapSet = false;
+#endif
+
     setWindowTitle(tr("FTP"));
 }
 
@@ -126,6 +134,12 @@ QSize FtpWindow::sizeHint() const
 //![0]
 void FtpWindow::connectOrDisconnect()
 {
+#ifdef Q_OS_SYMBIAN
+   if(!bDefaultIapSet) {
+       qt_SetDefaultIap();
+       bDefaultIapSet = true;
+   }
+#endif
     if (ftp) {
         ftp->abort();
         ftp->deleteLater();
@@ -139,6 +153,7 @@ void FtpWindow::connectOrDisconnect()
 #ifndef QT_NO_CURSOR
         setCursor(Qt::ArrowCursor);
 #endif
+        statusLabel->setText(tr("Please enter the name of an FTP server."));
         return;
     }
 

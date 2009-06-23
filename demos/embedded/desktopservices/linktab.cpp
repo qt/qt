@@ -49,19 +49,19 @@
 // CLASS HEADER
 #include "linktab.h"
 
-LinkTab::LinkTab(QWidget *parent) : 
+LinkTab::LinkTab(QWidget *parent) :
     ContentTab(parent)
-{          
+{
 }
-        
-LinkTab::~LinkTab() 
+
+LinkTab::~LinkTab()
 {
 }
 
 void LinkTab::populateListWidget()
 {
     m_WebItem = new QListWidgetItem(QIcon(":/resources/browser.png"), tr("Launch Browser"), this);
-    m_MailToItem = new QListWidgetItem(QIcon(":/resources/message.png"), tr("New e-mail"), this);   
+    m_MailToItem = new QListWidgetItem(QIcon(":/resources/message.png"), tr("New e-mail"), this);
 }
 
 QUrl LinkTab::itemUrl(QListWidgetItem *item)
@@ -78,8 +78,8 @@ QUrl LinkTab::itemUrl(QListWidgetItem *item)
 }
 void LinkTab::handleErrorInOpen(QListWidgetItem *item)
 {
-    if(m_MailToItem == item) {   
-        QMessageBox::warning( this, tr("Operation Failed"), tr("Please check that you have\ne-mail accunt defined"), QMessageBox::Close);    
+    if(m_MailToItem == item) {
+        QMessageBox::warning( this, tr("Operation Failed"), tr("Please check that you have\ne-mail account defined."), QMessageBox::Close);
     } else {
         ContentTab::handleErrorInOpen(item);
     }

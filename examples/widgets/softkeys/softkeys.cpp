@@ -49,19 +49,23 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(central);
 
     // Create text editor and set softkeys to it
-    textEditor= new QTextEdit(tr("Choose items from menu or navigate around with tab+selection to see what softkeys can do"), this);
-    QAction* fill = new QAction(tr("Fill"), this);
-    fill->setSoftKeyRole(QAction::OkSoftKey);
+    textEditor= new QTextEdit(tr("Navigate in UI to see context sensitive softkeys in action"), this);
+    QAction* menu = new QAction(tr("Menu"), this);
+    menu->setSoftKeyRole(QAction::MenuSoftKey);
     QAction* clear = new QAction(tr("Clear"), this);
     clear->setSoftKeyRole(QAction::CancelSoftKey);
 
     QList<QAction*> textEditorSoftKeys;
-    textEditorSoftKeys.append(fill);
+    textEditorSoftKeys.append(menu);
     textEditorSoftKeys.append(clear);
     textEditor->setSoftKeys(textEditorSoftKeys);
 
     infoLabel = new QLabel(tr(""), this);
     infoLabel->setContextMenuPolicy(Qt::NoContextMenu);
+
+    toggleButton = new QPushButton(tr("Custom softkeys"), this);
+    toggleButton->setContextMenuPolicy(Qt::NoContextMenu);
+    toggleButton->setCheckable(true); 
 
     pushButton = new QPushButton(tr("Open File Dialog"), this);
     pushButton->setContextMenuPolicy(Qt::NoContextMenu);
@@ -77,31 +81,24 @@ MainWindow::MainWindow(QWidget *parent)
     layout = new QVBoxLayout;
     layout->addWidget(textEditor);
     layout->addWidget(infoLabel);
+    layout->addWidget(toggleButton);
     layout->addWidget(pushButton);
     layout->addWidget(comboBox);
     central->setLayout(layout);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
-    addSoftKeysAct = new QAction(tr("&Add Softkeys"), this);
-    fileMenu->addAction(addSoftKeysAct);
     exit = new QAction(tr("&Exit"), this);
     fileMenu->addAction(exit);
 
-    connect(fill, SIGNAL(triggered()), this, SLOT(fillTextEditor()));
     connect(clear, SIGNAL(triggered()), this, SLOT(clearTextEditor()));
     connect(pushButton, SIGNAL(clicked()), this, SLOT(openDialog()));
-    connect(addSoftKeysAct, SIGNAL(triggered()), this, SLOT(addSoftKeys()));
     connect(exit, SIGNAL(triggered()), this, SLOT(exitApplication()));
+    connect(toggleButton, SIGNAL(clicked()), this, SLOT(setCustomSoftKeys()));
     pushButton->setFocus();
 }
 
 MainWindow::~MainWindow()
 {
-}
-
-void MainWindow::fillTextEditor()
-{
-    textEditor->setText(tr("The fill softkey was pressed and here is some text to fill the editor"));
 }
 
 void MainWindow::clearTextEditor()
@@ -121,7 +118,7 @@ void MainWindow::addSoftKeys()
     connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
 
     cancel = new QAction(tr("Cancel"), this);
-    cancel->setSoftKeyRole(QAction::OkSoftKey);
+    cancel->setSoftKeyRole(QAction::CancelSoftKey);
     connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
 
     QList<QAction*> softkeys;
@@ -132,6 +129,20 @@ void MainWindow::addSoftKeys()
         focusWidget->setSoftKeys(softkeys);
 }
 
+void MainWindow::setCustomSoftKeys()
+{
+    if (toggleButton->isChecked()) {
+        infoLabel->setText(tr("Custom softkeys set"));
+        addSoftKeys();
+        }
+    else {
+        infoLabel->setText(tr("Custom softkeys removed"));
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget)
+            focusWidget->setSoftKey(0);
+    }
+}
+
 void MainWindow::exitApplication()
 {
     qApp->exit();
@@ -140,18 +151,11 @@ void MainWindow::exitApplication()
 void MainWindow::okPressed()
 {
     infoLabel->setText(tr("OK pressed"));
-    QWidget* focusWidget = QApplication::focusWidget();
-    if (focusWidget)
-        focusWidget->setSoftKey(0);
 }
 
 void MainWindow::cancelPressed()
 {
     infoLabel->setText(tr("Cancel pressed"));
-    QWidget* focusWidget = QApplication::focusWidget();
-    if (focusWidget)
-        focusWidget->setSoftKey(0);
 }
-
 
 

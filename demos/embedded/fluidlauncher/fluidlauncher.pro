@@ -72,7 +72,8 @@ symbian {
         desktopservices.exe \
         fridgemagnets.exe \
         drilldown.exe \
-        softkeys.exe
+        softkeys.exe \
+        anomaly.exe
 
     executables.path = /sys/bin
 
@@ -88,7 +89,8 @@ symbian {
          $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
          $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
          $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/drilldown_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc
+         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc \
+         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
 
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
 
@@ -105,7 +107,8 @@ symbian {
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/drilldown.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc
+         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc \
+         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
 
     resource.path = $$APP_RESOURCE_DIR
 

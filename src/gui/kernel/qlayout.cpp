@@ -145,7 +145,12 @@ QLayout::QLayout(QLayoutPrivate &dd, QLayout *lay, QWidget *w)
         } else {
             d->topLevel = true;
             w->d_func()->layout = this;
-            invalidate();
+            QT_TRY {
+                invalidate();
+            } QT_CATCH(...) {
+                w->d_func()->layout = 0;
+                QT_RETHROW;
+            }
         }
     }
 }
@@ -230,7 +235,12 @@ QLayout::QLayout(QWidget *parent, int margin, int spacing, const char *name)
         } else {
             d->topLevel = true;
             parent->d_func()->layout = this;
-            invalidate();
+            QT_TRY {
+                invalidate();
+            } QT_CATCH(...) {
+                parent->d_func()->layout = 0;
+                QT_RETHROW;
+            }
         }
     }
 }
