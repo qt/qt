@@ -595,6 +595,8 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &r
     for (int i = 0; i < rectItems.size(); ++i)
         rectItems.at(i)->d_func()->itemDiscovered = 0;
 
+    rectItems += d->untransformableItems;
+
     d->sortItems(&rectItems, order, d->sortCacheEnabled);
 
     return rectItems;
