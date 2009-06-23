@@ -166,6 +166,7 @@
     \o \l{itemviews/dirview}{Dir View}
     \o \l{itemviews/editabletreemodel}{Editable Tree Model}\raisedaster
     \o \l{itemviews/fetchmore}{Fetch More}\raisedaster
+    \o \l{itemviews/frozencolumn}{Frozen Column}\raisedaster
     \o \l{itemviews/pixelator}{Pixelator}\raisedaster
     \o \l{itemviews/puzzle}{Puzzle}
     \o \l{itemviews/simpledommodel}{Simple DOM Model}\raisedaster
