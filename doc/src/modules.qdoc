@@ -55,6 +55,7 @@
     \row \o \l{QtGui} \o Graphical user interface (GUI) components
     \row \o \l{QtNetwork} \o Classes for network programming
     \row \o \l{QtOpenGL} \o OpenGL support classes
+    \row \o \l{QtOpenVG} \o OpenVG support classes
     \row \o \l{QtScript} \o Classes for evaluating Qt Scripts
     \row \o \l{QtScriptTools} \o Additional Qt Script components
     \row \o \l{QtSql} \o Classes for database integration using SQL
