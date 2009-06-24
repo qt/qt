@@ -39,106 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSQLQUERYMODEL_H
-#define QMLSQLQUERYMODEL_H
+#ifndef QMLTIMER_H
+#define QMLTIMER_H
 
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/qobject.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/QListModelInterface>
 
 QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlSqlBindPrivate;
-class Q_DECLARATIVE_EXPORT QmlSqlBind : public QObject, public QmlParserStatus
+class QmlTimerPrivate;
+class Q_DECLARATIVE_EXPORT QmlTimer : public QObject, public QmlParserStatus
 {
     Q_OBJECT
-    Q_INTERFACES(QmlParserStatus)
-
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QVariant value READ value WRITE setValue)
-
-    Q_CLASSINFO("DefaultValue", "value")
+    Q_DECLARE_PRIVATE(QmlTimer)
+    Q_PROPERTY(int interval READ interval WRITE setInterval)
 
 public:
-    QmlSqlBind(QObject *parent = 0);
-    ~QmlSqlBind();
+    QmlTimer(QObject *parent=0);
 
-    QString name() const;
-    QVariant value() const;
-
-    void setName(const QString &name);
-    void setValue(const QVariant &);
-
-    virtual void classComplete();
-
-Q_SIGNALS:
-    void valueChanged();
-
-private:
-    Q_DISABLE_COPY(QmlSqlBind)
-    Q_DECLARE_PRIVATE(QmlSqlBind)
-};
-
-QML_DECLARE_TYPE(QmlSqlBind)
-
-class QSqlQuery;
-class QmlSqlQueryPrivate;
-class Q_DECLARATIVE_EXPORT QmlSqlQuery : public QListModelInterface, public QmlParserStatus
-{
-    Q_OBJECT
-    Q_INTERFACES(QmlParserStatus)
-
-    Q_PROPERTY(QString query READ query WRITE setQuery)
-    Q_PROPERTY(QVariant connection READ connection WRITE setConnection)
-    Q_PROPERTY(QString lastError READ lastError)
-    
-    Q_PROPERTY(QmlList<QmlSqlBind *> *bindings READ bindings)
-public:
-    QmlSqlQuery(QObject *parent = 0);
-    ~QmlSqlQuery();
-
-    QString query() const;
-    void setQuery(const QString &);
-
-    QVariant connection() const;
-    void setConnection(const QVariant &);
-
-    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
-    virtual int count() const;
-    virtual QList<int> roles() const;
-    virtual QString toString(int role) const;
-
-    QString lastError() const;
-
-    virtual void classComplete();
-
-    QmlList<QmlSqlBind *> *bindings();
-    const QmlList<QmlSqlBind *> *bindings() const;
-
-public slots:
-    void exec();
+    void setInterval(int interval);
+    int interval() const;
 
 protected:
-    void timerEvent(QTimerEvent *);
+    void componentComplete();
 
-private slots:
-    void resetBinds();
-    void resetQuery();
+Q_SIGNALS:
+    void timeout();
 
-private:
-    void emitChanges(int oldcount);
-
-    Q_DISABLE_COPY(QmlSqlQuery)
-    Q_DECLARE_PRIVATE(QmlSqlQuery)
+private Q_SLOTS:
+    void ticked();
 };
-
-QML_DECLARE_TYPE(QmlSqlQuery)
+QML_DECLARE_TYPE(QmlTimer)
 
 QT_END_NAMESPACE
-
 QT_END_HEADER
 #endif
-

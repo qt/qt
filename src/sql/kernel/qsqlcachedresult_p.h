@@ -89,6 +89,7 @@ protected:
     int colCount() const;
     ValueCache &cache();
 
+    void virtual_hook(int id, void *data);
 private:
     bool cacheNext();
     QSqlCachedResultPrivate *d;

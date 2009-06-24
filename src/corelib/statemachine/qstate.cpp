@@ -333,10 +333,13 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
         return 0;
     }
     int offset = (*signal == '0'+QSIGNAL_CODE) ? 1 : 0;
-    if (sender->metaObject()->indexOfSignal(signal+offset) == -1) {
-        qWarning("QState::addTransition: no such signal %s::%s",
-                 sender->metaObject()->className(), signal+offset);
-        return 0;
+    const QMetaObject *meta = sender->metaObject();
+    if (meta->indexOfSignal(signal+offset) == -1) {
+        if (meta->indexOfSignal(QMetaObject::normalizedSignature(signal+offset)) == -1) {
+            qWarning("QState::addTransition: no such signal %s::%s",
+                     meta->className(), signal+offset);
+            return 0;
+        }
     }
     QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
     addTransition(trans);

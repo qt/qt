@@ -1771,10 +1771,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    int x1 = int(rect.x() + aliasedCoordinateDelta);
-    int y1 = int(rect.y() + aliasedCoordinateDelta);
-    int x2 = int(rect.right() + aliasedCoordinateDelta);
-    int y2 = int(rect.bottom() + aliasedCoordinateDelta);
+    int x1 = qRound(rect.x() + aliasedCoordinateDelta);
+    int y1 = qRound(rect.y() + aliasedCoordinateDelta);
+    int x2 = qRound(rect.right() + aliasedCoordinateDelta);
+    int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
 
     if (x2 < x1)
         qSwap(x1, x2);

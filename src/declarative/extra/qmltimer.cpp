@@ -39,61 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QFXIMAGEITEM_H
-#define QFXIMAGEITEM_H
-
-#include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qfxitem.h>
-
-
-QT_BEGIN_HEADER
+#include "QtCore/qpauseanimation.h"
+#include "private/qobject_p.h"
+#include "qmltimer.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+QML_DEFINE_TYPE(QmlTimer,Timer)
 
-class QFxPaintedItemPrivate;
-class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
+class QmlTimerPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
-    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth)
-    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
-
+    Q_DECLARE_PUBLIC(QmlTimer)
 public:
-    QFxPaintedItem(QFxItem *parent=0);
-    ~QFxPaintedItem();
-
-    void paintContents(QPainter &painter);
-
-    bool isSmooth() const;
-    QSize contentsSize() const;
-
-    void setSmooth(bool);
-    void setContentsSize(const QSize &);
-
-    int cacheSize() const;
-    void setCacheSize(int pixels);
-
-protected:
-    QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);
-
-    virtual void drawContents(QPainter *p, const QRect &) = 0;
-
-protected Q_SLOTS:
-    void dirtyCache(const QRect &);
-    void clearCache();
-
-private:
-    void init();
-    Q_DISABLE_COPY(QFxPaintedItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPaintedItem)
+    QmlTimerPrivate() : interval(1000) {}
+    int interval;
+    QPauseAnimation pause;
 };
-QML_DECLARE_TYPE(QFxPaintedItem)
 
+QmlTimer::QmlTimer(QObject *parent)
+    : QObject(*(new QmlTimerPrivate), parent)
+{
+    Q_D(QmlTimer);
+    connect(&d->pause, SIGNAL(currentLoopChanged(int)), this, SLOT(ticked()));
+    d->pause.setLoopCount(-1);
+    d->pause.setDuration(d->interval);
+}
+
+void QmlTimer::setInterval(int interval)
+{
+    Q_D(QmlTimer);
+    if (interval != d->interval) {
+        d->interval = interval;
+        d->pause.setDuration(d->interval);
+        d->pause.start();
+    }
+}
+
+int QmlTimer::interval() const
+{
+    Q_D(const QmlTimer);
+    return d->interval;
+}
+
+void QmlTimer::componentComplete()
+{
+    Q_D(QmlTimer);
+    if (d->pause.state() != QAbstractAnimation::Running)
+        d->pause.start();
+}
+
+void QmlTimer::ticked()
+{
+    emit timeout();
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-#endif

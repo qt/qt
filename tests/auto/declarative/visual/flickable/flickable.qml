@@ -1,7 +1,7 @@
 Rect {
     color: "lightSteelBlue"
-    width: 800
-    height: 500
+    width: 600
+    height: 300
     ListModel {
         id: List
         ListElement {

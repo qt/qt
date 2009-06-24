@@ -134,7 +134,6 @@ QString QFxTextEdit::text() const
 
 /*!
     \qmlproperty string TextEdit::text
-    \default
 
     The text to display.  If the text format is AutoText the text edit will
     automatically determine whether the text should be treated as

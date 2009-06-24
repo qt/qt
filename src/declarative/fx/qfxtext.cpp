@@ -179,7 +179,6 @@ void QFxText::setText(const QString &n)
 
 /*!
     \qmlproperty string Text::text
-    \default
 
     The text to display.  Text supports both plain and rich text strings.
 

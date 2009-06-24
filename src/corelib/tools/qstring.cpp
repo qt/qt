@@ -1012,14 +1012,13 @@ QString::QString(int size, QChar ch)
     }
 }
 
-/*!
-    Constructs a string of the given \a size without initializing the
-    characters. This is only used in \c QStringBuilder::toString().
+/*! \fn QString::QString(int size, Qt::Initialization)
+  \internal
 
-    \internal
+  Constructs a string of the given \a size without initializing the
+  characters. This is only used in \c QStringBuilder::toString().
 */
-
-QString::QString(int size, enum Qt::Uninitialized)
+QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
     d->ref = 1;

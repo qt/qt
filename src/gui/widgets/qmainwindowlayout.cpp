@@ -490,10 +490,10 @@ void QMainWindowLayoutState::clear()
 #ifndef QT_NO_DOCKWIDGET
     dockAreaLayout.clear();
 #else
-    centralWidgetRect = QRect(0, 0, -1, -1);
+    centralWidgetRect = QRect();
 #endif
 
-    rect = QRect(0, 0, -1, -1);
+    rect = QRect();
 }
 
 bool QMainWindowLayoutState::isValid() const

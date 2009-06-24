@@ -533,12 +533,12 @@ void QFxAnchors::setTop(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasTopAnchor;
-    else
-        d->usedAnchors &= ~HasTopAnchor;
+    d->usedAnchors |= HasTopAnchor;
 
-    d->checkVValid();
+    if (!d->checkVValid()) {
+        d->usedAnchors &= ~HasTopAnchor;
+        return;
+    }
 
     d->remDepend(d->top.item);
     d->top = edge;
@@ -548,7 +548,11 @@ void QFxAnchors::setTop(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetTop()
 {
-    setTop(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasTopAnchor;
+    d->remDepend(d->top.item);
+    d->top = QFxAnchorLine();
+    d->updateVerticalAnchors();
 }
 
 QFxAnchorLine QFxAnchors::bottom() const
@@ -563,12 +567,12 @@ void QFxAnchors::setBottom(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasBottomAnchor;
-    else
-        d->usedAnchors &= ~HasBottomAnchor;
+    d->usedAnchors |= HasBottomAnchor;
 
-    d->checkVValid();
+    if (!d->checkVValid()) {
+        d->usedAnchors &= ~HasBottomAnchor;
+        return;
+    }
 
     d->remDepend(d->bottom.item);
     d->bottom = edge;
@@ -578,7 +582,11 @@ void QFxAnchors::setBottom(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetBottom()
 {
-    setBottom(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasBottomAnchor;
+    d->remDepend(d->bottom.item);
+    d->bottom = QFxAnchorLine();
+    d->updateVerticalAnchors();
 }
 
 QFxAnchorLine QFxAnchors::verticalCenter() const
@@ -593,12 +601,12 @@ void QFxAnchors::setVerticalCenter(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasVCenterAnchor;
-    else
-        d->usedAnchors &= ~HasVCenterAnchor;
+    d->usedAnchors |= HasVCenterAnchor;
 
-    d->checkVValid();
+    if (!d->checkVValid()) {
+        d->usedAnchors &= ~HasVCenterAnchor;
+        return;
+    }
 
     d->remDepend(d->vCenter.item);
     d->vCenter = edge;
@@ -608,7 +616,11 @@ void QFxAnchors::setVerticalCenter(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetVerticalCenter()
 {
-    setVerticalCenter(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasVCenterAnchor;
+    d->remDepend(d->vCenter.item);
+    d->vCenter = QFxAnchorLine();
+    d->updateVerticalAnchors();
 }
 
 QFxAnchorLine QFxAnchors::baseline() const
@@ -623,12 +635,12 @@ void QFxAnchors::setBaseline(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasBaselineAnchor;
-    else
-        d->usedAnchors &= ~HasBaselineAnchor;
+    d->usedAnchors |= HasBaselineAnchor;
 
-    d->checkVValid();
+    if (!d->checkVValid()) {
+        d->usedAnchors &= ~HasBaselineAnchor;
+        return;
+    }
 
     d->remDepend(d->baseline.item);
     d->baseline = edge;
@@ -638,7 +650,11 @@ void QFxAnchors::setBaseline(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetBaseline()
 {
-    setBaseline(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasBaselineAnchor;
+    d->remDepend(d->baseline.item);
+    d->baseline = QFxAnchorLine();
+    d->updateVerticalAnchors();
 }
 
 QFxAnchorLine QFxAnchors::left() const
@@ -653,12 +669,12 @@ void QFxAnchors::setLeft(const QFxAnchorLine &edge)
     if (!d->checkHAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasLeftAnchor;
-    else
-        d->usedAnchors &= ~HasLeftAnchor;
+    d->usedAnchors |= HasLeftAnchor;
 
-    d->checkHValid();
+    if (!d->checkHValid()) {
+        d->usedAnchors &= ~HasLeftAnchor;
+        return;
+    }
 
     d->remDepend(d->left.item);
     d->left = edge;
@@ -668,7 +684,11 @@ void QFxAnchors::setLeft(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetLeft()
 {
-    setLeft(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasLeftAnchor;
+    d->remDepend(d->left.item);
+    d->left = QFxAnchorLine();
+    d->updateHorizontalAnchors();
 }
 
 QFxAnchorLine QFxAnchors::right() const
@@ -683,12 +703,12 @@ void QFxAnchors::setRight(const QFxAnchorLine &edge)
     if (!d->checkHAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasRightAnchor;
-    else
-        d->usedAnchors &= ~HasRightAnchor;
+    d->usedAnchors |= HasRightAnchor;
 
-    d->checkHValid();
+    if (!d->checkHValid()) {
+        d->usedAnchors &= ~HasRightAnchor;
+        return;
+    }
 
     d->remDepend(d->right.item);
     d->right = edge;
@@ -699,7 +719,11 @@ void QFxAnchors::setRight(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetRight()
 {
-    setRight(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasRightAnchor;
+    d->remDepend(d->right.item);
+    d->right = QFxAnchorLine();
+    d->updateHorizontalAnchors();
 }
 
 QFxAnchorLine QFxAnchors::horizontalCenter() const
@@ -714,12 +738,12 @@ void QFxAnchors::setHorizontalCenter(const QFxAnchorLine &edge)
     if (!d->checkHAnchorValid(edge))
         return;
 
-    if (edge.item)
-        d->usedAnchors |= HasHCenterAnchor;
-    else
-        d->usedAnchors &= ~HasHCenterAnchor;
+    d->usedAnchors |= HasHCenterAnchor;
 
-    d->checkHValid();
+    if (!d->checkHValid()) {
+        d->usedAnchors &= ~HasHCenterAnchor;
+        return;
+    }
 
     d->remDepend(d->hCenter.item);
     d->hCenter = edge;
@@ -729,7 +753,11 @@ void QFxAnchors::setHorizontalCenter(const QFxAnchorLine &edge)
 
 void QFxAnchors::resetHorizontalCenter()
 {
-    setHorizontalCenter(QFxAnchorLine());
+    Q_D(QFxAnchors);
+    d->usedAnchors &= ~HasHCenterAnchor;
+    d->remDepend(d->hCenter.item);
+    d->hCenter = QFxAnchorLine();
+    d->updateHorizontalAnchors();
 }
 
 int QFxAnchors::leftMargin() const
@@ -848,13 +876,16 @@ bool QFxAnchorsPrivate::checkHValid() const
 
 bool QFxAnchorsPrivate::checkHAnchorValid(QFxAnchorLine anchor) const
 {
-    if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
+    if (!anchor.item) {
+        qmlInfo(item) << "Can't anchor to a null item.";
+        return false;
+    } else if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
         qmlInfo(item) << "Can't anchor a horizontal edge to a vertical edge.";
         return false;
     } else if (anchor.item != item->itemParent() && anchor.item->itemParent() != item->itemParent()){
         qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
         return false;
-    } else if (anchor.item == item){
+    } else if (anchor.item == item) {
         qmlInfo(item) << "Can't anchor item to self.";
         return false;
     }
@@ -882,7 +913,10 @@ bool QFxAnchorsPrivate::checkVValid() const
 
 bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
 {
-    if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
+    if (!anchor.item) {
+        qmlInfo(item) << "Can't anchor to a null item.";
+        return false;
+    } else if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
         qmlInfo(item) << "Can't anchor a vertical edge to a horizontal edge.";
         return false;
     } else if (anchor.item != item->itemParent() && anchor.item->itemParent() != item->itemParent()){

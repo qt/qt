@@ -67,7 +67,6 @@ class Q_DECLARATIVE_EXPORT QmlSqlConnection : public QObject, public QmlParserSt
     Q_PROPERTY(QString userName READ userName WRITE setUserName)
     Q_PROPERTY(QString password READ password WRITE setPassword)
     Q_PROPERTY(QString lastError READ lastError)
-    Q_CLASSINFO("DefaultProperty", "name")
 public:
     QmlSqlConnection(QObject *parent = 0);
     ~QmlSqlConnection();

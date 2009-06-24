@@ -905,7 +905,6 @@ QVariant QSqlResult::lastInsertId() const
 */
 void QSqlResult::virtual_hook(int, void *)
 {
-    Q_ASSERT(false);
 }
 
 /*! \internal
@@ -971,6 +970,7 @@ void QSqlResult::detachFromResultSet()
 void QSqlResult::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy)
 {
     d->precisionPolicy = policy;
+    virtual_hook(SetNumericalPrecision, &policy);
 }
 
 /*! \internal

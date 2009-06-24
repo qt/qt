@@ -63,7 +63,7 @@ class QFxPaintedItemPrivate : public QFxItemPrivate
 
 public:
     QFxPaintedItemPrivate()
-      : max_imagecache_size(1000*1000), smooth(false)
+      : max_imagecache_size(100000), smooth(false)
     {
     }
 
@@ -77,7 +77,7 @@ public:
 
     QList<ImageCacheItem*> imagecache;
 
-    const int max_imagecache_size;
+    int max_imagecache_size;
     bool smooth;
     QSize contentsSize;
 };

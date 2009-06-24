@@ -1543,7 +1543,7 @@ public:
         TitleBarArea    // For move
     };
 
-    enum Uninitialized {
+    enum Initialization {
         Uninitialized
     };
 }

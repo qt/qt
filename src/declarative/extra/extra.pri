@@ -1,12 +1,14 @@
 SOURCES += \
            extra/qnumberformat.cpp \
            extra/qmlnumberformatter.cpp \
-           extra/qfxintegermodel.cpp
+           extra/qfxintegermodel.cpp \
+           extra/qmltimer.cpp
 
 HEADERS += \
            extra/qnumberformat.h \
            extra/qmlnumberformatter.h \
-           extra/qfxintegermodel.h
+           extra/qfxintegermodel.h \
+           extra/qmltimer.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns

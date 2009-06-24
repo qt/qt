@@ -290,7 +290,6 @@ public:
 
 /*!
     \qmlproperty QString SqlQuery::query
-    \default
 
     Defines the query text.
 */

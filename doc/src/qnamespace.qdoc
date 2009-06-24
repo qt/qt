@@ -2687,7 +2687,7 @@
 */
 
 /*!
-    \enum Uninitialized
+    \enum Qt::Initialization
     \internal
 */
 

@@ -206,6 +206,7 @@ public:
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
 
+    QList<QGraphicsItem *> topLevelItemsInStackingOrder(const QTransform *const, QRegion *);
     void recursive_items_helper(QGraphicsItem *item, QRectF rect, QList<QGraphicsItem *> *items,
                                 const QTransform &parentTransform, const QTransform &viewTransform,
                                 Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
@@ -259,10 +260,18 @@ public:
     void drawItemHelper(QGraphicsItem *item, QPainter *painter,
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
-    
-    void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
-                              QRegion *exposedRegion, QWidget *widget,
-                              QList<QGraphicsItem *> *topLevelItems = 0, qreal parentOpacity = qreal(1.0));
+
+    inline void drawItems(QPainter *painter, const QTransform *const viewTransform,
+                          QRegion *exposedRegion, QWidget *widget)
+    {
+        const QList<QGraphicsItem *> tli = topLevelItemsInStackingOrder(viewTransform, exposedRegion);
+        for (int i = 0; i < tli.size(); ++i)
+            drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
+        return;
+    }
+
+    void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform *const,
+                              QRegion *exposedRegion, QWidget *widget, qreal parentOpacity = qreal(1.0));
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
                    bool removingItemFromScene = false);

@@ -115,7 +115,7 @@ public:
     bool isLocked() const;
     void setLocked(bool);
 
-    Q_ENUMS(DragMode);
+    Q_ENUMS(DragMode)
     enum DragMode { Hard, Elastic };
     DragMode dragMode() const;
     void setDragMode(DragMode mode);

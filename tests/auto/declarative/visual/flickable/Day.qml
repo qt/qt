@@ -1,8 +1,8 @@
 Rect {
     property string day
 
-    width: 400
-    height: 500
+    width: 200
+    height: 300
     radius: 7
     pen.color: "black"
     id: Page
@@ -18,7 +18,6 @@ Rect {
         height: 40
         font.size: 14
         font.bold: true
-        width: 370
         text: day
         style: "Outline"
         styleColor: "#dedede"

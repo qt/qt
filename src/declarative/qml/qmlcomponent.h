@@ -71,7 +71,7 @@ public:
                  const QUrl &baseUrl=QUrl(), QObject *parent=0);
     virtual ~QmlComponent();
 
-    Q_ENUMS( Status );
+    Q_ENUMS(Status)
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
 
@@ -104,7 +104,7 @@ private:
     friend class QmlVME;
     friend struct QmlCompositeTypeData;
 };
-Q_DECLARE_METATYPE(QmlComponent::Status);
+Q_DECLARE_METATYPE(QmlComponent::Status)
 QML_DECLARE_TYPE(QmlComponent)
 
 QT_END_NAMESPACE

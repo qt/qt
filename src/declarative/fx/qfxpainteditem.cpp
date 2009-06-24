@@ -292,4 +292,51 @@ void QFxPaintedItem::paintContents(QPainter &p)
     }
 }
 
+/*!
+  \qmlproperty int PaintedItem::cacheSize
+
+  This property holds the maximum number of pixels of image cache to
+  allow. The default is 0.1 megapixels. The cache will not be larger
+  than the (unscaled) size of the item.
+*/
+
+/*!
+  \property QFxPaintedItem::cacheSize
+
+  The maximum number of pixels of image cache to allow. The default
+  is 0.1 megapixels. The cache will not be larger than the (unscaled)
+  size of the QFxPaintedItem.
+*/
+int QFxPaintedItem::cacheSize() const
+{
+    Q_D(const QFxPaintedItem);
+    return d->max_imagecache_size;
+}
+
+void QFxPaintedItem::setCacheSize(int pixels)
+{
+    Q_D(QFxPaintedItem);
+    if (pixels < d->max_imagecache_size) {
+        int cachesize=0;
+        for (int i=0; i<d->imagecache.count(); ++i) {
+            QRect area = d->imagecache[i]->area;
+            cachesize += area.width()*area.height();
+        }
+        while (d->imagecache.count() && cachesize > pixels) {
+            int oldest=-1;
+            int age=-1;
+            for (int i=0; i<d->imagecache.count(); ++i) {
+                int a = d->imagecache[i]->age;
+                if (a > age) {
+                    oldest = i;
+                    age = a;
+                }
+            }
+            cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
+            d->imagecache.removeAt(oldest);
+        }
+    }
+    d->max_imagecache_size = pixels;
+}
+
 QT_END_NAMESPACE

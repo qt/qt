@@ -311,7 +311,8 @@ void QFxImage::paintContents(QPainter &p)
     if (d->pix.isNull())
         return;
 
-    QPainter::RenderHints oldHints = p.renderHints();
+    bool oldAA = p.testRenderHint(QPainter::Antialiasing);
+    bool oldSmooth = p.testRenderHint(QPainter::SmoothPixmapTransform);
     if (d->smooth)
         p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
@@ -403,8 +404,10 @@ void QFxImage::paintContents(QPainter &p)
                         QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
     }
 
-    if (d->smooth)
-        p.setRenderHints(oldHints);
+    if (d->smooth) {
+        p.setRenderHint(QPainter::Antialiasing, oldAA);
+        p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+    }
 }
 
 QString QFxImage::propertyInfo() const

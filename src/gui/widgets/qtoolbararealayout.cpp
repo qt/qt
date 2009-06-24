@@ -567,7 +567,7 @@ bool QToolBarAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *item)
 void QToolBarAreaLayoutInfo::clear()
 {
     lines.clear();
-    rect = QRect(0, 0, -1, -1);
+    rect = QRect();
 }
 
 QRect QToolBarAreaLayoutInfo::itemRect(QList<int> path) const
@@ -1101,7 +1101,7 @@ void QToolBarAreaLayout::clear()
 {
     for (int i = 0; i < QInternal::DockCount; ++i)
         docks[i].clear();
-    rect = QRect(0, 0, -1, -1);
+    rect = QRect();
 }
 
 QToolBarAreaLayoutItem &QToolBarAreaLayout::item(QList<int> path)

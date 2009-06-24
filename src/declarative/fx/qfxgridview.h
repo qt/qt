@@ -92,7 +92,7 @@ public:
     bool autoHighlight() const;
     void setAutoHighlight(bool);
 
-    Q_ENUMS(Flow);
+    Q_ENUMS(Flow)
     enum Flow { LeftToRight, TopToBottom };
     Flow flow() const;
     void setFlow(Flow);
