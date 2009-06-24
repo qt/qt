@@ -86,6 +86,9 @@ public:
     bool repeat() const;
     void setRepeat(bool);
 
+    int currentTime();
+    void setCurrentTime(int);
+
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 

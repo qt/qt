@@ -371,6 +371,16 @@ void QmlAbstractAnimation::setRepeat(bool r)
     emit repeatChanged(r);
 }
 
+int QmlAbstractAnimation::currentTime()
+{
+    qtAnimation()->currentTime();
+}
+
+void QmlAbstractAnimation::setCurrentTime(int time)
+{
+    qtAnimation()->setCurrentTime(time);
+}
+
 QmlAnimationGroup *QmlAbstractAnimation::group() const
 {
     Q_D(const QmlAbstractAnimation);
