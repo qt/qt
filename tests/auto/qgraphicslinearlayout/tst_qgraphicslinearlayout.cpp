@@ -163,19 +163,19 @@ class RectWidget : public QGraphicsWidget
 public:
     RectWidget(QGraphicsItem *parent = 0, const QBrush &brush = QBrush()) : QGraphicsWidget(parent){ m_brush = brush;}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
         painter->setBrush(m_brush);
         painter->drawRoundRect(rect());
     }
-    
+
     void setSizeHint(Qt::SizeHint which, const QSizeF &size) {
         m_sizeHints[which] = size;
         updateGeometry();
     }
-    
+
     virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const {
         if (m_sizeHints[which].isValid()) {
             return m_sizeHints[which];
@@ -283,7 +283,7 @@ void tst_QGraphicsLinearLayout::alignment()
     int i;
     bool addWidget = true;
     for (i = 0; i < sizeof(alignmentsToTest)/sizeof(Qt::Alignment); ++i) {
-        QGraphicsLayoutItem *loutItem; 
+        QGraphicsLayoutItem *loutItem;
         Qt::Alignment align = alignmentsToTest[i];
         if (!align && i > 0)
             addWidget = false;
@@ -535,7 +535,7 @@ void tst_QGraphicsLinearLayout::insertItem()
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
     layout.insertItem(insertItemAt, item);
     QCOMPARE(layout.count(), itemCount + layoutCount + 1);
-    
+
     if (insertItemAt >= 0 && (itemCount + layoutCount >= 0)) {
         QCOMPARE(layout.itemAt(itemCount + layoutCount), item);
     }
@@ -697,7 +697,7 @@ void tst_QGraphicsLinearLayout::orientation_data()
 void tst_QGraphicsLinearLayout::orientation()
 {
     QFETCH(Qt::Orientation, orientation);
-    
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
@@ -723,7 +723,7 @@ void tst_QGraphicsLinearLayout::orientation()
         qreal pos;
         if (initialOrientation == Qt::Horizontal)
             pos = item->pos().x();
-        else 
+        else
             pos = item->pos().y();
         positions.append(pos);
 
@@ -738,7 +738,7 @@ void tst_QGraphicsLinearLayout::orientation()
         QGraphicsWidget *item = static_cast<QGraphicsWidget*>(layout.itemAt(i));
         if (initialOrientation == Qt::Horizontal)
             QCOMPARE(item->pos().y(), positions.at(i));
-        else 
+        else
             QCOMPARE(item->pos().x(), positions.at(i));
     }
 
@@ -887,7 +887,7 @@ void tst_QGraphicsLinearLayout::setSpacing_data()
 void tst_QGraphicsLinearLayout::setSpacing()
 {
     QFETCH(qreal, spacing);
-    
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
@@ -999,7 +999,7 @@ void tst_QGraphicsLinearLayout::itemSpacing()
 /**
  * The stretch factors are not applied linearly, but they are used together with both the preferred size, maximum size to form the
  * internal effective stretch factor.
- * There is only need to apply stretch factors if the size of the layout is different than the layouts preferred size. 
+ * There is only need to apply stretch factors if the size of the layout is different than the layouts preferred size.
  * (If the size of the layout is the preferred size, then all items should get their preferred sizes.
  * However, imagine this use case:
  * Layout
@@ -1012,7 +1012,7 @@ void tst_QGraphicsLinearLayout::itemSpacing()
  * layout->resize(120, h)
  *
  * In QLayout, C would become 50, B would become 50 and A would get 20. When scaling a layout this would give a jerky feeling, since
- * the item with the highest stretch factor will first resize. When that has reached its maximum the next candidate for stretch will 
+ * the item with the highest stretch factor will first resize. When that has reached its maximum the next candidate for stretch will
  * resize, and finally, item with the lowest stretch factor will resize.
  * In QGraphicsLinearLayout we try to scale all items so that they all reach their maximum at the same time. This means that
  * their relative sizes are not proportional to their stretch factors.
@@ -1064,7 +1064,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
 
     view.show();
     widget->show();
-    
+
     qreal firstStretch = -1;
     qreal firstExtent = -1.;
     qreal sumExtent = 0;
@@ -1078,7 +1078,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
                 QCOMPARE(extent, firstExtent);
             else if (stretch > firstStretch)
                 QVERIFY(extent > firstExtent);
-            else 
+            else
                 QVERIFY(extent < firstExtent);
         } else {
             firstStretch = (qreal)stretch;
@@ -1087,7 +1087,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
         sumExtent+= extent;
     }
     QCOMPARE(sumExtent, totalSize);
-    
+
     delete widget;
 }
 
@@ -1172,7 +1172,7 @@ void tst_QGraphicsLinearLayout::defaultStretchFactors()
             QSizePolicy sp = item->sizePolicy();
             if (orientation == Qt::Horizontal)
                 sp.setHorizontalPolicy(QSizePolicy::Policy(sp.horizontalPolicy() | QSizePolicy::IgnoreFlag));
-            else 
+            else
                 sp.setVerticalPolicy(QSizePolicy::Policy(sp.verticalPolicy() | QSizePolicy::IgnoreFlag));
             item->setSizePolicy(sp);
         }
@@ -1185,7 +1185,7 @@ void tst_QGraphicsLinearLayout::defaultStretchFactors()
     view.resize(400,300);
     if (newSize.isValid())
         widget->resize(newSize);
-    
+
     QApplication::processEvents();
     for (i = 0; i < count; ++i) {
         QSizeF itemSize = layout->itemAt(i)->geometry().size();
@@ -1194,7 +1194,7 @@ void tst_QGraphicsLinearLayout::defaultStretchFactors()
         if (i < expectedSizes.count())
             QCOMPARE(itemSize.width(), qreal(expectedSizes.at(i)));
     }
-    
+
     delete widget;
 }
 
@@ -1259,7 +1259,7 @@ void tst_QGraphicsLinearLayout::updateGeometry()
     layout->setContentsMargins(0, 0, 0, 0);
     QCOMPARE(w1->parentLayoutItem(), static_cast<QGraphicsLayoutItem*>(layout));
     QCOMPARE(layout->parentLayoutItem(), static_cast<QGraphicsLayoutItem*>(window));
-    
+
     view.show();
     QApplication::processEvents();
     QCOMPARE(window->size().toSize(), QSize(100, 50));
@@ -1288,7 +1288,7 @@ void tst_QGraphicsLinearLayout::updateGeometry()
         QApplication::processEvents();
         w1->setMinimumSize(120, 60);
         QApplication::processEvents();
-        QCOMPARE(window->size().toSize(), QSize(124, 64));    
+        QCOMPARE(window->size().toSize(), QSize(124, 64));
     }
 
     {
@@ -1346,7 +1346,7 @@ void tst_QGraphicsLinearLayout::layoutDirection()
     w2->setPreferredSize(20, 20);
     w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     layout->addItem(w2);
-    
+
     scene.addItem(window);
     window->setLayout(layout);
     view.show();
@@ -1364,7 +1364,7 @@ void tst_QGraphicsLinearLayout::layoutDirection()
     QCOMPARE(w1->geometry().left(), 29.0);
     QCOMPARE(w2->geometry().right(), 23.0);
     QCOMPARE(w2->geometry().left(),  3.0);
-    
+
     delete window;
 }
 

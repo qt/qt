@@ -194,7 +194,7 @@ class RectWidget : public QGraphicsWidget
 public:
     RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent){}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -238,11 +238,11 @@ static void populateLayout(QGraphicsGridLayout *gridLayout, int width, int heigh
  * |+---|---+|xxxx|
  * ||span=2 ||hole|
  * |+---|---+|xxxx|
- * +----+----+----+ 
+ * +----+----+----+
  * |xxxx|+---|---+|
  * |hole||span=2 ||
  * |xxxx|+---|---+|
- * +----+----+----+ 
+ * +----+----+----+
  */
 static void populateLayoutWithSpansAndHoles(QGraphicsGridLayout *gridLayout)
 {
@@ -299,7 +299,7 @@ void tst_QGraphicsGridLayout::addItem()
         QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::addItem: invalid row/column: -1");
     } else if (rowSpan < 1 || columnSpan < 1) {
         char buf[1024];
-        ::qsnprintf(buf, sizeof(buf), "QGraphicsGridLayout::addItem: invalid row span/column span: %d", 
+        ::qsnprintf(buf, sizeof(buf), "QGraphicsGridLayout::addItem: invalid row span/column span: %d",
             rowSpan < 1 ? rowSpan : columnSpan);
         QTest::ignoreMessage(QtWarningMsg, buf);
     }
@@ -461,7 +461,7 @@ void tst_QGraphicsGridLayout::columnCount()
     QCOMPARE(layout->columnCount(), 3);
     layout->addItem(new RectWidget(widget), 1, 2);
     QCOMPARE(layout->columnCount(), 3);
-    
+
     // ### Talk with Jasmin. Not sure if removeAt() should adjust columnCount().
     widget->setLayout(0);
     layout = new QGraphicsGridLayout();
@@ -527,7 +527,7 @@ void tst_QGraphicsGridLayout::columnMinimumWidth()
     populateLayout(layout, 3, 2);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     // should at least be a very large number
     QCOMPARE(layout->columnMinimumWidth(0), 0.0);
     QCOMPARE(layout->columnMinimumWidth(0), layout->columnMinimumWidth(1));
@@ -562,7 +562,7 @@ void tst_QGraphicsGridLayout::columnPreferredWidth()
     populateLayout(layout, 3, 2);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     // default preferred width ??
     QCOMPARE(layout->columnPreferredWidth(0), 0.0);
     QCOMPARE(layout->columnPreferredWidth(0), layout->columnPreferredWidth(1));
@@ -597,7 +597,7 @@ void tst_QGraphicsGridLayout::setColumnFixedWidth()
     populateLayout(layout, 3, 2);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     layout->setColumnFixedWidth(0, 20);
     layout->setColumnFixedWidth(2, 40);
 
@@ -629,7 +629,7 @@ void tst_QGraphicsGridLayout::columnSpacing()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     QCOMPARE(layout->columnSpacing(0), 0.0);
-    
+
     layout->setColumnSpacing(0, 20);
     view.show();
     widget->show();
@@ -658,7 +658,7 @@ void tst_QGraphicsGridLayout::columnStretchFactor()
     populateLayout(layout, 3, 2);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     layout->setColumnStretchFactor(0, 1);
     layout->setColumnStretchFactor(1, 2);
     layout->setColumnStretchFactor(2, 3);
@@ -744,7 +744,7 @@ void tst_QGraphicsGridLayout::contentsMargins()
     scene.addItem(widget);
     widget->setLayout(layout);
     layout->addItem(sublayout,0, 1);
-    
+
     qreal left, top, right, bottom;
     // sublayouts have 0 margin
     sublayout->getContentsMargins(&left, &top, &right, &bottom);
@@ -753,7 +753,7 @@ void tst_QGraphicsGridLayout::contentsMargins()
     QCOMPARE(right, 0.0);
     QCOMPARE(bottom, 0.0);
 
-    // top level layouts have style dependent margins. 
+    // top level layouts have style dependent margins.
     // we'll just check if its different from 0. (applies to all our styles)
     layout->getContentsMargins(&left, &top, &right, &bottom);
     QVERIFY(left >= 0.0);
@@ -774,7 +774,7 @@ void tst_QGraphicsGridLayout::itemAt()
     scene.addItem(widget);
     widget->setLayout(layout);
     populateLayoutWithSpansAndHoles(layout);
-    
+
     //itemAt(int row, int column)
     QVERIFY( layout->itemAt(0,0));
     QVERIFY( layout->itemAt(0,1));
@@ -877,7 +877,7 @@ void tst_QGraphicsGridLayout::rowAlignment()
     QCOMPARE(layout->alignment(layout->itemAt(1,0)), Qt::AlignTop);
     QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0,  101,  50,  50));
     QCOMPARE(layout->rowAlignment(1), Qt::AlignVCenter);
-    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(101, 126, 50,  50));   
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(101, 126, 50,  50));
     QCOMPARE(layout->alignment(layout->itemAt(2,0)), Qt::AlignHCenter);
     QCOMPARE(layout->itemAt(2,0)->geometry(), QRectF(25, 202,  50,  50));
     QCOMPARE(layout->rowAlignment(2), Qt::AlignTop);
@@ -925,7 +925,7 @@ void tst_QGraphicsGridLayout::rowMaximumHeight()
     populateLayout(layout, 2, 3);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     // should at least be a very large number
     QVERIFY(layout->rowMaximumHeight(0) >= 10000);
     QCOMPARE(layout->rowMaximumHeight(0), layout->rowMaximumHeight(1));
@@ -960,7 +960,7 @@ void tst_QGraphicsGridLayout::rowMinimumHeight()
     populateLayout(layout, 2, 3);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     // should at least be a very large number
     QCOMPARE(layout->rowMinimumHeight(0), 0.0);
     QCOMPARE(layout->rowMinimumHeight(0), layout->rowMinimumHeight(1));
@@ -995,7 +995,7 @@ void tst_QGraphicsGridLayout::rowPreferredHeight()
     populateLayout(layout, 2, 3);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     // default preferred height ??
     QCOMPARE(layout->rowPreferredHeight(0), 0.0);
     QCOMPARE(layout->rowPreferredHeight(0), layout->rowPreferredHeight(1));
@@ -1031,7 +1031,7 @@ void tst_QGraphicsGridLayout::setRowFixedHeight()
     populateLayout(layout, 2, 3);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     layout->setRowFixedHeight(0, 20.);
     layout->setRowFixedHeight(2, 40.);
 
@@ -1063,7 +1063,7 @@ void tst_QGraphicsGridLayout::rowSpacing()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     QCOMPARE(layout->columnSpacing(0), 0.0);
-    
+
     layout->setColumnSpacing(0, 20);
     view.show();
     widget->show();
@@ -1093,7 +1093,7 @@ void tst_QGraphicsGridLayout::rowStretchFactor()
     populateLayout(layout, 2, 3);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    
+
     layout->setRowStretchFactor(0, 1);
     layout->setRowStretchFactor(1, 2);
     layout->setRowStretchFactor(2, 3);
@@ -1124,7 +1124,7 @@ void tst_QGraphicsGridLayout::setColumnSpacing()
 {
     QFETCH(int, column);
     QFETCH(qreal, spacing);
-   
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
@@ -1178,7 +1178,7 @@ void tst_QGraphicsGridLayout::setRowSpacing()
 {
     QFETCH(int, row);
     QFETCH(qreal, spacing);
-   
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
@@ -1232,7 +1232,7 @@ void tst_QGraphicsGridLayout::setSpacing()
 
 void tst_QGraphicsGridLayout::sizeHint_data()
 {
-    
+
     /*
     QTest::addColumn<Qt::SizeHint>("which");
     QTest::addColumn<QSizeF>("constraint");
@@ -1311,7 +1311,7 @@ void tst_QGraphicsGridLayout::layoutDirection()
     RectWidget *w4 = new RectWidget;
     w4->setMinimumSize(30, 20);
     layout->addItem(w4, 1, 1);
-    
+
     layout->setAlignment(w2, Qt::AlignRight);
     layout->setAlignment(w3, Qt::AlignLeft);
 
@@ -1328,7 +1328,7 @@ void tst_QGraphicsGridLayout::layoutDirection()
     QCOMPARE(w3->geometry().right(), 21.0);
     QCOMPARE(w4->geometry().left(), 37.0);
     QCOMPARE(w4->geometry().right(), 67.0);
-    
+
     window->setLayoutDirection(Qt::RightToLeft);
     QApplication::processEvents();
     QCOMPARE(w1->geometry().left(),  39.0);
@@ -1339,7 +1339,7 @@ void tst_QGraphicsGridLayout::layoutDirection()
     QCOMPARE(w3->geometry().right(), 69.0);
     QCOMPARE(w4->geometry().left(),   3.0);
     QCOMPARE(w4->geometry().right(), 33.0);
-    
+
     delete window;
 }
 
@@ -1440,7 +1440,7 @@ struct ItemDesc
         m_sizes[Qt::MaximumSize] = sz;
         return (*this);
     }
-    
+
     ItemDesc &alignment(Qt::Alignment alignment) {
         m_align = alignment;
         return (*this);
@@ -1509,8 +1509,8 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10) 
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10) 
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10)
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10)
                             );
 
     QTest::newRow("ignoreitem01") << (ItemList()
@@ -1530,8 +1530,8 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10) 
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10) 
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10)
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10)
                             );
 
     QTest::newRow("ignoreitem01_resize120x40") << (ItemList()
@@ -1551,8 +1551,8 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF(120, 40)
                             << (SizeList()
-                                << QSizeF(20,20) << QSizeF(40,20) << QSizeF(60,20) 
-                                << QSizeF(20,20) << QSizeF(40,20) << QSizeF(60,20) 
+                                << QSizeF(20,20) << QSizeF(40,20) << QSizeF(60,20)
+                                << QSizeF(20,20) << QSizeF(40,20) << QSizeF(60,20)
                             );
 
     QTest::newRow("ignoreitem11_resize120x40") << (ItemList()
@@ -1572,8 +1572,8 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF(120, 60)
                             << (SizeList()
-                                << QSizeF(20,20) << QSizeF(40,20) << QSizeF(60,20) 
-                                << QSizeF(20,40) << QSizeF(40,40) << QSizeF(60,40) 
+                                << QSizeF(20,20) << QSizeF(40,20) << QSizeF(60,20)
+                                << QSizeF(20,40) << QSizeF(40,40) << QSizeF(60,40)
                             );
 
     QTest::newRow("ignoreitem01_span01_resize70x60") << (ItemList()
@@ -1592,10 +1592,10 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF(70, 60)
                             << (SizeList()
-                                << QSizeF(20,20) << QSizeF(10,60) << QSizeF(40,20) 
-                                << QSizeF(20,40) << QSizeF(40,40) 
+                                << QSizeF(20,20) << QSizeF(10,60) << QSizeF(40,20)
+                                << QSizeF(20,40) << QSizeF(40,40)
                             );
-                            
+
     QTest::newRow("ignoreitem10_resize40x120") << (ItemList()
                                     << ItemDesc(0,0)
                                         .preferredSizeHint(QSizeF(10,10))
@@ -1613,11 +1613,11 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF(40, 120)
                             << (SizeList()
-                                << QSizeF(20,20) << QSizeF(20,20) 
-                                << QSizeF(20,40) << QSizeF(20,40) 
-                                << QSizeF(20,60) << QSizeF(20,60) 
+                                << QSizeF(20,20) << QSizeF(20,20)
+                                << QSizeF(20,40) << QSizeF(20,40)
+                                << QSizeF(20,60) << QSizeF(20,60)
                             );
-                            
+
     QTest::newRow("ignoreitem01_span02") << (ItemList()
                                     << ItemDesc(0,0)
                                         .preferredSizeHint(QSizeF(10,10))
@@ -1634,7 +1634,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,10) << QSizeF(0,20) << QSizeF(10,10) 
+                                << QSizeF(10,10) << QSizeF(0,20) << QSizeF(10,10)
                                 << QSizeF(10,10) << QSizeF(10,10)
                             );
 
@@ -1654,7 +1654,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(0,20) 
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(0,20)
                                 << QSizeF(10,10) << QSizeF(10,10)
                             );
 
@@ -1673,7 +1673,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,20) << QSizeF(10,10) << QSizeF(0,20) 
+                                << QSizeF(10,20) << QSizeF(10,10) << QSizeF(0,20)
                                 << QSizeF(10,10)
                             );
 
@@ -1693,7 +1693,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(20,10) << QSizeF(10,10) << QSizeF(10,10) 
+                                << QSizeF(20,10) << QSizeF(10,10) << QSizeF(10,10)
                                 << QSizeF(10,10) << QSizeF(10,10)
                             );
 
@@ -1713,10 +1713,10 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,10) << QSizeF(20,10) << QSizeF(10,10) 
+                                << QSizeF(10,10) << QSizeF(20,10) << QSizeF(10,10)
                                 << QSizeF(10,10) << QSizeF(10,10)
                             );
-                            
+
     QTest::newRow("ignorecolumn1_resize70x60") << (ItemList()
                                     << ItemDesc(0,0)
                                         .preferredSizeHint(QSizeF(10,10))
@@ -1735,8 +1735,8 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF(70, 60)
                             << (SizeList()
-                                << QSizeF(20,20) << QSizeF(10,20) << QSizeF(40,20) 
-                                << QSizeF(20,40) << QSizeF(10,40) << QSizeF(40,40) 
+                                << QSizeF(20,20) << QSizeF(10,20) << QSizeF(40,20)
+                                << QSizeF(20,40) << QSizeF(10,40) << QSizeF(40,40)
                             );
 
     QTest::newRow("ignorerow0") << (ItemList()
@@ -1759,7 +1759,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                             << QSizeF()
                             << (SizeList()
                                 << QSizeF(10,0) << QSizeF(10,0) << QSizeF(10,0)
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10) 
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10)
                             );
 
     QTest::newRow("ignorerow1") << (ItemList()
@@ -1781,10 +1781,10 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                                 )
                             << QSizeF()
                             << (SizeList()
-                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10) 
+                                << QSizeF(10,10) << QSizeF(10,10) << QSizeF(10,10)
                                 << QSizeF(10,0) << QSizeF(10,0) << QSizeF(10,0)
                             );
-                            
+
     QTest::newRow("ignorerow0_resize60x50") << (ItemList()
                                     << ItemDesc(0,0)
                                         .sizePolicy(QSizePolicy::Ignored)
@@ -1805,9 +1805,9 @@ void tst_QGraphicsGridLayout::defaultStretchFactors_data()
                             << QSizeF(60, 50)
                             << (SizeList()
                                 << QSizeF(10,10) << QSizeF(20,10) << QSizeF(30,10)
-                                << QSizeF(10,40) << QSizeF(20,40) << QSizeF(30,40) 
+                                << QSizeF(10,40) << QSizeF(20,40) << QSizeF(30,40)
                             );
-                            
+
 }
 
 void tst_QGraphicsGridLayout::defaultStretchFactors()
@@ -1840,13 +1840,13 @@ void tst_QGraphicsGridLayout::defaultStretchFactors()
     view.resize(400,300);
     if (newSize.isValid())
         widget->resize(newSize);
-    
+
     QApplication::processEvents();
     for (i = 0; i < expectedSizes.count(); ++i) {
         QSizeF itemSize = layout->itemAt(i)->geometry().size();
         QCOMPARE(itemSize, expectedSizes.at(i));
     }
-    
+
     delete widget;
 }
 
@@ -2027,7 +2027,7 @@ void tst_QGraphicsGridLayout::geometries_data()
                             << (RectList()
                                 << QRectF(0, 0, 50,10) << QRectF(0, 10, 10,10)
                             );
-                            
+
     QTest::newRow("combine_min_sizes") << (ItemList()
                                     << ItemDesc(0,0)
                                         .minSize(QSizeF(50,10))
@@ -2038,7 +2038,7 @@ void tst_QGraphicsGridLayout::geometries_data()
                             << (RectList()
                                 << QRectF(0, 0, 60,10) << QRectF(0, 10, 60,10)
                             );
-                            
+
 }
 
 void tst_QGraphicsGridLayout::geometries()
