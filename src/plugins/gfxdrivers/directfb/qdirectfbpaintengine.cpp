@@ -378,7 +378,7 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
     const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().y2)));
-    if (bottom.y() >= d->lastLockedHeight)
+    if (bottom.y() > d->lastLockedHeight)
         d->lock();
     QRasterPaintEngine::clip(path, op);
 }
@@ -389,7 +389,7 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     d->dirtyClip = true;
     if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
         const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
-        if (bottom.y() >= d->lastLockedHeight)
+        if (bottom.y() > d->lastLockedHeight)
             d->lock();
     }
 
