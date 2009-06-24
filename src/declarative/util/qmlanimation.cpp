@@ -255,6 +255,44 @@ void QmlAbstractAnimation::setRunning(bool r)
     emit runningChanged(d->running);
 }
 
+/*!
+    \qmlproperty bool Animation::paused
+    This property holds whether the animation is currently paused.
+
+    The \c paused property can be set to declaratively control whether or not
+    an animation is paused.
+
+    Animations can also be paused and resumed imperatively from JavaScript
+    using the \c pause() and \c resume() methods.
+
+    By default, animations are not paused.
+*/
+bool QmlAbstractAnimation::isPaused() const
+{
+    Q_D(const QmlAbstractAnimation);
+    return d->paused;
+}
+
+void QmlAbstractAnimation::setPaused(bool p)
+{
+    Q_D(QmlAbstractAnimation);
+    if (d->paused == p)
+        return;
+
+    if (d->group) {
+        qWarning("QmlAbstractAnimation: setPaused() cannot be used on non-root animation nodes");
+        return;
+    }
+
+    d->paused = p;
+    if (d->paused)
+        qtAnimation()->pause();
+    else
+        qtAnimation()->resume();
+
+    emit pausedChanged(d->running);
+}
+
 void QmlAbstractAnimation::classBegin()
 {
     Q_D(QmlAbstractAnimation);
@@ -427,6 +465,30 @@ void QmlAbstractAnimation::setProperty(const QString &n)
 void QmlAbstractAnimation::start()
 {
     setRunning(true);
+}
+
+/*!
+    \qmlmethod Animation::pause()
+    \brief Pauses the animation.
+
+    If the animation is already paused, calling this method has no effect.  The
+    \c paused property will be true following a call to \c pause().
+*/
+void QmlAbstractAnimation::pause()
+{
+    setPaused(true);
+}
+
+/*!
+    \qmlmethod Animation::resume()
+    \brief Resumes a paused animation.
+
+    If the animation is not paused, calling this method has no effect.  The
+    \c paused property will be false following a call to \c resume().
+*/
+void QmlAbstractAnimation::resume()
+{
+    setPaused(false);
 }
 
 /*!
