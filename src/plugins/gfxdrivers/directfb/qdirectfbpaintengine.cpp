@@ -913,11 +913,17 @@ void QDirectFBPaintEnginePrivate::end()
 void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
 {
     pen = p;
-    simplePen = (pen.style() == Qt::NoPen) ||
-                (pen.style() == Qt::SolidLine
-                 && !antialiased
-                 && (pen.brush().style() == Qt::SolidPattern)
-                 && (pen.widthF() <= 1 && scale != NoScale));
+    if (pen.style() == Qt::NoPen) {
+        simplePen = true;
+    } else if (pen.style() == Qt::SolidLine
+               && !antialiased
+               && pen.brush().style() == Qt::SolidPattern
+               && pen.widthF() <= 1.0
+               && (scale == NoScale || pen.isCosmetic())) {
+        simplePen = true;
+    } else {
+        simplePen = false;
+    }
 }
 
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)
