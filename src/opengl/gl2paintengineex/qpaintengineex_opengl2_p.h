@@ -156,7 +156,7 @@ public:
     void updateBrushUniforms();
     void updateMatrix();
     void updateCompositionMode();
-    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform);
+    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = -1);
 
     void setBrush(const QBrush* brush);
 
@@ -175,7 +175,8 @@ public:
     void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
         // ^ Calls drawVertexArrays to render into stencil buffer
 
-    void prepareForDraw(bool srcPixelsAreOpaque);
+    bool prepareForDraw(bool srcPixelsAreOpaque);
+        // ^ returns whether the current program changed or not
 
     inline void useSimpleShader();
     inline QColor premultiplyColor(QColor c, GLfloat opacity);
@@ -198,6 +199,7 @@ public:
     bool stencilBufferDirty;
     bool depthUniformDirty;
     bool simpleShaderDepthUniformDirty;
+    bool opacityUniformDirty;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -218,6 +220,34 @@ public:
     void regenerateDepthClip();
     void systemStateChanged();
     uint use_system_clip : 1;
+
+    enum Uniform {
+        ImageTexture,
+        PatternColor,
+        GlobalOpacity,
+        Depth,
+        PmvMatrix,
+        MaskTexture,
+        FragmentColor,
+        LinearData,
+        Angle,
+        HalfViewportSize,
+        Fmp,
+        Fmp2MRadius2,
+        Inverse2Fmp2MRadius2,
+        InvertedTextureSize,
+        BrushTransform,
+        BrushTexture,
+        NumUniforms
+    };
+
+    uint location(Uniform uniform)
+    {
+        return shaderManager->getUniformLocation(uniformIdentifiers[uniform]);
+    }
+
+    uint uniformIdentifiers[NumUniforms];
+    GLuint lastTexture;
 };
 
 QT_END_NAMESPACE
