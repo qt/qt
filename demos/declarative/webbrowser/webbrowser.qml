@@ -198,6 +198,7 @@ Item {
 
                 url: WebBrowser.url
                 smooth: !Flick.moving
+                fillColor: "white"
                 focusable: true
                 focus: true
 
