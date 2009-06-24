@@ -98,7 +98,7 @@ void Window::on_actionSave_layout_triggered(bool )
     if (!fileName.isEmpty())
         saveLayout(fileName);
 }
- 
+
 void Window::on_itemName_textEdited(const QString & )
 {
     updateItem();
@@ -193,7 +193,7 @@ void Window::rebuildLayout()
         QGraphicsAnchorLayout::Edge endEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
         if (!ok)
             continue;
-        
+
         m_layout->anchor(startItem, startEdge, endItem, endEdge);
     }
 }
@@ -219,14 +219,14 @@ QGraphicsLayoutItem *Window::addItem(const QString &name)
     return layoutItem;
 }
 
-static const char *strEdges[] = {"Left", 
-                                 "HCenter", 
-                                 "Right", 
-                                 "Top", 
-                                 "VCenter", 
+static const char *strEdges[] = {"Left",
+                                 "HCenter",
+                                 "Right",
+                                 "Top",
+                                 "VCenter",
                                  "Bottom"};
 
-void Window::setAnchorData(QGraphicsLayoutItem *startItem, const QString &startName, QGraphicsAnchorLayout::Edge startEdge, 
+void Window::setAnchorData(QGraphicsLayoutItem *startItem, const QString &startName, QGraphicsAnchorLayout::Edge startEdge,
                        QGraphicsLayoutItem *endItem, const QString &endName, QGraphicsAnchorLayout::Edge endEdge, int row /*= -1*/)
 {
     if (row == -1) {
@@ -305,6 +305,7 @@ bool Window::saveLayout(const QString& fileName)
     ok = out.open(QIODevice::WriteOnly);
     if (ok) {
         QXmlStreamWriter xml(&out);
+        xml.setAutoFormatting(true);
         xml.writeStartDocument();
         xml.writeStartElement(QLatin1String("anchorlayout"));
         int i;
@@ -319,8 +320,8 @@ bool Window::saveLayout(const QString& fileName)
                 const char *propertyNames[] = {"minimumSize", "preferredSize", "maximumSize"};
                 int b;
                 typedef  QSizeF (QGraphicsLayoutItem::*QGLISizeGetter)(void) const;
-                QGLISizeGetter sizeGetters[] = { &QGraphicsLayoutItem::minimumSize, 
-                                                                        &QGraphicsLayoutItem::preferredSize, 
+                QGLISizeGetter sizeGetters[] = { &QGraphicsLayoutItem::minimumSize,
+                                                                        &QGraphicsLayoutItem::preferredSize,
                                                                         &QGraphicsLayoutItem::maximumSize};
                 QSizeF size = ((*item).*(sizeGetters[p])) ();
                 xml.writeStartElement(QLatin1String("property"));
@@ -355,7 +356,7 @@ bool Window::saveLayout(const QString& fileName)
             QGraphicsAnchorLayout::Edge endEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
             if (!ok)
                 continue;
-            
+
             QString strStart = nodeName(startItem);
             if (strStart == QLatin1String("layout"))
                 strStart = QLatin1String("this");
@@ -391,7 +392,7 @@ static bool parseProperty(QXmlStreamReader *xml, QString *name, QSizeF *size)
             if (ok) {
                 sz.setWidth(w);
             }
-            
+
             float h = sw.toFloat(&ok);
             if (ok) {
                 sz.setHeight(h);
@@ -404,7 +405,7 @@ static bool parseProperty(QXmlStreamReader *xml, QString *name, QSizeF *size)
                 *size = sz;
                 return true;
             }
-        }        
+        }
     }
     return false;
 }
@@ -467,7 +468,7 @@ bool Window::loadLayout(const QString& fileName, QGraphicsAnchorLayout *layout)
                 break;
             case QXmlStreamReader::StartElement:
                 if (level == 0 && xml.name() == str_anchorlayout) {
-                    
+
                 } else if (level == 1 && xml.name() == str_item) {
                     item_id = xml.attributes().value("id").toString();
                 } else if (level == 1 && xml.name() == QLatin1String("anchor")) {
@@ -503,7 +504,7 @@ bool Window::loadLayout(const QString& fileName, QGraphicsAnchorLayout *layout)
                         qWarning("%s is not a valid edge description", qPrintable(second));
                         break;
                     }
-                    setAnchorData(  startItem, startID, startEdge, 
+                    setAnchorData(  startItem, startID, startEdge,
                                     endItem, endID, endEdge, -1);
                 } else if (level == 2 && xml.name() == str_property) {
                     QString name;
