@@ -983,20 +983,20 @@ void tst_QSpinBox::sizeHint()
     // Prefix
     spinBox->sizeHintRequests = 0;
     spinBox->setPrefix(QLatin1String("abcdefghij"));
-    QTest::qWait(100);
+    qApp->processEvents();
     QVERIFY(spinBox->sizeHintRequests > 0);
 
     // Suffix
     spinBox->sizeHintRequests = 0; 
     spinBox->setSuffix(QLatin1String("abcdefghij"));
-    QTest::qWait(100);
+    qApp->processEvents();
     QVERIFY(spinBox->sizeHintRequests > 0); 
 
     // Range
     spinBox->sizeHintRequests = 0; 
     spinBox->setRange(0, 1234567890);
     spinBox->setValue(spinBox->maximum());
-    QTest::qWait(100);
+    qApp->processEvents();
     QVERIFY(spinBox->sizeHintRequests > 0); 
 }
 
