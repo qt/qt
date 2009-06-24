@@ -83,7 +83,7 @@ public:
     inline void setOptions(QScriptEngine::QObjectWrapOptions options)
         { data->options = options; }
 
-    static WTF::PassRefPtr<JSC::Structure> createStructureID(JSC::JSValue prototype)
+    static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
