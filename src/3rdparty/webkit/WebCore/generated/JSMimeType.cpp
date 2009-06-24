@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSMimeType.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSPlugin.h"
 #include "KURL.h"
 #include "MimeType.h"
 #include "Plugin.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -215,6 +215,8 @@ void HTMLElement::parseMappedAttribute(MappedAttribute *attr)
         setAttributeEventListener(eventNames().webkitAnimationEndEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onwebkittransitionendAttr) {
         setAttributeEventListener(eventNames().webkitTransitionEndEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == oninputAttr) {
+        setAttributeEventListener(eventNames().inputEvent, createAttributeEventListener(this, attr));
     }
 }
 
@@ -861,6 +863,7 @@ static HashSet<AtomicStringImpl*>* inlineTagList()
         tagList.add(inputTag.localName().impl());
         tagList.add(keygenTag.localName().impl());
         tagList.add(selectTag.localName().impl());
+        tagList.add(datagridTag.localName().impl());
         tagList.add(textareaTag.localName().impl());
         tagList.add(labelTag.localName().impl());
         tagList.add(buttonTag.localName().impl());

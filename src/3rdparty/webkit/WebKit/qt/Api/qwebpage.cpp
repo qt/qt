@@ -43,6 +43,7 @@
 #include "DragController.h"
 #include "DragData.h"
 #include "EditorClientQt.h"
+#include "SecurityOrigin.h"
 #include "Settings.h"
 #include "Page.h"
 #include "Pasteboard.h"
@@ -797,11 +798,24 @@ void QWebPagePrivate::keyPressEvent(QKeyEvent *ev)
         int fontHeight = fm.height();
         if (!handleScrolling(ev)) {
             switch (ev->key()) {
+            case Qt::Key_Back:
+                q->triggerAction(QWebPage::Back);
+                break;
+            case Qt::Key_Forward:
+                q->triggerAction(QWebPage::Forward);
+                break;
+            case Qt::Key_Stop:
+                q->triggerAction(QWebPage::Stop);
+                break;
+            case Qt::Key_Refresh:
+                q->triggerAction(QWebPage::Reload);
+                break;
             case Qt::Key_Backspace:
                 if (ev->modifiers() == Qt::ShiftModifier)
                     q->triggerAction(QWebPage::Forward);
                 else
                     q->triggerAction(QWebPage::Back);
+                break;
             default:
                 handled = false;
                 break;
@@ -1598,16 +1612,21 @@ void QWebPage::setViewportSize(const QSize &size) const
     }
 }
 
-QSize QWebPage::fixedLayoutSize() const
+QSize QWebPage::fixedContentsSize() const
 {
-    if (d->mainFrame && d->mainFrame->d->frame->view())
-        return d->mainFrame->d->frame->view()->fixedLayoutSize();
+    QWebFrame* frame = d->mainFrame;
+    if (frame) {
+        WebCore::FrameView* view = frame->d->frame->view();
+        if (view && view->useFixedLayout()) {
+            return d->mainFrame->d->frame->view()->fixedLayoutSize();
+        }
+    }
 
     return d->fixedLayoutSize;
 }
 
 /*!
-    \property QWebPage::fixedLayoutSize
+    \property QWebPage::fixedContentsSize
     \since 4.6
     \brief the size of the fixed layout
 
@@ -1615,37 +1634,22 @@ QSize QWebPage::fixedLayoutSize() const
     1024x768 for example then webkit will layout the page as if the viewport were that size
     rather than something different.
 */
-void QWebPage::setFixedLayoutSize(const QSize &size) const
+void QWebPage::setFixedContentsSize(const QSize &size) const
 {
     d->fixedLayoutSize = size;
 
     QWebFrame *frame = mainFrame();
     if (frame->d->frame && frame->d->frame->view()) {
         WebCore::FrameView* view = frame->d->frame->view();
-        view->setFixedLayoutSize(size);
-        view->forceLayout();
-    }
-}
 
-bool QWebPage::useFixedLayout() const
-{
-    return d->useFixedLayout;
-}
-
-/*!
-    \property QWebPage::useFixedLayout
-    \since 4.6
-    \brief whether to use a fixed layout size
-*/
-void QWebPage::setUseFixedLayout(bool useFixedLayout)
-{
-    d->useFixedLayout = useFixedLayout;
-
-    QWebFrame *frame = mainFrame();
-    if (frame->d->frame && frame->d->frame->view()) {
-        WebCore::FrameView* view = frame->d->frame->view();
-        view->setUseFixedLayout(useFixedLayout);
-        view->forceLayout();
+        if (size.isValid()) {
+            view->setUseFixedLayout(true);
+            view->setFixedLayoutSize(size);
+            view->forceLayout();
+        } else if (view->useFixedLayout()) {
+            view->setUseFixedLayout(false);
+            view->forceLayout();
+        }
     }
 }
 
@@ -1675,7 +1679,7 @@ bool QWebPage::acceptNavigationRequest(QWebFrame *frame, const QWebNetworkReques
                 return true;
 
             case DelegateExternalLinks:
-                if (WebCore::FrameLoader::shouldTreatURLSchemeAsLocal(request.url().scheme()))
+                if (WebCore::SecurityOrigin::shouldTreatURLSchemeAsLocal(request.url().scheme()))
                     return true;
                 emit linkClicked(request.url());
                 return false;
@@ -2228,7 +2232,10 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     WebCore::Frame* focusedFrame = d->page->focusController()->focusedOrMainFrame();
     HitTestResult result = focusedFrame->eventHandler()->hitTestResultAtPoint(focusedFrame->view()->windowToContents(pos), /*allowShadowContent*/ false);
 
-    d->hitTestResult = QWebHitTestResult(new QWebHitTestResultPrivate(result));
+    if (result.scrollbar())
+        d->hitTestResult = QWebHitTestResult();
+    else
+        d->hitTestResult = QWebHitTestResult(new QWebHitTestResultPrivate(result));
     WebCore::ContextMenu menu(result);
     menu.populate();
     if (d->page->inspectorController()->enabled())
@@ -2585,8 +2592,12 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 
     QChar securityStrength(QLatin1Char('N'));
 #if !defined(QT_NO_OPENSSL)
-    if (QSslSocket::supportsSsl())
-        securityStrength = QLatin1Char('U');
+    // we could check QSslSocket::supportsSsl() here, but this makes
+    // OpenSSL, certificates etc being loaded in all cases were QWebPage
+    // is used. This loading is not needed for non-https.
+    securityStrength = QLatin1Char('U');
+    // this may lead to a false positive: We indicate SSL since it is
+    // compiled in even though supportsSsl() might return false
 #endif
     ua = ua.arg(securityStrength);
 

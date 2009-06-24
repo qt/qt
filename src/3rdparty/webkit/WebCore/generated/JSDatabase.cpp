@@ -20,18 +20,15 @@
 
 #include "config.h"
 
-
 #if ENABLE(DATABASE)
 
 #include "JSDatabase.h"
 
-#include <wtf/GetPtr.h>
-
 #include "Database.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

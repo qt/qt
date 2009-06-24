@@ -21,10 +21,10 @@
 #ifndef JSSVGAnimateElement_h
 #define JSSVGAnimateElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_ANIMATION)
 
 #include "JSSVGAnimationElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

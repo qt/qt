@@ -63,6 +63,8 @@ public:
     virtual void setEndTime(float) = 0;
 
     virtual void setRate(float) = 0;
+    virtual void setPreservesPitch(bool) { }
+
     virtual bool paused() const = 0;
 
     virtual void setVolume(float) = 0;
@@ -90,6 +92,15 @@ public:
     virtual void deliverNotification(MediaPlayerProxyNotificationType) = 0;
     virtual void setMediaPlayerProxy(WebMediaPlayerProxy*) = 0;
 #endif
+
+#if USE(ACCELERATED_COMPOSITING)
+    // whether accelerated rendering is supported by the media engine for the current media.
+    virtual bool supportsAcceleratedRendering() const { return false; }
+    // called when the rendering system flips the into or out of accelerated rendering mode.
+    virtual void acceleratedRenderingStateChanged() { }
+#endif
+
+    virtual bool hasSingleSecurityOrigin() const { return false; }
 };
 
 }

@@ -21,7 +21,6 @@
 #ifndef JSSQLResultSetRowList_h
 #define JSSQLResultSetRowList_h
 
-
 #if ENABLE(DATABASE)
 
 #include "JSDOMBinding.h"

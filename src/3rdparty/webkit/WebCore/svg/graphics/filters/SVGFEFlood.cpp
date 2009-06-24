@@ -2,6 +2,7 @@
     Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
                   2005 Eric Seidel <eric@webkit.org>
+                  2009 Dirk Schulze <krit@webkit.org>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -23,7 +24,9 @@
 
 #if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEFlood.h"
+
 #include "Filter.h"
+#include "GraphicsContext.h"
 #include "SVGRenderTreeAsText.h"
 
 namespace WebCore {
@@ -63,6 +66,12 @@ void FEFlood::setFloodOpacity(float floodOpacity)
 
 void FEFlood::apply(Filter*)
 {
+    GraphicsContext* filterContext = getEffectContext();
+    if (!filterContext)
+        return;
+
+    Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
+    filterContext->fillRect(FloatRect(FloatPoint(), subRegion().size()), color);
 }
 
 void FEFlood::dump()

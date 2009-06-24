@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
@@ -46,19 +45,22 @@ using namespace std;
 
 namespace JSC {
 
-void ctiPatchNearCallByReturnAddress(MacroAssembler::ProcessorReturnAddress returnAddress, MacroAssemblerCodePtr newCalleeFunction)
+void ctiPatchNearCallByReturnAddress(ReturnAddressPtr returnAddress, MacroAssemblerCodePtr newCalleeFunction)
 {
-    returnAddress.relinkNearCallerToTrampoline(newCalleeFunction);
+    MacroAssembler::RepatchBuffer repatchBuffer;
+    repatchBuffer.relinkNearCallerToTrampoline(returnAddress, newCalleeFunction);
 }
 
-void ctiPatchCallByReturnAddress(MacroAssembler::ProcessorReturnAddress returnAddress, MacroAssemblerCodePtr newCalleeFunction)
+void ctiPatchCallByReturnAddress(ReturnAddressPtr returnAddress, MacroAssemblerCodePtr newCalleeFunction)
 {
-    returnAddress.relinkCallerToTrampoline(newCalleeFunction);
+    MacroAssembler::RepatchBuffer repatchBuffer;
+    repatchBuffer.relinkCallerToTrampoline(returnAddress, newCalleeFunction);
 }
 
-void ctiPatchCallByReturnAddress(MacroAssembler::ProcessorReturnAddress returnAddress, FunctionPtr newCalleeFunction)
+void ctiPatchCallByReturnAddress(ReturnAddressPtr returnAddress, FunctionPtr newCalleeFunction)
 {
-    returnAddress.relinkCallerToFunction(newCalleeFunction);
+    MacroAssembler::RepatchBuffer repatchBuffer;
+    repatchBuffer.relinkCallerToFunction(returnAddress, newCalleeFunction);
 }
 
 JIT::JIT(JSGlobalData* globalData, CodeBlock* codeBlock)
@@ -68,6 +70,7 @@ JIT::JIT(JSGlobalData* globalData, CodeBlock* codeBlock)
     , m_labels(codeBlock ? codeBlock->instructions().size() : 0)
     , m_propertyAccessCompilationInfo(codeBlock ? codeBlock->numberOfStructureStubInfos() : 0)
     , m_callStructureStubCompilationInfo(codeBlock ? codeBlock->numberOfCallLinkInfos() : 0)
+    , m_bytecodeIndex((unsigned)-1)
     , m_lastResultBytecodeRegister(std::numeric_limits<int>::max())
     , m_jumpTargetsPosition(0)
 {
@@ -403,10 +406,10 @@ void JIT::privateCompile()
         // In the case of a fast linked call, we do not set this up in the caller.
         emitPutImmediateToCallFrameHeader(m_codeBlock, RegisterFile::CodeBlock);
 
-        peek(regT0, FIELD_OFFSET(JITStackFrame, registerFile) / sizeof (void*));
+        peek(regT0, OBJECT_OFFSETOF(JITStackFrame, registerFile) / sizeof (void*));
         addPtr(Imm32(m_codeBlock->m_numCalleeRegisters * sizeof(Register)), callFrameRegister, regT1);
 
-        slowRegisterFileCheck = branchPtr(Above, regT1, Address(regT0, FIELD_OFFSET(RegisterFile, m_end)));
+        slowRegisterFileCheck = branchPtr(Above, regT1, Address(regT0, OBJECT_OFFSETOF(RegisterFile, m_end)));
         afterRegisterFileCheck = label();
     }
 
@@ -426,7 +429,7 @@ void JIT::privateCompile()
 
     ASSERT(m_jmpTable.isEmpty());
 
-    PatchBuffer patchBuffer(this, m_globalData->executableAllocator.poolForSize(m_assembler.size()));
+    LinkBuffer patchBuffer(this, m_globalData->executableAllocator.poolForSize(m_assembler.size()));
 
     // Translate vPC offsets into addresses in JIT generated code, for switch tables.
     for (unsigned i = 0; i < m_switches.size(); ++i) {
@@ -474,7 +477,7 @@ void JIT::privateCompile()
 
     // Link absolute addresses for jsr
     for (Vector<JSRInfo>::iterator iter = m_jsrSites.begin(); iter != m_jsrSites.end(); ++iter)
-        patchBuffer.patch(iter->storeLocation, patchBuffer.locationOf(iter->target).addressForJSR());
+        patchBuffer.patch(iter->storeLocation, patchBuffer.locationOf(iter->target).executableAddress());
 
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
     for (unsigned i = 0; i < m_codeBlock->numberOfStructureStubInfos(); ++i) {
@@ -489,7 +492,6 @@ void JIT::privateCompile()
         info.callReturnLocation = patchBuffer.locationOfNearCall(m_callStructureStubCompilationInfo[i].callReturnLocation);
         info.hotPathBegin = patchBuffer.locationOf(m_callStructureStubCompilationInfo[i].hotPathBegin);
         info.hotPathOther = patchBuffer.locationOfNearCall(m_callStructureStubCompilationInfo[i].hotPathOther);
-        info.coldPathOther = patchBuffer.locationOf(m_callStructureStubCompilationInfo[i].coldPathOther);
     }
 #endif
     unsigned methodCallCount = m_methodCallCompilationInfo.size();
@@ -514,8 +516,8 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     Jump array_failureCases2 = branchPtr(NotEqual, Address(regT0), ImmPtr(m_globalData->jsArrayVPtr));
 
     // Checks out okay! - get the length from the storage
-    loadPtr(Address(regT0, FIELD_OFFSET(JSArray, m_storage)), regT0);
-    load32(Address(regT0, FIELD_OFFSET(ArrayStorage, m_length)), regT0);
+    loadPtr(Address(regT0, OBJECT_OFFSETOF(JSArray, m_storage)), regT0);
+    load32(Address(regT0, OBJECT_OFFSETOF(ArrayStorage, m_length)), regT0);
 
     Jump array_failureCases3 = branch32(Above, regT0, Imm32(JSImmediate::maxImmediateInt));
 
@@ -532,8 +534,8 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     Jump string_failureCases2 = branchPtr(NotEqual, Address(regT0), ImmPtr(m_globalData->jsStringVPtr));
 
     // Checks out okay! - get the length from the Ustring.
-    loadPtr(Address(regT0, FIELD_OFFSET(JSString, m_value) + FIELD_OFFSET(UString, m_rep)), regT0);
-    load32(Address(regT0, FIELD_OFFSET(UString::Rep, len)), regT0);
+    loadPtr(Address(regT0, OBJECT_OFFSETOF(JSString, m_value) + OBJECT_OFFSETOF(UString, m_rep)), regT0);
+    load32(Address(regT0, OBJECT_OFFSETOF(UString::Rep, len)), regT0);
 
     Jump string_failureCases3 = branch32(Above, regT0, Imm32(JSImmediate::maxImmediateInt));
 
@@ -544,16 +546,14 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
 #endif
 
     // (3) Trampolines for the slow cases of op_call / op_call_eval / op_construct.
-    
+    COMPILE_ASSERT(sizeof(CodeType) == 4, CodeTypeEnumMustBe32Bit);
+
     Label virtualCallPreLinkBegin = align();
 
     // Load the callee CodeBlock* into eax
-    loadPtr(Address(regT2, FIELD_OFFSET(JSFunction, m_body)), regT3);
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_code)), regT0);
+    loadPtr(Address(regT2, OBJECT_OFFSETOF(JSFunction, m_body)), regT3);
+    loadPtr(Address(regT3, OBJECT_OFFSETOF(FunctionBodyNode, m_code)), regT0);
     Jump hasCodeBlock1 = branchTestPtr(NonZero, regT0);
-    // If m_code is null and m_jitCode is not, then we have a native function, so arity is irrelevant
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_jitCode)), regT0);
-    Jump isNativeFunc1 = branchTestPtr(NonZero, regT0);
     preverveReturnAddressAfterCall(regT3);
     restoreArgumentReference();
     Call callJSFunction1 = call();
@@ -562,8 +562,10 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     restoreReturnAddressBeforeReturn(regT3);
     hasCodeBlock1.link(this);
 
+    Jump isNativeFunc1 = branch32(Equal, Address(regT0, OBJECT_OFFSETOF(CodeBlock, m_codeType)), Imm32(NativeCode));
+
     // Check argCount matches callee arity.
-    Jump arityCheckOkay1 = branch32(Equal, Address(regT0, FIELD_OFFSET(CodeBlock, m_numParameters)), regT1);
+    Jump arityCheckOkay1 = branch32(Equal, Address(regT0, OBJECT_OFFSETOF(CodeBlock, m_numParameters)), regT1);
     preverveReturnAddressAfterCall(regT3);
     emitPutJITStubArg(regT3, 2);
     emitPutJITStubArg(regT0, 4);
@@ -590,12 +592,9 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     Label virtualCallLinkBegin = align();
 
     // Load the callee CodeBlock* into eax
-    loadPtr(Address(regT2, FIELD_OFFSET(JSFunction, m_body)), regT3);
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_code)), regT0);
+    loadPtr(Address(regT2, OBJECT_OFFSETOF(JSFunction, m_body)), regT3);
+    loadPtr(Address(regT3, OBJECT_OFFSETOF(FunctionBodyNode, m_code)), regT0);
     Jump hasCodeBlock2 = branchTestPtr(NonZero, regT0);
-    // If m_code is null and m_jitCode is not, then we have a native function, so arity is irrelevant
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_jitCode)), regT0);
-    Jump isNativeFunc2 = branchTestPtr(NonZero, regT0);
     preverveReturnAddressAfterCall(regT3);
     restoreArgumentReference();
     Call callJSFunction2 = call();
@@ -604,8 +603,10 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     restoreReturnAddressBeforeReturn(regT3);
     hasCodeBlock2.link(this);
 
+    Jump isNativeFunc2 = branch32(Equal, Address(regT0, OBJECT_OFFSETOF(CodeBlock, m_codeType)), Imm32(NativeCode));
+
     // Check argCount matches callee arity.
-    Jump arityCheckOkay2 = branch32(Equal, Address(regT0, FIELD_OFFSET(CodeBlock, m_numParameters)), regT1);
+    Jump arityCheckOkay2 = branch32(Equal, Address(regT0, OBJECT_OFFSETOF(CodeBlock, m_numParameters)), regT1);
     preverveReturnAddressAfterCall(regT3);
     emitPutJITStubArg(regT3, 2);
     emitPutJITStubArg(regT0, 4);
@@ -631,23 +632,22 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     Label virtualCallBegin = align();
 
     // Load the callee CodeBlock* into eax
-    loadPtr(Address(regT2, FIELD_OFFSET(JSFunction, m_body)), regT3);
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_code)), regT0);
+    loadPtr(Address(regT2, OBJECT_OFFSETOF(JSFunction, m_body)), regT3);
+    loadPtr(Address(regT3, OBJECT_OFFSETOF(FunctionBodyNode, m_code)), regT0);
     Jump hasCodeBlock3 = branchTestPtr(NonZero, regT0);
-    // If m_code is null and m_jitCode is not, then we have a native function, so arity is irrelevant
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_jitCode)), regT0);
-    Jump isNativeFunc3 = branchTestPtr(NonZero, regT0);
     preverveReturnAddressAfterCall(regT3);
     restoreArgumentReference();
     Call callJSFunction3 = call();
     emitGetJITStubArg(1, regT2);
     emitGetJITStubArg(3, regT1);
     restoreReturnAddressBeforeReturn(regT3);
-    loadPtr(Address(regT2, FIELD_OFFSET(JSFunction, m_body)), regT3); // reload the function body nody, so we can reload the code pointer.
+    loadPtr(Address(regT2, OBJECT_OFFSETOF(JSFunction, m_body)), regT3); // reload the function body nody, so we can reload the code pointer.
     hasCodeBlock3.link(this);
+    
+    Jump isNativeFunc3 = branch32(Equal, Address(regT0, OBJECT_OFFSETOF(CodeBlock, m_codeType)), Imm32(NativeCode));
 
     // Check argCount matches callee arity.
-    Jump arityCheckOkay3 = branch32(Equal, Address(regT0, FIELD_OFFSET(CodeBlock, m_numParameters)), regT1);
+    Jump arityCheckOkay3 = branch32(Equal, Address(regT0, OBJECT_OFFSETOF(CodeBlock, m_numParameters)), regT1);
     preverveReturnAddressAfterCall(regT3);
     emitPutJITStubArg(regT3, 2);
     emitPutJITStubArg(regT0, 4);
@@ -657,12 +657,13 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     emitGetJITStubArg(1, regT2);
     emitGetJITStubArg(3, regT1);
     restoreReturnAddressBeforeReturn(regT3);
-    loadPtr(Address(regT2, FIELD_OFFSET(JSFunction, m_body)), regT3); // reload the function body nody, so we can reload the code pointer.
+    loadPtr(Address(regT2, OBJECT_OFFSETOF(JSFunction, m_body)), regT3); // reload the function body nody, so we can reload the code pointer.
     arityCheckOkay3.link(this);
-    // load ctiCode from the new codeBlock.
-    loadPtr(Address(regT3, FIELD_OFFSET(FunctionBodyNode, m_jitCode)), regT0);
     isNativeFunc3.link(this);
 
+    // load ctiCode from the new codeBlock.
+    loadPtr(Address(regT3, OBJECT_OFFSETOF(FunctionBodyNode, m_jitCode)), regT0);
+    
     compileOpCallInitializeCallFrame();
     jump(regT0);
 
@@ -689,7 +690,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     subPtr(Imm32(1), X86::ecx); // Don't include 'this' in argcount
 
     // Push argcount
-    storePtr(X86::ecx, Address(stackPointerRegister, FIELD_OFFSET(ArgList, m_argCount)));
+    storePtr(X86::ecx, Address(stackPointerRegister, OBJECT_OFFSETOF(ArgList, m_argCount)));
 
     // Calculate the start of the callframe header, and store in edx
     addPtr(Imm32(-RegisterFile::CallFrameHeaderSize * (int32_t)sizeof(Register)), callFrameRegister, X86::edx);
@@ -699,7 +700,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     subPtr(X86::ecx, X86::edx);
 
     // push pointer to arguments
-    storePtr(X86::edx, Address(stackPointerRegister, FIELD_OFFSET(ArgList, m_args)));
+    storePtr(X86::edx, Address(stackPointerRegister, OBJECT_OFFSETOF(ArgList, m_args)));
     
     // ArgList is passed by reference so is stackPointerRegister
     move(stackPointerRegister, X86::ecx);
@@ -711,10 +712,10 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
 
     move(callFrameRegister, X86::edi); 
 
-    call(Address(X86::esi, FIELD_OFFSET(JSFunction, m_data)));
+    call(Address(X86::esi, OBJECT_OFFSETOF(JSFunction, m_data)));
     
     addPtr(Imm32(sizeof(ArgList)), stackPointerRegister);
-#else
+#elif PLATFORM(X86)
     emitGetFromCallFrameHeader32(RegisterFile::ArgumentCount, regT0);
 
     /* We have two structs that we use to describe the stackframe we set up for our
@@ -760,7 +761,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     subPtr(Imm32(1), regT0); // Don't include 'this' in argcount
 
     // push argcount
-    storePtr(regT0, Address(stackPointerRegister, FIELD_OFFSET(NativeCallFrameStructure, args) + FIELD_OFFSET(ArgList, m_argCount)));
+    storePtr(regT0, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, args) + OBJECT_OFFSETOF(ArgList, m_argCount)));
     
     // Calculate the start of the callframe header, and store in regT1
     addPtr(Imm32(-RegisterFile::CallFrameHeaderSize * (int)sizeof(Register)), callFrameRegister, regT1);
@@ -768,28 +769,28 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     // Calculate start of arguments as callframe header - sizeof(Register) * argcount (regT0)
     mul32(Imm32(sizeof(Register)), regT0, regT0);
     subPtr(regT0, regT1);
-    storePtr(regT1, Address(stackPointerRegister, FIELD_OFFSET(NativeCallFrameStructure, args) + FIELD_OFFSET(ArgList, m_args)));
+    storePtr(regT1, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, args) + OBJECT_OFFSETOF(ArgList, m_args)));
 
     // ArgList is passed by reference so is stackPointerRegister + 4 * sizeof(Register)
-    addPtr(Imm32(FIELD_OFFSET(NativeCallFrameStructure, args)), stackPointerRegister, regT0);
-    storePtr(regT0, Address(stackPointerRegister, FIELD_OFFSET(NativeCallFrameStructure, argPointer)));
+    addPtr(Imm32(OBJECT_OFFSETOF(NativeCallFrameStructure, args)), stackPointerRegister, regT0);
+    storePtr(regT0, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, argPointer)));
 
     // regT1 currently points to the first argument, regT1 - sizeof(Register) points to 'this'
     loadPtr(Address(regT1, -(int)sizeof(Register)), regT1);
-    storePtr(regT1, Address(stackPointerRegister, FIELD_OFFSET(NativeCallFrameStructure, thisValue)));
+    storePtr(regT1, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, thisValue)));
 
 #if COMPILER(MSVC) || PLATFORM(LINUX)
     // ArgList is passed by reference so is stackPointerRegister + 4 * sizeof(Register)
-    addPtr(Imm32(FIELD_OFFSET(NativeCallFrameStructure, result)), stackPointerRegister, X86::ecx);
+    addPtr(Imm32(OBJECT_OFFSETOF(NativeCallFrameStructure, result)), stackPointerRegister, X86::ecx);
 
     // Plant callee
     emitGetFromCallFrameHeaderPtr(RegisterFile::Callee, X86::eax);
-    storePtr(X86::eax, Address(stackPointerRegister, FIELD_OFFSET(NativeCallFrameStructure, callee)));
+    storePtr(X86::eax, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, callee)));
 
     // Plant callframe
     move(callFrameRegister, X86::edx);
 
-    call(Address(X86::eax, FIELD_OFFSET(JSFunction, m_data)));
+    call(Address(X86::eax, OBJECT_OFFSETOF(JSFunction, m_data)));
 
     // JSValue is a non-POD type
     loadPtr(Address(X86::eax), X86::eax);
@@ -799,13 +800,17 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
 
     // Plant callframe
     move(callFrameRegister, X86::ecx);
-    call(Address(X86::edx, FIELD_OFFSET(JSFunction, m_data)));
+    call(Address(X86::edx, OBJECT_OFFSETOF(JSFunction, m_data)));
 #endif
 
     // We've put a few temporaries on the stack in addition to the actual arguments
     // so pull them off now
     addPtr(Imm32(NativeCallFrameSize - sizeof(NativeFunctionCalleeSignature)), stackPointerRegister);
 
+#elif ENABLE(JIT_OPTIMIZE_NATIVE_CALL)
+#error "JIT_OPTIMIZE_NATIVE_CALL not yet supported on this platform."
+#else
+    breakpoint();
 #endif
 
     // Check for an exception
@@ -830,7 +835,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     storePtr(regT1, regT2);
     move(ImmPtr(reinterpret_cast<void*>(ctiVMThrowTrampoline)), regT2);
     emitGetFromCallFrameHeaderPtr(RegisterFile::CallerFrame, callFrameRegister);
-    poke(callFrameRegister, offsetof(struct JITStackFrame, callFrame) / sizeof (void*));
+    poke(callFrameRegister, OBJECT_OFFSETOF(struct JITStackFrame, callFrame) / sizeof (void*));
     restoreReturnAddressBeforeReturn(regT2);
     ret();
     
@@ -845,7 +850,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
 #endif
 
     // All trampolines constructed! copy the code, link up calls, and set the pointers on the Machine object.
-    PatchBuffer patchBuffer(this, m_globalData->executableAllocator.poolForSize(m_assembler.size()));
+    LinkBuffer patchBuffer(this, m_globalData->executableAllocator.poolForSize(m_assembler.size()));
 
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
     patchBuffer.link(array_failureCases1Call, FunctionPtr(JITStubs::cti_op_get_by_id_array_fail));
@@ -882,15 +887,15 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
 
 void JIT::emitGetVariableObjectRegister(RegisterID variableObject, int index, RegisterID dst)
 {
-    loadPtr(Address(variableObject, FIELD_OFFSET(JSVariableObject, d)), dst);
-    loadPtr(Address(dst, FIELD_OFFSET(JSVariableObject::JSVariableObjectData, registers)), dst);
+    loadPtr(Address(variableObject, OBJECT_OFFSETOF(JSVariableObject, d)), dst);
+    loadPtr(Address(dst, OBJECT_OFFSETOF(JSVariableObject::JSVariableObjectData, registers)), dst);
     loadPtr(Address(dst, index * sizeof(Register)), dst);
 }
 
 void JIT::emitPutVariableObjectRegister(RegisterID src, RegisterID variableObject, int index)
 {
-    loadPtr(Address(variableObject, FIELD_OFFSET(JSVariableObject, d)), variableObject);
-    loadPtr(Address(variableObject, FIELD_OFFSET(JSVariableObject::JSVariableObjectData, registers)), variableObject);
+    loadPtr(Address(variableObject, OBJECT_OFFSETOF(JSVariableObject, d)), variableObject);
+    loadPtr(Address(variableObject, OBJECT_OFFSETOF(JSVariableObject::JSVariableObjectData, registers)), variableObject);
     storePtr(src, Address(variableObject, index * sizeof(Register)));
 }
 
@@ -899,25 +904,29 @@ void JIT::unlinkCall(CallLinkInfo* callLinkInfo)
     // When the JSFunction is deleted the pointer embedded in the instruction stream will no longer be valid
     // (and, if a new JSFunction happened to be constructed at the same location, we could get a false positive
     // match).  Reset the check so it no longer matches.
-    callLinkInfo->hotPathBegin.repatch(JSValue::encode(JSValue()));
+    RepatchBuffer repatchBuffer;
+    repatchBuffer.repatch(callLinkInfo->hotPathBegin, JSValue::encode(JSValue()));
 }
 
-void JIT::linkCall(JSFunction* callee, CodeBlock* calleeCodeBlock, JITCode& code, CallLinkInfo* callLinkInfo, int callerArgCount)
+void JIT::linkCall(JSFunction* callee, CodeBlock* calleeCodeBlock, JITCode& code, CallLinkInfo* callLinkInfo, int callerArgCount, JSGlobalData* globalData)
 {
+    ASSERT(calleeCodeBlock);
+    RepatchBuffer repatchBuffer;
+
     // Currently we only link calls with the exact number of arguments.
     // If this is a native call calleeCodeBlock is null so the number of parameters is unimportant
-    if (!calleeCodeBlock || callerArgCount == calleeCodeBlock->m_numParameters) {
+    if (callerArgCount == calleeCodeBlock->m_numParameters || calleeCodeBlock->codeType() == NativeCode) {
         ASSERT(!callLinkInfo->isLinked());
     
         if (calleeCodeBlock)
             calleeCodeBlock->addCaller(callLinkInfo);
     
-        callLinkInfo->hotPathBegin.repatch(callee);
-        callLinkInfo->hotPathOther.relink(code.addressForCall());
+        repatchBuffer.repatch(callLinkInfo->hotPathBegin, callee);
+        repatchBuffer.relink(callLinkInfo->hotPathOther, code.addressForCall());
     }
 
-    // patch the instruction that jumps out to the cold path, so that we only try to link once.
-    callLinkInfo->hotPathBegin.jumpAtOffset(patchOffsetOpCallCompareToJump).relink(callLinkInfo->coldPathOther);
+    // patch the call so we do not continue to try to link.
+    repatchBuffer.relink(callLinkInfo->callReturnLocation, globalData->jitStubs.ctiVirtualCall());
 }
 
 } // namespace JSC

@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSCSSVariablesDeclaration.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "CSSRule.h"
 #include "CSSVariablesDeclaration.h"
 #include "JSCSSRule.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

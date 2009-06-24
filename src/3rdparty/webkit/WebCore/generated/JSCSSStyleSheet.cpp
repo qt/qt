@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSCSSStyleSheet.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSRule.h"
 #include "CSSRuleList.h"
 #include "CSSStyleSheet.h"
 #include "JSCSSRule.h"
 #include "JSCSSRuleList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

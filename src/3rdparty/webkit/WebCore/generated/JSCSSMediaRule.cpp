@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSCSSMediaRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMediaRule.h"
 #include "CSSRuleList.h"
 #include "JSCSSRuleList.h"
 #include "JSMediaList.h"
 #include "MediaList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

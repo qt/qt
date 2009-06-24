@@ -21,10 +21,10 @@
 #ifndef JSSVGForeignObjectElement_h
 #define JSSVGForeignObjectElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FOREIGN_OBJECT)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

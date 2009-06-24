@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSStyleSheet.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSMediaList.h"
 #include "JSNode.h"
@@ -31,8 +28,7 @@
 #include "MediaList.h"
 #include "Node.h"
 #include "StyleSheet.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

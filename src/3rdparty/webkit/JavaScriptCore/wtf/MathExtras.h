@@ -39,10 +39,8 @@
 #endif
 
 #if COMPILER(MSVC)
-#if PLATFORM(WIN_CE)
+#if PLATFORM(WINCE)
 #include <stdlib.h>
-#else
-#include <xmath.h>
 #endif
 #include <limits>
 

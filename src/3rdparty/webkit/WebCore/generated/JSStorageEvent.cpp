@@ -20,9 +20,9 @@
 
 #include "config.h"
 
-#include "JSStorageEvent.h"
+#if ENABLE(DOM_STORAGE)
 
-#include <wtf/GetPtr.h>
+#include "JSStorageEvent.h"
 
 #include "DOMWindow.h"
 #include "JSDOMWindow.h"
@@ -30,10 +30,9 @@
 #include "KURL.h"
 #include "Storage.h"
 #include "StorageEvent.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -218,3 +217,5 @@ JSValue JSC_HOST_CALL jsStorageEventPrototypeFunctionInitStorageEvent(ExecState*
 
 
 }
+
+#endif // ENABLE(DOM_STORAGE)

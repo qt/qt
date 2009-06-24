@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSDOMImplementation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSStyleSheet.h"
 #include "DOMImplementation.h"
@@ -34,9 +31,8 @@
 #include "JSDocumentType.h"
 #include "JSHTMLDocument.h"
 #include "NodeFilter.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -1,3 +1,48 @@
+2009-06-19  Daniel Teske <qt-info@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Remove warnings for QString() constructions from const char *
+
+        By explicitly wrapping it with QLatin1String() / QLatin1Char()
+
+        * Api/qwebelement.cpp:
+        (QWebElement::classes): Use QLatin1String.
+        (QWebElement::addClass): Ditto.
+        (QWebElement::removeClass): Ditto.
+        (QWebElement::toggleClass): Ditto.
+
+2009-06-18  Friedemann Kleint  <Friedemann.Kleint@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fixed MinGW compilation.
+
+        * Api/qwebelement.cpp:
+        (QWebElement::evaluateScript):
+
+2009-06-18  Markus Goetz <Markus.Goetz@nokia.com>
+
+        Reviewed by Simon Hausman.
+
+        Clarify in docs how to compile with debug information.
+
+        * docs/qtwebkit.qdoc:
+
+2009-06-17  Markus Goetz <Markus.Goetz@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        QWebPage: Don't call supportsSsl()
+
+        This stops QWebPage from loading the OpenSSL libs,
+        certificates etc. when they are not needed for the non-HTTPS case.
+
+        Loading the SSL libraries can be a very slow operation.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
 2009-06-16  David Boddie  <dboddie@trolltech.com>
 
         Reviewed by Simon Hausmann.
@@ -19,6 +64,50 @@
 
         * Api/qwebframe.cpp:
 
+2009-06-15  Benjamin C Meyer  <benjamin.meyer@torchmobile.com>
+
+        Reviewed by Adam Treat.
+
+        Support the back/forward/stop/refresh multimedia keys and accept the
+        event when handling backspace and shift backspace as we should.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::keyPressEvent):
+
+2009-06-15  Andre Pedralho  <andre.pedralho@openbossa.org>
+
+        Reviewed by Adam Treat.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26351
+        Remove bool QWebHitTestResult::isScrollBar() const and make sure a null QWebHitTestResult is returned instead.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::hitTestContent):
+        * Api/qwebframe.h:
+        * Api/qwebpage.cpp:
+        (QWebPage::updatePositionDependentActions):
+
+2009-06-15  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Adam Treat.
+
+        Fix the logic for disabling the fixed layout feature, when an invalid
+        QSize is set.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::setFixedContentsSize):
+
+2009-06-13  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24492
+
+        Move registerURLSchemeAsLocal from FrameLoader to SecurityOrigin.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::acceptNavigationRequest):
+
 2009-06-10  Antonio Gomes   <antonio.gomes@openbossa.org>
 
         Reviewed by Ariya Hidayat.
@@ -35,11 +124,51 @@
 
 2009-06-09  Ariya Hidayat  <ariya.hidayat@nokia.com>
 
-        Rubber-stamped by Tor Arne Vestbø.
+        Rubber-stamped by Simon Hausmann.
 
         Fix qdoc warning, function parameter string must be referred.
 
         * Api/qwebview.cpp:
+
+2009-06-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Renamed QWebSettings::AllowUniversalAccessFromFileUrls to
+        LocalContentCanAccessRemoteUrls, as discussed in the API review.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::QWebSettings):
+        * Api/qwebsettings.h:
+
+2009-06-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Merged useFixedLayout property with fixedLayoutSize and
+        renamed the latter to fixedContentsSize.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::fixedContentsSize):
+        (QWebPage::setFixedContentsSize):
+        * Api/qwebpage.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::transitionToCommittedForNewPage):
+
+2009-06-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Renamed QWebHitTestResult::linkTarget to linkElement() and made it return
+        a QWebElement. The link target itself is always the target DOM attribute.
+
+        * Api/qwebframe.cpp:
+        (QWebHitTestResultPrivate::QWebHitTestResultPrivate):
+        (QWebHitTestResult::linkElement):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        * tests/qwebframe/tst_qwebframe.cpp:
 
 2009-06-08  Simon Hausmann  <simon.hausmann@nokia.com>
 

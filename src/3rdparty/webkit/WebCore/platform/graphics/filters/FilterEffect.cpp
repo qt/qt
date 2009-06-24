@@ -29,11 +29,48 @@ FilterEffect::FilterEffect()
     , m_yBBoxMode(false)
     , m_widthBBoxMode(false)
     , m_heightBBoxMode(false)
+    , m_hasX(false)
+    , m_hasY(false)
+    , m_hasWidth(false)
+    , m_hasHeight(false)
 {
 }
 
 FilterEffect::~FilterEffect()
 {
+}
+
+FloatRect FilterEffect::calculateUnionOfChildEffectSubregions(Filter* filter, FilterEffect* in)
+{
+    return in->calculateEffectRect(filter);
+}
+
+FloatRect FilterEffect::calculateUnionOfChildEffectSubregions(Filter* filter, FilterEffect* in, FilterEffect* in2)
+{
+    FloatRect uniteEffectRect = in->calculateEffectRect(filter);
+    uniteEffectRect.unite(in2->calculateEffectRect(filter));
+    return uniteEffectRect;
+}
+
+FloatRect FilterEffect::calculateEffectRect(Filter* filter)
+{
+    setUnionOfChildEffectSubregions(uniteChildEffectSubregions(filter));
+    filter->calculateEffectSubRegion(this);
+    return subRegion();
+}
+
+FloatRect FilterEffect::calculateDrawingRect(const FloatRect& srcRect)
+{
+    FloatPoint startPoint = FloatPoint(srcRect.x() - subRegion().x(), srcRect.y() - subRegion().y());
+    FloatRect drawingRect = FloatRect(startPoint, srcRect.size());
+    return drawingRect;
+}
+
+GraphicsContext* FilterEffect::getEffectContext()
+{
+    IntRect bufferRect = enclosingIntRect(subRegion());
+    m_effectBuffer = ImageBuffer::create(bufferRect.size(), false);
+    return m_effectBuffer->context();
 }
 
 TextStream& FilterEffect::externalRepresentation(TextStream& ts) const

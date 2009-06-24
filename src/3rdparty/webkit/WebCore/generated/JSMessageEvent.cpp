@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSMessageEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMWindow.h"
 #include "JSDOMWindow.h"
@@ -30,10 +27,9 @@
 #include "KURL.h"
 #include "MessageEvent.h"
 #include "MessagePort.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -21,10 +21,10 @@
 #ifndef JSSVGPolylineElement_h
 #define JSSVGPolylineElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

@@ -46,6 +46,7 @@
 #elif !defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
 #define BUILDING_ON_LEOPARD 1
 #endif
+#include <TargetConditionals.h>
 #endif
 
 /* PLATFORM(WIN_OS) */
@@ -55,12 +56,12 @@
 #define WTF_PLATFORM_WIN_OS 1
 #endif
 
-/* PLATFORM(WIN_CE) */
+/* PLATFORM(WINCE) */
 /* Operating system level dependencies for Windows CE that should be used */
 /* regardless of operating environment */
 /* Note that for this platform PLATFORM(WIN_OS) is also defined. */
 #if defined(_WIN32_WCE)
-#define WTF_PLATFORM_WIN_CE 1
+#define WTF_PLATFORM_WINCE 1
 #include <ce_time.h>
 #endif
 
@@ -150,11 +151,30 @@
 #define WTF_PLATFORM_WIN 1
 #endif
 
+/* PLATFORM(IPHONE) */
+#if (defined(TARGET_OS_EMBEDDED) && TARGET_OS_EMBEDDED) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+#define WTF_PLATFORM_IPHONE 1
+#endif
+
+/* PLATFORM(IPHONE_SIMULATOR) */
+#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR
+#define WTF_PLATFORM_IPHONE 1
+#define WTF_PLATFORM_IPHONE_SIMULATOR 1
+#else
+#define WTF_PLATFORM_IPHONE_SIMULATOR 0
+#endif
+
+#if !defined(WTF_PLATFORM_IPHONE)
+#define WTF_PLATFORM_IPHONE 0
+#endif
+
 /* Graphics engines */
 
 /* PLATFORM(CG) and PLATFORM(CI) */
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) || PLATFORM(IPHONE)
 #define WTF_PLATFORM_CG 1
+#endif
+#if PLATFORM(MAC) && !PLATFORM(IPHONE)
 #define WTF_PLATFORM_CI 1
 #endif
 
@@ -208,7 +228,29 @@
 #if !defined(__ARM_EABI__)
 #define WTF_PLATFORM_FORCE_PACK 1
 #endif
+#define ARM_ARCH_VERSION 3
+#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__)
+#undef ARM_ARCH_VERSION
+#define ARM_ARCH_VERSION 4
 #endif
+#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
+        || defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
+        || defined(__ARM_ARCH_5TEJ__)
+#undef ARM_ARCH_VERSION
+#define ARM_ARCH_VERSION 5
+#endif
+#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) \
+     || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) \
+     || defined(__ARM_ARCH_6ZK__)
+#undef ARM_ARCH_VERSION
+#define ARM_ARCH_VERSION 6
+#endif
+#if defined(__ARM_ARCH_7A__)
+#undef ARM_ARCH_VERSION
+#define ARM_ARCH_VERSION 7
+#endif
+#endif /* ARM */
+#define PLATFORM_ARM_ARCH(N) (PLATFORM(ARM) && ARM_ARCH_VERSION >= N)
 
 /* PLATFORM(X86) */
 #if   defined(__i386__) \
@@ -236,12 +278,12 @@
 #define WTF_PLATFORM_BIG_ENDIAN 1
 #endif
 
-/* PLATFORM(WIN_CE) && PLATFORM(QT)
+/* PLATFORM(WINCE) && PLATFORM(QT)
    We can not determine the endianess at compile time. For
    Qt for Windows CE the endianess is specified in the
    device specific makespec
 */
-#if PLATFORM(WIN_CE) && PLATFORM(QT)
+#if PLATFORM(WINCE) && PLATFORM(QT)
 #   include <QtGlobal>
 #   undef WTF_PLATFORM_BIG_ENDIAN
 #   undef WTF_PLATFORM_MIDDLE_ENDIAN
@@ -293,7 +335,7 @@
 #define WTF_COMPILER_WINSCW 1
 #endif
 
-#if (PLATFORM(MAC) || PLATFORM(WIN)) && !defined(ENABLE_JSC_MULTIPLE_THREADS)
+#if (PLATFORM(IPHONE) || PLATFORM(MAC) || PLATFORM(WIN)) && !defined(ENABLE_JSC_MULTIPLE_THREADS)
 #define ENABLE_JSC_MULTIPLE_THREADS 1
 #endif
 
@@ -308,7 +350,7 @@
 #define WTF_USE_ICU_UNICODE 1
 #endif
 
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) && !PLATFORM(IPHONE)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
 #if !defined(ENABLE_MAC_JAVA_BRIDGE)
@@ -324,6 +366,18 @@
 #if PLATFORM(CHROMIUM) && PLATFORM(DARWIN)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#endif
+
+#if PLATFORM(IPHONE)
+#define WTF_PLATFORM_CF 1
+#define WTF_USE_PTHREADS 1
+#define ENABLE_FTPDIR 1
+#define ENABLE_MAC_JAVA_BRIDGE 0
+#define ENABLE_ICONDATABASE 0
+#define ENABLE_GEOLOCATION 1
+#define ENABLE_NETSCAPE_PLUGIN_API 0
+#define HAVE_READLINE 1
+#define ENABLE_REPAINT_THROTTLING 1
 #endif
 
 #if PLATFORM(WIN)
@@ -343,7 +397,7 @@
 #endif
 
 #if !defined(HAVE_ACCESSIBILITY)
-#if PLATFORM(MAC) || PLATFORM(WIN) || PLATFORM(GTK) || PLATFORM(CHROMIUM)
+#if PLATFORM(IPHONE) || PLATFORM(MAC) || PLATFORM(WIN) || PLATFORM(GTK) || PLATFORM(CHROMIUM)
 #define HAVE_ACCESSIBILITY 1
 #endif
 #endif /* !defined(HAVE_ACCESSIBILITY) */
@@ -360,15 +414,19 @@
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TIMEB_H 1
 
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
 #define HAVE_MADV_FREE_REUSE 1
+#define HAVE_MADV_FREE 1
+#endif
+
+#if PLATFORM(IPHONE)
 #define HAVE_MADV_FREE 1
 #endif
 
 #elif PLATFORM(WIN_OS)
 
 #define HAVE_FLOAT_H 1
-#if PLATFORM(WIN_CE)
+#if PLATFORM(WINCE)
 #define HAVE_ERRNO_H 0
 #else
 #define HAVE_SYS_TIMEB_H 1
@@ -481,29 +539,38 @@
 #elif PLATFORM(X86) && PLATFORM(MAC)
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
+#elif PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE)
+    /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */
+    #define ENABLE_JIT 0
+    #define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 0
 /* The JIT is tested & working on x86 Windows */
 #elif PLATFORM(X86) && PLATFORM(WIN)
     #define ENABLE_JIT 1
 #endif
-    #define ENABLE_JIT_OPTIMIZE_CALL 1
-    #define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 1
-    #define ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS 1
-    #define ENABLE_JIT_OPTIMIZE_ARITHMETIC 1
-    #define ENABLE_JIT_OPTIMIZE_METHOD_CALLS 1
 #endif
 
-#if PLATFORM(X86_64)
-    #define JSC_HOST_CALL
-#elif COMPILER(MSVC)
-    #define JSC_HOST_CALL __fastcall
-#elif COMPILER(GCC) && PLATFORM(X86)
-    #define JSC_HOST_CALL __attribute__ ((fastcall))
+#ifndef ENABLE_JIT_OPTIMIZE_CALL
+#define ENABLE_JIT_OPTIMIZE_CALL 1
+#endif
+#ifndef ENABLE_JIT_OPTIMIZE_NATIVE_CALL
+#define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 1
+#endif
+#ifndef ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS
+#define ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS 1
+#endif
+#ifndef ENABLE_JIT_OPTIMIZE_ARITHMETIC
+#define ENABLE_JIT_OPTIMIZE_ARITHMETIC 1
+#endif
+#ifndef ENABLE_JIT_OPTIMIZE_METHOD_CALLS
+#define ENABLE_JIT_OPTIMIZE_METHOD_CALLS 1
+#endif
+
+#if PLATFORM(X86) && COMPILER(MSVC)
+#define JSC_HOST_CALL __fastcall
+#elif PLATFORM(X86) && COMPILER(GCC)
+#define JSC_HOST_CALL __attribute__ ((fastcall))
 #else
-    #if ENABLE(JIT)
-    #error Need to support register calling convention in this compiler
-    #else
-    #define JSC_HOST_CALL
-    #endif
+#define JSC_HOST_CALL
 #endif
 
 #if COMPILER(GCC) && !ENABLE(JIT)
@@ -520,6 +587,8 @@
 /* YARR supports x86 & x86-64, and has been tested on Mac and Windows. */
 #if (!defined(ENABLE_YARR_JIT) && PLATFORM(X86) && PLATFORM(MAC)) \
  || (!defined(ENABLE_YARR_JIT) && PLATFORM(X86_64) && PLATFORM(MAC)) \
+ /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */ \
+ || (!defined(ENABLE_YARR_JIT) && PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE) && 0) \
  || (!defined(ENABLE_YARR_JIT) && PLATFORM(X86) && PLATFORM(WIN))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
@@ -534,7 +603,11 @@
 #endif
 /* Setting this flag prevents the assembler from using RWX memory; this may improve
    security but currectly comes at a significant performance cost. */
+#if PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE)
+#define ENABLE_ASSEMBLER_WX_EXCLUSIVE 1
+#else
 #define ENABLE_ASSEMBLER_WX_EXCLUSIVE 0
+#endif
 
 #if !defined(ENABLE_PAN_SCROLLING) && PLATFORM(WIN_OS)
 #define ENABLE_PAN_SCROLLING 1
@@ -553,6 +626,17 @@
 
 #if !PLATFORM(QT)
 #define WTF_USE_FONT_FAST_PATH 1
+#endif
+
+/* Accelerated compositing */
+#if PLATFORM(MAC)
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+#define WTF_USE_ACCELERATED_COMPOSITING 1
+#endif
+#endif
+
+#if PLATFORM(IPHONE)
+#define WTF_USE_ACCELERATED_COMPOSITING 1
 #endif
 
 #endif /* WTF_Platform_h */

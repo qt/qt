@@ -19,19 +19,15 @@
 */
 
 #include "config.h"
-
 #include "JSText.h"
-
-#include <wtf/GetPtr.h>
 
 #include "ExceptionCode.h"
 #include "JSText.h"
 #include "KURL.h"
 #include "Text.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
