@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qegl_p.h"
+#include <QtGui/private/qegl_p.h>
 
 QT_BEGIN_NAMESPACE
 

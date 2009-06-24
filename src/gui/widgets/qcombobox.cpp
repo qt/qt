@@ -59,6 +59,7 @@
 #ifndef QT_NO_IM
 #include "qinputcontext.h"
 #endif
+#include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
@@ -76,8 +77,6 @@
 # include <private/qeffects_p.h>
 #endif
 QT_BEGIN_NAMESPACE
-
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash();
 
 QComboBoxPrivate::QComboBoxPrivate()
     : QWidgetPrivate(),

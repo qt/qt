@@ -80,14 +80,19 @@ protected:
 
 QT_END_NAMESPACE
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+@protocol NSSoundDelegate <NSObject>
+-(void)sound:(NSSound *)sound didFinishPlaying:(BOOL)aBool;
+@end
+#endif
+
 QT_USE_NAMESPACE
 
-@interface QMacSoundDelegate : NSObject {
+@interface QMacSoundDelegate : NSObject<NSSoundDelegate> {
     QSound *qSound; // may be null.
     QAuServerMac* server;
-} 
+}
 -(id)initWithQSound:(QSound*)sound:(QAuServerMac*)server;
--(void)sound:(NSSound *)sound didFinishPlaying:(BOOL)aBool;
 @end
 
 @implementation QMacSoundDelegate

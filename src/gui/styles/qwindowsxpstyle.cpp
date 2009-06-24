@@ -3358,6 +3358,10 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
             res = 0;
         break;
 
+    case PM_ButtonDefaultIndicator:
+        res = 0;
+        break;
+
     default:
         res = QWindowsStyle::pixelMetric(pm, option, widget);
     }

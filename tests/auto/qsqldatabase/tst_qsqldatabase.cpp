@@ -249,7 +249,7 @@ struct FieldDef {
 // excluding the primary key field
 static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
 {
-    tst_Databases::safeDropTables(db, QStringList() << qTableName("qtestfields"));
+    tst_Databases::safeDropTable(db, qTableName("qtestfields"));
     QSqlQuery q(db);
     // construct a create table statement consisting of all fieldtypes
     QString qs = "create table " + qTableName("qtestfields");
@@ -357,6 +357,7 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         tableNames <<  (qTableName("qtest") + " test");
 
     tst_Databases::safeDropTables(db, tableNames);
+    tst_Databases::safeDropView(db, qTableName("qtest_view"));
 }
 
 void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
@@ -539,11 +540,6 @@ void tst_QSqlDatabase::tables()
     if (tempTables)
         QVERIFY(tables.contains(qTableName("temp_tab"), Qt::CaseInsensitive));
     QVERIFY(tables.contains(qTableName("qtest"), Qt::CaseInsensitive));
-
-    if (tst_Databases::isMSAccess(db))
-        QSqlQuery("drop table " + qTableName("qtest_view"), db);
-    else
-        QSqlQuery("drop view " + qTableName("qtest_view"), db);
 
     if (db.driverName().startsWith("QPSQL")) {
         QVERIFY(tables.contains(qTableName("qtest") + " test"));

@@ -55,3 +55,18 @@ setClipping true
 
 setBrush #6300ff00
 drawRect 25 25 50 50
+
+# disable clipping followed by setClipRect
+translate 150 0
+
+setClipRect 0 0 50 50 ReplaceClip
+
+setClipping false
+
+setBrush #630000ff
+drawRect 0 0 100 100
+
+setClipRect 25 25 75 75 IntersectClip
+
+setBrush #6300ff00
+drawRect 25 25 50 50

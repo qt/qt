@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -44,14 +44,12 @@
 #include <QtGui/qwidget.h>
 #include "qegl_p.h"
 
-#if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
-
 #include <windows.h>
 
 
 QT_BEGIN_NAMESPACE
 
-bool QEglContext::createSurface(QPaintDevice *device)
+bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
 {
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -73,10 +71,15 @@ bool QEglContext::createSurface(QPaintDevice *device)
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
+    const int *props;
+    if (properties)
+        props = properties->properties();
     else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
+        props = 0;
+    if (devType == QInternal::Widget)
+        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
+    else
+        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
     if (surf == EGL_NO_SURFACE) {
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
         return false;
@@ -87,19 +90,27 @@ bool QEglContext::createSurface(QPaintDevice *device)
 EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
 {
     EGLDisplay dpy = 0;
-    HWND win = ((QWidget*)device)->winId(); 
-    HDC myDc = GetDC(win); 
-    if (!myDc) { 
-        qWarning("QEglContext::defaultDisplay(): WinCE display is not open"); 
-    } 
-    dpy = eglGetDisplay(EGLNativeDisplayType(myDc)); 
-    if (dpy == EGL_NO_DISPLAY) { 
-        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY"); 
-        dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY); 
+    HWND win = (static_cast<QWidget*>(device))->winId();
+    HDC myDc = GetDC(win);
+    if (!myDc) {
+        qWarning("QEglContext::defaultDisplay(): WinCE display is not open");
+    }
+    dpy = eglGetDisplay(EGLNativeDisplayType(myDc));
+    if (dpy == EGL_NO_DISPLAY) {
+        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY");
+        dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     }
     return dpy;
 }
 
-QT_END_NAMESPACE
+// Set pixel format and other properties based on a paint device.
+void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
+{
+    int devType = dev->devType();
+    if (devType == QInternal::Image)
+        setPixelFormat(static_cast<QImage *>(dev)->format());
+    else
+        setPixelFormat(QImage::Format_RGB16); // XXX
+}
 
-#endif // QT_OPENGL_ES || QT_OPENVG
+QT_END_NAMESPACE

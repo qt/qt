@@ -86,6 +86,9 @@ private slots:
     void escapedRelations();
     void escapedTableName();
     void whiteSpaceInIdentifiers();
+
+private:
+    void dropTestTables( QSqlDatabase db );
 };
 
 
@@ -100,18 +103,9 @@ void tst_QSqlRelationalTableModel::initTestCase_data()
 
 void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
 {
+    dropTestTables(db);
+
     QSqlQuery q(db);
-
-    QStringList tableNames;
-    tableNames << qTableName( "reltest1" )
-            << qTableName( "reltest2" )
-            << qTableName( "reltest3" )
-            << qTableName( "reltest4" )
-            << qTableName( "reltest5" )
-            << db.driver()->escapeIdentifier(qTableName( "rel test6" ), QSqlDriver::TableName)
-            << db.driver()->escapeIdentifier(qTableName( "rel test7" ), QSqlDriver::TableName);
-    tst_Databases::safeDropTables( db, tableNames );
-
     QVERIFY_SQL( q, exec("create table " + qTableName("reltest1") +
             " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("reltest1") + " values(1, 'harry', 1, 2)"));
@@ -157,20 +151,27 @@ void tst_QSqlRelationalTableModel::initTestCase()
 
 void tst_QSqlRelationalTableModel::cleanupTestCase()
 {
+    foreach (const QString &dbName, dbs.dbNames) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE( db );
+        dropTestTables( QSqlDatabase::database(dbName) );
+    }
+    dbs.close();
+}
+
+void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
+{
     QStringList tableNames;
     tableNames << qTableName( "reltest1" )
             << qTableName( "reltest2" )
             << qTableName( "reltest3" )
             << qTableName( "reltest4" )
-            << qTableName( "reltest5" );
-    foreach (const QString &dbName, dbs.dbNames) {
-        QSqlDatabase db = QSqlDatabase::database(dbName);
-            QStringList tables = tableNames;
-            tables << db.driver()->escapeIdentifier(qTableName( "rel test6" ), QSqlDriver::TableName)
-            << db.driver()->escapeIdentifier(qTableName( "rel test7" ), QSqlDriver::TableName);
-        tst_Databases::safeDropTables( db, tables );
-    }
-    dbs.close();
+            << qTableName( "reltest5" )
+            << qTableName( "rel test6", db.driver() )
+            << qTableName( "rel test7", db.driver() )
+            << qTableName("CASETEST1", db.driver() )
+            << qTableName("casetest1", db.driver() );
+    tst_Databases::safeDropTables( db, tableNames );
 }
 
 void tst_QSqlRelationalTableModel::init()
@@ -916,11 +917,6 @@ void tst_QSqlRelationalTableModel::casing()
     if (db.driverName().startsWith("QSQLITE"))
         QSKIP("The casing test for SQLITE is irrelevant since SQLITE is case insensitive", SkipAll);
 
-    QStringList tableNames;
-    tableNames << qTableName("CASETEST1", db.driver()).toUpper();
-    tableNames << qTableName("casetest1", db.driver());
-    tst_Databases::safeDropTables(db, tableNames);
-
     QSqlQuery q(db);
     QVERIFY_SQL( q, exec("create table " + qTableName("CASETEST1", db.driver()).toUpper()  +
                 " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
@@ -974,8 +970,6 @@ void tst_QSqlRelationalTableModel::casing()
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
-
-    tst_Databases::safeDropTables(db, tableNames);
 }
 
 void tst_QSqlRelationalTableModel::escapedRelations()
