@@ -76,7 +76,7 @@ public:
 private:
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
 
-    static JSC::JSValue proxyCall(JSC::ExecState *, JSC::JSObject *, JSC::JSValue , const JSC::ArgList &);
+    static JSC::JSValue JSC_HOST_CALL proxyCall(JSC::ExecState *, JSC::JSObject *, JSC::JSValue , const JSC::ArgList &);
     static JSC::JSObject* proxyConstruct(JSC::ExecState *, JSC::JSObject *, const JSC::ArgList &);
 
 private:

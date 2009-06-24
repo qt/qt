@@ -48,6 +48,7 @@ public:
                           JSC::JSValue thisObject,
                           const JSC::ArgList &args,
                           bool calledAsConstructor,
+                          QScriptContext *parentContext,
                           QScriptEnginePrivate *engine);
     ~QScriptContextPrivate();
 
@@ -57,6 +58,7 @@ public:
     JSC::JSValue thisObject;
     const JSC::ArgList &args;
     bool calledAsConstructor;
+    QScriptContext *parentContext;
     QScriptEnginePrivate *engine;
 };
 

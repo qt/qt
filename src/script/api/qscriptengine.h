@@ -87,7 +87,7 @@ private:
     QScriptSyntaxCheckResultPrivate *d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptSyntaxCheckResult)
-    friend class QScriptEnginePrivate;
+    friend class QScriptEngine;
 };
 
 class Q_SCRIPT_EXPORT QScriptEngine

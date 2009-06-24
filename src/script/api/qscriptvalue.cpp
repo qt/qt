@@ -256,13 +256,14 @@ void QScriptValuePrivate::initFromJSCValue(JSC::JSValue value)
 {
     type = JSC;
     jscValue = value;
-    if (!JSC::JSImmediate::isImmediate(value)) {
+    if (value.isCell()) {
+        JSC::JSCell *cell = value.asCell();
         Q_ASSERT(engine != 0);
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
         if (value != eng_p->globalObject) {
-            if (!eng_p->keepAliveValues.contains(value))
-                eng_p->keepAliveValues[value] = 0;
-            eng_p->keepAliveValues[value].ref();
+            if (!eng_p->keepAliveValues.contains(cell))
+                eng_p->keepAliveValues[cell] = 0;
+            eng_p->keepAliveValues[cell].ref();
         }
     }
 }
@@ -345,6 +346,11 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 QVariant &QScriptValuePrivate::variantValue() const
 {
     return static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(jscValue))->value();
+}
+
+void QScriptValuePrivate::setVariantValue(const QVariant &value)
+{
+    static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(jscValue))->setValue(value);
 }
 
 /*!

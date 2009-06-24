@@ -136,9 +136,11 @@ QScriptContextPrivate::QScriptContextPrivate(JSC::JSObject *callee_,
                                              JSC::JSValue thisObject_,
                                              const JSC::ArgList &args_,
                                              bool calledAsConstructor_,
+                                             QScriptContext *parentContext_,
                                              QScriptEnginePrivate *engine_)
     : callee(callee_), thisObject(thisObject_), args(args_),
-      calledAsConstructor(calledAsConstructor_), engine(engine_)
+      calledAsConstructor(calledAsConstructor_), parentContext(parentContext_),
+      engine(engine_)
 {
 }
 
@@ -320,8 +322,8 @@ bool QScriptContext::isCalledAsConstructor() const
 */
 QScriptContext *QScriptContext::parentContext() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return 0;
+    Q_D(const QScriptContext);
+    return d->parentContext;
 }
 
 /*!
@@ -367,7 +369,7 @@ void QScriptContext::setReturnValue(const QScriptValue &result)
 */
 QScriptValue QScriptContext::activationObject() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptContext::activationObject() not implemented");
     return QScriptValue();
 }
 
@@ -430,8 +432,45 @@ QScriptContext::ExecutionState QScriptContext::state() const
 */
 QStringList QScriptContext::backtrace() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return QStringList();
+    QStringList result;
+    qWarning("QScriptContext::backtrace() not implemented");
+#if 0
+    const QScriptContextPrivate *ctx = this;
+    while (ctx) {
+        QString s;
+        QString functionName = ctx->functionName();
+        if (!functionName.isEmpty())
+            s += functionName;
+        else {
+            if (ctx->parentContext()) {
+                if (ctx->callee().isFunction()
+                    && ctx->callee().toFunction()->type() != QScriptFunction::Script) {
+                    s += QLatin1String("<native>");
+                } else {
+                    s += QLatin1String("<anonymous>");
+                }
+            } else {
+                s += QLatin1String("<global>");
+            }
+        }
+        s += QLatin1Char('(');
+        for (int i = 0; i < ctx->argc; ++i) {
+            if (i > 0)
+                s += QLatin1Char(',');
+            QScriptValueImpl arg = ctx->args[i];
+            if (arg.isObject())
+                s += QLatin1String("[object Object]"); // don't do a function call
+            else
+                s += arg.toString();
+        }
+        s += QLatin1String(")@");
+        s += ctx->fileName();
+        s += QString::fromLatin1(":%0").arg(ctx->currentLine);
+        result.append(s);
+        ctx = ctx->parentContext();
+    }
+#endif
+    return result;
 }
 
 /*!

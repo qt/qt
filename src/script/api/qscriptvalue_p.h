@@ -58,6 +58,7 @@ public:
     bool isJSC() const;
 
     QVariant &variantValue() const;
+    void setVariantValue(const QVariant &value);
 
     static QScriptValuePrivate *get(const QScriptValue &q);
 

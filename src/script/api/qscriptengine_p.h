@@ -38,6 +38,7 @@ QT_BEGIN_NAMESPACE
 
 namespace JSC
 {
+    class JSCell;
     class JSGlobalObject;
     class UString;
 }
@@ -53,6 +54,7 @@ namespace QScript
 
 class QString;
 class QStringList;
+class QScriptContext;
 class QScriptValue;
 class QScriptTypeInfo;
 class QScriptEngineAgent;
@@ -113,6 +115,7 @@ public:
 #endif
 
     JSC::JSGlobalObject *globalObject;
+    QScriptContext *currentContext;
 
     QScript::QObjectPrototype *qobjectPrototype;
     WTF::RefPtr<JSC::Structure> qobjectWrapperObjectStructure;
@@ -120,7 +123,7 @@ public:
     WTF::RefPtr<JSC::Structure> variantWrapperObjectStructure;
 
     QScriptEngineAgent *agent;
-    QHash<JSC::JSValue, QBasicAtomicInt> keepAliveValues;
+    QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
 

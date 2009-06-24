@@ -14,6 +14,7 @@
 #ifndef QT_NO_SCRIPT
 
 #include "qscriptengine_p.h"
+#include "qscriptcontext_p.h"
 #include "../bridge/qscriptqobject_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
@@ -380,10 +381,9 @@ void GlobalObject::mark()
         engine->variantPrototype->mark();
 
     {
-        QHash<JSC::JSValue,QBasicAtomicInt>::const_iterator it;
+        QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
         for (it = engine->keepAliveValues.constBegin(); it != engine->keepAliveValues.constEnd(); ++it) {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-//            it.key().mark();
+            it.key()->mark();
         }
     }
 
@@ -424,6 +424,11 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "version"), JSC::functionVersion));
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "load"), JSC::functionLoad));
 
+    currentContext = QScriptContextPrivate::create(
+        *new QScriptContextPrivate(/*callee=*/0, /*thisObject=*/globalObject,
+                                   /*args=*/JSC::ArgList(), /*calledAsConstructor=*/false,
+                                   /*parentContext=*/0, this));
+
     agent = 0;
     processEventsInterval = -1;
 }
@@ -463,9 +468,11 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
 void QScriptEnginePrivate::releaseJSCValue(JSC::JSValue value)
 {
 // ### Q_ASSERT(!JSC::JSImmediate::isImmediate(value));
-    Q_ASSERT(keepAliveValues.contains(value));
-    if (!keepAliveValues[value].deref())
-        keepAliveValues.remove(value);
+    Q_ASSERT(value.isCell());
+    JSC::JSCell *cell = value.asCell();
+    Q_ASSERT(keepAliveValues.contains(cell));
+    if (!keepAliveValues[cell].deref())
+        keepAliveValues.remove(cell);
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromVariant(const QVariant &v)
@@ -900,10 +907,14 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
 QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
                                        const QVariant &value)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    Q_UNUSED(object);
-    Q_UNUSED(value);
-    return QScriptValue();
+    if (!object.isObject())
+        return newVariant(value);
+    else if (!object.isVariant()) {
+        qWarning("QScriptEngine::newVariant(): Object-->QVariant promotion not implemented");
+    } else {
+        QScriptValuePrivate::get(object)->setVariantValue(value);
+    }
+    return object;
 }
 
 #ifndef QT_NO_QOBJECT
@@ -967,12 +978,18 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
                                        ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    Q_UNUSED(scriptObject);
-    Q_UNUSED(qtObject);
-    Q_UNUSED(ownership);
-    Q_UNUSED(options);
-    return QScriptValue();
+    if (!scriptObject.isObject())
+        return newQObject(qtObject, ownership, options);
+    else if (!scriptObject.isQObject()) {
+        qWarning("QScriptEngine::newQObject(): Object-->QObject promotion not implemented");
+    } else {
+        JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
+        QScript::QObjectWrapperObject *wrapper = static_cast<QScript::QObjectWrapperObject*>(jscObject);
+        wrapper->setValue(qtObject);
+        wrapper->setOwnership(ownership);
+        wrapper->setOptions(options);
+    }
+    return scriptObject;
 }
 
 #endif // QT_NO_QOBJECT
@@ -1022,7 +1039,7 @@ QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
 */
 QScriptValue QScriptEngine::newActivationObject()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::newActivationObject() not implemented");
     // ### JSActivation or JSVariableObject?
     return QScriptValue();
 }
@@ -1178,9 +1195,7 @@ QScriptValue QScriptEngine::newDate(const QDateTime &value)
 QScriptValue QScriptEngine::newQMetaObject(
     const QMetaObject *metaObject, const QScriptValue &ctor)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    Q_UNUSED(metaObject);
-    Q_UNUSED(ctor);
+    qWarning("QScriptEngine::newQMetaObject() not implemented");
     return QScriptValue();
 }
 
@@ -1276,7 +1291,7 @@ QScriptValue QScriptEngine::newQMetaObject(
 */
 bool QScriptEngine::canEvaluate(const QString &program) const
 {
-//    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::canEvaluate() not implemented");
     // ### use our own parser or JSC::Interpreter::checkSyntax()
     Q_UNUSED(program);
     return true;
@@ -1290,9 +1305,10 @@ bool QScriptEngine::canEvaluate(const QString &program) const
 */
 QScriptSyntaxCheckResult QScriptEngine::checkSyntax(const QString &program)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::checkSyntax() not implemented");
     // use our own parser or JSC::Interpreter::checkSyntax()
     Q_UNUSED(program);
+    return QScriptSyntaxCheckResult();
 }
 
 /*!
@@ -1355,8 +1371,8 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 */
 QScriptContext *QScriptEngine::currentContext() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return 0;
+    Q_D(const QScriptEngine);
+    return d->currentContext;
 }
 
 /*!
@@ -1384,7 +1400,7 @@ QScriptContext *QScriptEngine::currentContext() const
 */
 QScriptContext *QScriptEngine::pushContext()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::pushContext() not implemented");
     return 0;
 }
 
@@ -1396,7 +1412,7 @@ QScriptContext *QScriptEngine::pushContext()
 */
 void QScriptEngine::popContext()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::popContext() not implemented");
 }
 
 /*!
@@ -1443,9 +1459,9 @@ QScriptValue QScriptEngine::uncaughtException() const
 */
 int QScriptEngine::uncaughtExceptionLineNumber() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // use lineNumber property of exec->exception()?
-    return -1;
+    if (!hasUncaughtException())
+        return -1;
+    return uncaughtException().property(QLatin1String("lineNumber")).toInt32();
 }
 
 /*!
@@ -1457,6 +1473,7 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 */
 QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 {
+    qWarning("QScriptEngine::uncaughtExceptionBacktrace() not implemented");
 // ### implement me
     // how do we get a bt with JSC?
     return QStringList() << QLatin1String("<backtrace should go here>");
@@ -1927,7 +1944,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
 */
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::installTranslatorFunctions() not implemented");
     Q_UNUSED(object);
 }
 
@@ -1946,7 +1963,7 @@ void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 */
 QScriptValue QScriptEngine::importExtension(const QString &extension)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::importExtension() not implemented");
     Q_UNUSED(extension);
     return QScriptValue();
 }
@@ -1962,7 +1979,7 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
 */
 QStringList QScriptEngine::availableExtensions() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::availableExtensions() not implemented");
     return QStringList();
 }
 
@@ -1976,7 +1993,7 @@ QStringList QScriptEngine::availableExtensions() const
 */
 QStringList QScriptEngine::importedExtensions() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::importedExtensions() not implemented");
     return QStringList();
 }
 
@@ -2258,7 +2275,7 @@ void QScriptEngine::collectGarbage()
 void QScriptEngine::setProcessEventsInterval(int interval)
 {
     Q_D(QScriptEngine);
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::setProcessEventsInterval() not implemented");
     // is it possible with JSC?
     // JSC has some code for detecting timeouts but not for getting
     // a callback at fixed intervals.
@@ -2289,7 +2306,7 @@ int QScriptEngine::processEventsInterval() const
 */
 bool QScriptEngine::isEvaluating() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::isEvaluating() not implemented");
     // check whether we have a lock on the exec state?
     return false;
 }
@@ -2312,7 +2329,7 @@ bool QScriptEngine::isEvaluating() const
 */
 void QScriptEngine::abortEvaluation(const QScriptValue &result)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptEngine::abortEvaluation() not implemented");
     Q_UNUSED(result);
 }
 
@@ -2410,9 +2427,9 @@ QT_END_INCLUDE_NAMESPACE
 */
 void QScriptEngine::setAgent(QScriptEngineAgent *agent)
 {
+    qWarning("QScriptEngine::setAgent() not implemented");
     Q_D(QScriptEngine);
     d->agent = agent;
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
 }
 
 /*!
@@ -2573,6 +2590,8 @@ QScriptSyntaxCheckResult::~QScriptSyntaxCheckResult()
 QScriptSyntaxCheckResult::State QScriptSyntaxCheckResult::state() const
 {
     Q_D(const QScriptSyntaxCheckResult);
+    if (!d)
+        return Valid;
     return d->state;
 }
 
@@ -2585,6 +2604,8 @@ QScriptSyntaxCheckResult::State QScriptSyntaxCheckResult::state() const
 int QScriptSyntaxCheckResult::errorLineNumber() const
 {
     Q_D(const QScriptSyntaxCheckResult);
+    if (!d)
+        return -1;
     return d->errorLineNumber;
 }
 
@@ -2597,6 +2618,8 @@ int QScriptSyntaxCheckResult::errorLineNumber() const
 int QScriptSyntaxCheckResult::errorColumnNumber() const
 {
     Q_D(const QScriptSyntaxCheckResult);
+    if (!d)
+        return -1;
     return d->errorColumnNumber;
 }
 
@@ -2609,6 +2632,8 @@ int QScriptSyntaxCheckResult::errorColumnNumber() const
 QString QScriptSyntaxCheckResult::errorMessage() const
 {
     Q_D(const QScriptSyntaxCheckResult);
+    if (!d)
+        return QString();
     return d->errorMessage;
 }
 
