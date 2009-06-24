@@ -284,7 +284,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchBeginPoint.rect(), QRectF(pos, QSizeF(0, 0)));
     QCOMPARE(touchBeginPoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
     QCOMPARE(touchBeginPoint.sceneRect(), touchBeginPoint.screenRect());
-    QCOMPARE(touchBeginPoint.pressure(), qreal(-1.));
+    QCOMPARE(touchBeginPoint.pressure(), qreal(1.));
 
     // moving the point should translate to TouchUpdate
     rawTouchPoint.setState(Qt::TouchPointMoved);
@@ -314,7 +314,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchUpdatePoint.rect(), QRectF(pos + delta, QSizeF(0, 0)));
     QCOMPARE(touchUpdatePoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
     QCOMPARE(touchUpdatePoint.sceneRect(), touchUpdatePoint.screenRect());
-    QCOMPARE(touchUpdatePoint.pressure(), qreal(-1.));
+    QCOMPARE(touchUpdatePoint.pressure(), qreal(1.));
 
     // releasing the point translates to TouchEnd
     rawTouchPoint.setState(Qt::TouchPointReleased);
@@ -344,7 +344,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchEndPoint.rect(), QRectF(pos + delta + delta, QSizeF(0, 0)));
     QCOMPARE(touchEndPoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
     QCOMPARE(touchEndPoint.sceneRect(), touchEndPoint.screenRect());
-    QCOMPARE(touchEndPoint.pressure(), qreal(-1.));
+    QCOMPARE(touchEndPoint.pressure(), qreal(0.));
 }
 
 QTEST_MAIN(tst_QTouchEvent)
