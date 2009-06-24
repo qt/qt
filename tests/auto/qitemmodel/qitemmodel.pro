@@ -1,6 +1,5 @@
-CONFIG += qtestlib
+load(qttest_p4)
 SOURCES         += tst_qitemmodel.cpp
-TARGET          = tst_qitemmodel
 
 QT += sql
 

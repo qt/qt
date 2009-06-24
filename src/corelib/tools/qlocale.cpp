@@ -1011,21 +1011,17 @@ static QString macMonthName(int month, bool short_format)
     if (month < 0 || month > 11)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values
-            = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                      short_format ? kCFDateFormatterShortMonthSymbols
-                                                   : kCFDateFormatterMonthSymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values
+        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                  short_format ? kCFDateFormatterShortMonthSymbols
+                                               : kCFDateFormatterMonthSymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -1035,20 +1031,16 @@ static QString macDayName(int day, bool short_format)
     if (day < 1 || day > 7)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                                short_format ? kCFDateFormatterShortWeekdaySymbols
-                                                             : kCFDateFormatterWeekdaySymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                            short_format ? kCFDateFormatterShortWeekdaySymbols
+                                                         : kCFDateFormatterWeekdaySymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
