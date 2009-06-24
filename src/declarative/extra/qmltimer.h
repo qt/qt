@@ -44,6 +44,7 @@
 
 #include <QtDeclarative/qfxglobal.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qabstractanimation.h>
 #include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
@@ -57,6 +58,9 @@ class Q_DECLARATIVE_EXPORT QmlTimer : public QObject, public QmlParserStatus
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlTimer)
     Q_PROPERTY(int interval READ interval WRITE setInterval)
+    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
+    Q_PROPERTY(bool repeat READ isRepeating WRITE setRepeating)
+    Q_PROPERTY(bool firesOnStart READ firesOnStart WRITE setFiresOnStart)
 
 public:
     QmlTimer(QObject *parent=0);
@@ -64,14 +68,28 @@ public:
     void setInterval(int interval);
     int interval() const;
 
+    bool isRunning() const;
+    void setRunning(bool running);
+
+    bool isRepeating() const;
+    void setRepeating(bool repeating);
+
+    bool firesOnStart() const;
+    void setFiresOnStart(bool firesOnStart);
+
 protected:
     void componentComplete();
 
 Q_SIGNALS:
-    void timeout();
+    void triggered();
+    void runningChanged();
+
+private:
+    void update();
 
 private Q_SLOTS:
     void ticked();
+    void stateChanged(QAbstractAnimation::State,QAbstractAnimation::State);
 };
 QML_DECLARE_TYPE(QmlTimer)
 
