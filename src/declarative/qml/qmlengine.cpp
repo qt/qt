@@ -1160,14 +1160,26 @@ QVariant QmlExpression::value()
                 }
                 rv = QVariant::fromValue(list);
             }
-        } else if (svalue.isObject()) {
+        } else if (svalue.isObject() && 
+                   !svalue.isNumber() &&
+                   !svalue.isString() &&
+                   !svalue.isDate() && 
+                   !svalue.isError() && 
+                   !svalue.isFunction() &&
+                   !svalue.isNull() &&
+                   !svalue.isQMetaObject() &&
+                   !svalue.isQObject() &&
+                   !svalue.isRegExp()) {
             QScriptValue objValue = svalue.data();
-            if (objValue.isValid())
-                rv = objValue.toVariant();
+            if (objValue.isValid()) {
+                QVariant var = objValue.toVariant();
+                if (var.userType() >= (int)QVariant::UserType &&
+                    QmlMetaType::isObject(var.userType()))
+                    rv = var;
+            }
         }
-        if (rv.isNull()) {
+        if (rv.isNull()) 
             rv = svalue.toVariant();
-        }
 
         for (int i = 0; i < context()->d_func()->scopeChain.size(); ++i) {
             scriptEngine->currentContext()->popScope();
