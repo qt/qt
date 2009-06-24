@@ -98,7 +98,7 @@ QmlTimer::QmlTimer(QObject *parent)
 /*!
     \qmlproperty int Timer::interval
 
-    Sets the \a interval between triggering.
+    Sets the \a interval in milliseconds between triggering.
 */
 void QmlTimer::setInterval(int interval)
 {
