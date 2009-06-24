@@ -179,7 +179,6 @@ Q_SIGNALS:
     void doubleClick();
 
 private Q_SLOTS:
-    void updateCacheForVisibility();
     void expandToWebPage();
     void paintPage(const QRect&);
     void doLoadProgress(int p);
