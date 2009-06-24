@@ -81,7 +81,7 @@ public:
     JSHTMLButtonElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLButtonElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLButtonElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLButtonElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,9 +117,9 @@ static const HashTable JSHTMLButtonElementPrototypeTable =
 
 const ClassInfo JSHTMLButtonElementPrototype::s_info = { "HTMLButtonElementPrototype", 0, &JSHTMLButtonElementPrototypeTable, 0 };
 
-JSObject* JSHTMLButtonElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLButtonElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLButtonElement>(exec);
+    return getDOMPrototype<JSHTMLButtonElement>(exec, globalObject);
 }
 
 bool JSHTMLButtonElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -134,9 +134,9 @@ JSHTMLButtonElement::JSHTMLButtonElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLButtonElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLButtonElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLButtonElementPrototype(JSHTMLButtonElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLButtonElementPrototype(JSHTMLButtonElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLButtonElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -725,7 +725,7 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
         const QStringList flips = flipRegexp.cap(1).split(QLatin1Char(','),
                                                           QString::SkipEmptyParts);
         flipFlags = DSFLIP_NONE;
-        foreach (QString flip, flips) {
+        foreach(const QString &flip, flips) {
             if (flip == QLatin1String("wait"))
                 flipFlags = DFBSurfaceFlipFlags(flipFlags | DSFLIP_WAIT);
             else if (flip == QLatin1String("blit"))

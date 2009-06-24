@@ -69,7 +69,7 @@ public:
     JSHTMLMarqueeElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLMarqueeElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMarqueeElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMarqueeElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLMarqueeElementPrototypeTable =
 
 const ClassInfo JSHTMLMarqueeElementPrototype::s_info = { "HTMLMarqueeElementPrototype", 0, &JSHTMLMarqueeElementPrototypeTable, 0 };
 
-JSObject* JSHTMLMarqueeElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLMarqueeElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLMarqueeElement>(exec);
+    return getDOMPrototype<JSHTMLMarqueeElement>(exec, globalObject);
 }
 
 bool JSHTMLMarqueeElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -123,9 +123,9 @@ JSHTMLMarqueeElement::JSHTMLMarqueeElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSHTMLMarqueeElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLMarqueeElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLMarqueeElementPrototype(JSHTMLMarqueeElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLMarqueeElementPrototype(JSHTMLMarqueeElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLMarqueeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

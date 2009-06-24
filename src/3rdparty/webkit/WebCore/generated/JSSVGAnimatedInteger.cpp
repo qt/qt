@@ -69,9 +69,9 @@ static const HashTable JSSVGAnimatedIntegerPrototypeTable =
 
 const ClassInfo JSSVGAnimatedIntegerPrototype::s_info = { "SVGAnimatedIntegerPrototype", 0, &JSSVGAnimatedIntegerPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedIntegerPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedIntegerPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedInteger>(exec);
+    return getDOMPrototype<JSSVGAnimatedInteger>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedInteger::s_info = { "SVGAnimatedInteger", 0, &JSSVGAnimatedIntegerTable, 0 };
@@ -89,9 +89,9 @@ JSSVGAnimatedInteger::~JSSVGAnimatedInteger()
 
 }
 
-JSObject* JSSVGAnimatedInteger::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedInteger::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedIntegerPrototype(JSSVGAnimatedIntegerPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedIntegerPrototype(JSSVGAnimatedIntegerPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedInteger::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

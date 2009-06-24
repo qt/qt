@@ -108,9 +108,9 @@ static const HashTable JSSVGRectElementPrototypeTable =
 
 const ClassInfo JSSVGRectElementPrototype::s_info = { "SVGRectElementPrototype", 0, &JSSVGRectElementPrototypeTable, 0 };
 
-JSObject* JSSVGRectElementPrototype::self(ExecState* exec)
+JSObject* JSSVGRectElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGRectElement>(exec);
+    return getDOMPrototype<JSSVGRectElement>(exec, globalObject);
 }
 
 bool JSSVGRectElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -125,9 +125,9 @@ JSSVGRectElement::JSSVGRectElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGRectElement::createPrototype(ExecState* exec)
+JSObject* JSSVGRectElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGRectElementPrototype(JSSVGRectElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGRectElementPrototype(JSSVGRectElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGRectElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

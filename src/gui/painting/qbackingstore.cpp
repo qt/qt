@@ -258,7 +258,10 @@ void QWidgetBackingStore::unflushPaint(QWidget *widget, const QRegion &rgn)
 bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *widget)
 {
     const QPoint pos(tlwOffset + widget->mapTo(tlw, rect.topLeft()));
-    return windowSurface->scroll(QRect(pos, rect.size()), dx, dy);
+    const QRect tlwRect(QRect(pos, rect.size()));
+    if (dirty.intersects(tlwRect))
+        return false; // We don't want to scroll junk.
+    return windowSurface->scroll(tlwRect, dx, dy);
 }
 
 void QWidgetBackingStore::releaseBuffer()

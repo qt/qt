@@ -87,9 +87,9 @@ static const HashTable JSSVGFEOffsetElementPrototypeTable =
 
 const ClassInfo JSSVGFEOffsetElementPrototype::s_info = { "SVGFEOffsetElementPrototype", 0, &JSSVGFEOffsetElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEOffsetElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEOffsetElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEOffsetElement>(exec);
+    return getDOMPrototype<JSSVGFEOffsetElement>(exec, globalObject);
 }
 
 bool JSSVGFEOffsetElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -104,9 +104,9 @@ JSSVGFEOffsetElement::JSSVGFEOffsetElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGFEOffsetElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEOffsetElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEOffsetElementPrototype(JSSVGFEOffsetElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEOffsetElementPrototype(JSSVGFEOffsetElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEOffsetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

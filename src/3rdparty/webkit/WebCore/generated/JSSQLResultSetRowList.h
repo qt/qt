@@ -34,7 +34,7 @@ class JSSQLResultSetRowList : public DOMObject {
 public:
     JSSQLResultSetRowList(PassRefPtr<JSC::Structure>, PassRefPtr<SQLResultSetRowList>);
     virtual ~JSSQLResultSetRowList();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -58,7 +58,7 @@ SQLResultSetRowList* toSQLResultSetRowList(JSC::JSValuePtr);
 
 class JSSQLResultSetRowListPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

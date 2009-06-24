@@ -83,9 +83,9 @@ static const HashTable JSSVGFEMergeElementPrototypeTable =
 
 const ClassInfo JSSVGFEMergeElementPrototype::s_info = { "SVGFEMergeElementPrototype", 0, &JSSVGFEMergeElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEMergeElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEMergeElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEMergeElement>(exec);
+    return getDOMPrototype<JSSVGFEMergeElement>(exec, globalObject);
 }
 
 bool JSSVGFEMergeElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -100,9 +100,9 @@ JSSVGFEMergeElement::JSSVGFEMergeElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEMergeElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEMergeElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEMergeElementPrototype(JSSVGFEMergeElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEMergeElementPrototype(JSSVGFEMergeElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEMergeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

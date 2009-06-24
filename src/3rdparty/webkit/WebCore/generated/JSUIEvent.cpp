@@ -80,7 +80,7 @@ public:
     JSUIEventConstructor(ExecState* exec)
         : DOMObject(JSUIEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSUIEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSUIEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -116,9 +116,9 @@ static const HashTable JSUIEventPrototypeTable =
 
 const ClassInfo JSUIEventPrototype::s_info = { "UIEventPrototype", 0, &JSUIEventPrototypeTable, 0 };
 
-JSObject* JSUIEventPrototype::self(ExecState* exec)
+JSObject* JSUIEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSUIEvent>(exec);
+    return getDOMPrototype<JSUIEvent>(exec, globalObject);
 }
 
 bool JSUIEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -133,9 +133,9 @@ JSUIEvent::JSUIEvent(PassRefPtr<Structure> structure, PassRefPtr<UIEvent> impl)
 {
 }
 
-JSObject* JSUIEvent::createPrototype(ExecState* exec)
+JSObject* JSUIEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSUIEventPrototype(JSUIEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSUIEventPrototype(JSUIEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSUIEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

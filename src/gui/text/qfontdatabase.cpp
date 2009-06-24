@@ -442,7 +442,7 @@ QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 
 // ### copied to tools/makeqpf/qpf2.cpp
 
-#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN) || (defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA))
 // see the Unicode subset bitfields in the MSDN docs
 static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Any,

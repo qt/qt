@@ -73,7 +73,7 @@ public:
     JSCounterConstructor(ExecState* exec)
         : DOMObject(JSCounterConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -108,9 +108,9 @@ static const HashTable JSCounterPrototypeTable =
 
 const ClassInfo JSCounterPrototype::s_info = { "CounterPrototype", 0, &JSCounterPrototypeTable, 0 };
 
-JSObject* JSCounterPrototype::self(ExecState* exec)
+JSObject* JSCounterPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCounter>(exec);
+    return getDOMPrototype<JSCounter>(exec, globalObject);
 }
 
 const ClassInfo JSCounter::s_info = { "Counter", 0, &JSCounterTable, 0 };
@@ -127,9 +127,9 @@ JSCounter::~JSCounter()
 
 }
 
-JSObject* JSCounter::createPrototype(ExecState* exec)
+JSObject* JSCounter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCounterPrototype(JSCounterPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCounterPrototype(JSCounterPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCounter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

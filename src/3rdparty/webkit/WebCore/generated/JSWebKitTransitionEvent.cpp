@@ -73,7 +73,7 @@ public:
     JSWebKitTransitionEventConstructor(ExecState* exec)
         : DOMObject(JSWebKitTransitionEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitTransitionEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitTransitionEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSWebKitTransitionEventPrototypeTable =
 
 const ClassInfo JSWebKitTransitionEventPrototype::s_info = { "WebKitTransitionEventPrototype", 0, &JSWebKitTransitionEventPrototypeTable, 0 };
 
-JSObject* JSWebKitTransitionEventPrototype::self(ExecState* exec)
+JSObject* JSWebKitTransitionEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWebKitTransitionEvent>(exec);
+    return getDOMPrototype<JSWebKitTransitionEvent>(exec, globalObject);
 }
 
 bool JSWebKitTransitionEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,9 +126,9 @@ JSWebKitTransitionEvent::JSWebKitTransitionEvent(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSWebKitTransitionEvent::createPrototype(ExecState* exec)
+JSObject* JSWebKitTransitionEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWebKitTransitionEventPrototype(JSWebKitTransitionEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSWebKitTransitionEventPrototype(JSWebKitTransitionEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSWebKitTransitionEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

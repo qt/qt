@@ -84,7 +84,7 @@ public:
     JSSVGTransformConstructor(ExecState* exec)
         : DOMObject(JSSVGTransformConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGTransformPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGTransformPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -132,9 +132,9 @@ static const HashTable JSSVGTransformPrototypeTable =
 
 const ClassInfo JSSVGTransformPrototype::s_info = { "SVGTransformPrototype", 0, &JSSVGTransformPrototypeTable, 0 };
 
-JSObject* JSSVGTransformPrototype::self(ExecState* exec)
+JSObject* JSSVGTransformPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTransform>(exec);
+    return getDOMPrototype<JSSVGTransform>(exec, globalObject);
 }
 
 bool JSSVGTransformPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -157,9 +157,9 @@ JSSVGTransform::~JSSVGTransform()
 
 }
 
-JSObject* JSSVGTransform::createPrototype(ExecState* exec)
+JSObject* JSSVGTransform::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTransformPrototype(JSSVGTransformPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGTransformPrototype(JSSVGTransformPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGTransform::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

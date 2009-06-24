@@ -53,9 +53,9 @@ static const HashTable JSSVGFEFuncAElementPrototypeTable =
 
 const ClassInfo JSSVGFEFuncAElementPrototype::s_info = { "SVGFEFuncAElementPrototype", 0, &JSSVGFEFuncAElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEFuncAElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEFuncAElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEFuncAElement>(exec);
+    return getDOMPrototype<JSSVGFEFuncAElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEFuncAElement::s_info = { "SVGFEFuncAElement", &JSSVGComponentTransferFunctionElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGFEFuncAElement::JSSVGFEFuncAElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEFuncAElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEFuncAElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEFuncAElementPrototype(JSSVGFEFuncAElementPrototype::createStructure(JSSVGComponentTransferFunctionElementPrototype::self(exec)));
+    return new (exec) JSSVGFEFuncAElementPrototype(JSSVGFEFuncAElementPrototype::createStructure(JSSVGComponentTransferFunctionElementPrototype::self(exec, globalObject)));
 }
 
 

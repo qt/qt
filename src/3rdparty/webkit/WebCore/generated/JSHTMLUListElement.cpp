@@ -72,7 +72,7 @@ public:
     JSHTMLUListElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLUListElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLUListElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLUListElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,9 +107,9 @@ static const HashTable JSHTMLUListElementPrototypeTable =
 
 const ClassInfo JSHTMLUListElementPrototype::s_info = { "HTMLUListElementPrototype", 0, &JSHTMLUListElementPrototypeTable, 0 };
 
-JSObject* JSHTMLUListElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLUListElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLUListElement>(exec);
+    return getDOMPrototype<JSHTMLUListElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLUListElement::s_info = { "HTMLUListElement", &JSHTMLElement::s_info, &JSHTMLUListElementTable, 0 };
@@ -119,9 +119,9 @@ JSHTMLUListElement::JSHTMLUListElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLUListElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLUListElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLUListElementPrototype(JSHTMLUListElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLUListElementPrototype(JSHTMLUListElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLUListElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

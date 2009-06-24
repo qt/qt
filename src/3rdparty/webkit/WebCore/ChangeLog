@@ -1,3 +1,270 @@
+2009-06-23  Thiago Macieira  <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix Qt build with Phonon.
+
+        The #include <phonon> header no longer exists. And the <Phonon> or
+        <Phonon/Phonon> headers have never existed (neither for us nor for the
+        Phonon sources). You have to select each and every header that you do
+        want now.
+
+        * platform/graphics/qt/MediaPlayerPrivatePhonon.cpp:
+
+2009-06-23  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix NPAPI mouse translation issues on Mac
+
+        The WindowRef we pass to the plugin refers to the the top level window,
+        so the x and y positions have to be relative to this position, but we
+        have to manually compensate for title bar decorations and other parents
+        of the QWebView since contentsToWindow() only traverses to the QWebView.
+
+        Previously we did this compensation when passing on mouse coordinates to
+        the plugin, which caused various issues with translations such as not
+        being able to close the Flash settings dialog, or the hand cursor not
+        appearing over links.
+
+        We now do the compensation as part of the call to NPP_SetWindow, and
+        then pass mouse coordinates in global context without any compensation,
+        similar to how both Safari and Mozilla does it.
+
+        * plugins/mac/PluginViewMac.cpp:
+        (WebCore::PluginView::updatePluginWidget):
+        (WebCore::PluginView::globalMousePosForPlugin):
+
+2009-05-21  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+        
+        Test for <rdar://problem/6910832> | https://bugs.webkit.org/show_bug.cgi?id=25907
+        Incorrect URL returned to the DOM while the user drags a file
+
+        * page/DragController.cpp:
+        (WebCore::DragController::dragExited):
+        (WebCore::DragController::tryDHTMLDrag): Don't base our decision on KURL,
+        since that only looks at the text of the document's URL. Do base our
+        decision on the securityOrigin(), which knows more about the document's
+        actual origin.
+
+2009-04-14  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Alexey Proskuryakov.
+        
+        Fix <rdar://problem/6755724> <audio> and <video> elements can reference local 
+        file:/// URLs from remote in Safari
+
+        Tests: http/tests/security/local-video-poster-from-remote.html
+               http/tests/security/local-video-source-from-remote.html
+               http/tests/security/local-video-src-from-remote.html
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::loadResource): Don't pass url to media engine unless loader->canLoad()
+        says it is OK.
+
+2009-04-14  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        Part of <rdar://problem/6150868>
+        Fix incorrect handling of content that needs to go into the head element
+        once the head element has been removed.
+
+        Test: fast/parser/head-content-after-head-removal.html
+
+        * html/HTMLParser.cpp:
+        (WebCore::HTMLParser::HTMLParser): Remove unneeded initializer of m_head.
+        (WebCore::HTMLParser::handleError): Update since m_head is now a RefPtr.
+        (WebCore::HTMLParser::createHead): Ditto.
+        * html/HTMLParser.h: Make m_head a RefPtr.
+
+2009-04-08  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Geoffrey "Big Boy" Garen.
+
+        Fix for <rdar://problem/5745677> Possible to stop load during an unload event
+        Also fixes https://bugs.webkit.org/show_bug.cgi?id=20605
+
+        Tests: fast/events/stop-load-in-unload-handler-using-document-write.html
+               fast/events/stop-load-in-unload-handler-using-window-stop.html
+
+        Don't allow calling methods that would stop the new load inside the unload
+        event.
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::FrameLoader):
+        (WebCore::FrameLoader::stopLoading):
+        (WebCore::FrameLoader::stopAllLoaders):
+        * loader/FrameLoader.h:
+
+2009-04-08  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Anders Carlsson.
+
+        Fix for <rdar://problem/6226200> Implement Microsoft's X-FRAME-OPTIONS anti-framing defense
+
+        Tests: http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html
+               http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-allow.html
+               http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html
+               http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag.html
+               http/tests/security/XFrameOptions/x-frame-options-deny.html
+               http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html
+               http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::processHttpEquiv): Stop the current load and redirect to about:blank
+        if an X-FRAME-OPTIONS <meta> tag http-equiq dictates we should.
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::shouldInterruptLoadForXFrameOptions): Add logic to parse
+        the X-FRAME-OPTIONS parameter.
+        * loader/FrameLoader.h:
+        * loader/MainResourceLoader.cpp:
+        (WebCore::MainResourceLoader::didReceiveResponse): Stop the current load if framed and
+        a X-FRAME-OPTIONS header and its parameter dictate that we should.
+
+2009-04-05  Simon Hausmann  <hausmann@webkit.org>
+
+        Fix the Qt build.
+
+        * bridge/qt/qt_runtime.h:
+        (JSC::Bindings::QtRuntimeMethod::createPrototype): Take the JSGlobalObject
+        as second argument.
+
+2009-04-03  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        <rdar://problem/6330929>
+        https://bugs.webkit.org/show_bug.cgi?id=21456
+
+        Don't update the document pointer for all inactive windows on navigations.
+        This change causes us to differ slightly from Firefox when accessing the
+        document from within a closure tied to a navigated context, but as all
+        browsers differ on this edge case, I don't foresee compatibility issues.
+
+        Test: http/tests/security/cross-frame-access-document-direct.html
+
+        * bindings/js/JSDOMWindowBase.cpp:
+        (WebCore::JSDOMWindowBase::~JSDOMWindowBase):
+        * bindings/js/ScriptController.cpp:
+        (WebCore::ScriptController::clearWindowShell):
+        (WebCore::ScriptController::initScript):
+        (WebCore::ScriptController::updateDocument):
+        * bindings/js/ScriptController.h:
+
+2009-04-03  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Oliver Hunt.
+
+        Fix for <rdar://problem/6476356>
+        https://bugs.webkit.org/show_bug.cgi?id=23148
+
+        - Use the window object the Location and History objects are directly associated with
+          instead of the lexical global object to pick the object prototype to serve as the
+          base of the their respective prototype chains.
+        - Re-factor as necessary to allow passing the correct global object to the createPrototype
+          functions.
+
+        Tests: http/tests/security/cross-frame-access-history-prototype.html
+               http/tests/security/cross-frame-access-location-prototype.html
+
+        * bindings/js/JSAudioConstructor.cpp:
+        (WebCore::JSAudioConstructor::JSAudioConstructor):
+        * bindings/js/JSDOMBinding.cpp:
+        (WebCore::getCachedDOMStructure):
+        (WebCore::cacheDOMStructure):
+        * bindings/js/JSDOMBinding.h:
+        (WebCore::getDOMStructure):
+        (WebCore::getDOMPrototype):
+        * bindings/js/JSDOMWindowCustom.cpp:
+        (WebCore::JSDOMWindow::history):
+        (WebCore::JSDOMWindow::location):
+        * bindings/js/JSDocumentCustom.cpp:
+        (WebCore::JSDocument::location):
+        * bindings/js/JSImageConstructor.cpp:
+        (WebCore::JSImageConstructor::JSImageConstructor):
+        * bindings/js/JSMessageChannelConstructor.cpp:
+        (WebCore::JSMessageChannelConstructor::JSMessageChannelConstructor):
+        * bindings/js/JSNamedNodesCollection.h:
+        (WebCore::JSNamedNodesCollection::createPrototype):
+        * bindings/js/JSOptionConstructor.cpp:
+        (WebCore::JSOptionConstructor::JSOptionConstructor):
+        * bindings/js/JSRGBColor.h:
+        (WebCore::JSRGBColor::createPrototype):
+        * bindings/js/JSWebKitCSSMatrixConstructor.cpp:
+        (WebCore::JSWebKitCSSMatrixConstructor::JSWebKitCSSMatrixConstructor):
+        * bindings/js/JSWebKitPointConstructor.cpp:
+        (WebCore::JSWebKitPointConstructor::JSWebKitPointConstructor):
+        * bindings/js/JSWorkerConstructor.cpp:
+        (WebCore::JSWorkerConstructor::JSWorkerConstructor):
+        * bindings/js/JSXMLHttpRequestConstructor.cpp:
+        (WebCore::JSXMLHttpRequestConstructor::JSXMLHttpRequestConstructor):
+        * bindings/js/JSXSLTProcessorConstructor.cpp:
+        (WebCore::JSXSLTProcessorConstructor::JSXSLTProcessorConstructor):
+        * bindings/scripts/CodeGeneratorJS.pm:
+        * bridge/objc/objc_runtime.h:
+        (JSC::Bindings::ObjcFallbackObjectImp::createPrototype):
+        * bridge/runtime_array.h:
+        (JSC::RuntimeArray::createPrototype):
+        * bridge/runtime_method.h:
+        (JSC::RuntimeMethod::createPrototype):
+        * bridge/runtime_object.h:
+        (JSC::RuntimeObjectImp::createPrototype):
+        * page/DOMWindow.idl:
+
+2009-03-29  Darin Adler  <darin@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        <rdar://problem/6015407> attr parsing should allow only identifiers
+
+        Test: fast/css/attr-parsing.html
+
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseContent): Allow only CSS_IDENT, and filter out
+        identifiers that start with "-".
+        * css/CSSPrimitiveValue.cpp:
+        (WebCore::CSSPrimitiveValue::cssText): Added a case for CSS_ATTR so the test
+        case works. This has the pleasant side effect of fixing a bug too.
+
+2009-03-16  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Anders Carlsson.
+
+        Fix for <rdar://problem/6320555>
+        Add an upper limit for setting HTMLSelectElement.length.
+
+        Test: fast/forms/select-max-length.html
+
+        * html/HTMLSelectElement.cpp:
+        (WebCore::HTMLSelectElement::setOption):
+        (WebCore::HTMLSelectElement::setLength):
+
+2009-03-10  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Geoffrey Garen.
+
+        Fix for <rdar://problem/6166844>
+        https://bugs.webkit.org/show_bug.cgi?id=24495
+
+        Use same rule for loading java applets as we do for images.
+
+        * html/HTMLAppletElement.cpp:
+        (WebCore::HTMLAppletElement::createRenderer):
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::loadItem):
+
+2009-02-26  Alexey Proskuryakov  <ap@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=23500
+        KURL::parse() incorrectly compares its result to original string
+
+        * platform/KURL.cpp: (WebCore::KURL::parse): Take string length into account.
+
 2009-05-15  Adam Barth  <abarth@webkit.org>
 
         Reviewed by Oliver Hunt.

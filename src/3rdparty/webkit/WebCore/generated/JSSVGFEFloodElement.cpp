@@ -83,9 +83,9 @@ static const HashTable JSSVGFEFloodElementPrototypeTable =
 
 const ClassInfo JSSVGFEFloodElementPrototype::s_info = { "SVGFEFloodElementPrototype", 0, &JSSVGFEFloodElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEFloodElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEFloodElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEFloodElement>(exec);
+    return getDOMPrototype<JSSVGFEFloodElement>(exec, globalObject);
 }
 
 bool JSSVGFEFloodElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -100,9 +100,9 @@ JSSVGFEFloodElement::JSSVGFEFloodElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEFloodElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEFloodElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEFloodElementPrototype(JSSVGFEFloodElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEFloodElementPrototype(JSSVGFEFloodElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEFloodElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

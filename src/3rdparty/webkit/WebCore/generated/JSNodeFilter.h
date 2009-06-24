@@ -34,7 +34,7 @@ class JSNodeFilter : public DOMObject {
 public:
     JSNodeFilter(PassRefPtr<JSC::Structure>, PassRefPtr<NodeFilter>);
     virtual ~JSNodeFilter();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -61,7 +61,7 @@ PassRefPtr<NodeFilter> toNodeFilter(JSC::JSValuePtr);
 
 class JSNodeFilterPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

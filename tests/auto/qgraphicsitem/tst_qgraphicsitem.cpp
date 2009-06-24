@@ -170,6 +170,7 @@ private slots:
     void boundingRects2();
     void sceneBoundingRect();
     void childrenBoundingRect();
+    void childrenBoundingRect2();
     void group();
     void setGroup();
     void nestedGroups();
@@ -2898,6 +2899,16 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setPos(500, 500);
     child->rotate(90);
     QCOMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
+}
+
+void tst_QGraphicsItem::childrenBoundingRect2()
+{
+    QGraphicsItemGroup box;
+    QGraphicsLineItem l1(0, 0, 100, 0, &box);
+    QGraphicsLineItem l2(100, 0, 100, 100, &box);
+    QGraphicsLineItem l3(0, 0, 0, 100, &box);
+    // Make sure lines (zero with/height) are included in the childrenBoundingRect.
+    QCOMPARE(box.childrenBoundingRect(), QRectF(0, 0, 100, 100));
 }
 
 void tst_QGraphicsItem::group()

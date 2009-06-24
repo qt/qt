@@ -68,9 +68,9 @@ static const HashTable JSTimeRangesPrototypeTable =
 
 const ClassInfo JSTimeRangesPrototype::s_info = { "TimeRangesPrototype", 0, &JSTimeRangesPrototypeTable, 0 };
 
-JSObject* JSTimeRangesPrototype::self(ExecState* exec)
+JSObject* JSTimeRangesPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSTimeRanges>(exec);
+    return getDOMPrototype<JSTimeRanges>(exec, globalObject);
 }
 
 bool JSTimeRangesPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -92,9 +92,9 @@ JSTimeRanges::~JSTimeRanges()
 
 }
 
-JSObject* JSTimeRanges::createPrototype(ExecState* exec)
+JSObject* JSTimeRanges::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSTimeRangesPrototype(JSTimeRangesPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSTimeRangesPrototype(JSTimeRangesPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSTimeRanges::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

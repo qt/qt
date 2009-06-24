@@ -93,7 +93,7 @@ public:
     JSSVGGradientElementConstructor(ExecState* exec)
         : DOMObject(JSSVGGradientElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGGradientElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGGradientElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -133,9 +133,9 @@ static const HashTable JSSVGGradientElementPrototypeTable =
 
 const ClassInfo JSSVGGradientElementPrototype::s_info = { "SVGGradientElementPrototype", 0, &JSSVGGradientElementPrototypeTable, 0 };
 
-JSObject* JSSVGGradientElementPrototype::self(ExecState* exec)
+JSObject* JSSVGGradientElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGGradientElement>(exec);
+    return getDOMPrototype<JSSVGGradientElement>(exec, globalObject);
 }
 
 bool JSSVGGradientElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -150,9 +150,9 @@ JSSVGGradientElement::JSSVGGradientElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGGradientElement::createPrototype(ExecState* exec)
+JSObject* JSSVGGradientElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGGradientElementPrototype(JSSVGGradientElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGGradientElementPrototype(JSSVGGradientElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGGradientElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

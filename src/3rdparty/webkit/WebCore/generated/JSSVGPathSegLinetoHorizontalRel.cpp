@@ -69,9 +69,9 @@ static const HashTable JSSVGPathSegLinetoHorizontalRelPrototypeTable =
 
 const ClassInfo JSSVGPathSegLinetoHorizontalRelPrototype::s_info = { "SVGPathSegLinetoHorizontalRelPrototype", 0, &JSSVGPathSegLinetoHorizontalRelPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegLinetoHorizontalRelPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegLinetoHorizontalRelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegLinetoHorizontalRel>(exec);
+    return getDOMPrototype<JSSVGPathSegLinetoHorizontalRel>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegLinetoHorizontalRel::s_info = { "SVGPathSegLinetoHorizontalRel", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoHorizontalRelTable, 0 };
@@ -81,9 +81,9 @@ JSSVGPathSegLinetoHorizontalRel::JSSVGPathSegLinetoHorizontalRel(PassRefPtr<Stru
 {
 }
 
-JSObject* JSSVGPathSegLinetoHorizontalRel::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegLinetoHorizontalRel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegLinetoHorizontalRelPrototype(JSSVGPathSegLinetoHorizontalRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegLinetoHorizontalRelPrototype(JSSVGPathSegLinetoHorizontalRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegLinetoHorizontalRel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

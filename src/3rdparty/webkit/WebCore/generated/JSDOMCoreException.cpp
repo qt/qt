@@ -91,7 +91,7 @@ public:
     JSDOMCoreExceptionConstructor(ExecState* exec)
         : DOMObject(JSDOMCoreExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMCoreExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMCoreExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -144,9 +144,9 @@ static const HashTable JSDOMCoreExceptionPrototypeTable =
 
 const ClassInfo JSDOMCoreExceptionPrototype::s_info = { "DOMExceptionPrototype", 0, &JSDOMCoreExceptionPrototypeTable, 0 };
 
-JSObject* JSDOMCoreExceptionPrototype::self(ExecState* exec)
+JSObject* JSDOMCoreExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMCoreException>(exec);
+    return getDOMPrototype<JSDOMCoreException>(exec, globalObject);
 }
 
 bool JSDOMCoreExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -168,9 +168,9 @@ JSDOMCoreException::~JSDOMCoreException()
 
 }
 
-JSObject* JSDOMCoreException::createPrototype(ExecState* exec)
+JSObject* JSDOMCoreException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMCoreExceptionPrototype(JSDOMCoreExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMCoreExceptionPrototype(JSDOMCoreExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMCoreException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

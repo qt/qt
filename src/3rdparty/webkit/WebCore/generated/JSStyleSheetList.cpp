@@ -74,7 +74,7 @@ public:
     JSStyleSheetListConstructor(ExecState* exec)
         : DOMObject(JSStyleSheetListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSStyleSheetListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSStyleSheetListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,9 +110,9 @@ static const HashTable JSStyleSheetListPrototypeTable =
 
 const ClassInfo JSStyleSheetListPrototype::s_info = { "StyleSheetListPrototype", 0, &JSStyleSheetListPrototypeTable, 0 };
 
-JSObject* JSStyleSheetListPrototype::self(ExecState* exec)
+JSObject* JSStyleSheetListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSStyleSheetList>(exec);
+    return getDOMPrototype<JSStyleSheetList>(exec, globalObject);
 }
 
 bool JSStyleSheetListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -134,9 +134,9 @@ JSStyleSheetList::~JSStyleSheetList()
 
 }
 
-JSObject* JSStyleSheetList::createPrototype(ExecState* exec)
+JSObject* JSStyleSheetList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSStyleSheetListPrototype(JSStyleSheetListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSStyleSheetListPrototype(JSStyleSheetListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSStyleSheetList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

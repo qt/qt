@@ -73,7 +73,7 @@ public:
     JSCSSRuleListConstructor(ExecState* exec)
         : DOMObject(JSCSSRuleListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSRuleListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSRuleListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSCSSRuleListPrototypeTable =
 
 const ClassInfo JSCSSRuleListPrototype::s_info = { "CSSRuleListPrototype", 0, &JSCSSRuleListPrototypeTable, 0 };
 
-JSObject* JSCSSRuleListPrototype::self(ExecState* exec)
+JSObject* JSCSSRuleListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSRuleList>(exec);
+    return getDOMPrototype<JSCSSRuleList>(exec, globalObject);
 }
 
 bool JSCSSRuleListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -133,9 +133,9 @@ JSCSSRuleList::~JSCSSRuleList()
 
 }
 
-JSObject* JSCSSRuleList::createPrototype(ExecState* exec)
+JSObject* JSCSSRuleList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSRuleListPrototype(JSCSSRuleListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCSSRuleListPrototype(JSCSSRuleListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCSSRuleList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

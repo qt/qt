@@ -75,7 +75,7 @@ public:
     JSMediaErrorConstructor(ExecState* exec)
         : DOMObject(JSMediaErrorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMediaErrorPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMediaErrorPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -113,9 +113,9 @@ static const HashTable JSMediaErrorPrototypeTable =
 
 const ClassInfo JSMediaErrorPrototype::s_info = { "MediaErrorPrototype", 0, &JSMediaErrorPrototypeTable, 0 };
 
-JSObject* JSMediaErrorPrototype::self(ExecState* exec)
+JSObject* JSMediaErrorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMediaError>(exec);
+    return getDOMPrototype<JSMediaError>(exec, globalObject);
 }
 
 bool JSMediaErrorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -137,9 +137,9 @@ JSMediaError::~JSMediaError()
 
 }
 
-JSObject* JSMediaError::createPrototype(ExecState* exec)
+JSObject* JSMediaError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMediaErrorPrototype(JSMediaErrorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSMediaErrorPrototype(JSMediaErrorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSMediaError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

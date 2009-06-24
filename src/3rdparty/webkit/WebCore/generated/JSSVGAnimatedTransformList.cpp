@@ -70,9 +70,9 @@ static const HashTable JSSVGAnimatedTransformListPrototypeTable =
 
 const ClassInfo JSSVGAnimatedTransformListPrototype::s_info = { "SVGAnimatedTransformListPrototype", 0, &JSSVGAnimatedTransformListPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedTransformListPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedTransformListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedTransformList>(exec);
+    return getDOMPrototype<JSSVGAnimatedTransformList>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedTransformList::s_info = { "SVGAnimatedTransformList", 0, &JSSVGAnimatedTransformListTable, 0 };
@@ -90,9 +90,9 @@ JSSVGAnimatedTransformList::~JSSVGAnimatedTransformList()
 
 }
 
-JSObject* JSSVGAnimatedTransformList::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedTransformList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedTransformListPrototype(JSSVGAnimatedTransformListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedTransformListPrototype(JSSVGAnimatedTransformListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedTransformList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

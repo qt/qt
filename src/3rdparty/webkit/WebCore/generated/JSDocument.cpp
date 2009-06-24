@@ -157,7 +157,7 @@ public:
     JSDocumentConstructor(ExecState* exec)
         : DOMObject(JSDocumentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDocumentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDocumentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -228,9 +228,9 @@ static const HashTable JSDocumentPrototypeTable =
 
 const ClassInfo JSDocumentPrototype::s_info = { "DocumentPrototype", 0, &JSDocumentPrototypeTable, 0 };
 
-JSObject* JSDocumentPrototype::self(ExecState* exec)
+JSObject* JSDocumentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDocument>(exec);
+    return getDOMPrototype<JSDocument>(exec, globalObject);
 }
 
 bool JSDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -250,9 +250,9 @@ JSDocument::~JSDocument()
     forgetDOMObject(*Heap::heap(this)->globalData(), static_cast<Document*>(impl()));
 }
 
-JSObject* JSDocument::createPrototype(ExecState* exec)
+JSObject* JSDocument::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDocumentPrototype(JSDocumentPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSDocumentPrototype(JSDocumentPrototype::createStructure(JSEventTargetNodePrototype::self(exec, globalObject)));
 }
 
 JSValuePtr jsDocumentDoctype(ExecState* exec, const Identifier&, const PropertySlot& slot)

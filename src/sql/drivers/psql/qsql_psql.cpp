@@ -534,7 +534,7 @@ bool QPSQLResult::prepare(const QString &query)
 {
     if (!d->preparedQueriesEnabled)
         return QSqlResult::prepare(query);
-    
+
     cleanup();
 
     if (!d->preparedStmtId.isEmpty())
@@ -824,7 +824,20 @@ bool QPSQLDriver::commitTransaction()
         return false;
     }
     PGresult* res = PQexec(d->connection, "COMMIT");
-    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
+
+    bool transaction_failed = false;
+
+    // XXX
+    // This hack is used to tell if the transaction has succeeded for the protocol versions of
+    // PostgreSQL below. For 7.x and other protocol versions we are left in the dark.
+    // This hack can dissapear once there is an API to query this sort of information.
+    if (d->pro == QPSQLDriver::Version8 ||
+        d->pro == QPSQLDriver::Version81 ||
+        d->pro == QPSQLDriver::Version82) {
+        transaction_failed = QByteArray(PQcmdStatus(res)) == QByteArray("ROLLBACK")?true:false;
+    }
+
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK || transaction_failed) {
         PQclear(res);
         setLastError(qMakeError(tr("Could not commit transaction"),
                                 QSqlError::TransactionError, d));
@@ -1172,12 +1185,12 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
             qPrintable(name));
         return false;
     }
-    
+
     int socket = PQsocket(d->connection);
     if (socket) {
         QString query = QString(QLatin1String("LISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
-        if (PQresultStatus(PQexec(d->connection, 
-                                  d->isUtf8 ? query.toUtf8().constData() 
+        if (PQresultStatus(PQexec(d->connection,
+                                  d->isUtf8 ? query.toUtf8().constData()
                                             : query.toLocal8Bit().constData())
                           ) != PGRES_COMMAND_OK) {
             setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d));
@@ -1208,8 +1221,8 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
     }
 
     QString query = QString(QLatin1String("UNLISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
-    if (PQresultStatus(PQexec(d->connection, 
-                              d->isUtf8 ? query.toUtf8().constData() 
+    if (PQresultStatus(PQexec(d->connection,
+                              d->isUtf8 ? query.toUtf8().constData()
                                         : query.toLocal8Bit().constData())
                       ) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(tr("Unable to unsubscribe"), QSqlError::StatementError, d));
@@ -1242,7 +1255,7 @@ void QPSQLDriver::_q_handleNotification(int)
         if (d->seid.contains(name))
             emit notification(name);
         else
-            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.", 
+            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
                 qPrintable(name));
 
         qPQfreemem(notify);

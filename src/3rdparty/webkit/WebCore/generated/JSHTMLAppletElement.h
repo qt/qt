@@ -32,7 +32,7 @@ class JSHTMLAppletElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
     JSHTMLAppletElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLAppletElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     bool customGetOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
@@ -56,7 +56,7 @@ private:
 
 class JSHTMLAppletElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSHTMLAppletElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

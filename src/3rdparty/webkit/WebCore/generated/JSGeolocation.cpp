@@ -70,9 +70,9 @@ static const HashTable JSGeolocationPrototypeTable =
 
 const ClassInfo JSGeolocationPrototype::s_info = { "GeolocationPrototype", 0, &JSGeolocationPrototypeTable, 0 };
 
-JSObject* JSGeolocationPrototype::self(ExecState* exec)
+JSObject* JSGeolocationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSGeolocation>(exec);
+    return getDOMPrototype<JSGeolocation>(exec, globalObject);
 }
 
 bool JSGeolocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -94,9 +94,9 @@ JSGeolocation::~JSGeolocation()
 
 }
 
-JSObject* JSGeolocation::createPrototype(ExecState* exec)
+JSObject* JSGeolocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSGeolocationPrototype(JSGeolocationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSGeolocationPrototype(JSGeolocationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSGeolocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

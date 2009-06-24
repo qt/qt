@@ -34,7 +34,7 @@ class JSXMLHttpRequestException : public DOMObject {
 public:
     JSXMLHttpRequestException(PassRefPtr<JSC::Structure>, PassRefPtr<XMLHttpRequestException>);
     virtual ~JSXMLHttpRequestException();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -56,7 +56,7 @@ XMLHttpRequestException* toXMLHttpRequestException(JSC::JSValuePtr);
 
 class JSXMLHttpRequestExceptionPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

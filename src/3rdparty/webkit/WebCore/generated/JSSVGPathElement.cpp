@@ -162,9 +162,9 @@ static const HashTable JSSVGPathElementPrototypeTable =
 
 const ClassInfo JSSVGPathElementPrototype::s_info = { "SVGPathElementPrototype", 0, &JSSVGPathElementPrototypeTable, 0 };
 
-JSObject* JSSVGPathElementPrototype::self(ExecState* exec)
+JSObject* JSSVGPathElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathElement>(exec);
+    return getDOMPrototype<JSSVGPathElement>(exec, globalObject);
 }
 
 bool JSSVGPathElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -179,9 +179,9 @@ JSSVGPathElement::JSSVGPathElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGPathElement::createPrototype(ExecState* exec)
+JSObject* JSSVGPathElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathElementPrototype(JSSVGPathElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGPathElementPrototype(JSSVGPathElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

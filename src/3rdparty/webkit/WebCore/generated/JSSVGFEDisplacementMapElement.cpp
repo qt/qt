@@ -99,7 +99,7 @@ public:
     JSSVGFEDisplacementMapElementConstructor(ExecState* exec)
         : DOMObject(JSSVGFEDisplacementMapElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFEDisplacementMapElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFEDisplacementMapElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -140,9 +140,9 @@ static const HashTable JSSVGFEDisplacementMapElementPrototypeTable =
 
 const ClassInfo JSSVGFEDisplacementMapElementPrototype::s_info = { "SVGFEDisplacementMapElementPrototype", 0, &JSSVGFEDisplacementMapElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEDisplacementMapElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEDisplacementMapElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEDisplacementMapElement>(exec);
+    return getDOMPrototype<JSSVGFEDisplacementMapElement>(exec, globalObject);
 }
 
 bool JSSVGFEDisplacementMapElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -157,9 +157,9 @@ JSSVGFEDisplacementMapElement::JSSVGFEDisplacementMapElement(PassRefPtr<Structur
 {
 }
 
-JSObject* JSSVGFEDisplacementMapElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEDisplacementMapElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEDisplacementMapElementPrototype(JSSVGFEDisplacementMapElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEDisplacementMapElementPrototype(JSSVGFEDisplacementMapElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEDisplacementMapElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

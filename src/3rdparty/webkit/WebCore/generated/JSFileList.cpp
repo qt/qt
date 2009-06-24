@@ -74,7 +74,7 @@ public:
     JSFileListConstructor(ExecState* exec)
         : DOMObject(JSFileListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSFileListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSFileListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,9 +110,9 @@ static const HashTable JSFileListPrototypeTable =
 
 const ClassInfo JSFileListPrototype::s_info = { "FileListPrototype", 0, &JSFileListPrototypeTable, 0 };
 
-JSObject* JSFileListPrototype::self(ExecState* exec)
+JSObject* JSFileListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSFileList>(exec);
+    return getDOMPrototype<JSFileList>(exec, globalObject);
 }
 
 bool JSFileListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -134,9 +134,9 @@ JSFileList::~JSFileList()
 
 }
 
-JSObject* JSFileList::createPrototype(ExecState* exec)
+JSObject* JSFileList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSFileListPrototype(JSFileListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSFileListPrototype(JSFileListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSFileList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

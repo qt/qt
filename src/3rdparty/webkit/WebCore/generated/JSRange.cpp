@@ -90,7 +90,7 @@ public:
     JSRangeConstructor(ExecState* exec)
         : DOMObject(JSRangeConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSRangePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSRangePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -156,9 +156,9 @@ static const HashTable JSRangePrototypeTable =
 
 const ClassInfo JSRangePrototype::s_info = { "RangePrototype", 0, &JSRangePrototypeTable, 0 };
 
-JSObject* JSRangePrototype::self(ExecState* exec)
+JSObject* JSRangePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSRange>(exec);
+    return getDOMPrototype<JSRange>(exec, globalObject);
 }
 
 bool JSRangePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -180,9 +180,9 @@ JSRange::~JSRange()
 
 }
 
-JSObject* JSRange::createPrototype(ExecState* exec)
+JSObject* JSRange::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSRangePrototype(JSRangePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSRangePrototype(JSRangePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSRange::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

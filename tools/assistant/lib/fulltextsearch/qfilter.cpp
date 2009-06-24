@@ -26,6 +26,7 @@ QCLuceneFilterPrivate::QCLuceneFilterPrivate(const QCLuceneFilterPrivate &other)
     : QSharedData()
 {
     filter = _CL_POINTER(other.filter);
+    deleteCLuceneFilter = other.deleteCLuceneFilter;
 }
 
 QCLuceneFilterPrivate::~QCLuceneFilterPrivate ()

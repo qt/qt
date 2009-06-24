@@ -74,7 +74,7 @@ class BookmarkDialog : public QDialog
     Q_OBJECT
 
 public:
-    BookmarkDialog(BookmarkManager *manager, const QString &title, 
+    BookmarkDialog(BookmarkManager *manager, const QString &title,
         const QString &url, QWidget *parent = 0);
     ~BookmarkDialog();
 
@@ -86,8 +86,8 @@ private slots:
     void textChanged(const QString& string);
     void selectBookmarkFolder(const QString &folderName);
     void customContextMenuRequested(const QPoint &point);
-    void currentChanged(const QModelIndex& current, const QModelIndex& previous);
-    
+    void currentChanged(const QModelIndex& current);
+
 private:
     bool eventFilter(QObject *object, QEvent *e);
 
@@ -177,14 +177,16 @@ public:
     QStringList bookmarkFolders() const;
     QModelIndex addNewFolder(const QModelIndex& index);
     void removeBookmarkItem(QTreeView *treeView, const QModelIndex& index);
-    void showBookmarkDialog(QWidget* parent, const QString &name, const QString &url);
-    void addNewBookmark(const QModelIndex& index, const QString &name, const QString &url);
+    void showBookmarkDialog(QWidget* parent, const QString &name,
+        const QString &url);
+    void addNewBookmark(const QModelIndex& index, const QString &name,
+        const QString &url);
     void setupBookmarkModels();
 
 private slots:
     void itemChanged(QStandardItem *item);
 
-private:    
+private:
     QString uniqueFolderName() const;
     void removeBookmarkFolderItems(QStandardItem *item);
     void readBookmarksRecursive(const QStandardItem *item, QDataStream &stream,
@@ -193,7 +195,7 @@ private:
 private:
     QString oldText;
     QIcon folderIcon;
-    
+
     BookmarkModel *treeModel;
     BookmarkModel *listModel;
     QStandardItem *renameItem;

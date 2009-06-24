@@ -31,7 +31,7 @@ class JSHTMLOptionsCollection : public JSHTMLCollection {
     typedef JSHTMLCollection Base;
 public:
     JSHTMLOptionsCollection(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLOptionsCollection>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual void put(JSC::ExecState*, unsigned propertyName, JSC::JSValuePtr);
@@ -62,7 +62,7 @@ HTMLOptionsCollection* toHTMLOptionsCollection(JSC::JSValuePtr);
 
 class JSHTMLOptionsCollectionPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

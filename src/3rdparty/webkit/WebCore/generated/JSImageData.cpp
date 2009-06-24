@@ -70,7 +70,7 @@ public:
     JSImageDataConstructor(ExecState* exec)
         : DOMObject(JSImageDataConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSImageDataPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSImageDataPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -105,9 +105,9 @@ static const HashTable JSImageDataPrototypeTable =
 
 const ClassInfo JSImageDataPrototype::s_info = { "ImageDataPrototype", 0, &JSImageDataPrototypeTable, 0 };
 
-JSObject* JSImageDataPrototype::self(ExecState* exec)
+JSObject* JSImageDataPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSImageData>(exec);
+    return getDOMPrototype<JSImageData>(exec, globalObject);
 }
 
 const ClassInfo JSImageData::s_info = { "ImageData", 0, &JSImageDataTable, 0 };
@@ -124,9 +124,9 @@ JSImageData::~JSImageData()
 
 }
 
-JSObject* JSImageData::createPrototype(ExecState* exec)
+JSObject* JSImageData::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSImageDataPrototype(JSImageDataPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSImageDataPrototype(JSImageDataPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSImageData::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

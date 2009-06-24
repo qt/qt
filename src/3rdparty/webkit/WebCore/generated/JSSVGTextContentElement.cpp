@@ -102,7 +102,7 @@ public:
     JSSVGTextContentElementConstructor(ExecState* exec)
         : DOMObject(JSSVGTextContentElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGTextContentElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGTextContentElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -151,9 +151,9 @@ static const HashTable JSSVGTextContentElementPrototypeTable =
 
 const ClassInfo JSSVGTextContentElementPrototype::s_info = { "SVGTextContentElementPrototype", 0, &JSSVGTextContentElementPrototypeTable, 0 };
 
-JSObject* JSSVGTextContentElementPrototype::self(ExecState* exec)
+JSObject* JSSVGTextContentElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTextContentElement>(exec);
+    return getDOMPrototype<JSSVGTextContentElement>(exec, globalObject);
 }
 
 bool JSSVGTextContentElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -168,9 +168,9 @@ JSSVGTextContentElement::JSSVGTextContentElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSSVGTextContentElement::createPrototype(ExecState* exec)
+JSObject* JSSVGTextContentElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTextContentElementPrototype(JSSVGTextContentElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGTextContentElementPrototype(JSSVGTextContentElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGTextContentElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

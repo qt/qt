@@ -71,9 +71,9 @@ static const HashTable JSSVGFEPointLightElementPrototypeTable =
 
 const ClassInfo JSSVGFEPointLightElementPrototype::s_info = { "SVGFEPointLightElementPrototype", 0, &JSSVGFEPointLightElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEPointLightElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEPointLightElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEPointLightElement>(exec);
+    return getDOMPrototype<JSSVGFEPointLightElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEPointLightElement::s_info = { "SVGFEPointLightElement", &JSSVGElement::s_info, &JSSVGFEPointLightElementTable, 0 };
@@ -83,9 +83,9 @@ JSSVGFEPointLightElement::JSSVGFEPointLightElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGFEPointLightElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEPointLightElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEPointLightElementPrototype(JSSVGFEPointLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEPointLightElementPrototype(JSSVGFEPointLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEPointLightElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

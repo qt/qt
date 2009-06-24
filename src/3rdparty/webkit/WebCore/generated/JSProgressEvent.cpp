@@ -72,7 +72,7 @@ public:
     JSProgressEventConstructor(ExecState* exec)
         : DOMObject(JSProgressEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSProgressEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSProgressEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -108,9 +108,9 @@ static const HashTable JSProgressEventPrototypeTable =
 
 const ClassInfo JSProgressEventPrototype::s_info = { "ProgressEventPrototype", 0, &JSProgressEventPrototypeTable, 0 };
 
-JSObject* JSProgressEventPrototype::self(ExecState* exec)
+JSObject* JSProgressEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSProgressEvent>(exec);
+    return getDOMPrototype<JSProgressEvent>(exec, globalObject);
 }
 
 bool JSProgressEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -125,9 +125,9 @@ JSProgressEvent::JSProgressEvent(PassRefPtr<Structure> structure, PassRefPtr<Pro
 {
 }
 
-JSObject* JSProgressEvent::createPrototype(ExecState* exec)
+JSObject* JSProgressEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSProgressEventPrototype(JSProgressEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSProgressEventPrototype(JSProgressEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSProgressEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

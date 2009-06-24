@@ -77,9 +77,9 @@ static const HashTable* getJSWorkerNavigatorPrototypeTable(ExecState* exec)
 }
 const ClassInfo JSWorkerNavigatorPrototype::s_info = { "WorkerNavigatorPrototype", 0, 0, getJSWorkerNavigatorPrototypeTable };
 
-JSObject* JSWorkerNavigatorPrototype::self(ExecState* exec)
+JSObject* JSWorkerNavigatorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWorkerNavigator>(exec);
+    return getDOMPrototype<JSWorkerNavigator>(exec, globalObject);
 }
 
 static const HashTable* getJSWorkerNavigatorTable(ExecState* exec)
@@ -100,9 +100,9 @@ JSWorkerNavigator::~JSWorkerNavigator()
 
 }
 
-JSObject* JSWorkerNavigator::createPrototype(ExecState* exec)
+JSObject* JSWorkerNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWorkerNavigatorPrototype(JSWorkerNavigatorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSWorkerNavigatorPrototype(JSWorkerNavigatorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSWorkerNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

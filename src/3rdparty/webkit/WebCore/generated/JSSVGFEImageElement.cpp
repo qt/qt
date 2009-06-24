@@ -90,9 +90,9 @@ static const HashTable JSSVGFEImageElementPrototypeTable =
 
 const ClassInfo JSSVGFEImageElementPrototype::s_info = { "SVGFEImageElementPrototype", 0, &JSSVGFEImageElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEImageElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEImageElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEImageElement>(exec);
+    return getDOMPrototype<JSSVGFEImageElement>(exec, globalObject);
 }
 
 bool JSSVGFEImageElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -107,9 +107,9 @@ JSSVGFEImageElement::JSSVGFEImageElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEImageElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEImageElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEImageElementPrototype(JSSVGFEImageElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEImageElementPrototype(JSSVGFEImageElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -74,7 +74,7 @@ public:
     JSTextConstructor(ExecState* exec)
         : DOMObject(JSTextConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSTextPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSTextPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSTextPrototypeTable =
 
 const ClassInfo JSTextPrototype::s_info = { "TextPrototype", 0, &JSTextPrototypeTable, 0 };
 
-JSObject* JSTextPrototype::self(ExecState* exec)
+JSObject* JSTextPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSText>(exec);
+    return getDOMPrototype<JSText>(exec, globalObject);
 }
 
 bool JSTextPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,9 +128,9 @@ JSText::JSText(PassRefPtr<Structure> structure, PassRefPtr<Text> impl)
 {
 }
 
-JSObject* JSText::createPrototype(ExecState* exec)
+JSObject* JSText::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSTextPrototype(JSTextPrototype::createStructure(JSCharacterDataPrototype::self(exec)));
+    return new (exec) JSTextPrototype(JSTextPrototype::createStructure(JSCharacterDataPrototype::self(exec, globalObject)));
 }
 
 bool JSText::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

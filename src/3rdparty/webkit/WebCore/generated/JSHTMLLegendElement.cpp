@@ -75,7 +75,7 @@ public:
     JSHTMLLegendElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLLegendElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLLegendElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLLegendElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,9 +110,9 @@ static const HashTable JSHTMLLegendElementPrototypeTable =
 
 const ClassInfo JSHTMLLegendElementPrototype::s_info = { "HTMLLegendElementPrototype", 0, &JSHTMLLegendElementPrototypeTable, 0 };
 
-JSObject* JSHTMLLegendElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLLegendElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLLegendElement>(exec);
+    return getDOMPrototype<JSHTMLLegendElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLLegendElement::s_info = { "HTMLLegendElement", &JSHTMLElement::s_info, &JSHTMLLegendElementTable, 0 };
@@ -122,9 +122,9 @@ JSHTMLLegendElement::JSHTMLLegendElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLLegendElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLLegendElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLLegendElementPrototype(JSHTMLLegendElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLLegendElementPrototype(JSHTMLLegendElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLLegendElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

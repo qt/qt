@@ -68,7 +68,7 @@ public:
     JSCDATASectionConstructor(ExecState* exec)
         : DOMObject(JSCDATASectionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCDATASectionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCDATASectionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -103,9 +103,9 @@ static const HashTable JSCDATASectionPrototypeTable =
 
 const ClassInfo JSCDATASectionPrototype::s_info = { "CDATASectionPrototype", 0, &JSCDATASectionPrototypeTable, 0 };
 
-JSObject* JSCDATASectionPrototype::self(ExecState* exec)
+JSObject* JSCDATASectionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCDATASection>(exec);
+    return getDOMPrototype<JSCDATASection>(exec, globalObject);
 }
 
 const ClassInfo JSCDATASection::s_info = { "CDATASection", &JSText::s_info, &JSCDATASectionTable, 0 };
@@ -115,9 +115,9 @@ JSCDATASection::JSCDATASection(PassRefPtr<Structure> structure, PassRefPtr<CDATA
 {
 }
 
-JSObject* JSCDATASection::createPrototype(ExecState* exec)
+JSObject* JSCDATASection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCDATASectionPrototype(JSCDATASectionPrototype::createStructure(JSTextPrototype::self(exec)));
+    return new (exec) JSCDATASectionPrototype(JSCDATASectionPrototype::createStructure(JSTextPrototype::self(exec, globalObject)));
 }
 
 bool JSCDATASection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

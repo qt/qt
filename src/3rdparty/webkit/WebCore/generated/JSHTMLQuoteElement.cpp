@@ -71,7 +71,7 @@ public:
     JSHTMLQuoteElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLQuoteElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLQuoteElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLQuoteElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLQuoteElementPrototypeTable =
 
 const ClassInfo JSHTMLQuoteElementPrototype::s_info = { "HTMLQuoteElementPrototype", 0, &JSHTMLQuoteElementPrototypeTable, 0 };
 
-JSObject* JSHTMLQuoteElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLQuoteElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLQuoteElement>(exec);
+    return getDOMPrototype<JSHTMLQuoteElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLQuoteElement::s_info = { "HTMLQuoteElement", &JSHTMLElement::s_info, &JSHTMLQuoteElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLQuoteElement::JSHTMLQuoteElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLQuoteElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLQuoteElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLQuoteElementPrototype(JSHTMLQuoteElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLQuoteElementPrototype(JSHTMLQuoteElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLQuoteElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

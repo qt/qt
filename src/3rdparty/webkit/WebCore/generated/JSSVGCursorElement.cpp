@@ -81,9 +81,9 @@ static const HashTable JSSVGCursorElementPrototypeTable =
 
 const ClassInfo JSSVGCursorElementPrototype::s_info = { "SVGCursorElementPrototype", 0, &JSSVGCursorElementPrototypeTable, 0 };
 
-JSObject* JSSVGCursorElementPrototype::self(ExecState* exec)
+JSObject* JSSVGCursorElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGCursorElement>(exec);
+    return getDOMPrototype<JSSVGCursorElement>(exec, globalObject);
 }
 
 bool JSSVGCursorElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -98,9 +98,9 @@ JSSVGCursorElement::JSSVGCursorElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGCursorElement::createPrototype(ExecState* exec)
+JSObject* JSSVGCursorElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGCursorElementPrototype(JSSVGCursorElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGCursorElementPrototype(JSSVGCursorElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGCursorElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -76,7 +76,7 @@ public:
     JSRangeExceptionConstructor(ExecState* exec)
         : DOMObject(JSRangeExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSRangeExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSRangeExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSRangeExceptionPrototypeTable =
 
 const ClassInfo JSRangeExceptionPrototype::s_info = { "RangeExceptionPrototype", 0, &JSRangeExceptionPrototypeTable, 0 };
 
-JSObject* JSRangeExceptionPrototype::self(ExecState* exec)
+JSObject* JSRangeExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSRangeException>(exec);
+    return getDOMPrototype<JSRangeException>(exec, globalObject);
 }
 
 bool JSRangeExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,9 +138,9 @@ JSRangeException::~JSRangeException()
 
 }
 
-JSObject* JSRangeException::createPrototype(ExecState* exec)
+JSObject* JSRangeException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSRangeExceptionPrototype(JSRangeExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSRangeExceptionPrototype(JSRangeExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSRangeException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
