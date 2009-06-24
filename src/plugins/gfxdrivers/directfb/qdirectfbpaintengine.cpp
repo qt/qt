@@ -567,6 +567,7 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QPixmapData *data = pixmap.pixmapData();
         Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
         QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        dfbData->unlockDirectFB();
         IDirectFBSurface *s = dfbData->directFBSurface();
         d->blit(r, s, sr);
     }
@@ -598,6 +599,10 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pix, sp);
     } else {
         d->unlock();
+        QPixmapData *data = pixmap.pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
+        QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        dfbData->unlockDirectFB();
         d->drawTiledPixmap(r, pixmap);
     }
 }

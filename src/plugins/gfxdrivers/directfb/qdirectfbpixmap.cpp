@@ -81,10 +81,8 @@ void QDirectFBPixmapData::resize(int width, int height)
         qWarning("QDirectFBPixmapData::resize(): Unable to allocate surface");
         return;
     }
-
     setSerialNumber(++global_ser_no);
 }
-
 
 // mostly duplicated from qimage.cpp (QImageData::checkForAlphaPixels)
 static bool checkForAlphaPixels(const QImage &img)
@@ -200,6 +198,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         QPixmapData::copy(data, rect);
         return;
     }
+    unlockDirectFB();
 
     IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
     alpha = data->hasAlphaChannel();
@@ -282,10 +281,10 @@ void QDirectFBPixmapData::fill(const QColor &color)
 QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
                                          Qt::TransformationMode mode) const
 {
+    QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
     if (!dfbSurface || transform.type() != QTransform::TxScale
         || mode != Qt::FastTransformation)
     {
-        QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
         const QImage *image = that->buffer();
         Q_ASSERT(image);
         const QImage transformed = image->transformed(transform, mode);
@@ -294,6 +293,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         data->fromImage(transformed, Qt::AutoColor);
         return QPixmap(data);
     }
+    that->unlockDirectFB();
 
     int w, h;
     dfbSurface->GetSize(dfbSurface, &w, &h);
