@@ -132,7 +132,7 @@ Qt::TouchPointState QCocoaTouch::toTouchPointState(NSTouchPhase nsState)
 QList<QTouchEvent::TouchPoint>
 QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 {
-    QList<QTouchEvent::TouchPoint> touchPoints;
+    QMap<int, QTouchEvent::TouchPoint> touchPoints;
     NSSet *ended = [event touchesMatchingPhase:NSTouchPhaseEnded | NSTouchPhaseCancelled inView:nil];
     NSSet *active = [event
         touchesMatchingPhase:NSTouchPhaseBegan | NSTouchPhaseMoved | NSTouchPhaseStationary
@@ -150,7 +150,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         if (qcocoaTouch) {
             qcocoaTouch->updateTouchData(touch, [touch phase]);
             if (!_updateInternalStateOnly)
-                touchPoints.append(qcocoaTouch->_touchPoint);
+                touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
             delete qcocoaTouch;
         }
     }
@@ -170,7 +170,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         else
             qcocoaTouch->updateTouchData(touch, wasUpdateInternalStateOnly ? NSTouchPhaseBegan : [touch phase]);
         if (!_updateInternalStateOnly)
-            touchPoints.append(qcocoaTouch->_touchPoint);
+            touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
     }
 
     // Next: sadly, we need to check that our touch hash is in
@@ -184,13 +184,13 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         foreach (QCocoaTouch *qcocoaTouch, _currentTouches.values()) {
             if (!_updateInternalStateOnly) {
                 qcocoaTouch->_touchPoint.setState(Qt::TouchPointReleased);
-                touchPoints.append(qcocoaTouch->_touchPoint);
+                touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
             }
             delete qcocoaTouch;
         }
         _currentTouches.clear();
         _updateInternalStateOnly = !acceptSingleTouch;
-        return touchPoints;
+        return touchPoints.values();
     }
 
     // Finally: If this call _started_ to reject single
@@ -200,7 +200,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
     if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && !_currentTouches.isEmpty()) {
         QCocoaTouch *qcocoaTouch = _currentTouches.values().first();
         qcocoaTouch->_touchPoint.setState(Qt::TouchPointReleased);
-        touchPoints.append(qcocoaTouch->_touchPoint);
+        touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
         // Since this last touch also will end up beeing the first
         // touch (if the user adds a second finger without lifting
         // the first), we promote it to be the primary touch:
@@ -208,7 +208,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         _idAssignmentCount = 1;
     }
 
-    return touchPoints;
+    return touchPoints.values();
 }
 
 #endif
