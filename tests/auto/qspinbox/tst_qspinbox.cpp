@@ -65,6 +65,7 @@
 #include <QDoubleSpinBox>
 #include <QVBoxLayout>
 #include <QKeySequence>
+#include <QStackedWidget>
 #include <QDebug>
 #include "../../shared/util.h"
 
@@ -142,6 +143,9 @@ private slots:
     
     void specialValue();
     void textFromValue();
+
+    void sizeHint();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -954,6 +958,81 @@ void tst_QSpinBox::textFromValue()
 {
     SpinBox spinBox;
     QCOMPARE(spinBox.textFromValue(INT_MIN), QString::number(INT_MIN));
+}
+
+class sizeHint_Tester
+{
+    QSize createStackedWidget(bool delaySpinBoxOperation)
+    {
+        QWidget *widget = new QWidget;
+        QHBoxLayout *layout = new QHBoxLayout(widget);
+        QSpinBox *spinBox = new QSpinBox;
+        if (!delaySpinBoxOperation)
+            spinBoxOperation(spinBox);
+        layout->addWidget(spinBox);
+        layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
+        QStackedWidget *stackedWidget = new QStackedWidget;
+        stackedWidget->addWidget(widget);
+        if (delaySpinBoxOperation)
+            spinBoxOperation(spinBox);
+
+        stackedWidget->resize(500, 30);
+        stackedWidget->show();
+        QTest::qWait(100);
+
+        return spinBox->size();
+    }
+    virtual void spinBoxOperation(QSpinBox *) = 0;
+public:
+    QSize size1;
+    QSize size2;
+    void exec()
+    {
+        size1 = createStackedWidget(true);
+        size2 = createStackedWidget(false);
+    }
+    sizeHint_Tester() : size1(1, 0), size2(2, 0) {}
+    virtual ~sizeHint_Tester() {}
+};
+
+class sizeHint_setRangeTester : public sizeHint_Tester
+{
+    void spinBoxOperation(QSpinBox *spinBox)
+    {
+        spinBox->setRange(0, 1234567890);
+        spinBox->setValue(spinBox->maximum());
+    }
+};
+
+class sizeHint_setPrefixTester : public sizeHint_Tester
+{
+    void spinBoxOperation(QSpinBox *spinBox)
+    {
+        spinBox->setPrefix("abcdefghij");
+    }
+};
+
+class sizeHint_setSuffixTester : public sizeHint_Tester
+{
+    void spinBoxOperation(QSpinBox *spinBox)
+    {
+        spinBox->setSuffix("abcdefghij");
+    }
+};
+
+void tst_QSpinBox::sizeHint()
+{
+    sizeHint_setRangeTester setRangeTester;
+    setRangeTester.exec();
+    QCOMPARE(setRangeTester.size1, setRangeTester.size2);
+
+    sizeHint_setPrefixTester setPrefixTester;
+    setPrefixTester.exec();
+    QCOMPARE(setPrefixTester.size1, setPrefixTester.size2);
+
+    sizeHint_setSuffixTester setSuffixTester;
+    setSuffixTester.exec();
+    QCOMPARE(setSuffixTester.size1, setSuffixTester.size2);
 }
 
 QTEST_MAIN(tst_QSpinBox)
