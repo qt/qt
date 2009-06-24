@@ -317,7 +317,7 @@ public:
     void sendGestureEvent(const QSet<QGesture*> &gestures, const QSet<QString> &cancelled);
 
     QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
-    QHash<int, QGraphicsItem *> itemForTouchPointId;
+    QMap<int, QGraphicsItem *> itemForTouchPointId;
     static void updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent);
     int findClosestTouchPointId(const QPointF &scenePos);
     void touchEventHandler(QTouchEvent *touchEvent);

@@ -821,23 +821,32 @@ public:
         QTouchEventTouchPointPrivate *d;
     };
 
-    QTouchEvent(QEvent::Type type,
+    enum DeviceType {
+        TouchScreen,
+        TouchPad
+    };
+
+    QTouchEvent(QEvent::Type eventType,
+                QTouchEvent::DeviceType deviceType = TouchScreen,
                 Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                 Qt::TouchPointStates touchPointStates = 0,
                 const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 
     inline QWidget *widget() const { return _widget; }
+    inline QTouchEvent::DeviceType deviceType() const { return _deviceType; }
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
 
     // internal
     inline void setWidget(QWidget *widget) { _widget = widget; }
+    inline void setDeviceType(DeviceType deviceType) { _deviceType = deviceType; }
     inline void setTouchPointStates(Qt::TouchPointStates touchPointStates) { _touchPointStates = touchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints) { _touchPoints = touchPoints; }
 
 protected:
     QWidget *_widget;
+    QTouchEvent::DeviceType _deviceType;
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
 

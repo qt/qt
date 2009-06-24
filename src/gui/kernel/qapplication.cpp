@@ -5296,6 +5296,7 @@ int QApplicationPrivate::findClosestTouchPointId(const QPointF &screenPos)
 }
 
 void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
+                                                 QTouchEvent::DeviceType deviceType,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate *d = self;
@@ -5312,21 +5313,33 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
         {
-            // determine which widget this event will go to
-            if (!window)
-                window = q->topLevelAt(touchPoint.screenPos().toPoint());
-            if (!window)
-                continue;
-            widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
-            if (!widget)
-                widget = window;
-
-            int closestTouchPointId = d->findClosestTouchPointId(touchPoint.screenPos());
-            QWidget *closestWidget = d->widgetForTouchPointId.value(closestTouchPointId);
-            if (closestWidget
-                && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {
-                widget = closestWidget;
+            if (deviceType == QTouchEvent::TouchPad) {
+                // on touch-pads, send all touch points to the same widget
+                widget = d->widgetForTouchPointId.isEmpty()
+                         ? 0
+                         : d->widgetForTouchPointId.constBegin().value();
             }
+
+            if (!widget) {
+                // determine which widget this event will go to
+                if (!window)
+                    window = q->topLevelAt(touchPoint.screenPos().toPoint());
+                if (!window)
+                    continue;
+                widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
+                if (!widget)
+                    widget = window;
+            }
+
+            if (deviceType == QTouchEvent::TouchScreen) {
+                int closestTouchPointId = d->findClosestTouchPointId(touchPoint.screenPos());
+                QWidget *closestWidget = d->widgetForTouchPointId.value(closestTouchPointId);
+                if (closestWidget
+                    && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {
+                    widget = closestWidget;
+                }
+            }
+
             d->widgetForTouchPointId[touchPoint.id()] = widget;
             touchPoint.setStartScreenPos(touchPoint.screenPos());
             touchPoint.setLastScreenPos(touchPoint.screenPos());
@@ -5356,6 +5369,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             widget = d->widgetForTouchPointId.value(touchPoint.id());
             if (!widget)
                 continue;
+
             Q_ASSERT(d->appCurrentTouchPoints.contains(touchPoint.id()));
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
             touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
@@ -5408,6 +5422,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         }
 
         QTouchEvent touchEvent(eventType,
+                               deviceType,
                                q->keyboardModifiers(),
                                it.value().first,
                                it.value().second);
@@ -5433,10 +5448,11 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     }
 }
 
-Q_GUI_EXPORT void qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &touchPoints,
-                                            QWidget *window)
+Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+                                            QTouchEvent::DeviceType deviceType,
+                                            const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
-    QApplicationPrivate::translateRawTouchEvent(window, touchPoints);
+    QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
 }
 
 QT_END_NAMESPACE

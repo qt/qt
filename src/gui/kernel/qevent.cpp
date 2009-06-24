@@ -3734,15 +3734,39 @@ void QGestureEvent::accept(const QString &type)
     \since 4.6
 */
 
-/*!
-    Constructs a QTouchEvent with the given \a type and \a touchPoints. The \a touchPointStates and
-    \a modifiers are the current touch point states and keyboard modifiers at the time of the event.
+/*! \enum QTouchEvent::DeviceType
+    \since 4.6
+
+    This enum represents the type of device that generated a QTouchEvent.
+
+    \value TouchScreen In this type of device, the touch surface and display are integrated. This
+                       means the surface and display typically have the same size, such that there
+                       is a direct relationship between the touch points' physical positions and the
+                       coordinate reported by QTouchEvent::TouchPoint. As a result, Qt allows the
+                       user to interact directly with multiple QWidgets and QGraphicsItems at the
+                       same time.
+
+    \value TouchPad In this type of device, the touch surface is separate from the display. There
+                    is not a direct relationship between the physical touch location and the
+                    on-screen coordinates. Instead, they are calculated relative to the current
+                    mouse position, and the user must use the touch-pad to move this reference
+                    point. Unlike touch-screens, Qt allows users to only interact with a single
+                    QWidget or QGraphicsItem at a time.
 */
-QTouchEvent::QTouchEvent(QEvent::Type type,
+
+/*!
+    Constructs a QTouchEvent with the given \a eventType, \a deviceType, and \a touchPoints.
+    The \a touchPointStates and \a modifiers are the current touch point states and keyboard
+    modifiers at the time of the event.
+*/
+QTouchEvent::QTouchEvent(QEvent::Type eventType,
+                         QTouchEvent::DeviceType deviceType,
                          Qt::KeyboardModifiers modifiers,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
-    : QInputEvent(type, modifiers),
+    : QInputEvent(eventType, modifiers),
+      _widget(0),
+      _deviceType(deviceType),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
 { }

@@ -62,7 +62,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-extern Q_GUI_EXPORT void qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &touchPoints, QWidget *window);
+extern Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+                                                   QTouchEvent::DeviceType deviceType,
+                                                   const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 namespace QTest
 {
@@ -104,8 +106,8 @@ namespace QTest
         }
 
     private:
-        QTouchEventSequence(QWidget *widget)
-            : targetWidget(widget)
+        QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType deviceType)
+            : targetWidget(widget), deviceType(deviceType)
         {
         }
         QTouchEventSequence(const QTouchEventSequence &v);
@@ -125,18 +127,20 @@ namespace QTest
         }
         void commit()
         {
-            qt_translateRawTouchEvent(points.values(), targetWidget);
+            qt_translateRawTouchEvent(targetWidget, deviceType, points.values());
             targetWidget = 0;
         }
 
         QMap<int, QTouchEvent::TouchPoint> points;
         QWidget *targetWidget;
-        friend QTouchEventSequence touchEvent(QWidget*);
+        QTouchEvent::DeviceType deviceType;
+        friend QTouchEventSequence touchEvent(QWidget *, QTouchEvent::DeviceType);
     };
 
-    QTouchEventSequence touchEvent(QWidget *widget = 0)
+    QTouchEventSequence touchEvent(QWidget *widget = 0,
+                                   QTouchEvent::DeviceType deviceType = QTouchEvent::TouchScreen)
     {
-        return QTouchEventSequence(widget);
+        return QTouchEventSequence(widget, deviceType);
     }
 
 }

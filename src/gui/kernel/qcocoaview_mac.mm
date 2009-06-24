@@ -69,7 +69,6 @@ Q_GLOBAL_STATIC(DnDParams, qMacDnDParams);
 
 extern void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos); // qcursor_mac.mm
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
-extern bool qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &touchPoints, QWidget *window); // qapplication.cpp
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
@@ -874,25 +873,25 @@ extern "C" {
 - (void)touchesBeganWithEvent:(NSEvent *)event; 
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event;
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event;
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event;
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
 - (void)magnifyWithEvent:(NSEvent *)event;

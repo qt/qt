@@ -437,7 +437,7 @@ public:
     // map<gesture name -> number of widget subscribed to it>
     QMap<QString, int> grabbedGestures;
 
-    QHash<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QWidget *> widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();
@@ -448,6 +448,7 @@ public:
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     static void translateRawTouchEvent(QWidget *widget,
+                                       QTouchEvent::DeviceType deviceType,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 #if defined(Q_WS_WIN)
@@ -490,6 +491,10 @@ private:
                                                 Qt::FocusReason focusReason);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
 };
+
+Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+                                            QTouchEvent::DeviceType deviceType,
+                                            const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 QT_END_NAMESPACE
 

@@ -6217,7 +6217,7 @@ void QApplicationPrivate::_q_readRX71MultiTouchEvents()
     for (int i = 0; i < allRX71TouchPoints.count(); ++i)
         touchPoints.append(allRX71TouchPoints.at(i).touchPoint);
 
-    translateRawTouchEvent(0, touchPoints);
+    translateRawTouchEvent(0, QTouchEvent::TouchScreen, touchPoints);
 }
 
 #else // !QT_RX71_MULTITOUCH

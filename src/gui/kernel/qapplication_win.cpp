@@ -4078,7 +4078,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         touchInputIDToTouchPointID.clear();
     }
 
-    translateRawTouchEvent(widgetForHwnd, touchPoints);
+    translateRawTouchEvent(widgetForHwnd, QTouchEvent::TouchScreen, touchPoints);
     return true;
 }
 
