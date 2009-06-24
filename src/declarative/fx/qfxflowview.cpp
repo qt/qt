@@ -128,10 +128,11 @@ void QFxFlowView::refresh()
 {
     if (m_model && m_columns >= 1) {
         for (int ii = 0; ii < m_model->count(); ++ii) {
-            QFxItem *item = m_model->item(ii);
-            item->setParent(this);
-            item->setZ(0);
-            m_items << item;
+            if (QFxItem *item = m_model->item(ii)) {
+                item->setParent(this);
+                item->setZ(0);
+                m_items << item;
+            }
         }
 
         reflow();
