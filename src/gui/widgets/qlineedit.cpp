@@ -1550,10 +1550,7 @@ void QLineEditPrivate::copy(bool clipboard) const
     Q_Q(const QLineEdit);
     QString t = q->selectedText();
     if (!t.isEmpty() && echoMode == QLineEdit::Normal) {
-        q->disconnect(QApplication::clipboard(), SIGNAL(selectionChanged()), q, 0);
         QApplication::clipboard()->setText(t, clipboard ? QClipboard::Clipboard : QClipboard::Selection);
-        q->connect(QApplication::clipboard(), SIGNAL(selectionChanged()),
-                   q, SLOT(_q_clipboardChanged()));
     }
 }
 
@@ -2747,10 +2744,6 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->updateTextLayout();
     }
     QWidget::changeEvent(ev);
-}
-
-void QLineEditPrivate::_q_clipboardChanged()
-{
 }
 
 void QLineEditPrivate::_q_handleWindowActivate()
