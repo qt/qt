@@ -2,6 +2,7 @@
     Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
                   2005 Eric Seidel <eric@webkit.org>
+                  2009 Dirk Schulze <krit@webkit.org>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -23,8 +24,10 @@
 
 #if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEOffset.h"
-#include "SVGRenderTreeAsText.h"
+
 #include "Filter.h"
+#include "GraphicsContext.h"
+#include "SVGRenderTreeAsText.h"
 
 namespace WebCore {
 
@@ -61,8 +64,27 @@ void FEOffset::setDy(float dy)
     m_dy = dy;
 }
 
-void FEOffset::apply(Filter*)
+void FEOffset::apply(Filter* filter)
 {
+    m_in->apply(filter);
+    if (!m_in->resultImage())
+        return;
+
+    GraphicsContext* filterContext = getEffectContext();
+    if (!filterContext)
+        return;
+
+    if (filter->effectBoundingBoxMode()) {
+        setDx(dx() * filter->sourceImageRect().width());
+        setDy(dy() * filter->sourceImageRect().height());
+    }
+
+    FloatRect dstRect = FloatRect(dx() + m_in->subRegion().x() - subRegion().x(),
+                                  dy() + m_in->subRegion().y() - subRegion().y(),
+                                  m_in->subRegion().width(),
+                                  m_in->subRegion().height());
+
+    filterContext->drawImage(m_in->resultImage()->image(), dstRect);
 }
 
 void FEOffset::dump()

@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSCSSVariablesRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSVariablesDeclaration.h"
 #include "CSSVariablesRule.h"
 #include "JSCSSVariablesDeclaration.h"
 #include "JSMediaList.h"
 #include "MediaList.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

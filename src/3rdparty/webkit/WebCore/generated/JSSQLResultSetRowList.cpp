@@ -20,17 +20,14 @@
 
 #include "config.h"
 
-
 #if ENABLE(DATABASE)
 
 #include "JSSQLResultSetRowList.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SQLResultSetRowList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

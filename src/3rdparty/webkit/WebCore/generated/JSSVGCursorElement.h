@@ -21,10 +21,10 @@
 #ifndef JSSVGCursorElement_h
 #define JSSVGCursorElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

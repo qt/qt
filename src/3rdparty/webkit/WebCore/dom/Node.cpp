@@ -282,7 +282,7 @@ void Node::stopIgnoringLeaks()
 #endif
 }
 
-Node::StyleChange Node::diff( RenderStyle *s1, RenderStyle *s2 )
+Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2)
 {
     // FIXME: The behavior of this function is just totally wrong.  It doesn't handle
     // explicit inheritance of non-inherited properties and so you end up not re-resolving
@@ -302,6 +302,12 @@ Node::StyleChange Node::diff( RenderStyle *s1, RenderStyle *s2 )
     else if (s1->inheritedNotEqual(s2))
         ch = Inherit;
     
+    // For nth-child and other positional rules, treat styles as different if they have
+    // changed positionally in the DOM. This way subsequent sibling resolutions won't be confused
+    // by the wrong child index and evaluate to incorrect results.
+    if (ch == NoChange && s1->childIndex() != s2->childIndex())
+        ch = NoInherit;
+
     // If the pseudoStyles have changed, we want any StyleChange that is not NoChange
     // because setStyle will do the right thing with anything else.
     if (ch == NoChange && s1->hasPseudoStyle(BEFORE)) {
@@ -1353,6 +1359,14 @@ bool Node::canStartSelection() const
 {
     if (isContentEditable())
         return true;
+
+    if (renderer()) {
+        RenderStyle* style = renderer()->style();
+        // We allow selections to begin within an element that has -webkit-user-select: none set,
+        // but if the element is draggable then dragging should take priority over selection.
+        if (style->userDrag() == DRAG_ELEMENT && style->userSelect() == SELECT_NONE)
+            return false;
+    }
     return parent() ? parent()->canStartSelection() : true;
 }
 
@@ -2478,7 +2492,7 @@ bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
     event->setEventPhase(Event::CAPTURING_PHASE);
 
     if (targetForWindowEvents) {
-        event->setCurrentTarget(targetForWindowEvents->document()); // FIXME: targetForWindowEvents should be the event target.
+        event->setCurrentTarget(targetForWindowEvents);
         targetForWindowEvents->handleEvent(event.get(), true);
         if (event->propagationStopped())
             goto doneDispatching;
@@ -2516,7 +2530,7 @@ bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
                 goto doneDispatching;
         }
         if (targetForWindowEvents) {
-            event->setCurrentTarget(targetForWindowEvents->document()); // FIXME: targetForWindowEvents should be the event target.
+            event->setCurrentTarget(targetForWindowEvents);
             targetForWindowEvents->handleEvent(event.get(), false);
             if (event->propagationStopped() || event->cancelBubble())
                 goto doneDispatching;
@@ -3083,66 +3097,6 @@ void Node::setOnmousewheel(PassRefPtr<EventListener> eventListener)
     setAttributeEventListener(eventNames().mousewheelEvent, eventListener);
 }
 
-EventListener* Node::onbeforecut() const
-{
-    return getAttributeEventListener(eventNames().beforecutEvent);
-}
-
-void Node::setOnbeforecut(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().beforecutEvent, eventListener);
-}
-
-EventListener* Node::oncut() const
-{
-    return getAttributeEventListener(eventNames().cutEvent);
-}
-
-void Node::setOncut(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().cutEvent, eventListener);
-}
-
-EventListener* Node::onbeforecopy() const
-{
-    return getAttributeEventListener(eventNames().beforecopyEvent);
-}
-
-void Node::setOnbeforecopy(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().beforecopyEvent, eventListener);
-}
-
-EventListener* Node::oncopy() const
-{
-    return getAttributeEventListener(eventNames().copyEvent);
-}
-
-void Node::setOncopy(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().copyEvent, eventListener);
-}
-
-EventListener* Node::onbeforepaste() const
-{
-    return getAttributeEventListener(eventNames().beforepasteEvent);
-}
-
-void Node::setOnbeforepaste(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().beforepasteEvent, eventListener);
-}
-
-EventListener* Node::onpaste() const
-{
-    return getAttributeEventListener(eventNames().pasteEvent);
-}
-
-void Node::setOnpaste(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().pasteEvent, eventListener);
-}
-
 EventListener* Node::ondragenter() const
 {
     return getAttributeEventListener(eventNames().dragenterEvent);
@@ -3213,26 +3167,6 @@ void Node::setOndragend(PassRefPtr<EventListener> eventListener)
     setAttributeEventListener(eventNames().dragendEvent, eventListener);
 }
 
-EventListener* Node::onreset() const
-{
-    return getAttributeEventListener(eventNames().resetEvent);
-}
-
-void Node::setOnreset(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().resetEvent, eventListener);
-}
-
-EventListener* Node::onresize() const
-{
-    return getAttributeEventListener(eventNames().resizeEvent);
-}
-
-void Node::setOnresize(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().resizeEvent, eventListener);
-}
-
 EventListener* Node::onscroll() const
 {
     return getAttributeEventListener(eventNames().scrollEvent);
@@ -3241,16 +3175,6 @@ EventListener* Node::onscroll() const
 void Node::setOnscroll(PassRefPtr<EventListener> eventListener)
 {
     setAttributeEventListener(eventNames().scrollEvent, eventListener);
-}
-
-EventListener* Node::onsearch() const
-{
-    return getAttributeEventListener(eventNames().searchEvent);
-}
-
-void Node::setOnsearch(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().searchEvent, eventListener);
 }
 
 EventListener* Node::onselect() const
@@ -3263,16 +3187,6 @@ void Node::setOnselect(PassRefPtr<EventListener> eventListener)
     setAttributeEventListener(eventNames().selectEvent, eventListener);
 }
 
-EventListener* Node::onselectstart() const
-{
-    return getAttributeEventListener(eventNames().selectstartEvent);
-}
-
-void Node::setOnselectstart(PassRefPtr<EventListener> eventListener)
-{
-    setAttributeEventListener(eventNames().selectstartEvent, eventListener);
-}
-
 EventListener* Node::onsubmit() const
 {
     return getAttributeEventListener(eventNames().submitEvent);
@@ -3283,14 +3197,94 @@ void Node::setOnsubmit(PassRefPtr<EventListener> eventListener)
     setAttributeEventListener(eventNames().submitEvent, eventListener);
 }
 
-EventListener* Node::onunload() const
+EventListener* Node::onbeforecut() const
 {
-    return getAttributeEventListener(eventNames().unloadEvent);
+    return getAttributeEventListener(eventNames().beforecutEvent);
 }
 
-void Node::setOnunload(PassRefPtr<EventListener> eventListener)
+void Node::setOnbeforecut(PassRefPtr<EventListener> eventListener)
 {
-    setAttributeEventListener(eventNames().unloadEvent, eventListener);
+    setAttributeEventListener(eventNames().beforecutEvent, eventListener);
+}
+
+EventListener* Node::oncut() const
+{
+    return getAttributeEventListener(eventNames().cutEvent);
+}
+
+void Node::setOncut(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().cutEvent, eventListener);
+}
+
+EventListener* Node::onbeforecopy() const
+{
+    return getAttributeEventListener(eventNames().beforecopyEvent);
+}
+
+void Node::setOnbeforecopy(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().beforecopyEvent, eventListener);
+}
+
+EventListener* Node::oncopy() const
+{
+    return getAttributeEventListener(eventNames().copyEvent);
+}
+
+void Node::setOncopy(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().copyEvent, eventListener);
+}
+
+EventListener* Node::onbeforepaste() const
+{
+    return getAttributeEventListener(eventNames().beforepasteEvent);
+}
+
+void Node::setOnbeforepaste(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().beforepasteEvent, eventListener);
+}
+
+EventListener* Node::onpaste() const
+{
+    return getAttributeEventListener(eventNames().pasteEvent);
+}
+
+void Node::setOnpaste(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().pasteEvent, eventListener);
+}
+
+EventListener* Node::onreset() const
+{
+    return getAttributeEventListener(eventNames().resetEvent);
+}
+
+void Node::setOnreset(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().resetEvent, eventListener);
+}
+
+EventListener* Node::onsearch() const
+{
+    return getAttributeEventListener(eventNames().searchEvent);
+}
+
+void Node::setOnsearch(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().searchEvent, eventListener);
+}
+
+EventListener* Node::onselectstart() const
+{
+    return getAttributeEventListener(eventNames().selectstartEvent);
+}
+
+void Node::setOnselectstart(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().selectstartEvent, eventListener);
 }
 
 } // namespace WebCore

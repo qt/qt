@@ -116,6 +116,57 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
         props.setPixelFormat(glScreen->pixelFormat());
 }
 
+static bool qt_egl_create_surface
+    (QEglContext *context, QPaintDevice *device,
+     const QEglProperties *properties = 0)
+{
+    // Get the screen surface functions, which are used to create native ids.
+    QGLScreen *glScreen = glScreenForDevice(device);
+    if (!glScreen)
+        return false;
+    QGLScreenSurfaceFunctions *funcs = glScreen->surfaceFunctions();
+    if (!funcs)
+        return false;
+
+    // Create the native drawable for the paint device.
+    int devType = device->devType();
+    EGLNativePixmapType pixmapDrawable = 0;
+    EGLNativeWindowType windowDrawable = 0;
+    bool ok;
+    if (devType == QInternal::Pixmap) {
+        ok = funcs->createNativePixmap(static_cast<QPixmap *>(device), &pixmapDrawable);
+    } else if (devType == QInternal::Image) {
+        ok = funcs->createNativeImage(static_cast<QImage *>(device), &pixmapDrawable);
+    } else {
+        ok = funcs->createNativeWindow(static_cast<QWidget *>(device), &windowDrawable);
+    }
+    if (!ok) {
+        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
+        return false;
+    }
+
+    // Create the EGL surface to draw into, based on the native drawable.
+    const int *props;
+    if (properties)
+        props = properties->properties();
+    else
+        props = 0;
+    EGLSurface surf;
+    if (devType == QInternal::Widget) {
+        surf = eglCreateWindowSurface
+            (context->display(), context->config(), windowDrawable, props);
+    } else {
+        surf = eglCreatePixmapSurface
+            (context->display(), context->config(), pixmapDrawable, props);
+    }
+    if (surf == EGL_NO_SURFACE) {
+        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
+        return false;
+    }
+    context->setSurface(surf);
+    return true;
+}
+
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
@@ -131,7 +182,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
-    d->eglContext->setApi(QEglContext::OpenGL);
+    d->eglContext->setApi(QEgl::OpenGL);
     if (!d->eglContext->openDisplay(device())) {
         delete d->eglContext;
         d->eglContext = 0;
@@ -142,7 +193,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     QEglProperties configProps;
     qt_egl_add_platform_config(configProps, device());
     qt_egl_set_format(configProps, devType, d->glFormat);
-    configProps.setRenderableType(QEglContext::OpenGL);
+    configProps.setRenderableType(QEgl::OpenGL);
 
     // Search for a matching configuration, reducing the complexity
     // each time until we get something that matches.
@@ -168,8 +219,10 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
 #endif
 
-    // Create the EGL surface to draw into.
-    if (!d->eglContext->createSurface(device())) {
+    // Create the EGL surface to draw into.  We cannot use
+    // QEglContext::createSurface() because it does not have
+    // access to the QGLScreen.
+    if (!qt_egl_create_surface(d->eglContext, device())) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;

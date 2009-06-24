@@ -27,6 +27,7 @@ QCLuceneTokenPrivate::QCLuceneTokenPrivate(const QCLuceneTokenPrivate &other)
     : QSharedData()
 {
     token = _CL_POINTER(other.token);
+    deleteCLuceneToken = other.deleteCLuceneToken;
 }
 
 QCLuceneTokenPrivate::~QCLuceneTokenPrivate()

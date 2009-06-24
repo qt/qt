@@ -21,10 +21,11 @@
 #ifndef JSDocument_h
 #define JSDocument_h
 
+#include "Document.h"
 #include "JSNode.h"
 #include <runtime/Lookup.h>
 #include <wtf/AlwaysInline.h>
-#include "Document.h"
+
 namespace WebCore {
 
 class Document;
@@ -159,6 +160,82 @@ JSC::JSValue jsDocumentCharacterSet(JSC::ExecState*, const JSC::Identifier&, con
 JSC::JSValue jsDocumentPreferredStylesheetSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsDocumentSelectedStylesheetSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDocumentSelectedStylesheetSet(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnblur(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOncontextmenu(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOncontextmenu(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndblclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndblclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndrag(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndrag(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragenter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragenter(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragleave(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragleave(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndrop(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndrop(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnkeypress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnkeyup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnkeyup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmousedown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmousedown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmousemove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmousemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmouseout(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmouseout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmouseover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmouseover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmouseup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmouseup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmousewheel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmousewheel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnscroll(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnscroll(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnselect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnselect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnsubmit(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnsubmit(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnbeforecut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnbeforecut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOncut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOncut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnbeforecopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnbeforecopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOncopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOncopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnbeforepaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnbeforepaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnpaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnpaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnreset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnreset(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnsearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore

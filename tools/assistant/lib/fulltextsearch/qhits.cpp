@@ -27,6 +27,7 @@ QCLuceneHitsPrivate::QCLuceneHitsPrivate(const QCLuceneHitsPrivate &other)
     : QSharedData()
 {
     hits = _CL_POINTER(other.hits);
+    deleteCLuceneHits = other.deleteCLuceneHits;
 }
 
 QCLuceneHitsPrivate::~QCLuceneHitsPrivate()

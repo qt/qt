@@ -21,7 +21,6 @@
 #ifndef JSSQLResultSet_h
 #define JSSQLResultSet_h
 
-
 #if ENABLE(DATABASE)
 
 #include "JSDOMBinding.h"

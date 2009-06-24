@@ -19,16 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLBaseElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLBaseElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -29,6 +29,7 @@
 #include <wtf/Platform.h>
 
 #include <MacroAssemblerCodeRef.h>
+#include <CodeLocation.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/UnusedParam.h>
 
@@ -48,15 +49,8 @@ public:
     typedef MacroAssemblerCodeRef CodeRef;
 
     class Jump;
-    class PatchBuffer;
-    class CodeLocationInstruction;
-    class CodeLocationLabel;
-    class CodeLocationJump;
-    class CodeLocationCall;
-    class CodeLocationNearCall;
-    class CodeLocationDataLabel32;
-    class CodeLocationDataLabelPtr;
-    class ProcessorReturnAddress;
+    class LinkBuffer;
+    class RepatchBuffer;
 
     typedef typename AssemblerType::RegisterID RegisterID;
     typedef typename AssemblerType::FPRegisterID FPRegisterID;
@@ -181,17 +175,32 @@ public:
     struct Imm32 {
         explicit Imm32(int32_t value)
             : m_value(value)
+#if PLATFORM_ARM_ARCH(7)
+            , m_isPointer(false)
+#endif
         {
         }
 
 #if !PLATFORM(X86_64)
         explicit Imm32(ImmPtr ptr)
             : m_value(ptr.asIntptr())
+#if PLATFORM_ARM_ARCH(7)
+            , m_isPointer(true)
+#endif
         {
         }
 #endif
 
         int32_t m_value;
+#if PLATFORM_ARM_ARCH(7)
+        // We rely on being able to regenerate code to recover exception handling
+        // information.  Since ARMv7 supports 16-bit immediates there is a danger
+        // that if pointer values change the layout of the generated code will change.
+        // To avoid this problem, always generate pointers (and thus Imm32s constructed
+        // from ImmPtrs) with a code sequence that is able  to represent  any pointer
+        // value - don't use a more compact form in these cases.
+        bool m_isPointer;
+#endif
     };
 
 
@@ -212,7 +221,7 @@ public:
         friend class AbstractMacroAssembler;
         friend class Jump;
         friend class MacroAssemblerCodeRef;
-        friend class PatchBuffer;
+        friend class LinkBuffer;
 
     public:
         Label()
@@ -237,7 +246,7 @@ public:
     class DataLabelPtr {
         template<class TemplateAssemblerType>
         friend class AbstractMacroAssembler;
-        friend class PatchBuffer;
+        friend class LinkBuffer;
     public:
         DataLabelPtr()
         {
@@ -259,7 +268,7 @@ public:
     class DataLabel32 {
         template<class TemplateAssemblerType>
         friend class AbstractMacroAssembler;
-        friend class PatchBuffer;
+        friend class LinkBuffer;
     public:
         DataLabel32()
         {
@@ -283,7 +292,7 @@ public:
     class Call {
         template<class TemplateAssemblerType>
         friend class AbstractMacroAssembler;
-        friend class PatchBuffer;
+        friend class LinkBuffer;
     public:
         enum Flags {
             None = 0x0,
@@ -328,7 +337,7 @@ public:
         template<class TemplateAssemblerType>
         friend class AbstractMacroAssembler;
         friend class Call;
-        friend class PatchBuffer;
+        friend class LinkBuffer;
     public:
         Jump()
         {
@@ -358,7 +367,7 @@ public:
     // A JumpList is a set of Jump objects.
     // All jumps in the set will be linked to the same destination.
     class JumpList {
-        friend class PatchBuffer;
+        friend class LinkBuffer;
 
     public:
         void link(AbstractMacroAssembler<AssemblerType>* masm)
@@ -397,343 +406,14 @@ public:
     };
 
 
-    // Section 3: MacroAssembler JIT instruction stream handles.
-    //
-    // The MacroAssembler supported facilities to modify a JIT generated
-    // instruction stream after it has been generated (relinking calls and
-    // jumps, and repatching data values).  The following types are used
-    // to store handles into the underlying instruction stream, the type
-    // providing semantic information as to what it is that is in the
-    // instruction stream at this point, and thus what operations may be
-    // performed on it.
-
-
-    // CodeLocationCommon:
-    //
-    // Base type for other CodeLocation* types.  A postion in the JIT genertaed
-    // instruction stream, without any semantic information.
-    class CodeLocationCommon {
-    public:
-        CodeLocationCommon()
-        {
-        }
-
-        // In order to avoid the need to store multiple handles into the
-        // instructions stream, where the code generation is deterministic
-        // and the labels will always be a fixed distance apart, these
-        // methods may be used to recover a handle that has nopw been
-        // retained, based on a known fixed relative offset from one that has.
-        CodeLocationInstruction instructionAtOffset(int offset);
-        CodeLocationLabel labelAtOffset(int offset);
-        CodeLocationJump jumpAtOffset(int offset);
-        CodeLocationCall callAtOffset(int offset);
-        CodeLocationNearCall nearCallAtOffset(int offset);
-        CodeLocationDataLabelPtr dataLabelPtrAtOffset(int offset);
-        CodeLocationDataLabel32 dataLabel32AtOffset(int offset);
-
-    protected:
-        explicit CodeLocationCommon(CodePtr location)
-            : m_location(location)
-        {
-        }
-
-        void* dataLocation() { return m_location.dataLocation(); }
-        void* executableAddress() { return m_location.executableAddress(); }
-    
-        void reset()
-        {
-            m_location = CodePtr();
-        }
-
-    private:
-        CodePtr m_location;
-    };
-
-    // CodeLocationInstruction:
-    //
-    // An arbitrary instruction in the JIT code.
-    class CodeLocationInstruction : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-    public:
-        CodeLocationInstruction()
-        {
-        }
-
-        void repatchLoadPtrToLEA()
-        {
-            AssemblerType::repatchLoadPtrToLEA(this->dataLocation());
-        }
-
-    private:
-        explicit CodeLocationInstruction(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-    };
-
-    // CodeLocationLabel:
-    //
-    // A point in the JIT code maked with a label.
-    class CodeLocationLabel : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-        friend class CodeLocationJump;
-        friend class CodeLocationCall;
-        friend class CodeLocationNearCall;
-        friend class PatchBuffer;
-        friend class ProcessorReturnAddress;
-
-    public:
-        CodeLocationLabel()
-        {
-        }
-
-        void* addressForSwitch() { return this->executableAddress(); }
-        void* addressForExceptionHandler() { return this->executableAddress(); }
-        void* addressForJSR() { return this->executableAddress(); }
-
-        bool operator!()
-        {
-            return !this->executableAddress();
-        }
-
-        void reset()
-        {
-            CodeLocationCommon::reset();
-        }
-
-    private:
-        explicit CodeLocationLabel(CodePtr location)
-            : CodeLocationCommon(location)
-        {
-        }
-
-        explicit CodeLocationLabel(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-
-        void* getJumpDestination() { return this->executableAddress(); }
-    };
-
-    // CodeLocationJump:
-    //
-    // A point in the JIT code at which there is a jump instruction.
-    class CodeLocationJump : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-        friend class PatchBuffer;
-    public:
-        CodeLocationJump()
-        {
-        }
-
-        void relink(CodeLocationLabel destination)
-        {
-            AssemblerType::relinkJump(this->dataLocation(), destination.executableAddress());
-        }
-
-    private:
-        explicit CodeLocationJump(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-    };
-
-    // CodeLocationCall:
-    //
-    // A point in the JIT code at which there is a call instruction.
-    class CodeLocationCall : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-        friend class PatchBuffer;
-        friend class ProcessorReturnAddress;
-    public:
-        CodeLocationCall()
-        {
-        }
-
-        void relink(CodeLocationLabel destination)
-        {
-#if PLATFORM(X86_64)
-            CodeLocationCommon::dataLabelPtrAtOffset(-REPTACH_OFFSET_CALL_R11).repatch(destination.executableAddress());
-#else
-            AssemblerType::relinkCall(this->dataLocation(), destination.executableAddress());
-#endif
-        }
-
-        void relink(FunctionPtr destination)
-        {
-#if PLATFORM(X86_64)
-            CodeLocationCommon::dataLabelPtrAtOffset(-REPTACH_OFFSET_CALL_R11).repatch(destination.executableAddress());
-#else
-            AssemblerType::relinkCall(this->dataLocation(), destination.executableAddress());
-#endif
-        }
-
-        // This methods returns the value that will be set as the return address
-        // within a function that has been called from this call instruction.
-        void* calleeReturnAddressValue()
-        {
-            return this->executableAddress();
-        }
-
-    private:
-        explicit CodeLocationCall(CodePtr location)
-            : CodeLocationCommon(location)
-        {
-        }
-
-        explicit CodeLocationCall(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-    };
-
-    // CodeLocationNearCall:
-    //
-    // A point in the JIT code at which there is a call instruction with near linkage.
-    class CodeLocationNearCall : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-        friend class PatchBuffer;
-        friend class ProcessorReturnAddress;
-    public:
-        CodeLocationNearCall()
-        {
-        }
-
-        void relink(CodePtr destination)
-        {
-            AssemblerType::relinkCall(this->dataLocation(), destination.executableAddress());
-        }
-
-        void relink(CodeLocationLabel destination)
-        {
-            AssemblerType::relinkCall(this->dataLocation(), destination.executableAddress());
-        }
-
-        void relink(FunctionPtr destination)
-        {
-            AssemblerType::relinkCall(this->dataLocation(), destination.executableAddress());
-        }
-
-        // This methods returns the value that will be set as the return address
-        // within a function that has been called from this call instruction.
-        void* calleeReturnAddressValue()
-        {
-            return this->executableAddress();
-        }
-
-    private:
-        explicit CodeLocationNearCall(CodePtr location)
-            : CodeLocationCommon(location)
-        {
-        }
-
-        explicit CodeLocationNearCall(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-    };
-
-    // CodeLocationDataLabel32:
-    //
-    // A point in the JIT code at which there is an int32_t immediate that may be repatched.
-    class CodeLocationDataLabel32 : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-        friend class PatchBuffer;
-    public:
-        CodeLocationDataLabel32()
-        {
-        }
-
-        void repatch(int32_t value)
-        {
-            AssemblerType::repatchInt32(this->dataLocation(), value);
-        }
-
-    private:
-        explicit CodeLocationDataLabel32(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-    };
-
-    // CodeLocationDataLabelPtr:
-    //
-    // A point in the JIT code at which there is a void* immediate that may be repatched.
-    class CodeLocationDataLabelPtr : public CodeLocationCommon {
-        friend class CodeLocationCommon;
-        friend class PatchBuffer;
-    public:
-        CodeLocationDataLabelPtr()
-        {
-        }
-
-        void repatch(void* value)
-        {
-            AssemblerType::repatchPointer(this->dataLocation(), value);
-        }
-
-    private:
-        explicit CodeLocationDataLabelPtr(void* location)
-            : CodeLocationCommon(CodePtr(location))
-        {
-        }
-    };
-
-    // ProcessorReturnAddress:
-    //
-    // This class can be used to relink a call identified by its return address.
-    class ProcessorReturnAddress {
-        friend class CodeLocationCall;
-        friend class CodeLocationNearCall;
-    public:
-        ProcessorReturnAddress(void* location)
-            : m_location(location)
-        {
-        }
-
-        void relinkCallerToTrampoline(CodeLocationLabel label)
-        {
-            CodeLocationCall(CodePtr(m_location)).relink(label);
-        }
-        
-        void relinkCallerToTrampoline(CodePtr newCalleeFunction)
-        {
-            relinkCallerToTrampoline(CodeLocationLabel(newCalleeFunction));
-        }
-
-        void relinkCallerToFunction(FunctionPtr function)
-        {
-            CodeLocationCall(CodePtr(m_location)).relink(function);
-        }
-        
-        void relinkNearCallerToTrampoline(CodeLocationLabel label)
-        {
-            CodeLocationNearCall(CodePtr(m_location)).relink(label);
-        }
-        
-        void relinkNearCallerToTrampoline(CodePtr newCalleeFunction)
-        {
-            relinkNearCallerToTrampoline(CodeLocationLabel(newCalleeFunction));
-        }
-
-        void* addressForLookup()
-        {
-            return m_location.value();
-        }
-
-    private:
-        ReturnAddressPtr m_location;
-    };
-
-
-    // Section 4: PatchBuffer - utility to finalize code generation.
+    // Section 3: LinkBuffer - utility to finalize code generation.
 
     static CodePtr trampolineAt(CodeRef ref, Label label)
     {
         return CodePtr(AssemblerType::getRelocatedAddress(ref.m_code.dataLocation(), label.m_label));
     }
 
-    // PatchBuffer:
+    // LinkBuffer:
     //
     // This class assists in linking code generated by the macro assembler, once code generation
     // has been completed, and the code has been copied to is final location in memory.  At this
@@ -750,12 +430,12 @@ public:
     // FIXME: distinguish between Calls & Jumps (make a specific call to obtain the return
     // address of calls, as opposed to a point that can be used to later relink a Jump -
     // possibly wrap the later up in an object that can do just that).
-    class PatchBuffer : public Noncopyable {
+    class LinkBuffer : public Noncopyable {
     public:
         // Note: Initialization sequence is significant, since executablePool is a PassRefPtr.
         //       First, executablePool is copied into m_executablePool, then the initialization of
         //       m_code uses m_executablePool, *not* executablePool, since this is no longer valid.
-        PatchBuffer(AbstractMacroAssembler<AssemblerType>* masm, PassRefPtr<ExecutablePool> executablePool)
+        LinkBuffer(AbstractMacroAssembler<AssemblerType>* masm, PassRefPtr<ExecutablePool> executablePool)
             : m_executablePool(executablePool)
             , m_code(masm->m_assembler.executableCopy(m_executablePool.get()))
             , m_size(masm->m_assembler.size())
@@ -765,7 +445,7 @@ public:
         {
         }
 
-        ~PatchBuffer()
+        ~LinkBuffer()
         {
             ASSERT(m_completed);
         }
@@ -786,13 +466,13 @@ public:
         
         void link(Jump jump, CodeLocationLabel label)
         {
-            AssemblerType::linkJump(code(), jump.m_jmp, label.executableAddress());
+            AssemblerType::linkJump(code(), jump.m_jmp, label.dataLocation());
         }
 
         void link(JumpList list, CodeLocationLabel label)
         {
             for (unsigned i = 0; i < list.m_jumps.size(); ++i)
-                AssemblerType::linkJump(code(), list.m_jumps[i].m_jmp, label.executableAddress());
+                AssemblerType::linkJump(code(), list.m_jumps[i].m_jmp, label.dataLocation());
         }
 
         void patch(DataLabelPtr label, void* value)
@@ -802,7 +482,7 @@ public:
 
         void patch(DataLabelPtr label, CodeLocationLabel value)
         {
-            AssemblerType::patchPointer(code(), label.m_label, value.getJumpDestination());
+            AssemblerType::patchPointer(code(), label.m_label, value.executableAddress());
         }
 
         // These methods are used to obtain handles to allow the code to be relinked / repatched later.
@@ -886,8 +566,93 @@ public:
 #endif
     };
 
+    class RepatchBuffer {
+    public:
+        RepatchBuffer()
+        {
+        }
 
-    // Section 5: Misc admin methods
+        void relink(CodeLocationJump jump, CodeLocationLabel destination)
+        {
+            AssemblerType::relinkJump(jump.dataLocation(), destination.dataLocation());
+        }
+
+        void relink(CodeLocationCall call, CodeLocationLabel destination)
+        {
+#if PLATFORM(X86_64)
+            repatch(call.dataLabelPtrAtOffset(-REPTACH_OFFSET_CALL_R11), destination.executableAddress());
+#else
+            AssemblerType::relinkCall(call.dataLocation(), destination.executableAddress());
+#endif
+        }
+
+        void relink(CodeLocationCall call, FunctionPtr destination)
+        {
+#if PLATFORM(X86_64)
+            repatch(call.dataLabelPtrAtOffset(-REPTACH_OFFSET_CALL_R11), destination.executableAddress());
+#else
+            AssemblerType::relinkCall(call.dataLocation(), destination.executableAddress());
+#endif
+        }
+
+        void relink(CodeLocationNearCall nearCall, CodePtr destination)
+        {
+            AssemblerType::relinkCall(nearCall.dataLocation(), destination.executableAddress());
+        }
+
+        void relink(CodeLocationNearCall nearCall, CodeLocationLabel destination)
+        {
+            AssemblerType::relinkCall(nearCall.dataLocation(), destination.executableAddress());
+        }
+
+        void relink(CodeLocationNearCall nearCall, FunctionPtr destination)
+        {
+            AssemblerType::relinkCall(nearCall.dataLocation(), destination.executableAddress());
+        }
+
+        void repatch(CodeLocationDataLabel32 dataLabel32, int32_t value)
+        {
+            AssemblerType::repatchInt32(dataLabel32.dataLocation(), value);
+        }
+
+        void repatch(CodeLocationDataLabelPtr dataLabelPtr, void* value)
+        {
+            AssemblerType::repatchPointer(dataLabelPtr.dataLocation(), value);
+        }
+
+        void relinkCallerToTrampoline(ReturnAddressPtr returnAddress, CodeLocationLabel label)
+        {
+            relink(CodeLocationCall(CodePtr(returnAddress)), label);
+        }
+        
+        void relinkCallerToTrampoline(ReturnAddressPtr returnAddress, CodePtr newCalleeFunction)
+        {
+            relinkCallerToTrampoline(returnAddress, CodeLocationLabel(newCalleeFunction));
+        }
+
+        void relinkCallerToFunction(ReturnAddressPtr returnAddress, FunctionPtr function)
+        {
+            relink(CodeLocationCall(CodePtr(returnAddress)), function);
+        }
+        
+        void relinkNearCallerToTrampoline(ReturnAddressPtr returnAddress, CodeLocationLabel label)
+        {
+            relink(CodeLocationNearCall(CodePtr(returnAddress)), label);
+        }
+        
+        void relinkNearCallerToTrampoline(ReturnAddressPtr returnAddress, CodePtr newCalleeFunction)
+        {
+            relinkNearCallerToTrampoline(returnAddress, CodeLocationLabel(newCalleeFunction));
+        }
+
+        void repatchLoadPtrToLEA(CodeLocationInstruction instruction)
+        {
+            AssemblerType::repatchLoadPtrToLEA(instruction.dataLocation());
+        }
+    };
+
+
+    // Section 4: Misc admin methods
 
     size_t size()
     {
@@ -948,49 +713,6 @@ public:
 protected:
     AssemblerType m_assembler;
 };
-
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationInstruction AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::instructionAtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationInstruction(reinterpret_cast<char*>(dataLocation()) + offset);
-}
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationLabel AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::labelAtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationLabel(reinterpret_cast<char*>(dataLocation()) + offset);
-}
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationJump AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::jumpAtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationJump(reinterpret_cast<char*>(dataLocation()) + offset);
-}
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationCall AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::callAtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationCall(reinterpret_cast<char*>(dataLocation()) + offset);
-}
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationNearCall AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::nearCallAtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationNearCall(reinterpret_cast<char*>(dataLocation()) + offset);
-}
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationDataLabelPtr AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::dataLabelPtrAtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationDataLabelPtr(reinterpret_cast<char*>(dataLocation()) + offset);
-}
-
-template <class AssemblerType>
-typename AbstractMacroAssembler<AssemblerType>::CodeLocationDataLabel32 AbstractMacroAssembler<AssemblerType>::CodeLocationCommon::dataLabel32AtOffset(int offset)
-{
-    return typename AbstractMacroAssembler::CodeLocationDataLabel32(reinterpret_cast<char*>(dataLocation()) + offset);
-}
 
 } // namespace JSC
 

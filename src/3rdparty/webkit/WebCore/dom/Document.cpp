@@ -5,7 +5,7 @@
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
- * Copyright (C) 2008 David Levin (levin@chromium.org)
+ * Copyright (C) 2008, 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -1338,6 +1338,12 @@ void Document::detach()
     // in order to stop media elements
     documentWillBecomeInactive();
     
+    if (m_frame) {
+        FrameView* view = m_frame->view();
+        if (view)
+            view->detachCustomScrollbars();
+    }
+
     // indicate destruction mode,  i.e. attached() but renderer == 0
     setRenderer(0);
 
@@ -1477,7 +1483,7 @@ void Document::open(Document* ownerDocument)
         if (m_frame->loader()->state() == FrameStateProvisional)
             m_frame->loader()->stopAllLoaders();
     }
-    
+
     implicitOpen();
 
     if (m_frame)
@@ -1504,6 +1510,9 @@ void Document::implicitOpen()
     clear();
     m_tokenizer = createTokenizer();
     setParsing(true);
+
+    if (m_frame)
+        m_tokenizer->setXSSAuditor(m_frame->script()->xssAuditor());
 
     // If we reload, the animation controller sticks around and has
     // a stale animation time. We need to update it here.
@@ -2737,6 +2746,14 @@ void Document::setWindowAttributeEventListener(const AtomicString& eventType, Pa
     if (!domWindow)
         return;
     domWindow->setAttributeEventListener(eventType, listener);
+}
+
+EventListener* Document::getWindowAttributeEventListener(const AtomicString& eventType)
+{
+    DOMWindow* domWindow = this->domWindow();
+    if (!domWindow)
+        return 0;
+    return domWindow->getAttributeEventListener(eventType);
 }
 
 void Document::dispatchWindowEvent(PassRefPtr<Event> event)
@@ -4287,7 +4304,8 @@ void Document::attachRange(Range* range)
 
 void Document::detachRange(Range* range)
 {
-    ASSERT(m_ranges.contains(range));
+    // We don't ASSERT m_ranges.contains(range) to allow us to call this
+    // unconditionally to fix: https://bugs.webkit.org/show_bug.cgi?id=26044
     m_ranges.remove(range);
 }
 

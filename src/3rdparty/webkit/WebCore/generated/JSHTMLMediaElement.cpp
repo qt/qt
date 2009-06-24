@@ -20,12 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLMediaElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLMediaElement.h"
 #include "JSMediaError.h"
@@ -33,10 +30,10 @@
 #include "KURL.h"
 #include "MediaError.h"
 #include "TimeRanges.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -46,7 +43,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLMediaElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLMediaElementTableValues[24] =
+static const HashTableValue JSHTMLMediaElementTableValues[25] =
 {
     { "error", DontDelete|ReadOnly, (intptr_t)jsHTMLMediaElementError, (intptr_t)0 },
     { "src", DontDelete, (intptr_t)jsHTMLMediaElementSrc, (intptr_t)setJSHTMLMediaElementSrc },
@@ -70,6 +67,7 @@ static const HashTableValue JSHTMLMediaElementTableValues[24] =
     { "controls", DontDelete, (intptr_t)jsHTMLMediaElementControls, (intptr_t)setJSHTMLMediaElementControls },
     { "volume", DontDelete, (intptr_t)jsHTMLMediaElementVolume, (intptr_t)setJSHTMLMediaElementVolume },
     { "muted", DontDelete, (intptr_t)jsHTMLMediaElementMuted, (intptr_t)setJSHTMLMediaElementMuted },
+    { "webkitPreservesPitch", DontDelete, (intptr_t)jsHTMLMediaElementWebkitPreservesPitch, (intptr_t)setJSHTMLMediaElementWebkitPreservesPitch },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLMediaElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -78,7 +76,7 @@ static const HashTable JSHTMLMediaElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSHTMLMediaElementTableValues, 0 };
 #else
-    { 67, 63, JSHTMLMediaElementTableValues, 0 };
+    { 68, 63, JSHTMLMediaElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -340,6 +338,13 @@ JSValue jsHTMLMediaElementMuted(ExecState* exec, const Identifier&, const Proper
     return jsBoolean(imp->muted());
 }
 
+JSValue jsHTMLMediaElementWebkitPreservesPitch(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()))->impl());
+    return jsBoolean(imp->webkitPreservesPitch());
+}
+
 JSValue jsHTMLMediaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()))->getConstructor(exec);
@@ -411,6 +416,12 @@ void setJSHTMLMediaElementMuted(ExecState* exec, JSObject* thisObject, JSValue v
 {
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setMuted(value.toBoolean(exec));
+}
+
+void setJSHTMLMediaElementWebkitPreservesPitch(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
+    imp->setWebkitPreservesPitch(value.toBoolean(exec));
 }
 
 JSValue JSHTMLMediaElement::getConstructor(ExecState* exec)

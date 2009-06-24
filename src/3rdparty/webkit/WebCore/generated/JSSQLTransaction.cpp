@@ -20,16 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(DATABASE)
 
 #include "JSSQLTransaction.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SQLTransaction.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

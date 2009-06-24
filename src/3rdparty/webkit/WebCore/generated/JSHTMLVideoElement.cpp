@@ -20,18 +20,15 @@
 
 #include "config.h"
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLVideoElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLVideoElement.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

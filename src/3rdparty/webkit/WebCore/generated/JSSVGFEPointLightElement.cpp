@@ -20,17 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
-#include "SVGElement.h"
 #include "JSSVGFEPointLightElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedNumber.h"
 #include "SVGFEPointLightElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

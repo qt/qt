@@ -139,7 +139,7 @@ namespace QTest {
 
             if (!counter.deref()) {
                 QTest::testLogger->addMessage(QAbstractTestLogger::QSystem,
-                        "Maximum amount of warnings exceeded.");
+                        "Maximum amount of warnings exceeded. Use -maxwarnings to override.");
                 return;
             }
         }

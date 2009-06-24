@@ -21,7 +21,6 @@
 #ifndef JSSQLTransaction_h
 #define JSSQLTransaction_h
 
-
 #if ENABLE(DATABASE)
 
 #include "JSDOMBinding.h"

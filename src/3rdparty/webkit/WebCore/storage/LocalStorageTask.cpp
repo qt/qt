@@ -26,6 +26,8 @@
 #include "config.h"
 #include "LocalStorageTask.h"
 
+#if ENABLE(DOM_STORAGE)
+
 #include "LocalStorage.h"
 #include "LocalStorageArea.h"
 #include "LocalStorageThread.h"
@@ -40,14 +42,6 @@ LocalStorageTask::LocalStorageTask(Type type, PassRefPtr<LocalStorageArea> area)
     ASSERT(m_type == AreaImport || m_type == AreaSync);
 }
 
-LocalStorageTask::LocalStorageTask(Type type, PassRefPtr<LocalStorage> storage)
-    : m_type(type)
-    , m_storage(storage)
-{
-    ASSERT(m_storage);
-    ASSERT(m_type == StorageImport || m_type == StorageSync);
-}
-
 LocalStorageTask::LocalStorageTask(Type type, PassRefPtr<LocalStorageThread> thread)
     : m_type(type)
     , m_thread(thread)
@@ -59,14 +53,6 @@ LocalStorageTask::LocalStorageTask(Type type, PassRefPtr<LocalStorageThread> thr
 void LocalStorageTask::performTask()
 {
     switch (m_type) {
-        case StorageImport:
-            ASSERT(m_storage);
-            m_storage->performImport();
-            break;
-        case StorageSync:
-            ASSERT(m_storage);
-            m_storage->performSync();
-            break;
         case AreaImport:
             ASSERT(m_area);
             m_area->performImport();
@@ -82,3 +68,6 @@ void LocalStorageTask::performTask()
 }
 
 }
+
+#endif // ENABLE(DOM_STORAGE)
+

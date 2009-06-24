@@ -21,10 +21,10 @@
 #ifndef JSSVGClipPathElement_h
 #define JSSVGClipPathElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

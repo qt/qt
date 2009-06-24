@@ -20,16 +20,12 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGFontElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGFontElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

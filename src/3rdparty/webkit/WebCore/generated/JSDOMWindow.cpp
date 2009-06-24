@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSDOMWindow.h"
-
-#include <wtf/GetPtr.h>
 
 #include "BarInfo.h"
 #include "CSSMutableStyleDeclaration.h"
@@ -69,7 +66,6 @@
 #include "JSDOMImplementation.h"
 #include "JSDOMParser.h"
 #include "JSDOMSelection.h"
-#include "JSDOMStringList.h"
 #include "JSDOMWindow.h"
 #include "JSDOMWindowCustom.h"
 #include "JSDOMWindowShell.h"
@@ -98,6 +94,8 @@
 #include "JSHTMLCanvasElement.h"
 #include "JSHTMLCollection.h"
 #include "JSHTMLDListElement.h"
+#include "JSHTMLDataGridColElement.h"
+#include "JSHTMLDataGridElement.h"
 #include "JSHTMLDirectoryElement.h"
 #include "JSHTMLDivElement.h"
 #include "JSHTMLDocument.h"
@@ -214,10 +212,10 @@
 #include "Screen.h"
 #include "Storage.h"
 #include "WebKitPoint.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -227,7 +225,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 
 /* Hash table */
 
-static const HashTableValue JSDOMWindowTableValues[271] =
+static const HashTableValue JSDOMWindowTableValues[272] =
 {
     { "screen", DontDelete|ReadOnly, (intptr_t)jsDOMWindowScreen, (intptr_t)0 },
     { "history", DontDelete|ReadOnly, (intptr_t)jsDOMWindowHistory, (intptr_t)0 },
@@ -358,7 +356,6 @@ static const HashTableValue JSDOMWindowTableValues[271] =
     { "Rect", DontDelete, (intptr_t)jsDOMWindowRectConstructor, (intptr_t)setJSDOMWindowRectConstructor },
     { "StyleSheetList", DontDelete, (intptr_t)jsDOMWindowStyleSheetListConstructor, (intptr_t)setJSDOMWindowStyleSheetListConstructor },
     { "DOMException", DontDelete, (intptr_t)jsDOMWindowDOMExceptionConstructor, (intptr_t)setJSDOMWindowDOMExceptionConstructor },
-    { "DOMStringList", DontDelete, (intptr_t)jsDOMWindowDOMStringListConstructor, (intptr_t)setJSDOMWindowDOMStringListConstructor },
     { "DOMImplementation", DontDelete, (intptr_t)jsDOMWindowDOMImplementationConstructor, (intptr_t)setJSDOMWindowDOMImplementationConstructor },
     { "DocumentFragment", DontDelete, (intptr_t)jsDOMWindowDocumentFragmentConstructor, (intptr_t)setJSDOMWindowDocumentFragmentConstructor },
     { "Document", DontDelete, (intptr_t)jsDOMWindowDocumentConstructor, (intptr_t)setJSDOMWindowDocumentConstructor },
@@ -388,6 +385,8 @@ static const HashTableValue JSDOMWindowTableValues[271] =
     { "HTMLBodyElement", DontDelete, (intptr_t)jsDOMWindowHTMLBodyElementConstructor, (intptr_t)setJSDOMWindowHTMLBodyElementConstructor },
     { "HTMLButtonElement", DontDelete, (intptr_t)jsDOMWindowHTMLButtonElementConstructor, (intptr_t)setJSDOMWindowHTMLButtonElementConstructor },
     { "HTMLCanvasElement", DontDelete, (intptr_t)jsDOMWindowHTMLCanvasElementConstructor, (intptr_t)setJSDOMWindowHTMLCanvasElementConstructor },
+    { "HTMLDataGridElement", DontDelete, (intptr_t)jsDOMWindowHTMLDataGridElementConstructor, (intptr_t)setJSDOMWindowHTMLDataGridElementConstructor },
+    { "HTMLDataGridColElement", DontDelete, (intptr_t)jsDOMWindowHTMLDataGridColElementConstructor, (intptr_t)setJSDOMWindowHTMLDataGridColElementConstructor },
     { "HTMLDListElement", DontDelete, (intptr_t)jsDOMWindowHTMLDListElementConstructor, (intptr_t)setJSDOMWindowHTMLDListElementConstructor },
     { "HTMLDirectoryElement", DontDelete, (intptr_t)jsDOMWindowHTMLDirectoryElementConstructor, (intptr_t)setJSDOMWindowHTMLDirectoryElementConstructor },
     { "HTMLDivElement", DontDelete, (intptr_t)jsDOMWindowHTMLDivElementConstructor, (intptr_t)setJSDOMWindowHTMLDivElementConstructor },
@@ -591,13 +590,6 @@ JSDOMWindow::JSDOMWindow(PassRefPtr<Structure> structure, PassRefPtr<DOMWindow> 
 JSDOMWindow::~JSDOMWindow()
 {
     invalidateEventListeners(impl()->eventListeners());
-}
-
-bool JSDOMWindow::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    if (customGetOwnPropertySlot(exec, propertyName, slot))
-        return true;
-    return getStaticValueSlot<JSDOMWindow, Base>(exec, &JSDOMWindowTable, this, propertyName, slot);
 }
 
 JSValue jsDOMWindowScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -1958,14 +1950,6 @@ JSValue jsDOMWindowDOMExceptionConstructor(ExecState* exec, const Identifier&, c
     return JSDOMCoreException::getConstructor(exec);
 }
 
-JSValue jsDOMWindowDOMStringListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
-        return jsUndefined();
-    UNUSED_PARAM(slot);
-    return JSDOMStringList::getConstructor(exec);
-}
-
 JSValue jsDOMWindowDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
@@ -2196,6 +2180,22 @@ JSValue jsDOMWindowHTMLCanvasElementConstructor(ExecState* exec, const Identifie
         return jsUndefined();
     UNUSED_PARAM(slot);
     return JSHTMLCanvasElement::getConstructor(exec);
+}
+
+JSValue jsDOMWindowHTMLDataGridElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
+    return JSHTMLDataGridElement::getConstructor(exec);
+}
+
+JSValue jsDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
+    return JSHTMLDataGridColElement::getConstructor(exec);
 }
 
 JSValue jsDOMWindowHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -3089,13 +3089,6 @@ JSValue jsDOMWindowSVGUnitTypesConstructor(ExecState* exec, const Identifier&, c
     return JSSVGUnitTypes::getConstructor(exec);
 }
 
-void JSDOMWindow::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
-{
-    if (customPut(exec, propertyName, value, slot))
-        return;
-    lookupPut<JSDOMWindow, Base>(exec, propertyName, value, &JSDOMWindowTable, this, slot);
-}
-
 void setJSDOMWindowLocationbar(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -3327,12 +3320,16 @@ void setJSDOMWindowOpener(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSDOMWindowParent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
     // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "parent"), value);
 }
 
 void setJSDOMWindowTop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
     // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "top"), value);
 }
@@ -4149,14 +4146,6 @@ void setJSDOMWindowDOMExceptionConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DOMException"), value);
 }
 
-void setJSDOMWindowDOMStringListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
-{
-    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
-        return;
-    // Shadowing a built-in constructor
-    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DOMStringList"), value);
-}
-
 void setJSDOMWindowDOMImplementationConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -4387,6 +4376,22 @@ void setJSDOMWindowHTMLCanvasElementConstructor(ExecState* exec, JSObject* thisO
         return;
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLCanvasElement"), value);
+}
+
+void setJSDOMWindowHTMLDataGridElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridElement"), value);
+}
+
+void setJSDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridColElement"), value);
 }
 
 void setJSDOMWindowHTMLDListElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -5275,13 +5280,6 @@ void setJSDOMWindowSVGUnitTypesConstructor(ExecState* exec, JSObject* thisObject
         return;
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGUnitTypes"), value);
-}
-
-void JSDOMWindow::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
-{
-    if (customGetPropertyNames(exec, propertyNames))
-        return;
-     Base::getPropertyNames(exec, propertyNames);
 }
 
 JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionGetSelection(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
