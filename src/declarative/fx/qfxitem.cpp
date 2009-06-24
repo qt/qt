@@ -2176,6 +2176,7 @@ QPointF QFxItem::transformOriginPoint() const
 
 void QFxItem::setFocus(bool focus)
 {
+    Q_UNUSED(focus)
     return;
 }
 
@@ -2475,6 +2476,7 @@ bool QFxItem::activeFocusPanel() const
 
 void QFxItem::setActiveFocusPanel(bool b)
 {
+    Q_UNUSED(b)
 }
 
 bool QFxItem::hasActiveFocus() const

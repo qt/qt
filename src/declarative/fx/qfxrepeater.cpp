@@ -57,6 +57,7 @@ QFxRepeaterPrivate::~QFxRepeaterPrivate()
 
 QFxItem *QFxRepeaterPrivate::addItem(QmlContext *ctxt, QFxItem *lastItem)
 {
+    Q_UNUSED(lastItem)
     Q_Q(QFxRepeater);
     QObject *nobj = component->create(ctxt);
     QFxItem *item = qobject_cast<QFxItem *>(nobj);
