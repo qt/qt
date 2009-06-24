@@ -51,6 +51,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qtconcurrentexception.h>
 #include <QtCore/qwaitcondition.h>
+#include <QtCore/qatomic.h>
+#include <QtCore/qsemaphore.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -61,55 +63,91 @@ QT_MODULE(Core)
 
 namespace QtConcurrent {
 
-// A Semaphore that can wait until all resources are returned.
+// The ThreadEngineSemaphore counts worker threads, and allows one
+// thread to wait for all others to finish. Tested for its use in
+// QtConcurrent, requires more testing for use as a general class.
 class ThreadEngineSemaphore
 {
+private:
+    // The thread count is maintained as an integer in the count atomic
+    // variable. The count can be either positive or negative - a negative
+    // count signals that a thread is waiting on the semaphore.
+    QAtomicInt count;
+    QSemaphore semaphore;
 public:
     ThreadEngineSemaphore()
     :count(0) { }
 
     void acquire()
     {
-        QMutexLocker lock(&mutex);
-        ++count;
+        forever {
+            int localCount = int(count);
+            if (localCount < 0) {
+                if (count.testAndSetOrdered(localCount, localCount -1))
+                    return;
+            } else {
+                if (count.testAndSetOrdered(localCount, localCount + 1))
+                    return;
+            }
+        }
     }
 
     int release()
     {
-        QMutexLocker lock(&mutex);
-        if (--count == 0)
-            waitCondition.wakeAll();
-        return count;
+        forever {
+            int localCount = int(count);
+            if (localCount == -1) {
+                if (count.testAndSetOrdered(-1, 0)) {
+                    semaphore.release();
+                    return 0;
+                }
+            } else if (localCount < 0) {
+                if (count.testAndSetOrdered(localCount, localCount + 1))
+                    return qAbs(localCount + 1);
+            } else {
+                if (count.testAndSetOrdered(localCount, localCount - 1))
+                    return localCount - 1;
+            }
+        }
     }
 
-    // Wait until all resources are released.
+    // Wait until all threads have been released
     void wait()
     {
-        QMutexLocker lock(&mutex);
-        if (count != 0)
-            waitCondition.wait(&mutex);
+        forever {
+            int localCount = int(count);
+            if (localCount == 0)
+                    return;
+
+            if (count.testAndSetOrdered(localCount, -localCount)) {
+                semaphore.acquire();
+                return;
+            }
+        }
     }
 
     int currentCount()
     {
-        return count;
+        return int(count);
     }
 
-    // releases a resource, unless this is the last resource.
-    // returns true if a resource was released.
+    // releases a thread, unless this is the last thread.
+    // returns true if the thread was released.
     bool releaseUnlessLast()
     {
-        QMutexLocker lock(&mutex);
-        if (count == 1)
-            return false;
-        --count;
-        return true;
+        forever {
+            int localCount = int(count);
+            if (qAbs(localCount) == 1) {
+                return false;
+            } else if (localCount < 0) {
+                if (count.testAndSetOrdered(localCount, localCount + 1))
+                    return true;
+            } else {
+                if (count.testAndSetOrdered(localCount, localCount - 1))
+                    return true;
+            }
+        }
     }
-
-private:
-    QMutex mutex;
-    int count;
-    QWaitCondition waitCondition;
 };
 
 enum ThreadFunctionResult { ThrottleThread, ThreadFinished };
