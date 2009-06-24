@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLMapElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLCollection.h"
 #include "HTMLMapElement.h"
 #include "JSHTMLCollection.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -325,10 +325,10 @@ void markActiveObjectsForContext(JSGlobalData& globalData, ScriptExecutionContex
     const HashSet<MessagePort*>& messagePorts = scriptExecutionContext->messagePorts();
     HashSet<MessagePort*>::const_iterator portsEnd = messagePorts.end();
     for (HashSet<MessagePort*>::const_iterator iter = messagePorts.begin(); iter != portsEnd; ++iter) {
-        if ((*iter)->hasPendingActivity()) {
+        // If the message port is remotely entangled, then always mark it as in-use because we can't determine reachability across threads.
+        if (!(*iter)->locallyEntangledPort() || (*iter)->hasPendingActivity()) {
             DOMObject* wrapper = getCachedDOMObjectWrapper(globalData, *iter);
-            // A port with pending activity must have a wrapper to mark its listeners, so no null check.
-            if (!wrapper->marked())
+            if (wrapper && !wrapper->marked())
                 wrapper->mark();
         }
     }
@@ -545,7 +545,7 @@ KURL completeURL(ExecState* exec, const String& relativeURL)
 
 JSValue objectToStringFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
 {
-    return new (exec) PrototypeFunction(exec, 0, propertyName, objectProtoFuncToString);
+    return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 0, propertyName, objectProtoFuncToString);
 }
 
 Structure* getCachedDOMStructure(JSDOMGlobalObject* globalObject, const ClassInfo* classInfo)

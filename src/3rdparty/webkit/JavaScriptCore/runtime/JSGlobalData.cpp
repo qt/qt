@@ -60,6 +60,7 @@ using namespace WTF;
 namespace JSC {
 
 extern const HashTable arrayTable;
+extern const HashTable jsonTable;
 extern const HashTable dateTable;
 extern const HashTable mathTable;
 extern const HashTable numberTable;
@@ -105,6 +106,7 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
     , clientData(0)
     , arrayTable(fastNew<HashTable>(JSC::arrayTable))
     , dateTable(fastNew<HashTable>(JSC::dateTable))
+    , jsonTable(fastNew<HashTable>(JSC::jsonTable))
     , mathTable(fastNew<HashTable>(JSC::mathTable))
     , numberTable(fastNew<HashTable>(JSC::numberTable))
     , regExpTable(fastNew<HashTable>(JSC::regExpTable))
@@ -137,6 +139,7 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
     , head(0)
     , dynamicGlobalObject(0)
     , scopeNodeBeingReparsed(0)
+    , firstStringifierToMark(0)
 {
 #if PLATFORM(MAC)
     startProfilerServerIfNeeded();
@@ -155,17 +158,16 @@ JSGlobalData::~JSGlobalData()
 
     arrayTable->deleteTable();
     dateTable->deleteTable();
+    jsonTable->deleteTable();
     mathTable->deleteTable();
     numberTable->deleteTable();
     regExpTable->deleteTable();
     regExpConstructorTable->deleteTable();
     stringTable->deleteTable();
-#if ENABLE(JIT)
-    lazyNativeFunctionThunk.clear();
-#endif
 
     fastDelete(const_cast<HashTable*>(arrayTable));
     fastDelete(const_cast<HashTable*>(dateTable));
+    fastDelete(const_cast<HashTable*>(jsonTable));
     fastDelete(const_cast<HashTable*>(mathTable));
     fastDelete(const_cast<HashTable*>(numberTable));
     fastDelete(const_cast<HashTable*>(regExpTable));
@@ -221,15 +223,6 @@ JSGlobalData*& JSGlobalData::sharedInstanceInternal()
     static JSGlobalData* sharedInstance;
     return sharedInstance;
 }
-
-#if ENABLE(JIT)
-
-void JSGlobalData::createNativeThunk()
-{
-    lazyNativeFunctionThunk = FunctionBodyNode::createNativeThunk(this);
-}
-
-#endif
 
 // FIXME: We can also detect forms like v1 < v2 ? -1 : 0, reverse comparison, etc.
 const Vector<Instruction>& JSGlobalData::numericCompareFunction(ExecState* exec)

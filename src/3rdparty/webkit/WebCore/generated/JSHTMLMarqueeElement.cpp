@@ -19,15 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLMarqueeElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLMarqueeElement.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

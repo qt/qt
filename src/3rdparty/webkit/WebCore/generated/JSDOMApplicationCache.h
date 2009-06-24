@@ -21,7 +21,6 @@
 #ifndef JSDOMApplicationCache_h
 #define JSDOMApplicationCache_h
 
-
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
 #include "JSDOMBinding.h"

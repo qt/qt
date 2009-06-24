@@ -329,18 +329,16 @@ OSStatus QMainWindowLayout::qtmacToolbarDelegate(EventHandlerCallRef, EventRef e
 void QMainWindowLayout::updateHIToolBarStatus()
 {
     bool useMacToolbar = layoutState.mainWindow->unifiedTitleAndToolBarOnMac();
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
 #ifndef QT_MAC_USE_COCOA
-        if (useMacToolbar) {
-            ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
-                                   kWindowUnifiedTitleAndToolbarAttribute, 0);
-        } else {
-            ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
-                                   0, kWindowUnifiedTitleAndToolbarAttribute);
-        }
-#endif
-        macWindowToolbarShow(layoutState.mainWindow, useMacToolbar);
+    if (useMacToolbar) {
+        ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
+                               kWindowUnifiedTitleAndToolbarAttribute, 0);
+    } else {
+        ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
+                               0, kWindowUnifiedTitleAndToolbarAttribute);
     }
+#endif
+    macWindowToolbarShow(layoutState.mainWindow, useMacToolbar);
 
     layoutState.mainWindow->setUpdatesEnabled(false);  // reduces a little bit of flicker, not all though
     if (!useMacToolbar) {

@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLFrameElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMWindow.h"
 #include "Document.h"
@@ -33,10 +30,10 @@
 #include "JSSVGDocument.h"
 #include "KURL.h"
 #include "SVGDocument.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

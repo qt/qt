@@ -21,7 +21,6 @@
 #ifndef JSXPathException_h
 #define JSXPathException_h
 
-
 #if ENABLE(XPATH)
 
 #include "JSDOMBinding.h"

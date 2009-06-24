@@ -21,13 +21,13 @@
 #ifndef JSSVGNumber_h
 #define JSSVGNumber_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 

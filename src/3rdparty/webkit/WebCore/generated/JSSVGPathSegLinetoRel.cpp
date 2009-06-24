@@ -20,17 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPathSegLinetoRel.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGPathSegLineto.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

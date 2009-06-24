@@ -1017,6 +1017,10 @@ QWebHitTestResult QWebFrame::hitTestContent(const QPoint &pos) const
         return QWebHitTestResult();
 
     HitTestResult result = d->frame->eventHandler()->hitTestResultAtPoint(d->frame->view()->windowToContents(pos), /*allowShadowContent*/ false, /*ignoreClipping*/ true);
+
+    if (result.scrollbar())
+        return QWebHitTestResult();
+
     return QWebHitTestResult(new QWebHitTestResultPrivate(result));
 }
 
@@ -1268,9 +1272,7 @@ QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult 
     WebCore::Frame *wframe = hitTest.targetFrame();
     if (wframe)
         linkTargetFrame = QWebFramePrivate::kit(wframe);
-    Element* urlElement = hitTest.URLElement();
-    if (urlElement)
-        linkTarget = urlElement->target();
+    linkElement = QWebElement(hitTest.URLElement());
 
     isContentEditable = hitTest.isContentEditable();
     isContentSelected = hitTest.isSelected();
@@ -1413,21 +1415,21 @@ QUrl QWebHitTestResult::linkTitle() const
 
 /*!
   \since 4.6
-  Returns the name of the target frame that will load the link if it is activated.
+  Returns the element that represents the link.
 
   \sa linkTargetFrame()
 */
-QString QWebHitTestResult::linkTarget() const
+QWebElement QWebHitTestResult::linkElement() const
 {
     if (!d)
-        return 0;
-    return d->linkTarget;
+        return QWebElement();
+    return d->linkElement;
 }
 
 /*!
     Returns the frame that will load the link if it is activated.
 
-    \sa linkTarget()
+    \sa linkElement()
 */
 QWebFrame *QWebHitTestResult::linkTargetFrame() const
 {
@@ -1509,13 +1511,3 @@ QWebFrame *QWebHitTestResult::frame() const
     return d->frame;
 }
 
-/*!
-    \since 4.6
-    Returns true if the test includes a scrollbar.
-*/
-bool QWebHitTestResult::isScrollBar() const
-{
-    if (!d)
-        return false;
-    return d->isScrollBar;
-}

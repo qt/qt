@@ -19,20 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSInspectorController.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMWindow.h"
 #include "InspectorController.h"
 #include "JSNode.h"
 #include "KURL.h"
 #include "Node.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -731,7 +727,7 @@ JSValue JSC_HOST_CALL jsInspectorControllerPrototypeFunctionAddBreakpoint(ExecSt
         return throwError(exec, TypeError);
     JSInspectorController* castedThisObj = static_cast<JSInspectorController*>(asObject(thisValue));
     InspectorController* imp = static_cast<InspectorController*>(castedThisObj->impl());
-    unsigned sourceID = args.at(0).toInt32(exec);
+    const UString& sourceID = args.at(0).toString(exec);
     unsigned lineNumber = args.at(1).toInt32(exec);
 
     imp->addBreakpoint(sourceID, lineNumber);
@@ -745,7 +741,7 @@ JSValue JSC_HOST_CALL jsInspectorControllerPrototypeFunctionRemoveBreakpoint(Exe
         return throwError(exec, TypeError);
     JSInspectorController* castedThisObj = static_cast<JSInspectorController*>(asObject(thisValue));
     InspectorController* imp = static_cast<InspectorController*>(castedThisObj->impl());
-    unsigned sourceID = args.at(0).toInt32(exec);
+    const UString& sourceID = args.at(0).toString(exec);
     unsigned lineNumber = args.at(1).toInt32(exec);
 
     imp->removeBreakpoint(sourceID, lineNumber);

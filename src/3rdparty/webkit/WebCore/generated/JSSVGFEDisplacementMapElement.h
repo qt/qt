@@ -21,10 +21,10 @@
 #ifndef JSSVGFEDisplacementMapElement_h
 #define JSSVGFEDisplacementMapElement_h
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

@@ -1047,7 +1047,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 QRect ir = subElementRect(SE_PushButtonContents, option, 0);
                 QStyleOptionButton newBtn = *btn;
                 newBtn.rect = QStyle::visualRect(option->direction, option->rect,
-                                                QRect(ir.right() - mbiw - 2, (option->rect.height()/2) - (mbih/2),
+                                                QRect(ir.right() - mbiw - 2,
+                                                      option->rect.top() + (option->rect.height()/2) - (mbih/2),
                                                       mbiw + 1, mbih + 1));
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, painter, widget);
             }
@@ -1655,7 +1656,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                 if (sub & SC_ComboBoxArrow) {
                     QRect subRect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
                     XPThemeData theme(widget, painter, QLatin1String("COMBOBOX"));
-                    theme.rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
+                    theme.rect = subRect;
                     partId = option->direction == Qt::RightToLeft ? CP_DROPDOWNBUTTONLEFT : CP_DROPDOWNBUTTONRIGHT;
 
                     if (!(cmb->state & State_Enabled))

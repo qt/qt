@@ -19,16 +19,13 @@
 */
 
 #include "config.h"
-
 #include "JSHistory.h"
-
-#include <wtf/GetPtr.h>
 
 #include "History.h"
 #include "JSHistoryCustom.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -100,7 +97,7 @@ JSObject* JSHistory::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 
 bool JSHistory::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    if (customGetOwnPropertySlot(exec, propertyName, slot))
+    if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSHistory, Base>(exec, &JSHistoryTable, this, propertyName, slot);
 }
@@ -114,16 +111,9 @@ JSValue jsHistoryLength(ExecState* exec, const Identifier&, const PropertySlot& 
 
 void JSHistory::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     Base::put(exec, propertyName, value, slot);
-}
-
-void JSHistory::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
-{
-    if (customGetPropertyNames(exec, propertyNames))
-        return;
-     Base::getPropertyNames(exec, propertyNames);
 }
 
 JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionBack(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -26,6 +26,8 @@
 #include "config.h"
 #include "LocalStorageArea.h"
 
+#if ENABLE(DOM_STORAGE)
+
 #include "CString.h"
 #include "DOMWindow.h"
 #include "EventNames.h"
@@ -44,19 +46,17 @@ namespace WebCore {
 // Instead, queue up a batch of items to sync and actually do the sync at the following interval.
 static const double LocalStorageSyncInterval = 1.0;
 
-LocalStorageArea::LocalStorageArea(SecurityOrigin* origin, LocalStorage* localStorage)
+LocalStorageArea::LocalStorageArea(SecurityOrigin* origin, PassRefPtr<StorageSyncManager> syncManager)
     : StorageArea(origin)
     , m_syncTimer(this, &LocalStorageArea::syncTimerFired)
     , m_itemsCleared(false)
     , m_finalSyncScheduled(false)
-    , m_localStorage(localStorage)
+    , m_syncManager(syncManager)
     , m_clearItemsWhileSyncing(false)
     , m_syncScheduled(false)
     , m_importComplete(false)
 {
-    ASSERT(m_localStorage);
-    
-    if (!m_localStorage->scheduleImport(this))
+    if (!m_syncManager || !m_syncManager->scheduleImport(this))
         m_importComplete = true;
 }
 
@@ -67,6 +67,10 @@ LocalStorageArea::~LocalStorageArea()
 
 void LocalStorageArea::scheduleFinalSync()
 {
+    ASSERT(isMainThread());
+    if (!m_syncManager)
+        return;
+
     if (m_syncTimer.isActive())
         m_syncTimer.stop();
     else {
@@ -76,112 +80,6 @@ void LocalStorageArea::scheduleFinalSync()
     }
     syncTimerFired(&m_syncTimer);
     m_finalSyncScheduled = true;
-}
-
-unsigned LocalStorageArea::length() const
-{
-    ASSERT(isMainThread());
-
-    if (m_importComplete)
-        return internalLength();
-
-    MutexLocker locker(m_importLock);
-    if (m_importComplete)
-        return internalLength();
-
-    while (!m_importComplete)
-        m_importCondition.wait(m_importLock);
-    ASSERT(m_importComplete);
-    
-    return internalLength();
-}
-
-String LocalStorageArea::key(unsigned index, ExceptionCode& ec) const
-{
-    ASSERT(isMainThread());
-
-    if (m_importComplete)
-        return internalKey(index, ec);
-
-    MutexLocker locker(m_importLock);
-    if (m_importComplete)
-        return internalKey(index, ec);
-
-    while (!m_importComplete)
-        m_importCondition.wait(m_importLock);
-    ASSERT(m_importComplete);
-
-    return internalKey(index, ec);
-}
-
-String LocalStorageArea::getItem(const String& key) const
-{
-    ASSERT(isMainThread());
-
-    if (m_importComplete)
-        return internalGetItem(key);
-
-    MutexLocker locker(m_importLock);
-    if (m_importComplete)
-        return internalGetItem(key);
-
-    String item = internalGetItem(key);
-    if (!item.isNull())
-        return item;
-
-    while (!m_importComplete)
-        m_importCondition.wait(m_importLock);
-    ASSERT(m_importComplete);
-
-    return internalGetItem(key);
-}
-
-void LocalStorageArea::setItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
-{
-    ASSERT(isMainThread());
-
-    if (m_importComplete) {
-        internalSetItem(key, value, ec, frame);
-        return;
-    }
-
-    MutexLocker locker(m_importLock);
-    internalSetItem(key, value, ec, frame);
-}
-
-void LocalStorageArea::removeItem(const String& key, Frame* frame)
-{    
-    ASSERT(isMainThread());
-
-    if (m_importComplete) {
-        internalRemoveItem(key, frame);
-        return;
-    }
-
-    MutexLocker locker(m_importLock);
-    internalRemoveItem(key, frame);
-}
-
-bool LocalStorageArea::contains(const String& key) const
-{
-    ASSERT(isMainThread());
-
-    if (m_importComplete)
-        return internalContains(key);
-
-    MutexLocker locker(m_importLock);
-    if (m_importComplete)
-        return internalContains(key);
-
-    bool contained = internalContains(key);
-    if (contained)
-        return true;
-
-    while (!m_importComplete)
-        m_importCondition.wait(m_importLock);
-    ASSERT(m_importComplete);
-
-    return internalContains(key);
 }
 
 void LocalStorageArea::itemChanged(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame)
@@ -267,6 +165,8 @@ void LocalStorageArea::scheduleClear()
 void LocalStorageArea::syncTimerFired(Timer<LocalStorageArea>*)
 {
     ASSERT(isMainThread());
+    if (!m_syncManager)
+        return;
 
     HashMap<String, String>::iterator it = m_changedItems.begin();
     HashMap<String, String>::iterator end = m_changedItems.end();
@@ -290,7 +190,7 @@ void LocalStorageArea::syncTimerFired(Timer<LocalStorageArea>*)
             // performSync function.
             disableSuddenTermination();
 
-            m_localStorage->scheduleSync(this);
+            m_syncManager->scheduleSync(this);
         }
     }
 
@@ -305,9 +205,11 @@ void LocalStorageArea::performImport()
 {
     ASSERT(!isMainThread());
     ASSERT(!m_database.isOpen());
+    if (!m_syncManager)
+        return;
 
-    String databaseFilename = m_localStorage->fullDatabaseFilename(securityOrigin());
-    
+    String databaseFilename = m_syncManager->fullDatabaseFilename(securityOrigin());
+
     if (databaseFilename.isEmpty()) {
         LOG_ERROR("Filename for local storage database is empty - cannot open for persistent storage");
         markImported();
@@ -366,6 +268,27 @@ void LocalStorageArea::markImported()
     MutexLocker locker(m_importLock);
     m_importComplete = true;
     m_importCondition.signal();
+}
+
+// FIXME: In the future, we should allow use of localStorage while it's importing (when safe to do so).
+// Blocking everything until the import is complete is by far the simplest and safest thing to do, but
+// there is certainly room for safe optimization: Key/length will never be able to make use of such an
+// optimization (since the order of iteration can change as items are being added). Get can return any
+// item currently in the map. Get/remove can work whether or not it's in the map, but we'll need a list
+// of items the import should not overwrite. Clear can also work, but it'll need to kill the import
+// job first.
+void LocalStorageArea::blockUntilImportComplete() const
+{
+    ASSERT(isMainThread());
+
+    // Fast path to avoid locking.
+    if (m_importComplete)
+        return;
+
+    MutexLocker locker(m_importLock);
+    while (!m_importComplete)
+        m_importCondition.wait(m_importLock);
+    ASSERT(m_importComplete);
 }
 
 void LocalStorageArea::sync(bool clearItems, const HashMap<String, String>& items)
@@ -450,3 +373,6 @@ void LocalStorageArea::performSync()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
+

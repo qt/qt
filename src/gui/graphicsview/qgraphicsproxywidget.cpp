@@ -843,7 +843,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         // ### Qt 4.5: this code must also go into a reimplementation
         // of inputMethodEvent().
         QWidget *focusWidget = d->widget->focusWidget();
-        if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+        if (focusWidget && focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
             QApplication::sendEvent(focusWidget, event);
         break;
     }

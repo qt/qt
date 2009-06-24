@@ -21,7 +21,6 @@
 #ifndef JSHTMLSourceElement_h
 #define JSHTMLSourceElement_h
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLElement.h"

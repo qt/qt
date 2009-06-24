@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSMessagePort.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -33,9 +30,8 @@
 #include "JSMessagePort.h"
 #include "MessagePort.h"
 #include "PlatformString.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -45,20 +41,18 @@ ASSERT_CLASS_FITS_IN_CELL(JSMessagePort);
 
 /* Hash table */
 
-static const HashTableValue JSMessagePortTableValues[5] =
+static const HashTableValue JSMessagePortTableValues[3] =
 {
-    { "active", DontDelete|ReadOnly, (intptr_t)jsMessagePortActive, (intptr_t)0 },
     { "onmessage", DontDelete, (intptr_t)jsMessagePortOnmessage, (intptr_t)setJSMessagePortOnmessage },
-    { "onclose", DontDelete, (intptr_t)jsMessagePortOnclose, (intptr_t)setJSMessagePortOnclose },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsMessagePortConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static const HashTable JSMessagePortTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 7, JSMessagePortTableValues, 0 };
+    { 1, JSMessagePortTableValues, 0 };
 #else
-    { 8, 7, JSMessagePortTableValues, 0 };
+    { 4, 3, JSMessagePortTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -101,10 +95,9 @@ bool JSMessagePortConstructor::getOwnPropertySlot(ExecState* exec, const Identif
 
 /* Hash table for prototype */
 
-static const HashTableValue JSMessagePortPrototypeTableValues[8] =
+static const HashTableValue JSMessagePortPrototypeTableValues[7] =
 {
     { "postMessage", DontDelete|Function, (intptr_t)jsMessagePortPrototypeFunctionPostMessage, (intptr_t)2 },
-    { "startConversation", DontDelete|Function, (intptr_t)jsMessagePortPrototypeFunctionStartConversation, (intptr_t)1 },
     { "start", DontDelete|Function, (intptr_t)jsMessagePortPrototypeFunctionStart, (intptr_t)0 },
     { "close", DontDelete|Function, (intptr_t)jsMessagePortPrototypeFunctionClose, (intptr_t)0 },
     { "addEventListener", DontDelete|Function, (intptr_t)jsMessagePortPrototypeFunctionAddEventListener, (intptr_t)3 },
@@ -115,9 +108,9 @@ static const HashTableValue JSMessagePortPrototypeTableValues[8] =
 
 static const HashTable JSMessagePortPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 127, JSMessagePortPrototypeTableValues, 0 };
+    { 31, JSMessagePortPrototypeTableValues, 0 };
 #else
-    { 18, 15, JSMessagePortPrototypeTableValues, 0 };
+    { 17, 15, JSMessagePortPrototypeTableValues, 0 };
 #endif
 
 static const HashTable* getJSMessagePortPrototypeTable(ExecState* exec)
@@ -163,29 +156,11 @@ bool JSMessagePort::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSMessagePort, Base>(exec, getJSMessagePortTable(exec), this, propertyName, slot);
 }
 
-JSValue jsMessagePortActive(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    UNUSED_PARAM(exec);
-    MessagePort* imp = static_cast<MessagePort*>(static_cast<JSMessagePort*>(asObject(slot.slotBase()))->impl());
-    return jsBoolean(imp->active());
-}
-
 JSValue jsMessagePortOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     MessagePort* imp = static_cast<MessagePort*>(static_cast<JSMessagePort*>(asObject(slot.slotBase()))->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
-            return jsFunction;
-    }
-    return jsNull();
-}
-
-JSValue jsMessagePortOnclose(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    UNUSED_PARAM(exec);
-    MessagePort* imp = static_cast<MessagePort*>(static_cast<JSMessagePort*>(asObject(slot.slotBase()))->impl());
-    if (EventListener* listener = imp->onclose()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
     }
@@ -209,16 +184,6 @@ void setJSMessagePortOnmessage(ExecState* exec, JSObject* thisObject, JSValue va
     if (!globalObject)
         return;
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
-}
-
-void setJSMessagePortOnclose(ExecState* exec, JSObject* thisObject, JSValue value)
-{
-    UNUSED_PARAM(exec);
-    MessagePort* imp = static_cast<MessagePort*>(static_cast<JSMessagePort*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
-    if (!globalObject)
-        return;
-    imp->setOnclose(globalObject->createJSAttributeEventListener(value));
 }
 
 JSValue JSMessagePort::getConstructor(ExecState* exec)
@@ -248,15 +213,6 @@ JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionPostMessage(ExecState* exec,
     imp->postMessage(message, messagePort, ec);
     setDOMException(exec, ec);
     return jsUndefined();
-}
-
-JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionStartConversation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSMessagePort::s_info))
-        return throwError(exec, TypeError);
-    JSMessagePort* castedThisObj = static_cast<JSMessagePort*>(asObject(thisValue));
-    return castedThisObj->startConversation(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

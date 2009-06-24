@@ -27,6 +27,7 @@ QCLuceneSortPrivate::QCLuceneSortPrivate (const QCLuceneSortPrivate &other)
     : QSharedData()
 {
     sort = _CL_POINTER(other.sort);
+    deleteCLuceneSort = other.deleteCLuceneSort;
 }
 
 QCLuceneSortPrivate::~QCLuceneSortPrivate()

@@ -478,15 +478,12 @@ static inline bool isAlien(QWidget *widget)
 
 // ######## move to QApplicationPrivate
 // Default application palettes and fonts (per widget type)
-
-typedef QHash<QByteArray, QPalette> PaletteHash;
 Q_GLOBAL_STATIC(PaletteHash, app_palettes)
 PaletteHash *qt_app_palettes_hash()
 {
     return app_palettes();
 }
 
-typedef QHash<QByteArray, QFont> FontHash;
 Q_GLOBAL_STATIC(FontHash, app_fonts)
 FontHash *qt_app_fonts_hash()
 {

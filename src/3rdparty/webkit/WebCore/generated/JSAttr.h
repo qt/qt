@@ -21,8 +21,9 @@
 #ifndef JSAttr_h
 #define JSAttr_h
 
-#include "JSNode.h"
 #include "Attr.h"
+#include "JSNode.h"
+
 namespace WebCore {
 
 class Attr;

@@ -49,7 +49,7 @@ namespace JSC {
 
     class ExecState;
 
-    enum CodeType { GlobalCode, EvalCode, FunctionCode };
+    enum CodeType { GlobalCode, EvalCode, FunctionCode, NativeCode };
 
     static ALWAYS_INLINE int missingThisObjectMarker() { return std::numeric_limits<int>::max(); }
 
@@ -59,7 +59,7 @@ namespace JSC {
         uint32_t target;
         uint32_t scopeDepth;
 #if ENABLE(JIT)
-        MacroAssembler::CodeLocationLabel nativeCode;
+        CodeLocationLabel nativeCode;
 #endif
     };
 
@@ -95,10 +95,9 @@ namespace JSC {
         }
     
         unsigned bytecodeIndex;
-        MacroAssembler::CodeLocationNearCall callReturnLocation;
-        MacroAssembler::CodeLocationDataLabelPtr hotPathBegin;
-        MacroAssembler::CodeLocationNearCall hotPathOther;
-        MacroAssembler::CodeLocationLabel coldPathOther;
+        CodeLocationNearCall callReturnLocation;
+        CodeLocationDataLabelPtr hotPathBegin;
+        CodeLocationNearCall hotPathOther;
         CodeBlock* callee;
         unsigned position;
         
@@ -112,8 +111,8 @@ namespace JSC {
         {
         }
 
-        MacroAssembler::CodeLocationCall callReturnLocation;
-        MacroAssembler::CodeLocationDataLabelPtr structureLabel;
+        CodeLocationCall callReturnLocation;
+        CodeLocationDataLabelPtr structureLabel;
         Structure* cachedStructure;
     };
 
@@ -160,17 +159,17 @@ namespace JSC {
 
     inline void* getStructureStubInfoReturnLocation(StructureStubInfo* structureStubInfo)
     {
-        return structureStubInfo->callReturnLocation.calleeReturnAddressValue();
+        return structureStubInfo->callReturnLocation.executableAddress();
     }
 
     inline void* getCallLinkInfoReturnLocation(CallLinkInfo* callLinkInfo)
     {
-        return callLinkInfo->callReturnLocation.calleeReturnAddressValue();
+        return callLinkInfo->callReturnLocation.executableAddress();
     }
 
     inline void* getMethodCallLinkInfoReturnLocation(MethodCallLinkInfo* methodCallLinkInfo)
     {
-        return methodCallLinkInfo->callReturnLocation.calleeReturnAddressValue();
+        return methodCallLinkInfo->callReturnLocation.executableAddress();
     }
 
     inline unsigned getCallReturnOffset(CallReturnOffsetToBytecodeIndex* pc)
@@ -218,6 +217,7 @@ namespace JSC {
     class CodeBlock {
         friend class JIT;
     public:
+        CodeBlock(ScopeNode* ownerNode);
         CodeBlock(ScopeNode* ownerNode, CodeType, PassRefPtr<SourceProvider>, unsigned sourceOffset);
         ~CodeBlock();
 
@@ -287,25 +287,25 @@ namespace JSC {
             m_linkedCallerList.shrink(lastPos);
         }
 
-        StructureStubInfo& getStubInfo(void* returnAddress)
+        StructureStubInfo& getStubInfo(ReturnAddressPtr returnAddress)
         {
-            return *(binaryChop<StructureStubInfo, void*, getStructureStubInfoReturnLocation>(m_structureStubInfos.begin(), m_structureStubInfos.size(), returnAddress));
+            return *(binaryChop<StructureStubInfo, void*, getStructureStubInfoReturnLocation>(m_structureStubInfos.begin(), m_structureStubInfos.size(), returnAddress.value()));
         }
 
-        CallLinkInfo& getCallLinkInfo(void* returnAddress)
+        CallLinkInfo& getCallLinkInfo(ReturnAddressPtr returnAddress)
         {
-            return *(binaryChop<CallLinkInfo, void*, getCallLinkInfoReturnLocation>(m_callLinkInfos.begin(), m_callLinkInfos.size(), returnAddress));
+            return *(binaryChop<CallLinkInfo, void*, getCallLinkInfoReturnLocation>(m_callLinkInfos.begin(), m_callLinkInfos.size(), returnAddress.value()));
         }
 
-        MethodCallLinkInfo& getMethodCallLinkInfo(void* returnAddress)
+        MethodCallLinkInfo& getMethodCallLinkInfo(ReturnAddressPtr returnAddress)
         {
-            return *(binaryChop<MethodCallLinkInfo, void*, getMethodCallLinkInfoReturnLocation>(m_methodCallLinkInfos.begin(), m_methodCallLinkInfos.size(), returnAddress));
+            return *(binaryChop<MethodCallLinkInfo, void*, getMethodCallLinkInfoReturnLocation>(m_methodCallLinkInfos.begin(), m_methodCallLinkInfos.size(), returnAddress.value()));
         }
 
-        unsigned getBytecodeIndex(CallFrame* callFrame, void* nativePC)
+        unsigned getBytecodeIndex(CallFrame* callFrame, ReturnAddressPtr returnAddress)
         {
             reparseForExceptionInfoIfNecessary(callFrame);
-            return binaryChop<CallReturnOffsetToBytecodeIndex, unsigned, getCallReturnOffset>(m_exceptionInfo->m_callReturnIndexVector.begin(), m_exceptionInfo->m_callReturnIndexVector.size(), ownerNode()->generatedJITCode().offsetOf(nativePC))->bytecodeIndex;
+            return binaryChop<CallReturnOffsetToBytecodeIndex, unsigned, getCallReturnOffset>(m_exceptionInfo->m_callReturnIndexVector.begin(), m_exceptionInfo->m_callReturnIndexVector.size(), ownerNode()->generatedJITCode().offsetOf(returnAddress.value()))->bytecodeIndex;
         }
         
         bool functionRegisterForBytecodeOffset(unsigned bytecodeOffset, int& functionRegisterIndex);
@@ -340,8 +340,8 @@ namespace JSC {
 
         CodeType codeType() const { return m_codeType; }
 
-        SourceProvider* source() const { return m_source.get(); }
-        unsigned sourceOffset() const { return m_sourceOffset; }
+        SourceProvider* source() const { ASSERT(m_codeType != NativeCode); return m_source.get(); }
+        unsigned sourceOffset() const { ASSERT(m_codeType != NativeCode); return m_sourceOffset; }
 
         size_t numberOfJumpTargets() const { return m_jumpTargets.size(); }
         void addJumpTarget(unsigned jumpTarget) { m_jumpTargets.append(jumpTarget); }
@@ -433,7 +433,7 @@ namespace JSC {
 
         SymbolTable& symbolTable() { return m_symbolTable; }
 
-        EvalCodeCache& evalCodeCache() { createRareDataIfNecessary(); return m_rareData->m_evalCodeCache; }
+        EvalCodeCache& evalCodeCache() { ASSERT(m_codeType != NativeCode); createRareDataIfNecessary(); return m_rareData->m_evalCodeCache; }
 
         void shrinkToFit();
 
@@ -457,6 +457,7 @@ namespace JSC {
 
         void createRareDataIfNecessary()
         {
+            ASSERT(m_codeType != NativeCode); 
             if (!m_rareData)
                 m_rareData.set(new RareData);
         }

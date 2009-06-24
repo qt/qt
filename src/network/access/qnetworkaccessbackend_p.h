@@ -166,7 +166,6 @@ protected:
     // these functions control the downstream mechanism
     // that is, data that has come via the connection and is going out the backend
     qint64 nextDownstreamBlockSize() const;
-    qint64 downstreamBytesToConsume() const;
     void writeDownstreamData(const QByteArray &data);
 
 public slots:
