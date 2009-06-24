@@ -5377,7 +5377,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
             touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
             if (touchPoint.pressure() < qreal(0.))
-                touchPoint.setPressure(qreal(0.));
+                touchPoint.setPressure(qreal(1.));
             d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }
