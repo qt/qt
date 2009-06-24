@@ -2130,18 +2130,6 @@ void QMacStyle::polish(QWidget* w)
         }
     }
 
-    // Adjust the lineedit of the editable combo box
-    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_3) {
-        if (QLineEdit *lineEdit = qobject_cast<QLineEdit *>(w)) {
-            if (qobject_cast<QComboBox *>(lineEdit->parentWidget())
-                    && !lineEdit->testAttribute(Qt::WA_SetFont)) {
-                QFont font = lineEdit->font();
-                font.setPointSize(font.pointSize() - 1);
-                lineEdit->setFont(font);
-            }
-        }
-    }
-
     if (QTabBar *tb = qobject_cast<QTabBar*>(w)) {
         if (tb->documentMode()) {
             w->setAttribute(Qt::WA_Hover);
@@ -2376,12 +2364,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             GetThemeMetric(kThemeMetricScrollBarWidth, &ret);
             break;
         case QAquaSizeMini:
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3) && 0
-            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_3) {
-                GetThemeMetric(kThemeMetricMiniScrollBarWidth, &ret);
-                break;
-            }
-#endif
         case QAquaSizeSmall:
             GetThemeMetric(kThemeMetricSmallScrollBarWidth, &ret);
             break;
@@ -3756,105 +3738,97 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     return;
                 }
             }
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-            if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_3) {
-                HIThemeTabDrawInfo tdi;
-                tdi.version = 1;
-                tdi.style = kThemeTabNonFront;
-                tdi.direction = getTabDirection(tabOpt->shape);
-                switch (d->aquaSizeConstrain(opt, w)) {
-                default:
-                case QAquaSizeUnknown:
-                case QAquaSizeLarge:
-                    tdi.size = kHIThemeTabSizeNormal;
-                    break;
-                case QAquaSizeSmall:
-                    tdi.size = kHIThemeTabSizeSmall;
-                    break;
-                case QAquaSizeMini:
-                    tdi.size = kHIThemeTabSizeMini;
-                    break;
-                }
-                bool verticalTabs = tdi.direction == kThemeTabWest || tdi.direction == kThemeTabEast;
-                QRect tabRect = tabOpt->rect;
-
-                if ((!verticalTabs && tabRect.height() > 21 || verticalTabs && tabRect.width() > 21)) {
-                    d->drawPantherTab(tabOpt, p, w);
-                    break;
-                }
-
-                bool selected = tabOpt->state & State_Selected;
-                if (selected) {
-                    if (!(tabOpt->state & State_Active))
-                        tdi.style = kThemeTabFrontUnavailable;
-                    else if (!(tabOpt->state & State_Enabled))
-                        tdi.style = kThemeTabFrontInactive;
-                    else
-                        tdi.style = kThemeTabFront;
-                } else if (!(tabOpt->state & State_Active)) {
-                    tdi.style = kThemeTabNonFrontUnavailable;
-                } else if (!(tabOpt->state & State_Enabled)) {
-                    tdi.style = kThemeTabNonFrontInactive;
-                } else if (tabOpt->state & State_Sunken) {
-                    tdi.style = kThemeTabFrontInactive; // (should be kThemeTabNonFrontPressed)
-                }
-                if (tabOpt->state & State_HasFocus)
-                    tdi.adornment = kHIThemeTabAdornmentFocus;
-                else
-                    tdi.adornment = kHIThemeTabAdornmentNone;
-                tdi.kind = kHIThemeTabKindNormal;
-                if (!verticalTabs)
-                    tabRect.setY(tabRect.y() - 1);
-                else
-                    tabRect.setX(tabRect.x() - 1);
-                QStyleOptionTab::TabPosition tp = tabOpt->position;
-                QStyleOptionTab::SelectedPosition sp = tabOpt->selectedPosition;
-                if (tabOpt->direction == Qt::RightToLeft && !verticalTabs) {
-                    if (sp == QStyleOptionTab::NextIsSelected)
-                        sp = QStyleOptionTab::PreviousIsSelected;
-                    else if (sp == QStyleOptionTab::PreviousIsSelected)
-                        sp = QStyleOptionTab::NextIsSelected;
-                    switch (tp) {
-                        case QStyleOptionTab::Beginning:
-                            tp = QStyleOptionTab::End;
-                            break;
-                        case QStyleOptionTab::End:
-                            tp = QStyleOptionTab::Beginning;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                switch (tp) {
-                    case QStyleOptionTab::Beginning:
-                        tdi.position = kHIThemeTabPositionFirst;
-                        if (sp != QStyleOptionTab::NextIsSelected)
-                            tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
-                        break;
-                    case QStyleOptionTab::Middle:
-                        tdi.position = kHIThemeTabPositionMiddle;
-                        if (selected)
-                            tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
-                        if (sp != QStyleOptionTab::NextIsSelected)  // Also when we're selected.
-                            tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
-                        break;
-                    case QStyleOptionTab::End:
-                        tdi.position = kHIThemeTabPositionLast;
-                        if (selected)
-                            tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
-                        break;
-                    case QStyleOptionTab::OnlyOneTab:
-                        tdi.position = kHIThemeTabPositionOnly;
-                        break;
-                }
-                HIRect hirect = qt_hirectForQRect(tabRect);
-                HIThemeDrawTab(&hirect, &tdi, cg, kHIThemeOrientationNormal, 0);
-            } else
-#endif
-            {
-                d->drawPantherTab(tabOpt, p, w);
+            HIThemeTabDrawInfo tdi;
+            tdi.version = 1;
+            tdi.style = kThemeTabNonFront;
+            tdi.direction = getTabDirection(tabOpt->shape);
+            switch (d->aquaSizeConstrain(opt, w)) {
+            default:
+            case QAquaSizeUnknown:
+            case QAquaSizeLarge:
+                tdi.size = kHIThemeTabSizeNormal;
+                break;
+            case QAquaSizeSmall:
+                tdi.size = kHIThemeTabSizeSmall;
+                break;
+            case QAquaSizeMini:
+                tdi.size = kHIThemeTabSizeMini;
+                break;
             }
+            bool verticalTabs = tdi.direction == kThemeTabWest || tdi.direction == kThemeTabEast;
+            QRect tabRect = tabOpt->rect;
+
+            if ((!verticalTabs && tabRect.height() > 21 || verticalTabs && tabRect.width() > 21)) {
+                d->drawPantherTab(tabOpt, p, w);
+                break;
+            }
+
+            bool selected = tabOpt->state & State_Selected;
+            if (selected) {
+                if (!(tabOpt->state & State_Active))
+                    tdi.style = kThemeTabFrontUnavailable;
+                else if (!(tabOpt->state & State_Enabled))
+                    tdi.style = kThemeTabFrontInactive;
+                else
+                    tdi.style = kThemeTabFront;
+            } else if (!(tabOpt->state & State_Active)) {
+                tdi.style = kThemeTabNonFrontUnavailable;
+            } else if (!(tabOpt->state & State_Enabled)) {
+                tdi.style = kThemeTabNonFrontInactive;
+            } else if (tabOpt->state & State_Sunken) {
+                tdi.style = kThemeTabFrontInactive; // (should be kThemeTabNonFrontPressed)
+            }
+            if (tabOpt->state & State_HasFocus)
+                tdi.adornment = kHIThemeTabAdornmentFocus;
+            else
+                tdi.adornment = kHIThemeTabAdornmentNone;
+            tdi.kind = kHIThemeTabKindNormal;
+            if (!verticalTabs)
+                tabRect.setY(tabRect.y() - 1);
+            else
+                tabRect.setX(tabRect.x() - 1);
+            QStyleOptionTab::TabPosition tp = tabOpt->position;
+            QStyleOptionTab::SelectedPosition sp = tabOpt->selectedPosition;
+            if (tabOpt->direction == Qt::RightToLeft && !verticalTabs) {
+                if (sp == QStyleOptionTab::NextIsSelected)
+                    sp = QStyleOptionTab::PreviousIsSelected;
+                else if (sp == QStyleOptionTab::PreviousIsSelected)
+                    sp = QStyleOptionTab::NextIsSelected;
+                switch (tp) {
+                        case QStyleOptionTab::Beginning:
+                    tp = QStyleOptionTab::End;
+                    break;
+                        case QStyleOptionTab::End:
+                    tp = QStyleOptionTab::Beginning;
+                    break;
+                        default:
+                    break;
+                }
+            }
+            switch (tp) {
+                    case QStyleOptionTab::Beginning:
+                tdi.position = kHIThemeTabPositionFirst;
+                if (sp != QStyleOptionTab::NextIsSelected)
+                    tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
+                break;
+                    case QStyleOptionTab::Middle:
+                tdi.position = kHIThemeTabPositionMiddle;
+                if (selected)
+                    tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
+                if (sp != QStyleOptionTab::NextIsSelected)  // Also when we're selected.
+                    tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
+                break;
+                    case QStyleOptionTab::End:
+                tdi.position = kHIThemeTabPositionLast;
+                if (selected)
+                    tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
+                break;
+                    case QStyleOptionTab::OnlyOneTab:
+                tdi.position = kHIThemeTabPositionOnly;
+                break;
+            }
+            HIRect hirect = qt_hirectForQRect(tabRect);
+            HIThemeDrawTab(&hirect, &tdi, cg, kHIThemeOrientationNormal, 0);
         }
         break;
     case CE_TabBarTabLabel:
@@ -5159,12 +5133,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     bkind = kThemeBevelButton;
                     break;
                 case QAquaSizeMini:
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3) && 0
-                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_3) {
-                        bkind = kThemeMiniBevelButton;
-                        break;
-                    }
-#endif
                 case QAquaSizeSmall:
                     bkind = kThemeSmallBevelButton;
                     break;
