@@ -156,7 +156,6 @@ void QFxPaintedItem::setSmooth(bool smooth)
     Q_D(QFxPaintedItem);
     if (d->smooth == smooth) return;
     d->smooth = smooth;
-    clearCache();
     update();
 }
 
