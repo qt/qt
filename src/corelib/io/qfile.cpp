@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1026,7 +1026,7 @@ bool QFile::open(OpenMode mode)
     \bold{Warning:}
     \list 1
         \o If \a fh is \c stdin, \c stdout, or \c stderr, you may not be able
-           to seek(). See QIODevice::isSequentialAccess() for more information.
+           to seek(). See QIODevice::isSequential() for more information.
         \o Since this function opens the file without specifying the file name,
            you cannot use this QFile with a QFileInfo.
     \endlist

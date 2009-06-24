@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,11 +82,11 @@ QNetworkAccessFtpBackendFactory::create(QNetworkAccessManager::Operation op,
     return 0;
 }
 
-class QNetworkAccessFtpFtp: public QFtp, public QNetworkAccessCache::CacheableObject
+class QNetworkAccessCachedFtpConnection: public QFtp, public QNetworkAccessCache::CacheableObject
 {
     // Q_OBJECT
 public:
-    QNetworkAccessFtpFtp()
+    QNetworkAccessCachedFtpConnection()
     {
         setExpires(true);
         setShareable(false);
@@ -148,11 +148,11 @@ void QNetworkAccessFtpBackend::open()
     }
     state = LoggingIn;
 
-    QNetworkAccessCache* cache = QNetworkAccessManagerPrivate::getCache(this);
+    QNetworkAccessCache* objectCache = QNetworkAccessManagerPrivate::getObjectCache(this);
     QByteArray cacheKey = makeCacheKey(url);
-    if (!cache->requestEntry(cacheKey, this,
+    if (!objectCache->requestEntry(cacheKey, this,
                              SLOT(ftpConnectionReady(QNetworkAccessCache::CacheableObject*)))) {
-        ftp = new QNetworkAccessFtpFtp;
+        ftp = new QNetworkAccessCachedFtpConnection;
 #ifndef QT_NO_NETWORKPROXY
         if (proxy.type() == QNetworkProxy::FtpCachingProxy)
             ftp->setProxy(proxy.hostName(), proxy.port());
@@ -160,7 +160,7 @@ void QNetworkAccessFtpBackend::open()
         ftp->connectToHost(url.host(), url.port(DefaultFtpPort));
         ftp->login(url.userName(), url.password());
 
-        cache->addEntry(cacheKey, ftp);
+        objectCache->addEntry(cacheKey, ftp);
         ftpConnectionReady(ftp);
     }
 
@@ -207,7 +207,7 @@ void QNetworkAccessFtpBackend::downstreamReadyWrite()
 
 void QNetworkAccessFtpBackend::ftpConnectionReady(QNetworkAccessCache::CacheableObject *o)
 {
-    ftp = static_cast<QNetworkAccessFtpFtp *>(o);
+    ftp = static_cast<QNetworkAccessCachedFtpConnection *>(o);
     connect(ftp, SIGNAL(done(bool)), SLOT(ftpDone()));
     connect(ftp, SIGNAL(rawCommandReply(int,QString)), SLOT(ftpRawCommandReply(int,QString)));
     connect(ftp, SIGNAL(readyRead()), SLOT(ftpReadyRead()));
@@ -227,7 +227,7 @@ void QNetworkAccessFtpBackend::disconnectFromFtp()
         disconnect(ftp, 0, this, 0);
 
         QByteArray key = makeCacheKey(url());
-        QNetworkAccessManagerPrivate::getCache(this)->releaseEntry(key);
+        QNetworkAccessManagerPrivate::getObjectCache(this)->releaseEntry(key);
 
         ftp = 0;
     }
@@ -278,7 +278,7 @@ void QNetworkAccessFtpBackend::ftpDone()
 
         // we're not connected, so remove the cache entry:
         QByteArray key = makeCacheKey(url());
-        QNetworkAccessManagerPrivate::getCache(this)->removeEntry(key);
+        QNetworkAccessManagerPrivate::getObjectCache(this)->removeEntry(key);
 
         disconnect(ftp, 0, this, 0);
         ftp->dispose();

@@ -2,7 +2,7 @@
     This file is part of the KDE project
     Copyright (C) 2005-2007 Matthias Kretz <kretz@kde.org>
     Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-   Contact: Qt Software Information (qt-info@nokia.com)
+    Contact: Nokia Corporation (qt-info@nokia.com)
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -60,7 +60,7 @@
     through a function call, e.g., through
     \l{Phonon::MediaObject::}{play()}, you cannot be sure that the
     change has taken place before you receive the
-    \l{Phonon::MediaObject::}{stateChanged()} signal. 
+    \l{Phonon::MediaObject::}{stateChanged()} signal.
 
     A media object can at any time change into any state, regardless
     of the state it previously had. \omit In the
@@ -192,14 +192,14 @@
     computer on the network.
 
     \value EffectType An audio effect (\l{Phonon::}{EffectDescription}).
-    \omitvalue SubtitleType 
-    \omitvalue AudioCaptureDeviceType 
-    \omitvalue AudioChannelType 
+    \omitvalue SubtitleType
+    \omitvalue AudioCaptureDeviceType
+    \omitvalue AudioChannelType
 */
 
 /*!
     \typedef Phonon::AudioOutputDevice
-    \relates Phonon::ObjectDescription    
+    \relates Phonon::ObjectDescription
 
     This typedef of \l{Phonon::}{ObjectDescription} describes an audio output
     device, such as soundcards (with different drivers), sound servers, or other
@@ -223,7 +223,7 @@
     \fn Phonon::phononVersion()
     \inmodule Phonon
     \since 4.5
-    
+
     Returns the Phonon version.
 */
 
@@ -362,7 +362,7 @@
     property() is called.
 
     Currently, Qt backends do not use properties for their object
-    descriptions. 
+    descriptions.
 
     \sa property()
 */
@@ -370,7 +370,7 @@
 /*!
     \fn inline bool Phonon::ObjectDescription::isValid() const
 
-    Returns true if the device or effect described exists. 
+    Returns true if the device or effect described exists.
 
     An ObjectDescription that is invalid, will also have an
     index() of -1.
@@ -1932,7 +1932,7 @@
     \fn void Phonon::MediaObject::clearQueue()
 
     Clears the queue of media sources.
-    
+
     \sa queue(), enqueue()
 */
 
@@ -2096,7 +2096,7 @@
 /*!
     \fn void Phonon::MediaObject::hasVideoChanged(bool hasVideo)
 
-    Emitted whenever the return value of hasVideo() changes, i.e., 
+    Emitted whenever the return value of hasVideo() changes, i.e.,
     the media source being played back contains video.
 
     Normally you'll check hasVideo() first and then let this signal
@@ -4110,15 +4110,13 @@
 
 /*!
     \enum Phonon::VideoWidget::ScaleMode
-    
+
     The ScaleMode enum describes how to treat aspect ratio during
-    resizing of video. 
+    resizing of video.
 
     \value FitInView    The video will be fitted to fill the view
                         keeping aspect ratio.
-    \value ScaleAndCrop The video is scaled 
-
-    
+    \value ScaleAndCrop The video is scaled
 */
 
 /*!
@@ -4136,7 +4134,6 @@
     top-level window. Key event forwarding is handled by VideoWidget,
     but if you need to handle other events, e.g., mouse events, you
     should handle fullscreen mode yourself.
-
 */
 
 /*!
@@ -4583,7 +4580,7 @@
     \class Phonon::AddonInterface
     \inmodule Phonon
     \since 4.4
-    \internal 
+    \internal
     \brief Interface for Menu, Chapter, Angle and Title/Track control.
 */
 

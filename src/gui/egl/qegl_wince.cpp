@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,20 +42,14 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
-#include <QtCore/qdebug.h>
 #include "qegl_p.h"
 
-#if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
+#include <windows.h>
 
-#if defined(Q_WS_X11)
-#include <QtGui/qx11info_x11.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
-bool QEglContext::createSurface(QPaintDevice *device)
+bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
 {
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -63,7 +57,7 @@ bool QEglContext::createSurface(QPaintDevice *device)
     EGLNativeWindowType windowDrawable = 0;
     bool ok;
     if (devType == QInternal::Pixmap) {
-        pixmapDrawable = (EGLNativePixmapType)(static_cast<QPixmap *>(device))->handle();
+        pixmapDrawable = 0;
         ok = (pixmapDrawable != 0);
     } else if (devType == QInternal::Widget) {
         windowDrawable = (EGLNativeWindowType)(static_cast<QWidget *>(device))->winId();
@@ -77,14 +71,17 @@ bool QEglContext::createSurface(QPaintDevice *device)
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
+    const int *props;
+    if (properties)
+        props = properties->properties();
     else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
-
+        props = 0;
+    if (devType == QInternal::Widget)
+        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
+    else
+        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
     if (surf == EGL_NO_SURFACE) {
-        qWarning() << "QEglContext::createSurface(): Unable to create EGL surface:"
-                   << errorString(eglGetError());
+        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
         return false;
     }
     return true;
@@ -92,42 +89,28 @@ bool QEglContext::createSurface(QPaintDevice *device)
 
 EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
 {
-    Q_UNUSED(device);
-    Display *xdpy = QX11Info::display();
-    if (!xdpy) {
-        qWarning("QEglContext::getDisplay(): X11 display is not open");
-        return EGL_NO_DISPLAY;
+    EGLDisplay dpy = 0;
+    HWND win = (static_cast<QWidget*>(device))->winId();
+    HDC myDc = GetDC(win);
+    if (!myDc) {
+        qWarning("QEglContext::defaultDisplay(): WinCE display is not open");
     }
-    return eglGetDisplay(EGLNativeDisplayType(xdpy));
+    dpy = eglGetDisplay(EGLNativeDisplayType(myDc));
+    if (dpy == EGL_NO_DISPLAY) {
+        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY");
+        dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    }
+    return dpy;
 }
 
-static int countBits(unsigned long mask)
+// Set pixel format and other properties based on a paint device.
+void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
 {
-    int count = 0;
-    while (mask != 0) {
-        if (mask & 1)
-            ++count;
-        mask >>= 1;
-    }
-    return count;
-}
-
-// Set the pixel format parameters from the visual in "xinfo".
-void QEglProperties::setVisualFormat(const QX11Info *xinfo)
-{
-    if (!xinfo)
-        return;
-    Visual *visual = (Visual*)xinfo->visual();
-    if (!visual)
-        return;
-    if (visual->c_class != TrueColor && visual->c_class != DirectColor)
-        return;
-    setValue(EGL_RED_SIZE, countBits(visual->red_mask));
-    setValue(EGL_GREEN_SIZE, countBits(visual->green_mask));
-    setValue(EGL_BLUE_SIZE, countBits(visual->blue_mask));
-    setValue(EGL_ALPHA_SIZE, 0);    // XXX
+    int devType = dev->devType();
+    if (devType == QInternal::Image)
+        setPixelFormat(static_cast<QImage *>(dev)->format());
+    else
+        setPixelFormat(QImage::Format_RGB16); // XXX
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_OPENGL_ES || QT_OPENVG

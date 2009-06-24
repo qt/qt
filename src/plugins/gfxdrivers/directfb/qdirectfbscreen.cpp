@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -725,7 +725,7 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
         const QStringList flips = flipRegexp.cap(1).split(QLatin1Char(','),
                                                           QString::SkipEmptyParts);
         flipFlags = DSFLIP_NONE;
-        foreach (QString flip, flips) {
+        foreach(const QString &flip, flips) {
             if (flip == QLatin1String("wait"))
                 flipFlags = DFBSurfaceFlipFlags(flipFlags | DSFLIP_WAIT);
             else if (flip == QLatin1String("blit"))
@@ -751,12 +751,7 @@ QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType typ
     return new QDirectFBPixmapData(type);
 }
 
-#ifdef QT_NO_DEBUG
-struct FlagDescription;
-static const FlagDescription *accelerationDescriptions = 0;
-static const FlagDescription *blitDescriptions = 0;
-static const FlagDescription *drawDescriptions = 0;
-#else
+#ifndef QT_NO_DEBUG
 struct FlagDescription {
     const char *name;
     uint flag;

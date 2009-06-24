@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,7 +63,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 {
     // Create the EGL context.
     ctx = new QEglContext();
-    ctx->setApi(QEglContext::OpenGL);
+    ctx->setApi(QEgl::OpenGL);
 
     // Open the EGL display.
     if (!ctx->openDisplay(0)) {
@@ -82,13 +82,13 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 #if QGL_RENDER_TEXTURE
     textureFormat = EGL_TEXTURE_RGBA;
     configProps.setValue(EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE);
-    ok = ctx->chooseConfig(configProps, QEglContext::BestPixelFormat);
+    ok = ctx->chooseConfig(configProps, QEgl::BestPixelFormat);
     if (!ok) {
         // Try again with RGB texture rendering.
         textureFormat = EGL_TEXTURE_RGB;
         configProps.removeValue(EGL_BIND_TO_TEXTURE_RGBA);
         configProps.setValue(EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE);
-        ok = ctx->chooseConfig(configProps, QEglContext::BestPixelFormat);
+        ok = ctx->chooseConfig(configProps, QEgl::BestPixelFormat);
         if (!ok) {
             // One last try for a pbuffer with no texture rendering.
             configProps.removeValue(EGL_BIND_TO_TEXTURE_RGB);
@@ -99,7 +99,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     textureFormat = EGL_NONE;
 #endif
     if (!ok) {
-        if (!ctx->chooseConfig(configProps, QEglContext::BestPixelFormat)) {
+        if (!ctx->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete ctx;
             ctx = 0;
             return false;
@@ -208,7 +208,7 @@ bool QGLPixelBuffer::hasOpenGLPbuffers()
         return false;
     QEglProperties configProps;
     qt_egl_set_format(configProps, QInternal::Pbuffer, QGLFormat::defaultFormat());
-    configProps.setRenderableType(QEglContext::OpenGL);
+    configProps.setRenderableType(QEgl::OpenGL);
     return ctx.chooseConfig(configProps);
 }
 

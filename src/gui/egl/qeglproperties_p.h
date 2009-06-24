@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,13 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef QEGL_P_H
-#define QEGL_P_H
+#ifndef QEGLPROPERTIES_P_H
+#define QEGLPROPERTIES_P_H
 
 //
 //  W A R N I N G
@@ -53,70 +53,40 @@
 // We mean it.
 //
 
-#include "QtCore/qvarlengtharray.h"
-#include "QtCore/qsize.h"
-#include "QtGui/qimage.h"
-
-#if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
+#include <QtCore/qvarlengtharray.h>
+#include <QtGui/qimage.h>
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENVG)
-#include <EGL/egl.h>
-#else
-#include <GLES/egl.h>
-#endif
-#if !defined(EGL_VERSION_1_3) && !defined(QEGL_NATIVE_TYPES_DEFINED)
-#undef EGLNativeWindowType
-#undef EGLNativePixmapType
-#undef EGLNativeDisplayType
-typedef NativeWindowType EGLNativeWindowType;
-typedef NativePixmapType EGLNativePixmapType;
-typedef NativeDisplayType EGLNativeDisplayType;
-#define QEGL_NATIVE_TYPES_DEFINED 1
-#endif
-QT_END_INCLUDE_NAMESPACE
 
-class QX11Info;
-class QPaintDevice;
-class QImage;
-class QPixmap;
-class QWidget;
+#if defined(QT_GLES_EGL)
+#include <GLES/egl.h>
+#else
+#include <EGL/egl.h>
+#endif
+
+#if defined(Q_WS_X11)
+// If <EGL/egl.h> included <X11/Xlib.h>, then the global namespace
+// may have been polluted with X #define's.  The following makes sure
+// the X11 headers were included properly and then cleans things up.
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#undef Bool
+#undef Status
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef Type
+#undef FontChange
+#undef CursorShape
+#endif
+
+QT_END_INCLUDE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-class Q_OPENGL_EXPORT QEglProperties
-{
-public:
-    QEglProperties();
-    QEglProperties(const QEglProperties& other) : props(other.props) {}
-    ~QEglProperties() {}
-
-    int value(int name) const;
-    void setValue(int name, int value);
-    bool removeValue(int name);
-
-    const int *properties() const { return props.constData(); }
-
-    void setPixelFormat(QImage::Format pixelFormat);
-#ifdef Q_WS_X11
-    void setVisualFormat(const QX11Info *xinfo);
-#endif
-    void setRenderableType(int api);
-
-    bool reduceConfiguration();
-
-    QString toString() const;
-
-private:
-    QVarLengthArray<int> props;
-};
-
-class Q_OPENGL_EXPORT QEglContext
-{
-public:
-    QEglContext();
-    ~QEglContext();
-
+namespace QEgl {
     enum API
     {
         OpenGL,
@@ -128,61 +98,41 @@ public:
         ExactPixelFormat,
         BestPixelFormat
     };
+};
 
-    bool isValid() const;
-    bool isSharing() const;
+class QX11Info;
+class QPaintDevice;
 
-    void setApi(QEglContext::API api) { apiType = api; }
-    bool openDisplay(QPaintDevice *device);
-    bool chooseConfig(const QEglProperties& properties, PixelFormatMatch match = ExactPixelFormat);
-    bool createContext(QEglContext *shareContext = 0);
-    bool createSurface(QPaintDevice *device);
-    bool recreateSurface(QPaintDevice *device);
-    void setSurface(EGLSurface surface) { surf = surface; }
+class Q_GUI_EXPORT QEglProperties
+{
+public:
+    QEglProperties();
+    QEglProperties(const QEglProperties& other) : props(other.props) {}
+    ~QEglProperties() {}
 
-    void destroy();
+    int value(int name) const;
+    void setValue(int name, int value);
+    bool removeValue(int name);
+    bool isEmpty() const { return props[0] == EGL_NONE; }
 
-    bool makeCurrent();
-    bool doneCurrent();
-    bool swapBuffers();
+    const int *properties() const { return props.constData(); }
 
-    void waitNative();
-    void waitClient();
+    void setPixelFormat(QImage::Format pixelFormat);
+#ifdef Q_WS_X11
+    void setVisualFormat(const QX11Info *xinfo);
+#endif
+    void setRenderableType(QEgl::API api);
 
-    QSize surfaceSize() const;
+    void setPaintDeviceFormat(QPaintDevice *dev);
 
-    bool configAttrib(int name, EGLint *value) const;
+    bool reduceConfiguration();
 
-    void clearError() const { eglGetError(); }
-
-    QEglContext::API api() const { return apiType; }
-
-    EGLDisplay display() const { return dpy; }
-    EGLContext context() const { return ctx; }
-    EGLSurface surface() const { return surf; }
-    EGLConfig config() const { return cfg; }
-
-    QEglProperties configProperties(EGLConfig cfg = 0) const;
-
-    static EGLDisplay defaultDisplay(QPaintDevice *device);
-    static QString errorString(int code);
-
-    void dumpAllConfigs();
+    QString toString() const;
 
 private:
-    QEglContext::API apiType;
-    EGLDisplay dpy;
-    EGLContext ctx;
-    EGLSurface surf;
-    EGLConfig cfg;
-    bool share;
-    void *reserved;     // For extension data in future versions.
-
-    static EGLDisplay getDisplay(QPaintDevice *device);
+    QVarLengthArray<int> props;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_OPENGL_ES || QT_OPENVG
-
-#endif // QEGL_P_H
+#endif // QEGLPROPERTIES_P_H

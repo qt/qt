@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -103,6 +103,7 @@ struct QDockAreaLayoutItem
     QSize maximumSize() const;
     QSize sizeHint() const;
     bool expansive(Qt::Orientation o) const;
+    bool hasFixedSize(Qt::Orientation o) const;
 
     QLayoutItem *widgetItem;
     QDockAreaLayoutInfo *subinfo;
@@ -167,6 +168,7 @@ public:
 
     void clear();
     bool isEmpty() const;
+    bool hasFixedSize() const;
     QList<int> findSeparator(const QPoint &pos) const;
     int next(int idx) const;
     int prev(int idx) const;
@@ -179,7 +181,7 @@ public:
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
-    int separatorMove(int index, int delta, QVector<QLayoutStruct> *cache);
+    int separatorMove(int index, int delta);
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);
@@ -188,7 +190,7 @@ public:
     QMainWindowLayout *mainWindowLayout() const;
 
     int sep;
-    QVector<QWidget*> separatorWidgets;
+    mutable QVector<QWidget*> separatorWidgets;
     QInternal::DockPosition dockPos;
     Qt::Orientation o;
     QRect rect;
@@ -231,7 +233,7 @@ public:
     QDockAreaLayout(QMainWindow *win);
     QDockAreaLayoutInfo docks[4];
     int sep; // separator extent
-    QVector<QWidget*> separatorWidgets;
+    mutable QVector<QWidget*> separatorWidgets;
 
     bool isValid() const;
 
@@ -275,8 +277,7 @@ public:
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
-    int separatorMove(QList<int> separator, const QPoint &origin, const QPoint &dest,
-                        QVector<QLayoutStruct> *cache);
+    int separatorMove(QList<int> separator, const QPoint &origin, const QPoint &dest);
     void updateSeparatorWidgets() const;
 
     QLayoutItem *itemAt(int *x, int index) const;

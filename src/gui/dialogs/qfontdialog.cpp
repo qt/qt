@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -501,8 +501,6 @@ void QFontDialogPrivate::updateFamilies()
 {
     Q_Q(QFontDialog);
 
-    familyList->blockSignals(true);
-
     enum match_t { MATCH_NONE = 0, MATCH_LAST_RESORT = 1, MATCH_APP = 2, MATCH_FAMILY = 3 };
 
     QStringList familyNames = fdb.families(writingSystem);
@@ -556,7 +554,6 @@ void QFontDialogPrivate::updateFamilies()
             && familyList->hasFocus())
         familyEdit->selectAll();
 
-    familyList->blockSignals(false);
     updateStyles();
 }
 
@@ -567,9 +564,6 @@ void QFontDialogPrivate::updateFamilies()
 void QFontDialogPrivate::updateStyles()
 {
     Q_Q(QFontDialog);
-
-    styleList->blockSignals(true);
-
     QStringList styles = fdb.styles(familyList->currentText());
     styleList->model()->setStringList(styles);
 
@@ -613,8 +607,6 @@ void QFontDialogPrivate::updateStyles()
         smoothScalable = fdb.isSmoothlyScalable(familyList->currentText(), styleList->currentText());
     }
 
-    styleList->blockSignals(false);
-
     updateSizes();
 }
 
@@ -627,8 +619,6 @@ void QFontDialogPrivate::updateStyles()
 void QFontDialogPrivate::updateSizes()
 {
     Q_Q(QFontDialog);
-
-    sizeList->blockSignals(true);
 
     if (!familyList->currentText().isEmpty()) {
         QList<int> sizes = fdb.pointSizes(familyList->currentText(), styleList->currentText());
@@ -659,7 +649,6 @@ void QFontDialogPrivate::updateSizes()
         sizeEdit->clear();
     }
 
-    sizeList->blockSignals(false);
     _q_updateSample();
 }
 

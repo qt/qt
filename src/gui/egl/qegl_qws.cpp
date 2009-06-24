@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,62 +44,68 @@
 #include <QtGui/qwidget.h>
 #include "qegl_p.h"
 
-#if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
+#if !defined(QT_NO_EGL)
 
-#include <windows.h>
-
+#include <qscreen_qws.h>
+#include <qscreenproxy_qws.h>
+#include <qapplication.h>
+#include <qdesktopwidget.h>
 
 QT_BEGIN_NAMESPACE
 
-bool QEglContext::createSurface(QPaintDevice *device)
+// Create the surface for a QPixmap, QImage, or QWidget.
+// We don't have QGLScreen to create EGL surfaces for us,
+// so surface creation needs to be done in QtOpenGL or
+// QtOpenVG for Qt/Embedded.
+bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
 {
-    // Create the native drawable for the paint device.
-    int devType = device->devType();
-    EGLNativePixmapType pixmapDrawable = 0;
-    EGLNativeWindowType windowDrawable = 0;
-    bool ok;
-    if (devType == QInternal::Pixmap) {
-        pixmapDrawable = 0;
-        ok = (pixmapDrawable != 0);
-    } else if (devType == QInternal::Widget) {
-        windowDrawable = (EGLNativeWindowType)(static_cast<QWidget *>(device))->winId();
-        ok = (windowDrawable != 0);
-    } else {
-        ok = false;
-    }
-    if (!ok) {
-        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
-    }
-
-    // Create the EGL surface to draw into, based on the native drawable.
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
-    else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
-    if (surf == EGL_NO_SURFACE) {
-        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
-    }
-    return true;
+    Q_UNUSED(device);
+    Q_UNUSED(properties);
+    return false;
 }
 
 EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
 {
-    EGLDisplay dpy = 0;
-    HWND win = ((QWidget*)device)->winId(); 
-    HDC myDc = GetDC(win); 
-    if (!myDc) { 
-        qWarning("QEglContext::defaultDisplay(): WinCE display is not open"); 
-    } 
-    dpy = eglGetDisplay(EGLNativeDisplayType(myDc)); 
-    if (dpy == EGL_NO_DISPLAY) { 
-        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY"); 
-        dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY); 
+    Q_UNUSED(device);
+    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
+}
+
+static QScreen *screenForDevice(QPaintDevice *device)
+{
+    QScreen *screen = qt_screen;
+    if (!screen)
+        return 0;
+    if (screen->classId() == QScreen::MultiClass) {
+        int screenNumber;
+        if (device && device->devType() == QInternal::Widget)
+            screenNumber = qApp->desktop()->screenNumber(static_cast<QWidget *>(device));
+        else
+            screenNumber = 0;
+        screen = screen->subScreens()[screenNumber];
     }
-    return dpy;
+    while (screen->classId() == QScreen::ProxyClass) {
+        screen = static_cast<QProxyScreen *>(screen)->screen();
+    }
+    return screen;
+}
+
+// Set pixel format and other properties based on a paint device.
+void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
+{
+    if (!dev)
+        return;
+
+    // Find the QGLScreen for this paint device.
+    QScreen *screen = screenForDevice(dev);
+    if (!screen)
+        return;
+    int devType = dev->devType();
+    if (devType == QInternal::Image)
+        setPixelFormat(static_cast<QImage *>(dev)->format());
+    else
+        setPixelFormat(screen->pixelFormat());
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_OPENGL_ES || QT_OPENVG
+#endif // !QT_NO_EGL

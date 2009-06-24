@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2902,8 +2902,14 @@ void QAbstractItemView::scrollToBottom()
 void QAbstractItemView::update(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    if (index.isValid())
-        d->viewport->update(visualRect(index));
+    if (index.isValid()) {
+        const QRect rect = visualRect(index);
+        //this test is important for peformance reason
+        //For example in dataChanged we simply update all the cells without checking
+        //it can be a major bottleneck to update rects that aren't even part of the viewport
+        if (d->viewport->geometry().intersects(rect))
+            d->viewport->update(rect);
+    }
 }
 
 /*!

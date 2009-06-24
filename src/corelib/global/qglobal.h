@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1143,6 +1143,11 @@ class QDataStream;
 #    else
 #      define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_OPENVG_LIB)
+#      define Q_OPENVG_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_OPENVG_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_XML_LIB)
 #      define Q_XML_EXPORT Q_DECL_EXPORT
 #    else
@@ -1182,6 +1187,7 @@ class QDataStream;
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
+#    define Q_OPENVG_EXPORT Q_DECL_IMPORT
 #    define Q_XML_EXPORT Q_DECL_IMPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
 #    define Q_SCRIPT_EXPORT Q_DECL_IMPORT
@@ -1207,6 +1213,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
+#    define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    define Q_XML_EXPORT Q_DECL_EXPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
 #    define Q_SCRIPT_EXPORT Q_DECL_EXPORT
@@ -2252,6 +2259,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define QT_MODULE_TEST                 0x04000
 #define QT_MODULE_DBUS                 0x08000
 #define QT_MODULE_SCRIPTTOOLS          0x10000
+#define QT_MODULE_OPENVG               0x20000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2271,6 +2279,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_GUI \
                                  | QT_MODULE_NETWORK \
                                  | QT_MODULE_OPENGL \
+                                 | QT_MODULE_OPENVG \
                                  | QT_MODULE_SQL \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
@@ -2313,6 +2322,9 @@ QT_LICENSED_MODULE(Network)
 #endif
 #if (QT_EDITION & QT_MODULE_OPENGL)
 QT_LICENSED_MODULE(OpenGL)
+#endif
+#if (QT_EDITION & QT_MODULE_OPENVG)
+QT_LICENSED_MODULE(OpenVG)
 #endif
 #if (QT_EDITION & QT_MODULE_SQL)
 QT_LICENSED_MODULE(Sql)

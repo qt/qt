@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,10 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <qwidget.h>
+#endif
+
+#ifdef Q_WS_MAC
+#include <private/qpaintengine_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -225,10 +229,10 @@ QImage::Format QNativeImage::systemFormat()
 
 #elif defined(Q_WS_MAC)
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *widget)
     : image(width, height, format)
 {
-    cgColorSpace = CGColorSpaceCreateDeviceRGB();
+    cgColorSpace = QCoreGraphicsPaintEngine::macDisplayColorSpace(widget);
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version

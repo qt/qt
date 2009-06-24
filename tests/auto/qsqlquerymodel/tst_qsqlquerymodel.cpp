@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,6 +93,9 @@ private slots:
     void setQuerySignalEmission();
     void setQueryWithNoRowsInResultSet_data() { generic_data(); }
     void setQueryWithNoRowsInResultSet();
+
+    void task_180617();
+    void task_180617_data() { generic_data(); }
 
 private:
     void generic_data(const QString &engine=QString());
@@ -496,7 +499,7 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
     QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3"), db));
     view.scrollToBottom();
-    
+
     QTestEventLoop::instance().enterLoop(1);
 
     QCOMPARE(proxy.rowCount(), 511);
@@ -530,12 +533,12 @@ void tst_QSqlQueryModel::setQuerySignalEmission()
     QSignalSpy modelRowsRemovedSpy(&model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
 
     // First select, the model was empty and no rows had to be removed!
-    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test"), db)); 
+    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test"), db));
     QCOMPARE(modelRowsAboutToBeRemovedSpy.count(), 0);
     QCOMPARE(modelRowsRemovedSpy.count(), 0);
 
     // Second select, the model wasn't empty and two rows had to be removed!
-    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test"), db)); 
+    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test"), db));
     QCOMPARE(modelRowsAboutToBeRemovedSpy.count(), 1);
     QCOMPARE(modelRowsAboutToBeRemovedSpy.value(0).value(1).toInt(), 0);
     QCOMPARE(modelRowsAboutToBeRemovedSpy.value(0).value(2).toInt(), 1);
@@ -559,9 +562,43 @@ void tst_QSqlQueryModel::setQueryWithNoRowsInResultSet()
     // The query's result set will be empty so no signals should be emitted!
     QSqlQuery query(db);
     QVERIFY_SQL(query, exec("SELECT * FROM " + qTableName("test") + " where 0 = 1"));
-    model.setQuery(query); 
+    model.setQuery(query);
     QCOMPARE(modelRowsAboutToBeInsertedSpy.count(), 0);
     QCOMPARE(modelRowsInsertedSpy.count(), 0);
+}
+
+// For task 180617
+// According to the task, several specific duplicate SQL queries would cause
+// multiple empty grid lines to be visible in the view
+void tst_QSqlQueryModel::task_180617()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QTableView view;
+    QCOMPARE(view.columnAt(0), -1);
+    QCOMPARE(view.rowAt(0), -1);
+
+    QSqlQueryModel model;
+    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+    view.setModel(&model);
+
+    bool error = false;
+    // Usually a syntax error
+    if (model.lastError().isValid())    // usually a syntax error
+        error = true;
+
+    QCOMPARE(view.columnAt(0), (error)?-1:0 );
+    QCOMPARE(view.rowAt(0), -1);
+
+    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+
+    QCOMPARE(view.columnAt(0),  (error)?-1:0 );
+    QCOMPARE(view.rowAt(0), -1);
 }
 
 QTEST_MAIN(tst_QSqlQueryModel)

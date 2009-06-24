@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,6 +57,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
+#include <QtScript/qscriptvalue.h>
 
 #include "qscriptdebuggerbackend_p.h"
 
@@ -66,7 +67,6 @@ class QEvent;
 class QString;
 class QScriptContext;
 class QScriptEngine;
-class QScriptValue;
 class QScriptValueIterator;
 class QScriptObjectSnapshot;
 class QScriptDebuggerAgent;
@@ -126,6 +126,10 @@ public:
     QObject *eventReceiver;
 
     QScriptDebuggerBackend *q_ptr;
+
+    QScriptValue origTraceFunction;
+    QScriptValue origFileNameFunction;
+    QScriptValue origLineNumberFunction;
 };
 
 QT_END_NAMESPACE

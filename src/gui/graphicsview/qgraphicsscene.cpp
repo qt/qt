@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1422,6 +1422,63 @@ QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item)
         item = item->parentItem();
     } while (item);
     return 0;
+}
+
+QList<QGraphicsItem *> QGraphicsScenePrivate::topLevelItemsInStackingOrder(const QTransform *const viewTransform,
+                                                                           QRegion *exposedRegion)
+{
+    if (indexMethod == QGraphicsScene::NoIndex || !exposedRegion) {
+        if (needSortTopLevelItems) {
+            needSortTopLevelItems = false;
+            qStableSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+        }
+        return topLevelItems;
+    }
+
+    const QRectF exposedRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
+    QRectF sceneRect;
+    QTransform invertedViewTransform(Qt::Uninitialized);
+    if (!viewTransform) {
+        sceneRect = exposedRect;
+    } else {
+        invertedViewTransform = viewTransform->inverted();
+        sceneRect = invertedViewTransform.mapRect(exposedRect);
+    }
+    if (!largestUntransformableItem.isEmpty()) {
+        // ### Nuke this when we move the indexing code into a separate
+        // class.  All the largestUntransformableItem code should then go
+        // away, and the estimate function should return untransformable
+        // items as well.
+        QRectF untr = largestUntransformableItem;
+        QRectF ltri = !viewTransform ? untr : invertedViewTransform.mapRect(untr);
+        ltri.adjust(-untr.width(), -untr.height(), untr.width(), untr.height());
+        sceneRect.adjust(-ltri.width(), -ltri.height(), ltri.width(), ltri.height());
+    }
+
+    QList<QGraphicsItem *> tmp = estimateItemsInRect(sceneRect);
+    for (int i = 0; i < tmp.size(); ++i)
+        tmp.at(i)->topLevelItem()->d_ptr->itemDiscovered = 1;
+
+    // Sort if the toplevel list is unsorted.
+    if (needSortTopLevelItems) {
+        needSortTopLevelItems = false;
+        qStableSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+    }
+
+    QList<QGraphicsItem *> tli;
+    for (int i = 0; i < topLevelItems.size(); ++i) {
+        // ### Investigate smarter ways. Looping through all top level
+        // items is not optimal. If the BSP tree is to have maximum
+        // effect, it should be possible to sort the subset of items
+        // quickly. We must use this approach for now, as it's the only
+        // current way to keep the stable sorting order (insertion order).
+        QGraphicsItem *item = topLevelItems.at(i);
+        if (item->d_ptr->itemDiscovered) {
+            item->d_ptr->itemDiscovered = 0;
+            tli << item;
+        }
+    }
+    return tli;
 }
 
 void QGraphicsScenePrivate::recursive_items_helper(QGraphicsItem *item, QRectF rect,
@@ -5045,196 +5102,144 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 }
 
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
-                                                 const QTransform &viewTransform,
+                                                 const QTransform *const viewTransform,
                                                  QRegion *exposedRegion, QWidget *widget,
-                                                 QList<QGraphicsItem *> *topLevelItems,
                                                  qreal parentOpacity)
 {
-    // Calculate opacity.
-    qreal opacity;
-    bool invisibleButChildIgnoresParentOpacity = false;
-    if (item) {
-        if (!item->d_ptr->visible)
-            return;
-        QGraphicsItem *p = item->d_ptr->parent;
-        bool itemIgnoresParentOpacity = item->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity;
-        bool parentDoesntPropagateOpacity = (p && (p->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren));
-        if (!itemIgnoresParentOpacity && !parentDoesntPropagateOpacity) {
-            opacity = parentOpacity * item->opacity();
-        } else {
-            opacity = item->d_ptr->opacity;
-        }
-        if (opacity == 0.0 && !(item->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
-            invisibleButChildIgnoresParentOpacity = !item->d_ptr->childrenCombineOpacity();
-            if (!invisibleButChildIgnoresParentOpacity)
-                return;
-        }
-    } else {
-        opacity = parentOpacity;
+    Q_ASSERT(item);
+
+    if (!item->d_ptr->visible)
+        return;
+
+    const bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+    if (!itemHasContents && !itemHasChildren)
+        return; // Item has neither contents nor children!(?)
+
+    const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
+    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity()))
+        return;
+
+    QTransform transform(Qt::Uninitialized);
+    QTransform *transformPtr = 0;
+#define ENSURE_TRANSFORM_PTR \
+    if (!transformPtr) { \
+        Q_ASSERT(!itemIsUntransformable); \
+        if (viewTransform) { \
+            transform = item->d_ptr->sceneTransform; \
+            transform *= *viewTransform; \
+            transformPtr = &transform; \
+        } else { \
+            transformPtr = &item->d_ptr->sceneTransform; \
+        } \
     }
 
-    // Item is invisible.
-    bool invisible = !item || ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity);
-
-    // Calculate the full transform for this item.
+    // Update the item's scene transform if the item is transformable;
+    // otherwise calculate the full transform,
     bool wasDirtyParentSceneTransform = false;
-    bool dontDrawItem = true;
-    QTransform transform;
-    if (item) {
-        if (item->d_ptr->itemIsUntransformable()) {
-            transform = item->deviceTransform(viewTransform);
-        } else {
-            if (item->d_ptr->dirtySceneTransform) {
-                item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                              : QTransform();
-                item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
-                item->d_ptr->dirtySceneTransform = 0;
-                wasDirtyParentSceneTransform = true;
-            }
-            transform = item->d_ptr->sceneTransform;
-            transform *= viewTransform;
-        }
-
-        if (!invisible) {
-            QRectF brect = item->boundingRect();
-            // ### This does not take the clip into account.
-            _q_adjustRect(&brect);
-            QRect viewBoundingRect = transform.mapRect(brect).toRect();
-            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
-            viewBoundingRect.adjust(-1, -1, 1, 1);
-            if (exposedRegion)
-                dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
-            else
-                dontDrawItem = viewBoundingRect.isEmpty();
-        }
+    const bool itemIsUntransformable = item->d_ptr->itemIsUntransformable();
+    if (itemIsUntransformable) {
+        transform = item->deviceTransform(viewTransform ? *viewTransform : QTransform());
+        transformPtr = &transform;
+    } else if (item->d_ptr->dirtySceneTransform) {
+        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
+                                                          : QTransform();
+        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
+        item->d_ptr->dirtySceneTransform = 0;
+        wasDirtyParentSceneTransform = true;
     }
 
-    // Find and sort children.
-    QList<QGraphicsItem *> tmp;
-    QList<QGraphicsItem *> *children = 0;
-    if (item) {
-        children = &item->d_ptr->children;
-    } else if (topLevelItems) {
-        children = topLevelItems;
-    } else if (indexMethod == QGraphicsScene::NoIndex || !exposedRegion) {
-        children = &this->topLevelItems;
-    } else {
-        QRectF sceneRect = viewTransform.inverted().mapRect(QRectF(exposedRegion->boundingRect().adjusted(-1, -1, 1, 1)));
-        if (!largestUntransformableItem.isEmpty()) {
-            // ### Nuke this when we move the indexing code into a separate
-            // class.  All the largestUntransformableItem code should then go
-            // away, and the estimate function should return untransformable
-            // items as well.
-            QRectF untr = largestUntransformableItem;
-            QRectF ltri = viewTransform.inverted().mapRect(untr);
-            ltri.adjust(-untr.width(), -untr.height(), untr.width(), untr.height());
-            sceneRect.adjust(-ltri.width(), -ltri.height(), ltri.width(), ltri.height());
-        }
-        tmp = estimateItemsInRect(sceneRect);
-
-        QList<QGraphicsItem *> tli;
-        for (int i = 0; i < tmp.size(); ++i)
-            tmp.at(i)->topLevelItem()->d_ptr->itemDiscovered = 1;
-
-        // Sort if the toplevel list is unsorted.
-        if (needSortTopLevelItems) {
-            needSortTopLevelItems = false;
-            qStableSort(this->topLevelItems.begin(),
-                        this->topLevelItems.end(), qt_notclosestLeaf);
-        }
-
-        for (int i = 0; i < this->topLevelItems.size(); ++i) {
-            // ### Investigate smarter ways. Looping through all top level
-            // items is not optimal. If the BSP tree is to have maximum
-            // effect, it should be possible to sort the subset of items
-            // quickly. We must use this approach for now, as it's the only
-            // current way to keep the stable sorting order (insertion order).
-            QGraphicsItem *item = this->topLevelItems.at(i);
-            if (item->d_ptr->itemDiscovered) {
-                item->d_ptr->itemDiscovered = 0;
-                tli << item;
+    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    bool drawItem = itemHasContents && !itemIsFullyTransparent;
+    if (drawItem) {
+        const QRectF brect = adjustedItemBoundingRect(item);
+        ENSURE_TRANSFORM_PTR
+        QRect viewBoundingRect = transformPtr->mapRect(brect).toRect();
+        item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+        viewBoundingRect.adjust(-1, -1, 1, 1);
+        drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect) : !viewBoundingRect.isEmpty();
+        if (!drawItem) {
+            if (!itemHasChildren)
+                return;
+            if (itemClipsChildrenToShape) {
+                if (wasDirtyParentSceneTransform)
+                    item->d_ptr->invalidateChildrenSceneTransform();
+                return;
             }
         }
+    } // else we know for sure this item has children we must process.
 
-        tmp = tli;
-        children = &tmp;
-    }
-
-    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
-    bool dontDrawChildren = item && dontDrawItem && childClip;
-    childClip &= !dontDrawChildren && !children->isEmpty();
-    if (item && invisible)
-        dontDrawItem = true;
-
-    // Clip children.
-    if (childClip) {
-        painter->save();
-        painter->setWorldTransform(transform);
-        painter->setClipPath(item->shape(), Qt::IntersectClip);
-    }
-    
-    if (!dontDrawChildren) {
-        if (item && item->d_ptr->needSortChildren) {
-            item->d_ptr->needSortChildren = 0;
-            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
-        } else if (!item && needSortTopLevelItems && children != &tmp) {
-            needSortTopLevelItems = false;
-            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
-        }
-    }
-
-    // Draw children behind
     int i = 0;
-    if (!dontDrawChildren) {
-        // ### Don't visit children that don't ignore parent opacity if this
-        // item is invisible.
-        for (i = 0; i < children->size(); ++i) {
-            QGraphicsItem *child = children->at(i);
+    if (itemHasChildren) {
+        if (item->d_ptr->needSortChildren) {
+            item->d_ptr->needSortChildren = 0;
+            qStableSort(item->d_ptr->children.begin(), item->d_ptr->children.end(), qt_notclosestLeaf);
+        }
+
+        if (itemClipsChildrenToShape) {
+            painter->save();
+            ENSURE_TRANSFORM_PTR
+            painter->setWorldTransform(*transformPtr);
+            painter->setClipPath(item->shape(), Qt::IntersectClip);
+        }
+
+        // Draw children behind
+        for (i = 0; i < item->d_ptr->children.size(); ++i) {
+            QGraphicsItem *child = item->d_ptr->children.at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
                 break;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget,
-                                 0, opacity);
+            if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
+                continue;
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity);
         }
     }
 
     // Draw item
-    if (!dontDrawItem) {
-        item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
+    if (drawItem) {
+        Q_ASSERT(!itemIsFullyTransparent);
+        Q_ASSERT(itemHasContents);
+        item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion
+                                     ? *exposedRegion : QRegion(), exposedRegion == 0);
 
-        bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
-        bool savePainter = clipsToShape || painterStateProtection;
+        const bool itemClipsToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsToShape;
+        const bool savePainter = itemClipsToShape || painterStateProtection;
         if (savePainter)
             painter->save();
-        if (!childClip)
-            painter->setWorldTransform(transform);
-        if (clipsToShape)
+
+        if (!itemHasChildren || !itemClipsChildrenToShape) {
+            ENSURE_TRANSFORM_PTR
+            painter->setWorldTransform(*transformPtr);
+        }
+        if (itemClipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
-        drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
+
+        if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget)
+            item->paint(painter, &styleOptionTmp, widget);
+        else
+            drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
 
         if (savePainter)
             painter->restore();
     }
 
     // Draw children in front
-    if (!dontDrawChildren) {
-        // ### Don't visit children that don't ignore parent opacity if this
-        // item is invisible.
-        for (; i < children->size(); ++i) {
-            QGraphicsItem *child = children->at(i);
+    if (itemHasChildren) {
+        for (; i < item->d_ptr->children.size(); ++i) {
+            QGraphicsItem *child = item->d_ptr->children.at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion,
-                                 widget, 0, opacity);
+            if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
+                continue;
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity);
         }
-    } else if (wasDirtyParentSceneTransform) {
-        item->d_ptr->invalidateChildrenSceneTransform();
     }
 
     // Restore child clip
-    if (childClip)
+    if (itemHasChildren && itemClipsChildrenToShape)
         painter->restore();
 }
 
@@ -5296,6 +5301,11 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         item->d_ptr->dirtyChildren = 1;
     }
 
+    if (force)
+        item->d_ptr->ignoreVisible = 1;
+    if (ignoreOpacity)
+        item->d_ptr->ignoreOpacity = 1;
+
     QGraphicsItem *p = item->d_ptr->parent;
     while (p && !p->d_ptr->dirtyChildren) {
         p->d_ptr->dirtyChildren = 1;
@@ -5303,34 +5313,58 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     }
 }
 
-void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren)
+static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate *item,
+                                const QRectF &rect, const QTransform &xform)
+{
+    Q_ASSERT(view);
+    Q_ASSERT(item);
+    if (item->hasBoundingRegionGranularity)
+        return view->updateRegion(xform.map(QRegion(rect.toRect())));
+    return view->updateRect(xform.mapRect(rect).toRect());
+}
+
+void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren,
+                                                       qreal parentOpacity)
 {
     Q_Q(QGraphicsScene);
 
-    // Calculate the full scene transform for this item.
+    bool wasDirtyParentViewBoundingRects = false;
     bool wasDirtyParentSceneTransform = false;
-    if (item && item->d_ptr->dirtySceneTransform && !item->d_ptr->itemIsUntransformable()) {
-        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                                          : QTransform();
-        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
-        item->d_ptr->dirtySceneTransform = 0;
-        wasDirtyParentSceneTransform = true;
+    qreal opacity = parentOpacity;
+
+    if (item) {
+        wasDirtyParentViewBoundingRects = item->d_ptr->paintedViewBoundingRectsNeedRepaint;
+        opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
+        const bool itemIsHidden = !item->d_ptr->ignoreVisible && !item->d_ptr->visible;
+        const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity && opacity == 0.0;
+
+        if (item->d_ptr->dirtySceneTransform && !itemIsHidden && !item->d_ptr->itemIsUntransformable()
+            && !(itemIsFullyTransparent && item->d_ptr->childrenCombineOpacity())) {
+            // Calculate the full scene transform for this item.
+            item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
+                                                              : QTransform();
+            item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
+            item->d_ptr->dirtySceneTransform = 0;
+            wasDirtyParentSceneTransform = true;
+        }
+
+        if (itemIsHidden || itemIsFullyTransparent || (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)) {
+            // Make sure we don't process invisible items or items with no content.
+            item->d_ptr->dirty = 0;
+            item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
+        }
     }
 
     // Process item.
-    bool wasDirtyParentViewBoundingRects = false;
     if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
         const bool untransformableItem = item->d_ptr->itemIsUntransformable();
-        const QRectF itemBoundingRect = item->boundingRect();
+        const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
 
         if (item->d_ptr->geometryChanged) {
             // Update growingItemsBoundingRect.
-            if (!hasSceneRect) {
-                QRectF itemSceneBoundingRect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
-                _q_adjustRect(&itemSceneBoundingRect);
-                growingItemsBoundingRect |= itemSceneBoundingRect;
-            }
+            if (!hasSceneRect)
+                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
             item->d_ptr->geometryChanged = 0;
         }
 
@@ -5359,11 +5393,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     break;
                 }
 
+                QRect &paintedViewBoundingRect = item->d_ptr->paintedViewBoundingRects[viewPrivate->viewport];
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     wasDirtyParentViewBoundingRects = true;
-                    QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
-                    rect.translate(viewPrivate->dirtyScrollOffset);
-                    viewPrivate->updateRect(rect);
+                    paintedViewBoundingRect.translate(viewPrivate->dirtyScrollOffset);
+                    if (!viewPrivate->updateRect(paintedViewBoundingRect))
+                        paintedViewBoundingRect = QRect();
                 }
 
                 if (!item->d_ptr->dirty)
@@ -5371,7 +5406,6 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
                 if (uninitializedDirtyRect) {
                     dirtyRect = itemBoundingRect;
-                    _q_adjustRect(&dirtyRect);
                     if (!item->d_ptr->fullUpdatePending) {
                         _q_adjustRect(&item->d_ptr->needsRepaint);
                         dirtyRect &= item->d_ptr->needsRepaint;
@@ -5382,17 +5416,19 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 if (dirtyRect.isEmpty())
                     continue; // Discard updates outside the bounding rect.
 
-                QTransform deviceTransform = item->d_ptr->sceneTransform;
-                if (view->isTransformed()) {
-                    if (!untransformableItem)
-                        deviceTransform *= view->viewportTransform();
-                    else
-                        deviceTransform = item->deviceTransform(view->viewportTransform());
+                bool valid = false;
+                if (untransformableItem) {
+                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect,
+                                         item->deviceTransform(view->viewportTransform()));
+                } else if (!view->isTransformed()) {
+                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect, item->d_ptr->sceneTransform);
+                } else {
+                    QTransform deviceTransform = item->d_ptr->sceneTransform;
+                    deviceTransform *= view->viewportTransform();
+                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect, deviceTransform);
                 }
-                if (item->d_ptr->hasBoundingRegionGranularity)
-                    viewPrivate->updateRegion(deviceTransform.map(QRegion(dirtyRect.toRect())));
-                else
-                    viewPrivate->updateRect(deviceTransform.mapRect(dirtyRect).toRect());
+                if (!valid)
+                    paintedViewBoundingRect = QRect();
             }
         }
     }
@@ -5405,12 +5441,18 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             dirtyAncestorContainsChildren = item && item->d_ptr->fullUpdatePending
                                             && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
         }
+        const bool parentIgnoresVisible = item && item->d_ptr->ignoreVisible;
+        const bool parentIgnoresOpacity = item && item->d_ptr->ignoreOpacity;
         for (int i = 0; i < children->size(); ++i) {
             QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (wasDirtyParentViewBoundingRects)
                 child->d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+            if (parentIgnoresVisible)
+                child->d_ptr->ignoreVisible = 1;
+            if (parentIgnoresOpacity)
+                child->d_ptr->ignoreOpacity = 1;
 
             if (allChildrenDirty) {
                 child->d_ptr->dirty = 1;
@@ -5433,7 +5475,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     child->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
             }
 
-            processDirtyItemsRecursive(child, dirtyAncestorContainsChildren);
+            processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();
@@ -5490,7 +5532,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         if (!item->d_ptr->itemDiscovered) {
             topLevelItems << item;
             item->d_ptr->itemDiscovered = 1;
-            d->drawSubtreeRecursive(item, painter, viewTransform, expose, widget);
+            d->drawSubtreeRecursive(item, painter, &viewTransform, expose, widget);
         }
     }
 
