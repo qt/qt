@@ -110,6 +110,22 @@ public:
     void disposeQObject(QObject *object);
     void emitSignalHandlerException();
 
+    bool scriptConnect(QObject *sender, const char *signal,
+                       JSC::JSValue receiver, JSC::JSValue function);
+    bool scriptDisconnect(QObject *sender, const char *signal,
+                          JSC::JSValue receiver, JSC::JSValue function);
+
+    bool scriptConnect(QObject *sender, int index,
+                       JSC::JSValue receiver, JSC::JSValue function,
+                       JSC::JSValue senderWrapper = 0);
+    bool scriptDisconnect(QObject *sender, int index,
+                          JSC::JSValue receiver, JSC::JSValue function);
+
+    bool scriptConnect(JSC::JSValue signal, JSC::JSValue receiver,
+                       JSC::JSValue function);
+    bool scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
+                          JSC::JSValue function);
+
     // private slots
     void _q_objectDestroyed(QObject *);
 #endif

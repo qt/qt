@@ -305,6 +305,7 @@ namespace QScript
 {
 JSC::UString qtStringToJSCUString(const QString &str);
 QString qtStringFromJSCUString(const JSC::UString &str);
+bool isFunction(JSC::JSValue value);
 }
 
 QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
@@ -2171,10 +2172,9 @@ bool QScriptValue::isString() const
 bool QScriptValue::isFunction() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isJSC())
         return false;
-    JSC::CallData callData;
-    return (JSC::asObject(d->jscValue)->getCallData(callData) != JSC::CallTypeNone);
+    return QScript::isFunction(d->jscValue);
 }
 
 /*!

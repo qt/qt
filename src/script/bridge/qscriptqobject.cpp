@@ -52,9 +52,9 @@ struct QObjectConnection
 
     bool hasTarget(JSC::JSValue r, JSC::JSValue s) const
     {
-        if (r.isObject() != receiver.isObject())
+        if ((r && r.isObject()) != (receiver && receiver.isObject()))
             return false;
-        if ((r.isObject() && receiver.isObject())
+        if (((r && r.isObject()) && (receiver && receiver.isObject()))
             && (r != receiver)) {
             return false;
         }
@@ -81,17 +81,26 @@ struct QObjectConnection
     }
 };
 
+class QObjectNotifyCaller : public QObject
+{
+public:
+    void callConnectNotify(const char *signal)
+        { connectNotify(signal); }
+    void callDisconnectNotify(const char *signal)
+        { disconnectNotify(signal); }
+};
+
 class QObjectConnectionManager: public QObject
 {
 public:
     QObjectConnectionManager(QScriptEnginePrivate *engine);
     ~QObjectConnectionManager();
 
-    bool addSignalHandler(QObject *sender, const char *signal,
+    bool addSignalHandler(QObject *sender, int signalIndex,
                           JSC::JSValue receiver,
                           JSC::JSValue slot,
                           JSC::JSValue senderWrapper = 0);
-    bool removeSignalHandler(QObject *sender, const char *signal,
+    bool removeSignalHandler(QObject *sender, int signalIndex,
                              JSC::JSValue receiver,
                              JSC::JSValue slot);
 
@@ -162,37 +171,6 @@ QString qtStringFromJSCUString(const JSC::UString &str);
 static JSC::JSValue JSC_HOST_CALL QtFunction_call(JSC::ExecState *exec, JSC::JSObject*,
                                                   JSC::JSValue thisValue, const JSC::ArgList &args);
 
-class QtFunction: public JSC::InternalFunction
-{
-public:
-    // work around CELL_SIZE limitation
-    struct Data
-    {
-        JSC::JSValue object;
-        int initialIndex;
-        bool maybeOverloaded;
-
-        Data(JSC::JSValue o, int ii, bool mo)
-            : object(o), initialIndex(ii), maybeOverloaded(mo) {}
-    };
-
-    QtFunction(JSC::JSValue object, int initialIndex, bool maybeOverloaded,
-               JSC::JSGlobalData*, WTF::PassRefPtr<JSC::Structure>, const JSC::Identifier&);
-    virtual ~QtFunction();
-
-    virtual JSC::CallType getCallData(JSC::CallData&);
-    virtual void mark();
-
-    virtual const JSC::ClassInfo* classInfo() const { return &info; }
-    static const JSC::ClassInfo info;
-
-    JSC::JSValue call(JSC::ExecState *exec, JSC::JSValue thisValue,
-                       const JSC::ArgList &args);
-
-private:
-    Data *data;
-};
-
 QtFunction::QtFunction(JSC::JSValue object, int initialIndex, bool maybeOverloaded,
                        JSC::JSGlobalData *data, WTF::PassRefPtr<JSC::Structure> sid,
                        const JSC::Identifier &ident)
@@ -215,6 +193,77 @@ JSC::CallType QtFunction::getCallData(JSC::CallData &callData)
 void QtFunction::mark()
 {
     data->object.mark();
+}
+
+QObjectWrapperObject *QtFunction::wrapperObject() const
+{
+    Q_ASSERT(JSC::asObject(data->object)->inherits(&QObjectWrapperObject::info));
+    return static_cast<QObjectWrapperObject*>(JSC::asObject(data->object));
+}
+
+QObject *QtFunction::qobject() const
+{
+    return wrapperObject()->value();
+}
+
+const QMetaObject *QtFunction::metaObject() const
+{
+    QObject *qobj = qobject();
+    if (!qobj)
+        return 0;
+    return qobj->metaObject();
+}
+
+int QtFunction::initialIndex() const
+{
+    return data->initialIndex;
+}
+
+bool QtFunction::maybeOverloaded() const
+{
+    return data->maybeOverloaded;
+}
+
+int QtFunction::mostGeneralMethod(QMetaMethod *out) const
+{
+    const QMetaObject *meta = metaObject();
+    if (!meta)
+        return -1;
+    int index = initialIndex();
+    QMetaMethod method = meta->method(index);
+    if (maybeOverloaded() && (method.attributes() & QMetaMethod::Cloned)) {
+        // find the most general method
+        do {
+            method = meta->method(--index);
+        } while (method.attributes() & QMetaMethod::Cloned);
+    }
+    if (out)
+        *out = method;
+    return index;
+}
+
+QList<int> QScript::QtFunction::overloadedIndexes() const
+{
+    if (!maybeOverloaded())
+        return QList<int>();
+    QList<int> result;
+    QString name = functionName();
+    const QMetaObject *meta = metaObject();
+    for (int index = mostGeneralMethod() - 1; index >= 0; --index) {
+        QString otherName = QString::fromLatin1(methodName(meta->method(index)));
+        if (otherName == name)
+            result.append(index);
+    }
+    return result;
+}
+
+QString QtFunction::functionName() const
+{
+    const QMetaObject *meta = metaObject();
+    if (!meta)
+        return QString();
+    QMetaMethod method = meta->method(initialIndex());
+    return QLatin1String(methodName(method));
 }
 
 class QScriptMetaType
@@ -363,7 +412,7 @@ struct QScriptMetaArguments
 };
 
 JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
-                               const JSC::ArgList &scriptArgs)
+                              const JSC::ArgList &scriptArgs)
 {
     Q_ASSERT(data->object.isObject(&QObjectWrapperObject::info));
     QObjectWrapperObject *wrapper = static_cast<QObjectWrapperObject*>(JSC::asObject(data->object));
@@ -450,7 +499,7 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
 
         QScriptMetaMethod mtd = QScriptMetaMethod(methodName(method), types);
 
-        if (args.count() < mtd.argumentCount()) {
+        if (int(scriptArgs.size()) < mtd.argumentCount()) {
             tooFewArgs.append(index);
             continue;
         }
@@ -516,7 +565,7 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
                             matchDistance += 10;
                         }
                     }
-                } else if (actual.isNumber()) {
+                } else if (actual.isNumber() || actual.isString()) {
                     // see if it's an enum value
                     QMetaEnum m;
                     if (argType.isMetaEnum()) {
@@ -527,11 +576,21 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
                             m = meta->enumerator(mi);
                     }
                     if (m.isValid()) {
-                        int ival = actual.toInt32();
-                        if (m.valueToKey(ival) != 0) {
-                            qVariantSetValue(v, ival);
-                            converted = true;
-                            matchDistance += 10;
+                        if (actual.isNumber()) {
+                            int ival = actual.toInt32();
+                            if (m.valueToKey(ival) != 0) {
+                                qVariantSetValue(v, ival);
+                                converted = true;
+                                matchDistance += 10;
+                            }
+                        } else {
+                            QString sval = actual.toString();
+                            int ival = m.keyToValue(sval.toLatin1());
+                            if (ival != -1) {
+                                qVariantSetValue(v, ival);
+                                converted = true;
+                                matchDistance += 10;
+                            }
                         }
                     }
                 }
@@ -822,7 +881,7 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
         }
     }
 
-    return JSC::JSValue();
+    return result;
 }
 
 const JSC::ClassInfo QtFunction::info = { "QtFunction", 0, 0, 0 };
@@ -905,7 +964,12 @@ bool QObjectWrapperObject::getOwnPropertySlot(JSC::ExecState *exec,
         if (prop.isScriptable()) {
             if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
                 || (index >= meta->propertyOffset())) {
-                JSC::JSValue val = eng->jscValueFromVariant(prop.read(qobject));
+                // ### use property getter function
+                JSC::JSValue val;
+                if (!prop.isValid())
+                    val = JSC::jsUndefined();
+                else
+                    val = eng->jscValueFromVariant(prop.read(qobject));
                 slot.setValue(val);
                 return true;
             }
@@ -1190,15 +1254,15 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     int argc = parameterTypes.count();
 
     JSC::ExecState *exec = engine->globalObject->globalExec();
-    JSC::ArgList jscArgs;
+    QVector<JSC::JSValue> argsVector;
+    argsVector.resize(argc);
     for (int i = 0; i < argc; ++i) {
         int argType = QMetaType::type(parameterTypes.at(i));
+        // ### optimize -- no need to convert via QScriptValue
         QScriptValue arg = engine->create(argType, argv[i + 1]);
-        Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-        jscArgs.append(engine->scriptValueToJSCValue(arg));
-#endif
+        argsVector[i] = engine->scriptValueToJSCValue(arg);
     }
+    JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
     JSC::JSValue senderObject;
     if (senderWrapper && senderWrapper.isObject(&QObjectWrapperObject::info))
@@ -1214,7 +1278,14 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     else
         thisObject = exec->dynamicGlobalObject();
 
-    (void)static_cast<JSC::JSFunction*>(JSC::asFunction(slot))->call(exec, thisObject, jscArgs);
+    JSC::CallData callData;
+    JSC::CallType callType = slot.getCallData(callData);
+    if (callType == JSC::CallTypeJS) {
+        (void)JSC::asFunction(slot)->call(exec, thisObject, jscArgs);
+    } else if (callType == JSC::CallTypeHost) {
+        (void)callData.native.function(exec, JSC::asObject(slot), thisObject, jscArgs);
+    }
+
     if (exec->hadException())
         engine->emitSignalHandlerException();
 }
@@ -1238,36 +1309,29 @@ void QObjectConnectionManager::mark()
 }
 
 bool QObjectConnectionManager::addSignalHandler(
-    QObject *sender, const char *signal, JSC::JSValue receiver,
+    QObject *sender, int signalIndex, JSC::JSValue receiver,
     JSC::JSValue function, JSC::JSValue senderWrapper)
 {
-    Q_ASSERT(sender != 0);
-    Q_ASSERT(signal != 0);
-    Q_ASSERT(function.isObject(&JSC::JSFunction::info));
-    const QMetaObject *meta = sender->metaObject();
-    int signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal+1));
-    if (signalIndex == -1)
-        return false;
     if (connections.size() <= signalIndex)
         connections.resize(signalIndex+1);
     QVector<QObjectConnection> &cs = connections[signalIndex];
     int absSlotIndex = slotCounter + metaObject()->methodOffset();
     bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex);
-    if (ok)
+    if (ok) {
         cs.append(QObjectConnection(slotCounter++, receiver, function, senderWrapper));
+        QMetaMethod signal = sender->metaObject()->method(signalIndex);
+        QByteArray signalString;
+        signalString.append('2'); // signal code
+        signalString.append(signal.signature());
+        static_cast<QObjectNotifyCaller*>(sender)->callConnectNotify(signalString);
+    }
     return ok;
 }
 
 bool QObjectConnectionManager::removeSignalHandler(
-    QObject *sender, const char *signal,
+    QObject *sender, int signalIndex,
     JSC::JSValue receiver, JSC::JSValue slot)
 {
-    Q_ASSERT(sender != 0);
-    Q_ASSERT(signal != 0);
-    const QMetaObject *meta = sender->metaObject();
-    int signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal+1));
-    if (signalIndex == -1)
-        return false;
     if (connections.size() <= signalIndex)
         return false;
     QVector<QObjectConnection> &cs = connections[signalIndex];
@@ -1276,8 +1340,14 @@ bool QObjectConnectionManager::removeSignalHandler(
         if (c.hasTarget(receiver, slot)) {
             int absSlotIndex = c.slotIndex + metaObject()->methodOffset();
             bool ok = QMetaObject::disconnect(sender, signalIndex, this, absSlotIndex);
-            if (ok)
+            if (ok) {
                 cs.remove(i);
+                QMetaMethod signal = sender->metaObject()->method(signalIndex);
+                QByteArray signalString;
+                signalString.append('2'); // signal code
+                signalString.append(signal.signature());
+                static_cast<QScript::QObjectNotifyCaller*>(sender)->callDisconnectNotify(signalString);
+            }
             return ok;
         }
     }
@@ -1304,7 +1374,7 @@ void QObjectData::mark()
 }
 
 bool QObjectData::addSignalHandler(QObject *sender,
-                                   const char *signal,
+                                   int signalIndex,
                                    JSC::JSValue receiver,
                                    JSC::JSValue slot,
                                    JSC::JSValue senderWrapper)
@@ -1312,18 +1382,18 @@ bool QObjectData::addSignalHandler(QObject *sender,
     if (!connectionManager)
         connectionManager = new QObjectConnectionManager(engine);
     return connectionManager->addSignalHandler(
-        sender, signal, receiver, slot, senderWrapper);
+        sender, signalIndex, receiver, slot, senderWrapper);
 }
 
 bool QObjectData::removeSignalHandler(QObject *sender,
-                                      const char *signal,
+                                      int signalIndex,
                                       JSC::JSValue receiver,
                                       JSC::JSValue slot)
 {
     if (!connectionManager)
         return false;
     return connectionManager->removeSignalHandler(
-        sender, signal, receiver, slot);
+        sender, signalIndex, receiver, slot);
 }
 
 } // namespace QScript

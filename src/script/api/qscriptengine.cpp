@@ -21,10 +21,10 @@
 #include "qscriptvalueiterator.h"
 
 #include <QtCore/qstringlist.h>
+#include <QtCore/qmetaobject.h>
 
 #include "Error.h"
 #include "JSArray.h"
-#include "JSImmediate.h"
 #include "JSLock.h"
 #include "Interpreter.h"
 #include "DateConstructor.h"
@@ -34,6 +34,7 @@
 #include "InitializeThreading.h"
 #include "ObjectPrototype.h"
 #include "SourceCode.h"
+#include "FunctionPrototype.h"
 
 #include "utils/qscriptdate_p.h"
 #include "bridge/qscriptfunction_p.h"
@@ -362,6 +363,160 @@ QString qtStringFromJSCUString(const JSC::UString &str)
     return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
 }
 
+bool isFunction(JSC::JSValue value)
+{
+    if (!value.isObject())
+        return false;
+    JSC::CallData callData;
+    return (JSC::asObject(value)->getCallData(callData) != JSC::CallTypeNone);
+}
+
+static JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+static JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+
+JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+{
+#ifndef QT_NO_QOBJECT
+    if (args.size() == 0) {
+        return JSC::throwError(exec, JSC::GeneralError, "Function.prototype.disconnect: no arguments given");
+    }
+
+    if (!JSC::asObject(thisObject)->inherits(&QScript::QtFunction::info)) {
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.disconnect: this object is not a signal");
+    }
+
+    QScript::QtFunction *qtSignal = static_cast<QScript::QtFunction*>(JSC::asObject(thisObject));
+
+    const QMetaObject *meta = qtSignal->metaObject();
+    if (!meta) {
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.discconnect: cannot disconnect from deleted QObject");
+    }
+
+    QMetaMethod sig = meta->method(qtSignal->initialIndex());
+    if (sig.methodType() != QMetaMethod::Signal) {
+        QString message = QString::fromLatin1("Function.prototype.disconnect: %0::%1 is not a signal")
+                          .arg(QLatin1String(qtSignal->metaObject()->className()))
+                          .arg(QLatin1String(sig.signature()));
+        return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
+    }
+
+    JSC::JSValue receiver;
+    JSC::JSValue slot;
+    JSC::JSValue arg0 = args.at(0);
+    if (args.size() < 2) {
+        slot = arg0;
+    } else {
+        receiver = arg0;
+        JSC::JSValue arg1 = args.at(1);
+        if (isFunction(arg1))
+            slot = arg1;
+        else {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+//            slot = receiver.property(arg1.toString(), QScriptValue::ResolvePrototype);
+        }
+    }
+
+    if (!isFunction(slot)) {
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.disconnect: target is not a function");
+    }
+
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    bool ok = engine->scriptDisconnect(thisObject, receiver, slot);
+    if (!ok) {
+        QString message = QString::fromLatin1("Function.prototype.disconnect: failed to disconnect from %0::%1")
+                          .arg(QLatin1String(qtSignal->metaObject()->className()))
+                          .arg(QLatin1String(sig.signature()));
+        return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+    }
+    return JSC::jsUndefined();
+#else
+    Q_UNUSED(eng);
+    return context->throwError(QScriptContext::TypeError,
+                               QLatin1String("Function.prototype.disconnect"));
+#endif // QT_NO_QOBJECT
+}
+
+JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+{
+#ifndef QT_NO_QOBJECT
+    if (args.size() == 0) {
+        return JSC::throwError(exec, JSC::GeneralError,"Function.prototype.connect: no arguments given");
+    }
+
+    if (!JSC::asObject(thisObject)->inherits(&QScript::QtFunction::info)) {
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.disconnect: this object is not a signal");
+    }
+
+    QScript::QtFunction *qtSignal = static_cast<QScript::QtFunction*>(JSC::asObject(thisObject));
+
+    const QMetaObject *meta = qtSignal->metaObject();
+    if (!meta) {
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.connect: cannot connect to deleted QObject");
+    }
+
+    QMetaMethod sig = meta->method(qtSignal->initialIndex());
+    if (sig.methodType() != QMetaMethod::Signal) {
+        QString message = QString::fromLatin1("Function.prototype.connect: %0::%1 is not a signal")
+                          .arg(QLatin1String(qtSignal->metaObject()->className()))
+                          .arg(QLatin1String(sig.signature()));
+        return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
+    }
+
+    {
+        QList<int> overloads = qtSignal->overloadedIndexes();
+        if (!overloads.isEmpty()) {
+            overloads.append(qtSignal->initialIndex());
+            QByteArray signature = sig.signature();
+            QString message = QString::fromLatin1("Function.prototype.connect: ambiguous connect to %0::%1(); candidates are\n")
+                              .arg(QLatin1String(qtSignal->metaObject()->className()))
+                              .arg(QLatin1String(signature.left(signature.indexOf('('))));
+            for (int i = 0; i < overloads.size(); ++i) {
+                QMetaMethod mtd = meta->method(overloads.at(i));
+                message.append(QString::fromLatin1("    %0\n").arg(QString::fromLatin1(mtd.signature())));
+            }
+            message.append(QString::fromLatin1("Use e.g. object['%0'].connect() to connect to a particular overload")
+                           .arg(QLatin1String(signature)));
+            return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        }
+    }
+
+    JSC::JSValue receiver;
+    JSC::JSValue slot;
+    JSC::JSValue arg0 = args.at(0);
+    if (args.size() < 2) {
+        slot = arg0;
+    } else {
+        receiver = arg0;
+        JSC::JSValue arg1 = args.at(1);
+        if (isFunction(arg1))
+            slot = arg1;
+        else {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "Not implemented");
+//            slot = receiver.property(arg1.toString(), QScriptValue::ResolvePrototype);
+        }
+    }
+
+    if (!isFunction(slot)) {
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.connect: target is not a function");
+    }
+
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    bool ok = engine->scriptConnect(thisObject, receiver, slot);
+    if (!ok) {
+        QString message = QString::fromLatin1("Function.prototype.connect: failed to connect to %0::%1")
+                          .arg(QLatin1String(qtSignal->metaObject()->className()))
+                          .arg(QLatin1String(sig.signature()));
+        return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+    }
+    return JSC::jsUndefined();
+#else
+    Q_UNUSED(eng);
+    Q_UNUSED(classInfo);
+    return context->throwError(QScriptContext::TypeError,
+                               QLatin1String("Function.prototype.connect"));
+#endif // QT_NO_QOBJECT
+}
+
 GlobalObject::GlobalObject(QScriptEnginePrivate *eng)
     : JSC::JSGlobalObject(), engine(eng)
 {
@@ -423,6 +578,10 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "gc"), JSC::functionGC));
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "version"), JSC::functionVersion));
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "load"), JSC::functionLoad));
+
+    // ### rather than extending Function.prototype, consider creating a QtSignal.prototype
+    globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "disconnect"), QScript::functionDisconnect));
+    globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "connect"), QScript::functionConnect));
 
     currentContext = QScriptContextPrivate::create(
         *new QScriptContextPrivate(/*callee=*/0, /*thisObject=*/globalObject,
@@ -658,6 +817,63 @@ void QScriptEnginePrivate::emitSignalHandlerException()
 {
     Q_Q(QScriptEngine);
     emit q->signalHandlerException(q->uncaughtException());
+}
+
+bool QScriptEnginePrivate::scriptConnect(QObject *sender, const char *signal,
+                                         JSC::JSValue receiver, JSC::JSValue function)
+{
+    Q_ASSERT(sender);
+    Q_ASSERT(signal);
+    const QMetaObject *meta = sender->metaObject();
+    int index = meta->indexOfSignal(QMetaObject::normalizedSignature(signal+1));
+    if (index == -1)
+        return false;
+    return scriptConnect(sender, index, receiver, function, /*wrapper=*/JSC::JSValue());
+}
+
+bool QScriptEnginePrivate::scriptDisconnect(QObject *sender, const char *signal,
+                                            JSC::JSValue receiver, JSC::JSValue function)
+{
+    Q_ASSERT(sender);
+    Q_ASSERT(signal);
+    const QMetaObject *meta = sender->metaObject();
+    int index = meta->indexOfSignal(QMetaObject::normalizedSignature(signal+1));
+    if (index == -1)
+        return false;
+    return scriptDisconnect(sender, index, receiver, function);
+}
+
+bool QScriptEnginePrivate::scriptConnect(QObject *sender, int signalIndex,
+                                         JSC::JSValue receiver, JSC::JSValue function,
+                                         JSC::JSValue senderWrapper)
+{
+    QScript::QObjectData *data = qobjectData(sender);
+    return data->addSignalHandler(sender, signalIndex, receiver, function, senderWrapper);
+}
+
+bool QScriptEnginePrivate::scriptDisconnect(QObject *sender, int signalIndex,
+                                            JSC::JSValue receiver, JSC::JSValue function)
+{
+    QScript::QObjectData *data = qobjectData(sender);
+    if (!data)
+        return false;
+    return data->removeSignalHandler(sender, signalIndex, receiver, function);
+}
+
+bool QScriptEnginePrivate::scriptConnect(JSC::JSValue signal, JSC::JSValue receiver,
+                                         JSC::JSValue function)
+{
+    QScript::QtFunction *fun = static_cast<QScript::QtFunction*>(JSC::asObject(signal));
+    int index = fun->mostGeneralMethod();
+    return scriptConnect(fun->qobject(), index, receiver, function, fun->wrapperObject());
+}
+
+bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
+                                            JSC::JSValue function)
+{
+    QScript::QtFunction *fun = static_cast<QScript::QtFunction*>(JSC::asObject(signal));
+    int index = fun->mostGeneralMethod();
+    return scriptDisconnect(fun->qobject(), index, receiver, function);
 }
 
 #endif
@@ -2356,16 +2572,9 @@ bool qScriptConnect(QObject *sender, const char *signal,
     if (receiver.isObject() && (receiver.engine() != function.engine()))
         return false;
     QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
-    JSC::JSValue jscReceiver(engine->scriptValueToJSCValue(receiver));
-    JSC::JSValue jscFunction(engine->scriptValueToJSCValue(function));
-    QScript::QObjectData *data = engine->qobjectData(sender);
-
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // ### FIXME
-    // return data->addSignalHandler(sender, signal, jscReceiver, jscFunction);
-
-    return false;
-
+    JSC::JSValue jscReceiver = engine->scriptValueToJSCValue(receiver);
+    JSC::JSValue jscFunction = engine->scriptValueToJSCValue(function);
+    return engine->scriptConnect(sender, signal, jscReceiver, jscFunction);
 }
 
 /*!
@@ -2390,8 +2599,7 @@ bool qScriptDisconnect(QObject *sender, const char *signal,
     QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
     JSC::JSValue jscReceiver = engine->scriptValueToJSCValue(receiver);
     JSC::JSValue jscFunction = engine->scriptValueToJSCValue(function);
-    QScript::QObjectData *data = engine->qobjectData(sender);
-    return data->removeSignalHandler(sender, signal, jscReceiver, jscFunction);
+    return engine->scriptDisconnect(sender, signal, jscReceiver, jscFunction);
 }
 
 /*!

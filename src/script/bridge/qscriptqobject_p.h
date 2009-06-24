@@ -31,6 +31,7 @@
 #include <QtCore/qpointer.h>
 
 #include "JSObject.h"
+#include "InternalFunction.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -108,12 +109,12 @@ public:
     ~QObjectData();
 
     bool addSignalHandler(QObject *sender,
-                          const char *signal,
+                          int signalIndex,
                           JSC::JSValue receiver,
                           JSC::JSValue slot,
                           JSC::JSValue senderWrapper = 0);
     bool removeSignalHandler(QObject *sender,
-                             const char *signal,
+                             int signalIndex,
                              JSC::JSValue receiver,
                              JSC::JSValue slot);
 
@@ -123,6 +124,46 @@ private:
     QScriptEnginePrivate *engine;
     QScript::QObjectConnectionManager *connectionManager;
 //    QList<QScriptQObjectWrapperInfo> wrappers;
+};
+
+class QtFunction: public JSC::InternalFunction
+{
+public:
+    // work around CELL_SIZE limitation
+    struct Data
+    {
+        JSC::JSValue object;
+        int initialIndex;
+        bool maybeOverloaded;
+
+        Data(JSC::JSValue o, int ii, bool mo)
+            : object(o), initialIndex(ii), maybeOverloaded(mo) {}
+    };
+
+    QtFunction(JSC::JSValue object, int initialIndex, bool maybeOverloaded,
+               JSC::JSGlobalData*, WTF::PassRefPtr<JSC::Structure>, const JSC::Identifier&);
+    virtual ~QtFunction();
+
+    virtual JSC::CallType getCallData(JSC::CallData&);
+    virtual void mark();
+
+    virtual const JSC::ClassInfo* classInfo() const { return &info; }
+    static const JSC::ClassInfo info;
+
+    JSC::JSValue call(JSC::ExecState *exec, JSC::JSValue thisValue,
+                       const JSC::ArgList &args);
+
+    QObjectWrapperObject *wrapperObject() const;
+    QObject *qobject() const;
+    const QMetaObject *metaObject() const;
+    int initialIndex() const;
+    bool maybeOverloaded() const;
+    int mostGeneralMethod(QMetaMethod *out = 0) const;
+    QList<int> overloadedIndexes() const;
+    QString functionName() const;
+
+private:
+    Data *data;
 };
 
 } // namespace QScript
