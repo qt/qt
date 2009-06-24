@@ -45,4 +45,10 @@ contains(QT_CONFIG, egl) {
     !isEmpty(QMAKE_LIBS_EGL): LIBS += $$QMAKE_LIBS_EGL
 }
 
+contains(QT_CONFIG, openvg_on_opengl) {
+    !isEmpty(QMAKE_INCDIR_OPENGL): INCLUDEPATH += $$QMAKE_INCDIR_OPENGL
+    !isEmpty(QMAKE_LIBDIR_OPENGL): LIBS += -L$$QMAKE_LIBDIR_OPENGL
+    !isEmpty(QMAKE_LIBS_OPENGL): LIBS += $$QMAKE_LIBS_OPENGL
+}
+
 INCLUDEPATH += ../3rdparty/harfbuzz/src
