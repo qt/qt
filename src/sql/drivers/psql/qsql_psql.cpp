@@ -834,7 +834,7 @@ bool QPSQLDriver::commitTransaction()
     if (d->pro == QPSQLDriver::Version8 ||
         d->pro == QPSQLDriver::Version81 ||
         d->pro == QPSQLDriver::Version82) {
-        transaction_failed = QByteArray(PQcmdStatus(res)) == QByteArray("ROLLBACK")?true:false;
+        transaction_failed = qstrcmp(PQcmdStatus(res), "ROLLBACK") == 0;
     }
 
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK || transaction_failed) {
