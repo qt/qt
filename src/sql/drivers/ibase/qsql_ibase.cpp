@@ -157,8 +157,8 @@ static void delDA(XSQLDA *&sqlda)
     if (!sqlda)
         return;
     for (int i = 0; i < sqlda->sqld; ++i) {
-        delete sqlda->sqlvar[i].sqlind;
-        delete sqlda->sqlvar[i].sqldata;
+        delete [] sqlda->sqlvar[i].sqlind;
+        delete [] sqlda->sqlvar[i].sqldata;
     }
     free(sqlda);
     sqlda = 0;
