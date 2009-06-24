@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSClientRect.h"
 
-#include <wtf/GetPtr.h>
-
 #include "ClientRect.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

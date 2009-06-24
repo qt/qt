@@ -21,14 +21,14 @@
 #ifndef JSSVGMatrix_h
 #define JSSVGMatrix_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
+#include "TransformationMatrix.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "TransformationMatrix.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 

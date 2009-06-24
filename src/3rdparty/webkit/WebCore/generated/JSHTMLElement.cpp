@@ -19,21 +19,19 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Element.h"
 #include "HTMLCollection.h"
 #include "HTMLElement.h"
+#include "HTMLNames.h"
 #include "JSElement.h"
 #include "JSHTMLCollection.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -157,35 +155,35 @@ JSValue jsHTMLElementId(ExecState* exec, const Identifier&, const PropertySlot& 
 {
     UNUSED_PARAM(exec);
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->id());
+    return jsString(exec, imp->getAttribute(HTMLNames::idAttr));
 }
 
 JSValue jsHTMLElementTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->title());
+    return jsString(exec, imp->getAttribute(HTMLNames::titleAttr));
 }
 
 JSValue jsHTMLElementLang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->lang());
+    return jsString(exec, imp->getAttribute(HTMLNames::langAttr));
 }
 
 JSValue jsHTMLElementDir(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->dir());
+    return jsString(exec, imp->getAttribute(HTMLNames::dirAttr));
 }
 
 JSValue jsHTMLElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->className());
+    return jsString(exec, imp->getAttribute(HTMLNames::classAttr));
 }
 
 JSValue jsHTMLElementTabIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -256,31 +254,31 @@ void JSHTMLElement::put(ExecState* exec, const Identifier& propertyName, JSValue
 void setJSHTMLElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(thisObject)->impl());
-    imp->setId(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::idAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLElementTitle(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(thisObject)->impl());
-    imp->setTitle(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::titleAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLElementLang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(thisObject)->impl());
-    imp->setLang(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::langAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLElementDir(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(thisObject)->impl());
-    imp->setDir(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::dirAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLElementClassName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLElement* imp = static_cast<HTMLElement*>(static_cast<JSHTMLElement*>(thisObject)->impl());
-    imp->setClassName(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::classAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLElementTabIndex(ExecState* exec, JSObject* thisObject, JSValue value)

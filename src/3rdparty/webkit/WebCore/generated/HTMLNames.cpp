@@ -68,12 +68,16 @@ DEFINE_GLOBAL(QualifiedName, citeTag, nullAtom, "cite", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, codeTag, nullAtom, "code", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, colTag, nullAtom, "col", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, colgroupTag, nullAtom, "colgroup", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, datagridTag, nullAtom, "datagrid", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, dcellTag, nullAtom, "dcell", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, dcolTag, nullAtom, "dcol", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ddTag, nullAtom, "dd", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, delTag, nullAtom, "del", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, dfnTag, nullAtom, "dfn", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, dirTag, nullAtom, "dir", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, divTag, nullAtom, "div", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, dlTag, nullAtom, "dl", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, drowTag, nullAtom, "drow", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, dtTag, nullAtom, "dt", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, emTag, nullAtom, "em", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, embedTag, nullAtom, "embed", xhtmlNamespaceURI);
@@ -180,12 +184,16 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&codeTag,
         (WebCore::QualifiedName*)&colTag,
         (WebCore::QualifiedName*)&colgroupTag,
+        (WebCore::QualifiedName*)&datagridTag,
+        (WebCore::QualifiedName*)&dcellTag,
+        (WebCore::QualifiedName*)&dcolTag,
         (WebCore::QualifiedName*)&ddTag,
         (WebCore::QualifiedName*)&delTag,
         (WebCore::QualifiedName*)&dfnTag,
         (WebCore::QualifiedName*)&dirTag,
         (WebCore::QualifiedName*)&divTag,
         (WebCore::QualifiedName*)&dlTag,
+        (WebCore::QualifiedName*)&drowTag,
         (WebCore::QualifiedName*)&dtTag,
         (WebCore::QualifiedName*)&emTag,
         (WebCore::QualifiedName*)&embedTag,
@@ -265,7 +273,7 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&wbrTag,
         (WebCore::QualifiedName*)&xmpTag,
     };
-    *size = 107;
+    *size = 111;
     return HTMLTags;
 }
 
@@ -334,7 +342,9 @@ DEFINE_GLOBAL(QualifiedName, directionAttr, nullAtom, "direction", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, disabledAttr, nullAtom, "disabled", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, enctypeAttr, nullAtom, "enctype", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, endAttr, nullAtom, "end", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, expandedAttr, nullAtom, "expanded", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, faceAttr, nullAtom, "face", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, focusedAttr, nullAtom, "focused", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, forAttr, nullAtom, "for", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, frameAttr, nullAtom, "frame", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, frameborderAttr, nullAtom, "frameborder", xhtmlNamespaceURI);
@@ -347,6 +357,7 @@ DEFINE_GLOBAL(QualifiedName, hspaceAttr, nullAtom, "hspace", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, http_equivAttr, nullAtom, "http_equiv", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, idAttr, nullAtom, "id", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, incrementalAttr, nullAtom, "incremental", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, indeterminateAttr, nullAtom, "indeterminate", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ismapAttr, nullAtom, "ismap", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, keytypeAttr, nullAtom, "keytype", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, labelAttr, nullAtom, "label", xhtmlNamespaceURI);
@@ -381,6 +392,8 @@ DEFINE_GLOBAL(QualifiedName, onbeforecutAttr, nullAtom, "onbeforecut", xhtmlName
 DEFINE_GLOBAL(QualifiedName, onbeforepasteAttr, nullAtom, "onbeforepaste", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onbeforeunloadAttr, nullAtom, "onbeforeunload", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onblurAttr, nullAtom, "onblur", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, oncanplayAttr, nullAtom, "oncanplay", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, oncanplaythroughAttr, nullAtom, "oncanplaythrough", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onchangeAttr, nullAtom, "onchange", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onclickAttr, nullAtom, "onclick", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, oncontextmenuAttr, nullAtom, "oncontextmenu", xhtmlNamespaceURI);
@@ -394,6 +407,9 @@ DEFINE_GLOBAL(QualifiedName, ondragleaveAttr, nullAtom, "ondragleave", xhtmlName
 DEFINE_GLOBAL(QualifiedName, ondragoverAttr, nullAtom, "ondragover", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ondragstartAttr, nullAtom, "ondragstart", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ondropAttr, nullAtom, "ondrop", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ondurationchangeAttr, nullAtom, "ondurationchange", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onemptiedAttr, nullAtom, "onemptied", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onendedAttr, nullAtom, "onended", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onerrorAttr, nullAtom, "onerror", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onfocusAttr, nullAtom, "onfocus", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, oninputAttr, nullAtom, "oninput", xhtmlNamespaceURI);
@@ -401,6 +417,9 @@ DEFINE_GLOBAL(QualifiedName, onkeydownAttr, nullAtom, "onkeydown", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, onkeypressAttr, nullAtom, "onkeypress", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onkeyupAttr, nullAtom, "onkeyup", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onloadAttr, nullAtom, "onload", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onloadeddataAttr, nullAtom, "onloadeddata", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onloadedmetadataAttr, nullAtom, "onloadedmetadata", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onloadstartAttr, nullAtom, "onloadstart", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmousedownAttr, nullAtom, "onmousedown", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmousemoveAttr, nullAtom, "onmousemove", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmouseoutAttr, nullAtom, "onmouseout", xhtmlNamespaceURI);
@@ -410,15 +429,27 @@ DEFINE_GLOBAL(QualifiedName, onmousewheelAttr, nullAtom, "onmousewheel", xhtmlNa
 DEFINE_GLOBAL(QualifiedName, onofflineAttr, nullAtom, "onoffline", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ononlineAttr, nullAtom, "ononline", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onpasteAttr, nullAtom, "onpaste", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onpauseAttr, nullAtom, "onpause", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onplayAttr, nullAtom, "onplay", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onplayingAttr, nullAtom, "onplaying", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onprogressAttr, nullAtom, "onprogress", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onratechangeAttr, nullAtom, "onratechange", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onresetAttr, nullAtom, "onreset", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onresizeAttr, nullAtom, "onresize", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onscrollAttr, nullAtom, "onscroll", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onsearchAttr, nullAtom, "onsearch", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onseekedAttr, nullAtom, "onseeked", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onseekingAttr, nullAtom, "onseeking", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onselectAttr, nullAtom, "onselect", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onselectstartAttr, nullAtom, "onselectstart", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onstalledAttr, nullAtom, "onstalled", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onstorageAttr, nullAtom, "onstorage", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onsubmitAttr, nullAtom, "onsubmit", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onsuspendAttr, nullAtom, "onsuspend", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ontimeupdateAttr, nullAtom, "ontimeupdate", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onunloadAttr, nullAtom, "onunload", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onvolumechangeAttr, nullAtom, "onvolumechange", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onwaitingAttr, nullAtom, "onwaiting", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationendAttr, nullAtom, "onwebkitanimationend", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationiterationAttr, nullAtom, "onwebkitanimationiteration", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationstartAttr, nullAtom, "onwebkitanimationstart", xhtmlNamespaceURI);
@@ -428,7 +459,9 @@ DEFINE_GLOBAL(QualifiedName, playcountAttr, nullAtom, "playcount", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, pluginurlAttr, nullAtom, "pluginurl", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, posterAttr, nullAtom, "poster", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, precisionAttr, nullAtom, "precision", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, primaryAttr, nullAtom, "primary", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, profileAttr, nullAtom, "profile", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, progressAttr, nullAtom, "progress", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, promptAttr, nullAtom, "prompt", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, readonlyAttr, nullAtom, "readonly", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, relAttr, nullAtom, "rel", xhtmlNamespaceURI);
@@ -446,6 +479,8 @@ DEFINE_GLOBAL(QualifiedName, scrollingAttr, nullAtom, "scrolling", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, selectedAttr, nullAtom, "selected", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, shapeAttr, nullAtom, "shape", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, sizeAttr, nullAtom, "size", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, sortableAttr, nullAtom, "sortable", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, sortdirectionAttr, nullAtom, "sortdirection", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, spanAttr, nullAtom, "span", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, spellcheckAttr, nullAtom, "spellcheck", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, srcAttr, nullAtom, "src", xhtmlNamespaceURI);
@@ -541,7 +576,9 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&disabledAttr,
         (WebCore::QualifiedName*)&enctypeAttr,
         (WebCore::QualifiedName*)&endAttr,
+        (WebCore::QualifiedName*)&expandedAttr,
         (WebCore::QualifiedName*)&faceAttr,
+        (WebCore::QualifiedName*)&focusedAttr,
         (WebCore::QualifiedName*)&forAttr,
         (WebCore::QualifiedName*)&frameAttr,
         (WebCore::QualifiedName*)&frameborderAttr,
@@ -554,6 +591,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&http_equivAttr,
         (WebCore::QualifiedName*)&idAttr,
         (WebCore::QualifiedName*)&incrementalAttr,
+        (WebCore::QualifiedName*)&indeterminateAttr,
         (WebCore::QualifiedName*)&ismapAttr,
         (WebCore::QualifiedName*)&keytypeAttr,
         (WebCore::QualifiedName*)&labelAttr,
@@ -588,6 +626,8 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onbeforepasteAttr,
         (WebCore::QualifiedName*)&onbeforeunloadAttr,
         (WebCore::QualifiedName*)&onblurAttr,
+        (WebCore::QualifiedName*)&oncanplayAttr,
+        (WebCore::QualifiedName*)&oncanplaythroughAttr,
         (WebCore::QualifiedName*)&onchangeAttr,
         (WebCore::QualifiedName*)&onclickAttr,
         (WebCore::QualifiedName*)&oncontextmenuAttr,
@@ -601,6 +641,9 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&ondragoverAttr,
         (WebCore::QualifiedName*)&ondragstartAttr,
         (WebCore::QualifiedName*)&ondropAttr,
+        (WebCore::QualifiedName*)&ondurationchangeAttr,
+        (WebCore::QualifiedName*)&onemptiedAttr,
+        (WebCore::QualifiedName*)&onendedAttr,
         (WebCore::QualifiedName*)&onerrorAttr,
         (WebCore::QualifiedName*)&onfocusAttr,
         (WebCore::QualifiedName*)&oninputAttr,
@@ -608,6 +651,9 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onkeypressAttr,
         (WebCore::QualifiedName*)&onkeyupAttr,
         (WebCore::QualifiedName*)&onloadAttr,
+        (WebCore::QualifiedName*)&onloadeddataAttr,
+        (WebCore::QualifiedName*)&onloadedmetadataAttr,
+        (WebCore::QualifiedName*)&onloadstartAttr,
         (WebCore::QualifiedName*)&onmousedownAttr,
         (WebCore::QualifiedName*)&onmousemoveAttr,
         (WebCore::QualifiedName*)&onmouseoutAttr,
@@ -617,15 +663,27 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onofflineAttr,
         (WebCore::QualifiedName*)&ononlineAttr,
         (WebCore::QualifiedName*)&onpasteAttr,
+        (WebCore::QualifiedName*)&onpauseAttr,
+        (WebCore::QualifiedName*)&onplayAttr,
+        (WebCore::QualifiedName*)&onplayingAttr,
+        (WebCore::QualifiedName*)&onprogressAttr,
+        (WebCore::QualifiedName*)&onratechangeAttr,
         (WebCore::QualifiedName*)&onresetAttr,
         (WebCore::QualifiedName*)&onresizeAttr,
         (WebCore::QualifiedName*)&onscrollAttr,
         (WebCore::QualifiedName*)&onsearchAttr,
+        (WebCore::QualifiedName*)&onseekedAttr,
+        (WebCore::QualifiedName*)&onseekingAttr,
         (WebCore::QualifiedName*)&onselectAttr,
         (WebCore::QualifiedName*)&onselectstartAttr,
+        (WebCore::QualifiedName*)&onstalledAttr,
         (WebCore::QualifiedName*)&onstorageAttr,
         (WebCore::QualifiedName*)&onsubmitAttr,
+        (WebCore::QualifiedName*)&onsuspendAttr,
+        (WebCore::QualifiedName*)&ontimeupdateAttr,
         (WebCore::QualifiedName*)&onunloadAttr,
+        (WebCore::QualifiedName*)&onvolumechangeAttr,
+        (WebCore::QualifiedName*)&onwaitingAttr,
         (WebCore::QualifiedName*)&onwebkitanimationendAttr,
         (WebCore::QualifiedName*)&onwebkitanimationiterationAttr,
         (WebCore::QualifiedName*)&onwebkitanimationstartAttr,
@@ -635,7 +693,9 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&pluginurlAttr,
         (WebCore::QualifiedName*)&posterAttr,
         (WebCore::QualifiedName*)&precisionAttr,
+        (WebCore::QualifiedName*)&primaryAttr,
         (WebCore::QualifiedName*)&profileAttr,
+        (WebCore::QualifiedName*)&progressAttr,
         (WebCore::QualifiedName*)&promptAttr,
         (WebCore::QualifiedName*)&readonlyAttr,
         (WebCore::QualifiedName*)&relAttr,
@@ -653,6 +713,8 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&selectedAttr,
         (WebCore::QualifiedName*)&shapeAttr,
         (WebCore::QualifiedName*)&sizeAttr,
+        (WebCore::QualifiedName*)&sortableAttr,
+        (WebCore::QualifiedName*)&sortdirectionAttr,
         (WebCore::QualifiedName*)&spanAttr,
         (WebCore::QualifiedName*)&spellcheckAttr,
         (WebCore::QualifiedName*)&srcAttr,
@@ -680,7 +742,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&widthAttr,
         (WebCore::QualifiedName*)&wrapAttr,
     };
-    *size = 202;
+    *size = 229;
     return HTMLAttr;
 }
 
@@ -728,12 +790,16 @@ void init()
     const char *codeTagString = "code";
     const char *colTagString = "col";
     const char *colgroupTagString = "colgroup";
+    const char *datagridTagString = "datagrid";
+    const char *dcellTagString = "dcell";
+    const char *dcolTagString = "dcol";
     const char *ddTagString = "dd";
     const char *delTagString = "del";
     const char *dfnTagString = "dfn";
     const char *dirTagString = "dir";
     const char *divTagString = "div";
     const char *dlTagString = "dl";
+    const char *drowTagString = "drow";
     const char *dtTagString = "dt";
     const char *emTagString = "em";
     const char *embedTagString = "embed";
@@ -835,12 +901,16 @@ void init()
     new ((void*)&codeTag) QualifiedName(nullAtom, codeTagString, xhtmlNS);
     new ((void*)&colTag) QualifiedName(nullAtom, colTagString, xhtmlNS);
     new ((void*)&colgroupTag) QualifiedName(nullAtom, colgroupTagString, xhtmlNS);
+    new ((void*)&datagridTag) QualifiedName(nullAtom, datagridTagString, xhtmlNS);
+    new ((void*)&dcellTag) QualifiedName(nullAtom, dcellTagString, xhtmlNS);
+    new ((void*)&dcolTag) QualifiedName(nullAtom, dcolTagString, xhtmlNS);
     new ((void*)&ddTag) QualifiedName(nullAtom, ddTagString, xhtmlNS);
     new ((void*)&delTag) QualifiedName(nullAtom, delTagString, xhtmlNS);
     new ((void*)&dfnTag) QualifiedName(nullAtom, dfnTagString, xhtmlNS);
     new ((void*)&dirTag) QualifiedName(nullAtom, dirTagString, xhtmlNS);
     new ((void*)&divTag) QualifiedName(nullAtom, divTagString, xhtmlNS);
     new ((void*)&dlTag) QualifiedName(nullAtom, dlTagString, xhtmlNS);
+    new ((void*)&drowTag) QualifiedName(nullAtom, drowTagString, xhtmlNS);
     new ((void*)&dtTag) QualifiedName(nullAtom, dtTagString, xhtmlNS);
     new ((void*)&emTag) QualifiedName(nullAtom, emTagString, xhtmlNS);
     new ((void*)&embedTag) QualifiedName(nullAtom, embedTagString, xhtmlNS);
@@ -983,7 +1053,9 @@ void init()
     const char *disabledAttrString = "disabled";
     const char *enctypeAttrString = "enctype";
     const char *endAttrString = "end";
+    const char *expandedAttrString = "expanded";
     const char *faceAttrString = "face";
+    const char *focusedAttrString = "focused";
     const char *forAttrString = "for";
     const char *frameAttrString = "frame";
     const char *frameborderAttrString = "frameborder";
@@ -996,6 +1068,7 @@ void init()
     const char *http_equivAttrString = "http-equiv";
     const char *idAttrString = "id";
     const char *incrementalAttrString = "incremental";
+    const char *indeterminateAttrString = "indeterminate";
     const char *ismapAttrString = "ismap";
     const char *keytypeAttrString = "keytype";
     const char *labelAttrString = "label";
@@ -1030,6 +1103,8 @@ void init()
     const char *onbeforepasteAttrString = "onbeforepaste";
     const char *onbeforeunloadAttrString = "onbeforeunload";
     const char *onblurAttrString = "onblur";
+    const char *oncanplayAttrString = "oncanplay";
+    const char *oncanplaythroughAttrString = "oncanplaythrough";
     const char *onchangeAttrString = "onchange";
     const char *onclickAttrString = "onclick";
     const char *oncontextmenuAttrString = "oncontextmenu";
@@ -1043,6 +1118,9 @@ void init()
     const char *ondragoverAttrString = "ondragover";
     const char *ondragstartAttrString = "ondragstart";
     const char *ondropAttrString = "ondrop";
+    const char *ondurationchangeAttrString = "ondurationchange";
+    const char *onemptiedAttrString = "onemptied";
+    const char *onendedAttrString = "onended";
     const char *onerrorAttrString = "onerror";
     const char *onfocusAttrString = "onfocus";
     const char *oninputAttrString = "oninput";
@@ -1050,6 +1128,9 @@ void init()
     const char *onkeypressAttrString = "onkeypress";
     const char *onkeyupAttrString = "onkeyup";
     const char *onloadAttrString = "onload";
+    const char *onloadeddataAttrString = "onloadeddata";
+    const char *onloadedmetadataAttrString = "onloadedmetadata";
+    const char *onloadstartAttrString = "onloadstart";
     const char *onmousedownAttrString = "onmousedown";
     const char *onmousemoveAttrString = "onmousemove";
     const char *onmouseoutAttrString = "onmouseout";
@@ -1059,15 +1140,27 @@ void init()
     const char *onofflineAttrString = "onoffline";
     const char *ononlineAttrString = "ononline";
     const char *onpasteAttrString = "onpaste";
+    const char *onpauseAttrString = "onpause";
+    const char *onplayAttrString = "onplay";
+    const char *onplayingAttrString = "onplaying";
+    const char *onprogressAttrString = "onprogress";
+    const char *onratechangeAttrString = "onratechange";
     const char *onresetAttrString = "onreset";
     const char *onresizeAttrString = "onresize";
     const char *onscrollAttrString = "onscroll";
     const char *onsearchAttrString = "onsearch";
+    const char *onseekedAttrString = "onseeked";
+    const char *onseekingAttrString = "onseeking";
     const char *onselectAttrString = "onselect";
     const char *onselectstartAttrString = "onselectstart";
+    const char *onstalledAttrString = "onstalled";
     const char *onstorageAttrString = "onstorage";
     const char *onsubmitAttrString = "onsubmit";
+    const char *onsuspendAttrString = "onsuspend";
+    const char *ontimeupdateAttrString = "ontimeupdate";
     const char *onunloadAttrString = "onunload";
+    const char *onvolumechangeAttrString = "onvolumechange";
+    const char *onwaitingAttrString = "onwaiting";
     const char *onwebkitanimationendAttrString = "onwebkitanimationend";
     const char *onwebkitanimationiterationAttrString = "onwebkitanimationiteration";
     const char *onwebkitanimationstartAttrString = "onwebkitanimationstart";
@@ -1077,7 +1170,9 @@ void init()
     const char *pluginurlAttrString = "pluginurl";
     const char *posterAttrString = "poster";
     const char *precisionAttrString = "precision";
+    const char *primaryAttrString = "primary";
     const char *profileAttrString = "profile";
+    const char *progressAttrString = "progress";
     const char *promptAttrString = "prompt";
     const char *readonlyAttrString = "readonly";
     const char *relAttrString = "rel";
@@ -1095,6 +1190,8 @@ void init()
     const char *selectedAttrString = "selected";
     const char *shapeAttrString = "shape";
     const char *sizeAttrString = "size";
+    const char *sortableAttrString = "sortable";
+    const char *sortdirectionAttrString = "sortdirection";
     const char *spanAttrString = "span";
     const char *spellcheckAttrString = "spellcheck";
     const char *srcAttrString = "src";
@@ -1185,7 +1282,9 @@ void init()
     new ((void*)&disabledAttr) QualifiedName(nullAtom, disabledAttrString, nullAtom);
     new ((void*)&enctypeAttr) QualifiedName(nullAtom, enctypeAttrString, nullAtom);
     new ((void*)&endAttr) QualifiedName(nullAtom, endAttrString, nullAtom);
+    new ((void*)&expandedAttr) QualifiedName(nullAtom, expandedAttrString, nullAtom);
     new ((void*)&faceAttr) QualifiedName(nullAtom, faceAttrString, nullAtom);
+    new ((void*)&focusedAttr) QualifiedName(nullAtom, focusedAttrString, nullAtom);
     new ((void*)&forAttr) QualifiedName(nullAtom, forAttrString, nullAtom);
     new ((void*)&frameAttr) QualifiedName(nullAtom, frameAttrString, nullAtom);
     new ((void*)&frameborderAttr) QualifiedName(nullAtom, frameborderAttrString, nullAtom);
@@ -1198,6 +1297,7 @@ void init()
     new ((void*)&http_equivAttr) QualifiedName(nullAtom, http_equivAttrString, nullAtom);
     new ((void*)&idAttr) QualifiedName(nullAtom, idAttrString, nullAtom);
     new ((void*)&incrementalAttr) QualifiedName(nullAtom, incrementalAttrString, nullAtom);
+    new ((void*)&indeterminateAttr) QualifiedName(nullAtom, indeterminateAttrString, nullAtom);
     new ((void*)&ismapAttr) QualifiedName(nullAtom, ismapAttrString, nullAtom);
     new ((void*)&keytypeAttr) QualifiedName(nullAtom, keytypeAttrString, nullAtom);
     new ((void*)&labelAttr) QualifiedName(nullAtom, labelAttrString, nullAtom);
@@ -1232,6 +1332,8 @@ void init()
     new ((void*)&onbeforepasteAttr) QualifiedName(nullAtom, onbeforepasteAttrString, nullAtom);
     new ((void*)&onbeforeunloadAttr) QualifiedName(nullAtom, onbeforeunloadAttrString, nullAtom);
     new ((void*)&onblurAttr) QualifiedName(nullAtom, onblurAttrString, nullAtom);
+    new ((void*)&oncanplayAttr) QualifiedName(nullAtom, oncanplayAttrString, nullAtom);
+    new ((void*)&oncanplaythroughAttr) QualifiedName(nullAtom, oncanplaythroughAttrString, nullAtom);
     new ((void*)&onchangeAttr) QualifiedName(nullAtom, onchangeAttrString, nullAtom);
     new ((void*)&onclickAttr) QualifiedName(nullAtom, onclickAttrString, nullAtom);
     new ((void*)&oncontextmenuAttr) QualifiedName(nullAtom, oncontextmenuAttrString, nullAtom);
@@ -1245,6 +1347,9 @@ void init()
     new ((void*)&ondragoverAttr) QualifiedName(nullAtom, ondragoverAttrString, nullAtom);
     new ((void*)&ondragstartAttr) QualifiedName(nullAtom, ondragstartAttrString, nullAtom);
     new ((void*)&ondropAttr) QualifiedName(nullAtom, ondropAttrString, nullAtom);
+    new ((void*)&ondurationchangeAttr) QualifiedName(nullAtom, ondurationchangeAttrString, nullAtom);
+    new ((void*)&onemptiedAttr) QualifiedName(nullAtom, onemptiedAttrString, nullAtom);
+    new ((void*)&onendedAttr) QualifiedName(nullAtom, onendedAttrString, nullAtom);
     new ((void*)&onerrorAttr) QualifiedName(nullAtom, onerrorAttrString, nullAtom);
     new ((void*)&onfocusAttr) QualifiedName(nullAtom, onfocusAttrString, nullAtom);
     new ((void*)&oninputAttr) QualifiedName(nullAtom, oninputAttrString, nullAtom);
@@ -1252,6 +1357,9 @@ void init()
     new ((void*)&onkeypressAttr) QualifiedName(nullAtom, onkeypressAttrString, nullAtom);
     new ((void*)&onkeyupAttr) QualifiedName(nullAtom, onkeyupAttrString, nullAtom);
     new ((void*)&onloadAttr) QualifiedName(nullAtom, onloadAttrString, nullAtom);
+    new ((void*)&onloadeddataAttr) QualifiedName(nullAtom, onloadeddataAttrString, nullAtom);
+    new ((void*)&onloadedmetadataAttr) QualifiedName(nullAtom, onloadedmetadataAttrString, nullAtom);
+    new ((void*)&onloadstartAttr) QualifiedName(nullAtom, onloadstartAttrString, nullAtom);
     new ((void*)&onmousedownAttr) QualifiedName(nullAtom, onmousedownAttrString, nullAtom);
     new ((void*)&onmousemoveAttr) QualifiedName(nullAtom, onmousemoveAttrString, nullAtom);
     new ((void*)&onmouseoutAttr) QualifiedName(nullAtom, onmouseoutAttrString, nullAtom);
@@ -1261,15 +1369,27 @@ void init()
     new ((void*)&onofflineAttr) QualifiedName(nullAtom, onofflineAttrString, nullAtom);
     new ((void*)&ononlineAttr) QualifiedName(nullAtom, ononlineAttrString, nullAtom);
     new ((void*)&onpasteAttr) QualifiedName(nullAtom, onpasteAttrString, nullAtom);
+    new ((void*)&onpauseAttr) QualifiedName(nullAtom, onpauseAttrString, nullAtom);
+    new ((void*)&onplayAttr) QualifiedName(nullAtom, onplayAttrString, nullAtom);
+    new ((void*)&onplayingAttr) QualifiedName(nullAtom, onplayingAttrString, nullAtom);
+    new ((void*)&onprogressAttr) QualifiedName(nullAtom, onprogressAttrString, nullAtom);
+    new ((void*)&onratechangeAttr) QualifiedName(nullAtom, onratechangeAttrString, nullAtom);
     new ((void*)&onresetAttr) QualifiedName(nullAtom, onresetAttrString, nullAtom);
     new ((void*)&onresizeAttr) QualifiedName(nullAtom, onresizeAttrString, nullAtom);
     new ((void*)&onscrollAttr) QualifiedName(nullAtom, onscrollAttrString, nullAtom);
     new ((void*)&onsearchAttr) QualifiedName(nullAtom, onsearchAttrString, nullAtom);
+    new ((void*)&onseekedAttr) QualifiedName(nullAtom, onseekedAttrString, nullAtom);
+    new ((void*)&onseekingAttr) QualifiedName(nullAtom, onseekingAttrString, nullAtom);
     new ((void*)&onselectAttr) QualifiedName(nullAtom, onselectAttrString, nullAtom);
     new ((void*)&onselectstartAttr) QualifiedName(nullAtom, onselectstartAttrString, nullAtom);
+    new ((void*)&onstalledAttr) QualifiedName(nullAtom, onstalledAttrString, nullAtom);
     new ((void*)&onstorageAttr) QualifiedName(nullAtom, onstorageAttrString, nullAtom);
     new ((void*)&onsubmitAttr) QualifiedName(nullAtom, onsubmitAttrString, nullAtom);
+    new ((void*)&onsuspendAttr) QualifiedName(nullAtom, onsuspendAttrString, nullAtom);
+    new ((void*)&ontimeupdateAttr) QualifiedName(nullAtom, ontimeupdateAttrString, nullAtom);
     new ((void*)&onunloadAttr) QualifiedName(nullAtom, onunloadAttrString, nullAtom);
+    new ((void*)&onvolumechangeAttr) QualifiedName(nullAtom, onvolumechangeAttrString, nullAtom);
+    new ((void*)&onwaitingAttr) QualifiedName(nullAtom, onwaitingAttrString, nullAtom);
     new ((void*)&onwebkitanimationendAttr) QualifiedName(nullAtom, onwebkitanimationendAttrString, nullAtom);
     new ((void*)&onwebkitanimationiterationAttr) QualifiedName(nullAtom, onwebkitanimationiterationAttrString, nullAtom);
     new ((void*)&onwebkitanimationstartAttr) QualifiedName(nullAtom, onwebkitanimationstartAttrString, nullAtom);
@@ -1279,7 +1399,9 @@ void init()
     new ((void*)&pluginurlAttr) QualifiedName(nullAtom, pluginurlAttrString, nullAtom);
     new ((void*)&posterAttr) QualifiedName(nullAtom, posterAttrString, nullAtom);
     new ((void*)&precisionAttr) QualifiedName(nullAtom, precisionAttrString, nullAtom);
+    new ((void*)&primaryAttr) QualifiedName(nullAtom, primaryAttrString, nullAtom);
     new ((void*)&profileAttr) QualifiedName(nullAtom, profileAttrString, nullAtom);
+    new ((void*)&progressAttr) QualifiedName(nullAtom, progressAttrString, nullAtom);
     new ((void*)&promptAttr) QualifiedName(nullAtom, promptAttrString, nullAtom);
     new ((void*)&readonlyAttr) QualifiedName(nullAtom, readonlyAttrString, nullAtom);
     new ((void*)&relAttr) QualifiedName(nullAtom, relAttrString, nullAtom);
@@ -1297,6 +1419,8 @@ void init()
     new ((void*)&selectedAttr) QualifiedName(nullAtom, selectedAttrString, nullAtom);
     new ((void*)&shapeAttr) QualifiedName(nullAtom, shapeAttrString, nullAtom);
     new ((void*)&sizeAttr) QualifiedName(nullAtom, sizeAttrString, nullAtom);
+    new ((void*)&sortableAttr) QualifiedName(nullAtom, sortableAttrString, nullAtom);
+    new ((void*)&sortdirectionAttr) QualifiedName(nullAtom, sortdirectionAttrString, nullAtom);
     new ((void*)&spanAttr) QualifiedName(nullAtom, spanAttrString, nullAtom);
     new ((void*)&spellcheckAttr) QualifiedName(nullAtom, spellcheckAttrString, nullAtom);
     new ((void*)&srcAttr) QualifiedName(nullAtom, srcAttrString, nullAtom);

@@ -1,6 +1,7 @@
 /*
  *  Copyright (C) 1999-2000 Harri Porten (porten@kde.org)
  *  Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2008, 2009 Torch Mobile, Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,7 +23,7 @@
 #include "config.h"
 #include "DatePrototype.h"
 
-#include "DateMath.h"
+#include "DateConversion.h"
 #include "Error.h"
 #include "JSString.h"
 #include "ObjectPrototype.h"
@@ -38,6 +39,7 @@
 #include <math.h>
 #include <time.h>
 #include <wtf/Assertions.h>
+#include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
 #include <wtf/StringExtras.h>
 #include <wtf/UnusedParam.h>
@@ -56,6 +58,10 @@
 
 #if PLATFORM(MAC)
 #include <CoreFoundation/CoreFoundation.h>
+#endif
+
+#if PLATFORM(WINCE) && !PLATFORM(QT)
+extern "C" size_t strftime(char * const s, const size_t maxsize, const char * const format, const struct tm * const t); //provided by libce
 #endif
 
 using namespace WTF;
@@ -107,6 +113,9 @@ static JSValue JSC_HOST_CALL dateProtoFuncToLocaleTimeString(ExecState*, JSObjec
 static JSValue JSC_HOST_CALL dateProtoFuncToString(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL dateProtoFuncToTimeString(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL dateProtoFuncToUTCString(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL dateProtoFuncToISOString(ExecState*, JSObject*, JSValue, const ArgList&);
+
+static JSValue JSC_HOST_CALL dateProtoFuncToJSON(ExecState*, JSObject*, JSValue, const ArgList&);
 
 }
 
@@ -189,6 +198,9 @@ static JSCell* formatLocaleDate(ExecState* exec, const GregorianDateTime& gdt, L
 {
 #if HAVE(LANGINFO_H)
     static const nl_item formats[] = { D_T_FMT, D_FMT, T_FMT };
+#elif PLATFORM(WINCE) && !PLATFORM(QT)
+    // strftime() we are using does not support #
+    static const char* const formatStrings[] = { "%c", "%x", "%X" };
 #else
     static const char* const formatStrings[] = { "%#c", "%#x", "%X" };
 #endif
@@ -333,6 +345,7 @@ const ClassInfo DatePrototype::info = {"Date", &DateInstance::info, 0, ExecState
 /* Source for DatePrototype.lut.h
 @begin dateTable
   toString              dateProtoFuncToString                DontEnum|Function       0
+  toISOString           dateProtoFuncToISOString             DontEnum|Function       0
   toUTCString           dateProtoFuncToUTCString             DontEnum|Function       0
   toDateString          dateProtoFuncToDateString            DontEnum|Function       0
   toTimeString          dateProtoFuncToTimeString            DontEnum|Function       0
@@ -376,6 +389,7 @@ const ClassInfo DatePrototype::info = {"Date", &DateInstance::info, 0, ExecState
   setUTCFullYear        dateProtoFuncSetUTCFullYear          DontEnum|Function       3
   setYear               dateProtoFuncSetYear                 DontEnum|Function       1
   getYear               dateProtoFuncGetYear                 DontEnum|Function       0
+  toJSON                dateProtoFuncToJSON                  DontEnum|Function       0
 @end
 */
 
@@ -427,6 +441,28 @@ JSValue JSC_HOST_CALL dateProtoFuncToUTCString(ExecState* exec, JSObject*, JSVal
     GregorianDateTime t;
     thisDateObj->msToGregorianDateTime(milli, utc, t);
     return jsNontrivialString(exec, formatDateUTCVariant(t) + " " + formatTime(t, utc));
+}
+
+JSValue JSC_HOST_CALL dateProtoFuncToISOString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
+{
+    if (!thisValue.isObject(&DateInstance::info))
+        return throwError(exec, TypeError);
+    
+    const bool utc = true;
+    
+    DateInstance* thisDateObj = asDateInstance(thisValue); 
+    double milli = thisDateObj->internalNumber();
+    if (!isfinite(milli))
+        return jsNontrivialString(exec, "Invalid Date");
+    
+    GregorianDateTime t;
+    thisDateObj->msToGregorianDateTime(milli, utc, t);
+    // Maximum amount of space we need in buffer: 6 (max. digits in year) + 2 * 5 (2 characters each for month, day, hour, minute, second)
+    // 6 for formatting and one for null termination = 23.  We add one extra character to allow us to force null termination.
+    char buffer[24];
+    snprintf(buffer, sizeof(buffer) - 1, "%04d-%02d-%02dT%02d:%02d:%02dZ", 1900 + t.year, t.month + 1, t.monthDay, t.hour, t.minute, t.second);
+    buffer[sizeof(buffer) - 1] = 0;
+    return jsNontrivialString(exec, buffer);
 }
 
 JSValue JSC_HOST_CALL dateProtoFuncToDateString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
@@ -1041,6 +1077,29 @@ JSValue JSC_HOST_CALL dateProtoFuncGetYear(ExecState* exec, JSObject*, JSValue t
 
     // NOTE: IE returns the full year even in getYear.
     return jsNumber(exec, t.year);
+}
+
+JSValue JSC_HOST_CALL dateProtoFuncToJSON(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
+{
+    JSObject* object = thisValue.toThisObject(exec);
+    if (exec->hadException())
+        return jsNull();
+    
+    JSValue toISOValue = object->get(exec, exec->globalData().propertyNames->toISOString);
+    if (exec->hadException())
+        return jsNull();
+
+    CallData callData;
+    CallType callType = toISOValue.getCallData(callData);
+    if (callType == CallTypeNone)
+        return throwError(exec, TypeError, "toISOString is not a function");
+
+    JSValue result = call(exec, asObject(toISOValue), callType, callData, object, exec->emptyList());
+    if (exec->hadException())
+        return jsNull();
+    if (result.isObject())
+        return throwError(exec, TypeError, "toISOString did not return a primitive value");
+    return result;
 }
 
 } // namespace JSC

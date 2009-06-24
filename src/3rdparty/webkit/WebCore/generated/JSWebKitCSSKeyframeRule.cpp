@@ -19,19 +19,15 @@
 */
 
 #include "config.h"
-
 #include "JSWebKitCSSKeyframeRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
 #include "JSCSSStyleDeclaration.h"
 #include "KURL.h"
 #include "WebKitCSSKeyframeRule.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

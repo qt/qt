@@ -20,12 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
 #include "JSDOMApplicationCache.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMApplicationCache.h"
 #include "Event.h"
@@ -34,9 +31,9 @@
 #include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

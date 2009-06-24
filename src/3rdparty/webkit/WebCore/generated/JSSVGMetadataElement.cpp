@@ -20,16 +20,12 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGMetadataElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGMetadataElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

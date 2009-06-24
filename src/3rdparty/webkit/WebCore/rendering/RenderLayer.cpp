@@ -229,6 +229,10 @@ RenderLayerCompositor* RenderLayer::compositor() const
 
 void RenderLayer::rendererContentChanged()
 {
+    // This can get called when video becomes accelerated, so the layers may change.
+    if (compositor()->updateLayerCompositingState(this))
+        compositor()->setCompositingLayersNeedUpdate();
+
     if (m_backing)
         m_backing->rendererContentChanged();
 }
@@ -306,9 +310,6 @@ void RenderLayer::updateLayerPositions(bool doFullRepaint, bool checkForRepaint)
         child->updateLayerPositions(doFullRepaint, checkForRepaint);
 
 #if USE(ACCELERATED_COMPOSITING)
-    if (!parent())
-        compositor()->updateRootLayerPosition();
-
     if (isComposited())
         backing()->updateAfterLayout();
 #endif
@@ -948,7 +949,6 @@ void RenderLayer::panScrollFromPoint(const IntPoint& sourcePoint)
     const int shortDistanceLimit = 100;  // We delimit a 200 pixels long square enclosing the original point
     const int speedReducer = 2;          // Within this square we divide the scrolling speed by 2
     
-    const int iconRadius = 10;
     Frame* frame = renderer()->document()->frame();
     if (!frame)
         return;
@@ -965,9 +965,9 @@ void RenderLayer::panScrollFromPoint(const IntPoint& sourcePoint)
     int xDelta = currentMousePosition.x() - sourcePoint.x();
     int yDelta = currentMousePosition.y() - sourcePoint.y();
 
-    if (abs(xDelta) < iconRadius) // at the center we let the space for the icon
+    if (abs(xDelta) < ScrollView::noPanScrollRadius) // at the center we let the space for the icon
         xDelta = 0;
-    if (abs(yDelta) < iconRadius)
+    if (abs(yDelta) < ScrollView::noPanScrollRadius)
         yDelta = 0;
 
     // Let's attenuate the speed for the short distances
@@ -1300,7 +1300,7 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const IntSize& oldOffset
 
     ExceptionCode ec;
 
-    if (difference.width()) {
+    if (resize != RESIZE_VERTICAL && difference.width()) {
         if (element->isFormControlElement()) {
             // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
             style->setProperty(CSSPropertyMarginLeft, String::number(renderer->marginLeft() / zoomFactor) + "px", false, ec);
@@ -1312,7 +1312,7 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const IntSize& oldOffset
         style->setProperty(CSSPropertyWidth, String::number(baseWidth + difference.width()) + "px", false, ec);
     }
 
-    if (difference.height()) {
+    if (resize != RESIZE_HORIZONTAL && difference.height()) {
         if (element->isFormControlElement()) {
             // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
             style->setProperty(CSSPropertyMarginTop, String::number(renderer->marginTop() / zoomFactor) + "px", false, ec);
@@ -1894,7 +1894,7 @@ bool RenderLayer::scroll(ScrollDirection direction, ScrollGranularity granularit
 void RenderLayer::paint(GraphicsContext* p, const IntRect& damageRect, PaintRestriction paintRestriction, RenderObject *paintingRoot)
 {
     RenderObject::OverlapTestRequestMap overlapTestRequests;
-    paintLayer(this, p, damageRect, false, paintRestriction, paintingRoot, &overlapTestRequests);
+    paintLayer(this, p, damageRect, paintRestriction, paintingRoot, &overlapTestRequests);
     RenderObject::OverlapTestRequestMap::iterator end = overlapTestRequests.end();
     for (RenderObject::OverlapTestRequestMap::iterator it = overlapTestRequests.begin(); it != end; ++it)
         it->first->setOverlapTestResult(false);
@@ -1930,15 +1930,29 @@ static void performOverlapTests(RenderObject::OverlapTestRequestMap& overlapTest
         overlapTestRequests.remove(overlappedRequestClients[i]);
 }
 
+#if USE(ACCELERATED_COMPOSITING)
+static bool shouldDoSoftwarePaint(const RenderLayer* layer, bool paintingReflection)
+{
+    return paintingReflection && !layer->has3DTransform();
+}
+#endif
+
 void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
-                        const IntRect& paintDirtyRect, bool haveTransparency, PaintRestriction paintRestriction,
+                        const IntRect& paintDirtyRect, PaintRestriction paintRestriction,
                         RenderObject* paintingRoot, RenderObject::OverlapTestRequestMap* overlapTestRequests,
-                        bool appliedTransform, bool temporaryClipRects)
+                        PaintLayerFlags paintFlags)
 {
 #if USE(ACCELERATED_COMPOSITING)
-    // Composited RenderLayers are painted via the backing's paintIntoLayer().
-    if (isComposited() && !backing()->paintingGoesToWindow())
-        return;
+    if (isComposited()) {
+        // The updatingControlTints() painting pass goes through compositing layers,
+        // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
+        if (p->updatingControlTints())
+            paintFlags |= PaintLayerTemporaryClipRects;
+        else if (!backing()->paintingGoesToWindow() && !shouldDoSoftwarePaint(this, paintFlags & PaintLayerPaintingReflection)) {
+            // If this RenderLayer should paint into its backing, that will be done via RenderLayerBacking::paintIntoLayer().
+            return;
+        }
+    }
 #endif
 
     // Avoid painting layers when stylesheets haven't loaded.  This eliminates FOUC.
@@ -1952,24 +1966,24 @@ void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
         return;
 
     if (paintsWithTransparency())
-        haveTransparency = true;
+        paintFlags |= PaintLayerHaveTransparency;
 
     // Apply a transform if we have one.  A reflection is considered to be a transform, since it is a flip and a translate.
-    if (paintsWithTransform() && !appliedTransform) {
+    if (paintsWithTransform() && !(paintFlags & PaintLayerAppliedTransform)) {
         // If the transform can't be inverted, then don't paint anything.
         if (!m_transform->isInvertible())
             return;
 
         // If we have a transparency layer enclosing us and we are the root of a transform, then we need to establish the transparency
         // layer from the parent now.
-        if (haveTransparency)
+        if (paintFlags & PaintLayerHaveTransparency)
             parent()->beginTransparencyLayers(p, rootLayer);
   
         // Make sure the parent's clip rects have been calculated.
         IntRect clipRect = paintDirtyRect;
         if (parent()) {
             ClipRects parentRects;
-            parentClipRects(rootLayer, parentRects, temporaryClipRects);
+            parentClipRects(rootLayer, parentRects, paintFlags & PaintLayerTemporaryClipRects);
             clipRect = parentRects.overflowClipRect();
             clipRect.intersect(paintDirtyRect);
         }
@@ -1991,7 +2005,7 @@ void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
         p->concatCTM(transform);
 
         // Now do a paint with the root layer shifted to be us.
-        paintLayer(this, p, transform.inverse().mapRect(paintDirtyRect), haveTransparency, paintRestriction, paintingRoot, overlapTestRequests, true, temporaryClipRects);
+        paintLayer(this, p, transform.inverse().mapRect(paintDirtyRect), paintRestriction, paintingRoot, overlapTestRequests, paintFlags | PaintLayerAppliedTransform);
 
         p->restore();
         
@@ -2001,17 +2015,20 @@ void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
         return;
     }
 
+    PaintLayerFlags localPaintFlags = paintFlags & ~PaintLayerAppliedTransform;
+    bool haveTransparency = localPaintFlags & PaintLayerHaveTransparency;
+
     // Paint the reflection first if we have one.
-    if (m_reflection && !m_paintingInsideReflection && (!m_transform || appliedTransform)) {
+    if (m_reflection && !m_paintingInsideReflection) {
         // Mark that we are now inside replica painting.
         m_paintingInsideReflection = true;
-        reflectionLayer()->paintLayer(rootLayer, p, paintDirtyRect, haveTransparency, paintRestriction, paintingRoot, overlapTestRequests, false, temporaryClipRects);
+        reflectionLayer()->paintLayer(rootLayer, p, paintDirtyRect, paintRestriction, paintingRoot, overlapTestRequests, localPaintFlags | PaintLayerPaintingReflection);
         m_paintingInsideReflection = false;
     }
 
     // Calculate the clip rects we should use.
     IntRect layerBounds, damageRect, clipRectToApply, outlineRect;
-    calculateRects(rootLayer, paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect, temporaryClipRects);
+    calculateRects(rootLayer, paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect, localPaintFlags & PaintLayerTemporaryClipRects);
     int x = layerBounds.x();
     int y = layerBounds.y();
     int tx = x - renderBoxX();
@@ -2056,7 +2073,7 @@ void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
     // Now walk the sorted list of children with negative z-indices.
     if (m_negZOrderList)
         for (Vector<RenderLayer*>::iterator it = m_negZOrderList->begin(); it != m_negZOrderList->end(); ++it)
-            it[0]->paintLayer(rootLayer, p, paintDirtyRect, haveTransparency, paintRestriction, paintingRoot, overlapTestRequests, false, temporaryClipRects);
+            it[0]->paintLayer(rootLayer, p, paintDirtyRect, paintRestriction, paintingRoot, overlapTestRequests, localPaintFlags);
     
     // Now establish the appropriate clip and paint our child RenderObjects.
     if (shouldPaint && !clipRectToApply.isEmpty()) {
@@ -2095,12 +2112,12 @@ void RenderLayer::paintLayer(RenderLayer* rootLayer, GraphicsContext* p,
     // Paint any child layers that have overflow.
     if (m_normalFlowList)
         for (Vector<RenderLayer*>::iterator it = m_normalFlowList->begin(); it != m_normalFlowList->end(); ++it)
-            it[0]->paintLayer(rootLayer, p, paintDirtyRect, haveTransparency, paintRestriction, paintingRoot, overlapTestRequests, false, temporaryClipRects);
+            it[0]->paintLayer(rootLayer, p, paintDirtyRect, paintRestriction, paintingRoot, overlapTestRequests, localPaintFlags);
 
     // Now walk the sorted list of children with positive z-indices.
     if (m_posZOrderList)
         for (Vector<RenderLayer*>::iterator it = m_posZOrderList->begin(); it != m_posZOrderList->end(); ++it)
-            it[0]->paintLayer(rootLayer, p, paintDirtyRect, haveTransparency, paintRestriction, paintingRoot, overlapTestRequests, false, temporaryClipRects);
+            it[0]->paintLayer(rootLayer, p, paintDirtyRect, paintRestriction, paintingRoot, overlapTestRequests, localPaintFlags);
     
     if (renderer()->hasMask() && shouldPaint && !selectionOnly && !damageRect.isEmpty()) {
         setClip(p, paintDirtyRect, damageRect);
@@ -2298,7 +2315,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
 #if USE(ACCELERATED_COMPOSITING)
         if (isComposited()) {
             // It doesn't make sense to project hitTestRect into the plane of this layer, so use the same bounds we use for painting.
-            localHitTestRect = compositor()->calculateCompositedBounds(this, this);
+            localHitTestRect = backing()->compositedBounds();
         } else
 #endif
             localHitTestRect = newTransformState->mappedQuad().enclosingBoundingBox();
@@ -3046,7 +3063,7 @@ void RenderLayer::repaintIncludingNonCompositingDescendants(RenderBoxModelObject
 
 bool RenderLayer::shouldBeNormalFlowOnly() const
 {
-    return (renderer()->hasOverflowClip() || renderer()->hasReflection() || renderer()->hasMask()) &&
+    return (renderer()->hasOverflowClip() || renderer()->hasReflection() || renderer()->hasMask() || renderer()->isVideo()) &&
            !renderer()->isPositioned() &&
            !renderer()->isRelPositioned() &&
            !renderer()->hasTransform() &&
@@ -3055,7 +3072,7 @@ bool RenderLayer::shouldBeNormalFlowOnly() const
 
 bool RenderLayer::isSelfPaintingLayer() const
 {
-    return !isNormalFlowOnly() || renderer()->hasReflection() || renderer()->hasMask() || renderer()->isTableRow();
+    return !isNormalFlowOnly() || renderer()->hasReflection() || renderer()->hasMask() || renderer()->isTableRow() || renderer()->isVideo();
 }
 
 void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle*)

@@ -21,7 +21,6 @@
 #ifndef JSXPathNSResolver_h
 #define JSXPathNSResolver_h
 
-
 #if ENABLE(XPATH)
 
 #include "JSDOMBinding.h"

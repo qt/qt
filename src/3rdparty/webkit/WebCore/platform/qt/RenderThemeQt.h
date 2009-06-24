@@ -38,9 +38,12 @@ class HTMLMediaElement;
 
 class RenderThemeQt : public RenderTheme
 {
-public:
-    RenderThemeQt();
+private:
+    RenderThemeQt(Page* page);
     virtual ~RenderThemeQt();
+
+public:
+    static PassRefPtr<RenderTheme> create(Page*);
 
     virtual bool supportsHover(const RenderStyle*) const;
     virtual bool supportsFocusRing(const RenderStyle* style) const;
@@ -138,15 +141,17 @@ private:
     void setButtonPadding(RenderStyle*) const;
     void setPopupPadding(RenderStyle*) const;
 
+    QStyle* qStyle() const;
+    QStyle* fallbackStyle();
+
+    Page* m_page;
+
 #ifdef Q_WS_MAC
     int m_buttonFontPixelSize;
 #endif
     QString m_buttonFontFamily;
 
     QStyle* m_fallbackStyle;
-    QStyle* fallbackStyle();
-
-    int m_frameLineWidth;
 };
 
 class StylePainter

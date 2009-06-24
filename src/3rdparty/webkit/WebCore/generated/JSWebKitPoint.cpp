@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSWebKitPoint.h"
 
-#include <wtf/GetPtr.h>
-
 #include "WebKitPoint.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

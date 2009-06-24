@@ -19,16 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSClipboard.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Clipboard.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

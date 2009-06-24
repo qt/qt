@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSStyleSheetList.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "JSStyleSheet.h"
 #include "StyleSheet.h"
 #include "StyleSheetList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

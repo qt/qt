@@ -33,6 +33,9 @@ namespace WebCore {
 #define PROFILE_LAYER_REBUILD 0
 
 class GraphicsLayer;
+#if ENABLE(VIDEO)
+class RenderVideo;
+#endif
 
 // RenderLayerCompositor manages the hierarchy of
 // composited RenderLayers. It determines which RenderLayers
@@ -66,6 +69,9 @@ public:
     enum CompositingChangeRepaint { CompositingChangeRepaintNow, CompositingChangeWillRepaintLater };
     bool updateLayerCompositingState(RenderLayer*, CompositingChangeRepaint = CompositingChangeRepaintNow);
 
+    // Update the geometry for compositing children of compositingAncestor.
+    void updateCompositingChildrenGeometry(RenderLayer* compositingAncestor, RenderLayer* layer);
+    
     // Whether layer's backing needs a graphics layer to do clipping by an ancestor (non-stacking-context parent with overflow).
     bool clippedByAncestor(RenderLayer*) const;
     // Whether layer's backing needs a graphics layer to clip z-order children of the given layer.
@@ -75,7 +81,7 @@ public:
     bool needsContentsCompositingLayer(const RenderLayer*) const;
     // Return the bounding box required for compositing layer and its childern, relative to ancestorLayer.
     // If layerBoundingBox is not 0, on return it contains the bounding box of this layer only.
-    IntRect calculateCompositedBounds(const RenderLayer* layer, const RenderLayer* ancestorLayer, IntRect* layerBoundingBox = 0);
+    IntRect calculateCompositedBounds(const RenderLayer* layer, const RenderLayer* ancestorLayer);
 
     // Repaint the appropriate layers when the given RenderLayer starts or stops being composited.
     void repaintOnCompositingChange(RenderLayer*);
@@ -97,6 +103,11 @@ public:
     void willMoveOffscreen();
 
     void updateRootLayerPosition();
+    
+#if ENABLE(VIDEO)
+    // Use by RenderVideo to ask if it should try to use accelerated compositing.
+    bool canAccelerateVideoRendering(RenderVideo*) const;
+#endif
 
     // Walk the tree looking for layers with 3d transforms. Useful in case you need
     // to know if there is non-affine content, e.g. for drawing into an image.
@@ -107,6 +118,9 @@ private:
     bool needsToBeComposited(const RenderLayer*) const;
     // Whether the layer has an intrinsic need for compositing layer.
     bool requiresCompositingLayer(const RenderLayer*) const;
+
+    // Make or destroy the backing for this layer; returns true if backing changed.
+    bool updateBacking(RenderLayer*, CompositingChangeRepaint shouldRepaint);
 
     // Repaint the given rect (which is layer's coords), and regions of child layers that intersect that rect.
     void recursiveRepaintLayerRect(RenderLayer* layer, const IntRect& rect);
@@ -127,6 +141,7 @@ private:
     // Whether a running transition or animation enforces the need for a compositing layer.
     static bool requiresCompositingForAnimation(RenderObject*);
     static bool requiresCompositingForTransform(RenderObject*);
+    bool requiresCompositingForVideo(RenderObject*) const;
 
 private:
     RenderView* m_renderView;

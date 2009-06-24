@@ -77,6 +77,7 @@ public:
     virtual void setEndTime(float) { }
 
     virtual void setRate(float) { }
+    virtual void setPreservesPitch(bool) { }
     virtual bool paused() const { return false; }
 
     virtual void setVolume(float) { }
@@ -102,6 +103,8 @@ public:
     virtual void deliverNotification(MediaPlayerProxyNotificationType) { }
     virtual void setMediaPlayerProxy(WebMediaPlayerProxy*) { }
 #endif
+
+    virtual bool hasSingleSecurityOrigin() const { return true; }
 };
 
 static MediaPlayerPrivateInterface* createNullMediaPlayer(MediaPlayer* player) 
@@ -183,6 +186,7 @@ MediaPlayer::MediaPlayer(MediaPlayerClient* client)
     , m_visible(false)
     , m_rate(1.0f)
     , m_volume(1.0f)
+    , m_preservesPitch(true)
     , m_autobuffer(false)
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     , m_playerProxy(0)
@@ -345,6 +349,17 @@ void MediaPlayer::setRate(float rate)
     m_private->setRate(rate);   
 }
 
+bool MediaPlayer::preservesPitch() const
+{
+    return m_preservesPitch;
+}
+
+void MediaPlayer::setPreservesPitch(bool preservesPitch)
+{
+    m_preservesPitch = preservesPitch;
+    m_private->setPreservesPitch(preservesPitch);
+}
+
 int MediaPlayer::dataRate() const
 {
     return m_private->dataRate();
@@ -456,6 +471,18 @@ void MediaPlayer::setMediaPlayerProxy(WebMediaPlayerProxy* proxy)
 }
 #endif
 
+#if USE(ACCELERATED_COMPOSITING)
+void MediaPlayer::acceleratedRenderingStateChanged()
+{
+    m_private->acceleratedRenderingStateChanged();
+}
+
+bool MediaPlayer::supportsAcceleratedRendering() const
+{
+    return m_private->supportsAcceleratedRendering();
+}
+#endif // USE(ACCELERATED_COMPOSITING)
+
 void MediaPlayer::networkStateChanged()
 {
     if (m_mediaPlayerClient)
@@ -502,6 +529,11 @@ void MediaPlayer::rateChanged()
 {
     if (m_mediaPlayerClient)
         m_mediaPlayerClient->mediaPlayerRateChanged(this);
+}
+
+bool MediaPlayer::hasSingleSecurityOrigin() const
+{
+    return m_private->hasSingleSecurityOrigin();
 }
 
 }

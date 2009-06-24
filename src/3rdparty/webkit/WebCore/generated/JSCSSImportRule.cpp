@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSCSSImportRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSImportRule.h"
 #include "CSSStyleSheet.h"
@@ -30,8 +27,7 @@
 #include "JSMediaList.h"
 #include "KURL.h"
 #include "MediaList.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

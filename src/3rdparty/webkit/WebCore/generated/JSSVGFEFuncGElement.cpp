@@ -20,16 +20,12 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
-#include "SVGElement.h"
 #include "JSSVGFEFuncGElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGFEFuncGElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

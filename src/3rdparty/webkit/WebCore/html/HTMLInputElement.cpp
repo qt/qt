@@ -632,8 +632,6 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
         setAttributeEventListener(eventNames().selectEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onchangeAttr) {
         setAttributeEventListener(eventNames().changeEvent, createAttributeEventListener(this, attr));
-    } else if (attr->name() == oninputAttr) {
-        setAttributeEventListener(eventNames().inputEvent, createAttributeEventListener(this, attr));
     }
     // Search field and slider attributes all just cause updateFromElement to be called through style
     // recalcing.
@@ -881,9 +879,9 @@ void HTMLInputElement::setChecked(bool nowChecked, bool sendChangeEvent)
     setNeedsStyleRecalc();
 
     checkedRadioButtons(this).addButton(this);
-    
+
     if (renderer() && renderer()->style()->hasAppearance())
-        theme()->stateChanged(renderer(), CheckedState);
+        renderer()->theme()->stateChanged(renderer(), CheckedState);
 
     // Only send a change event for items in the document (avoid firing during
     // parsing) and don't send a change event for a radio button that's getting
@@ -905,7 +903,7 @@ void HTMLInputElement::setIndeterminate(bool _indeterminate)
     setNeedsStyleRecalc();
 
     if (renderer() && renderer()->style()->hasAppearance())
-        theme()->stateChanged(renderer(), CheckedState);
+        renderer()->theme()->stateChanged(renderer(), CheckedState);
 }
 
 int HTMLInputElement::size() const

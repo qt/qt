@@ -21,7 +21,6 @@
 #ifndef JSHTMLAudioElement_h
 #define JSHTMLAudioElement_h
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLMediaElement.h"
