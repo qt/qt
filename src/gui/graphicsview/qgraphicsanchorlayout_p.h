@@ -181,15 +181,33 @@ inline QString AnchorData::toString() const
 
 struct SequentialAnchorData : public AnchorData
 {
-    SequentialAnchorData() : AnchorData(AnchorData::Sequential) {}
+    SequentialAnchorData() : AnchorData(AnchorData::Sequential)
+    {
+        name = QLatin1String("SequentialAnchorData");
+    }
+
+    void setVertices(const QVector<AnchorVertex*> &vertices)
+    {
+        m_children = vertices;
+        name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
+    }
+
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
     QVector<AnchorData*> m_edges;               // keep the list of edges too.
 };
 
 struct ParallelAnchorData : public AnchorData
 {
-    ParallelAnchorData() : AnchorData(AnchorData::Parallel) {}
-    QVector<AnchorData*> children;      // list of parallel edges
+    ParallelAnchorData(AnchorData *first, AnchorData *second)
+        : AnchorData(AnchorData::Parallel),
+        firstEdge(first), secondEdge(second)
+    {
+        Q_ASSERT(first->origin == second->origin);
+        origin = first->origin;
+        name = QString::fromAscii("%1 | %2").arg(first->toString(), second->toString());
+    }
+    AnchorData* firstEdge;
+    AnchorData* secondEdge;
 };
 
 /*!
@@ -259,7 +277,7 @@ public:
         if (orientation == Vertical && int(edge) <= 2)
             return (QGraphicsAnchorLayout::Edge)(edge + 3);
         else if (orientation == Horizontal && int(edge) >= 3) {
-            return (QGraphicsAnchorLayout::Edge)(edge - 3);            
+            return (QGraphicsAnchorLayout::Edge)(edge - 3);
         }
         return edge;
     }

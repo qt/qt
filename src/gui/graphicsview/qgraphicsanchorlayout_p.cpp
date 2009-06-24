@@ -150,11 +150,6 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
 #endif
 
-    if (graph->edgeData(before, after)) {
-        qDebug("### FIXME: Need to merge parallel anchors, ignoring this simplification for now");
-        return;
-    }
-
     qreal min = 0;
     qreal pref = 0;
     qreal max = 0;
@@ -176,10 +171,21 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     sequence->minSize = min;
     sequence->prefSize = pref;
     sequence->maxSize = max;
-    sequence->m_children = vertices;
+    sequence->setVertices(vertices);
     sequence->origin = data->origin == vertices.last() ? before : after;
-    graph->createEdge(before, after, sequence);
+    AnchorData *newAnchor = sequence;
+    if (AnchorData *oldAnchor = graph->takeEdge(before, after)) {
+        newAnchor = new ParallelAnchorData(oldAnchor, sequence);
+        min = qMax(oldAnchor->minSize, sequence->minSize);
+        pref = qMax(oldAnchor->prefSize, sequence->prefSize);
+        max = qMin(oldAnchor->maxSize, sequence->maxSize);
+        newAnchor->minSize = min;
+        newAnchor->prefSize = pref;
+        newAnchor->maxSize = max;
+    }
+    graph->createEdge(before, after, newAnchor);
 }
+
 /*!
  * \internal
  *
@@ -239,24 +245,20 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
         if (endOfSequence && candidates.count() >= 2) {
             int i;
             AnchorVertex *afterSequence= 0;
-            {
             QList<AnchorVertex *> adjacentOfSecondLastVertex = g.adjacentVertices(candidates.last());
             Q_ASSERT(adjacentOfSecondLastVertex.count() == 2);
             if (adjacentOfSecondLastVertex.first() == candidates.at(candidates.count() - 2))
                 afterSequence = adjacentOfSecondLastVertex.last();
             else
                 afterSequence = adjacentOfSecondLastVertex.first();
-            }
 
             AnchorVertex *beforeSequence = 0;
-            {
             QList<AnchorVertex *> adjacentOfSecondVertex = g.adjacentVertices(candidates.first());
             Q_ASSERT(adjacentOfSecondVertex.count() == 2);
             if (adjacentOfSecondVertex.first() == candidates.at(1))
                 beforeSequence = adjacentOfSecondVertex.last();
             else
                 beforeSequence = adjacentOfSecondVertex.first();
-            }
             // The complete path of the sequence to simplify is: beforeSequence, <candidates>, afterSequence
             // where beforeSequence and afterSequence are the endpoints where the anchor is inserted
             // between.
@@ -266,7 +268,7 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
             for (i = 0; i < candidates.count(); ++i)
                 strCandidates += QString::fromAscii("%1 - ").arg(candidates.at(i)->toString());
             QString strPath = QString::fromAscii("%1 - %2%3").arg(beforeSequence->toString(), strCandidates, afterSequence->toString());
-            qDebug("candidate list for sequential simplification:\n[%s]", qPrintable(strPath), qPrintable(beforeSequence->toString()), qPrintable(afterSequence->toString()));
+            qDebug("candidate list for sequential simplification:\n[%s]", qPrintable(strPath));
 #endif
 
             bool forward;
@@ -280,33 +282,44 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
 
             // "i" is the index *including* the beforeSequence and afterSequence vertices.
             for (i = 1; i <= candidates.count() + 1; ++i) {
-                AnchorVertex *v1 = (i <= candidates.count()) ? candidates.at(i - 1) : afterSequence;
+                bool atVertexAfter = i > candidates.count();
+                AnchorVertex *v1 = atVertexAfter ? afterSequence : candidates.at(i - 1);
                 AnchorData *data = g.edgeData(prev, v1);
                 Q_ASSERT(data);
                 if (i == 1) {
                     forward = (prev == data->origin ? true : false);
-                } else if ((forward != (prev == data->origin))) {
-                    intervalTo = i - 1;
+                } else if (forward != (prev == data->origin) || atVertexAfter) {
+                    int intervalTo = i;
+                    if (forward != (prev == data->origin))
+                        --intervalTo;
+
+                    // intervalFrom and intervalTo should now be indices to the vertex before and
+                    // after the sequential anchor.
                     if (intervalTo - intervalFrom >= 2) {
                         // simplify in the range [intervalFrom, intervalTo]
                         AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
                         AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
-                        QVector<AnchorVertex*> subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
+                        QVector<AnchorVertex*> subCandidates;
+                        if (forward) {
+                           subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
+                        } else {
+                            // reverse the order of the candidates.
+                            qSwap(intervalVertexFrom, intervalVertexTo);
+                            do {
+                                ++intervalFrom;
+                                subCandidates.prepend(candidates.at(intervalFrom - 1));
+                            } while (intervalFrom < intervalTo - 1);
+                        }
                         simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo);
                         // finished simplification of chunk with same direction
                     }
+                    if (forward == (prev == data->origin))
+                        --intervalTo;
                     intervalFrom = intervalTo;
+
                     forward = !forward;
                 }
                 prev = v1;
-            }
-            if (intervalTo - intervalFrom >= 2) {
-                // simplify in the range [intervalFrom, intervalTo]
-                AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
-                AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
-                QVector<AnchorVertex*> subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
-                simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo);
-                // finished simplification of chunk with same direction
             }
         }
         if (endOfSequence)
@@ -349,18 +362,32 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
                 continue;
             if (visited.contains(next))
                 continue;
-            AnchorData *edge = g.edgeData(v, next);
-            if (edge->type == AnchorData::Sequential) {
-                SequentialAnchorData* seqEdge = static_cast<SequentialAnchorData*>(edge);
-                // restore the sequential anchor
-                AnchorVertex *prev = v;
-                for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
-                    AnchorVertex *v1 = (i < seqEdge->m_children.count()) ? seqEdge->m_children.at(i) : next;
-                    AnchorData *data = seqEdge->m_edges.at(i);
-                    g.createEdge(prev, v1, data);
-                    prev = v1;
+
+            QQueue<AnchorData*> queue;
+            queue.enqueue(g.edgeData(v, next));
+            while (!queue.isEmpty()) {
+                AnchorData *edge = queue.dequeue();
+                if (edge->type == AnchorData::Sequential) {
+                    SequentialAnchorData* seqEdge = static_cast<SequentialAnchorData*>(edge);
+                    // restore the sequential anchor
+                    AnchorVertex *prev = v;
+                    AnchorVertex *last = next;
+                    if (edge->origin != prev)
+                        qSwap(last, prev);
+
+                    for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
+                        AnchorVertex *v1 = (i < seqEdge->m_children.count()) ? seqEdge->m_children.at(i) : last;
+                        AnchorData *data = seqEdge->m_edges.at(i);
+                        g.createEdge(prev, v1, data);
+                        prev = v1;
+                    }
+                    g.removeEdge(v, next);
+                } else if (edge->type == AnchorData::Parallel) {
+                    ParallelAnchorData* parallelEdge = static_cast<ParallelAnchorData*>(edge);
+                    queue.enqueue(parallelEdge->firstEdge);
+                    queue.enqueue(parallelEdge->secondEdge);
+                    g.removeEdge(v, next);
                 }
-                g.removeEdge(v, next);
             }
             stack.push(next);
         }
@@ -681,6 +708,13 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
 {
     if (!calculateGraphCacheDirty)
         return;
+
+    simplifyGraph(Horizontal);
+    simplifyGraph(Vertical);
+    //q->dumpGraph();
+    restoreSimplifiedGraph(Horizontal);    // should not be here, but currently crashes if not
+    restoreSimplifiedGraph(Vertical);    // should not be here, but currently crashes if not
+
 
     calculateGraphs(Horizontal);
     calculateGraphs(Vertical);

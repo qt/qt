@@ -68,9 +68,16 @@ public:
         return const_iterator(this,false);
     }
 
+    /*!
+     * \internal
+     *
+     * If there is an edge between \a first and \a second, it will return a structure
+     * containing the data associated with the edge, otherwise it will return 0.
+     *
+     */
     EdgeData *edgeData(Vertex* first, Vertex* second) {
-        Q_ASSERT(m_graph.value(first));
-        return m_graph.value(first)->value(second);
+        QHash<Vertex *, EdgeData *> *row = m_graph.value(first);
+        return row ? row->value(second) : 0;
     }
 
     void createEdge(Vertex *first, Vertex *second, EdgeData *data)
@@ -93,8 +100,10 @@ public:
     {
         // Removes a bidirectional edge
         EdgeData *data = edgeData(first, second);
-        removeDirectedEdge(first, second);
-        removeDirectedEdge(second, first);
+        if (data) {
+            removeDirectedEdge(first, second);
+            removeDirectedEdge(second, first);
+        }
         return data;
     }
 
@@ -140,7 +149,6 @@ public:
                         .arg(data->maxSize)
                         ;
                 }
-                
             }
             strVertices += QString::fromAscii("%1 [label=\"%2\"]\n").arg(v->toString()).arg(v->toString());
         }
