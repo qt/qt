@@ -17,7 +17,6 @@
 #include <QMenuBar>
 #include <QBasicTimer>
 #include <QTime>
-#include <qfxtestengine.h>
 #include <QList>
 
 
@@ -30,7 +29,7 @@ class QmlViewer : public QWidget
 {
 Q_OBJECT
 public:
-    QmlViewer(const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
+    QmlViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
 
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
@@ -74,7 +73,6 @@ private:
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QFxView *canvas;
-    void init(QFxTestEngine::TestMode, const QString &, const QString& fileName);
     QBasicTimer recordTimer;
     QList<QImage*> frames;
     QProcess* frame_stream;

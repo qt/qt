@@ -461,7 +461,6 @@ void QFxWebView::paintPage(const QRect& r)
     update();
 }
 
-<<<<<<< HEAD:src/declarative/fx/qfxwebview.cpp
 /*!
   \qmlproperty int WebView::cacheSize
 
@@ -507,13 +506,6 @@ void QFxWebView::setCacheSize(int pixels)
         }
     }
     d->max_imagecache_size = pixels;
-=======
-void QFxWebView::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "url:" << url();
-    QFxPaintedItem::dump(depth);
->>>>>>> 124f5714e8e6ec1945d536e622b51304f2b32dd7:src/declarative/fx/qfxwebview.cpp
 }
 
 void QFxWebView::drawContents(QPainter *p, const QRect &r)

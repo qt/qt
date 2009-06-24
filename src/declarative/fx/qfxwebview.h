@@ -159,6 +159,9 @@ public:
 
     QString status() const;
 
+    int cacheSize() const;
+    void setCacheSize(int pixels);
+
 Q_SIGNALS:
     void idealWidthChanged();
     void idealHeightChanged();

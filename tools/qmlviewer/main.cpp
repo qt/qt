@@ -15,7 +15,6 @@
 #include "qmlviewer.h"
 #include <QWidget>
 #include <QDir>
-#include "qfxtestengine.h"
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
@@ -76,7 +75,6 @@ int main(int argc, char ** argv)
     QString skin;
     bool devkeys = false;
     bool cache = false;
-    QString testDir;
     QString translationFile;
 
     for (int i = 1; i < argc; ++i) {
@@ -126,7 +124,7 @@ int main(int argc, char ** argv)
         app.installTranslator(&qmlTranslator);
     }
 
-    QmlViewer viewer(testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    QmlViewer viewer(0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
     viewer.setCacheEnabled(cache);

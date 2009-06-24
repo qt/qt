@@ -19,7 +19,6 @@
 #include <QtDeclarative/qmlengine.h>
 #include "qml.h"
 #include "qperformancelog.h"
-#include "qfxtestengine.h"
 #include "deviceskin.h"
 
 #include <QNetworkDiskCache>
@@ -125,7 +124,7 @@ void PreviewDeviceSkin::slotPopupMenu()
 }
 
 
-QmlViewer::QmlViewer(const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
+QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
 {
     devicemode = false;
