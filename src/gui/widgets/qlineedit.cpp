@@ -2689,11 +2689,11 @@ QMenu *QLineEdit::createStandardContextMenu()
 
 #ifndef QT_NO_CLIPBOARD
     action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->readOnly && d->hasSelectedText());
+    action->setEnabled(!d->readOnly && d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(cut()));
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
-    action->setEnabled(d->hasSelectedText());
+    action->setEnabled(d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
     action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
