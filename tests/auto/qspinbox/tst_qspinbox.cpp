@@ -960,79 +960,44 @@ void tst_QSpinBox::textFromValue()
     QCOMPARE(spinBox.textFromValue(INT_MIN), QString::number(INT_MIN));
 }
 
-class sizeHint_Tester
+class sizeHint_SpinBox : public QSpinBox
 {
-    QSize createStackedWidget(bool delaySpinBoxOperation)
-    {
-        QWidget *widget = new QWidget;
-        QHBoxLayout *layout = new QHBoxLayout(widget);
-        QSpinBox *spinBox = new QSpinBox;
-        if (!delaySpinBoxOperation)
-            spinBoxOperation(spinBox);
-        layout->addWidget(spinBox);
-        layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
-        QStackedWidget *stackedWidget = new QStackedWidget;
-        stackedWidget->addWidget(widget);
-        if (delaySpinBoxOperation)
-            spinBoxOperation(spinBox);
-
-        stackedWidget->resize(500, 30);
-        stackedWidget->show();
-        QTest::qWait(100);
-
-        return spinBox->size();
-    }
-    virtual void spinBoxOperation(QSpinBox *) = 0;
 public:
-    QSize size1;
-    QSize size2;
-    void exec()
+    QSize sizeHint() const
     {
-        size1 = createStackedWidget(true);
-        size2 = createStackedWidget(false);
+        ++sizeHintRequests;
+        return QSpinBox::sizeHint();
     }
-    sizeHint_Tester() : size1(1, 0), size2(2, 0) {}
-    virtual ~sizeHint_Tester() {}
-};
-
-class sizeHint_setRangeTester : public sizeHint_Tester
-{
-    void spinBoxOperation(QSpinBox *spinBox)
-    {
-        spinBox->setRange(0, 1234567890);
-        spinBox->setValue(spinBox->maximum());
-    }
-};
-
-class sizeHint_setPrefixTester : public sizeHint_Tester
-{
-    void spinBoxOperation(QSpinBox *spinBox)
-    {
-        spinBox->setPrefix("abcdefghij");
-    }
-};
-
-class sizeHint_setSuffixTester : public sizeHint_Tester
-{
-    void spinBoxOperation(QSpinBox *spinBox)
-    {
-        spinBox->setSuffix("abcdefghij");
-    }
+    mutable int sizeHintRequests;
 };
 
 void tst_QSpinBox::sizeHint()
 {
-    sizeHint_setRangeTester setRangeTester;
-    setRangeTester.exec();
-    QCOMPARE(setRangeTester.size1, setRangeTester.size2);
+    QWidget *widget = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout(widget);
+    sizeHint_SpinBox *spinBox = new sizeHint_SpinBox;
+    layout->addWidget(spinBox);
+    widget->show();
+    QTest::qWait(100);
 
-    sizeHint_setPrefixTester setPrefixTester;
-    setPrefixTester.exec();
-    QCOMPARE(setPrefixTester.size1, setPrefixTester.size2);
+    // Prefix
+    spinBox->sizeHintRequests = 0;
+    spinBox->setPrefix(QLatin1String("abcdefghij"));
+    QTest::qWait(100);
+    QVERIFY(spinBox->sizeHintRequests > 0);
 
-    sizeHint_setSuffixTester setSuffixTester;
-    setSuffixTester.exec();
-    QCOMPARE(setSuffixTester.size1, setSuffixTester.size2);
+    // Suffix
+    spinBox->sizeHintRequests = 0; 
+    spinBox->setSuffix(QLatin1String("abcdefghij"));
+    QTest::qWait(100);
+    QVERIFY(spinBox->sizeHintRequests > 0); 
+
+    // Range
+    spinBox->sizeHintRequests = 0; 
+    spinBox->setRange(0, 1234567890);
+    spinBox->setValue(spinBox->maximum());
+    QTest::qWait(100);
+    QVERIFY(spinBox->sizeHintRequests > 0); 
 }
 
 QTEST_MAIN(tst_QSpinBox)
