@@ -26,6 +26,7 @@ QCLuceneTokenStreamPrivate::QCLuceneTokenStreamPrivate(const QCLuceneTokenStream
     : QSharedData()
 {
     tokenStream = _CL_POINTER(other.tokenStream);
+    deleteCLuceneTokenStream = other.deleteCLuceneTokenStream;
 }
 
 QCLuceneTokenStreamPrivate::~QCLuceneTokenStreamPrivate()

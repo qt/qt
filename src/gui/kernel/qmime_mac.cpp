@@ -68,11 +68,6 @@
 #include "qmap.h"
 #include <private/qt_mac_p.h>
 
-#ifdef Q_WS_MAC32
-#include <QuickTime/QuickTime.h>
-#include "qlibrary.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 extern CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imagePtr = 0); // qpaintengine_mac.cpp
@@ -507,6 +502,9 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
 
 #ifdef Q_WS_MAC32
 
+#include <QuickTime/QuickTime.h>
+#include <qlibrary.h>
+
 typedef ComponentResult (*PtrGraphicsImportSetDataHandle)(GraphicsImportComponent, Handle);
 typedef ComponentResult (*PtrGraphicsImportCreateCGImage)(GraphicsImportComponent, CGImageRef*, UInt32);
 typedef ComponentResult (*PtrGraphicsExportSetInputCGImage)(GraphicsExportComponent, CGImageRef);
@@ -684,33 +682,11 @@ QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteA
         return ret;
     const QByteArray &a = data.first();
     QCFType<CGImageRef> image;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDataRef> data = CFDataCreateWithBytesNoCopy(0,
-                                                    reinterpret_cast<const UInt8 *>(a.constData()),
-                                                    a.size(), kCFAllocatorNull);
-        QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(data, 0);
-        image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-    } else
-#endif
-    {
-#ifdef Q_WS_MAC32
-        if (resolveMimeQuickTimeSymbols()) {
-            Handle tiff = NewHandle(a.size());
-            memcpy(*tiff, a.constData(), a.size());
-            GraphicsImportComponent graphicsImporter;
-            ComponentResult result = OpenADefaultComponent(GraphicsImporterComponentType,
-                                                           kQTFileTypeTIFF, &graphicsImporter);
-            if (!result)
-                result = ptrGraphicsImportSetDataHandle(graphicsImporter, tiff);
-            if (!result)
-                result = ptrGraphicsImportCreateCGImage(graphicsImporter, &image,
-                                                     kGraphicsImportCreateCGImageUsingCurrentSettings);
-            CloseComponent(graphicsImporter);
-            DisposeHandle(tiff);
-        }
-#endif
-    }
+    QCFType<CFDataRef> tiffData = CFDataCreateWithBytesNoCopy(0,
+                                                reinterpret_cast<const UInt8 *>(a.constData()),
+                                                a.size(), kCFAllocatorNull);
+    QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(tiffData, 0);
+    image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
 
     if (image != 0)
         ret = QVariant(QPixmap::fromMacCGImageRef(image).toImage());

@@ -27,6 +27,7 @@ QCLuceneIndexReaderPrivate::QCLuceneIndexReaderPrivate(const QCLuceneIndexReader
     : QSharedData()
 {
     reader = _CL_POINTER(other.reader);
+    deleteCLuceneIndexReader = other.deleteCLuceneIndexReader;
 }
 
 QCLuceneIndexReaderPrivate::~QCLuceneIndexReaderPrivate()

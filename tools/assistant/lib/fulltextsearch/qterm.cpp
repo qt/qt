@@ -27,6 +27,7 @@ QCLuceneTermPrivate::QCLuceneTermPrivate(const QCLuceneTermPrivate &other)
     : QSharedData()
 {
     term = _CL_POINTER(other.term);
+    deleteCLuceneTerm = other.deleteCLuceneTerm;
 }
 
 QCLuceneTermPrivate::~QCLuceneTermPrivate()

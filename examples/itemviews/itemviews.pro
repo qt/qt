@@ -8,6 +8,7 @@ SUBDIRS       = addressbook \
                 dirview \
                 editabletreemodel \
                 fetchmore \
+                frozencolumn \
                 pixelator \
                 puzzle \
                 simpledommodel \

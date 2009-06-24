@@ -899,7 +899,7 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     QVERIFY_SQL( q, exec("INSERT INTO atest2 VALUES(2, 'attached-atest2')"));
 
     QSqlQuery q2(db);
-    tst_Databases::safeDropTables(db, QStringList() << "atest");
+    tst_Databases::safeDropTable(db, "atest");
     QVERIFY_SQL(q2, exec("CREATE TABLE atest(id int, text varchar(20))"));
     QVERIFY_SQL(q2, exec("INSERT INTO atest VALUES(3, 'main')"));
     QVERIFY_SQL(q2, exec("ATTACH DATABASE \""+attachedDb.databaseName()+"\" as adb"));

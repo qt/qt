@@ -65,6 +65,7 @@ class QmlAbstractAnimation : public QmlPropertyValueSource, public QmlParserStat
 
     Q_INTERFACES(QmlParserStatus)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
+    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool finishPlaying READ finishPlaying WRITE setFinishPlaying NOTIFY finishPlayingChanged())
     Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
@@ -78,6 +79,8 @@ public:
 
     bool isRunning() const;
     void setRunning(bool);
+    bool isPaused() const;
+    void setPaused(bool);
     bool finishPlaying() const;
     void setFinishPlaying(bool);
     bool repeat() const;
@@ -100,6 +103,7 @@ Q_SIGNALS:
     void started();
     void completed();
     void runningChanged(bool);
+    void pausedChanged(bool);
     void repeatChanged(bool);
     void targetChanged(QObject *, const QString &);
     void finishPlayingChanged(bool);
@@ -107,6 +111,8 @@ Q_SIGNALS:
 public Q_SLOTS:
     void restart();
     void start();
+    void pause();
+    void resume();
     void stop();
     void complete();
 

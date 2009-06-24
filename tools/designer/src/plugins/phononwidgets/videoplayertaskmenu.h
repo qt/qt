@@ -47,7 +47,8 @@
 #include <QtDesigner/QDesignerTaskMenuExtension>
 #include <QtDesigner/private/extensionfactory_p.h>
 
-#include <phonon>
+#include <Phonon/BackendCapabilities>
+#include <Phonon/VideoPlayer>
 
 QT_BEGIN_NAMESPACE
 

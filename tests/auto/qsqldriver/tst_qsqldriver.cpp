@@ -85,9 +85,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 {
     QSqlQuery q(db);
 
-    QStringList tableNames;
-    tableNames << qTableName( "relTEST1" );
-    tst_Databases::safeDropTables( db, tableNames );
+    tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
 
     QVERIFY_SQL( q, exec("create table " + qTableName("relTEST1") +
             " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
@@ -105,11 +103,9 @@ void tst_QSqlDriver::initTestCase()
 
 void tst_QSqlDriver::cleanupTestCase()
 {
-    QStringList tableNames;
-    tableNames << qTableName( "relTEST1" );
     foreach (const QString &dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        tst_Databases::safeDropTables( db, tableNames );
+        tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
     }
     dbs.close();
 }

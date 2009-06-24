@@ -55,6 +55,12 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
 QT_END_NAMESPACE
 QT_USE_NAMESPACE
 
+
+@interface NSWindow (QtCoverForHackWithCategory)
++ (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
+@end
+
+
 @implementation QT_MANGLE_NAMESPACE(QCocoaPanel)
 
 - (BOOL)canBecomeKeyWindow

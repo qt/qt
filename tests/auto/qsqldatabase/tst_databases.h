@@ -238,8 +238,8 @@ public:
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird2-nokia.trolltech.com.au" ); // Firebird 2.1.1
 
 //      use in-memory database to prevent local files
-        addDb("QSQLITE", ":memory:");
-//        addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
+//         addDb("QSQLITE", ":memory:");
+       addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
 //         addDb( "QSQLITE2", QDir::toNativeSeparators(QDir::tempPath()+"/foo2.db") );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
@@ -333,6 +333,11 @@ public:
         }
     }
 
+    static void safeDropTable( QSqlDatabase db, const QString& tableName )
+    {
+        safeDropTables(db, QStringList() << tableName);
+    }
+
     static void safeDropViews( QSqlDatabase db, const QStringList &viewNames )
     {
         if ( isMSAccess( db ) ) // Access is sooo stupid.
@@ -352,6 +357,11 @@ public:
                 QSqlQuery q( "drop view " + viewName, db );
             }
         }
+    }
+
+    static void safeDropView( QSqlDatabase db, const QString& tableName )
+    {
+        safeDropViews(db, QStringList() << tableName);
     }
 
     // returns the type name of the blob datatype for the database db.
