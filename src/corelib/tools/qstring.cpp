@@ -169,7 +169,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
 // Unicode case-insensitive comparison
 static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
 {
-    if (a == b)
+    if (a == b && alen == blen)
         return 0;
     int l = qMin(alen, blen);
     while (l-- && *a == *b)
