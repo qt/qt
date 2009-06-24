@@ -63,91 +63,24 @@ QT_MODULE(Core)
 
 namespace QtConcurrent {
 
-// The ThreadEngineSemaphore counts worker threads, and allows one
+// The ThreadEngineBarrier counts worker threads, and allows one
 // thread to wait for all others to finish. Tested for its use in
 // QtConcurrent, requires more testing for use as a general class.
-class ThreadEngineSemaphore
+class ThreadEngineBarrier
 {
 private:
     // The thread count is maintained as an integer in the count atomic
     // variable. The count can be either positive or negative - a negative
-    // count signals that a thread is waiting on the semaphore.
+    // count signals that a thread is waiting on the barrier.
     QAtomicInt count;
     QSemaphore semaphore;
 public:
-    ThreadEngineSemaphore()
-    :count(0) { }
-
-    void acquire()
-    {
-        forever {
-            int localCount = int(count);
-            if (localCount < 0) {
-                if (count.testAndSetOrdered(localCount, localCount -1))
-                    return;
-            } else {
-                if (count.testAndSetOrdered(localCount, localCount + 1))
-                    return;
-            }
-        }
-    }
-
-    int release()
-    {
-        forever {
-            int localCount = int(count);
-            if (localCount == -1) {
-                if (count.testAndSetOrdered(-1, 0)) {
-                    semaphore.release();
-                    return 0;
-                }
-            } else if (localCount < 0) {
-                if (count.testAndSetOrdered(localCount, localCount + 1))
-                    return qAbs(localCount + 1);
-            } else {
-                if (count.testAndSetOrdered(localCount, localCount - 1))
-                    return localCount - 1;
-            }
-        }
-    }
-
-    // Wait until all threads have been released
-    void wait()
-    {
-        forever {
-            int localCount = int(count);
-            if (localCount == 0)
-                    return;
-
-            if (count.testAndSetOrdered(localCount, -localCount)) {
-                semaphore.acquire();
-                return;
-            }
-        }
-    }
-
-    int currentCount()
-    {
-        return int(count);
-    }
-
-    // releases a thread, unless this is the last thread.
-    // returns true if the thread was released.
-    bool releaseUnlessLast()
-    {
-        forever {
-            int localCount = int(count);
-            if (qAbs(localCount) == 1) {
-                return false;
-            } else if (localCount < 0) {
-                if (count.testAndSetOrdered(localCount, localCount + 1))
-                    return true;
-            } else {
-                if (count.testAndSetOrdered(localCount, localCount - 1))
-                    return true;
-            }
-        }
-    }
+    ThreadEngineBarrier();
+    void acquire();
+    int release();
+    void wait();
+    int currentCount();
+    bool releaseUnlessLast();
 };
 
 enum ThreadFunctionResult { ThrottleThread, ThreadFinished };
@@ -190,7 +123,7 @@ private:
 protected:
     QFutureInterfaceBase *futureInterface;
     QThreadPool *threadPool;
-    ThreadEngineSemaphore semaphore;
+    ThreadEngineBarrier barrier;
     QtConcurrent::internal::ExceptionStore exceptionStore;
 };
 
@@ -237,7 +170,7 @@ public:
         QFuture<T> future = QFuture<T>(futureInterfaceTyped());
         start();
 
-        semaphore.acquire();
+        barrier.acquire();
         threadPool->start(this);
         return future;
     }
