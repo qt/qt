@@ -197,7 +197,7 @@ Item {
                 cacheSize: 4000000
 
                 url: WebBrowser.url
-                smooth: true
+                smooth: !Flick.moving
                 focusable: true
                 focus: true
 
@@ -421,7 +421,7 @@ Item {
                 SetPropertyAction {
                     target: WebView
                     property: "smooth"
-                    value: true
+                    value: !Flick.moving
                 }
             }
         }
