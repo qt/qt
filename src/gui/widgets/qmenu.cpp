@@ -235,16 +235,15 @@ void QMenuPrivate::calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAc
     for(int i = 0; i < items.count(); i++) {
         QAction *action = items.at(i);
 
-        QFontMetrics fm(action->font().resolve(q->font()));
-        QSize sz;
-
         //let the style modify the above size..
         QStyleOptionMenuItem opt;
         q->initStyleOption(&opt, action);
         opt.rect = q->rect();
+        const QFontMetrics &fm = opt.fontMetrics;
 
+        QSize sz;
         if (QWidget *w = widgetItems.value(action)) {
-          sz=w->sizeHint().expandedTo(w->minimumSize()).expandedTo(w->minimumSizeHint()).boundedTo(w->maximumSize());
+          sz = w->sizeHint().expandedTo(w->minimumSize()).expandedTo(w->minimumSizeHint()).boundedTo(w->maximumSize());
         } else {
             //calc what I think the size is..
             if (action->isSeparator()) {
@@ -1178,7 +1177,8 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     else
         option->palette.setCurrentColorGroup(QPalette::Disabled);
 
-    option->font = action->font();
+    option->font = action->font().resolve(font());
+    option->fontMetrics = QFontMetrics(option->font);
 
     if (d->currentAction && d->currentAction == action && !d->currentAction->isSeparator()) {
         option->state |= QStyle::State_Selected
