@@ -373,7 +373,7 @@ void QmlAbstractAnimation::setRepeat(bool r)
 
 int QmlAbstractAnimation::currentTime()
 {
-    qtAnimation()->currentTime();
+    return qtAnimation()->currentTime();
 }
 
 void QmlAbstractAnimation::setCurrentTime(int time)
@@ -716,54 +716,14 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 */
 
 QmlColorAnimation::QmlColorAnimation(QObject *parent)
-: QmlAbstractAnimation(*(new QmlColorAnimationPrivate), parent)
+: QmlVariantAnimation(parent)
 {
-    Q_D(QmlColorAnimation);
+    Q_D(QmlVariantAnimation);
     d->init();
 }
 
 QmlColorAnimation::~QmlColorAnimation()
 {
-}
-
-void QmlColorAnimationPrivate::init()
-{
-    Q_Q(QmlColorAnimation);
-    ca = new QmlTimeLineValueAnimator(q);
-    ca->setStartValue(QVariant(0.0f));
-    ca->setEndValue(QVariant(1.0f));
-}
-
-/*!
-    \qmlproperty int ColorAnimation::duration
-    This property holds the duration of the color transition, in milliseconds.
-
-    The default value is 250.
-*/
-/*!
-    \property QmlColorAnimation::duration
-    \brief the duration of the transition, in milliseconds.
-
-    The default value is 250.
-*/
-int QmlColorAnimation::duration() const
-{
-    Q_D(const QmlColorAnimation);
-    return d->ca->duration();
-}
-
-void QmlColorAnimation::setDuration(int duration)
-{
-    if (duration < 0) {
-        qWarning("QmlColorAnimation: Cannot set a duration of < 0");
-        return;
-    }
-
-    Q_D(QmlColorAnimation);
-    if (d->ca->duration() == duration)
-        return;
-    d->ca->setDuration(duration);
-    emit durationChanged(duration);
 }
 
 /*!
@@ -776,18 +736,13 @@ void QmlColorAnimation::setDuration(int duration)
 */
 QColor QmlColorAnimation::from() const
 {
-    Q_D(const QmlColorAnimation);
-    return d->fromValue;
+    Q_D(const QmlVariantAnimation);
+    return d->from.value<QColor>();
 }
 
 void QmlColorAnimation::setFrom(const QColor &f)
 {
-    Q_D(QmlColorAnimation);
-    if (d->fromIsDefined && f == d->fromValue)
-        return;
-    d->fromValue = f;
-    d->fromIsDefined = f.isValid();
-    emit fromChanged(f);
+    QmlVariantAnimation::setFrom(f);
 }
 
 /*!
@@ -800,202 +755,15 @@ void QmlColorAnimation::setFrom(const QColor &f)
 */
 QColor QmlColorAnimation::to() const
 {
-    Q_D(const QmlColorAnimation);
-    return d->toValue;
+    Q_D(const QmlVariantAnimation);
+    return d->to.value<QColor>();
 }
 
 void QmlColorAnimation::setTo(const QColor &t)
 {
-    Q_D(QmlColorAnimation);
-    if (d->toIsDefined && t == d->toValue)
-        return;
-    d->toValue = t;
-    d->toIsDefined = t.isValid();
-    emit toChanged(t);
+    QmlVariantAnimation::setTo(t);
 }
 
-/*!
-    \qmlproperty string ColorAnimation::easing
-    This property holds the easing curve used for the transition.
-
-    Each channel of the color is eased using the same easing curve.
-    See NumericAnimation::easing for a full discussion of easing,
-    and a list of available curves.
-*/
-QString QmlColorAnimation::easing() const
-{
-    Q_D(const QmlColorAnimation);
-    return d->easing;
-}
-
-void QmlColorAnimation::setEasing(const QString &e)
-{
-    Q_D(QmlColorAnimation);
-    if (d->easing == e)
-        return;
-
-    d->easing = e;
-    d->ca->setEasingCurve(stringToCurve(d->easing));
-    emit easingChanged(e);
-}
-
-/*!
-    \qmlproperty list<Item> ColorAnimation::filter
-    This property holds the items selected to be affected by this animation (all if not set).
-    \sa exclude
-*/
-QList<QObject *> *QmlColorAnimation::filter()
-{
-    Q_D(QmlColorAnimation);
-    return &d->filter;
-}
-
-/*!
-    \qmlproperty list<Item> ColorAnimation::exclude
-    This property holds the items not to be affected by this animation.
-    \sa filter
-*/
-QList<QObject *> *QmlColorAnimation::exclude()
-{
-    Q_D(QmlColorAnimation);
-    return &d->exclude;
-}
-
-void QmlColorAnimation::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlColorAnimation);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
-    d->fromSourced = false;
-    d->value.QmlTimeLineValue::setValue(0.);
-    d->ca->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
-    d->ca->setFromSourcedValue(&d->fromSourced);
-}
-
-QAbstractAnimation *QmlColorAnimation::qtAnimation()
-{
-    Q_D(QmlColorAnimation);
-    return d->ca;
-}
-
-void QmlColorAnimation::transition(QmlStateActions &actions,
-                                   QmlMetaProperties &modified,
-                                   TransitionDirection direction)
-{
-    Q_D(QmlColorAnimation);
-    Q_UNUSED(direction);
-
-    struct NTransitionData : public QmlTimeLineValue
-    {
-        QmlStateActions actions;
-        void write(QmlMetaProperty &property, const QVariant &color)
-        {
-            if (property.propertyType() == QVariant::Color) {
-                property.write(color);
-            }
-        }
-
-        void setValue(qreal v)
-        {
-            QmlTimeLineValue::setValue(v);
-            for (int ii = 0; ii < actions.count(); ++ii) {
-                Action &action = actions[ii];
-
-                QColor to(action.toValue.value<QColor>());
-
-                if (v == 1.) {
-                    write(action.property, to);
-                } else {
-                    if (action.fromValue.isNull()) {
-                        action.fromValue = action.property.read();
-                        if (action.fromValue.isNull())
-                            action.fromValue = QVariant(QColor());
-                    }
-
-                    QColor from(action.fromValue.value<QColor>());
-
-                    QVariant newColor = QmlColorAnimationPrivate::colorInterpolator(&from, &to, v);
-                    write(action.property, newColor);
-                }
-            }
-        }
-    };
-
-    //XXX should we get rid of this?
-    QStringList props;
-    props << QLatin1String("color");
-    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
-        props.append(d->propertyName);
-
-    NTransitionData *data = new NTransitionData;
-
-    QSet<QObject *> objs;
-    for (int ii = 0; ii < actions.count(); ++ii) {
-        Action &action = actions[ii];
-
-        QObject *obj = action.property.object();
-        QString propertyName = action.property.name();
-
-        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
-           (!d->exclude.contains(obj)) && props.contains(propertyName) &&
-           (!target() || target() == obj)) {
-            objs.insert(obj);
-            Action myAction = action;
-
-            if (d->fromIsDefined) {
-                myAction.fromValue = QVariant(d->fromValue);
-            } else {
-                myAction.fromValue = QVariant();
-            }
-            if (d->toIsDefined)
-                myAction.toValue = QVariant(d->toValue);
-
-            modified << action.property;
-            data->actions << myAction;
-            action.fromValue = myAction.toValue;
-        }
-    }
-
-    if (d->toValue.isValid() && target() && !objs.contains(target())) {
-        QObject *obj = target();
-        for (int jj = 0; jj < props.count(); ++jj) {
-            Action myAction;
-            myAction.property = QmlMetaProperty(obj, props.at(jj));
-
-            if (d->fromIsDefined)
-                myAction.fromValue = QVariant(d->fromValue);
-
-            myAction.toValue = QVariant(d->toValue);
-            myAction.bv = 0;
-            myAction.event = 0;
-            data->actions << myAction;
-        }
-    }
-
-    if (data->actions.count())
-        d->ca->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
-    else
-        delete data;
-}
-
-QVariantAnimation::Interpolator QmlColorAnimationPrivate::colorInterpolator = 0;
-
-void QmlColorAnimationPrivate::valueChanged(qreal v)
-{
-    if (!fromSourced) {
-        if (!fromIsDefined) {
-            fromValue = qvariant_cast<QColor>(property.read());
-        }
-        fromSourced = true;
-    }
-
-    if (property.propertyType() == QVariant::Color) {
-        QVariant newColor = colorInterpolator(&fromValue, &toValue, v);
-        property.write(newColor);
-    }
-}
 QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation)
 
 /*!
@@ -1428,54 +1196,14 @@ QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction)
 */
 
 QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
-: QmlAbstractAnimation(*(new QmlNumericAnimationPrivate), parent)
+: QmlVariantAnimation(parent)
 {
-    Q_D(QmlNumericAnimation);
+    Q_D(QmlVariantAnimation);
     d->init();
 }
 
 QmlNumericAnimation::~QmlNumericAnimation()
 {
-}
-
-void QmlNumericAnimationPrivate::init()
-{
-    Q_Q(QmlNumericAnimation);
-    na = new QmlTimeLineValueAnimator(q);
-    na->setStartValue(QVariant(0.0f));
-    na->setEndValue(QVariant(1.0f));
-}
-
-/*!
-    \qmlproperty int NumericAnimation::duration
-    This property holds the duration of the transition, in milliseconds.
-
-    The default value is 250.
-*/
-/*!
-    \property QmlNumericAnimation::duration
-    \brief the duration of the transition, in milliseconds.
-
-    The default value is 250.
-*/
-int QmlNumericAnimation::duration() const
-{
-    Q_D(const QmlNumericAnimation);
-    return d->na->duration();
-}
-
-void QmlNumericAnimation::setDuration(int duration)
-{
-    if (duration < 0) {
-        qWarning("QmlNumericAnimation: Cannot set a duration of < 0");
-        return;
-    }
-
-    Q_D(QmlNumericAnimation);
-    if (d->na->duration() == duration)
-        return;
-    d->na->setDuration(duration);
-    emit durationChanged(duration);
 }
 
 /*!
@@ -1489,17 +1217,13 @@ void QmlNumericAnimation::setDuration(int duration)
 */
 qreal QmlNumericAnimation::from() const
 {
-    Q_D(const QmlNumericAnimation);
-    return d->from;
+    Q_D(const QmlVariantAnimation);
+    return d->from.toDouble();    //### toFloat?
 }
 
 void QmlNumericAnimation::setFrom(qreal f)
 {
-    Q_D(QmlNumericAnimation);
-    if (!d->from.isNull && f == d->from)
-        return;
-    d->from = f;
-    emit fromChanged(f);
+    QmlVariantAnimation::setFrom(f);
 }
 
 /*!
@@ -1513,280 +1237,13 @@ void QmlNumericAnimation::setFrom(qreal f)
 */
 qreal QmlNumericAnimation::to() const
 {
-    Q_D(const QmlNumericAnimation);
-    return d->to;
+    Q_D(const QmlVariantAnimation);
+    return d->to.toDouble();    //### toFloat?
 }
 
 void QmlNumericAnimation::setTo(qreal t)
 {
-    Q_D(QmlNumericAnimation);
-    if (!d->to.isNull && t == d->to)
-        return;
-    d->to = t;
-    emit toChanged(t);
-}
-
-/*!
-    \qmlproperty string NumericAnimation::easing
-    \brief the easing curve used for the transition.
-
-    Available values are:
-
-    \list
-    \i \e easeNone - Easing equation function for a simple linear tweening, with no easing.
-    \i \e easeInQuad - Easing equation function for a quadratic (t^2) easing in: accelerating from zero velocity.
-    \i \e easeOutQuad - Easing equation function for a quadratic (t^2) easing out: decelerating to zero velocity.
-    \i \e easeInOutQuad - Easing equation function for a quadratic (t^2) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInQuad - Easing equation function for a quadratic (t^2) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInCubic - Easing equation function for a cubic (t^3) easing in: accelerating from zero velocity.
-    \i \e easeOutCubic - Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
-    \i \e easeInOutCubic - Easing equation function for a cubic (t^3) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInCubic - Easing equation function for a cubic (t^3) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInQuart - Easing equation function for a quartic (t^4) easing in: accelerating from zero velocity.
-    \i \e easeOutQuart - Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
-    \i \e easeInOutQuart - Easing equation function for a quartic (t^4) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInQuart - Easing equation function for a quartic (t^4) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInQuint - Easing equation function for a quintic (t^5) easing in: accelerating from zero velocity.
-    \i \e easeOutQuint - Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
-    \i \e easeInOutQuint - Easing equation function for a quintic (t^5) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInQuint - Easing equation function for a quintic (t^5) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInSine - Easing equation function for a sinusoidal (sin(t)) easing in: accelerating from zero velocity.
-    \i \e easeOutSine - Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
-    \i \e easeInOutSine - Easing equation function for a sinusoidal (sin(t)) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInSine - Easing equation function for a sinusoidal (sin(t)) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInExpo - Easing equation function for an exponential (2^t) easing in: accelerating from zero velocity.
-    \i \e easeOutExpo - Easing equation function for an exponential (2^t) easing out: decelerating from zero velocity.
-    \i \e easeInOutExpo - Easing equation function for an exponential (2^t) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInExpo - Easing equation function for an exponential (2^t) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in: accelerating from zero velocity.
-    \i \e easeOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating from zero velocity.
-    \i \e easeInOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in: accelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
-    \i \e easeOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
-    \i \e easeInOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
-    \i \e easeOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating from zero velocity.
-    \i \e easeInOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
-    \i \e easeInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in: accelerating from zero velocity.
-    \i \e easeInOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
-    \endlist
-*/
-
-/*!
-    \property QmlNumericAnimation::easing
-    This property holds the easing curve to use.
-
-    \sa QEasingCurve
-*/
-QString QmlNumericAnimation::easing() const
-{
-    Q_D(const QmlNumericAnimation);
-    return d->easing;
-}
-
-void QmlNumericAnimation::setEasing(const QString &e)
-{
-    Q_D(QmlNumericAnimation);
-    if (d->easing == e)
-        return;
-
-    d->easing = e;
-    d->na->setEasingCurve(stringToCurve(d->easing));
-    emit easingChanged(e);
-}
-
-/*!
-    \qmlproperty string NumericAnimation::properties
-    This property holds the properties this animation should be applied to.
-
-    This is a comma-separated list of properties that should use
-    this animation when they change.
-*/
-/*!
-    \property QmlNumericAnimation::properties
-    \brief the properties this animation should be applied to.
-
-    properties holds a comma-separated list of properties that should use
-    this animation when they change.
-*/
-QString QmlNumericAnimation::properties() const
-{
-    Q_D(const QmlNumericAnimation);
-    return d->properties;
-}
-
-void QmlNumericAnimation::setProperties(const QString &prop)
-{
-    Q_D(QmlNumericAnimation);
-    if (d->properties == prop)
-        return;
-
-    d->properties = prop;
-    emit propertiesChanged(prop);
-}
-
-/*!
-    \qmlproperty list<Item> NumericAnimation::filter
-    This property holds the items selected to be affected by this animation (all if not set).
-    \sa exclude
-*/
-QList<QObject *> *QmlNumericAnimation::filter()
-{
-    Q_D(QmlNumericAnimation);
-    return &d->filter;
-}
-
-/*!
-    \qmlproperty list<Item> NumericAnimation::exclude
-    This property holds the items not to be affected by this animation.
-    \sa filter
-*/
-QList<QObject *> *QmlNumericAnimation::exclude()
-{
-    Q_D(QmlNumericAnimation);
-    return &d->exclude;
-}
-
-void QmlNumericAnimationPrivate::valueChanged(qreal r)
-{
-    if (!fromSourced) {
-        if (from.isNull) {
-            fromValue = qvariant_cast<qreal>(property.read());
-        } else {
-            fromValue = from;
-        }
-        fromSourced = true;
-    }
-
-    if (r == 1.) {
-        property.write(to.value);
-    } else {
-        qreal val = fromValue + (to-fromValue) * r;
-        property.write(val);
-    }
-}
-
-void QmlNumericAnimation::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlNumericAnimation);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
-    d->fromSourced = false;
-    d->value.QmlTimeLineValue::setValue(0.);
-    d->na->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
-    d->na->setFromSourcedValue(&d->fromSourced);
-}
-
-QAbstractAnimation *QmlNumericAnimation::qtAnimation()
-{
-    Q_D(QmlNumericAnimation);
-    return d->na;
-}
-
-void QmlNumericAnimation::transition(QmlStateActions &actions,
-                                     QmlMetaProperties &modified,
-                                     TransitionDirection direction)
-{
-    Q_D(QmlNumericAnimation);
-    Q_UNUSED(direction);
-
-    struct NTransitionData : public QmlTimeLineValue
-    {
-        QmlStateActions actions;
-        void setValue(qreal v)
-        {
-            QmlTimeLineValue::setValue(v);
-            for (int ii = 0; ii < actions.count(); ++ii) {
-                Action &action = actions[ii];
-
-                QmlBehaviour::_ignore = true;
-                if (v == 1.)
-                    action.property.write(action.toValue.toDouble());
-                else {
-                    if (action.fromValue.isNull()) {
-                        action.fromValue = action.property.read();
-                        if (action.fromValue.isNull()) {
-                            action.fromValue = QVariant(0.);
-                        }
-                    }
-                    qreal start = action.fromValue.toDouble();
-                    qreal end = action.toValue.toDouble();
-                    qreal val = start + (end-start) * v;
-                    action.property.write(val);
-                }
-                QmlBehaviour::_ignore = false;
-            }
-        }
-    };
-
-    QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
-    for (int ii = 0; ii < props.count(); ++ii)
-        props[ii] = props.at(ii).trimmed();
-    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
-        props.append(d->propertyName);
-
-   if (d->userProperty.isValid() && props.isEmpty() && !target()) {
-        props.append(d->userProperty.value.name());
-        d->target = d->userProperty.value.object();
-   }
-
-    NTransitionData *data = new NTransitionData;
-
-    QSet<QObject *> objs;
-    for (int ii = 0; ii < actions.count(); ++ii) {
-        Action &action = actions[ii];
-
-        QObject *obj = action.property.object();
-        QString propertyName = action.property.name();
-
-        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
-           (!d->exclude.contains(obj)) && props.contains(propertyName) &&
-           (!target() || target() == obj)) {
-            objs.insert(obj);
-            Action myAction = action;
-            if (d->from.isValid()) {
-                myAction.fromValue = QVariant(d->from);
-            } else {
-                myAction.fromValue = QVariant();
-            }
-            if (d->to.isValid())
-                myAction.toValue = QVariant(d->to);
-
-            modified << action.property;
-
-            data->actions << myAction;
-            action.fromValue = myAction.toValue;
-        }
-    }
-
-    if (d->to.isValid() && target() && !objs.contains(target())) {
-        QObject *obj = target();
-        for (int jj = 0; jj < props.count(); ++jj) {
-            Action myAction;
-            myAction.property = QmlMetaProperty(obj, props.at(jj));
-
-            if (d->from.isValid())
-                myAction.fromValue = QVariant(d->from);
-
-            myAction.toValue = QVariant(d->to);
-            myAction.bv = 0;
-            myAction.event = 0;
-            data->actions << myAction;
-        }
-    }
-
-    if (data->actions.count()) {
-        d->na->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
-    } else {
-        delete data;
-    }
+    QmlVariantAnimation::setTo(t);
 }
 
 QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation)
@@ -1971,6 +1428,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 
 QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation)
 
+//### profile and optimize
 QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
 {
     if (from.userType() != to.userType())
@@ -1981,6 +1439,8 @@ QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, co
 }
 
 //convert a variant from string type to another animatable type
+//### should use any registered string convertor
+//### profile and optimize
 void QmlVariantAnimationPrivate::convertVariant(QVariant &variant, QVariant::Type type)
 {
     if (variant.type() != QVariant::String) {
@@ -2137,10 +1597,53 @@ void QmlVariantAnimation::setTo(const QVariant &t)
 
 /*!
     \qmlproperty string VariantAnimation::easing
-    This property holds the easing curve used for the transition.
+    \brief the easing curve used for the transition.
 
-    See NumericAnimation::easing for a full discussion of easing,
-    and a list of available curves.
+    Available values are:
+
+    \list
+    \i \e easeNone - Easing equation function for a simple linear tweening, with no easing.
+    \i \e easeInQuad - Easing equation function for a quadratic (t^2) easing in: accelerating from zero velocity.
+    \i \e easeOutQuad - Easing equation function for a quadratic (t^2) easing out: decelerating to zero velocity.
+    \i \e easeInOutQuad - Easing equation function for a quadratic (t^2) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInQuad - Easing equation function for a quadratic (t^2) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInCubic - Easing equation function for a cubic (t^3) easing in: accelerating from zero velocity.
+    \i \e easeOutCubic - Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
+    \i \e easeInOutCubic - Easing equation function for a cubic (t^3) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInCubic - Easing equation function for a cubic (t^3) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInQuart - Easing equation function for a quartic (t^4) easing in: accelerating from zero velocity.
+    \i \e easeOutQuart - Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
+    \i \e easeInOutQuart - Easing equation function for a quartic (t^4) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInQuart - Easing equation function for a quartic (t^4) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInQuint - Easing equation function for a quintic (t^5) easing in: accelerating from zero velocity.
+    \i \e easeOutQuint - Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
+    \i \e easeInOutQuint - Easing equation function for a quintic (t^5) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInQuint - Easing equation function for a quintic (t^5) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInSine - Easing equation function for a sinusoidal (sin(t)) easing in: accelerating from zero velocity.
+    \i \e easeOutSine - Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
+    \i \e easeInOutSine - Easing equation function for a sinusoidal (sin(t)) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInSine - Easing equation function for a sinusoidal (sin(t)) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInExpo - Easing equation function for an exponential (2^t) easing in: accelerating from zero velocity.
+    \i \e easeOutExpo - Easing equation function for an exponential (2^t) easing out: decelerating from zero velocity.
+    \i \e easeInOutExpo - Easing equation function for an exponential (2^t) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInExpo - Easing equation function for an exponential (2^t) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in: accelerating from zero velocity.
+    \i \e easeOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating from zero velocity.
+    \i \e easeInOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in: accelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
+    \i \e easeOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
+    \i \e easeInOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
+    \i \e easeOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating from zero velocity.
+    \i \e easeInOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
+    \i \e easeInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in: accelerating from zero velocity.
+    \i \e easeInOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
+    \endlist
 */
 
 /*!
@@ -2230,8 +1733,7 @@ void QmlVariantAnimationPrivate::valueChanged(qreal r)
     if (r == 1.) {
         property.write(to);
     } else {
-        QVariant val = interpolateVariant(from, to, r);
-        property.write(val);
+        property.write(interpolateVariant(from, to, r));
     }
 }
 
@@ -2266,7 +1768,7 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     Q_D(QmlVariantAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public QmlTimeLineValue
+    struct PropertyUpdater : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void setValue(qreal v)
@@ -2275,28 +1777,38 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
+                QmlBehaviour::_ignore = true;
                 if (v == 1.)
                     action.property.write(action.toValue);
                 else {
                     if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
                         /*if (action.fromValue.isNull())
-                            action.fromValue = QVariant(0.);*/    //XXX can we give a default value for any type?
+                            action.fromValue = QVariant(0.);*/    //### can/should we give a default value for any type?
                     }
                     QVariant val = QmlVariantAnimationPrivate::interpolateVariant(action.fromValue, action.toValue, v);
                     action.property.write(val);
                 }
+                QmlBehaviour::_ignore = false;
             }
         }
     };
 
-    QStringList props = d->properties.split(QLatin1Char(','));
+    QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
-    NTransitionData *data = new NTransitionData;
+    /* ### we used to select properties of name 'color' by default for color animations
+    props << QLatin1String("color");*/
+
+    if (d->userProperty.isValid() && props.isEmpty() && !target()) {
+        props.append(d->userProperty.value.name());
+        d->target = d->userProperty.value.object();
+    }
+
+    PropertyUpdater *data = new PropertyUpdater;
 
     QSet<QObject *> objs;
     for (int ii = 0; ii < actions.count(); ++ii) {
@@ -2339,7 +1851,6 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
                 d->convertVariant(d->from, (QVariant::Type)myAction.property.propertyType());
                 myAction.fromValue = d->from;
             }
-
             d->convertVariant(d->to, (QVariant::Type)myAction.property.propertyType());
             myAction.toValue = d->to;
             myAction.bv = 0;
