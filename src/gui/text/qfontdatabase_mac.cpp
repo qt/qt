@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 int qt_mac_pixelsize(const QFontDef &def, int dpi); //qfont_mac.cpp
 int qt_mac_pointsize(const QFontDef &def, int dpi); //qfont_mac.cpp
 
+#ifndef QT_MAC_USE_COCOA
 static void initWritingSystems(QtFontFamily *family, ATSFontRef atsFont)
 {
     ByteCount length = 0;
@@ -81,6 +82,7 @@ qDebug() << "first char" << hex << unicodeRange[0];
     for (int i = 0; i < systems.count(); ++i)
         family->writingSystems[systems.at(i)] = QtFontFamily::Supported;
 }
+#endif
 
 static void initializeDb()
 {

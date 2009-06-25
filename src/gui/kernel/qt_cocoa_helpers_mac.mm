@@ -1166,4 +1166,13 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     return context;
 }
 
+CGFloat qt_mac_get_scalefactor()
+{
+#ifndef QT_MAC_USE_COCOA
+    return HIGetScaleFactor();
+#else
+    return [[NSScreen mainScreen] userSpaceScaleFactor];
+#endif
+}
+
 QT_END_NAMESPACE

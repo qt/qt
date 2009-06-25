@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "QtCore/qcoreapplication.h"
 #include "QtCore/qpauseanimation.h"
 #include "private/qobject_p.h"
 #include "qmltimer.h"
@@ -52,27 +53,59 @@ class QmlTimerPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlTimer)
 public:
-    QmlTimerPrivate() : interval(1000) {}
+    QmlTimerPrivate()
+        : interval(1000), running(false), repeating(false), firesOnStart(false)
+        , componentComplete(false) {}
     int interval;
+    bool running;
+    bool repeating;
+    bool firesOnStart;
     QPauseAnimation pause;
+    bool componentComplete;
 };
+
+/*!
+    \qmlclass Timer QFxTimer
+    \brief The Timer item triggers a handler at a specified interval.
+
+    A timer can be used to trigger an action either once, or repeatedly
+    at a given interval.
+
+    \qml
+    Timer {
+        interval: 500; running: true; repeat: true
+        onTriggered: Time.text = Date().toString()
+    }
+    Text {
+        id: Time
+    }
+    \endqml
+
+*/
 
 QmlTimer::QmlTimer(QObject *parent)
     : QObject(*(new QmlTimerPrivate), parent)
 {
     Q_D(QmlTimer);
     connect(&d->pause, SIGNAL(currentLoopChanged(int)), this, SLOT(ticked()));
-    d->pause.setLoopCount(-1);
+    connect(&d->pause, SIGNAL(finished()), this, SLOT(ticked()));
+    connect(&d->pause, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State))
+            , this, SLOT(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    d->pause.setLoopCount(1);
     d->pause.setDuration(d->interval);
 }
 
+/*!
+    \qmlproperty int Timer::interval
+
+    Sets the \a interval in milliseconds between triggering.
+*/
 void QmlTimer::setInterval(int interval)
 {
     Q_D(QmlTimer);
     if (interval != d->interval) {
         d->interval = interval;
-        d->pause.setDuration(d->interval);
-        d->pause.start();
+        update();
     }
 }
 
@@ -82,16 +115,119 @@ int QmlTimer::interval() const
     return d->interval;
 }
 
+/*!
+    \qmlproperty bool Timer::running
+
+    If set to true, starts the timer; otherwise stops the timer.
+    For a non-repeating timer, \a running  will be set to false after the
+    timer has been triggered.
+
+    \sa repeat
+*/
+bool QmlTimer::isRunning() const
+{
+    Q_D(const QmlTimer);
+    return d->running;
+}
+
+void QmlTimer::setRunning(bool running)
+{
+    Q_D(QmlTimer);
+    if (d->running != running) {
+        d->running = running;
+        emit runningChanged();
+        update();
+    }
+}
+
+/*!
+    \qmlproperty bool Timer::repeat
+
+    If \a repeat is true the timer will be triggered repeatedly at the
+    specified interval; otherwise, the timer will trigger once at the
+    specified interval and then stop (i.e. running will be set to false).
+
+    \sa running
+*/
+bool QmlTimer::isRepeating() const
+{
+    Q_D(const QmlTimer);
+    return d->repeating;
+}
+
+void QmlTimer::setRepeating(bool repeating)
+{
+    Q_D(QmlTimer);
+    if (repeating != d->repeating) {
+        d->repeating = repeating;
+        update();
+    }
+}
+
+/*!
+    \qmlproperty bool Timer::firesOnStart
+
+    If \a firesOnStart is true, the timer will be triggered immediately
+    when started, and subsequently at the specified interval.
+
+    \sa running
+*/
+bool QmlTimer::firesOnStart() const
+{
+    Q_D(const QmlTimer);
+    return d->firesOnStart;
+}
+
+void QmlTimer::setFiresOnStart(bool firesOnStart)
+{
+    Q_D(QmlTimer);
+    if (d->firesOnStart != firesOnStart) {
+        d->firesOnStart = firesOnStart;
+        update();
+    }
+}
+
+void QmlTimer::update()
+{
+    Q_D(QmlTimer);
+    if (!d->componentComplete)
+        return;
+    d->pause.stop();
+    if (d->running) {
+        d->pause.setLoopCount(d->repeating ? -1 : 1);
+        d->pause.setDuration(d->interval);
+        d->pause.start();
+        if (d->firesOnStart) {
+            QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
+            QMetaObject::invokeMethod(this, "ticked", Qt::QueuedConnection);
+        }
+    }
+}
+
 void QmlTimer::componentComplete()
 {
     Q_D(QmlTimer);
-    if (d->pause.state() != QAbstractAnimation::Running)
-        d->pause.start();
+    d->componentComplete = true;
+    update();
 }
 
+/*!
+    \qmlsignal Timer::onTriggered
+
+    This handler is called when the Timer is triggered.
+*/
 void QmlTimer::ticked()
 {
-    emit timeout();
+    emit triggered();
+}
+
+void QmlTimer::stateChanged(QAbstractAnimation::State, QAbstractAnimation::State state)
+{
+    Q_D(QmlTimer);
+    if (d->running && state != QAbstractAnimation::Running) {
+        d->running = false;
+        emit runningChanged();
+    }
 }
 
 QT_END_NAMESPACE

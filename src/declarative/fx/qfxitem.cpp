@@ -897,7 +897,16 @@ void QFxItem::qmlLoaded()
         QmlContext *ctxt = new QmlContext(qmlContext(this));
         ctxt->addDefaultObject(this);
 
+        if (!d->_qmlcomp->errors().isEmpty()) {
+            qWarning() << d->_qmlcomp->errors();
+            delete d->_qmlcomp;
+            d->_qmlcomp = 0;
+            emit qmlChanged();
+            return;
+        }
         QObject *obj = d->_qmlcomp->create(ctxt);
+        if (!d->_qmlcomp->errors().isEmpty())
+            qWarning() << d->_qmlcomp->errors();
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
         if (qmlChild) {
             qmlChild->setItemParent(this);

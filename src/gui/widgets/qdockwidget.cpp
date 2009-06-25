@@ -59,6 +59,7 @@
 #include "qdockwidget_p.h"
 #include "qmainwindowlayout_p.h"
 #ifdef Q_WS_MAC
+#include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
 #include <qmacstyle_mac.h>
 #endif
@@ -66,8 +67,6 @@
 QT_BEGIN_NAMESPACE
 
 extern QString qt_setWindowTitle_helperHelper(const QString&, const QWidget*); // qwidget.cpp
-
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash(); // qapplication.cpp
 
 static inline bool hasFeature(const QDockWidgetPrivate *priv, QDockWidget::DockWidgetFeature feature)
 { return (priv->features & feature) == feature; }

@@ -181,7 +181,7 @@ public:
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
-    int separatorMove(int index, int delta, QVector<QLayoutStruct> *cache);
+    int separatorMove(int index, int delta);
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);
@@ -277,8 +277,7 @@ public:
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
-    int separatorMove(QList<int> separator, const QPoint &origin, const QPoint &dest,
-                        QVector<QLayoutStruct> *cache);
+    int separatorMove(QList<int> separator, const QPoint &origin, const QPoint &dest);
     void updateSeparatorWidgets() const;
 
     QLayoutItem *itemAt(int *x, int index) const;

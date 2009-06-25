@@ -643,8 +643,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 /*!
   Sends \a event to \a receiver: \a {receiver}->event(\a event).
   Returns the value that is returned from the receiver's event
-  handler. Note that this function is called for all events send to
-  any object is all threads.
+  handler. Note that this function is called for all events sent to
+  any object in any thread.
 
   For certain types of events (e.g. mouse and key events),
   the event will be propagated to the receiver's parent and so on up to

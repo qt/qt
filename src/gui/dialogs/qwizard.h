@@ -197,6 +197,7 @@ private:
     Q_DECLARE_PRIVATE(QWizard)
     Q_PRIVATE_SLOT(d_func(), void _q_emitCustomButtonClicked())
     Q_PRIVATE_SLOT(d_func(), void _q_updateButtonStates())
+    Q_PRIVATE_SLOT(d_func(), void _q_handleFieldObjectDestroyed(QObject *))
 
     friend class QWizardPage;
 };
