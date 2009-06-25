@@ -54,12 +54,12 @@ class QmlTimerPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlTimer)
 public:
     QmlTimerPrivate()
-        : interval(1000), running(false), repeating(false), firesOnStart(false)
+        : interval(1000), running(false), repeating(false), triggeredOnStart(false)
         , componentComplete(false) {}
     int interval;
     bool running;
     bool repeating;
-    bool firesOnStart;
+    bool triggeredOnStart;
     QPauseAnimation pause;
     bool componentComplete;
 };
@@ -165,24 +165,24 @@ void QmlTimer::setRepeating(bool repeating)
 }
 
 /*!
-    \qmlproperty bool Timer::firesOnStart
+    \qmlproperty bool Timer::triggeredOnStart
 
-    If \a firesOnStart is true, the timer will be triggered immediately
+    If \a triggeredOnStart is true, the timer will be triggered immediately
     when started, and subsequently at the specified interval.
 
     \sa running
 */
-bool QmlTimer::firesOnStart() const
+bool QmlTimer::triggeredOnStart() const
 {
     Q_D(const QmlTimer);
-    return d->firesOnStart;
+    return d->triggeredOnStart;
 }
 
-void QmlTimer::setFiresOnStart(bool firesOnStart)
+void QmlTimer::setTriggeredOnStart(bool triggeredOnStart)
 {
     Q_D(QmlTimer);
-    if (d->firesOnStart != firesOnStart) {
-        d->firesOnStart = firesOnStart;
+    if (d->triggeredOnStart != triggeredOnStart) {
+        d->triggeredOnStart = triggeredOnStart;
         update();
     }
 }
@@ -197,7 +197,7 @@ void QmlTimer::update()
         d->pause.setLoopCount(d->repeating ? -1 : 1);
         d->pause.setDuration(d->interval);
         d->pause.start();
-        if (d->firesOnStart) {
+        if (d->triggeredOnStart) {
             QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
             QMetaObject::invokeMethod(this, "ticked", Qt::QueuedConnection);
         }
