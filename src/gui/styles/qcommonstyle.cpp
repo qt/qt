@@ -3197,7 +3197,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 //have all the information we need (ie. the layout's margin)
                 const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
                 const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
-                const int handleExtent = pixelMetric(QStyle::PM_ToolBarExtensionExtent, opt, tb);
+                const int handleExtent = pixelMetric(QStyle::PM_ToolBarHandleExtent, opt, tb);
                 if (tbopt->state & QStyle::State_Horizontal) {
                     r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
                     r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
