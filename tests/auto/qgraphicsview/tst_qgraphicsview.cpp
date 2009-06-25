@@ -3093,7 +3093,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
+    QTest::qWait(200);
 
     view.lastPaintedRegion = QRegion();
     view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
