@@ -176,7 +176,8 @@ bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) con
 
 void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
 {
-    reply.d_func()->responseData.append(fragment);
+    char *dst = reply.d_func()->responseData.reserve(fragment.size());
+    qMemCopy(dst, fragment.constData(), fragment.size());
 }
 
 void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
@@ -189,6 +190,11 @@ qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetw
     return reply.d_func()->responseData.size();
 }
 
+qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const
+{
+    return reply.d_func()->responseData.nextDataBlockSize();
+}
+
 qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
     return reply.d_func()->compressedData.size();
@@ -196,15 +202,15 @@ qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetwor
 
 qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize)
 {
-    QByteArray *ba = &reply.d_func()->responseData;
-    if (maxSize == -1 || maxSize >= ba->size()) {
+    QRingBuffer *rb = &reply.d_func()->responseData;
+    if (maxSize == -1 || maxSize >= rb->size()) {
         // read the whole data
-        data = *ba;
-        ba->clear();
+        data = rb->readAll();
+        rb->clear();
     } else {
         // read only the requested length
-        data = ba->mid(0, maxSize);
-        ba->remove(0, maxSize);
+        data.resize(maxSize);
+        rb->read(data.data(), maxSize);
     }
     return data.size();
 }

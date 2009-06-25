@@ -258,6 +258,7 @@ public:
     void appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
+    qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
     qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
 
     qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize);
