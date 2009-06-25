@@ -129,7 +129,7 @@ namespace QtSharedPointer {
         inline T *operator->() const { return data(); }
 
     protected:
-        inline Basic() : value(0 * sizeof(T)) { }
+        inline Basic() : value(0) { }
         // ~Basic();
 
         inline void verifyReconstruction(const T *ptr)

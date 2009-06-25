@@ -225,16 +225,37 @@ void tst_QSharedPointer::basics()
 }
 
 class ForwardDeclared;
+ForwardDeclared *forwardPointer();
+void externalForwardDeclaration();
+extern int forwardDeclaredDestructorRunCount;
+
 void tst_QSharedPointer::forwardDeclaration1()
 {
-    class Wrapper { QSharedPointer<ForwardDeclared> pointer; };
+    externalForwardDeclaration();
+
+    struct Wrapper { QSharedPointer<ForwardDeclared> pointer; };
+
+    forwardDeclaredDestructorRunCount = 0;
+    {
+        Wrapper w;
+        w.pointer = QSharedPointer<ForwardDeclared>(forwardPointer());
+        QVERIFY(!w.pointer.isNull());
+    }
+    QCOMPARE(forwardDeclaredDestructorRunCount, 1);
 }
 
-class ForwardDeclared { };
+#include "forwarddeclared.h"
+
 void tst_QSharedPointer::forwardDeclaration2()
 {
-    class Wrapper { QSharedPointer<ForwardDeclared> pointer; };
-    Wrapper w;
+    forwardDeclaredDestructorRunCount = 0;
+    {
+        struct Wrapper { QSharedPointer<ForwardDeclared> pointer; };
+        Wrapper w1, w2;
+        w1.pointer = QSharedPointer<ForwardDeclared>(forwardPointer());
+        QVERIFY(!w1.pointer.isNull());
+    }
+    QCOMPARE(forwardDeclaredDestructorRunCount, 1);
 }
 
 void tst_QSharedPointer::memoryManagement()
@@ -1108,8 +1129,10 @@ void tst_QSharedPointer::invalidConstructs_data()
 
     // use of forward-declared class
     QTest::newRow("forward-declaration")
-        << &QTest::QExternalTest::tryCompileFail
-        << "QSharedPointer<ForwardDeclared> ptr;";
+        << &QTest::QExternalTest::tryRun
+        << "forwardDeclaredDestructorRunCount = 0;\n"
+           "{ QSharedPointer<ForwardDeclared> ptr = QSharedPointer<ForwardDeclared>(forwardPointer()); }\n"
+           "exit(forwardDeclaredDestructorRunCount);";
     QTest::newRow("creating-forward-declaration")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<ForwardDeclared>::create();";
@@ -1216,6 +1239,7 @@ void tst_QSharedPointer::invalidConstructs()
     QTest::QExternalTest test;
     test.setDebugMode(true);
     test.setQtModules(QTest::QExternalTest::QtCore);
+    test.setExtraProgramSources(QStringList() << SRCDIR "forwarddeclared.cpp");
     test.setProgramHeader(
         "#define QT_SHAREDPOINTER_TRACK_POINTERS\n"
         "#include <QtCore/qsharedpointer.h>\n"
@@ -1223,7 +1247,11 @@ void tst_QSharedPointer::invalidConstructs()
         "\n"
         "struct Data { int i; };\n"
         "struct DerivedData: public Data { int j; };\n"
-        "struct ForwardDeclared;");
+        "\n"
+        "extern int forwardDeclaredDestructorRunCount;\n"
+        "struct ForwardDeclared;\n"
+        "ForwardDeclared *forwardPointer();\n"
+        );
 
     QFETCH(QString, code);
     static bool sane = true;
