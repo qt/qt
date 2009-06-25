@@ -48,6 +48,8 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <QtCore/qatomic.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -138,14 +140,14 @@ namespace QtSharedPointer {
 
         inline void internalConstruct(T *ptr)
         {
-#ifndef QT_NO_DEBUG
+#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
             if (ptr) internalSafetyCheckAdd(ptr);
 #endif
             value = ptr;
         }
         inline void internalDestroy()
         {
-#ifndef QT_NO_DEBUG
+#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
             if (value) internalSafetyCheckRemove(value);
 #endif
         }
