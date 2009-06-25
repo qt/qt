@@ -1905,10 +1905,14 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // don't show resize-cursors for fixed-size widgets
                 QRect fs = widget->frameStrut();
                 if (!widget->isMinimized()) {
+                    if (widget->minimumHeight() == widget->maximumHeight()) {
+                        if (pos.y() < -(fs.top() - fs.left()))
+                            return HTCAPTION;
+                        if (pos.y() >= widget->height())
+                            return HTBORDER;
+                    }
                     if (widget->minimumWidth() == widget->maximumWidth() && (pos.x() < 0 || pos.x() >= widget->width()))
-                        break;
-                    if (widget->minimumHeight() == widget->maximumHeight() && (pos.y() < -(fs.top() - fs.left()) || pos.y() >= widget->height()))
-                        break;
+                        return HTBORDER;
                 }
             }
 

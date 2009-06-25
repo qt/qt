@@ -1560,7 +1560,7 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 */
 QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
 {
-    const uint arraySize = ba.size();
+    const int arraySize = ba.size();
 
     if (arraySize > 3) {
         if ((uchar)ba[0] == 0x00

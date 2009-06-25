@@ -66,7 +66,7 @@ namespace QtConcurrent {
 // The ThreadEngineBarrier counts worker threads, and allows one
 // thread to wait for all others to finish. Tested for its use in
 // QtConcurrent, requires more testing for use as a general class.
-class ThreadEngineBarrier
+class Q_CORE_EXPORT ThreadEngineBarrier
 {
 private:
     // The thread count is maintained as an integer in the count atomic

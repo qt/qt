@@ -154,7 +154,8 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::DeferredDelete:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-    case QEvent::DragEnter:
+#ifndef QT_NO_DRAGANDDROP 
+   case QEvent::DragEnter:
         return new QDragEnterEvent(*static_cast<QDragEnterEvent*>(e));
     case QEvent::DragMove:
         return new QDragMoveEvent(*static_cast<QDragMoveEvent*>(e));
@@ -165,6 +166,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::DragResponse:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
+#endif
     case QEvent::ChildAdded:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -295,12 +297,12 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::StatusTip:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-
+#ifndef QT_NO_ACTION
     case QEvent::ActionChanged:
     case QEvent::ActionAdded:
     case QEvent::ActionRemoved:
         return new QActionEvent(*static_cast<QActionEvent*>(e));
-
+#endif
     case QEvent::FileOpen:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -386,7 +388,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::ZeroTimerEvent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseRelease:
@@ -450,7 +452,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::GraphicsSceneWheel:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-
+#endif
     case QEvent::KeyboardLayoutChange:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -494,7 +496,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::FutureCallOut:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneResize:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -506,7 +508,7 @@ static QEvent *cloneEvent(QEvent *e)
         me2->setOldPos(me->oldPos());
         return me2;
     }
-
+#endif
     case QEvent::CursorChange:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;

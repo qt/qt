@@ -101,6 +101,7 @@ private slots:
     void automaticSemicolonInsertion();
     void abortEvaluation();
     void isEvaluating();
+    void printFunctionWithCustomHandler();
     void printThrowsException();
     void errorConstructors();
     void argumentsProperty();
@@ -2471,6 +2472,33 @@ void tst_QScriptEngine::isEvaluating()
         eng.evaluate(script);
         QVERIFY(receiver.wasEvaluating);
     }
+}
+
+static QtMsgType theMessageType;
+static QString theMessage;
+
+static void myMsgHandler(QtMsgType type, const char *msg)
+{
+    theMessageType = type;
+    theMessage = QString::fromLatin1(msg);
+}
+
+void tst_QScriptEngine::printFunctionWithCustomHandler()
+{
+    QScriptEngine eng;
+    QtMsgHandler oldHandler = qInstallMsgHandler(myMsgHandler);
+    QVERIFY(eng.globalObject().property("print").isFunction());
+    theMessageType = QtSystemMsg;
+    QVERIFY(theMessage.isEmpty());
+    QVERIFY(eng.evaluate("print('test')").isUndefined());
+    QCOMPARE(theMessageType, QtDebugMsg);
+    QCOMPARE(theMessage, QString::fromLatin1("test"));
+    theMessageType = QtSystemMsg;
+    theMessage.clear();
+    QVERIFY(eng.evaluate("print(3, true, 'little pigs')").isUndefined());
+    QCOMPARE(theMessageType, QtDebugMsg);
+    QCOMPARE(theMessage, QString::fromLatin1("3 true little pigs"));
+    qInstallMsgHandler(oldHandler);
 }
 
 void tst_QScriptEngine::printThrowsException()

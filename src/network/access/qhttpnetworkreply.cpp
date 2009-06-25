@@ -162,7 +162,7 @@ qint64 QHttpNetworkReply::bytesAvailable() const
 {
     Q_D(const QHttpNetworkReply);
     if (d->connection)
-        return d->connection->d_func()->bytesAvailable(*this);
+        return d->connection->d_func()->uncompressedBytesAvailable(*this);
     else
         return -1;
 }
@@ -172,7 +172,7 @@ QByteArray QHttpNetworkReply::read(qint64 maxSize)
     Q_D(QHttpNetworkReply);
     QByteArray data;
     if (d->connection)
-        d->connection->d_func()->read(*this, data, maxSize, false);
+        d->connection->d_func()->read(*this, data, maxSize);
     return data;
 }
 

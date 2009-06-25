@@ -248,6 +248,8 @@ public:
 
     uint uniformIdentifiers[NumUniforms];
     GLuint lastTexture;
+
+    bool needsSync;
 };
 
 QT_END_NAMESPACE

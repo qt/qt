@@ -654,6 +654,9 @@ void QGL2PaintEngineEx::sync()
 
     glDisable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
+
+    d->needsSync = true;
+    d->shaderManager->setDirty();
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
@@ -1216,6 +1219,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->simpleShaderDepthUniformDirty = true;
     d->depthUniformDirty = true;
     d->opacityUniformDirty = true;
+    d->needsSync = false;
 
     d->use_system_clip = !systemClip().isEmpty();
 
@@ -1294,11 +1298,15 @@ void QGL2PaintEngineEx::ensureActive()
 
         ctx->d_ptr->active_engine = this;
 
-        glDisable(GL_DEPTH_TEST);
+        d->needsSync = true;
+    }
 
+    if (d->needsSync) {
         glViewport(0, 0, d->width, d->height);
-
+        glDepthMask(false);
+        glDepthFunc(GL_LEQUAL);
         setState(state());
+        d->needsSync = false;
     }
 }
 

@@ -174,22 +174,29 @@ bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) con
 }
 
 
-void QHttpNetworkConnectionPrivate::appendData(QHttpNetworkReply &reply, const QByteArray &fragment, bool compressed)
+void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
 {
-    QByteArray *ba = (compressed) ? &reply.d_func()->compressedData : &reply.d_func()->responseData;
-    ba->append(fragment);
-    return;
+    reply.d_func()->responseData.append(fragment);
 }
 
-qint64 QHttpNetworkConnectionPrivate::bytesAvailable(const QHttpNetworkReply &reply, bool compressed) const
+void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
 {
-    const QByteArray *ba = (compressed) ? &reply.d_func()->compressedData : &reply.d_func()->responseData;
-    return ba->size();
+    reply.d_func()->compressedData.append(fragment);
 }
 
-qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize, bool compressed)
+qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
-    QByteArray *ba = (compressed) ? &reply.d_func()->compressedData : &reply.d_func()->responseData;
+    return reply.d_func()->responseData.size();
+}
+
+qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetworkReply &reply) const
+{
+    return reply.d_func()->compressedData.size();
+}
+
+qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize)
+{
+    QByteArray *ba = &reply.d_func()->responseData;
     if (maxSize == -1 || maxSize >= ba->size()) {
         // read the whole data
         data = *ba;
@@ -524,12 +531,14 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
     Q_ASSERT(socket);
     Q_ASSERT(reply);
 
-    qint64 total = bytesAvailable(*reply, true);
+    qint64 total = compressedBytesAvailable(*reply);
     if (total >= CHUNK || dataComplete) {
         int i = indexOf(socket);
          // uncompress the data
         QByteArray content, inflated;
-        read(*reply, content, -1, true);
+        content = reply->d_func()->compressedData;
+        reply->d_func()->compressedData.clear();
+
         int ret = Z_OK;
         if (content.size())
             ret = reply->d_func()->gunzipBodyPartially(content, inflated);
@@ -537,7 +546,7 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
         if (ret >= retCheck) {
             if (inflated.size()) {
                 reply->d_func()->totalProgress += inflated.size();
-                appendData(*reply, inflated, false);
+                appendUncompressedData(*reply, inflated);
                 if (shouldEmitSignals(reply)) {
                     emit reply->readyRead();
                     // make sure that the reply is valid
@@ -638,7 +647,11 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             fragment.open(QIODevice::WriteOnly);
             bytes = reply->d_func()->readBody(socket, &fragment);
             if (bytes) {
-                appendData(*reply, fragment.data(), reply->d_func()->autoDecompress);
+                if (reply->d_func()->autoDecompress)
+                    appendCompressedData(*reply, fragment.data());
+                else
+                    appendUncompressedData(*reply, fragment.data());
+
                 if (!reply->d_func()->autoDecompress) {
                     reply->d_func()->totalProgress += fragment.size();
                     if (shouldEmitSignals(reply)) {
