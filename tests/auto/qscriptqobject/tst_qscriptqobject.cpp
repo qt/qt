@@ -1433,12 +1433,12 @@ void tst_QScriptExtQObject::callQtInvokable()
         m_myObject->resetQtFunctionInvoked();
         QScriptValue ret = m_engine->evaluate("new myObject(123)");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: myObject is not a constructor"));
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'myObject' [MyQObject(name = \"\")] is not a constructor."));
     }
     {
         m_myObject->resetQtFunctionInvoked();
         QScriptValue ret = m_engine->evaluate("myObject(123)");
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: myObject is not a function"));
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'myObject' [MyQObject(name = \"\")] is not a function."));
     }
 
     // task 233624
