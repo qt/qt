@@ -60,7 +60,7 @@
 /* TODO:
     Check for any memory leaks
     easing should be a QEasingCurve-type property
-    All other XXXs
+    All other XXXs and ###s
 */
 
 QT_BEGIN_NAMESPACE
@@ -693,7 +693,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 
 /*!
     \qmlclass ColorAnimation QmlColorAnimation
-    \inherits Animation
+    \inherits PropertyAnimation
     \brief The ColorAnimation allows you to animate color changes.
 
     \code
@@ -716,9 +716,9 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 */
 
 QmlColorAnimation::QmlColorAnimation(QObject *parent)
-: QmlVariantAnimation(parent)
+: QmlPropertyAnimation(parent)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     d->init();
     d->interpolatorType = QMetaType::QColor;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
@@ -738,13 +738,13 @@ QmlColorAnimation::~QmlColorAnimation()
 */
 QColor QmlColorAnimation::from() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->from.value<QColor>();
 }
 
 void QmlColorAnimation::setFrom(const QColor &f)
 {
-    QmlVariantAnimation::setFrom(f);
+    QmlPropertyAnimation::setFrom(f);
 }
 
 /*!
@@ -757,13 +757,13 @@ void QmlColorAnimation::setFrom(const QColor &f)
 */
 QColor QmlColorAnimation::to() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->to.value<QColor>();
 }
 
 void QmlColorAnimation::setTo(const QColor &t)
 {
-    QmlVariantAnimation::setTo(t);
+    QmlPropertyAnimation::setTo(t);
 }
 
 QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation)
@@ -1176,7 +1176,7 @@ QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction)
 
 /*!
     \qmlclass NumericAnimation QmlNumericAnimation
-    \inherits Animation
+    \inherits PropertyAnimation
     \brief The NumericAnimation allows you to animate changes in properties of type qreal.
 
     Animate a set of properties over 200ms, from their values in the start state to
@@ -1198,9 +1198,9 @@ QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction)
 */
 
 QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
-: QmlVariantAnimation(parent)
+: QmlPropertyAnimation(parent)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     d->init();
     d->interpolatorType = QMetaType::QReal;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
@@ -1221,13 +1221,13 @@ QmlNumericAnimation::~QmlNumericAnimation()
 */
 qreal QmlNumericAnimation::from() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->from.toDouble();    //### toFloat?
 }
 
 void QmlNumericAnimation::setFrom(qreal f)
 {
-    QmlVariantAnimation::setFrom(f);
+    QmlPropertyAnimation::setFrom(f);
 }
 
 /*!
@@ -1241,13 +1241,13 @@ void QmlNumericAnimation::setFrom(qreal f)
 */
 qreal QmlNumericAnimation::to() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->to.toDouble();    //### toFloat?
 }
 
 void QmlNumericAnimation::setTo(qreal t)
 {
-    QmlVariantAnimation::setTo(t);
+    QmlPropertyAnimation::setTo(t);
 }
 
 QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation)
@@ -1433,7 +1433,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation)
 
 //### profile and optimize
-QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
+QVariant QmlPropertyAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
 {
     if (from.userType() != to.userType())
         return QVariant();
@@ -1445,7 +1445,7 @@ QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, co
 //convert a variant from string type to another animatable type
 //### should use any registered string convertor
 //### profile and optimize
-void QmlVariantAnimationPrivate::convertVariant(QVariant &variant, QVariant::Type type)
+void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, QVariant::Type type)
 {
     if (variant.type() != QVariant::String) {
         variant.convert(type);
@@ -1488,9 +1488,9 @@ void QmlVariantAnimationPrivate::convertVariant(QVariant &variant, QVariant::Typ
 }
 
 /*!
-    \qmlclass VariantAnimation QmlVariantAnimation
+    \qmlclass PropertyAnimation QmlPropertyAnimation
     \inherits Animation
-    \brief The VariantAnimation allows you to animate changes in properties of type QVariant.
+    \brief The PropertyAnimation allows you to animate property changes.
 
     Animate a size property over 200ms, from its current size to 20-by-20:
     \code
@@ -1498,51 +1498,51 @@ void QmlVariantAnimationPrivate::convertVariant(QVariant &variant, QVariant::Typ
     \endcode
 */
 
-QmlVariantAnimation::QmlVariantAnimation(QObject *parent)
-: QmlAbstractAnimation(*(new QmlVariantAnimationPrivate), parent)
+QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
+: QmlAbstractAnimation(*(new QmlPropertyAnimationPrivate), parent)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     d->init();
 }
 
-QmlVariantAnimation::~QmlVariantAnimation()
+QmlPropertyAnimation::~QmlPropertyAnimation()
 {
 }
 
-void QmlVariantAnimationPrivate::init()
+void QmlPropertyAnimationPrivate::init()
 {
-    Q_Q(QmlVariantAnimation);
+    Q_Q(QmlPropertyAnimation);
     va = new QmlTimeLineValueAnimator(q);
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));
 }
 
 /*!
-    \qmlproperty int VariantAnimation::duration
+    \qmlproperty int PropertyAnimation::duration
     This property holds the duration of the transition, in milliseconds.
 
     The default value is 250.
 */
 /*!
-    \property QmlVariantAnimation::duration
+    \property QmlPropertyAnimation::duration
     \brief the duration of the transition, in milliseconds.
 
     The default value is 250.
 */
-int QmlVariantAnimation::duration() const
+int QmlPropertyAnimation::duration() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->va->duration();
 }
 
-void QmlVariantAnimation::setDuration(int duration)
+void QmlPropertyAnimation::setDuration(int duration)
 {
     if (duration < 0) {
-        qWarning("QmlVariantAnimation: Cannot set a duration of < 0");
+        qWarning("QmlPropertyAnimation: Cannot set a duration of < 0");
         return;
     }
 
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     if (d->va->duration() == duration)
         return;
     d->va->setDuration(duration);
@@ -1550,23 +1550,23 @@ void QmlVariantAnimation::setDuration(int duration)
 }
 
 /*!
-    \qmlproperty real VariantAnimation::from
+    \qmlproperty real PropertyAnimation::from
     This property holds the starting value.
     If not set, then the value defined in the start state of the transition.
 */
 /*!
-    \property QmlVariantAnimation::from
+    \property QmlPropertyAnimation::from
     \brief the starting value.
 */
-QVariant QmlVariantAnimation::from() const
+QVariant QmlPropertyAnimation::from() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->from;
 }
 
-void QmlVariantAnimation::setFrom(const QVariant &f)
+void QmlPropertyAnimation::setFrom(const QVariant &f)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     if (d->fromIsDefined && f == d->from)
         return;
     d->from = f;
@@ -1575,23 +1575,23 @@ void QmlVariantAnimation::setFrom(const QVariant &f)
 }
 
 /*!
-    \qmlproperty real VariantAnimation::to
+    \qmlproperty real PropertyAnimation::to
     This property holds the ending value.
     If not set, then the value defined in the end state of the transition.
 */
 /*!
-    \property QmlVariantAnimation::to
+    \property QmlPropertyAnimation::to
     \brief the ending value.
 */
-QVariant QmlVariantAnimation::to() const
+QVariant QmlPropertyAnimation::to() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->to;
 }
 
-void QmlVariantAnimation::setTo(const QVariant &t)
+void QmlPropertyAnimation::setTo(const QVariant &t)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     if (d->toIsDefined && t == d->to)
         return;
     d->to = t;
@@ -1600,7 +1600,7 @@ void QmlVariantAnimation::setTo(const QVariant &t)
 }
 
 /*!
-    \qmlproperty string VariantAnimation::easing
+    \qmlproperty string PropertyAnimation::easing
     \brief the easing curve used for the transition.
 
     Available values are:
@@ -1651,20 +1651,20 @@ void QmlVariantAnimation::setTo(const QVariant &t)
 */
 
 /*!
-    \property QmlVariantAnimation::easing
+    \property QmlPropertyAnimation::easing
     \brief the easing curve to use.
 
     \sa QEasingCurve
 */
-QString QmlVariantAnimation::easing() const
+QString QmlPropertyAnimation::easing() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->easing;
 }
 
-void QmlVariantAnimation::setEasing(const QString &e)
+void QmlPropertyAnimation::setEasing(const QString &e)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     if (d->easing == e)
         return;
 
@@ -1674,28 +1674,28 @@ void QmlVariantAnimation::setEasing(const QString &e)
 }
 
 /*!
-    \qmlproperty string VariantAnimation::properties
+    \qmlproperty string PropertyAnimation::properties
     This property holds the properties this animation should be applied to.
 
     This is a comma-separated list of properties that should use
     this animation when they change.
 */
 /*!
-    \property QmlVariantAnimation::properties
+    \property QmlPropertyAnimation::properties
     \brief the properties this animation should be applied to
 
     properties holds a copy separated list of properties that should use
     this animation when they change.
 */
-QString QmlVariantAnimation::properties() const
+QString QmlPropertyAnimation::properties() const
 {
-    Q_D(const QmlVariantAnimation);
+    Q_D(const QmlPropertyAnimation);
     return d->properties;
 }
 
-void QmlVariantAnimation::setProperties(const QString &prop)
+void QmlPropertyAnimation::setProperties(const QString &prop)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     if (d->properties == prop)
         return;
 
@@ -1704,28 +1704,28 @@ void QmlVariantAnimation::setProperties(const QString &prop)
 }
 
 /*!
-    \qmlproperty list<Item> VariantAnimation::filter
+    \qmlproperty list<Item> PropertyAnimation::filter
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlVariantAnimation::filter()
+QList<QObject *> *QmlPropertyAnimation::filter()
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     return &d->filter;
 }
 
 /*!
-    \qmlproperty list<Item> VariantAnimation::exclude
+    \qmlproperty list<Item> PropertyAnimation::exclude
     This property holds the items not to be affected by this animation.
     \sa filter
 */
-QList<QObject *> *QmlVariantAnimation::exclude()
+QList<QObject *> *QmlPropertyAnimation::exclude()
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     return &d->exclude;
 }
 
-void QmlVariantAnimationPrivate::valueChanged(qreal r)
+void QmlPropertyAnimationPrivate::valueChanged(qreal r)
 {
     if (!fromSourced) {
         if (!fromIsDefined) {
@@ -1745,15 +1745,15 @@ void QmlVariantAnimationPrivate::valueChanged(qreal r)
     }
 }
 
-QAbstractAnimation *QmlVariantAnimation::qtAnimation()
+QAbstractAnimation *QmlPropertyAnimation::qtAnimation()
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     return d->va;
 }
 
-void QmlVariantAnimation::prepare(QmlMetaProperty &p)
+void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     if (d->userProperty.isNull)
         d->property = p;
     else
@@ -1769,11 +1769,11 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
     d->va->setFromSourcedValue(&d->fromSourced);
 }
 
-void QmlVariantAnimation::transition(QmlStateActions &actions,
+void QmlPropertyAnimation::transition(QmlStateActions &actions,
                                      QmlMetaProperties &modified,
                                      TransitionDirection direction)
 {
-    Q_D(QmlVariantAnimation);
+    Q_D(QmlPropertyAnimation);
     Q_UNUSED(direction);
 
     struct PropertyUpdater : public QmlTimeLineValue
@@ -1795,7 +1795,7 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
                     if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
                         if (interpolatorType)
-                            QmlVariantAnimationPrivate::convertVariant(action.fromValue, (QVariant::Type)interpolatorType);
+                            QmlPropertyAnimationPrivate::convertVariant(action.fromValue, (QVariant::Type)interpolatorType);
                     }
                     if (!interpolatorType) {
                         int propType = action.property.propertyType();
@@ -1886,7 +1886,6 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     }
 }
 
-//XXX whats the best name for this? (just Animation?)
-QML_DEFINE_TYPE(QmlVariantAnimation,VariantAnimation)
+QML_DEFINE_TYPE(QmlPropertyAnimation,PropertyAnimation)
 
 QT_END_NAMESPACE

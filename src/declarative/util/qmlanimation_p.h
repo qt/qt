@@ -300,13 +300,13 @@ public:
     QAnimationGroup *ag;
 };
 
-class QmlVariantAnimationPrivate : public QmlAbstractAnimationPrivate
+class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlVariantAnimation)
+    Q_DECLARE_PUBLIC(QmlPropertyAnimation)
 public:
-    QmlVariantAnimationPrivate()
+    QmlPropertyAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      interpolatorType(0), interpolator(0), va(0), value(this, &QmlVariantAnimationPrivate::valueChanged) {}
+      interpolatorType(0), interpolator(0), va(0), value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
 
     void init();
 
@@ -328,7 +328,7 @@ public:
     QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);
 
-    QmlTimeLineValueProxy<QmlVariantAnimationPrivate> value;
+    QmlTimeLineValueProxy<QmlPropertyAnimationPrivate> value;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, QVariant::Type type);
