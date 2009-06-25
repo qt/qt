@@ -306,7 +306,7 @@ class QmlVariantAnimationPrivate : public QmlAbstractAnimationPrivate
 public:
     QmlVariantAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      va(0), value(this, &QmlVariantAnimationPrivate::valueChanged) {}
+      interpolatorType(0), interpolator(0), va(0), value(this, &QmlVariantAnimationPrivate::valueChanged) {}
 
     void init();
 
@@ -322,6 +322,8 @@ public:
     bool fromSourced;
     bool fromIsDefined;
     bool toIsDefined;
+    int interpolatorType;
+    QVariantAnimation::Interpolator interpolator;
 
     QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);

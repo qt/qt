@@ -720,6 +720,8 @@ QmlColorAnimation::QmlColorAnimation(QObject *parent)
 {
     Q_D(QmlVariantAnimation);
     d->init();
+    d->interpolatorType = QMetaType::QColor;
+    d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
 
 QmlColorAnimation::~QmlColorAnimation()
@@ -1200,6 +1202,8 @@ QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
 {
     Q_D(QmlVariantAnimation);
     d->init();
+    d->interpolatorType = QMetaType::QReal;
+    d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
 
 QmlNumericAnimation::~QmlNumericAnimation()
@@ -1726,6 +1730,7 @@ void QmlVariantAnimationPrivate::valueChanged(qreal r)
     if (!fromSourced) {
         if (!fromIsDefined) {
             from = property.read();
+            convertVariant(from, (QVariant::Type)(interpolatorType ? interpolatorType : property.propertyType()));
         }
         fromSourced = true;
     }
@@ -1733,7 +1738,10 @@ void QmlVariantAnimationPrivate::valueChanged(qreal r)
     if (r == 1.) {
         property.write(to);
     } else {
-        property.write(interpolateVariant(from, to, r));
+        if (interpolator)
+            property.write(interpolator(from.constData(), to.constData(), r));
+        else
+            property.write(interpolateVariant(from, to, r));    //### optimize
     }
 }
 
@@ -1751,9 +1759,9 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
-    d->convertVariant(d->to, (QVariant::Type)d->property.propertyType());
+    d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
     if (d->fromIsDefined)
-        d->convertVariant(d->from, (QVariant::Type)d->property.propertyType());
+        d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
 
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
@@ -1771,6 +1779,9 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     struct PropertyUpdater : public QmlTimeLineValue
     {
         QmlStateActions actions;
+        int interpolatorType;       //for Numeric/ColorAnimation
+        int prevInterpolatorType;   //for generic
+        QVariantAnimation::Interpolator interpolator;
         void setValue(qreal v)
         {
             QmlTimeLineValue::setValue(v);
@@ -1783,11 +1794,18 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
                 else {
                     if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
-                        /*if (action.fromValue.isNull())
-                            action.fromValue = QVariant(0.);*/    //### can/should we give a default value for any type?
+                        if (interpolatorType)
+                            QmlVariantAnimationPrivate::convertVariant(action.fromValue, (QVariant::Type)interpolatorType);
                     }
-                    QVariant val = QmlVariantAnimationPrivate::interpolateVariant(action.fromValue, action.toValue, v);
-                    action.property.write(val);
+                    if (!interpolatorType) {
+                        int propType = action.property.propertyType();
+                        if (!prevInterpolatorType || prevInterpolatorType != propType) {
+                            prevInterpolatorType = propType;
+                            interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
+                        }
+                    }
+                    if (interpolator)
+                        action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v));
                 }
                 QmlBehaviour::_ignore = false;
             }
@@ -1809,6 +1827,8 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     }
 
     PropertyUpdater *data = new PropertyUpdater;
+    data->interpolatorType = d->interpolatorType;
+    data->interpolator = d->interpolator;
 
     QSet<QObject *> objs;
     for (int ii = 0; ii < actions.count(); ++ii) {
@@ -1831,8 +1851,8 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             if (d->toIsDefined)
                 myAction.toValue = d->to;
 
-            d->convertVariant(myAction.fromValue, (QVariant::Type)myAction.property.propertyType());
-            d->convertVariant(myAction.toValue, (QVariant::Type)myAction.property.propertyType());
+            d->convertVariant(myAction.fromValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
+            d->convertVariant(myAction.toValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
 
             modified << action.property;
 
@@ -1848,10 +1868,10 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
             if (d->fromIsDefined) {
-                d->convertVariant(d->from, (QVariant::Type)myAction.property.propertyType());
+                d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
                 myAction.fromValue = d->from;
             }
-            d->convertVariant(d->to, (QVariant::Type)myAction.property.propertyType());
+            d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
             myAction.toValue = d->to;
             myAction.bv = 0;
             myAction.event = 0;
