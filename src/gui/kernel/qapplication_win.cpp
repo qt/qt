@@ -720,7 +720,11 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
 typedef BOOL (WINAPI *PtrUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, const POINT *pptDst,
     const SIZE *psize, HDC hdcSrc, const POINT *pptSrc, COLORREF crKey,
     const Q_BLENDFUNCTION *pblend, DWORD dwflags);
+
+typedef BOOL (WINAPI *PtrSetProcessDPIAware) (VOID);
+
 static PtrUpdateLayeredWindow ptrUpdateLayeredWindow = 0;
+static PtrSetProcessDPIAware ptrSetProcessDPIAware = 0;
 
 static BOOL WINAPI qt_updateLayeredWindowIndirect(HWND hwnd, const Q_UPDATELAYEREDWINDOWINFO *info)
 {
@@ -846,6 +850,11 @@ void qt_init(QApplicationPrivate *priv, int)
 
     if (ptrUpdateLayeredWindow && !ptrUpdateLayeredWindowIndirect)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
+
+    // Notify Vista and Windows 7 that we support highter DPI settings
+    if (ptrSetProcessDPIAware = (PtrSetProcessDPIAware)
+        QLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware"))
+    ptrSetProcessDPIAware();
 #endif
 }
 
