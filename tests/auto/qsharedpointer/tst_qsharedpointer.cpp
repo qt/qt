@@ -56,6 +56,7 @@ private slots:
     void memoryManagement();
     void downCast();
     void upCast();
+    void objectCast();
     void differentPointers();
     void virtualBaseDifferentPointers();
 #ifndef QTEST_NO_RTTI
@@ -422,6 +423,109 @@ void tst_QSharedPointer::upCast()
     }
     QCOMPARE(int(baseptr.d->weakref), 1);
     QCOMPARE(int(baseptr.d->strongref), 1);
+}
+
+class OtherObject: public QObject
+{
+    Q_OBJECT
+};
+
+void tst_QSharedPointer::objectCast()
+{
+    {
+        OtherObject *data = new OtherObject;
+        QSharedPointer<QObject> baseptr = QSharedPointer<QObject>(data);
+        QVERIFY(baseptr == data);
+        QVERIFY(data == baseptr);
+
+        // perform object cast
+        QSharedPointer<OtherObject> ptr = qSharedPointerObjectCast<OtherObject>(baseptr);
+        QVERIFY(!ptr.isNull());
+        QCOMPARE(ptr.data(), data);
+        QVERIFY(ptr == data);
+
+        // again:
+        ptr = baseptr.objectCast<OtherObject>();
+        QVERIFY(ptr == data);
+
+#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+        // again:
+        ptr = qobject_cast<OtherObject *>(baseptr);
+        QVERIFY(ptr == data);
+
+        // again:
+        ptr = qobject_cast<QSharedPointer<OtherObject> >(baseptr);
+        QVERIFY(ptr == data);
+#endif
+    }
+
+    {
+        const OtherObject *data = new OtherObject;
+        QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(data);
+        QVERIFY(baseptr == data);
+        QVERIFY(data == baseptr);
+
+        // perform object cast
+        QSharedPointer<const OtherObject> ptr = qSharedPointerObjectCast<const OtherObject>(baseptr);
+        QVERIFY(!ptr.isNull());
+        QCOMPARE(ptr.data(), data);
+        QVERIFY(ptr == data);
+
+        // again:
+        ptr = baseptr.objectCast<const OtherObject>();
+        QVERIFY(ptr == data);
+
+#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+        // again:
+        ptr = qobject_cast<const OtherObject *>(baseptr);
+        QVERIFY(ptr == data);
+
+        // again:
+        ptr = qobject_cast<QSharedPointer<const OtherObject> >(baseptr);
+        QVERIFY(ptr == data);
+#endif
+    }
+
+    {
+        OtherObject *data = new OtherObject;
+        QPointer<OtherObject> qptr = data;
+        QSharedPointer<OtherObject> ptr = QSharedPointer<OtherObject>(data);
+        QWeakPointer<QObject> weakptr = ptr;
+
+        {
+            // perform object cast
+            QSharedPointer<OtherObject> otherptr = qSharedPointerObjectCast<OtherObject>(weakptr);
+            QVERIFY(otherptr == ptr);
+
+            // again:
+            otherptr = qobject_cast<OtherObject *>(weakptr);
+            QVERIFY(otherptr == ptr);
+
+            // again:
+            otherptr = qobject_cast<QSharedPointer<OtherObject> >(weakptr);
+            QVERIFY(otherptr == ptr);
+        }
+
+        // drop the reference:
+        ptr.clear();
+        QVERIFY(ptr.isNull());
+        QVERIFY(qptr.isNull());
+        QVERIFY(weakptr.toStrongRef().isNull());
+
+        // verify that the object casts fail without crash
+        QSharedPointer<OtherObject> otherptr = qSharedPointerObjectCast<OtherObject>(weakptr);
+        QVERIFY(otherptr.isNull());
+
+#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+        // again:
+        otherptr = qobject_cast<OtherObject *>(weakptr);
+        QVERIFY(otherptr.isNull());
+
+        // again:
+        otherptr = qobject_cast<QSharedPointer<OtherObject> >(weakptr);
+        QVERIFY(otherptr.isNull());
+#endif
+    }
 }
 
 void tst_QSharedPointer::differentPointers()
@@ -939,6 +1043,20 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "QSharedPointer<const Data> baseptr = QSharedPointer<const Data>(new Data);\n"
            "QSharedPointer<Data> ptr;"
            "ptr = baseptr;";
+    QTest::newRow("const-dropping-static-cast")
+        << &QTest::QExternalTest::tryCompileFail
+        << "QSharedPointer<const Data> baseptr = QSharedPointer<const Data>(new Data);\n"
+        "qSharedPointerCast<DerivedData>(baseptr);";
+#ifndef QTEST_NO_RTTI
+    QTest::newRow("const-dropping-dynamic-cast")
+        << &QTest::QExternalTest::tryCompileFail
+        << "QSharedPointer<const Data> baseptr = QSharedPointer<const Data>(new Data);\n"
+        "qSharedPointerDynamicCast<DerivedData>(baseptr);";
+#endif
+    QTest::newRow("const-dropping-object-cast")
+        << &QTest::QExternalTest::tryCompileFail
+        << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
+        "qSharedPointerObjectCast<QCoreApplication>(baseptr);";
 
     // arithmethics through automatic cast operators
     QTest::newRow("arithmethic1")
@@ -982,6 +1100,10 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
            "QSharedPointer<int> ptr2 = qSharedPointerConstCast<int>(ptr1);";
+    QTest::newRow("invalid-cast4")
+        << &QTest::QExternalTest::tryCompileFail
+        << "QSharedPointer<Data> ptr1;\n"
+           "QSharedPointer<int> ptr2 = qSharedPointerObjectCast<int>(ptr1);";
 }
 
 void tst_QSharedPointer::invalidConstructs()
@@ -999,6 +1121,7 @@ void tst_QSharedPointer::invalidConstructs()
     test.setProgramHeader(
         "#define QT_SHAREDPOINTER_TRACK_POINTERS\n"
         "#include <QtCore/qsharedpointer.h>\n"
+        "#include <QtCore/qcoreapplication.h>\n"
         "\n"
         "struct Data { int i; };\n"
         "struct DerivedData: public Data { int j; };\n"
