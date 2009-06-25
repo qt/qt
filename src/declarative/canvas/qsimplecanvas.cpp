@@ -883,9 +883,9 @@ QRect QSimpleCanvasPrivate::resetDirty()
         dirtyItems.clear();
         oldDirty = QRect();
 
-        if (fullUpdate())
+        /*if (fullUpdate())
             return QRect();
-        else
+        else*/
             return r;
     } else {
         return QRect();
@@ -934,7 +934,7 @@ bool QSimpleCanvas::event(QEvent *e)
         QRect r = d->resetDirty();
 
 #if defined(QFX_RENDER_QPAINTER)
-        if (r.isEmpty() || fullUpdate())
+        if (fullUpdate())
             repaint();
         else 
             repaint(r);

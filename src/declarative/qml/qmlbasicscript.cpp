@@ -830,7 +830,8 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
 
                     if (n.type == QmlBasicScriptNodeCache::Invalid || state == Reset) {
                         context->engine()->d_func()->loadCache(n, QLatin1String(id), static_cast<QmlContextPrivate*>(context->d_ptr));
-                        state = Incremental;
+                        if (state != Reset)
+                            state = Incremental;
                     }
 
                     if(!n.isValid())
@@ -855,7 +856,8 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                     } else if (n.type == QmlBasicScriptNodeCache::Invalid || state == Reset) {
                         context->engine()->d_func()->fetchCache(n, QLatin1String(id), obj);
                         guard(n);
-                        state = Incremental;
+                        if (state != Reset)
+                            state = Incremental;
                     } else if (!valid(n, obj)) {
                         clearCache(dataCache);
                         *cached = Reset;

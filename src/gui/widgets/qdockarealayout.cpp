@@ -924,43 +924,41 @@ static int separatorMoveHelper(QVector<QLayoutStruct> &list, int index, int delt
     return delta;
 }
 
-int QDockAreaLayoutInfo::separatorMove(int index, int delta, QVector<QLayoutStruct> *cache)
+int QDockAreaLayoutInfo::separatorMove(int index, int delta)
 {
 #ifndef QT_NO_TABBAR
     Q_ASSERT(!tabbed);
 #endif
 
-    if (cache->isEmpty()) {
-        QVector<QLayoutStruct> &list = *cache;
-        list.resize(item_list.size());
-        for (int i = 0; i < item_list.size(); ++i) {
-            const QDockAreaLayoutItem &item = item_list.at(i);
-            QLayoutStruct &ls = list[i];
-            Q_ASSERT(!(item.flags & QDockAreaLayoutItem::GapItem));
-            if (item.skip()) {
-                ls.empty = true;
-            } else {
-                ls.empty = false;
-                ls.pos = item.pos;
-                ls.size = item.size;
-                ls.minimumSize = pick(o, item.minimumSize());
-                ls.maximumSize = pick(o, item.maximumSize());
-            }
+    QVector<QLayoutStruct> list(item_list.size());
+    for (int i = 0; i < list.size(); ++i) {
+        const QDockAreaLayoutItem &item = item_list.at(i);
+        QLayoutStruct &ls = list[i];
+        Q_ASSERT(!(item.flags & QDockAreaLayoutItem::GapItem));
+        if (item.skip()) {
+            ls.empty = true;
+        } else {
+            const int separatorSpace = item.hasFixedSize(o) ? 0 : sep;
+            ls.empty = false;
+            ls.pos = item.pos;
+            ls.size = item.size + separatorSpace;
+            ls.minimumSize = pick(o, item.minimumSize()) + separatorSpace;
+            ls.maximumSize = pick(o, item.maximumSize()) + separatorSpace;
+
         }
     }
 
-    QVector<QLayoutStruct> list = *cache;
+    //the separator space has been added to the size, so we pass 0 as a parameter
+    delta = separatorMoveHelper(list, index, delta, 0 /*separator*/);
 
-    delta = separatorMoveHelper(list, index, delta, sep);
-
-    for (int i = 0; i < item_list.size(); ++i) {
+    for (int i = 0; i < list.size(); ++i) {
         QDockAreaLayoutItem &item = item_list[i];
         if (item.skip())
             continue;
         QLayoutStruct &ls = list[i];
-        item.size = ls.size;
+        const int separatorSpace = item.hasFixedSize(o) ? 0 : sep;
+        item.size = ls.size - separatorSpace;
         item.pos = ls.pos;
-
         if (item.subinfo != 0) {
             item.subinfo->rect = itemRect(i);
             item.subinfo->fitItems();
@@ -1974,7 +1972,6 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 } else {
                     int dummy;
                     stream >> item.pos >> item.size >> dummy >> dummy;
-    //                qDebug() << widget << item.pos << item.size;
                     if (!testing) {
                         widget->setFloating(false);
                         widget->setVisible(flags & StateFlagVisible);
@@ -3115,31 +3112,29 @@ QRegion QDockAreaLayout::separatorRegion() const
 }
 
 int QDockAreaLayout::separatorMove(QList<int> separator, const QPoint &origin,
-                                                const QPoint &dest,
-                                                QVector<QLayoutStruct> *cache)
+                                                const QPoint &dest)
 {
     int delta = 0;
     int index = separator.last();
+
+
 
     if (separator.count() > 1) {
         QDockAreaLayoutInfo *info = this->info(separator);
         delta = pick(info->o, dest - origin);
         if (delta != 0)
-            delta = info->separatorMove(index, delta, cache);
+            delta = info->separatorMove(index, delta);
         info->apply(false);
         return delta;
     }
 
-    if (cache->isEmpty()) {
-        QVector<QLayoutStruct> &list = *cache;
+    QVector<QLayoutStruct> list;
 
-        if (index == QInternal::LeftDock || index == QInternal::RightDock)
-            getGrid(0, &list);
-        else
-            getGrid(&list, 0);
-    }
+    if (index == QInternal::LeftDock || index == QInternal::RightDock)
+        getGrid(0, &list);
+    else
+        getGrid(&list, 0);
 
-    QVector<QLayoutStruct> list = *cache;
     int sep_index = index == QInternal::LeftDock || index == QInternal::TopDock
                         ? 0 : 1;
     Qt::Orientation o = index == QInternal::LeftDock || index == QInternal::RightDock

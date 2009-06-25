@@ -234,19 +234,6 @@ QmlState &QmlState::operator<<(QmlStateOperation *op)
     return *this;
 }
 
-#if 0
-static void dump(const QmlStateOperation::ActionList &list)
-{
-    if (!QString(getenv("STATE_DEBUG")).isEmpty())
-        return;
-
-    for (int ii = 0; ii < list.count(); ++ii) {
-        const Action &action = list.at(ii);
-        qWarning() << action.property.object << action.property.name << action.toValue;
-    }
-}
-#endif
-
 void QmlStatePrivate::applyBindings()
 {
     foreach(const Action &action, bindingsList) {
@@ -282,12 +269,16 @@ void QmlStatePrivate::complete()
     emit q->completed();
 }
 
-QmlStateOperation::ActionList QmlStatePrivate::generateActionList(QmlStateGroup *group) const
+// Generate a list of actions for this state.  This includes coelescing state
+// actions that this state "extends"
+QmlStateOperation::ActionList 
+QmlStatePrivate::generateActionList(QmlStateGroup *group) const
 {
     QmlStateOperation::ActionList applyList;
     if (inState)
         return applyList;
 
+    // Prevent "extends" recursion
     inState = true;
 
     if (!extends.isEmpty()) {
@@ -336,12 +327,19 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     d->reverting.clear();
     d->bindingsList.clear();
 
-    if (revert)
-        d->revertList = static_cast<QmlStatePrivate*>(revert->d_ptr)->revertList;
-    QmlStateOperation::RevertActionList additionalReverts;
+    if (revert) {
+        QmlStatePrivate *revertPrivate = 
+            static_cast<QmlStatePrivate*>(revert->d_ptr);
+        d->revertList = revertPrivate->revertList;
+        revertPrivate->revertList.clear();
+    }
 
+    // List of actions caused by this state
     QmlStateOperation::ActionList applyList = d->generateActionList(group);
 
+    // List of actions that need to be reverted to roll back (just) this state
+    QmlStatePrivate::SimpleActionList additionalReverts;
+    // First add the reverse of all the applyList actions
     for (int ii = 0; ii < applyList.count(); ++ii) {
         const Action &action = applyList.at(ii);
         if (action.event || !action.restore)
@@ -353,10 +351,15 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                 found = true;
         }
         if (!found) {
-            RevertAction r(action);
+            // Only need to revert the applyList action if the previous
+            // state doesn't have a higher priority revert already
+            SimpleAction r(action);
             additionalReverts << r;
         }
     }
+    
+    // Any reverts from a previous state that aren't carried forth
+    // into this state need to be translated into apply actions
     for (int ii = 0; ii < d->revertList.count(); ++ii) {
         bool found = false;
         for (int jj = 0; !found && jj < applyList.count(); ++jj) {
@@ -376,26 +379,41 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                 a.bv = d->revertList.at(ii).bv;
             }
             applyList << a;
+            // Store these special reverts in the reverting list
             d->reverting << d->revertList.at(ii).property;
         }
     }
+    // All the local reverts now become part of the ongoing revertList
     d->revertList << additionalReverts;
 
-    //apply all changes, and work out any ending positions for bindings
-    //then rewind all changes and proceed as normal
-    //### 4 foreach loops!
-    ////////////////////////////////////////////////////////////////////
-    foreach(const Action &action, applyList) {
-        if (stateChangeDebug())
-            qWarning() << "    Action:" << action.property.object() << action.property.name() << action.toValue;
+    // Output for debugging
+    if (stateChangeDebug()) {
+        foreach(const Action &action, applyList) {
+            qWarning() << "    Action:" << action.property.object() 
+                       << action.property.name() << action.toValue;
+        }
+    }
 
+    // Determine which actions are binding changes.
+    foreach(const Action &action, applyList) {
         if (action.bv && !action.toBinding.isEmpty()) {
             d->bindingsList << action;
             action.bv->clearExpression();
         }
     }
 
+    // Animated transitions need both the start and the end value for
+    // each property change.  In the presence of bindings, the end values
+    // are non-trivial to calculate.  As a "best effort" attempt, we first
+    // apply all the property and binding changes, then read all the actual
+    // final values, then roll back the changes and proceed as normal.
+    //
+    // This doesn't catch everything, and it might be a little fragile in
+    // some cases - but whatcha going to do?
+
     if (!d->bindingsList.isEmpty()) {
+
+        // Apply all the property and binding changes
         foreach(const Action &action, applyList) {
             if (action.bv && !action.toBinding.isEmpty()) {
                 action.bv->setExpression(action.toBinding);
@@ -404,6 +422,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             }
         }
 
+        // Read all the end values for binding changes
         for (int ii = 0; ii < applyList.size(); ++ii) {
             Action *action = &applyList[ii];
             if (action->event)
@@ -415,6 +434,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             }
         }
 
+        // Revert back to the original values
         foreach(const Action &action, applyList) {
             if (action.event)
                 continue;
@@ -424,36 +444,44 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             action.property.write(action.fromValue);
         }
     }
-    ////////////////////////////////////////////////////////////////////
 
-    QmlStateOperation::ActionList modList = applyList;
-    QList<QmlMetaProperty> touched;
+
     d->completeList.clear();
+
     if (trans) {
+        QList<QmlMetaProperty> touched;
         d->transition = trans;
-        trans->prepare(modList, touched, this);
-        for (int ii = 0; ii < modList.count(); ++ii) {
-            const Action &action = modList.at(ii);
+        trans->prepare(applyList, touched, this);
+
+        // Modify the action list to remove actions handled in the transition
+        for (int ii = 0; ii < applyList.count(); ++ii) {
+            const Action &action = applyList.at(ii);
 
             if (action.event) {
+
                 if (action.actionDone) {
-                    modList.removeAt(ii);
+                    applyList.removeAt(ii);
                     --ii;
-                }
-            } else {
-                if (action.toValue != action.fromValue) {
-                    d->completeList << RevertAction(action, false);
                 }
 
+            } else {
+
                 if (touched.contains(action.property)) {
-                    modList.removeAt(ii);
+                    if (action.toValue != action.fromValue) 
+                        d->completeList << SimpleAction(action, 
+                                                        SimpleAction::EndState);
+
+                    applyList.removeAt(ii);
                     --ii;
                 }
+
             }
         }
     }
 
-    foreach(const Action &action, modList) {
+    // Any actions remaining have not been handled by the transition and should
+    // be applied immediately
+    foreach(const Action &action, applyList) {
         if (action.event)
             action.event->execute();
         else

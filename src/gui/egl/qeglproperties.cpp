@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,358 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qpaintdevice.h>
-#include <QtGui/qpixmap.h>
-#include <QtGui/qwidget.h>
-#include <QtCore/qdebug.h>
-#include "qegl_p.h"
-
-#if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
+#include "qeglproperties_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QEglContext::QEglContext()
-{
-    apiType = OpenGL;
-    dpy = EGL_NO_DISPLAY;
-    ctx = EGL_NO_CONTEXT;
-    surf = EGL_NO_SURFACE;
-    cfg = 0;
-    share = false;
-    reserved = 0;
-}
-
-QEglContext::~QEglContext()
-{
-    destroy();
-}
-
-bool QEglContext::isValid() const
-{
-    return (ctx != EGL_NO_CONTEXT);
-}
-
-bool QEglContext::isSharing() const
-{
-    return share;
-}
-
-// Open the EGL display associated with "device".
-bool QEglContext::openDisplay(QPaintDevice *device)
-{
-    if (dpy == EGL_NO_DISPLAY)
-        dpy = defaultDisplay(device);
-    return (dpy != EGL_NO_DISPLAY);
-}
-
-// Choose a configuration that matches "properties".
-bool QEglContext::chooseConfig
-        (const QEglProperties& properties, PixelFormatMatch match)
-{
-    QEglProperties props(properties);
-    EGLConfig *configs;
-    EGLint matching, size;
-    do {
-        // Get the number of matching configurations for this set of properties.
-        matching = 0;
-        if (!eglChooseConfig(dpy, props.properties(), 0, 256, &matching) || !matching)
-            continue;
-
-        // If we want the best pixel format, then return the first
-        // matching configuration.
-        if (match == BestPixelFormat) {
-            eglChooseConfig(dpy, props.properties(), &cfg, 1, &matching);
-            if (matching < 1)
-                continue;
-            return true;
-        }
-
-        // Fetch all of the matching configurations and find the
-        // first that matches the pixel format we wanted.
-        size = matching;
-        configs = new EGLConfig [size];
-        eglChooseConfig(dpy, props.properties(), configs, size, &matching);
-        for (EGLint index = 0; index < size; ++index) {
-            EGLint red, green, blue, alpha;
-            eglGetConfigAttrib(dpy, configs[index], EGL_RED_SIZE, &red);
-            eglGetConfigAttrib(dpy, configs[index], EGL_GREEN_SIZE, &green);
-            eglGetConfigAttrib(dpy, configs[index], EGL_BLUE_SIZE, &blue);
-            eglGetConfigAttrib(dpy, configs[index], EGL_ALPHA_SIZE, &alpha);
-            if (red == props.value(EGL_RED_SIZE) &&
-                    green == props.value(EGL_GREEN_SIZE) &&
-                    blue == props.value(EGL_BLUE_SIZE) &&
-                    (props.value(EGL_ALPHA_SIZE) == 0 ||
-                     alpha == props.value(EGL_ALPHA_SIZE))) {
-                cfg = configs[index];
-                delete [] configs;
-                return true;
-            }
-        }
-        delete [] configs;
-    } while (props.reduceConfiguration());
-
-#ifdef EGL_BIND_TO_TEXTURE_RGBA
-    // Don't report an error just yet if we failed to get a pbuffer
-    // configuration with texture rendering.  Only report failure if
-    // we cannot get any pbuffer configurations at all.
-    if (props.value(EGL_BIND_TO_TEXTURE_RGBA) == EGL_DONT_CARE &&
-        props.value(EGL_BIND_TO_TEXTURE_RGB) == EGL_DONT_CARE)
-#endif
-    {
-        qWarning() << "QEglContext::chooseConfig(): Could not find a suitable EGL configuration";
-        qWarning() << "Requested:" << props.toString();
-        qWarning() << "Available:";
-        dumpAllConfigs();
-    }
-    return false;
-}
-
-// Create the EGLContext.
-bool QEglContext::createContext(QEglContext *shareContext)
-{
-    // We need to select the correct API before calling eglCreateContext().
-#ifdef EGL_OPENGL_ES_API
-    if (apiType == OpenGL)
-        eglBindAPI(EGL_OPENGL_ES_API);
-#endif
-#ifdef EGL_OPENVG_API
-    if (apiType == OpenVG)
-        eglBindAPI(EGL_OPENVG_API);
-#endif
-
-    // Create a new context for the configuration.
-    QEglProperties contextProps;
-#if defined(QT_OPENGL_ES_2)
-    if (apiType == OpenGL)
-        contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
-#endif
-    if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
-        shareContext = 0;
-    if (shareContext) {
-        ctx = eglCreateContext(dpy, cfg, shareContext->ctx, contextProps.properties());
-        if (ctx == EGL_NO_CONTEXT) {
-            qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
-            shareContext = 0;
-        }
-    }
-    if (ctx == EGL_NO_CONTEXT) {
-        ctx = eglCreateContext(dpy, cfg, 0, contextProps.properties());
-        if (ctx == EGL_NO_CONTEXT) {
-            qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << errorString(eglGetError());
-            return false;
-        }
-    }
-    share = (shareContext != 0);
-    return true;
-}
-
-// Recreate the surface for a paint device because the native id has changed.
-bool QEglContext::recreateSurface(QPaintDevice *device)
-{
-    // Bail out if the surface has not been created for the first time yet.
-    if (surf == EGL_NO_SURFACE)
-        return true;
-
-    // Destroy the old surface.
-    eglDestroySurface(dpy, surf);
-
-    // Create a new one.
-    return createSurface(device);
-}
-
-void QEglContext::destroy()
-{
-    if (ctx != EGL_NO_CONTEXT)
-        eglDestroyContext(dpy, ctx);
-    dpy = EGL_NO_DISPLAY;
-    ctx = EGL_NO_CONTEXT;
-    surf = EGL_NO_SURFACE;
-    cfg = 0;
-    share = false;
-}
-
-bool QEglContext::makeCurrent()
-{
-    if(ctx == EGL_NO_CONTEXT) {
-        qWarning() << "QEglContext::makeCurrent(): Cannot make invalid context current";
-        return false;
-    }
-
-    bool ok = eglMakeCurrent(dpy, surf, surf, ctx);
-    if (!ok) {
-        EGLint err = eglGetError();
-        qWarning() << "QEglContext::makeCurrent():" << errorString(err);
-    }
-    return ok;
-}
-
-bool QEglContext::doneCurrent()
-{
-    // If the context is invalid, we assume that an error was reported
-    // when makeCurrent() was called.
-    if (ctx == EGL_NO_CONTEXT)
-        return false;
-
-    // We need to select the correct API before calling eglMakeCurrent()
-    // with EGL_NO_CONTEXT because threads can have both OpenGL and OpenVG
-    // contexts active at the same time.
-#ifdef EGL_OPENGL_ES_API
-    if (apiType == OpenGL)
-        eglBindAPI(EGL_OPENGL_ES_API);
-#endif
-#ifdef EGL_OPENVG_API
-    if (apiType == OpenVG)
-        eglBindAPI(EGL_OPENVG_API);
-#endif
-
-    bool ok = eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    if (!ok) {
-        EGLint err = eglGetError();
-        qWarning() << "QEglContext::doneCurrent():" << errorString(err);
-    }
-    return ok;
-}
-
-bool QEglContext::swapBuffers()
-{
-    if(ctx == EGL_NO_CONTEXT)
-        return false;
-
-    bool ok = eglSwapBuffers(dpy, surf);
-    if (!ok) {
-        EGLint err = eglGetError();
-        qWarning() << "QEglContext::swapBuffers():" << errorString(err);
-    }
-    return ok;
-}
-
-// Wait for native rendering operations to complete before starting
-// to use OpenGL/OpenVG operations.
-void QEglContext::waitNative()
-{
-#ifdef EGL_CORE_NATIVE_ENGINE
-    eglWaitNative(EGL_CORE_NATIVE_ENGINE);
-#endif
-}
-
-// Wait for client OpenGL/OpenVG operations to complete before
-// using native rendering operations.
-void QEglContext::waitClient()
-{
-#ifdef EGL_OPENGL_ES_API
-    if (apiType == OpenGL) {
-        eglBindAPI(EGL_OPENGL_ES_API);
-        eglWaitClient();
-    }
-#else
-    if (apiType == OpenGL)
-        eglWaitGL();
-#endif
-#ifdef EGL_OPENVG_API
-    if (apiType == OpenVG) {
-        eglBindAPI(EGL_OPENVG_API);
-        eglWaitClient();
-    }
-#endif
-}
-
-// Query the actual size of the EGL surface.
-QSize QEglContext::surfaceSize() const
-{
-    int w, h;
-    eglQuerySurface(dpy, surf, EGL_WIDTH, &w);
-    eglQuerySurface(dpy, surf, EGL_HEIGHT, &h);
-    return QSize(w, h);
-}
-
-// Query the value of a configuration attribute.
-bool QEglContext::configAttrib(int name, EGLint *value) const
-{
-    return eglGetConfigAttrib(dpy, cfg, name, value);
-}
-
-// Retrieve all of the properties on "cfg".  If zero, return
-// the context's configuration.
-QEglProperties QEglContext::configProperties(EGLConfig cfg) const
-{
-    if (!cfg)
-        cfg = config();
-    QEglProperties props;
-    for (int name = 0x3020; name <= 0x304F; ++name) {
-        EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(dpy, cfg, name, &value))
-            props.setValue(name, value);
-    }
-    eglGetError();  // Clear the error state.
-    return props;
-}
-
-// Initialize and return the default display.
-EGLDisplay QEglContext::defaultDisplay(QPaintDevice *device)
-{
-    static EGLDisplay dpy = EGL_NO_DISPLAY;
-    if (dpy == EGL_NO_DISPLAY) {
-        dpy = getDisplay(device);
-        if (dpy == EGL_NO_DISPLAY) {
-            qWarning() << "QEglContext::defaultDisplay(): Cannot open EGL display";
-            return EGL_NO_DISPLAY;
-        }
-        if (!eglInitialize(dpy, NULL, NULL)) {
-            EGLint err = eglGetError();
-            qWarning() << "QEglContext::defaultDisplay(): Cannot initialize EGL display:" << errorString(err);
-            return EGL_NO_DISPLAY;
-        }
-#ifdef EGL_OPENGL_ES_API
-        eglBindAPI(EGL_OPENGL_ES_API);
-#endif
-    }
-    return dpy;
-}
-
-// Return the error string associated with a specific code.
-QString QEglContext::errorString(int code)
-{
-    static const char * const errors[] = {
-        "Success (0x3000)",                 // No tr
-        "Not initialized (0x3001)",         // No tr
-        "Bad access (0x3002)",              // No tr
-        "Bad alloc (0x3003)",               // No tr
-        "Bad attribute (0x3004)",           // No tr
-        "Bad config (0x3005)",              // No tr
-        "Bad context (0x3006)",             // No tr
-        "Bad current surface (0x3007)",     // No tr
-        "Bad display (0x3008)",             // No tr
-        "Bad match (0x3009)",               // No tr
-        "Bad native pixmap (0x300A)",       // No tr
-        "Bad native window (0x300B)",       // No tr
-        "Bad parameter (0x300C)",           // No tr
-        "Bad surface (0x300D)",             // No tr
-        "Context lost (0x300E)"             // No tr
-    };
-    if (code >= 0x3000 && code <= 0x300E) {
-        return QString::fromLatin1(errors[code - 0x3000]);
-    } else {
-        return QLatin1String("0x") + QString::number(code, 16);
-    }
-}
-
-// Dump all of the EGL configurations supported by the system.
-void QEglContext::dumpAllConfigs()
-{
-    QEglProperties props;
-    EGLint count = 0;
-    if (!eglGetConfigs(dpy, 0, 0, &count))
-        return;
-    if (count < 1)
-        return;
-    EGLConfig *configs = new EGLConfig [count];
-    eglGetConfigs(dpy, configs, count, &count);
-    for (EGLint index = 0; index < count; ++index) {
-        props = configProperties(configs[index]);
-        qWarning() << props.toString();
-    }
-    delete [] configs;
-}
+#include <QtCore/qdebug.h>
+#include <QtCore/qstringlist.h>
 
 // Initialize a property block.
 QEglProperties::QEglProperties()
@@ -455,10 +109,10 @@ int QEglProperties::value(int name) const
     case EGL_MAX_PBUFFER_PIXELS:
     case EGL_NATIVE_VISUAL_ID:
     case EGL_NONE:
-        qWarning("QEglProperties::value() - Attibute %d does not affect config selection", name);
+        // Attribute does not affect config selection.
         return EGL_DONT_CARE;
     default:
-        qWarning("QEglProperties::value() - Attibute %d is unknown in EGL <=1.4", name);
+        // Attribute is unknown in EGL <= 1.4.
         return EGL_DONT_CARE;
     }
 }
@@ -532,18 +186,18 @@ void QEglProperties::setPixelFormat(QImage::Format pixelFormat)
     setValue(EGL_ALPHA_SIZE, alpha);
 }
 
-void QEglProperties::setRenderableType(int api)
+void QEglProperties::setRenderableType(QEgl::API api)
 {
 #if defined(EGL_RENDERABLE_TYPE)
 #if defined(QT_OPENGL_ES_2)
-    if (api == QEglContext::OpenGL)
+    if (api == QEgl::OpenGL)
         setValue(EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT);
 #elif defined(QT_OPENGL_ES)
-    if (api == QEglContext::OpenGL)
+    if (api == QEgl::OpenGL)
         setValue(EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT);
 #endif
 #if defined(EGL_OPENVG_BIT)
-    if (api == QEglContext::OpenVG)
+    if (api == QEgl::OpenVG)
         setValue(EGL_RENDERABLE_TYPE, EGL_OPENVG_BIT);
 #endif
 #else
@@ -839,4 +493,4 @@ QString QEglProperties::toString() const
 
 QT_END_NAMESPACE
 
-#endif // QT_OPENGL_ES || QT_OPENVG
+

@@ -93,11 +93,11 @@ void QmlFollowPrivate::tick(int time)
     if (!elapsed)
         return;
     if (mode == Spring) {
-        if (elapsed < 10) // capped at 100fps.
+        if (elapsed < 16) // capped at 62fps.
             return;
         // Real men solve the spring DEs using RK4.
         // We'll do something much simpler which gives a result that looks fine.
-        int count = (elapsed+5) / 10;
+        int count = (elapsed+8) / 16;
         for (int i = 0; i < count; ++i) {
             qreal diff = sourceValue - currentValue;
             velocity = velocity + spring * diff - damping * velocity;
@@ -110,14 +110,14 @@ void QmlFollowPrivate::tick(int time)
                 else if (velocity < -maxVelocity)
                     velocity = -maxVelocity;
             }
-            currentValue += velocity * 10.0 / 1000.0;
+            currentValue += velocity * 16.0 / 1000.0;
         }
         if (qAbs(velocity) < epsilon && qAbs(sourceValue - currentValue) < epsilon) {
             velocity = 0.0;
             currentValue = sourceValue;
             clock.stop();
         }
-        lastTime = time - (elapsed - count * 10);
+        lastTime = time - (elapsed - count * 16);
     } else {
         qreal moveBy = elapsed * velocityms;
         qreal diff = sourceValue - currentValue;
