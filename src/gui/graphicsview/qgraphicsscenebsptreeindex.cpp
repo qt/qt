@@ -128,10 +128,9 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
     purgeRemovedItems();
 
      // Add unindexedItems to indexedItems
-    QRectF unindexedItemsBoundingRect;
     for (int i = 0; i < unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = unindexedItems.at(i)) {
-            unindexedItemsBoundingRect |= item->sceneBoundingRect();
+            item->d_ptr->itemDiscovered = 0;
             if (!freeItemIndexes.isEmpty()) {
                 int freeIndex = freeItemIndexes.takeFirst();
                 item->d_func()->index = freeIndex;
@@ -165,11 +164,14 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
     // Insert all unindexed items into the tree.
     for (int i = 0; i < unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = unindexedItems.at(i)) {
-            QRectF rect = item->sceneBoundingRect();
+            if (item->d_ptr->itemIsUntransformable()) {
+                untransformableItems << item;
+                continue;
+            }
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
 
-            bsp.insertItem(item, rect);
+            bsp.insertItem(item, item->sceneBoundingRect());
         }
     }
     unindexedItems.clear();
@@ -222,11 +224,13 @@ void QGraphicsSceneBspTreeIndexPrivate::resetIndex()
     for (int i = 0; i < indexedItems.size(); ++i) {
         if (QGraphicsItem *item = indexedItems.at(i)) {
             item->d_ptr->index = -1;
+            item->d_ptr->itemDiscovered = 0;
             unindexedItems << item;
         }
     }
     indexedItems.clear();
     freeItemIndexes.clear();
+    untransformableItems.clear();
     regenerateIndex = true;
     startIndexTimer();
 }
@@ -270,10 +274,10 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateSortCache()
     int stackingOrder = 0;
 
     QList<QGraphicsItem *> topLevels;
-
-    for (int i = 0; i < q->items().count(); ++i) {
-        QGraphicsItem *item = q->items().at(i);
-        if (item && item->parentItem() == 0)
+    const QList<QGraphicsItem *> items = q->items();
+    for (int i = 0; i < items.size(); ++i) {
+        QGraphicsItem *item = items.at(i);
+        if (item && !item->d_ptr->parent)
             topLevels << item;
     }
 
@@ -293,6 +297,79 @@ void QGraphicsSceneBspTreeIndexPrivate::invalidateSortCache()
 
     updatingSortCache = true;
     QMetaObject::invokeMethod(q, "_q_updateSortCache", Qt::QueuedConnection);
+}
+
+void QGraphicsSceneBspTreeIndexPrivate::addItem(QGraphicsItem *item, bool recursive)
+{
+    if (!item)
+        return;
+
+    // Prevent reusing a recently deleted pointer: purge all removed item from our lists.
+    purgeRemovedItems();
+
+    // Invalidate any sort caching; arrival of a new item means we need to resort.
+    // Update the scene's sort cache settings.
+    item->d_ptr->globalStackingOrder = -1;
+    invalidateSortCache();
+
+    // Indexing requires sceneBoundingRect(), but because \a item might
+    // not be completely constructed at this point, we need to store it in
+    // a temporary list and schedule an indexing for later.
+    if (item->d_ptr->index == -1) {
+        Q_ASSERT(!unindexedItems.contains(item));
+        unindexedItems << item;
+        startIndexTimer(0);
+    } else {
+        Q_ASSERT(indexedItems.contains(item));
+        qWarning("QGraphicsSceneBspTreeIndex::addItem: item has already been added to this BSP");
+    }
+
+    if (recursive) {
+        for (int i = 0; i < item->d_ptr->children.size(); ++i)
+            addItem(item->d_ptr->children.at(i), recursive);
+    }
+}
+
+void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool recursive,
+                                                   bool moveToUnindexedItems)
+{
+    if (!item)
+        return;
+
+    if (item->d_ptr->index != -1) {
+        Q_ASSERT(item->d_ptr->index < indexedItems.size());
+        Q_ASSERT(indexedItems.at(item->d_ptr->index) == item);
+        freeItemIndexes << item->d_ptr->index;
+        indexedItems[item->d_ptr->index] = 0;
+        item->d_ptr->index = -1;
+        item->d_ptr->itemDiscovered = 0;
+
+        if (item->d_ptr->itemIsUntransformable()) {
+            untransformableItems.removeOne(item);
+        } else if (item->d_ptr->inDestructor) {
+            // Avoid virtual function calls from the destructor.
+            purgePending = true;
+            removedItems << item;
+        } else if (!item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+            bsp.removeItem(item, item->sceneBoundingRect());
+        }
+    } else {
+        unindexedItems.removeOne(item);
+    }
+    invalidateSortCache(); // ### Only do this when removing from BSP?
+
+    Q_ASSERT(item->d_ptr->index == -1);
+    Q_ASSERT(!indexedItems.contains(item));
+    Q_ASSERT(!unindexedItems.contains(item));
+    Q_ASSERT(!untransformableItems.contains(item));
+
+    if (moveToUnindexedItems)
+        addItem(item);
+
+    if (recursive) {
+        for (int i = 0; i < item->d_ptr->children.size(); ++i)
+            removeItem(item->d_ptr->children.at(i), recursive, moveToUnindexedItems);
+    }
 }
 
 /*!
@@ -401,8 +478,16 @@ void QGraphicsSceneBspTreeIndex::clear()
     d->bsp.clear();
     d->lastItemCount = 0;
     d->freeItemIndexes.clear();
+    for (int i = 0; i < d->indexedItems.size(); ++i) {
+        // Ensure item bits are reset properly.
+        if (QGraphicsItem *item = d->indexedItems.at(i)) {
+            item->d_ptr->index = -1;
+            item->d_ptr->itemDiscovered = 0;
+        }
+    }
     d->indexedItems.clear();
     d->unindexedItems.clear();
+    d->untransformableItems.clear();
 }
 
 /*!
@@ -411,46 +496,7 @@ void QGraphicsSceneBspTreeIndex::clear()
 void QGraphicsSceneBspTreeIndex::addItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
-    // Prevent reusing a recently deleted pointer: purge all removed items
-    // from our lists.
-    d->purgeRemovedItems();
-
-    // Invalidate any sort caching; arrival of a new item means we need to
-    // resort.
-    // Update the scene's sort cache settings.
-    item->d_ptr->globalStackingOrder = -1;
-    d->invalidateSortCache();
-
-    // Indexing requires sceneBoundingRect(), but because \a item might
-    // not be completely constructed at this point, we need to store it in
-    // a temporary list and schedule an indexing for later.
-    item->d_ptr->index = -1;
-    if (item->d_ptr->itemIsUntransformable()) {
-        d->untransformableItems << item;
-    } else {
-        d->unindexedItems << item;
-        d->startIndexTimer(0);
-    }
-}
-
-/*!
-    This really add the item in the BSP.
-    \internal
-*/
-void QGraphicsSceneBspTreeIndexPrivate::addToBspTree(QGraphicsItem *item)
-{
-    if (item->d_ptr->itemIsUntransformable())
-        return;
-    if (item->d_func()->index != -1) {
-        bsp.insertItem(item, item->sceneBoundingRect());
-        foreach (QGraphicsItem *child, item->children())
-            child->addToIndex();
-    } else {
-        // The BSP tree is regenerated if the number of items grows to a
-        // certain threshold, or if the bounding rect of the graph doubles in
-        // size.
-        startIndexTimer();
-    }
+    d->addItem(item);
 }
 
 /*!
@@ -459,82 +505,7 @@ void QGraphicsSceneBspTreeIndexPrivate::addToBspTree(QGraphicsItem *item)
 void QGraphicsSceneBspTreeIndex::removeItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
-
-    // Note: This will access item's sceneBoundingRect(), which (as this is
-    // C++) is why we cannot call removeItem() from QGraphicsItem's
-    // destructor.
-    d->removeFromBspTree(item);
-
-    // Invalidate any sort caching; arrival of a new item means we need to
-    // resort.
-    d->invalidateSortCache();
-
-    // Remove from our item lists.
-    int index = item->d_func()->index;
-    if (index != -1) {
-        d->freeItemIndexes << index;
-        d->indexedItems[index] = 0;
-    } else {
-        if (item->d_ptr->itemIsUntransformable())
-            d->untransformableItems.removeOne(item);
-        else
-            d->unindexedItems.removeOne(item);
-    }
-}
-
-/*!
-    \reimp
-    Delete the \a item from the BSP index (without accessing its boundingRect).
-*/
-void QGraphicsSceneBspTreeIndex::deleteItem(QGraphicsItem *item)
-{
-    Q_D(QGraphicsSceneBspTreeIndex);
-    // Invalidate any sort caching; arrival of a new item means we need to
-    // resort.
-    d->invalidateSortCache();
-
-    int index = item->d_func()->index;
-    if (index != -1) {
-        // Important: The index is useless until purgeRemovedItems() is
-        // called.
-        d->indexedItems[index] = (QGraphicsItem *)0;
-        if (!d->purgePending) {
-            d->purgePending = true;
-            scene()->update();
-        }
-        d->removedItems << item;
-    } else {
-        // Recently added items are purged immediately. unindexedItems() never
-        // contains stale items.
-        if (item->d_ptr->itemIsUntransformable())
-            d->untransformableItems.removeOne(item);
-        else
-            d->unindexedItems.removeOne(item);
-        scene()->update();
-    }
-}
-
-/*!
-    Really remove the item from the BSP
-    \internal
-*/
-void QGraphicsSceneBspTreeIndexPrivate::removeFromBspTree(QGraphicsItem *item)
-{
-    if (item->d_ptr->itemIsUntransformable())
-        return;
-
-    if (item->d_func()->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        // ### remove from child index only if applicable
-        return;
-    }
-
-    if (item->d_func()->index != -1) {
-        bsp.removeItem(item, item->sceneBoundingRect());
-        //prepareGeometryChange will call prepareBoundingRectChange
-        foreach (QGraphicsItem *child, item->children())
-            child->prepareGeometryChange();
-    }
-    startIndexTimer();
+    d->removeItem(item);
 }
 
 /*!
@@ -543,21 +514,19 @@ void QGraphicsSceneBspTreeIndexPrivate::removeFromBspTree(QGraphicsItem *item)
 */
 void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
-    Q_D(QGraphicsSceneBspTreeIndex);
-    if (!item->d_ptr->itemIsUntransformable()) {
-        // Note: This will access item's sceneBoundingRect(), which (as this is
-        // C++) is why we cannot call removeItem() from QGraphicsItem's
-        // destructor.
-        QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
-        d->removeFromBspTree(thatItem);
-        int index = item->d_func()->index;
-        if (index != -1) {
-            d->freeItemIndexes << index;
-            d->indexedItems[index] = 0;
-            thatItem->d_func()->index = -1;
-            d->unindexedItems << thatItem;
-        }
+    if (!item)
+        return;
+
+    if (item->d_ptr->index == -1 || item->d_ptr->itemIsUntransformable()
+        || item->d_func()->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+        return; // Item is not in BSP tree; nothing to do.
     }
+
+    Q_D(QGraphicsSceneBspTreeIndex);
+    QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
+    d->removeItem(thatItem, /*recursive=*/false, /*moveToUnindexedItems=*/true);
+    for (int i = 0; i < item->d_ptr->children.size(); ++i)  // ### Do we really need this?
+        prepareBoundingRectChange(item->d_ptr->children.at(i));
 }
 
 /*!
@@ -706,18 +675,17 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
     switch (change) {
     case QGraphicsItem::ItemFlagsChange: {
         // Handle ItemIgnoresTransformations
-        bool ignoredTransform = item->flags() & QGraphicsItem::ItemIgnoresTransformations;
+        bool ignoredTransform = item->d_ptr->flags & QGraphicsItem::ItemIgnoresTransformations;
         bool willIgnoreTransform = value.toUInt() & QGraphicsItem::ItemIgnoresTransformations;
-        if (ignoredTransform != willIgnoreTransform) {
+        bool clipsChildren = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
+        bool willClipChildren = value.toUInt() & QGraphicsItem::ItemClipsChildrenToShape;
+        if ((ignoredTransform != willIgnoreTransform) || (clipsChildren != willClipChildren)) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
-            removeItem(thatItem);
-            thatItem->d_ptr->index = -1;
-            if (willIgnoreTransform) {
-                d->untransformableItems << thatItem;
-            } else {
-                d->unindexedItems << thatItem;
-                d->startIndexTimer(0);
-            }
+            // Remove item and its descendants from the index and append
+            // them to the list of unindexed items. Then, when the index
+            // is updated, they will be put into the bsp-tree or the list
+            // of untransformable items.
+            d->removeItem(thatItem, /*recursive=*/true, /*moveToUnidexedItems=*/true);
         }
         break;
     }
@@ -729,17 +697,19 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
         // Handle ItemIgnoresTransformations
         QGraphicsItem *newParent = qVariantValue<QGraphicsItem *>(value);
         bool ignoredTransform = item->d_ptr->itemIsUntransformable();
-        bool willIgnoreTransform = (item->flags() & QGraphicsItem::ItemIgnoresTransformations) || (newParent && newParent->d_ptr->itemIsUntransformable());
-        if (ignoredTransform != willIgnoreTransform) {
+        bool willIgnoreTransform = (item->d_ptr->flags & QGraphicsItem::ItemIgnoresTransformations)
+                                   || (newParent && newParent->d_ptr->itemIsUntransformable());
+        bool ancestorClippedChildren = item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren;
+        bool ancestorWillClipChildren = newParent
+                            && ((newParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)
+                                || (newParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren));
+        if ((ignoredTransform != willIgnoreTransform) || (ancestorClippedChildren != ancestorWillClipChildren)) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
-            removeItem(thatItem);
-            thatItem->d_ptr->index = -1;
-            if (willIgnoreTransform) {
-                d->untransformableItems << thatItem;
-            } else {
-                d->unindexedItems << thatItem;
-                d->startIndexTimer(0);
-            }
+            // Remove item and its descendants from the index and append
+            // them to the list of unindexed items. Then, when the index
+            // is updated, they will be put into the bsp-tree or the list
+            // of untransformable items.
+            d->removeItem(thatItem, /*recursive=*/true, /*moveToUnidexedItems=*/true);
         }
         break;
     }

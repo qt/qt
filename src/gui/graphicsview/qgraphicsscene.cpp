@@ -1954,25 +1954,13 @@ void QGraphicsScene::clearSelection()
 void QGraphicsScene::clear()
 {
     Q_D(QGraphicsScene);
-    QList<QGraphicsItem *> items = d->index->items();
-#if 1
-    QList<QGraphicsItem *> toDelete;
-    // ### As the item list is already in ascending order,
-    // the items should be deleted in topological order.
-    // Recursive descent delete
-    for (int i = 0; i < items.size(); ++i) {
-        if (QGraphicsItem *item = items.at(i)) {
-            if (!item->parentItem())
-                toDelete << item;
-        }
-    }
-    // We delete all top level items
-    qDeleteAll(toDelete);
-#else
-    qDeleteAll(items);
-#endif
-    d->lastItemCount = 0;
+    // NB! We have to clear the index before deleting items; otherwise the
+    // index might try to access dangling item pointers.
     d->index->clear();
+    const QList<QGraphicsItem *> items = d->topLevelItems;
+    qDeleteAll(items);
+    Q_ASSERT(d->topLevelItems.isEmpty());
+    d->lastItemCount = 0;
     d->allItemsIgnoreHoverEvents = true;
     d->allItemsUseDefaultCursor = true;
 }

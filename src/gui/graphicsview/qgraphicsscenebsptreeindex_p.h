@@ -96,7 +96,6 @@ protected:
 
     void addItem(QGraphicsItem *item);
     void removeItem(QGraphicsItem *item);
-    void deleteItem(QGraphicsItem *item);
     void prepareBoundingRectChange(const QGraphicsItem *item);
 
     void sceneRectChanged();
@@ -139,13 +138,12 @@ public:
     void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
     void resetIndex();
 
-    void addToBspTree(QGraphicsItem *item);
-    void removeFromBspTree(QGraphicsItem *item);
-
     void _q_updateSortCache();
     bool sortCacheEnabled;
     bool updatingSortCache;
     void invalidateSortCache();
+    void addItem(QGraphicsItem *item, bool recursive = false);
+    void removeItem(QGraphicsItem *item, bool recursive = false, bool moveToUnindexedItems = false);
 
     static void climbTree(QGraphicsItem *item, int *stackingOrder);
     static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
