@@ -181,6 +181,7 @@
         <li><a href="qthelp.html">Help Module</a></li>
         <li><a href="qtnetwork.html">Network Module</a></li>
         <li><a href="qtopengl.html">OpenGL Module</a></li>
+        <li><a href="qtopenvg.html">OpenVG Module</a></li>
         <li><a href="qtscript.html">Script Module</a></li>
         <li><a href="qtsql.html">SQL Module</a></li>
         <li><a href="qtsvg.html">SVG Module</a></li>
