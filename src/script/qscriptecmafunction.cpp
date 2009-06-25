@@ -436,7 +436,7 @@ QScriptValueImpl Function::method_connect(QScriptContextPrivate *context, QScrip
             QLatin1String("Function.prototype.connect: target is not a function"));
     }
 
-    bool ok = eng->scriptConnect(self, receiver, slot);
+    bool ok = eng->scriptConnect(self, receiver, slot, Qt::AutoConnection);
     if (!ok) {
         return context->throwError(
             QString::fromLatin1("Function.prototype.connect: failed to connect to %0::%1")
