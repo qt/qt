@@ -56,8 +56,6 @@ public slots:
     void initTestCase();
 
 private slots:
-    void sceneRect_data();
-    void sceneRect();
     void customIndex_data();
     void customIndex();
     void scatteredItems_data();
@@ -95,19 +93,6 @@ QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMe
         index = new QGraphicsSceneLinearIndex(scene);
 
     return index;
-}
-
-void tst_QGraphicsSceneIndex::sceneRect_data()
-{
-    common_data();
-}
-
-void tst_QGraphicsSceneIndex::sceneRect()
-{ 
-    QGraphicsScene *scene = new QGraphicsScene();
-    QGraphicsSceneIndex *index = new QGraphicsSceneBspTreeIndex(scene);
-    scene->setSceneRect(QRectF(0, 0, 2000, 2000));
-    QCOMPARE(index->indexedRect(), QRectF(0, 0, 2000, 2000));
 }
 
 void tst_QGraphicsSceneIndex::customIndex_data()
