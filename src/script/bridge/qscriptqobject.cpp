@@ -144,7 +144,7 @@ static int indexOfMetaEnum(const QMetaObject *meta, const QByteArray &str)
 {
     QByteArray scope;
     QByteArray name;
-    int scopeIdx = str.indexOf("::");
+    int scopeIdx = str.lastIndexOf("::");
     if (scopeIdx != -1) {
         scope = str.left(scopeIdx);
         name = str.mid(scopeIdx + 2);
@@ -153,7 +153,7 @@ static int indexOfMetaEnum(const QMetaObject *meta, const QByteArray &str)
     }
     for (int i = meta->enumeratorCount() - 1; i >= 0; --i) {
         QMetaEnum m = meta->enumerator(i);
-        if ((m.name() == name)/* && (scope.isEmpty() || (m.scope() == scope))*/)
+        if ((m.name() == name) && (scope.isEmpty() || (m.scope() == scope)))
             return i;
     }
     return -1;
@@ -305,6 +305,11 @@ public:
     inline int enumeratorIndex() const
     { Q_ASSERT(isMetaEnum()); return m_typeId; }
 
+    inline bool operator==(const QScriptMetaType &other) const
+    {
+        return (m_kind == other.m_kind) && (m_typeId == other.m_typeId);
+    }
+
     static inline QScriptMetaType variant()
     { return QScriptMetaType(Variant); }
 
@@ -387,6 +392,9 @@ public:
 
     inline QScriptMetaType type(int index) const
     { return m_types.at(index); }
+
+    inline QVector<QScriptMetaType> types() const
+    { return m_types; }
 
 private:
     QByteArray m_name;
@@ -541,9 +549,8 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
                 tid = argType.typeId();
                 v = QVariant(tid, (void *)0);
                 converted = QScriptEnginePrivate::convert(actual, tid, v.data(), engine);
-                // ###
-//                if (engine->hasUncaughtException())
-//                    return;
+                if (exec->hadException())
+                    return exec->exception();
             }
 
             if (!converted) {
@@ -726,17 +733,32 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
                 chosenIndex = index;
                 break;
             } else {
-                QScriptMetaArguments metaArgs(matchDistance, index, mtd, args);
-                if (candidates.isEmpty()) {
-                    candidates.append(metaArgs);
-                } else {
-                    QScriptMetaArguments otherArgs = candidates.at(0);
-                    if ((args.count() > otherArgs.args.count())
-                        || ((args.count() == otherArgs.args.count())
-                            && (matchDistance <= otherArgs.matchDistance))) {
-                        candidates.prepend(metaArgs);
-                    } else {
+                bool redundant = false;
+                if (/*(callType != QMetaMethod::Constructor)
+                      &&*/ (index < meta->methodOffset())) {
+                    // it is possible that a virtual method is redeclared in a subclass,
+                    // in which case we want to ignore the superclass declaration
+                    for (int i = 0; i < candidates.size(); ++i) {
+                        const QScriptMetaArguments &other = candidates.at(i);
+                        if (mtd.types() == other.method.types()) {
+                            redundant = true;
+                            break;
+                        }
+                    }
+                }
+                if (!redundant) {
+                    QScriptMetaArguments metaArgs(matchDistance, index, mtd, args);
+                    if (candidates.isEmpty()) {
                         candidates.append(metaArgs);
+                    } else {
+                        const QScriptMetaArguments &otherArgs = candidates.at(0);
+                        if ((args.count() > otherArgs.args.count())
+                            || ((args.count() == otherArgs.args.count())
+                                && (matchDistance <= otherArgs.matchDistance))) {
+                            candidates.prepend(metaArgs);
+                        } else {
+                            candidates.append(metaArgs);
+                        }
                     }
                 }
             }
