@@ -89,7 +89,7 @@ QVFbAbstractView::~QVFbAbstractView()
 
 QVFbView::QVFbView(int id, int w, int h, int d, Rotation r, QWidget *parent)
         : QVFbAbstractView(parent),
-          viewdepth(d), viewFormat(DefaultFormat), rsh(0), gsh(0), bsh(0), rmax(15), gmax(15), bmax(15),
+          viewdepth(d), viewFormat(DefaultFormat), rgb_swapped(0), rsh(0), gsh(0), bsh(0), rmax(15), gmax(15), bmax(15),
         contentsWidth(w), contentsHeight(h), gred(1.0), ggreen(1.0), gblue(1.0),
         gammatable(0), refreshRate(30), animation(0),
         hzm(0.0), vzm(0.0), mView(0),
@@ -457,6 +457,67 @@ QImage QVFbView::getBuffer(const QRect &r, int &leading) const
         }
         break;
     }
+
+    case 2: {
+        if (requiredSize > buffer.size())
+            buffer.resize(requiredSize);
+
+        // XXX: hw: replace by drawhelper functionality
+
+        const int pixelsPerByte = 4;
+        quint8 *src = reinterpret_cast<quint8*>(mView->data())
+                      + r.y() * mView->linestep() + r.x() / pixelsPerByte;
+        const int align = qMin(r.width(), (4 - (r.x() & 3)) & 3);
+        const int doAlign = (align > 0 ? 1 : 0);
+        const int tail = qMin(r.width(), (r.width() - align) & 3);
+        const int doTail = (tail > 0 ? 1 : 0);
+        const int width8 = (r.width() - align) / pixelsPerByte;
+        const int stride = mView->linestep() - (width8 + doAlign);
+
+        uchar *b = reinterpret_cast<uchar*>(buffer.data());
+	img = QImage(b, r.width(), r.height(), QImage::Format_RGB32);
+	for (int y = 0; y < r.height(); ++y) {
+            quint32 *dest = reinterpret_cast<quint32*>(img.scanLine(y));
+            quint8 c;
+
+            if (doAlign) {
+                switch (align) {
+                case 3: c = ((*src & 0x30) >> 4) * 0x55;
+                        *dest++ = qRgb(c, c, c);
+                case 2: c = ((*src & 0x0c) >> 2) * 0x55;
+                        *dest++ = qRgb(c, c, c);
+                case 1: c = ((*src & 0x03)) * 0x55;
+                        *dest++ = qRgb(c, c, c);
+                }
+                ++src;
+            }
+            for (int i = 0; i < width8; ++i) {
+                c = ((*src & 0xc0) >> 6) * 0x55;
+                *dest++ = qRgb(c, c, c);
+                c = ((*src & 0x30) >> 4) * 0x55;
+                *dest++ = qRgb(c, c, c);
+                c = ((*src & 0x0c) >> 2) * 0x55;
+                *dest++ = qRgb(c, c, c);
+                c = ((*src & 0x03)) * 0x55;
+                *dest++ = qRgb(c, c, c);
+
+                ++src;
+            }
+            if (doTail) {
+                switch (tail) {
+                case 3: c = ((*src & 0x0c) >> 2) * 0x55;
+                        dest[2] = qRgb(c, c, c);
+                case 2: c = ((*src & 0x30) >> 4) * 0x55;
+                        dest[1] = qRgb(c, c, c);
+                case 1: c = ((*src & 0xc0) >> 6) * 0x55;
+                        dest[0] = qRgb(c, c, c);
+                }
+            }
+            src += stride;
+        }
+        break;
+    }
+
     case 4: {
         if (requiredSize > buffer.size())
             buffer.resize(requiredSize);
@@ -539,6 +600,9 @@ QImage QVFbView::getBuffer(const QRect &r, int &leading) const
             img = QImage();
         break;
     }
+
+    if (rgb_swapped)
+        img = img.rgbSwapped();
 
     if ( brightness != 255 ) {
         if (img.format() == QImage::Format_Indexed8) {

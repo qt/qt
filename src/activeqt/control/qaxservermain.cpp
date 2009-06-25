@@ -253,7 +253,7 @@ EXTERN_C int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR,
             run = false;
             break;
         } else {
-            unprocessed += cmds.at(i) + " ";
+            unprocessed += cmds.at(i) + ' ';
         }
     }
     

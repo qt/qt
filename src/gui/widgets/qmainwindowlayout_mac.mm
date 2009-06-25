@@ -502,11 +502,11 @@ void QMainWindowLayout::fixSizeInUnifiedToolbar(QToolBar *tb) const
         QMacCocoaAutoReleasePool pool;
         QWidgetItem layoutItem(tb);
         QSize size = layoutItem.maximumSize();
-        NSSize nssize = NSMakeSize(size.width(), size.height());
+        NSSize nssize = NSMakeSize(size.width(), size.height() - 2);
         [item setMaxSize:nssize];
         size = layoutItem.minimumSize();
         nssize.width = size.width();
-        nssize.height = size.height();
+        nssize.height = size.height() - 2;
         [item setMinSize:nssize];
     }
 }

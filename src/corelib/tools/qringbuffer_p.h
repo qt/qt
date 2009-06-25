@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QRingBuffer
+class QRingBuffer
 {
 public:
     inline QRingBuffer(int growth = 4096) : basicBlockSize(growth) {
@@ -72,6 +72,52 @@ public:
 
     inline const char *readPointer() const {
         return buffers.isEmpty() ? 0 : (buffers.first().constData() + head);
+    }
+
+    // access the bytes at a specified position
+    // the out-variable length will contain the amount of bytes readable
+    // from there, e.g. the amount still the same QByteArray
+    inline const char *readPointerAtPosition(qint64 pos, qint64 &length) const {
+        if (buffers.isEmpty()) {
+            length = 0;
+            return 0;
+        }
+
+        if (pos >= bufferSize) {
+            length = 0;
+            return 0;
+        }
+
+        // special case: it is in the first buffer
+        int nextDataBlockSizeValue = nextDataBlockSize();
+        if (pos - head < nextDataBlockSizeValue) {
+            length = nextDataBlockSizeValue - pos;
+            return buffers.at(0).constData() + head + pos;
+        }
+
+        // special case: we only had one buffer and tried to read over it
+        if (buffers.length() == 1) {
+            length = 0;
+            return 0;
+        }
+
+        // skip the first
+        pos -= nextDataBlockSizeValue;
+
+        // normal case: it is somewhere in the second to the-one-before-the-tailBuffer
+        for (int i = 1; i < tailBuffer; i++) {
+            if (pos >= buffers[i].size()) {
+                pos -= buffers[i].size();
+                continue;
+            }
+
+            length = buffers[i].length() - pos;
+            return buffers[i].constData() + pos;
+        }
+
+        // it is in the tail buffer
+        length = tail - pos;
+        return buffers[tailBuffer].constData() + pos;
     }
 
     inline void free(int bytes) {

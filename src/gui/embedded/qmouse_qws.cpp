@@ -413,8 +413,8 @@ void QWSCalibratedMouseHandler::writeCalibration()
     QFile file(calFile);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream t(&file);
-        t << a << " " << b << " " << c << " ";
-        t << d << " " << e << " " << f << " " << s << endl;
+        t << a << ' ' << b << ' ' << c << ' ';
+        t << d << ' ' << e << ' ' << f << ' ' << s << endl;
     } else
 #endif
     {

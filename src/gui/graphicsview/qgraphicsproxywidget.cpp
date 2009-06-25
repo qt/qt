@@ -460,7 +460,7 @@ void QGraphicsProxyWidgetPrivate::embedSubWindow(QWidget *subWin)
 {
     QWExtra *extra;
     if (!((extra = subWin->d_func()->extra) && extra->proxyWidget)) {
-        QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func());
+        QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func(), subWin->windowFlags());
         subProxy->d_func()->setWidget_helper(subWin, false);
     }
 }
@@ -543,6 +543,9 @@ QGraphicsProxyWidget::~QGraphicsProxyWidget()
     explicitly hidden or disabled, the proxy widget will become explicitly
     hidden or disabled after embedding is complete. The class documentation
     has a full overview over the shared state.
+
+    QGraphicsProxyWidget's window flags determine whether the widget, after
+    embedding, will be given window decorations or not.
 
     After this function returns, QGraphicsProxyWidget will keep its state
     synchronized with that of \a widget whenever possible.
@@ -661,10 +664,6 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     if (newWidget->testAttribute(Qt::WA_SetCursor))
         q->setCursor(widget->cursor());
 #endif
-    Qt::WFlags flags = newWidget->windowFlags();
-    if (newWidget->windowType() == Qt::Window)
-        flags &= ~Qt::Window;
-    q->setWindowFlags(flags);
     q->setEnabled(newWidget->isEnabled());
     q->setVisible(newWidget->isVisible());
     q->setLayoutDirection(newWidget->layoutDirection());
@@ -977,6 +976,7 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
 }
 #endif // QT_NO_CONTEXTMENU
 
+#ifndef QT_NO_DRAGANDDROP
 /*!
     \reimp
 */
@@ -1097,6 +1097,7 @@ void QGraphicsProxyWidget::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 #endif
 }
+#endif
 
 /*!
     \reimp

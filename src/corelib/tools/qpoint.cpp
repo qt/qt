@@ -373,7 +373,7 @@ QDebug operator<<(QDebug dbg, const QPoint &p) {
 
 QDebug operator<<(QDebug d, const QPointF &p)
 {
-    d.nospace() << "QPointF(" << p.x() << ", " << p.y() << ")";
+    d.nospace() << "QPointF(" << p.x() << ", " << p.y() << ')';
     return d;
 }
 #endif
@@ -441,6 +441,19 @@ QDebug operator<<(QDebug d, const QPointF &p)
     Returns true if both the x and y coordinates are set to 0.0,
     otherwise returns false.
 */
+
+
+/*!
+    Returns the sum of the absolute values of x() and y(),
+    traditionally known as the "Manhattan length" of the vector from
+    the origin to the point.
+
+    \sa QPoint::manhattanLength()
+*/
+qreal QPointF::manhattanLength() const
+{
+    return qAbs(x())+qAbs(y());
+}
 
 /*!
     \fn qreal QPointF::x() const

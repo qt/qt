@@ -176,12 +176,11 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
         if (tw->cornerWidget(Qt::TopRightCorner) || tw->cornerWidget(Qt::BottomRightCorner))
             option->cornerWidgets |= QStyleOptionTab::RightCornerWidget;
     }
+#endif
 
     QRect textRect = style()->subElementRect(QStyle::SE_TabBarTabText, option, this);
-
     option->text = fontMetrics().elidedText(option->text, d->elideMode, textRect.width(),
                         Qt::TextShowMnemonic);
-#endif
 }
 
 /*!
@@ -1944,8 +1943,10 @@ void QTabBar::changeEvent(QEvent *event)
     if (event->type() == QEvent::StyleChange) {
         d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
         d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
+        d->refresh();
+    } else if (event->type() == QEvent::FontChange) {
+        d->refresh();
     }
-    d->refresh();
     QWidget::changeEvent(event);
 }
 

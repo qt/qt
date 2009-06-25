@@ -211,6 +211,7 @@ public:
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
     static QString kdeHome();
+    static QString x11_desktop_style();
     static bool x11_apply_settings();
 #endif
     static void reset_instance_pointer();
@@ -220,10 +221,11 @@ public:
 #endif
     static bool quitOnLastWindowClosed;
     static void emitLastWindowClosed();
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     static int autoMaximizeThreshold;
 #endif
     static bool autoSipEnabled;
+    static QString desktopStyleKey();
 
     static QGraphicsSystem *graphicsSystem()
 #if !defined(Q_WS_QWS)
@@ -359,7 +361,7 @@ public:
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     static bool inSizeMove;
 #endif
 
@@ -394,7 +396,7 @@ public:
 
     static QApplicationPrivate *instance() { return self; }
 
-    static QString *styleOverride;
+    static QString styleOverride;
 
     static int app_compile_version;
 

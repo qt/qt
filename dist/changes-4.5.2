@@ -82,6 +82,12 @@ Third party components
    * [252068] QFileDialog with QSortFilterProxyModel crashes
    * [254490] QFileDialog selectFile doesn't clear the selection if we call it several times.
 
+- QGtkStyle
+    * [250731] Fixed a build issue with glib version lower than 2.3.2
+    * [254342] Fixed a potential crash when system theme changes occur.
+    * [254614] Fixed an assert or warning related to GtkEntry focus handling 
+    reported with certain versions of Gtk+.
+
 - QMacStyle
     * [253339] Don't draw arrows on toolbuttons that have a menu and text only.
     * [252301] Ensure that small and mini spin boxes are drawn correctly.
@@ -91,6 +97,13 @@ Third party components
 
 - QFontDialog
     * [252000] Ensure that QFontDialog::getFont() works on Mac OS X.
+
+- QGraphicsItem
+    * [197802] Dont show children when parent is not visible
+    * [252913] QGraphicsItem::setOpacity(0.0) does not trigger an update
+
+- QGraphicsView
+    * [253415] Reset the 'connectedToScene' flag when changing the scene of a view
 
 - QGraphicsWidget
     * Fixed a bug with Qt::WidgetWithChildren shortcut context.
@@ -213,6 +226,10 @@ Third party components
     * [248848] Fixed an issue that would cause QIcon::pixmap() to reparse the
       SVG file, even though there was a cached pixmap for that size available.
 
+- QToolButton
+    * [252554] Fixed a problem where text labels would be partially clipped 
+    when using Qt::ToolButtonTextUnderIcon.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -240,6 +257,8 @@ legacy freetype headers.
          BGR color layout.
 [196152] Fixed a problem with QPixmap::toImage() on big endian systems that
          would cause the R and B channels to be swapped for 32 bit pixmaps.
+[251928] Made the file dialog show suffixes if no filter name is provided 
+when using the GTK+ file dialog.  
 
 Qt for Windows
 --------------
@@ -304,6 +323,10 @@ Qt for Windows CE
      QDesignerFormWindowCursor::setProperty().
    * [253539] Prevent crash in Designer with the Cocoa port when when using a scroll
      wheel to change a property.
+   * [252333] Fixed a regression crash in uic triggered when icon was set with different modes
+     than normal off.
+   * [252414, 252416, 252502] Fixed a crash in case of setting invalid point size
+     of font property in property editor
 
 - Linguist
   - Linguist GUI

@@ -129,13 +129,8 @@
            Therefore, if it is important to minimize resource
            consumption, do not set this attribute.
 
-    \value AA_MSWindowsUseDirect3DByDefault Is a Windows specific
-           attribute, that will make the Direct3D paint engine the
-           default Qt widget paint engine.  Note that you can toggle
-           usage of the Direct3D engine on individual QWidgets by
-           setting/clearing the \c WA_MSWindowsUseDirect3D attribute
-           on a specific widget. \bold {This functionality is
-           experimental}.
+    \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
+           has no effect.
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
@@ -151,10 +146,24 @@
            widgets stay non-native unless specifically set by the
            Qt::WA_NativeWindow attribute.
 
-    \value AA_MacPluginApplication Stops the a Qt mac application from doing
+    \value AA_MacPluginApplication Stops the Qt mac application from doing
            specific initializations that do not necessarily make sense when using Qt
            to author a plugin. This includes avoiding loading our nib for the main
-           menu and not taking possession of the native menu bar.
+           menu and not taking possession of the native menu bar. When setting this
+           attribute to true will also set the AA_DontUseNativeMenuBar attribute
+           to true.
+
+    \value AA_DontUseNativeMenuBar All menubars created while this attribute is
+           set to true won't be used as a native menubar (e.g, the menubar at
+           the top of the main screen on Mac OS X or at the bottom in Windows CE).
+
+    \value AA_MacDontSwapCtrlAndMeta On Mac OS X by default, Qt swaps the
+           Control and Meta (Command) keys (i.e., whenever Control is pressed, Qt
+           sends Meta and whenever Meta is pressed Control is sent. When this
+           attribute is true, Qt will not do the flip. QKeySequence::StandardShortcuts
+           will also flip accordingly (i.e., QKeySequence::Copy will be
+           Command+C on the keyboard regardless of the value set, though what is output for
+           QKeySequence::toString(QKeySequence::PortableText) will be different).
 
     \omitvalue AA_AttributeCount
 */
@@ -519,6 +528,10 @@
                              Qt::DirectConnection; otherwise the
                              signal is queued, as with
                              Qt::QueuedConnection.
+    \value UniqueConnection  Same as AutoConnection, but there will be a check that the signal is
+                             not already connected to the same slot before connecting, otherwise,
+                             the connection will fail.
+                             This value was introduced in Qt 4.6.
 
     With queued connections, the parameters must be of types that are known to
     Qt's meta-object system, because Qt needs to copy the arguments to store them
@@ -948,10 +961,8 @@
     position. This is set/cleared by QWidget::move() and
     by QWidget::setGeometry().
 
-    \value WA_MSWindowsUseDirect3D Makes drawing to a widget
-    with this attribute set use the Direct3D paint engine, if the
-    Direct3D paint engine is available. \bold {This functionality
-    is experimental.}
+    \value WA_MSWindowsUseDirect3D This value is obsolete and has no
+    effect.
 
     \value WA_NoBackground This value is obsolete. Use
     WA_OpaquePaintEvent instead.
@@ -2050,9 +2061,9 @@
                             should be taken over by the target application,
                             i.e., the source application should not delete
                             the data.
-
-                            On X11 this value is used to do a move.
-
+			    \br
+			    On X11 this value is used to do a move.
+			    \br
                             TargetMoveAction is not used on the Mac.
 */
 
@@ -2689,4 +2700,20 @@
     \sa QGraphicsWidget::paintWindowFrame()
     \sa QGraphicsWidget::windowFrameSectionAt()
 
+*/
+
+/*!
+  \enum Qt::TileRule
+  \since 4.6
+
+  This enum describes how to repeat or stretch the parts of an image
+  when drawing.
+
+  \value Stretch   Scale the image to fit to the available area.
+
+  \value Repeat    Tile the image until there is no more space. May crop
+  the last image.
+
+  \value Round 	   Like Repeat, but scales the images down to ensure that
+  the last image is not cropped.
 */

@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-default_tag="origin/qtwebkit-4.5"
+default_tag="origin/svn/master"
 
 if [ $# -eq 0 ]; then
     tag="$default_tag"
@@ -27,7 +27,7 @@ excluded_directories="$excluded_directories PlanetWebKit"
 excluded_directories="$excluded_directories SunSpider"
 excluded_directories="$excluded_directories WebKitExamplePlugins"
 
-excluded_directories="$excluded_directories symbols.filter"
+excluded_directories="$excluded_directories autotools"
 excluded_directories="$excluded_directories JavaScriptCore/Makefile"
 excluded_directories="$excluded_directories Makefile"
 excluded_directories="$excluded_directories Makefile.shared"
@@ -46,6 +46,7 @@ excluded_directories="$excluded_directories JavaScriptCore/wtf/wx"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/gtk"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/mac"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/win"
+excluded_directories="$excluded_directories JavaScriptCore/wtf/chromium"
 
 excluded_directories="$excluded_directories WebCore/WebCore.vcproj"
 excluded_directories="$excluded_directories WebCore/DerivedSources.make"
@@ -57,6 +58,7 @@ excluded_directories="$excluded_directories WebCore/Configurations"
 excluded_directories="$excluded_directories WebCore/bridge/objc"
 excluded_directories="$excluded_directories WebCore/bridge/testbindings.pro"
 excluded_directories="$excluded_directories WebCore/bindings/objc"
+excluded_directories="$excluded_directories WebCore/bindings/v8"
 
 excluded_directories="$excluded_directories JavaScriptCore/icu"
 
@@ -70,6 +72,7 @@ excluded_directories="$excluded_directories WebCore/loader/win"
 excluded_directories="$excluded_directories WebCore/page/gtk"
 excluded_directories="$excluded_directories WebCore/page/mac"
 excluded_directories="$excluded_directories WebCore/page/wx"
+excluded_directories="$excluded_directories WebCore/page/chromium"
 
 excluded_directories="$excluded_directories WebCore/history/mac"
 
@@ -78,6 +81,7 @@ excluded_directories="$excluded_directories WebCore/editing/wx"
 
 excluded_directories="$excluded_directories WebCore/platform/text/wx"
 excluded_directories="$excluded_directories WebCore/platform/text/gtk"
+excluded_directories="$excluded_directories WebCore/platform/text/chromium"
 
 
 excluded_directories="$excluded_directories WebCore/manual-tests"
@@ -87,6 +91,7 @@ excluded_directories="$excluded_directories WebCore/platform/network/curl"
 excluded_directories="$excluded_directories WebCore/platform/network/mac"
 excluded_directories="$excluded_directories WebCore/platform/network/win"
 excluded_directories="$excluded_directories WebCore/platform/network/soup"
+excluded_directories="$excluded_directories WebCore/platform/network/chromium"
 
 excluded_directories="$excluded_directories WebCore/platform/graphics/cg"
 excluded_directories="$excluded_directories WebCore/platform/graphics/cairo"
@@ -95,6 +100,7 @@ excluded_directories="$excluded_directories WebCore/platform/graphics/wx"
 excluded_directories="$excluded_directories WebCore/platform/graphics/mac"
 excluded_directories="$excluded_directories WebCore/platform/graphics/win"
 excluded_directories="$excluded_directories WebCore/platform/graphics/skia"
+excluded_directories="$excluded_directories WebCore/platform/graphics/chromium"
 
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/bmp"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/gif"
@@ -103,9 +109,10 @@ excluded_directories="$excluded_directories WebCore/platform/image-decoders/png"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/ico"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/jpeg"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/xbm"
+excluded_directories="$excluded_directories WebCore/platform/image-decoders/skia"
 
-excluded_directories="$excluded_directories WebCore/plugins/wx"
 excluded_directories="$excluded_directories WebCore/plugins/gtk"
+excluded_directories="$excluded_directories WebCore/plugins/chromium"
 
 excluded_directories="$excluded_directories WebCore/platform/symbian WebCore/platform/wx"
 excluded_directories="$excluded_directories WebKit/gtk"
@@ -113,11 +120,6 @@ excluded_directories="$excluded_directories WebKit/win"
 excluded_directories="$excluded_directories WebKit/mac"
 excluded_directories="$excluded_directories WebKit/wx"
 excluded_directories="$excluded_directories WebKit/cf"
-
-excluded_directories="$excluded_directories WebCore/svg/graphics/cg"
-excluded_directories="$excluded_directories WebCore/svg/graphics/cairo"
-excluded_directories="$excluded_directories WebCore/svg/graphics/filters/cg"
-excluded_directories="$excluded_directories WebCore/svg/graphics/mac"
 
 excluded_directories="$excluded_directories WebKit/English.lproj WebKit/WebKit.xcodeproj"
 excluded_directories="$excluded_directories WebCore/English.lproj"
@@ -132,7 +134,6 @@ files_to_remove="$files_to_remove WebKit/qt/Api/qcookiejar.h"
 files_to_remove="$files_to_remove WebKit/qt/Api/qcookiejar.cpp"
 
 files_to_remove="$files_to_remove WebCore/rendering/RenderThemeMac.mm"
-files_to_remove="$files_to_remove acinclude.m4"
 files_to_remove="$files_to_remove autogen.sh"
 files_to_remove="$files_to_remove configure.ac"
 
@@ -144,13 +145,11 @@ files_to_remove="$files_to_remove WebKit/qt/QtLauncher/QtLauncher.pro"
 files_to_remove="$files_to_remove WebKit/qt/QtLauncher/main.cpp"
 
 files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
-files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCore.scons"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/SConstruct"
 files_to_remove="$files_to_remove JavaScriptCore/jscore.bkl"
 
 files_to_remove="$files_to_remove WebCore/SConstruct"
-files_to_remove="$files_to_remove WebCore/WebCore.scons"
 files_to_remove="$files_to_remove WebCore/WebCoreSources.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-base.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-wx.bkl"

@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::PromotionModel
-*/
-
 #include "promotionmodel_p.h"
 #include "widgetdatabase_p.h"
 

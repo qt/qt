@@ -128,6 +128,10 @@ extern "C" {
 
 #include <private/qbackingstore_p.h>
 
+#if defined(Q_OS_BSD4) || _POSIX_VERSION+0 < 200112L
+# define QT_NO_UNSETENV
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //#define X_NOT_BROKEN
@@ -157,6 +161,8 @@ static const char * x11_atomnames = {
     "WM_TAKE_FOCUS\0"
     "_NET_WM_PING\0"
     "_NET_WM_CONTEXT_HELP\0"
+    "_NET_WM_SYNC_REQUEST\0"
+    "_NET_WM_SYNC_REQUEST_COUNTER\0"
 
     // ICCCM window state
     "WM_STATE\0"
@@ -294,6 +300,10 @@ static const char * x11_atomnames = {
     // XEMBED
     "_XEMBED\0"
     "_XEMBED_INFO\0"
+
+    "Wacom Stylus\0"
+    "Wacom Cursor\0"
+    "Wacom Eraser\0"
 };
 
 Q_GUI_EXPORT QX11Data *qt_x11Data = 0;
@@ -504,6 +514,7 @@ static Bool qt_xfixes_scanner(Display*, XEvent *event, XPointer arg)
 class QETWidget : public QWidget                // event translator widget
 {
 public:
+    QWidgetPrivate* d_func() { return QWidget::d_func(); }
     bool translateMouseEvent(const XEvent *);
     void translatePaintEvent(const XEvent *);
     bool translateConfigEvent(const XEvent *);
@@ -714,6 +725,44 @@ static int qt_xio_errhandler(Display *)
 }
 #endif
 
+#ifndef QT_NO_XSYNC
+struct qt_sync_request_event_data
+{
+    WId window;
+};
+
+#if defined(Q_C_CALLBACKS)
+extern "C" {
+#endif
+
+static Bool qt_sync_request_scanner(Display*, XEvent *event, XPointer arg)
+{
+    qt_sync_request_event_data *data =
+        reinterpret_cast<qt_sync_request_event_data*>(arg);
+    if (event->type == ClientMessage &&
+        event->xany.window == data->window &&
+        event->xclient.message_type == ATOM(WM_PROTOCOLS) &&
+        (Atom)event->xclient.data.l[0] == ATOM(_NET_WM_SYNC_REQUEST)) {
+        QWidget *w = QWidget::find(event->xany.window);
+        if (QTLWExtra *tlw = ((QETWidget*)w)->d_func()->maybeTopData()) {
+            const ulong timestamp = (const ulong) event->xclient.data.l[1];
+            if (timestamp > X11->time)
+                X11->time = timestamp;
+            if (timestamp == CurrentTime || timestamp > tlw->syncRequestTimestamp) {
+                tlw->syncRequestTimestamp = timestamp;
+                tlw->newCounterValueLo = event->xclient.data.l[2];
+                tlw->newCounterValueHi = event->xclient.data.l[3];
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+#if defined(Q_C_CALLBACKS)
+}
+#endif
+#endif // QT_NO_XSYNC
 
 static void qt_x11_create_intern_atoms()
 {
@@ -754,6 +803,14 @@ Q_GUI_EXPORT void qt_x11_apply_settings_in_all_apps()
                     PropModeReplace, (unsigned char *)stamp.data(), stamp.size());
 }
 
+static int kdeSessionVersion()
+{
+    static int kdeVersion = 0;
+    if (!kdeVersion)
+        kdeVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
+    return kdeVersion;
+}
+
 /*! \internal
     Gets the current KDE 3 or 4 home path
 */
@@ -763,10 +820,9 @@ QString QApplicationPrivate::kdeHome()
     if (kdeHomePath.isEmpty()) {
         kdeHomePath = QString::fromLocal8Bit(qgetenv("KDEHOME"));
         if (kdeHomePath.isEmpty()) {
-            int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
             QDir homeDir(QDir::homePath());
             QString kdeConfDir(QLatin1String("/.kde"));
-            if (4 == kdeSessionVersion && homeDir.exists(QLatin1String(".kde4")))
+            if (4 == kdeSessionVersion() && homeDir.exists(QLatin1String(".kde4")))
                 kdeConfDir = QLatin1String("/.kde4");
             kdeHomePath = QDir::homePath() + kdeConfDir;
         }
@@ -835,13 +891,11 @@ bool QApplicationPrivate::x11_apply_settings()
             QApplicationPrivate::setSystemPalette(pal);
     }
 
-    int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
-
     if (!appFont) {
         QFont font(QApplication::font());
         QString fontDescription;
         // Override Qt font if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
+        if (4 == kdeSessionVersion()) {
             QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
             fontDescription = kdeSettings.value(QLatin1String("font")).toString();
             if (fontDescription.isEmpty()) {
@@ -871,29 +925,16 @@ bool QApplicationPrivate::x11_apply_settings()
 
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
-    if (stylename.isEmpty() && !QApplicationPrivate::styleOverride && X11->use_xrender) {
-        QStringList availableStyles = QStyleFactory::keys();
-        // Override Qt style if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
-            QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-            QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
-                                                  QLatin1String("Oxygen")).toString();
-            foreach (const QString &style, availableStyles) {
-                if (style.toLower() == kde4Style.toLower())
-                    stylename = kde4Style;
-            }
-        // Set QGtkStyle for GNOME
-        } else if (X11->desktopEnvironment == DE_GNOME) {
-            QString gtkStyleKey = QString::fromLatin1("GTK+");
-            if (availableStyles.contains(gtkStyleKey))
-                stylename = gtkStyleKey;
-        }
+
+
+    if (stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull() && X11->use_xrender) {
+        stylename = x11_desktop_style();
     }
 
     static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
-        if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
-            QApplicationPrivate::styleOverride = new QString(stylename);
+        if (!stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull())
+            QApplicationPrivate::styleOverride = stylename;
     } else {
         if (currentStyleName != stylename) {
             currentStyleName = stylename;
@@ -1579,6 +1620,7 @@ static PtrWacomConfigOpenDevice ptrWacomConfigOpenDevice = 0;
 static PtrWacomConfigGetRawParam ptrWacomConfigGetRawParam = 0;
 static PtrWacomConfigCloseDevice ptrWacomConfigCloseDevice = 0;
 static PtrWacomConfigTerm ptrWacomConfigTerm = 0;
+Q_GLOBAL_STATIC(QByteArray, wacomDeviceName)
 #endif
 
 #endif
@@ -1719,7 +1761,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->pattern_fills[i].screen = -1;
 #endif
 
-    X11->startupId = X11->originalStartupId = 0;
+    X11->startupId = X11->originalStartupId = X11->startupIdString = 0;
 
     int argc = priv->argc;
     char **argv = priv->argv;
@@ -2057,14 +2099,6 @@ void qt_init(QApplicationPrivate *priv, int,
                 X11->xfixes_major = major;
             }
         }
-        if (X11->use_xfixes && X11->ptrXFixesSelectSelectionInput) {
-            const unsigned long eventMask =
-                XFixesSetSelectionOwnerNotifyMask | XFixesSelectionWindowDestroyNotifyMask | XFixesSelectionClientCloseNotifyMask;
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               XA_PRIMARY, eventMask);
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               ATOM(CLIPBOARD), eventMask);
-        }
 #endif // QT_NO_XFIXES
 
 #ifndef QT_NO_XCURSOR
@@ -2084,6 +2118,13 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->ptrXcursorLibraryLoadCursor = XcursorLibraryLoadCursor;
 #endif // QT_RUNTIME_XCURSOR
 #endif // QT_NO_XCURSOR
+
+#ifndef QT_NO_XSYNC
+        int xsync_evbase, xsync_errbase;
+        int major, minor;
+        if (XSyncQueryExtension(X11->display, &xsync_evbase, &xsync_errbase))
+            XSyncInitialize(X11->display, &major, &minor);
+#endif // QT_NO_XSYNC
 
 #ifndef QT_NO_XINERAMA
 #ifdef QT_RUNTIME_XINERAMA
@@ -2356,13 +2397,6 @@ void qt_init(QApplicationPrivate *priv, int,
             XAxisInfoPtr a;
             XDevice *dev = 0;
 
-#if !defined(Q_OS_IRIX)
-            // XFree86 divides a stylus and eraser into 2 devices, so we must do for both...
-            const QString XFREENAMESTYLUS = QLatin1String("stylus");
-            const QString XFREENAMEPEN = QLatin1String("pen");
-            const QString XFREENAMEERASER = QLatin1String("eraser");
-#endif
-
             if (X11->ptrXListInputDevices) {
                 devices = X11->ptrXListInputDevices(X11->display, &ndev);
                 if (!devices)
@@ -2377,18 +2411,19 @@ void qt_init(QApplicationPrivate *priv, int,
                 gotStylus = false;
                 gotEraser = false;
 
-                QString devName = QString::fromLocal8Bit(devs->name).toLower();
 #if defined(Q_OS_IRIX)
+                QString devName = QString::fromLocal8Bit(devs->name).toLower();
                 if (devName == QLatin1String(WACOM_NAME)) {
                     deviceType = QTabletEvent::Stylus;
                     gotStylus = true;
                 }
 #else
-                if (devName.startsWith(XFREENAMEPEN)
-                    || devName.startsWith(XFREENAMESTYLUS)) {
+                if (devs->type == ATOM(XWacomStylus)) {
                     deviceType = QTabletEvent::Stylus;
+                    if (wacomDeviceName()->isEmpty())
+                        wacomDeviceName()->append(devs->name);
                     gotStylus = true;
-                } else if (devName.startsWith(XFREENAMEERASER)) {
+                } else if (devs->type == ATOM(XWacomEraser)) {
                     deviceType = QTabletEvent::XFreeEraser;
                     gotEraser = true;
                 }
@@ -2525,9 +2560,16 @@ void qt_init(QApplicationPrivate *priv, int,
 
         X11->startupId = getenv("DESKTOP_STARTUP_ID");
         X11->originalStartupId = X11->startupId;
-        static char desktop_startup_id[] = "DESKTOP_STARTUP_ID=";
-        putenv(desktop_startup_id);
-
+        if (X11->startupId) {
+#ifndef QT_NO_UNSETENV
+            unsetenv("DESKTOP_STARTUP_ID");
+#else
+            // it's a small memory leak, however we won't crash if Qt is
+            // unloaded and someones tries to use the envoriment.
+            X11->startupIdString = strdup("DESKTOP_STARTUP_ID=");
+            putenv(X11->startupIdString);
+#endif
+        }
    } else {
         // read some non-GUI settings when not using the X server...
 
@@ -2586,31 +2628,49 @@ void qt_init(QApplicationPrivate *priv, int,
 /*!
     \internal
 */
-void QApplicationPrivate::x11_initialize_style()
+QString QApplicationPrivate::x11_desktop_style()
 {
-    if (QApplicationPrivate::app_style)
-        return;
+    QString stylename;
+    QStringList availableStyles = QStyleFactory::keys();
+    // Override Qt style if KDE4 settings can be used
+    if (4 == kdeSessionVersion()) {
+        QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
+                                              QLatin1String("Oxygen")).toString();
+        foreach (const QString &style, availableStyles) {
+            if (style.toLower() == kde4Style.toLower())
+                stylename = kde4Style;
+        }
+    // Set QGtkStyle for GNOME
+    } else if (X11->desktopEnvironment == DE_GNOME) {
+        QString gtkStyleKey = QString::fromLatin1("GTK+");
+        if (availableStyles.contains(gtkStyleKey))
+            stylename = gtkStyleKey;
+    }
 
-    switch(X11->desktopEnvironment) {
+    if (stylename.isEmpty()) {
+        switch(X11->desktopEnvironment) {
         case DE_KDE:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("plastique"));
+                stylename = QLatin1String("plastique");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_GNOME:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cleanlooks"));
+                stylename = QLatin1String("cleanlooks");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_CDE:
-            QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cde"));
+            stylename = QLatin1String("cde");
             break;
         default:
             // Don't do anything
             break;
+        }
     }
+    return stylename;
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -2641,9 +2701,14 @@ void qt_cleanup()
 #endif
     }
 
-    // restore original value back. This is also done in QWidgetPrivate::show_sys.
-    if (X11->originalStartupId)
+#ifdef QT_NO_UNSETENV
+    // restore original value back.
+    if (X11->originalStartupId && X11->startupIdString) {
         putenv(X11->originalStartupId);
+        free(X11->startupIdString);
+        X11->startupIdString = 0;
+    }
+#endif
 
 #ifndef QT_NO_XRENDER
     for (int i = 0; i < X11->solid_fill_count; ++i) {
@@ -2979,7 +3044,7 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
 void QApplication::syncX()
 {
     if (X11->display)
-        XSync(X11->display, False);                        // don't discard events
+        XSync(X11->display, False);  // don't discard events
 }
 
 
@@ -3117,6 +3182,19 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                     XSendEvent(event->xclient.display, event->xclient.window,
                                 False, SubstructureNotifyMask|SubstructureRedirectMask, event);
                 }
+#ifndef QT_NO_XSYNC
+            } else if (a == ATOM(_NET_WM_SYNC_REQUEST)) {
+                const ulong timestamp = (const ulong) event->xclient.data.l[1];
+                if (timestamp > X11->time)
+                    X11->time = timestamp;
+                if (QTLWExtra *tlw = w->d_func()->maybeTopData()) {
+                    if (timestamp == CurrentTime || timestamp > tlw->syncRequestTimestamp) {
+                        tlw->syncRequestTimestamp = timestamp;
+                        tlw->newCounterValueLo = event->xclient.data.l[2];
+                        tlw->newCounterValueHi = event->xclient.data.l[3];
+                    }
+                }
+#endif
             }
         } else if (event->xclient.message_type == ATOM(_QT_SCROLL_DONE)) {
             widget->translateScrollDoneEvent(event);
@@ -4145,7 +4223,9 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
                 || ((nextEvent.type == EnterNotify || nextEvent.type == LeaveNotify)
                     && qt_button_down == this)
                 || (nextEvent.type == ClientMessage
-                    && nextEvent.xclient.message_type == ATOM(_QT_SCROLL_DONE))) {
+                    && (nextEvent.xclient.message_type == ATOM(_QT_SCROLL_DONE) ||
+                    (nextEvent.xclient.message_type == ATOM(WM_PROTOCOLS) &&
+                     (Atom)nextEvent.xclient.data.l[0] == ATOM(_NET_WM_SYNC_REQUEST))))) {
                 qApp->x11ProcessEvent(&nextEvent);
                 continue;
             } else if (nextEvent.type != MotionNotify ||
@@ -4484,8 +4564,7 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
     WACOMCONFIG *config = ptrWacomConfigInit(X11->display, 0);
     if (config == 0)
         return;
-    const char *name = "stylus"; // TODO get this from the X config instead (users may have called it differently)
-    WACOMDEVICE *device = ptrWacomConfigOpenDevice (config, name);
+    WACOMDEVICE *device = ptrWacomConfigOpenDevice (config, wacomDeviceName()->constData());
     if (device == 0)
         return;
     unsigned keys[1];
@@ -5202,6 +5281,14 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                                    otherEvent.xconfigure.border_width;
                 }
             }
+#ifndef QT_NO_XSYNC
+            qt_sync_request_event_data sync_event;
+            sync_event.window = internalWinId();
+            for (XEvent ev;;) {
+                if (!XCheckIfEvent(X11->display, &ev, &qt_sync_request_scanner, (XPointer)&sync_event))
+                    break;
+            }
+#endif // QT_NO_XSYNC
         }
 
         QRect cr (geometry());
@@ -5287,6 +5374,20 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         if (d->extra && d->extra->topextra)
             d->extra->topextra->inTopLevelResize = false;
     }
+#ifndef QT_NO_XSYNC
+    if (QTLWExtra *tlwExtra = d->maybeTopData()) {
+        if (tlwExtra->newCounterValueLo != 0 || tlwExtra->newCounterValueHi != 0) {
+            XSyncValue value;
+            XSyncIntsToValue(&value,
+                             tlwExtra->newCounterValueLo,
+                             tlwExtra->newCounterValueHi);
+
+            XSyncSetCounter(X11->display, tlwExtra->syncUpdateCounter, value);
+            tlwExtra->newCounterValueHi = 0;
+            tlwExtra->newCounterValueLo = 0;
+        }
+    }
+#endif
     return true;
 }
 

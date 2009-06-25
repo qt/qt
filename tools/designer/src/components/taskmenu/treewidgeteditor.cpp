@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::TreeWidgetEditor
-*/
-
 #include "treewidgeteditor.h"
 #include <formwindowbase_p.h>
 #include <iconloader_p.h>

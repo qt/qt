@@ -71,7 +71,7 @@ public:
     enum State {
         Error,
         Intermediate,
-        Valid,
+        Valid
     };
 
     struct Result {

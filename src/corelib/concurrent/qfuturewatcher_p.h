@@ -63,8 +63,8 @@
 QT_BEGIN_NAMESPACE
 
 class QFutureWatcherBase;
-class Q_CORE_EXPORT QFutureWatcherBasePrivate : public QObjectPrivate,
-                                                public QFutureCallOutInterface
+class QFutureWatcherBasePrivate : public QObjectPrivate,
+                                  public QFutureCallOutInterface
 {
     Q_DECLARE_PUBLIC(QFutureWatcherBase)
 

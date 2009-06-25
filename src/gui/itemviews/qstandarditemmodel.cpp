@@ -1740,18 +1740,21 @@ QList<QStandardItem*> QStandardItem::takeRow(int row)
     Q_D(QStandardItem);
     if ((row < 0) || (row >= rowCount()))
         return QList<QStandardItem*>();
+    if (d->model)
+        d->model->d_func()->rowsAboutToBeRemoved(this, row, row);
     QList<QStandardItem*> items;
     int index = d->childIndex(row, 0);
-    for (int column = 0; column < d->columnCount(); ++column) {
-        QStandardItem *ch = d->children.at(index);
-        if (ch) {
+    int col_count = d->columnCount();
+    for (int column = 0; column < col_count; ++column) {
+        QStandardItem *ch = d->children.at(index + column);
+        if (ch)
             ch->d_func()->setParentAndModel(0, 0);
-            d->children.replace(index, 0);
-        }
         items.append(ch);
-        ++index;
     }
-    removeRow(row);
+    d->children.remove(index, col_count);
+    d->rows--;
+    if (d->model)
+        d->model->d_func()->rowsRemoved(this, row, 1);
     return items;
 }
 
@@ -1767,18 +1770,21 @@ QList<QStandardItem*> QStandardItem::takeColumn(int column)
     Q_D(QStandardItem);
     if ((column < 0) || (column >= columnCount()))
         return QList<QStandardItem*>();
+    if (d->model)
+        d->model->d_func()->columnsAboutToBeRemoved(this, column, column);
     QList<QStandardItem*> items;
-    int index = d->childIndex(0, column);
-    for (int row = 0; row < d->rowCount(); ++row) {
+
+    for (int row = d->rowCount() - 1; row >= 0; --row) {
+        int index = d->childIndex(row, column);
         QStandardItem *ch = d->children.at(index);
-        if (ch) {
+        if (ch)
             ch->d_func()->setParentAndModel(0, 0);
-            d->children.replace(index, 0);
-        }
-        items.append(ch);
-        index += d->columnCount();
+        d->children.remove(index);
+        items.prepend(ch);
     }
-    removeColumn(column);
+    d->columns--;
+    if (d->model)
+        d->model->d_func()->columnsRemoved(this, column, 1);
     return items;
 }
 
@@ -1936,7 +1942,7 @@ QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
     return out;
 }
 
-#endif // !QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 /*!
     \class QStandardItemModel
@@ -2905,8 +2911,8 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     QStack<QStandardItem*> stack;
     itemsSet.reserve(indexes.count());
     stack.reserve(indexes.count());
-    foreach (const QModelIndex &index, indexes) {
-        QStandardItem *item = itemFromIndex(index);
+    for (int i = 0; i < indexes.count(); ++i) {
+        QStandardItem *item = itemFromIndex(indexes.at(i));
         itemsSet << item;
         stack.push(item);
     }

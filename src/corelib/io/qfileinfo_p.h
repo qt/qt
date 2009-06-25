@@ -46,8 +46,8 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of QIODevice. This header file may change from version to
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
@@ -76,70 +76,51 @@ public:
     QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
     QString getFileName(QAbstractFileEngine::FileName) const;
 
-    enum {
-        CachedFileFlags = 0x01,
-        CachedLinkTypeFlag = 0x02,
-        CachedBundleTypeFlag= 0x04,
-        CachedMTime = 0x10,
-        CachedCTime = 0x20,
-        CachedATime = 0x40,
-        CachedSize = 0x08
-    };
-
-    struct Data
-    {
+    enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
+           CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
+           CachedSize =0x08 };
+    struct Data {
         inline Data()
             : ref(1), fileEngine(0), cache_enabled(1)
-        {
-            clear();
-        }
-
+        { clear(); }
         inline Data(const Data &copy)
             : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
               fileName(copy.fileName), cache_enabled(copy.cache_enabled)
-        {
-            clear();
-        }
-
-        inline ~Data()
-        {
-            delete fileEngine;
-        }
-
-        inline void clear()
-        {
-            fileNames.clear();
+        { clear(); }
+        inline ~Data() { delete fileEngine; }
+        inline void clearFlags() {
             fileFlags = 0;
             cachedFlags = 0;
+            if (fileEngine)
+                (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
         }
-
+        inline void clear() {
+            fileNames.clear();
+            clearFlags();
+        }
         mutable QAtomicInt ref;
 
         QAbstractFileEngine *fileEngine;
         mutable QString fileName;
         mutable QHash<int, QString> fileNames;
+
         mutable uint cachedFlags : 31;
         mutable uint cache_enabled : 1;
         mutable uint fileFlags;
         mutable qint64 fileSize;
         mutable QDateTime fileTimes[3];
-
         inline bool getCachedFlag(uint c) const
         { return cache_enabled ? (cachedFlags & c) : 0; }
-
         inline void setCachedFlag(uint c)
         { if (cache_enabled) cachedFlags |= c; }
     } *data;
-
     inline void reset() {
         detach();
         data->clear();
     }
-
     void detach();
 };
 
-
 QT_END_NAMESPACE
-#endif
 
+#endif // QFILEINFO_P_H

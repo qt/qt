@@ -88,7 +88,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CODECS
 
-class Q_CORE_EXPORT QTsciiCodec : public QTextCodec {
+class QTsciiCodec : public QTextCodec {
 public:
     ~QTsciiCodec();
 

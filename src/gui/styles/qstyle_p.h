@@ -43,6 +43,7 @@
 #define QSTYLE_P_H
 
 #include "private/qobject_p.h"
+#include <QtGui/qstyle.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,22 +52,24 @@ QT_BEGIN_NAMESPACE
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// of qstyle_*.cpp.  This header file may change from version to version
+// without notice, or even be removed.
 //
 // We mean it.
 //
 
 // Private class
 
+class QStyle;
+
 class QStylePrivate: public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QStyle)
+    Q_DECLARE_PUBLIC(QStyle);
 public:
     inline QStylePrivate()
-        : layoutSpacingIndex(-1)
-    { }
+        : layoutSpacingIndex(-1), proxyStyle(0) {}
     mutable int layoutSpacingIndex;
+    QStyle *proxyStyle;
 };
 
 
@@ -77,7 +80,7 @@ public:
     QPainter *p = painter; \
     QString unique = uniqueName((a), option, option->rect.size()); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
-    bool doPixmapCache = UsePixmapCache && txType <= QTransform::TxTranslate; \
+    bool doPixmapCache = txType <= QTransform::TxTranslate; \
     if (doPixmapCache && QPixmapCache::find(unique, internalPixmapCache)) { \
         painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
     } else { \
@@ -87,6 +90,7 @@ public:
             imageCache.fill(0); \
             p = new QPainter(&imageCache); \
         }
+
 
 
 #define END_STYLE_PIXMAPCACHE \

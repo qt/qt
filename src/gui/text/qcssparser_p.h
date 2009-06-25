@@ -403,7 +403,7 @@ struct BorderData {
 // 4. QVector<Declaration> - { prop1: value1; prop2: value2; }
 // 5. Declaration - prop1: value1;
 
-struct Q_GUI_EXPORT Declaration
+struct Q_AUTOTEST_EXPORT Declaration
 {
     struct DeclarationData : public QSharedData
     {
@@ -495,7 +495,7 @@ const quint64 PseudoClass_Alternate        = Q_UINT64_C(0x0000100000000000);
 const quint64 PseudoClass_Any              = Q_UINT64_C(0x0000ffffffffffff);
 const int NumPseudos = 46;
 
-struct Q_GUI_EXPORT Pseudo
+struct Pseudo
 {
     Pseudo() : negated(false) { }
     quint64 type;
@@ -504,7 +504,7 @@ struct Q_GUI_EXPORT Pseudo
     bool negated;
 };
 
-struct Q_GUI_EXPORT AttributeSelector
+struct AttributeSelector
 {
     enum ValueMatchType {
         NoMatch,
@@ -519,7 +519,7 @@ struct Q_GUI_EXPORT AttributeSelector
     ValueMatchType valueMatchCriterium;
 };
 
-struct Q_GUI_EXPORT BasicSelector
+struct BasicSelector
 {
     inline BasicSelector() : relationToNext(NoRelation) {}
 
@@ -539,7 +539,7 @@ struct Q_GUI_EXPORT BasicSelector
     Relation relationToNext;
 };
 
-struct Q_GUI_EXPORT Selector
+struct Q_AUTOTEST_EXPORT Selector
 {
     QVector<BasicSelector> basicSelectors;
     int specificity() const;
@@ -552,7 +552,7 @@ struct MediaRule;
 struct PageRule;
 struct ImportRule;
 
-struct Q_GUI_EXPORT ValueExtractor
+struct Q_AUTOTEST_EXPORT ValueExtractor
 {
     ValueExtractor(const QVector<Declaration> &declarations, const QPalette & = QPalette());
 
@@ -586,7 +586,7 @@ private:
     QPalette pal;
 };
 
-struct Q_GUI_EXPORT StyleRule
+struct StyleRule
 {
     StyleRule() : order(0) { }
     QVector<Selector> selectors;
@@ -594,19 +594,19 @@ struct Q_GUI_EXPORT StyleRule
     int order;
 };
 
-struct Q_GUI_EXPORT MediaRule
+struct MediaRule
 {
     QStringList media;
     QVector<StyleRule> styleRules;
 };
 
-struct Q_GUI_EXPORT PageRule
+struct PageRule
 {
     QString selector;
     QVector<Declaration> declarations;
 };
 
-struct Q_GUI_EXPORT ImportRule
+struct ImportRule
 {
     QString href;
     QStringList media;
@@ -620,7 +620,7 @@ enum StyleSheetOrigin {
     StyleSheetOrigin_Inline
 };
 
-struct Q_GUI_EXPORT StyleSheet
+struct StyleSheet
 {
     StyleSheet() : origin(StyleSheetOrigin_Unspecified), depth(0) { }
     QVector<StyleRule> styleRules;  //only contains rules that are not indexed
@@ -731,7 +731,6 @@ class Q_AUTOTEST_EXPORT Scanner
 public:
     static QString preprocess(const QString &input, bool *hasEscapeSequences = 0);
     static void scan(const QString &preprocessedInput, QVector<Symbol> *symbols);
-    static const char *tokenName(TokenType t);
 };
 
 class Q_GUI_EXPORT Parser

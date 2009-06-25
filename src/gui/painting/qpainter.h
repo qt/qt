@@ -510,6 +510,7 @@ private:
     friend class QFontEngineXLFD;
     friend class QWSManager;
     friend class QPaintEngine;
+    friend class QPaintEngineExPrivate;
     friend class QOpenGLPaintEngine;
     friend class QX11PaintEngine;
     friend class QX11PaintEnginePrivate;

@@ -60,7 +60,7 @@
 
 #include <shlobj.h>
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include <commdlg.h>
 #  ifndef BFFM_SETSELECTION
 #    define BFFM_SETSELECTION (WM_USER + 102)
@@ -112,7 +112,7 @@ static void qt_win_resolve_libs()
 
         triedResolve = true;
         if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
             QLibrary lib(QLatin1String("shell32"));
             ptrSHBrowseForFolder = (PtrSHBrowseForFolder) lib.resolve("SHBrowseForFolderW");
             ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList) lib.resolve("SHGetPathFromIDListW");
@@ -186,7 +186,7 @@ static QString qt_win_selected_filter(const QString &filter, DWORD idx)
     return qt_win_make_filters_list(filter).at((int)idx - 1);
 }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 // Static vars for OFNA funcs:
 static QByteArray aInitDir;
 static QByteArray aInitSel;
@@ -206,7 +206,7 @@ static OPENFILENAMEA *qt_win_make_OFNA(QWidget *parent,
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     aTitle = title.toLocal8Bit();
     aInitDir = QDir::toNativeSeparators(initialDirectory).toLocal8Bit();
@@ -214,10 +214,10 @@ static OPENFILENAMEA *qt_win_make_OFNA(QWidget *parent,
         aInitSel = "";
     } else {
         aInitSel = QDir::toNativeSeparators(initialSelection).toLocal8Bit();
-	aInitSel.replace("<", "");
-	aInitSel.replace(">", "");
-	aInitSel.replace("\"", "");
-	aInitSel.replace("|", "");
+	    aInitSel.replace('<', "");
+	    aInitSel.replace('>', "");
+	    aInitSel.replace('\"', "");
+	    aInitSel.replace('|', "");
     }
     int maxLen = mode == QFileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
     aInitSel.resize(maxLen + 1);                // make room for return value
@@ -279,17 +279,17 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     tInitDir = QDir::toNativeSeparators(initialDirectory);
     tFilters = filters;
     tTitle = title;
     QString initSel = QDir::toNativeSeparators(initialSelection);
     if (!initSel.isEmpty()) {
-	initSel.replace(QLatin1String("<"), QLatin1String(""));
-	initSel.replace(QLatin1String(">"), QLatin1String(""));
-	initSel.replace(QLatin1String("\""), QLatin1String(""));
-	initSel.replace(QLatin1String("|"), QLatin1String(""));
+	    initSel.remove(QLatin1Char('<'));
+	    initSel.remove(QLatin1Char('>'));
+	    initSel.remove(QLatin1Char('\"'));
+	    initSel.remove(QLatin1Char('|'));
     }
 
     int maxLen = mode == QFileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
@@ -505,7 +505,7 @@ QString qt_win_get_save_file_name(const QFileDialogArgs &args,
         }
         qt_win_clean_up_OFNA(&ofn);
     });
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     int semIndex = result.indexOf(QLatin1Char(';'));
     if (semIndex >= 0)
         result = result.left(semIndex);
@@ -692,7 +692,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
     if (parent)
         parent->createWinId();
 
@@ -700,7 +700,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
     QApplicationPrivate::enterModal(&modal_widget);
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     QT_WA({
         qt_win_resolve_libs();
         QString initDir = QDir::toNativeSeparators(args.directory);
@@ -811,7 +811,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
         QDir::setCurrent(currentDir);
 
     if (!result.isEmpty())
-        result.replace(QLatin1String("\\"), QLatin1String("/"));
+        result.replace(QLatin1Char('\\'), QLatin1Char('/'));
     return result;
 }
 

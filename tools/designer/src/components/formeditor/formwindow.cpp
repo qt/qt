@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::FormWindow
-*/
-
 #include "formwindow.h"
 #include "formeditor.h"
 #include "formwindow_dnditem.h"
@@ -2140,7 +2136,10 @@ void FormWindow::layoutContainer(QWidget *w, int type)
 bool FormWindow::hasInsertedChildren(QWidget *widget) const // ### move
 {
     if (QDesignerContainerExtension *container = qt_extension<QDesignerContainerExtension*>(core()->extensionManager(), widget)) {
-        widget = container->widget(container->currentIndex());
+        const int index = container->currentIndex();
+        if (index < 0)
+            return false;
+        widget = container->widget(index);
     }
 
     const QWidgetList l = widgets(widget);

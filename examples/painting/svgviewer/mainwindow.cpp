@@ -53,7 +53,7 @@ MainWindow::MainWindow()
     QAction *openAction = fileMenu->addAction(tr("&Open..."));
     openAction->setShortcut(QKeySequence(tr("Ctrl+O")));
     QAction *quitAction = fileMenu->addAction(tr("E&xit"));
-    quitAction->setShortcut(QKeySequence(tr("Ctrl+Q")));
+    quitAction->setShortcuts(QKeySequence::Quit);
 
     menuBar()->addMenu(fileMenu);
 

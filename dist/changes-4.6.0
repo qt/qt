@@ -1,0 +1,69 @@
+Qt 4.6 introduces many new features and improvements as well as bugfixes
+over the 4.5.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+  http://doc.trolltech.com/4.6
+
+The Qt version 4.6 series is binary compatible with the 4.5.x series.
+Applications compiled for 4.5 will continue to run with 4.6.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Task Tracker:
+
+  http://www.qtsoftware.com/developer/task-tracker
+
+Each of these identifiers can be entered in the task tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+ 
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+
+ - The experimental Direct3D paint engine has been removed. The
+   reasons for this is that Qt Software focuses on OpenGL for desktop
+   hardware accelerated rendering.
+
+ - When mixing OpenGL and QPainter calls you need to first call syncState()
+   on the paint engine, for example "painter->paintEngine()->syncState()".
+   This is to ensure that the engine flushes any pending drawing and sets up
+   the GL modelview/projection matrices properly.
+
+ - Graphics View has undergone heavy optimization work, and as a result of
+   this work, the following behavior changes were introduced.
+
+   a) QStyleOptionGraphicsItem::exposedRect now contains the item's bounding
+      rectangle, and QStyleOptionGraphicsItem::matrix is uninitialized by
+      default. You can enable an exact exposed rectangle and a correct matrix
+      by enabling the flag QGraphicsItem::ItemUsesExtendedStyleOptions.
+
+   b) QStyleOptionGraphicsItem::levelOfDetails is obsoleted and its value is
+      always initialized to 1. Instead you can call
+      QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &)
+      to determine the level of detail.
+
+   c) QGraphicsView no longer calls QGraphicsView::drawItems(), and in turn
+      QGraphicsScene::drawItems(), by default. You can get the old behavior
+      back by enabling QGraphicsView::IndirectPainting.
+
+   d) QGraphicsItem no longer calls itemChange() for position and
+      transformation changes. If you want to receive notifications for changes
+      to the item's position and transformation, you can set the flag
+      QGraphicsItem::ItemSendsGeometryChanges (which is enabled by default by
+      QGraphicsWidget and QGraphicsProxyWidget).

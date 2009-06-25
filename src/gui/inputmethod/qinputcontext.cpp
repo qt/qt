@@ -274,7 +274,7 @@ void QInputContext::sendEvent(const QInputMethodEvent &event)
 	return;
 
     QInputMethodEvent e(event);
-    qApp->sendEvent(focus, &e);
+    QApplication::sendEvent(focus, &e);
 }
 
 
@@ -420,7 +420,7 @@ QList<QAction *> QInputContext::actions()
 QTextFormat QInputContext::standardFormat(StandardFormat s) const
 {
     QWidget *focus = focusWidget();
-    const QPalette &pal = focus ? focus->palette() : qApp->palette();
+    const QPalette &pal = focus ? focus->palette() : QApplication::palette();
 
     QTextCharFormat fmt;
     QColor bg;

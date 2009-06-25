@@ -127,13 +127,13 @@ static inline void flattenBezierWithoutInflections(QBezier &bez,
         qreal dy = bez.y2 - bez.y1;
 
         qreal normalized = qSqrt(dx * dx + dy * dy);
-        if (qFuzzyCompare(normalized + 1, 1))
+        if (qFuzzyIsNull(normalized))
            break;
 
         qreal d = qAbs(dx * (bez.y3 - bez.y2) - dy * (bez.x3 - bez.x2));
 
         qreal t = qSqrt(4. / 3. * normalized * flatness / d);
-        if (t > 1 || qFuzzyCompare(t, (qreal)1.))
+        if (t > 1 || qFuzzyIsNull(t - (qreal)1.))
             break;
         bez.parameterSplitLeft(t, &left);
         p->append(bez.pt1());
@@ -144,19 +144,19 @@ static inline void flattenBezierWithoutInflections(QBezier &bez,
 static inline int quadraticRoots(qreal a, qreal b, qreal c,
                                  qreal *x1, qreal *x2)
 {
-    if (qFuzzyCompare(a + 1, 1)) {
-        if (qFuzzyCompare(b + 1, 1))
+    if (qFuzzyIsNull(a)) {
+        if (qFuzzyIsNull(b))
             return 0;
         *x1 = *x2 = (-c / b);
         return 1;
     } else {
         const qreal det = b * b - 4 * a * c;
-        if (qFuzzyCompare(det + 1, 1)) {
+        if (qFuzzyIsNull(det)) {
             *x1 = *x2 = -b / (2 * a);
             return 1;
         }
         if (det > 0) {
-            if (qFuzzyCompare(b + 1, 1)) {
+            if (qFuzzyIsNull(b)) {
                 *x2 = qSqrt(-c / a);
                 *x1 = -(*x2);
                 return 2;
@@ -187,7 +187,7 @@ static inline bool findInflections(qreal a, qreal b, qreal c,
             *t1 = r2;
             *t2 = r1;
         }
-        if (!qFuzzyCompare(a + 1, 1))
+        if (!qFuzzyIsNull(a))
             *tCups = 0.5 * (-b / a);
         else
             *tCups = 2;
@@ -243,7 +243,7 @@ void QBezier::addToPolygonMixed(QPolygonF *polygon) const
     qreal b = 6 * (ay * cx - ax * cy);
     qreal c = 2 * (by * cx - bx * cy);
 
-    if ((qFuzzyCompare(a + 1, 1) && qFuzzyCompare(b + 1, 1)) ||
+    if ((qFuzzyIsNull(a) && qFuzzyIsNull(b)) ||
         (b * b - 4 * a *c) < 0) {
         QBezier bez(*this);
         flattenBezierWithoutInflections(bez, polygon);
@@ -447,7 +447,7 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
         qreal r = 1.0 + prev_normal.x() * next_normal.x()
                   + prev_normal.y() * next_normal.y();
 
-        if (qFuzzyCompare(r + 1, 1)) {
+        if (qFuzzyIsNull(r)) {
             points_shifted[i] = points[i] + offset * prev_normal;
         } else {
             qreal k = offset / r;
@@ -477,12 +477,12 @@ static bool addCircle(const QBezier *b, qreal offset, QBezier *o)
 
     normals[0] = QPointF(b->y2 - b->y1, b->x1 - b->x2);
     qreal dist = qSqrt(normals[0].x()*normals[0].x() + normals[0].y()*normals[0].y());
-    if (qFuzzyCompare(dist + 1, 1))
+    if (qFuzzyIsNull(dist))
         return false;
     normals[0] /= dist;
     normals[2] = QPointF(b->y4 - b->y3, b->x3 - b->x4);
     dist = qSqrt(normals[2].x()*normals[2].x() + normals[2].y()*normals[2].y());
-    if (qFuzzyCompare(dist + 1, 1))
+    if (qFuzzyIsNull(dist))
         return false;
     normals[2] /= dist;
 
@@ -673,10 +673,10 @@ static int IntersectBB(const QBezier &a, const QBezier &b)
 #ifdef QDEBUG_BEZIER
 static QDebug operator<<(QDebug dbg, const QBezier &bz)
 {
-    dbg <<"["<<bz.x1<<", "<<bz.y1<<"], "
-        <<"["<<bz.x2<<", "<<bz.y2<<"], "
-        <<"["<<bz.x3<<", "<<bz.y3<<"], "
-        <<"["<<bz.x4<<", "<<bz.y4<<"]";
+    dbg << '[' << bz.x1<< ", " << bz.y1 << "], "
+        << '[' << bz.x2 <<", " << bz.y2 << "], "
+        << '[' << bz.x3 <<", " << bz.y3 << "], "
+        << '[' << bz.x4 <<", " << bz.y4 << ']';
     return dbg;
 }
 #endif
@@ -1022,7 +1022,7 @@ int QBezier::stationaryYPoints(qreal &t0, qreal &t1) const
 
     QList<qreal> result;
 
-    if (qFuzzyCompare(reciprocal + 1, 1)) {
+    if (qFuzzyIsNull(reciprocal)) {
         t0 = -b / (2 * a);
         return 1;
     } else if (reciprocal > 0) {

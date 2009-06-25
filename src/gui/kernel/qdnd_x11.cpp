@@ -542,6 +542,8 @@ bool QX11Data::xdndMimeDataForAtom(Atom a, QMimeData *mimeData, QByteArray *data
                 dm->xdndMimeTransferedPixmapIndex =
                             (dm->xdndMimeTransferedPixmapIndex + 1) % 2;
             }
+        } else {
+            DEBUG("QClipboard: xdndMimeDataForAtom(): converting to type '%s' is not supported", qPrintable(atomName));
         }
     }
     return data;
@@ -622,28 +624,12 @@ QVariant QX11Data::xdndMimeConvertToFormat(Atom a, const QByteArray &data, const
     if (format == QLatin1String("image/ppm")) {
         if (a == XA_PIXMAP && data.size() == sizeof(Pixmap)) {
             Pixmap xpm = *((Pixmap*)data.data());
-            Display *dpy = display;
-            Window r;
-            int x,y;
-            uint w,h,bw,d;
             if (!xpm)
                 return QByteArray();
-            XGetGeometry(dpy,xpm, &r,&x,&y,&w,&h,&bw,&d);
+            QPixmap qpm = QPixmap::fromX11Pixmap(xpm);
             QImageWriter imageWriter;
-            GC gc = XCreateGC(dpy, xpm, 0, 0);
-            QImage imageToWrite;
-            if (d == 1) {
-                QBitmap qbm(w,h);
-                XCopyArea(dpy,xpm,qbm.handle(),gc,0,0,w,h,0,0);
-                imageWriter.setFormat("PBMRAW");
-                imageToWrite = qbm.toImage();
-            } else {
-                QPixmap qpm(w,h);
-                XCopyArea(dpy,xpm,qpm.handle(),gc,0,0,w,h,0,0);
-                imageWriter.setFormat("PPMRAW");
-                imageToWrite = qpm.toImage();
-            }
-            XFreeGC(dpy,gc);
+            imageWriter.setFormat("PPMRAW");
+            QImage imageToWrite = qpm.toImage();
             QBuffer buf;
             buf.open(QIODevice::WriteOnly);
             imageWriter.setDevice(&buf);

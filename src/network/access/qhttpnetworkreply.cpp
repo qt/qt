@@ -187,7 +187,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
-      autoDecompress(false), requestIsBuffering(false), requestIsPrepared(false)
+      autoDecompress(false), requestIsPrepared(false)
 {
 }
 
@@ -544,13 +544,13 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *ou
 {
     qint64 bytes = 0;
     if (isChunked()) {
-        bytes += transferChunked(socket, out); // chunked transfer encoding (rfc 2616, sec 3.6)
+        bytes += readReplyBodyChunked(socket, out); // chunked transfer encoding (rfc 2616, sec 3.6)
     } else if (bodyLength > 0) { // we have a Content-Length
-        bytes += transferRaw(socket, out, bodyLength - contentRead);
+        bytes += readReplyBodyRaw(socket, out, bodyLength - contentRead);
         if (contentRead + bytes == bodyLength)
             state = AllDoneState;
     } else {
-        bytes += transferRaw(socket, out, socket->bytesAvailable());
+        bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
     }
     if (state == AllDoneState)
         socket->readAll(); // Read the rest to clean (CRLF)
@@ -558,7 +558,7 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *ou
     return bytes;
 }
 
-qint64 QHttpNetworkReplyPrivate::transferRaw(QIODevice *in, QIODevice *out, qint64 size)
+qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QIODevice *in, QIODevice *out, qint64 size)
 {
     qint64 bytes = 0;
     Q_ASSERT(in);
@@ -584,7 +584,7 @@ qint64 QHttpNetworkReplyPrivate::transferRaw(QIODevice *in, QIODevice *out, qint
 
 }
 
-qint64 QHttpNetworkReplyPrivate::transferChunked(QIODevice *in, QIODevice *out)
+qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QIODevice *out)
 {
     qint64 bytes = 0;
     while (in->bytesAvailable()) { // while we can read from input

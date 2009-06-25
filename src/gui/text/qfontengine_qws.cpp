@@ -387,7 +387,7 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 {
     cache_cost = 1;
 
-    int f = ::open( QFile::encodeName(fn), O_RDONLY );
+    int f = ::open( QFile::encodeName(fn), O_RDONLY, 0);
     Q_ASSERT(f>=0);
     QT_STATBUF st;
     if ( QT_FSTAT( f, &st ) )

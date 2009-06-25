@@ -212,17 +212,17 @@ void MainWindow::createActions()
             this, SLOT(lineWidthActionTriggered(QAction *)));
 
     exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcut(tr("Ctrl+X"));
+    exitAction->setShortcuts(QKeySequence::Quit);
     connect(exitAction, SIGNAL(triggered()),
             this, SLOT(close()));
 
     loadAction = new QAction(tr("&Open..."), this);
-    loadAction->setShortcut(tr("Ctrl+O"));
+    loadAction->setShortcuts(QKeySequence::Open);
     connect(loadAction, SIGNAL(triggered()),
             this, SLOT(loadAct()));
 
     saveAction = new QAction(tr("&Save As..."), this);
-    saveAction->setShortcut(tr("Ctrl+S"));
+    saveAction->setShortcuts(QKeySequence::SaveAs);
     connect(saveAction, SIGNAL(triggered()),
             this, SLOT(saveAct()));
 

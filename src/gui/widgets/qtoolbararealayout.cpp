@@ -113,7 +113,7 @@ QSize QToolBarAreaLayoutLine::sizeHint() const
             continue;
 
         QSize sh = item.sizeHint();
-        a += pick(o, sh) + item.extraSpace;
+        a += item.preferredSize > 0 ? item.preferredSize : pick(o, sh);
         b = qMax(b, perp(o, sh));
     }
 
@@ -163,12 +163,17 @@ void QToolBarAreaLayoutLine::fitLayout()
         int itemMin = pick(o, item.minimumSize());
         int itemHint = pick(o, item.sizeHint());
         //we ensure the extraspace is not too low
-        item.extraSpace = qMax(itemMin - itemHint, item.extraSpace);
-        itemHint  += item.extraSpace;
-        int itemExtra = qMin(itemHint - itemMin, extra);
+        item.size = qMax(item.size, itemHint);
+        if (item.preferredSize > 0) {
+            //preferredSize would be the default size
+            item.size = item.preferredSize;
+        }
 
-        item.size = itemMin + itemExtra;
-        extra -= itemExtra;
+        //the extraspace is the space above the item minimum sizehint
+        int extraSpace = qMin(item.size - itemMin, extra);
+        item.size = itemMin + extraSpace; //that is the real size
+
+        extra -= extraSpace;
 
         last = i;
     }
@@ -395,17 +400,15 @@ void QToolBarAreaLayoutInfo::removeToolBarBreak(QToolBar *before)
 
 void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
 {
-    if (dirty) {
+    if (dirty)
         fitLayout();
-    }
 
     dirty = true;
 
-    if (o == Qt::Vertical) {
+    if (o == Qt::Vertical)
         pos -= rect.top();
-    }
 
-    //here we actually update the extraSpace for the line containing the toolbar so that we move it
+    //here we actually update the preferredSize for the line containing the toolbar so that we move it
     for (int j = 0; j < lines.count(); ++j) {
         QToolBarAreaLayoutLine &line = lines[j];
 
@@ -432,22 +435,22 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
                         newPos = qMin(pos, maxPos);
                     }
 
-                    //let's update the previous extra space
+                    //extra is the number of pixels to add to the previous toolbar
                     int extra = newPos - current.pos;
 
-                    if (qAbs(previous.extraSpace + extra) < QApplication::startDragDistance()) {
-                        //we stick to the default space
-                        extra = 0;
+                    //we check if the previous is near its size hint
+                    //in which case we try to stick to it
+                    const int diff = pick(o, previous.sizeHint()) - (previous.size + extra);
+                    if (qAbs(diff) < QApplication::startDragDistance()) {
+                        //we stick to the default place and size
+                        extra += diff;
                     }
 
                     //update for the current item
-                    current.extraSpace -= extra;
-                    //this ensures the toolbars to be pushed to the right when necessary
-                    current.extraSpace = qMax(pick(o,current.minimumSize())- pick(o,current.sizeHint()), current.extraSpace);
- 
-                    if (extra >= 0) {
-                        previous.extraSpace += extra;
+                    current.extendSize(line.o, -extra);
 
+                    if (extra >= 0) {
+                        previous.extendSize(line.o, extra);
                     } else {
                         //we need to push the toolbars on the left starting with previous
                         extra = -extra; // we just need to know the number of pixels
@@ -455,13 +458,13 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
                         for(int l = previousIndex; l >=0; --l) {
                             QToolBarAreaLayoutItem &item = line.toolBarItems[l];
                             if (!item.skip()) {
-                                const int minExtraSpace = pick(o, item.minimumSize()) - pick(o, item.sizeHint());
-                                const int margin =  item.extraSpace - minExtraSpace;
+                                const int minPreferredSize = pick(o, item.minimumSize());
+                                const int margin =  item.size - minPreferredSize;
                                 if (margin < extra) {
-                                    item.extraSpace = minExtraSpace;
+                                    item.resize(line.o, minPreferredSize);
                                     extra -= margin;
                                 } else {
-                                    item.extraSpace -= extra;
+                                    item.extendSize(line.o, -extra);
                                     extra = 0;
                                 }
                             }
@@ -536,13 +539,22 @@ bool QToolBarAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *item)
     gap_item.gap = true;
     gap_item.widgetItem = item;
 
-    //update the previous item's extra space
+    //update the previous item's preferred size
     for(int p = k - 1 ; p >= 0; --p) {
         QToolBarAreaLayoutItem &previous = line.toolBarItems[p];
         if (!previous.skip()) {
             //we found the previous one
-            gap_item.extraSpace = qMax(0, previous.extraSpace - pick(o, gap_item.sizeHint()));
-            previous.extraSpace = qMin(previous.extraSpace, 0);
+            int previousSizeHint = pick(line.o, previous.sizeHint());
+            int previousExtraSpace = previous.size - previousSizeHint;
+
+            if (previousExtraSpace > 0) {
+                //in this case we reset the space
+                previous.preferredSize = -1;
+                previous.size = previousSizeHint;
+
+                gap_item.resize(o, previousExtraSpace);
+            }
+
             break;
         }
     }
@@ -1132,15 +1144,22 @@ QLayoutItem *QToolBarAreaLayout::unplug(QList<int> path, QToolBarAreaLayout *oth
     //update the leading space here
     QToolBarAreaLayoutInfo &info = docks[path.at(0)];
     QToolBarAreaLayoutLine &line = info.lines[path.at(1)];
-    if (item.extraSpace != 0) {
+    if (item.size != pick(line.o, item.realSizeHint())) {
+        //the item doesn't have its default size
+        //so we'll give this to the next item
         int newExtraSpace = 0;
+        //let's iterate over the siblings of the current item that pare placed before it
+        //we need to find just the one before
         for (int i = path.at(2) - 1; i >= 0; --i) {
             QToolBarAreaLayoutItem &previous = line.toolBarItems[i];
             if (!previous.skip()) {
+                //we need to check if it has a previous element and a next one
+                //the previous will get its size changed
                 for (int j = path.at(2) + 1; j < line.toolBarItems.count(); ++j) {
                     const QToolBarAreaLayoutItem &next = line.toolBarItems.at(j);
                     if (!next.skip()) {
-                        newExtraSpace = previous.extraSpace = next.pos - previous.pos - pick(line.o, previous.sizeHint());
+                        newExtraSpace = next.pos - previous.pos - pick(line.o, previous.sizeHint());
+                        previous.resize(line.o, next.pos - previous.pos);
                     }
                     break;
                 }
@@ -1154,14 +1173,13 @@ QLayoutItem *QToolBarAreaLayout::unplug(QList<int> path, QToolBarAreaLayout *oth
             for (int i = path.at(2) - 1; i >= 0; --i) {
                 QToolBarAreaLayoutItem &previous = line.toolBarItems[i];
                 if (!previous.skip()) {
-                    previous.extraSpace = newExtraSpace;
+                    previous.resize(line.o, pick(line.o, previous.sizeHint()) + newExtraSpace);
                     break;
                 }
             }
 
         }
     }
-
 
     Q_ASSERT(!item.gap);
     item.gap = true;
@@ -1253,8 +1271,8 @@ void QToolBarAreaLayout::saveState(QDataStream &stream) const
                 }
                 stream << shownOrientation;
                 stream << item.pos;
-                //if extraSpace is 0 the item has its "normal" size, so no need to store the size (we store -1)
-                stream << (item.extraSpace == 0 ? -1 : (pick(line.o, item.realSizeHint()) + item.extraSpace));
+                //we store the preferred size. If the use rdidn't resize the toolbars it will be -1
+                stream << item.preferredSize;
 
                 uint geom0, geom1;
                 packRect(&geom0, &geom1, widget->geometry(), widget->isWindow());
@@ -1339,10 +1357,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
                 toolBar->setVisible(shown & 1);
                 toolBar->d_func()->setWindowState(floating, true, rect);
 
-                //if it is -1, it means we should use the default size
-                item.extraSpace = (item.size == -1) ? 0 : item.size - pick(line.o, item.realSizeHint());
-
-
+                item.preferredSize = item.size;
                 line.toolBarItems.append(item);
             }
         }

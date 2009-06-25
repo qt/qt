@@ -41,7 +41,10 @@ for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     } else:isEqual(PROJECT, docs) {
        contains(QT_BUILD_PARTS, tools):include(doc/doc.pri)
     } else:isEqual(PROJECT, translations) {
-       contains(QT_BUILD_PARTS, tools):include(translations/translations.pri)
+       contains(QT_BUILD_PARTS, tools) {
+          include(translations/translations.pri)  # ts targets
+          SUBDIRS += translations                 # qm build step
+       }
     } else:isEqual(PROJECT, qmake) {
 #      SUBDIRS += qmake
     } else {
@@ -65,6 +68,7 @@ unix:!symbian {
  	 		(cd config.tests/unix/mysql_r && $(MAKE) distclean); \
 			(cd config.tests/unix/nis && $(MAKE) distclean); \
 			(cd config.tests/unix/nix && $(MAKE) distclean); \
+			(cd config.tests/unix/iodbc && $(MAKE) distclean); \
 			(cd config.tests/unix/odbc && $(MAKE) distclean); \
 			(cd config.tests/unix/oci && $(MAKE) distclean); \
 			(cd config.tests/unix/tds && $(MAKE) distclean); \

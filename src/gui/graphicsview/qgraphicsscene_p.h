@@ -57,6 +57,7 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicsview.h"
 #include "qgraphicsscene_bsp_p.h"
 #include "qgraphicsitem_p.h"
 
@@ -68,6 +69,9 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qstyle.h>
+#include <QtGui/qstyleoption.h>
+
+static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
 QT_BEGIN_NAMESPACE
 
@@ -104,28 +108,30 @@ public:
     QList<QRectF> updatedRects;
     bool updateAll;
     bool calledEmitUpdated;
+    bool processDirtyItemsEmitted;
 
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
     QList<QGraphicsItem *> unindexedItems;
     QList<QGraphicsItem *> indexedItems;
-    QList<QGraphicsItem *> dirtyItems;
     QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
+    QList<QGraphicsItem *> topLevelItems;
+    bool needSortTopLevelItems;
     QMap<QGraphicsItem *, QPointF> movingItemsInitialPositions;
+    void registerTopLevelItem(QGraphicsItem *item);
+    void unregisterTopLevelItem(QGraphicsItem *item);
     void _q_updateLater();
     void _q_polishItems();
 
-    void _q_resetDirtyItems();
-    void resetDirtyItemsLater();
-    bool dirtyItemResetPending;
+    void _q_processDirtyItems();
 
     QList<int> freeItemIndexes;
     bool regenerateIndex;
 
     bool purgePending;
-    void _q_removeItemLater(QGraphicsItem *item);
+    void removeItemHelper(QGraphicsItem *item);
     QSet<QGraphicsItem *> removedItems;
     void purgeRemovedItems();
 
@@ -134,7 +140,7 @@ public:
 
     int indexTimerId;
     bool restartIndexTimer;
-    void startIndexTimer();
+    void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
 
     bool stickyFocus;
     bool hasFocus;
@@ -165,6 +171,9 @@ public:
     Qt::DropAction lastDropAction;
     QList<QGraphicsItem *> cachedItemsUnderMouse;
     QList<QGraphicsItem *> hoverItems;
+    bool allItemsIgnoreHoverEvents;
+    bool allItemsUseDefaultCursor;
+    void enableMouseTrackingOnViews();
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownPos;
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownScenePos;
     QMap<Qt::MouseButton, QPoint> mouseGrabberButtonDownScreenPos;
@@ -196,6 +205,10 @@ public:
     void sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
+
+    void recursive_items_helper(QGraphicsItem *item, QRectF rect, QList<QGraphicsItem *> *items,
+                                const QTransform &parentTransform, const QTransform &viewTransform,
+                                Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
 
     QList<QGraphicsItem *> items_helper(const QPointF &pos) const;
     QList<QGraphicsItem *> items_helper(const QRectF &rect,
@@ -247,6 +260,26 @@ public:
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
     
+    void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
+                              QRegion *exposedRegion, QWidget *widget,
+                              QList<QGraphicsItem *> *topLevelItems = 0, qreal parentOpacity = qreal(1.0));
+    void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
+                   bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
+                   bool removingItemFromScene = false);
+    void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false);
+
+    inline void resetDirtyItem(QGraphicsItem *item)
+    {
+        Q_ASSERT(item);
+        item->d_ptr->dirty = 0;
+        item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
+        item->d_ptr->geometryChanged = 0;
+        item->d_ptr->dirtyChildren = 0;
+        item->d_ptr->needsRepaint = QRectF();
+        item->d_ptr->allChildrenDirty = 0;
+        item->d_ptr->fullUpdatePending = 0;
+    }
+
     QStyle *style;
     QFont font;
     void setFont_helper(const QFont &font);
@@ -257,9 +290,7 @@ public:
     void resolvePalette();
     void updatePalette(const QPalette &palette);
 
-    mutable QVector<QTransform> sceneTransformCache;
-    mutable QBitArray validTransforms;
-    mutable QVector<int> freeSceneTransformSlots;
+    QStyleOptionGraphicsItem styleOptionTmp;
 };
 
 QT_END_NAMESPACE

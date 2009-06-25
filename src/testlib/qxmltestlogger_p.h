@@ -79,6 +79,9 @@ public:
     void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
 
+    static void xmlCdata(char* dest, char const* src, size_t n);
+    static void xmlQuote(char* dest, char const* src, size_t n);
+
 private:
     XmlMode xmlmode;
 };

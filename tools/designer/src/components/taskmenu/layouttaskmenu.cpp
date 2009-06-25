@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::LayoutWidgetTaskMenu
-*/
-
 #include "layouttaskmenu.h"
 #include <formlayoutmenu_p.h>
 #include <morphmenu_p.h>

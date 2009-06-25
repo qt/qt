@@ -47,7 +47,9 @@
 #include <QDir>
 #include <QList>
 #include <QLocale>
+#include <QMultiHash>
 #include <QString>
+#include <QSet>
 
 
 QT_BEGIN_NAMESPACE
@@ -85,7 +87,10 @@ public:
     QString m_sourceFileName;
     QString m_targetFileName;
     QDir m_sourceDir;
-    QDir m_targetDir; // FIXME: TS spefic
+    QDir m_targetDir; // FIXME: TS specific
+    QSet<QString> m_projectRoots;
+    QMultiHash<QString, QString> m_allCSources;
+    QStringList m_includePath;
     QStringList m_dropTags;  // tags to be dropped
     QStringList m_errors;
     bool m_verbose;
@@ -127,6 +132,7 @@ public:
     void stripNonPluralForms();
     void stripIdenticalSourceTranslations();
     void dropTranslations();
+    void dropUiLines();
     void makeFileNamesAbsolute(const QDir &originalPath);
     QSet<TranslatorMessagePtr> resolveDuplicates();
     static void reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
@@ -138,7 +144,7 @@ public:
     QString languageCode() const { return m_language; }
     QString sourceLanguageCode() const { return m_sourceLanguage; }
 
-    enum LocationsType { NoLocations, RelativeLocations, AbsoluteLocations };
+    enum LocationsType { DefaultLocations, NoLocations, RelativeLocations, AbsoluteLocations };
     void setLocationsType(LocationsType lt) { m_locationsType = lt; }
     LocationsType locationsType() const { return m_locationsType; }
 
@@ -178,7 +184,7 @@ public:
         QString description; // human-readable description
         LoadFunction loader;
         SaveFunction saver;
-        enum FileType { SourceCode, TranslationSource, TranslationBinary } fileType;
+        enum FileType { TranslationSource, TranslationBinary } fileType;
         int priority; // 0 = highest, -1 = invisible
     };
     static void registerFileFormat(const FileFormat &format);

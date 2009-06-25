@@ -135,12 +135,12 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
         symbolicTraits |= kCTFontItalicTrait;
         break;
     }
-    
+
     QCFString name;
     ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
-    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pixelSize);
-    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, 0); 
-    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, 0, symbolicTraits, symbolicTraits);
+    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pointSize);
+    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pointSize, 0);
+    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pointSize, 0, symbolicTraits, symbolicTraits);
 
     // CTFontCreateCopyWithSymbolicTraits returns NULL if we ask for a trait that does
     // not exist for the given font. (for example italic)
@@ -162,7 +162,7 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(ctfont, fontDef, this);
     fe->ref.ref();
     engines.append(fe);
-    
+
 }
 
 QCoreTextFontEngineMulti::~QCoreTextFontEngineMulti()
@@ -176,7 +176,7 @@ uint QCoreTextFontEngineMulti::fontIndexForFont(CTFontRef id) const
         if (CFEqual(engineAt(i)->ctfont, id))
             return i;
     }
-    
+
     QCoreTextFontEngineMulti *that = const_cast<QCoreTextFontEngineMulti *>(this);
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(id, fontDef, that);
     fe->ref.ref();
@@ -227,7 +227,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, NSFontAttributeName));
             const uint fontIndex = (fontIndexForFont(runFont) << 24);
             //NSLog(@"Run Font Name = %@", CTFontCopyFamilyName(runFont));
-            QVarLengthArray<CGGlyph, 512> cgglyphs(0);           
+            QVarLengthArray<CGGlyph, 512> cgglyphs(0);
             const CGGlyph *tmpGlyphs = CTRunGetGlyphsPtr(run);
             if (!tmpGlyphs) {
                 cgglyphs.resize(glyphCount);
@@ -260,7 +260,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
 
                 CFIndex k = 0;
                 CFIndex i = 0;
-                for (i = stringRange.location; 
+                for (i = stringRange.location;
                      (i < stringRange.location + stringRange.length) && (k < glyphCount); ++i) {
                     if (tmpIndices[k * rtlSign + rtlOffset] == i || i == stringRange.location) {
                         logClusters[i] = k + firstGlyphIndex;
@@ -425,28 +425,28 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
     getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
     if (glyphs.size() == 0)
         return;
-    
+
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    
+
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
-    
+
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, -1, 0, -paintDeviceHeight);
-    
+
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
-    
+
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -tanf(14 * acosf(0) / 90), 1, 0, 0));
-    
+
 // ###    cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
-    
+
     CGContextSetTextMatrix(ctx, cgMatrix);
-    
+
     CGContextSetTextDrawingMode(ctx, kCGTextFill);
-    
-    
+
+
     QVarLengthArray<CGSize> advances(glyphs.size());
     QVarLengthArray<CGGlyph> cgGlyphs(glyphs.size());
-    
+
     for (int i = 0; i < glyphs.size() - 1; ++i) {
         advances[i].width = (positions[i + 1].x - positions[i].x).toReal();
         advances[i].height = (positions[i + 1].y - positions[i].y).toReal();
@@ -455,21 +455,21 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
     advances[glyphs.size() - 1].width = 0;
     advances[glyphs.size() - 1].height = 0;
     cgGlyphs[glyphs.size() - 1] = glyphs[glyphs.size() - 1];
-    
+
     CGContextSetFont(ctx, cgFont);
     //NSLog(@"Font inDraw %@  ctfont %@", CGFontCopyFullName(cgFont), CTFontCopyFamilyName(ctfont));
-    
+
     CGContextSetTextPosition(ctx, positions[0].x.toReal(), positions[0].y.toReal());
-    
+
     CGContextShowGlyphsWithAdvances(ctx, cgGlyphs.data(), advances.data(), glyphs.size());
-    
+
     if (synthesisFlags & QFontEngine::SynthesizedBold) {
         CGContextSetTextPosition(ctx, positions[0].x.toReal() + 0.5 * lineThickness().toReal(),
                                  positions[0].y.toReal());
-        
+
         CGContextShowGlyphsWithAdvances(ctx, cgGlyphs.data(), advances.data(), glyphs.size());
     }
-    
+
     CGContextSetTextMatrix(ctx, oldTextMatrix);
 }
 
@@ -624,7 +624,7 @@ QFontEngine::FaceId QCoreTextFontEngine::faceId() const
 
 bool QCoreTextFontEngine::canRender(const QChar *string, int len)
 {
-    QCFType<CTFontRef> retFont = CTFontCreateForString(ctfont, 
+    QCFType<CTFontRef> retFont = CTFontCreateForString(ctfont,
                   QCFType<CFStringRef>(CFStringCreateWithCharactersNoCopy(0,
                                                               reinterpret_cast<const UniChar *>(string),
                                                                           len, kCFAllocatorNull)),
@@ -674,7 +674,7 @@ QFontEngineMacMulti::QFontEngineMacMulti(const ATSFontFamilyRef &atsFamily, cons
     } else {
         if (fontDef.weight >= QFont::Bold)
             fntStyle |= ::bold;
-        if (fontDef.style != QFont::StyleNormal) 
+        if (fontDef.style != QFont::StyleNormal)
             fntStyle |= ::italic;
 
         FMFontStyle intrinsicStyle;
@@ -957,7 +957,7 @@ bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *
         tmpItem.length = charCount;
         tmpItem.glyphs = shaperItem.glyphs.mid(glyphIdx, glyphCount);
         tmpItem.log_clusters = shaperItem.log_clusters + charIdx;
-        if (!stringToCMapInternal(tmpItem.string + tmpItem.from, tmpItem.length, 
+        if (!stringToCMapInternal(tmpItem.string + tmpItem.from, tmpItem.length,
                                   &tmpItem.glyphs, &glyphCount, flags,
                                   &tmpItem)) {
             *nglyphs = glyphIdx + glyphCount;
@@ -1223,12 +1223,12 @@ QFontEngineMac::QFontEngineMac(ATSUStyle baseStyle, ATSUFontID fontID, const QFo
 	transform = multiEngine->transform;
     else
 	transform = CGAffineTransformIdentity;
-    
+
     ATSUTextMeasurement metric;
 
     ATSUGetAttribute(style, kATSUAscentTag, sizeof(metric), &metric, 0);
     m_ascent = FixRound(metric);
-   
+
     ATSUGetAttribute(style, kATSUDescentTag, sizeof(metric), &metric, 0);
     m_descent = FixRound(metric);
 
@@ -1424,11 +1424,16 @@ void QFontEngineMac::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, in
     addGlyphsToPathHelper(style, glyphs, positions, numGlyphs, path);
 }
 
-QImage QFontEngineMac::alphaMapForGlyph(glyph_t glyph)
+
+/*!
+  Helper function for alphaMapForGlyph and alphaRGBMapForGlyph. The two are identical, except for
+  the subpixel antialiasing...
+*/
+QImage QFontEngineMac::imageForGlyph(glyph_t glyph, int margin, bool colorful)
 {
     const glyph_metrics_t br = boundingBox(glyph);
     QImage im(qRound(br.width)+2, qRound(br.height)+4, QImage::Format_RGB32);
-    im.fill(0);
+    im.fill(0xff000000);
 
     CGColorSpaceRef colorspace = QCoreGraphicsPaintEngine::macGenericColorSpace();
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
@@ -1446,7 +1451,7 @@ QImage QFontEngineMac::alphaMapForGlyph(glyph_t glyph)
     CGContextSetFontSize(ctx, fontDef.pixelSize);
     CGContextSetShouldAntialias(ctx, fontDef.pointSize > qt_antialiasing_threshold && !(fontDef.styleStrategy & QFont::NoAntialias));
     // turn off sub-pixel hinting - no support for that in OpenGL
-    CGContextSetShouldSmoothFonts(ctx, false);
+    CGContextSetShouldSmoothFonts(ctx, colorful);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
@@ -1478,6 +1483,13 @@ QImage QFontEngineMac::alphaMapForGlyph(glyph_t glyph)
 
     CGContextRelease(ctx);
 
+    return im;
+}
+
+QImage QFontEngineMac::alphaMapForGlyph(glyph_t glyph)
+{
+    QImage im = imageForGlyph(glyph, 2, false);
+
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
     for (int i=0; i<256; ++i)
@@ -1496,6 +1508,32 @@ QImage QFontEngineMac::alphaMapForGlyph(glyph_t glyph)
 
     return indexed;
 }
+
+QImage QFontEngineMac::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &t)
+{
+    QImage im = imageForGlyph(glyph, margin, true);
+
+    if (t.type() >= QTransform::TxScale) {
+        im = im.transformed(t);
+    }
+
+    extern uchar qt_pow_rgb_gamma[256];
+
+    // gamma correct the pixels back to linear color space...
+    for (int y=0; y<im.height(); ++y) {
+        uint *pixels = (uint *) im.scanLine(y);
+        for (int x=0; x<im.width(); ++x) {
+            uint p = pixels[x];
+            uint r = qt_pow_rgb_gamma[qRed(p)];
+            uint g = qt_pow_rgb_gamma[qGreen(p)];
+            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
+        }
+    }
+
+    return im;
+}
+
 
 bool QFontEngineMac::canRender(const QChar *string, int len)
 {
@@ -1650,7 +1688,7 @@ QFontEngine::Properties QFontEngineMac::properties() const
     if (ATSFontGetTable(atsFont, MAKE_TAG('p', 'o', 's', 't'), 10, 2, &lw, 0) == noErr)
        lw = qFromBigEndian<quint16>(lw);
     props.lineWidth = lw;
-    
+
     // CTFontCopyPostScriptName
     QCFString psName;
     if (ATSFontGetPostScriptName(FMGetATSFontRefFromFont(fontID), kATSOptionFlagsDefault, &psName) == noErr)
@@ -1665,7 +1703,7 @@ void QFontEngineMac::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_m
     ATSUCreateAndCopyStyle(style, &unscaledStyle);
 
     int emSquare = properties().emSquare.toInt();
-    
+
     const int maxAttributeCount = 4;
     ATSUAttributeTag tags[maxAttributeCount + 1];
     ByteCount sizes[maxAttributeCount + 1];
@@ -1677,7 +1715,7 @@ void QFontEngineMac::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_m
     sizes[attributeCount] = sizeof(size);
     values[attributeCount] = &size;
     ++attributeCount;
-    
+
     Q_ASSERT(attributeCount < maxAttributeCount + 1);
     OSStatus err = ATSUSetAttributes(unscaledStyle, attributeCount, tags, sizes, values);
     Q_ASSERT(err == noErr);

@@ -241,14 +241,6 @@ static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *pro
     return ret;
 }
 
-static QScriptValue qscript_toArray(QScriptEngine *eng, const QStringList &elts)
-{
-    QScriptValue a = eng->newArray();
-    for (int i = 0; i < elts.count(); ++i)
-        a.setProperty(i, QScriptValue(eng, elts.at(i)));
-    return a;
-}
-
 QT_END_NAMESPACE
 
 #endif
@@ -2556,7 +2548,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         if(ok) { // do integer compare
             int lhs_int = lhs.toInt(&ok);
             if(ok) {
-                if(func == "greaterThan")
+                if(func_t == T_GREATERTHAN)
                     return lhs_int > rhs_int;
                 return lhs_int < rhs_int;
             }

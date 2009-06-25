@@ -69,6 +69,18 @@
 */
 
 /*!
+    \group animation
+    \ingroup groups
+
+    \title Animation Framework
+    \brief Classes for animations, states and transitions.
+
+    These classes provide a framework for creating both simple and complex
+    animations. \l{The Animation Framework} also provides states and animated
+    transitions, making it easy to create animated stateful forms.
+*/
+
+/*!
     \group abstractwidgets
     \title Abstract Widget Classes
     \ingroup groups
@@ -596,4 +608,15 @@
 
     These classes are relevant to developers who are working with Qt Script's
     debugging features.
+*/
+
+/*!
+    \group statemachine
+    \ingroup groups
+
+    \title State Machine Classes
+    \brief Classes for constructing and executing state graphs.
+
+    These classes are provided by \l{The State Machine Framework} for creating
+    event-driven state machines.
 */

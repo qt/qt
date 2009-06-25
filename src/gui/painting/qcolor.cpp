@@ -1387,7 +1387,7 @@ QColor QColor::toHsv() const
     const qreal min = Q_MIN_3(r, g, b);
     const qreal delta = max - min;
     color.ct.ahsv.value = qRound(max * USHRT_MAX);
-    if (qFuzzyCompare(delta + 1, 1)) {
+    if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
         color.ct.ahsv.hue = USHRT_MAX;
         color.ct.ahsv.saturation = 0;
@@ -1441,7 +1441,7 @@ QColor QColor::toCmyk() const
     // cmy -> cmyk
     const qreal k = qMin(c, qMin(m, y));
 
-    if (!qFuzzyCompare(k,1)) {
+    if (!qFuzzyIsNull(k - 1)) {
         c = (c - k) / (1.0 - k);
         m = (m - k) / (1.0 - k);
         y = (y - k) / (1.0 - k);
@@ -2022,12 +2022,12 @@ QDebug operator<<(QDebug dbg, const QColor &c)
     if (!c.isValid())
         dbg.nospace() << "QColor(Invalid)";
     else if (c.spec() == QColor::Rgb)
-        dbg.nospace() << "QColor(ARGB " << c.alphaF() << ", " << c.redF() << ", " << c.greenF() << ", " << c.blueF() << ")";
+        dbg.nospace() << "QColor(ARGB " << c.alphaF() << ", " << c.redF() << ", " << c.greenF() << ", " << c.blueF() << ')';
     else if (c.spec() == QColor::Hsv)
-        dbg.nospace() << "QColor(AHSV " << c.alphaF() << ", " << c.hueF() << ", " << c.saturationF() << ", " << c.valueF() << ")";
+        dbg.nospace() << "QColor(AHSV " << c.alphaF() << ", " << c.hueF() << ", " << c.saturationF() << ", " << c.valueF() << ')';
     else if (c.spec() == QColor::Cmyk)
         dbg.nospace() << "QColor(ACMYK " << c.alphaF() << ", " << c.cyanF() << ", " << c.magentaF() << ", " << c.yellowF() << ", "
-                      << c.blackF()<< ")";
+                      << c.blackF()<< ')';
 
     return dbg.space();
 #else
@@ -2116,9 +2116,7 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
 
     return stream;
 }
-#endif
-
-
+#endif // QT_NO_DATASTREAM
 
 
 /*****************************************************************************

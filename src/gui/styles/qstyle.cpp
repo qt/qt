@@ -325,8 +325,9 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 QStyle::QStyle()
     : QObject(*new QStylePrivate)
 {
+    Q_D(QStyle);
+    d->proxyStyle = this;
 }
-
 
 /*!
     \internal
@@ -336,6 +337,8 @@ QStyle::QStyle()
 QStyle::QStyle(QStylePrivate &dd)
     : QObject(dd)
 {
+  Q_D(QStyle);
+  d->proxyStyle = this;
 }
 
 /*!
@@ -1048,6 +1051,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_TabBarTabRightButton Area for a widget on the right side of a tab in a tab bar.
     \value SE_TabBarTabText Area for the text on a tab in a tab bar.
 
+    \value SE_ToolBarHandle Area for the handle of a tool bar.
+
     \sa subElementRect()
 */
 
@@ -1330,7 +1335,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_LayoutVerticalSpacing  Default \l{QLayout::spacing}{vertical spacing} for a QLayout.
 
     \value PM_MaximumDragDistance The maximum allowed distance between
-    the mouse and a slider when dragging. Exceeding the specified
+    the mouse and a scrollbar when dragging. Exceeding the specified
     distance will cause the slider to jump back to the original
     position; a value of -1 disables this behavior.
 
@@ -2437,9 +2442,38 @@ QDebug operator<<(QDebug debug, QStyle::State state)
 
     qSort(states);
     debug << states.join(QLatin1String(" | "));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif
+
+/*!
+    \since 4.6
+
+    \fn const QStyle * proxy() const
+
+    This function returns the current proxy for this style.
+    By default most styles will return themselves. However
+    when a proxy style is in use, it will allow the style to
+    call back into its proxy.
+
+    \sa setProxyStyle
+*/
+const QStyle * QStyle::proxy() const
+{
+    Q_D(const QStyle);
+    return d->proxyStyle;
+}
+
+/* \internal
+
+    This function sets the base style that style calls will be
+    redirected to. Note that ownership is not transferred.
+*/
+void QStyle::setProxy(QStyle *style)
+{
+    Q_D(QStyle);
+    d->proxyStyle = style;
+}
 
 QT_END_NAMESPACE

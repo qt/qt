@@ -79,11 +79,8 @@ public:
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
     virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
 
-    virtual void upstreamReadyRead();
     virtual void downstreamReadyWrite();
     virtual void copyFinished(QIODevice *);
 #ifndef QT_NO_OPENSSL
@@ -95,6 +92,9 @@ public:
     QNetworkCacheMetaData fetchCacheMetaData(const QNetworkCacheMetaData &metaData) const;
 
     qint64 deviceReadData(char *buffer, qint64 maxlen);
+
+    // we return true since HTTP needs to send PUT/POST data again after having authenticated
+    bool needsResetableUploadData() {return true;};
 
 private slots:
     void replyReadyRead();
@@ -108,7 +108,8 @@ private:
     QHttpNetworkReply *httpReply;
     QPointer<QNetworkAccessHttpBackendCache> http;
     QByteArray cacheKey;
-    QNetworkAccessHttpBackendIODevice *uploadDevice;
+    QNetworkAccessBackendUploadIODevice *uploadDevice;
+
 #ifndef QT_NO_OPENSSL
     QSslConfiguration *pendingSslConfiguration;
     bool pendingIgnoreSslErrors;
@@ -122,8 +123,6 @@ private:
     void postRequest();
     void readFromHttp();
     void checkForRedirect(const int statusCode);
-
-    friend class QNetworkAccessHttpBackendIODevice;
 };
 
 class QNetworkAccessHttpBackendFactory : public QNetworkAccessBackendFactory

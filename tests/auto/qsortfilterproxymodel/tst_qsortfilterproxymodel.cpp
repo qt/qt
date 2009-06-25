@@ -134,6 +134,7 @@ private slots:
     void task250023_fetchMore();
     void task251296_hiddenChildren();
     void task252507_mapFromToSource();
+    void task255652_removeRowsRecursive();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -390,7 +391,7 @@ void tst_QSortFilterProxyModel::sort()
         QModelIndex index = m_proxy->index(row, 0, QModelIndex());
         QCOMPARE(m_proxy->data(index, Qt::DisplayRole).toString(), initial.at(row));
     }
-    
+
 }
 
 void tst_QSortFilterProxyModel::sortHierarchy_data()
@@ -411,7 +412,7 @@ void tst_QSortFilterProxyModel::sortHierarchy_data()
         << static_cast<int>(Qt::AscendingOrder)
         << (QStringList() << "a" << "<" << "b" << "<" << "c" << ">" << ">")
         << (QStringList() << "a" << "<" << "b" << "<" << "c" << ">" << ">");
-    
+
 #if 1
     QTest::newRow("hierarchical ascending")
         << static_cast<int>(Qt::AscendingOrder)
@@ -571,7 +572,7 @@ void tst_QSortFilterProxyModel::insertRows()
         QModelIndex index = m_proxy->index(row, 0, QModelIndex());
         QCOMPARE(m_proxy->data(index, Qt::DisplayRole).toString(), initial.at(row));
     }
-    
+
     // insert the row
     m_proxy->insertRows(position, insert.count(), QModelIndex());
     QCOMPARE(m_model->rowCount(QModelIndex()), expected.count());
@@ -615,7 +616,7 @@ void tst_QSortFilterProxyModel::prependRow()
     QStandardItem sub2("sub2");
     sub2.appendRow(new QStandardItem("sub3"));
     item.insertRow(0, &sub2);
-    
+
     QModelIndex index_sub2 = proxy.mapFromSource(model.indexFromItem(&sub2));
 
     QCOMPARE(sub2.rowCount(), proxy.rowCount(index_sub2));
@@ -626,7 +627,7 @@ void tst_QSortFilterProxyModel::prependRow()
 /*
 void tst_QSortFilterProxyModel::insertColumns_data()
 {
-    
+
 }
 
 void tst_QSortFilterProxyModel::insertColumns()
@@ -923,7 +924,7 @@ void tst_QSortFilterProxyModel::removeRows()
     // prepare model
     foreach (QString s, initial)
         model.appendRow(new QStandardItem(s));
-    
+
     // remove the rows
     QCOMPARE(proxy.removeRows(position, count, QModelIndex()), success);
     QCOMPARE(model.rowCount(QModelIndex()), expectedSource.count());
@@ -1164,10 +1165,10 @@ void tst_QSortFilterProxyModel::removeColumns()
     proxy.setSourceModel(&model);
     if (!filter.isEmpty())
         proxy.setFilterRegExp(QRegExp(filter));
-    
+
     // prepare model
     model.setHorizontalHeaderLabels(initial);
-    
+
     // remove the columns
     QCOMPARE(proxy.removeColumns(position, count, QModelIndex()), success);
     QCOMPARE(model.columnCount(QModelIndex()), expectedSource.count());
@@ -1266,7 +1267,7 @@ void tst_QSortFilterProxyModel::filter_data()
                            << "golf"
                            << "quebec"
                            << "foxtrot"
-                           << "india" 
+                           << "india"
                            << "romeo"
                            << "november"
                            << "oskar"
@@ -1274,9 +1275,9 @@ void tst_QSortFilterProxyModel::filter_data()
                            << "kilo"
                            << "whiskey"
                            << "mike"
-                           << "papa" 
+                           << "papa"
                            << "sierra"
-                           << "xray" 
+                           << "xray"
                            << "viktor")
                        << (QStringList()
                            << "delta"
@@ -1334,7 +1335,7 @@ void tst_QSortFilterProxyModel::filterHierarchy_data()
             << "foo" << "boo" << "baz" << "moo" << "laa" << "haa")
         << (QStringList()
             << "foo" << "boo" << "moo");
-    
+
     QTest::newRow("simple hierarchy") << "b.*z"
         << (QStringList() << "baz" << "<" << "boz" << "<" << "moo" << ">" << ">")
         << (QStringList() << "baz" << "<" << "boz" << ">");
@@ -1671,7 +1672,7 @@ void tst_QSortFilterProxyModel::removeSourceRows()
     QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
     QSignalSpy aboutToRemoveSpy(&proxy, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)));
     QSignalSpy aboutToInsertSpy(&proxy, SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)));
-    
+
     model.removeRows(start, count, QModelIndex());
 
     QCOMPARE(aboutToRemoveSpy.count(), expectedRemovedProxyIntervals.count());
@@ -1827,7 +1828,7 @@ void tst_QSortFilterProxyModel::changeFilter()
     QFETCH(IntPairList, finalRemoveIntervals);
     QFETCH(IntPairList, insertIntervals);
     QFETCH(QStringList, finalProxyItems);
-    
+
     QStandardItemModel model;
     QSortFilterProxyModel proxy;
 
@@ -1880,7 +1881,7 @@ void tst_QSortFilterProxyModel::changeFilter()
 
 #ifdef Q_OS_IRIX
     QEXPECT_FAIL("filter (2)", "Not reliable on IRIX", Abort);
-#endif    
+#endif
     QCOMPARE(finalInsertSpy.count(), insertIntervals.count());
     for (int i = 0; i < finalInsertSpy.count(); ++i) {
         QList<QVariant> args = finalInsertSpy.at(i);
@@ -2068,7 +2069,7 @@ void tst_QSortFilterProxyModel::sortFilterRole()
         model.setData(index, sourceItems.at(i).first, Qt::DisplayRole);
         model.setData(index, sourceItems.at(i).second, Qt::UserRole);
     }
-        
+
     proxy.setFilterRegExp("2");
     QCOMPARE(proxy.rowCount(), 0); // Qt::DisplayRole is default role
 
@@ -2358,7 +2359,7 @@ void tst_QSortFilterProxyModel::sourceInsertRows()
       model.insertColumns(0, 1, parent);
       model.insertRows(0, 1, parent);
     }
-   
+
     model.insertRows(0, 1, QModelIndex());
     model.insertRows(0, 1, QModelIndex());
 
@@ -2462,7 +2463,7 @@ void tst_QSortFilterProxyModel::task236755_hiddenColumns()
     QVERIFY(view.isColumnHidden(0));
 }
 
-void tst_QSortFilterProxyModel::task247867_insertRowsSort() 
+void tst_QSortFilterProxyModel::task247867_insertRowsSort()
 {
     QStandardItemModel model(2,2);
     QSortFilterProxyModel proxyModel;
@@ -2567,7 +2568,7 @@ void tst_QSortFilterProxyModel::task248868_dynamicSorting()
     QStringList initial2 = initial;
     initial2.replaceInStrings("bateau", "girafe");
     model1.setStringList(initial2); //this will cause a reset
-    
+
     QStringList expected2 = initial2;
     expected2.sort();
 
@@ -2648,7 +2649,7 @@ class QtTestModel: public QAbstractItemModel
         {
             if (!idx.isValid())
                 return QVariant();
-            
+
             if (role == Qt::DisplayRole) {
                 if (idx.row() < 0 || idx.column() < 0 || idx.column() >= cols || idx.row() >= rows) {
                     wrongIndex = true;
@@ -2727,6 +2728,16 @@ void tst_QSortFilterProxyModel::task251296_hiddenChildren()
     QCOMPARE(proxy.rowCount(indexA) , 1);
     QModelIndex indexC = proxy.index(0, 0, indexA);
     QCOMPARE(proxy.data(indexC).toString(), QString::fromLatin1("C VISIBLE"));
+
+    proxy.setFilterRegExp("C");
+    QCOMPARE(proxy.rowCount(QModelIndex()), 0);
+    itemC->setText("invisible");
+    itemA->setText("AC");
+
+    QCOMPARE(proxy.rowCount(QModelIndex()), 1);
+    indexA = proxy.index(0,0);
+    QCOMPARE(proxy.data(indexA).toString(), QString::fromLatin1("AC"));
+    QCOMPARE(proxy.rowCount(indexA) , 0);
 }
 
 void tst_QSortFilterProxyModel::task252507_mapFromToSource()
@@ -2744,6 +2755,64 @@ void tst_QSortFilterProxyModel::task252507_mapFromToSource()
     QCOMPARE(proxy.mapToSource(source.index(2, 3)), QModelIndex());
     QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapFromSource ");
     QCOMPARE(proxy.mapFromSource(proxy.index(6, 2)), QModelIndex());
+}
+
+static QStandardItem *addEntry(QStandardItem* pParent, const QString &description)
+{
+    QStandardItem* pItem = new QStandardItem(description);
+    pParent->appendRow(pItem);
+    return pItem;
+}
+
+
+void tst_QSortFilterProxyModel::task255652_removeRowsRecursive()
+{
+    QStandardItemModel pModel;
+    QStandardItem *pItem1    = new QStandardItem("root");
+    pModel.appendRow(pItem1);
+    QList<QStandardItem *> items;
+
+    QStandardItem *pItem11   = addEntry(pItem1,"Sub-heading");
+    items << pItem11;
+    QStandardItem *pItem111 = addEntry(pItem11,"A");
+    items << pItem111;
+    items << addEntry(pItem111,"A1");
+    items << addEntry(pItem111,"A2");
+    QStandardItem *pItem112 = addEntry(pItem11,"B");
+    items << pItem112;
+    items << addEntry(pItem112,"B1");
+    items << addEntry(pItem112,"B2");
+    QStandardItem *pItem1123 = addEntry(pItem112,"B3");
+    items << pItem1123;
+    items << addEntry(pItem1123,"B3-");
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&pModel);
+
+    QList<QPersistentModelIndex> sourceIndexes;
+    QList<QPersistentModelIndex> proxyIndexes;
+    foreach (QStandardItem *item, items) {
+        QModelIndex idx = item->index();
+        sourceIndexes << idx;
+        proxyIndexes << proxy.mapFromSource(idx);
+    }
+
+    foreach (const QPersistentModelIndex &pidx, sourceIndexes)
+        QVERIFY(pidx.isValid());
+    foreach (const QPersistentModelIndex &pidx, proxyIndexes)
+        QVERIFY(pidx.isValid());
+
+    QList<QStandardItem*> itemRow = pItem1->takeRow(0);
+
+    QCOMPARE(itemRow.count(), 1);
+    QCOMPARE(itemRow.first(), pItem11);
+
+    foreach (const QPersistentModelIndex &pidx, sourceIndexes)
+        QVERIFY(!pidx.isValid());
+    foreach (const QPersistentModelIndex &pidx, proxyIndexes)
+        QVERIFY(!pidx.isValid());
+
+    delete pItem11;
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

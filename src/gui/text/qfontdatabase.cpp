@@ -94,34 +94,34 @@ static int getFontWeight(const QString &weightString)
     // Test in decreasing order of commonness
     if (s == QLatin1String("medium") ||
         s == QLatin1String("normal")
-        || s.compare(qApp->translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
         return QFont::Normal;
     if (s == QLatin1String("bold")
-        || s.compare(qApp->translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
         return QFont::Bold;
     if (s == QLatin1String("demibold") || s == QLatin1String("demi bold")
-        || s.compare(qApp->translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
         return QFont::DemiBold;
     if (s == QLatin1String("black")
-        || s.compare(qApp->translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
 
     if (s.contains(QLatin1String("bold"))
-        || s.contains(qApp->translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
+        || s.contains(QApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
         if (s.contains(QLatin1String("demi"))
-            || s.compare(qApp->translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
+            || s.compare(QApplication::translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
             return (int) QFont::DemiBold;
         return (int) QFont::Bold;
     }
 
     if (s.contains(QLatin1String("light"))
-        || s.compare(qApp->translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
         return (int) QFont::Light;
 
     if (s.contains(QLatin1String("black"))
-        || s.compare(qApp->translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+        || s.compare(QApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return (int) QFont::Black;
 
     return (int) QFont::Normal;
@@ -261,10 +261,10 @@ QtFontStyle::Key::Key(const QString &styleString)
     weight = getFontWeight(styleString);
 
     if (styleString.contains(QLatin1String("Italic"))
-        || styleString.contains(qApp->translate("QFontDatabase", "Italic")))
+        || styleString.contains(QApplication::translate("QFontDatabase", "Italic")))
         style = QFont::StyleItalic;
     else if (styleString.contains(QLatin1String("Oblique"))
-             || styleString.contains(qApp->translate("QFontDatabase", "Oblique")))
+             || styleString.contains(QApplication::translate("QFontDatabase", "Oblique")))
         style = QFont::StyleOblique;
 }
 
@@ -951,7 +951,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
         fontDef->family += QString::fromLatin1(" [");
         fontDef->family += desc.foundry->name;
-        fontDef->family += QString::fromLatin1("]");
+        fontDef->family += QLatin1Char(']');
     }
 
     if (desc.style->smoothScalable)
@@ -1408,21 +1408,21 @@ static QString styleStringHelper(int weight, QFont::Style style)
 {
     QString result;
     if (weight >= QFont::Black)
-        result = qApp->translate("QFontDatabase", "Black");
+        result = QApplication::translate("QFontDatabase", "Black");
     else if (weight >= QFont::Bold)
-        result = qApp->translate("QFontDatabase", "Bold");
+        result = QApplication::translate("QFontDatabase", "Bold");
     else if (weight >= QFont::DemiBold)
-        result = qApp->translate("QFontDatabase", "Demi Bold");
+        result = QApplication::translate("QFontDatabase", "Demi Bold");
     else if (weight < QFont::Normal)
-        result = qApp->translate("QFontDatabase", "Light");
+        result = QApplication::translate("QFontDatabase", "Light");
 
     if (style == QFont::StyleItalic)
-        result += QLatin1Char(' ') + qApp->translate("QFontDatabase", "Italic");
+        result += QLatin1Char(' ') + QApplication::translate("QFontDatabase", "Italic");
     else if (style == QFont::StyleOblique)
-        result += QLatin1Char(' ') + qApp->translate("QFontDatabase", "Oblique");
+        result += QLatin1Char(' ') + QApplication::translate("QFontDatabase", "Oblique");
 
     if (result.isEmpty())
-        result = qApp->translate("QFontDatabase", "Normal");
+        result = QApplication::translate("QFontDatabase", "Normal");
 
     return result.simplified();
 }
@@ -1654,7 +1654,7 @@ QStringList QFontDatabase::families(WritingSystem writingSystem) const
                 if (!foundry.isEmpty()) {
                     str += QLatin1String(" [");
                     str += foundry;
-                    str += QLatin1String("]");
+                    str += QLatin1Char(']');
                 }
                 flist.append(str);
             }
@@ -2226,7 +2226,7 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
         Q_ASSERT_X(false, "QFontDatabase::writingSystemName", "invalid 'writingSystem' parameter");
         break;
     }
-    return qApp ? qApp->translate("QFontDatabase", name) : QString::fromLatin1(name);
+    return QApplication::translate("QFontDatabase", name);
 }
 
 

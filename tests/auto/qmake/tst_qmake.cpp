@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
+#include <QtTest/QtTest>
+
 #if !defined(QMAKE_CROSS_COMPILED)
 
 #include "testcompiler.h"
 
 #include <QObject>
 #include <QDir>
-#include <QtTest/QtTest>
 
 class tst_qmake : public QObject
 {

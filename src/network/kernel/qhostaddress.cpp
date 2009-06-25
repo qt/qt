@@ -1077,7 +1077,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QHostAddress &address)
 {
-    d.maybeSpace() << "QHostAddress(" << address.toString() << ")";
+    d.maybeSpace() << "QHostAddress(" << address.toString() << ')';
     return d.space();
 }
 #endif

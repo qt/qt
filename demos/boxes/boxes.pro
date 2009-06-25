@@ -11,17 +11,14 @@ INCLUDEPATH += .
 HEADERS += 3rdparty/fbm.h \
            glbuffers.h \
            glextensions.h \
-           glshaders.h \
            gltrianglemesh.h \
            qtbox.h \
            roundedbox.h \
            scene.h \
-           trackball.h \
-           vector.h
+           trackball.h
 SOURCES += 3rdparty/fbm.c \
            glbuffers.cpp \
            glextensions.cpp \
-           glshaders.cpp \
            main.cpp \
            qtbox.cpp \
            roundedbox.cpp \

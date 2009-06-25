@@ -362,7 +362,7 @@ public:
             translate_dashPattern(spen.dashPattern(), penWidth, &dashPattern);
 
             // SVG uses absolute offset
-            dashOffset = QString::fromLatin1("%1").arg(spen.dashOffset() * penWidth);
+            dashOffset = QString::number(spen.dashOffset() * penWidth);
 
             d_func()->attributes.stroke = color;
             d_func()->attributes.strokeOpacity = colorOpacity;
@@ -403,8 +403,8 @@ public:
         }
         switch (spen.joinStyle()) {
         case Qt::MiterJoin:
-            stream() << "stroke-linejoin=\"miter\" ";
-            stream() << "stroke-miterlimit=\""<<spen.miterLimit()<<"\" ";
+            stream() << "stroke-linejoin=\"miter\" "
+                        "stroke-miterlimit=\""<<spen.miterLimit()<<"\" ";
             break;
         case Qt::BevelJoin:
             stream() << "stroke-linejoin=\"bevel\" ";
@@ -413,8 +413,8 @@ public:
             stream() << "stroke-linejoin=\"round\" ";
             break;
         case Qt::SvgMiterJoin:
-            stream() << "stroke-linejoin=\"miter\" ";
-            stream() << "stroke-miterlimit=\""<<spen.miterLimit()<<"\" ";
+            stream() << "stroke-linejoin=\"miter\" "
+                        "stroke-miterlimit=\""<<spen.miterLimit()<<"\" ";
             break;
         default:
             qWarning("Unhandled join style");
@@ -427,8 +427,8 @@ public:
         case Qt::SolidPattern: {
             QString color, colorOpacity;
             translate_color(sbrush.color(), &color, &colorOpacity);
-            stream() << "fill=\"" << color << "\" ";
-            stream() << "fill-opacity=\""
+            stream() << "fill=\"" << color << "\" "
+                        "fill-opacity=\""
                      << colorOpacity << "\" ";
             d_func()->attributes.fill = color;
             d_func()->attributes.fillOpacity = colorOpacity;
@@ -493,9 +493,9 @@ public:
         d->attributes.font_style = d->font.italic() ? QLatin1String("italic") : QLatin1String("normal");
 
         *d->stream << "font-family=\"" << d->attributes.font_family << "\" "
-                   << "font-size=\"" << d->attributes.font_size << "\" "
-                   << "font-weight=\"" << d->attributes.font_weight << "\" "
-                   << "font-style=\"" << d->attributes.font_style << "\" "
+                      "font-size=\"" << d->attributes.font_size << "\" "
+                      "font-weight=\"" << d->attributes.font_weight << "\" "
+                      "font-style=\"" << d->attributes.font_style << "\" "
                    << endl;
     }
 };
@@ -848,13 +848,13 @@ bool QSvgPaintEngine::begin(QPaintDevice *)
     }
 
     if (d->viewBox.isValid()) {
-        *d->stream << " viewBox=\"" << d->viewBox.left() << " " << d->viewBox.top();
-        *d->stream << " " << d->viewBox.width() << " " << d->viewBox.height() << "\"" << endl;
+        *d->stream << " viewBox=\"" << d->viewBox.left() << ' ' << d->viewBox.top();
+        *d->stream << ' ' << d->viewBox.width() << ' ' << d->viewBox.height() << '\"' << endl;
     }
 
     *d->stream << " xmlns=\"http://www.w3.org/2000/svg\""
-               << " xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
-               << " version=\"1.2\" baseProfile=\"tiny\">" << endl;
+                  " xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
+                  " version=\"1.2\" baseProfile=\"tiny\">" << endl;
 
     if (!d->attributes.document_title.isEmpty()) {
         *d->stream << "<title>" << d->attributes.document_title << "</title>" << endl;
@@ -917,10 +917,10 @@ void QSvgPaintEngine::drawImage(const QRectF &r, const QImage &image,
     Q_UNUSED(sr);
     Q_UNUSED(flags);
     stream() << "<image ";
-    stream() << "x=\""<<r.x()<<"\" ";
-    stream() << "y=\""<<r.y()<<"\" ";
-    stream() << "width=\""<<r.width()<<"\" ";
-    stream() << "height=\""<<r.height()<<"\" ";
+    stream() << "x=\""<<r.x()<<"\" "
+                "y=\""<<r.y()<<"\" "
+                "width=\""<<r.width()<<"\" "
+                "height=\""<<r.height()<<"\" ";
 
     QByteArray data;
     QBuffer buffer(&data);
@@ -929,8 +929,7 @@ void QSvgPaintEngine::drawImage(const QRectF &r, const QImage &image,
     buffer.close();
     stream() << "xlink:href=\"data:image/png;base64,"
              << data.toBase64()
-             <<"\" ";
-    stream() << "/>\n";
+             <<"\" />\n";
 }
 
 void QSvgPaintEngine::updateState(const QPaintEngineState &state)
@@ -957,10 +956,10 @@ void QSvgPaintEngine::updateState(const QPaintEngineState &state)
 
     if (flags & QPaintEngine::DirtyTransform) {
         d->matrix = state.matrix();
-        *d->stream << "transform=\"matrix(" << d->matrix.m11() << ","
-                   << d->matrix.m12() << ","
-                   << d->matrix.m21() << "," << d->matrix.m22() << ","
-                   << d->matrix.dx() << "," << d->matrix.dy()
+        *d->stream << "transform=\"matrix(" << d->matrix.m11() << ','
+                   << d->matrix.m12() << ','
+                   << d->matrix.m21() << ',' << d->matrix.m22() << ','
+                   << d->matrix.dx() << ',' << d->matrix.dy()
                    << ")\""
                    << endl;
     }
@@ -970,11 +969,11 @@ void QSvgPaintEngine::updateState(const QPaintEngineState &state)
     }
 
     if (flags & QPaintEngine::DirtyOpacity) {
-        if (!qFuzzyCompare(state.opacity(), 1))
+        if (!qFuzzyIsNull(state.opacity() - 1))
             stream() << "opacity=\""<<state.opacity()<<"\" ";
     }
 
-    *d->stream << ">" << endl;
+    *d->stream << '>' << endl;
 
     d->afterFirstUpdate = true;
 }
@@ -983,10 +982,8 @@ void QSvgPaintEngine::drawPath(const QPainterPath &p)
 {
     Q_D(QSvgPaintEngine);
 
-    *d->stream << "<path ";
-
-
-    *d->stream << "fill-rule=";
+    *d->stream << "<path "
+                  "fill-rule=";
     if (p.fillRule() == Qt::OddEvenFill)
         *d->stream << "\"evenodd\" ";
     else
@@ -998,13 +995,13 @@ void QSvgPaintEngine::drawPath(const QPainterPath &p)
         const QPainterPath::Element &e = p.elementAt(i);
         switch (e.type) {
         case QPainterPath::MoveToElement:
-            *d->stream << "M" << e.x << "," << e.y;
+            *d->stream << 'M' << e.x << ',' << e.y;
             break;
         case QPainterPath::LineToElement:
-            *d->stream << "L" << e.x << "," << e.y;
+            *d->stream << 'L' << e.x << ',' << e.y;
             break;
         case QPainterPath::CurveToElement:
-            *d->stream << "C" << e.x << "," << e.y;
+            *d->stream << 'C' << e.x << ',' << e.y;
             ++i;
             while (i < p.elementCount()) {
                 const QPainterPath::Element &e = p.elementAt(i);
@@ -1012,8 +1009,8 @@ void QSvgPaintEngine::drawPath(const QPainterPath &p)
                     --i;
                     break;
                 } else
-                    *d->stream << " ";
-                *d->stream << e.x << "," << e.y;
+                    *d->stream << ' ';
+                *d->stream << e.x << ',' << e.y;
                 ++i;
             }
             break;
@@ -1021,7 +1018,7 @@ void QSvgPaintEngine::drawPath(const QPainterPath &p)
             break;
         }
         if (i != p.elementCount() - 1) {
-            *d->stream << " ";
+            *d->stream << ' ';
         }
     }
 
@@ -1043,7 +1040,7 @@ void QSvgPaintEngine::drawPolygon(const QPointF *points, int pointCount,
         stream() << "<polyline fill=\"none\" points=\"";
         for (int i = 0; i < pointCount; ++i) {
             const QPointF &pt = points[i];
-            stream() << pt.x() << "," << pt.y() << " ";
+            stream() << pt.x() << ',' << pt.y() << ' ';
         }
         stream() << "\" />" <<endl;
     } else {
@@ -1062,10 +1059,10 @@ void QSvgPaintEngine::drawTextItem(const QPointF &pt, const QTextItem &textItem)
     QString s = QString::fromRawData(ti.chars, ti.num_chars);
 
     *d->stream << "<text "
-               << "fill=\"" << d->attributes.stroke << "\" "
-               << "fill-opacity=\"" << d->attributes.strokeOpacity << "\" "
-               << "stroke=\"none\" "
-               << "x=\"" << pt.x() << "\" y=\"" << pt.y() << "\" ";
+                  "fill=\"" << d->attributes.stroke << "\" "
+                  "fill-opacity=\"" << d->attributes.strokeOpacity << "\" "
+                  "stroke=\"none\" "
+                  "x=\"" << pt.x() << "\" y=\"" << pt.y() << "\" ";
     qfontToSvg(textItem.font());
     *d->stream << " >"
                << Qt::escape(s)

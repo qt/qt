@@ -636,9 +636,21 @@ void tst_QScriptEngine::newQObject()
         QScriptValue val = ret.property("objectName");
         QVERIFY(val.isString());
     }
+    // "promote" variant object to QObject
+    {
+        QScriptValue obj = eng.newVariant(123);
+        QVERIFY(obj.isVariant());
+        QScriptValue originalProto = obj.prototype();
+        QScriptValue ret = eng.newQObject(obj, this);
+        QVERIFY(ret.isQObject());
+        QVERIFY(ret.strictlyEquals(obj));
+        QVERIFY(obj.isQObject());
+        QCOMPARE(ret.toQObject(), (QObject *)this);
+        QVERIFY(ret.prototype().strictlyEquals(originalProto));
+    }
     // replace QObject* of existing object
     {
-        QScriptValue object = eng.newQObject(this);
+        QScriptValue object = eng.newVariant(123);
         QScriptValue originalProto = object.prototype();
         QObject otherQObject;
         QScriptValue ret = eng.newQObject(object, &otherQObject);

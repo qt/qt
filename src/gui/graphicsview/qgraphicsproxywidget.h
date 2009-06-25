@@ -90,10 +90,12 @@ protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 #endif
 
+#ifndef QT_NO_DRAGANDDROP
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
     void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
     void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
     void dropEvent(QGraphicsSceneDragDropEvent *event);
+#endif
 
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);

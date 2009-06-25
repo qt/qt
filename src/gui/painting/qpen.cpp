@@ -978,7 +978,7 @@ QDebug operator<<(QDebug dbg, const QPen &p)
     dbg.nospace() << "QPen(" << p.width() << ',' << p.brush()
                   << ',' << int(p.style()) << ',' << int(p.capStyle())
                   << ',' << int(p.joinStyle()) << ',' << p.dashPattern()
-                  << "," << p.dashOffset()
+                  << ',' << p.dashOffset()
                   << ',' << p.miterLimit() << ')';
     return dbg.space();
 #else

@@ -307,8 +307,7 @@ void QInputDialogPrivate::ensureEnabledConnection(QAbstractSpinBox *spinBox)
 {
     if (spinBox) {
         QAbstractButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
-        QObject::disconnect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)));
-        QObject::connect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)));
+        QObject::connect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)), Qt::UniqueConnection);
     }
 }
 
@@ -1250,9 +1249,9 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     QInputDialog dialog(parent, flags);
     dialog.setWindowTitle(title);
     dialog.setLabelText(label);
+    dialog.setDoubleDecimals(decimals);
     dialog.setDoubleRange(min, max);
     dialog.setDoubleValue(value);
-    dialog.setDoubleDecimals(decimals);
 
     int ret = dialog.exec();
     if (ok)

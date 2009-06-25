@@ -126,6 +126,7 @@ private slots:
     void permissions();
     void setPermissions();
     void copy();
+    void copyAfterFail();
     void copyRemovesTemporaryFile() const;
     void copyShouldntOverwrite();
     void copyFallback();
@@ -227,8 +228,15 @@ void tst_QFile::cleanup()
     // for renameFallback()
     QFile::remove("file-rename-destination.txt");
 
+    // for copyAfterFail()
+    QFile::remove("file-to-be-copied.txt");
+    QFile::remove("existing-file.txt");
+    QFile::remove("copied-file-1.txt");
+    QFile::remove("copied-file-2.txt");
+
     // for renameMultiple()
     QFile::remove("file-to-be-renamed.txt");
+    QFile::remove("existing-file.txt");
     QFile::remove("file-renamed-once.txt");
     QFile::remove("file-renamed-twice.txt");
 }
@@ -902,6 +910,39 @@ void tst_QFile::copy()
     QFile::remove( "main_copy.cpp" );
 
     QFile::copy(QDir::currentPath(), QDir::currentPath() + QLatin1String("/test2"));
+}
+
+void tst_QFile::copyAfterFail()
+{
+    QFile file1("file-to-be-copied.txt");
+    QFile file2("existing-file.txt");
+
+    QVERIFY(file1.open(QIODevice::ReadWrite) && "(test-precondition)");
+    QVERIFY(file2.open(QIODevice::ReadWrite) && "(test-precondition)");
+    QVERIFY(!QFile::exists("copied-file-1.txt") && "(test-precondition)");
+    QVERIFY(!QFile::exists("copied-file-2.txt") && "(test-precondition)");
+
+    QVERIFY(!file1.copy("existing-file.txt"));
+    QCOMPARE(file1.error(), QFile::CopyError);
+
+    QVERIFY(file1.copy("copied-file-1.txt"));
+    QVERIFY(!file1.isOpen());
+    QCOMPARE(file1.error(), QFile::NoError);
+
+    QVERIFY(!file1.copy("existing-file.txt"));
+    QCOMPARE(file1.error(), QFile::CopyError);
+
+    QVERIFY(file1.copy("copied-file-2.txt"));
+    QVERIFY(!file1.isOpen());
+    QCOMPARE(file1.error(), QFile::NoError);
+
+    QVERIFY(QFile::exists("copied-file-1.txt"));
+    QVERIFY(QFile::exists("copied-file-2.txt"));
+
+    QVERIFY(QFile::remove("file-to-be-copied.txt") && "(test-cleanup)");
+    QVERIFY(QFile::remove("existing-file.txt") && "(test-cleanup)");
+    QVERIFY(QFile::remove("copied-file-1.txt") && "(test-cleanup)");
+    QVERIFY(QFile::remove("copied-file-2.txt") && "(test-cleanup)");
 }
 
 void tst_QFile::copyRemovesTemporaryFile() const
@@ -2152,24 +2193,42 @@ void tst_QFile::renameMultiple()
 {
     // create the file if it doesn't exist
     QFile file("file-to-be-renamed.txt");
+    QFile file2("existing-file.txt");
     QVERIFY(file.open(QIODevice::ReadWrite) && "(test-precondition)");
+    QVERIFY(file2.open(QIODevice::ReadWrite) && "(test-precondition)");
 
     // any stale files from previous test failures?
     QFile::remove("file-renamed-once.txt");
     QFile::remove("file-renamed-twice.txt");
 
     // begin testing
+    QVERIFY(QFile::exists("existing-file.txt"));
+    QVERIFY(!file.rename("existing-file.txt"));
+    QCOMPARE(file.error(), QFile::RenameError);
+    QCOMPARE(file.fileName(), QString("file-to-be-renamed.txt"));
+
     QVERIFY(file.rename("file-renamed-once.txt"));
+    QVERIFY(!file.isOpen());
     QCOMPARE(file.fileName(), QString("file-renamed-once.txt"));
+
+    QVERIFY(QFile::exists("existing-file.txt"));
+    QVERIFY(!file.rename("existing-file.txt"));
+    QCOMPARE(file.error(), QFile::RenameError);
+    QCOMPARE(file.fileName(), QString("file-renamed-once.txt"));
+
     QVERIFY(file.rename("file-renamed-twice.txt"));
+    QVERIFY(!file.isOpen());
     QCOMPARE(file.fileName(), QString("file-renamed-twice.txt"));
 
+    QVERIFY(QFile::exists("existing-file.txt"));
     QVERIFY(!QFile::exists("file-to-be-renamed.txt"));
     QVERIFY(!QFile::exists("file-renamed-once.txt"));
     QVERIFY(QFile::exists("file-renamed-twice.txt"));
 
     file.remove();
+    file2.remove();
     QVERIFY(!QFile::exists("file-renamed-twice.txt"));
+    QVERIFY(!QFile::exists("existing-file.txt"));
 }
 
 void tst_QFile::appendAndRead()

@@ -71,7 +71,7 @@ static QString qdlerror()
 #else
     const char *err = strerror(errno);
 #endif
-    return err ? QLatin1String("(")+QString::fromLocal8Bit(err) + QLatin1String(")"): QString();
+    return err ? QLatin1Char('(') + QString::fromLocal8Bit(err) + QLatin1Char(')'): QString();
 }
 
 bool QLibraryPrivate::load_sys()

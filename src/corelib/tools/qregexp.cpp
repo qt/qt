@@ -4076,6 +4076,6 @@ QDataStream &operator>>(QDataStream &in, QRegExp &regExp)
     regExp = newRegExp;
     return in;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE

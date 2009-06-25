@@ -319,6 +319,14 @@
   from displaying Web pages within a Qt user interface to an implementation of
   a basic function Web browser.
 
+  \section1 \l{Qt Examples#State Machine}{State Machine}
+
+  Qt provides a powerful hierchical finite state machine through the Qt State
+  Machine classes.
+
+  These examples demonstrate the fundamental aspects of implementing
+  Statecharts with Qt.
+
   \section1 \l{Qt Examples#Qt for Embedded Linux}{Qt for Embedded Linux}
 
   \l{Qt Examples#Qt for Embedded Linux}{\inlineimage qt-embedded-examples.png

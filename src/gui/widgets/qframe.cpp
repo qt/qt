@@ -59,8 +59,7 @@ QFramePrivate::QFramePrivate()
       midLineWidth(0),
       frameWidth(0),
       leftFrameWidth(0), rightFrameWidth(0),
-      topFrameWidth(0), bottomFrameWidth(0),
-      oldFrameStyle(QFrame::NoFrame | QFrame::Plain)
+      topFrameWidth(0), bottomFrameWidth(0)
 {
 }
 
@@ -333,7 +332,6 @@ void QFrame::setFrameStyle(int style)
     d->frameStyle = (short)style;
     update();
     d->updateFrameWidth();
-    d->oldFrameStyle = (short)style;
 }
 
 /*!

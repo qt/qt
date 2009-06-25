@@ -71,7 +71,6 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
   QMenu globals
  *****************************************************************************/
-bool qt_mac_no_native_menubar = false;
 bool qt_mac_no_menubar_merge = false;
 bool qt_mac_quit_menu_item_enabled = true;
 int qt_mac_menus_open_count = 0;
@@ -143,6 +142,39 @@ static int qt_mac_CountMenuItems(OSMenuRef menu)
     return 0;
 }
 
+static quint32 constructModifierMask(quint32 accel_key)
+{
+    quint32 ret = 0;
+    const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
+#ifndef QT_MAC_USE_COCOA
+    if ((accel_key & Qt::ALT) == Qt::ALT)
+        ret |= kMenuOptionModifier;
+    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
+        ret |= kMenuShiftModifier;
+    if (dontSwap) {
+        if ((accel_key & Qt::META) != Qt::META)
+            ret |= kMenuNoCommandModifier;
+        if ((accel_key & Qt::CTRL) == Qt::CTRL)
+            ret |= kMenuControlModifier;
+    } else {
+        if ((accel_key & Qt::CTRL) != Qt::CTRL)
+            ret |= kMenuNoCommandModifier;
+        if ((accel_key & Qt::META) == Qt::META)
+            ret |= kMenuControlModifier;
+    }
+#else
+    if ((accel_key & Qt::CTRL) == Qt::CTRL)
+        ret |= (dontSwap ? NSControlKeyMask : NSCommandKeyMask);
+    if ((accel_key & Qt::META) == Qt::META)
+        ret |= (dontSwap ? NSCommandKeyMask : NSControlKeyMask);
+    if ((accel_key & Qt::ALT) == Qt::ALT)
+        ret |= NSAlternateKeyMask;
+    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
+        ret |= NSShiftKeyMask;
+#endif
+    return ret;
+}
+
 static bool actualMenuItemVisibility(const QMenuBarPrivate::QMacMenuBarPrivate *mbp,
                                      const QMacMenuAction *action)
 {
@@ -166,7 +198,7 @@ bool qt_mac_activate_action(MenuRef menu, uint command, QAction::ActionEvent act
         QMenuMergeList *list = 0;
         GetMenuItemProperty(menu, 0, kMenuCreatorQt, kMenuPropertyMergeList,
                             sizeof(list), 0, &list);
-        if (!list && qt_mac_current_menubar.qmenubar) {
+        if (!list && qt_mac_current_menubar.qmenubar && qt_mac_current_menubar.qmenubar->isNativeMenuBar()) {
             MenuRef apple_menu = qt_mac_current_menubar.qmenubar->d_func()->mac_menubar->apple_menu;
             GetMenuItemProperty(apple_menu, 0, kMenuCreatorQt, kMenuPropertyMergeList, sizeof(list), 0, &list);
             if (list)
@@ -526,15 +558,7 @@ static bool qt_mac_auto_apple_menu(MenuCommand cmd)
 
 static void qt_mac_get_accel(quint32 accel_key, quint32 *modif, quint32 *key) {
     if (modif) {
-        *modif = 0;
-        if ((accel_key & Qt::CTRL) != Qt::CTRL)
-            *modif |= kMenuNoCommandModifier;
-        if ((accel_key & Qt::META) == Qt::META)
-            *modif |= kMenuControlModifier;
-        if ((accel_key & Qt::ALT) == Qt::ALT)
-            *modif |= kMenuOptionModifier;
-        if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-            *modif |= kMenuShiftModifier;
+        *modif = constructModifierMask(accel_key);
     }
 
     accel_key &= ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL);
@@ -599,7 +623,7 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 static NSMenuItem *createNSMenuItem(const QString &title)
 {
     NSMenuItem *item = [[NSMenuItem alloc] 
-                         initWithTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(title)))
+                         initWithTitle:qt_mac_QStringToNSString(title)
                          action:@selector(qtDispatcherToQAction:) keyEquivalent:@""];
     [item setTarget:getMenuLoader()];
     return item;
@@ -728,6 +752,18 @@ QMacMenuAction::~QMacMenuAction()
 {
 #ifdef QT_MAC_USE_COCOA
     [menu release];
+    if (action) {
+        QAction::MenuRole role = action->menuRole();
+        // Check if the item is owned by Qt, and should be hidden to keep it from causing
+        // problems. Do it for everything but the quit menu item since that should always
+        // be visible.
+        if (role > QAction::ApplicationSpecificRole && role < QAction::QuitRole) {
+            [menuItem setHidden:YES];
+        } else if (role == QAction::TextHeuristicRole
+                   && menuItem != [getMenuLoader() quitMenuItem]) {
+            [menuItem setHidden:YES];
+        }
+    }
     [menuItem setTag:nil];
     [menuItem release];
 #endif
@@ -915,21 +951,22 @@ static QKeySequence qt_mac_menu_merge_accel(QMacMenuAction *action)
         ret = action->action->shortcut();
 #ifndef QT_MAC_USE_COCOA
     else if (action->command == kHICommandPreferences)
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Comma);
+        ret = QKeySequence(QKeySequence::Preferences);
     else if (action->command == kHICommandQuit)
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Q);
+        ret = QKeySequence(QKeySequence::Quit);
 #else
     else if (action->menuItem == [loader preferencesMenuItem])
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Comma);
+        ret = QKeySequence(QKeySequence::Preferences);
     else if (action->menuItem == [loader quitMenuItem])
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Q);
+        ret = QKeySequence(QKeySequence::Quit);
 #endif
     return ret;
 }
 
 void Q_GUI_EXPORT qt_mac_set_menubar_icons(bool b)
 { QApplication::instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !b); }
-void Q_GUI_EXPORT qt_mac_set_native_menubar(bool b) { qt_mac_no_native_menubar = !b; }
+void Q_GUI_EXPORT qt_mac_set_native_menubar(bool b)
+{  QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, !b); }
 void Q_GUI_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge = !b; }
 
 /*****************************************************************************
@@ -1206,58 +1243,21 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
     quint32 accel_key = (accel[0] & ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL));
-    unichar keyEquiv[1] = { 0 };
-    if (accel_key == Qt::Key_Return)
-        keyEquiv[0] = kReturnCharCode;
-    else if (accel_key == Qt::Key_Enter)
-        keyEquiv[0] = kEnterCharCode;
-    else if (accel_key == Qt::Key_Tab)
-        keyEquiv[0] = kTabCharCode;
-    else if (accel_key == Qt::Key_Backspace)
-        keyEquiv[0] = kBackspaceCharCode;
-    else if (accel_key == Qt::Key_Delete)
-        keyEquiv[0] = NSDeleteFunctionKey;
-    else if (accel_key == Qt::Key_Escape)
-        keyEquiv[0] = kEscapeCharCode;
-    else if (accel_key == Qt::Key_PageUp)
-        keyEquiv[0] = NSPageUpFunctionKey;
-    else if (accel_key == Qt::Key_PageDown)
-        keyEquiv[0] = NSPageDownFunctionKey;
-    else if (accel_key == Qt::Key_Up)
-        keyEquiv[0] = NSUpArrowFunctionKey;
-    else if (accel_key == Qt::Key_Down)
-        keyEquiv[0] = NSDownArrowFunctionKey;
-    else if (accel_key == Qt::Key_Left)
-        keyEquiv[0] = NSLeftArrowFunctionKey;
-    else if (accel_key == Qt::Key_Right)
-        keyEquiv[0] = NSRightArrowFunctionKey;
-    else if (accel_key == Qt::Key_CapsLock)
-        keyEquiv[0] = kMenuCapsLockGlyph;  // ### Cocoa has no equivalent
-    else if (accel_key >= Qt::Key_F1 && accel_key <= Qt::Key_F15)
-        keyEquiv[0] = (accel_key - Qt::Key_F1) + NSF1FunctionKey;
-    else if (accel_key == Qt::Key_Home)
-        keyEquiv[0] = NSHomeFunctionKey;
-    else if (accel_key == Qt::Key_End)
-        keyEquiv[0] = NSEndFunctionKey;
-    else
-        keyEquiv[0] = unichar(QChar(accel_key).toLower().unicode());
-    return [NSString stringWithCharacters:keyEquiv length:1];
+    extern QChar qt_macSymbolForQtKey(int key); // qkeysequence.cpp
+    QChar keyEquiv = qt_macSymbolForQtKey(accel_key);
+    if (keyEquiv.isNull()) {
+        if (accel_key >= Qt::Key_F1 && accel_key <= Qt::Key_F15)
+            keyEquiv = (accel_key - Qt::Key_F1) + NSF1FunctionKey;
+        else
+            keyEquiv = unichar(QChar(accel_key).toLower().unicode());
+    }
+    return [NSString stringWithCharacters:&keyEquiv.unicode() length:1];
 }
 
 // return the cocoa modifier mask for the QKeySequence (currently only looks at the first one).
 NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 {
-    NSUInteger ret = 0;
-    quint32 accel_key = accel[0];
-    if ((accel_key & Qt::CTRL) == Qt::CTRL)
-        ret |= NSCommandKeyMask;
-    if ((accel_key & Qt::META) == Qt::META)
-        ret |= NSControlKeyMask;
-    if ((accel_key & Qt::ALT) == Qt::ALT)
-        ret |= NSAlternateKeyMask;
-    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-        ret |= NSShiftKeyMask;
-    return ret;
+    return constructModifierMask(accel[0]);
 }
 
 void
@@ -1379,18 +1379,18 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     // Cocoa Font and title
     if (action->action->font().resolve()) {
         const QFont &actionFont = action->action->font();
-        NSFont *customMenuFont = [NSFont fontWithName:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(actionFont.family())))
+        NSFont *customMenuFont = [NSFont fontWithName:qt_mac_QStringToNSString(actionFont.family())
                                   size:actionFont.pointSize()];
         NSArray *keys = [NSArray arrayWithObjects:NSFontAttributeName, nil];
         NSArray *objects = [NSArray arrayWithObjects:customMenuFont, nil];
         NSDictionary *attributes = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
-        NSAttributedString *str = [[[NSAttributedString alloc] initWithString:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(finalString)))
+        NSAttributedString *str = [[[NSAttributedString alloc] initWithString:qt_mac_QStringToNSString(finalString)
                                  attributes:attributes] autorelease];
        [item setAttributedTitle: str];
     } else {
-        [item setTitle: reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(finalString)))];
+        [item setTitle: qt_mac_QStringToNSString(finalString)];
     }
-    [item setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(qt_mac_removeMnemonics(text))))];
+    [item setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(text))];
 
     // Cocoa Enabled
     [item setEnabled: action->action->isEnabled()];
@@ -1699,7 +1699,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
             ChangeMenuAttributes(submenu, kMenuAttrHidden, 0);
 #else
         [item setSubmenu: submenu];
-        [submenu setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(qt_mac_removeMnemonics(action->action->text()))))];
+        [submenu setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(action->action->text()))];
         syncNSMenuItemVisiblity(item, visible);
 #endif
         if (release_submenu) { //no pointers to it
@@ -1733,9 +1733,14 @@ QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
     static int checkEnv = -1;
+    // We call the isNativeMenuBar function here
+    // becasue that will make sure that local overrides
+    // are dealt with correctly.
+    bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
     if (qt_mac_no_native_menubar == false && checkEnv < 0) {
         checkEnv = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
-        qt_mac_no_native_menubar = checkEnv;
+        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, checkEnv);
+        qt_mac_no_native_menubar = !q->isNativeMenuBar();
     }
     if (!qt_mac_no_native_menubar) {
         extern void qt_event_request_menubarupdate(); //qapplication_mac.cpp
@@ -1770,7 +1775,7 @@ void QMenuBarPrivate::macDestroyMenuBar()
 OSMenuRef QMenuBarPrivate::macMenu()
 {
     Q_Q(QMenuBar);
-    if (!mac_menubar) {
+    if (!q->isNativeMenuBar() || !mac_menubar) {
         return 0;
     } else if (!mac_menubar->menu) {
         mac_menubar->menu = qt_mac_create_menu(q);
@@ -1786,7 +1791,7 @@ OSMenuRef QMenuBarPrivate::macMenu()
                 SetMenuItemHierarchicalMenu(mac_menubar->menu, index, mac_menubar->apple_menu);
                 SetMenuItemProperty(mac_menubar->apple_menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(q), &q);
 #else
-                [mac_menubar->apple_menu setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(QString(QChar(0x14)))))];
+                [mac_menubar->apple_menu setTitle:qt_mac_QStringToNSString(QString(QChar(0x14)))];
                 NSMenuItem *apple_menuItem = [[NSMenuItem alloc] init];
                 [apple_menuItem setSubmenu:mac_menubar->menu];
                 [mac_menubar->apple_menu addItem:apple_menuItem];
@@ -1829,6 +1834,9 @@ OSMenuRef QMenuBar::macMenu() { return d_func()->macMenu(); }
 */
 static bool qt_mac_is_ancestor(QWidget* possibleAncestor, QWidget *child)
 {
+    if (!possibleAncestor)
+        return false;
+
     QWidget * current = child->parentWidget();
     while (current != 0) {
         if (current == possibleAncestor)
@@ -1847,22 +1855,19 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar, QWidget *modalWidget)
 {
     if (modalWidget == 0 || menuBar == 0)
         return false;
-    const Qt::WindowModality modality = modalWidget->windowModality();
-    if (modality == Qt::ApplicationModal) {
-        return true;
-    } else if (modality == Qt::WindowModal) {
-        QWidget * parent = menuBar->parentWidget();
 
-        // Special case for the global menu bar: It's not associated
-        // with a window so don't disable it.
-        if (parent == 0)
-            return false;
-
-        // Disable menu entries in menu bars that belong to ancestors of
-        // the modal widget, leave entries in unrelated menu bars enabled.
-        return qt_mac_is_ancestor(parent, modalWidget);
+    // If there is an application modal window on
+    // screen, the entries of the menubar should be disabled:
+    QWidget *w = modalWidget;
+    while (w) {
+        if (w->isVisible() && w->windowModality() == Qt::ApplicationModal)
+            return true;
+        w = w->parentWidget();
     }
-    return false; // modality == NonModal
+
+    // INVARIANT: modalWidget is window modal. Disable menu entries
+    // if the menu bar belongs to an ancestor of modalWidget:
+    return qt_mac_is_ancestor(menuBar->parentWidget(), modalWidget);
 }
 
 static void cancelAllMenuTracking()
@@ -1891,9 +1896,6 @@ static void cancelAllMenuTracking()
 */
 bool QMenuBar::macUpdateMenuBar()
 {
-    if (qt_mac_no_native_menubar) //nothing to be done..
-        return true;
-
     cancelAllMenuTracking();
     QMenuBar *mb = 0;
     //find a menu bar
@@ -1927,7 +1929,7 @@ bool QMenuBar::macUpdateMenuBar()
         mb = fallback;
     //now set it
     bool ret = false;
-    if (mb) {
+    if (mb && mb->isNativeMenuBar()) {
 #ifdef QT_MAC_USE_COCOA
         QMacCocoaAutoReleasePool pool;
 #endif
@@ -1965,7 +1967,7 @@ bool QMenuBar::macUpdateMenuBar()
         qt_mac_current_menubar.qmenubar = mb;
         qt_mac_current_menubar.modal = QApplicationPrivate::modalState();
         ret = true;
-    } else if (qt_mac_current_menubar.qmenubar) {
+    } else if (qt_mac_current_menubar.qmenubar && qt_mac_current_menubar.qmenubar->isNativeMenuBar()) {
         const bool modal = QApplicationPrivate::modalState();
         if (modal != qt_mac_current_menubar.modal) {
             ret = true;

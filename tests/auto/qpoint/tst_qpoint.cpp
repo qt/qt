@@ -60,6 +60,8 @@ public:
 private slots:
     void getSetCheck();
     void division();
+
+    void manhattanLength();
 };
 
 tst_QPoint::tst_QPoint()
@@ -68,6 +70,24 @@ tst_QPoint::tst_QPoint()
 
 tst_QPoint::~tst_QPoint()
 {
+}
+
+
+
+void tst_QPoint::manhattanLength()
+{
+    {
+        QPoint p(10, 20);
+        QCOMPARE(p.manhattanLength(), 30);
+    }
+    {
+        QPointF p(10., 20.);
+        QCOMPARE(p.manhattanLength(), 30.);
+    }
+    {
+        QPointF p(10.1, 20.2);
+        QCOMPARE(p.manhattanLength(), 30.3);
+    }
 }
 
 // Testing get/set functions

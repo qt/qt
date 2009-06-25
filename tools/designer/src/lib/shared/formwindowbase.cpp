@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::FormWindowBase
-*/
-
 #include "formwindowbase_p.h"
 #include "connectionedit_p.h"
 #include "qdesigner_command_p.h"

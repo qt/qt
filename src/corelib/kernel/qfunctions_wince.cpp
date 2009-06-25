@@ -285,11 +285,6 @@ int qt_wince_SetErrorMode(int newValue)
     return result;
 }
 
-HRESULT qt_wince_CoInitialize(void* reserved)
-{
-    return CoInitializeEx(reserved, 0);
-}
-
 bool qt_wince__chmod(const char *file, int mode)
 {
     return _wchmod( reinterpret_cast<const wchar_t *> (QString::fromLatin1(file).utf16()), mode);

@@ -3831,19 +3831,19 @@ void QDateTimePrivate::getUTC(QDate &outDate, QTime &outTime) const
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
 QDebug operator<<(QDebug dbg, const QDate &date)
 {
-    dbg.nospace() << "QDate(" << date.toString() << ")";
+    dbg.nospace() << "QDate(" << date.toString() << ')';
     return dbg.space();
 }
 
 QDebug operator<<(QDebug dbg, const QTime &time)
 {
-    dbg.nospace() << "QTime(" << time.toString() << ")";
+    dbg.nospace() << "QTime(" << time.toString() << ')';
     return dbg.space();
 }
 
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
-    dbg.nospace() << "QDateTime(" << date.toString() << ")";
+    dbg.nospace() << "QDateTime(" << date.toString() << ')';
     return dbg.space();
 }
 #endif
@@ -4686,7 +4686,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
             if (fixup && tmpstate == Intermediate && used < sn.count) {
                 const FieldInfo fi = fieldInfo(index);
                 if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                    const QString newText = QString(QLatin1String("%1")).arg(num, sn.count, 10, QLatin1Char('0'));
+                    const QString newText = QString::fromLatin1("%1").arg(num, sn.count, 10, QLatin1Char('0'));
                     input.replace(pos, used, newText);
                     used = sn.count;
                 }

@@ -84,10 +84,6 @@ public:
     {}
 
     QWidget *focusWidget;
-
-#if defined(Q_WS_WIN) || defined(Q_WS_QWS)
-    static void updateImeStatus(QWidget *w, bool hasFocus);
-#endif
 };
 
 QT_END_NAMESPACE

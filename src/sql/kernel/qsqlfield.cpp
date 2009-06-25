@@ -523,8 +523,8 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
     if (f.typeID() >= 0)
         dbg.nospace() << ", typeID: " << f.typeID();
     if (!f.defaultValue().isNull())
-        dbg.nospace() << ", auto-value: \"" << f.defaultValue() << "\"";
-    dbg.nospace() << ")";
+        dbg.nospace() << ", auto-value: \"" << f.defaultValue() << '\"';
+    dbg.nospace() << ')';
     return dbg.space();
 #else
     qWarning("This compiler doesn't support streaming QSqlField to QDebug");

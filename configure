@@ -607,7 +607,7 @@ CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
 CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty usb sl5000 yopy vr41xx qvfb"
+CFG_KBD_AVAILABLE="tty linuxinput sl5000 yopy vr41xx qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
 CFG_MOUSE_AVAILABLE="pc bus linuxtp yopy vr41xx tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
@@ -668,7 +668,7 @@ CFG_INOTIFY=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_MAC_ARCHS=
-MAC_ARCHS_COMMANDLINE=
+MAC_CONFIG_TEST_COMMANDLINE=  # used to make the configure tests run with the correct arch's and SDK settings
 CFG_MAC_DWARF2=auto
 CFG_MAC_XARCH=auto
 CFG_MAC_CARBON=yes
@@ -716,6 +716,7 @@ QT_LFLAGS_MYSQL=
 QT_LFLAGS_MYSQL_R=
 QT_CFLAGS_SQLITE=
 QT_LFLAGS_SQLITE=
+QT_LFLAGS_ODBC="-lodbc"
 
 # flags for libdbus-1
 QT_CFLAGS_DBUS=
@@ -742,7 +743,7 @@ CFG_SQL_AVAILABLE=
 if [ -d "$relpath/src/plugins/sqldrivers" ]; then
   for a in "$relpath/src/plugins/sqldrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_SQL_AVAILABLE="${CFG_SQL_AVAILABLE} ${base_a}"
 	 eval "CFG_SQL_${base_a}=auto"
      fi
@@ -753,7 +754,7 @@ CFG_DECORATION_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/decorations" ]; then
   for a in "$relpath/src/plugins/decorations/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_DECORATION_PLUGIN_AVAILABLE="${CFG_DECORATION_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -763,7 +764,7 @@ CFG_KBD_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/kbddrivers" ]; then
   for a in "$relpath/src/plugins/kbddrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_KBD_PLUGIN_AVAILABLE="${CFG_KBD_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -773,7 +774,7 @@ CFG_MOUSE_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/mousedrivers" ]; then
   for a in "$relpath/src/plugins/mousedrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_MOUSE_PLUGIN_AVAILABLE="${CFG_MOUSE_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -783,7 +784,7 @@ CFG_GFX_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
   for a in "$relpath/src/plugins/gfxdrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_GFX_PLUGIN_AVAILABLE="${CFG_GFX_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -837,14 +838,15 @@ while [ "$#" -gt 0 ]; do
         ;;
     #Qt style options that pass an argument
     -qconfig)
-        if [ "$PLATFORM_QWS" = "yes" ]; then
-            CFG_QCONFIG="$VAL"
-            VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-            shift
-            VAL=$1
-        else
-            UNKNOWN_ARG=yes
+        if [ "$PLATFORM_QWS" != "yes" ]; then
+            echo
+            echo "WARNING: -qconfig is only tested and supported on Qt for Embedded Linux."
+            echo
         fi
+        CFG_QCONFIG="$VAL"
+        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
+        shift
+        VAL=$1
         ;;
     -prefix|-docdir|-headerdir|-plugindir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
@@ -2103,8 +2105,9 @@ fi
 
 # symlink files from src/gui/embedded neccessary to build qvfb
 if [ "$CFG_DEV" = "yes" ]; then
+    mkdir -p "$outpath/tools/qvfb"
     for f in qvfbhdr.h qlock_p.h qlock.cpp qwssignalhandler_p.h qwssignalhandler.cpp; do
-	dest="${relpath}/tools/qvfb/${f}"
+	dest="${outpath}/tools/qvfb/${f}"
 	rm -f "$dest"
 	ln -s "${relpath}/src/gui/embedded/${f}" "${dest}"
     done
@@ -2131,7 +2134,7 @@ if [ -z "$MAKE" ]; then
     MAKE=
     for mk in gmake make; do
         if "$WHICH" $mk >/dev/null 2>&1; then
-            MAKE=`$WHICH $mk`
+            MAKE=`"$WHICH" $mk`
             break
         fi
     done
@@ -2669,7 +2672,7 @@ if [ -z "$PKG_CONFIG" ]; then
     PKG_CONFIG=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%PKG_CONFIG[^_].*=%%p' | tr '\n' ' '`
 fi
 if [ -z "$PKG_CONFIG" ]; then
-    PKG_CONFIG=`$WHICH pkg-config 2>/dev/null`
+    PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
 fi
 
 # Work out if we can use pkg-config
@@ -2716,12 +2719,18 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
             # These are synonymous values
             # CFG_MAC_ARCHS requires x86 while GCC requires i386
             CFG_MAC_ARCHS="$CFG_MAC_ARCHS x86"
-            MAC_ARCHS_COMMANDLINE="$MAC_ARCHS_COMMANDLINE -arch i386"
+            MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -arch i386"
         else
             CFG_MAC_ARCHS="$CFG_MAC_ARCHS $i"
-            MAC_ARCHS_COMMANDLINE="$MAC_ARCHS_COMMANDLINE -arch $i"
+            MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -arch $i"
         fi
     done
+fi
+
+# pass on $CFG_SDK to the configure tests.
+if [ '!' -z "$CFG_SDK" ]; then
+    MAC_CONFIG_TEST_COMMANDLINE="-sdk $CFG_SDK"
+    echo "tests command line: $MAC_CONFIG_TEST_COMMANDLINE"
 fi
 
 # find the default framework value
@@ -4069,9 +4078,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         [ -f "$in_mkfile" ] || continue
 
-        echo "########################################################################" >$mkfile
-        echo "## This file was autogenerated by configure, all changes will be lost ##" >>$mkfile
-        echo "########################################################################" >>$mkfile
+        echo "########################################################################" > "$mkfile"
+        echo "## This file was autogenerated by configure, all changes will be lost ##" >> "$mkfile"
+        echo "########################################################################" >> "$mkfile"
         EXTRA_OBJS=
         EXTRA_SRCS=
         EXTRA_CFLAGS="\$(QMAKE_CFLAGS)"
@@ -4082,8 +4091,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
         fi
 
-	[ -n "$CC" ] && echo "CC = $CC" >>$mkfile
-	[ -n "$CXX" ] && echo "CXX = $CXX" >>$mkfile
+	[ -n "$CC" ] && echo "CC = $CC" >> "$mkfile"
+	[ -n "$CXX" ] && echo "CXX = $CXX" >> "$mkfile"
         if [ "$CFG_SILENT" = "yes" ]; then
             [ -z "$CC" ] && setBootstrapVariable QMAKE_CC 's,QMAKE_CC.*=,CC=\@,'
             [ -z "$CXX" ] && setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX.*=,CXX=\@,'
@@ -4119,9 +4128,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         if [ "$PLATFORM_MAC" = "yes" ]; then
             if [ "$PLATFORM" = "macx-icc" ]; then
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >>"$mkfile"
+                echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
 	    else
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.3" >>"$mkfile"
+                echo "export MACOSX_DEPLOYMENT_TARGET = 10.3" >> "$mkfile"
 	    fi
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
@@ -4165,18 +4174,20 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
+	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
         sed -e "s,@SOURCE_PATH@,$adjrelpath,g" -e "s,@BUILD_PATH@,$adjoutpath,g" \
             -e "s,@QMAKE_CFLAGS@,$EXTRA_CFLAGS,g" -e "s,@QMAKE_LFLAGS@,$EXTRA_LFLAGS,g" \
             -e "s,@QMAKE_CXXFLAGS@,$EXTRA_CXXFLAGS,g" \
             -e "s,@QT_INSTALL_BINS@,\$(INSTALL_ROOT)$QMAKE_BIN_DIR,g" \
             -e "s,@QT_INSTALL_DATA@,\$(INSTALL_ROOT)$QMAKE_DATA_DIR,g" \
             -e "s,@QMAKE_QTOBJS@,$EXTRA_OBJS,g" -e "s,@QMAKE_QTSRCS@,$EXTRA_SRCS,g" \
-	    -e "s,@QMAKESPEC@,$QMAKESPEC,g" "$in_mkfile" >>"$mkfile"
+	    -e "s,@QMAKESPEC@,$adjqmakespec,g" "$in_mkfile" >>"$mkfile"
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
-	    sed "s,^.*/\([^/]*.o\):,\1:,g" "$mkfile" >"${mkfile}.tmp"
-	    mv "${mkfile}.tmp" "${mkfile}"
+	    sed "s,^.*/\([^/]*.o\):,\1:,g" "$mkfile" >"$mkfile.tmp"
+	    sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
+	    rm "$mkfile.tmp"
         fi
     done
 
@@ -4236,7 +4247,8 @@ fi
 
 # check iWMMXt support
 if [ "$CFG_IWMMXT" = "yes" ]; then
-    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/iwmmxt "iwmmxt" $L_FLAGS $I_FLAGS $l_FLAGS "-mcpu=iwmmxt"; then
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/iwmmxt "iwmmxt" $L_FLAGS $I_FLAGS $l_FLAGS "-mcpu=iwmmxt"
+    if [ $? != "0" ]; then
         echo "The iWMMXt functionality test failed!"
 	echo " Please make sure your compiler supports iWMMXt intrinsics!"
 	exit 1
@@ -4258,7 +4270,7 @@ if [ "$CFG_ZLIB" = "no" ]; then
     ZLIB_FORCED=yes
 fi
 if [ "$CFG_ZLIB" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/zlib "zlib" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/zlib "zlib" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
        CFG_ZLIB=system
     else
        CFG_ZLIB=yes
@@ -4275,7 +4287,7 @@ if [ "$CFG_JPEG" = "auto" ]; then
 fi
 # detect jpeg
 if [ "$CFG_LIBJPEG" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libjpeg "libjpeg" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libjpeg "libjpeg" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
        CFG_LIBJPEG=system
     else
        CFG_LIBJPEG=qt
@@ -4302,7 +4314,7 @@ fi
 
 # detect tiff
 if [ "$CFG_LIBTIFF" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libtiff "libtiff" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libtiff "libtiff" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_LIBTIFF=system
     else
         CFG_LIBTIFF=qt
@@ -4319,7 +4331,7 @@ if [ "$CFG_MNG" = "auto" ]; then
 fi
 # detect mng
 if [ "$CFG_LIBMNG" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libmng "libmng" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libmng "libmng" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
        CFG_LIBMNG=system
     else
        CFG_LIBMNG=qt
@@ -4328,7 +4340,7 @@ fi
 
 # detect png
 if [ "$CFG_LIBPNG" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libpng "libpng" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libpng "libpng" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
        CFG_LIBPNG=system
     else
        CFG_LIBPNG=qt
@@ -4345,7 +4357,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         case $_SQLDR in
         mysql)
             if [ "$CFG_SQL_mysql" != "no" ]; then
-		[ -z "$CFG_MYSQL_CONFIG" ] && CFG_MYSQL_CONFIG=`$WHICH mysql_config`
+		[ -z "$CFG_MYSQL_CONFIG" ] && CFG_MYSQL_CONFIG=`"$WHICH" mysql_config`
                 if [ -x "$CFG_MYSQL_CONFIG" ]; then
                     QT_CFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --include 2>/dev/null`
                     QT_LFLAGS_MYSQL_R=`$CFG_MYSQL_CONFIG --libs_r 2>/dev/null`
@@ -4367,13 +4379,13 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
 			QT_CFLAGS_MYSQL=""
                     fi
                 else
-                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mysql_r "MySQL (thread-safe)" $QT_LFLAGS_MYSQL_R $L_FLAGS $QT_CFLAGS_MYSQL $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mysql_r "MySQL (thread-safe)" $QT_LFLAGS_MYSQL_R $L_FLAGS $QT_CFLAGS_MYSQL $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                         QMakeVar add CONFIG use_libmysqlclient_r
                         if [ "$CFG_SQL_mysql" = "auto" ]; then
                             CFG_SQL_mysql=plugin
                         fi
                         QT_LFLAGS_MYSQL="$QT_LFLAGS_MYSQL_R"
-                    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mysql "MySQL (thread-unsafe)" $QT_LFLAGS_MYSQL $L_FLAGS $QT_CFLAGS_MYSQL $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mysql "MySQL (thread-unsafe)" $QT_LFLAGS_MYSQL $L_FLAGS $QT_CFLAGS_MYSQL $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                         if [ "$CFG_SQL_mysql" = "auto" ]; then
                             CFG_SQL_mysql=plugin
                         fi
@@ -4402,7 +4414,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                 fi
                 [ -z "$QT_CFLAGS_PSQL" ] || QT_CFLAGS_PSQL="-I$QT_CFLAGS_PSQL"
                 [ -z "$QT_LFLAGS_PSQL" ] || QT_LFLAGS_PSQL="-L$QT_LFLAGS_PSQL"
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/psql "PostgreSQL" $QT_LFLAGS_PSQL $L_FLAGS $QT_CFLAGS_PSQL $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/psql "PostgreSQL" $QT_LFLAGS_PSQL $L_FLAGS $QT_CFLAGS_PSQL $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_psql" = "auto" ]; then
                         CFG_SQL_psql=plugin
                     fi
@@ -4423,26 +4435,33 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ;;
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_odbc" = "auto" ]; then
                         CFG_SQL_odbc=plugin
                     fi
                 else
-                    if [ "$CFG_SQL_odbc" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                        echo "ODBC support cannot be enabled due to functionality tests!"
-                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                        echo " If you believe this message is in error you may use the continue"
-                        echo " switch (-continue) to $0 to continue."
-                        exit 101
+                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/iodbc "iODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                        QT_LFLAGS_ODBC="-liodbc"
+                        if [ "$CFG_SQL_odbc" = "auto" ]; then
+                            CFG_SQL_odbc=plugin
+                        fi
                     else
-                        CFG_SQL_odbc=no
+                        if [ "$CFG_SQL_odbc" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                            echo "ODBC support cannot be enabled due to functionality tests!"
+                            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                            echo " If you believe this message is in error you may use the continue"
+                            echo " switch (-continue) to $0 to continue."
+                            exit 101
+                        else
+                            CFG_SQL_odbc=no
+                        fi
                     fi
                 fi
             fi
             ;;
         oci)
             if [ "$CFG_SQL_oci" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/oci "OCI" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/oci "OCI" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_oci" = "auto" ]; then
                         CFG_SQL_oci=plugin
                     fi
@@ -4461,7 +4480,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         tds)
             if [ "$CFG_SQL_tds" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tds "TDS" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tds "TDS" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_tds" = "auto" ]; then
                         CFG_SQL_tds=plugin
                     fi
@@ -4480,7 +4499,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         db2)
             if [ "$CFG_SQL_db2" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/db2 "DB2" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/db2 "DB2" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_db2" = "auto" ]; then
                         CFG_SQL_db2=plugin
                     fi
@@ -4499,7 +4518,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         ibase)
             if [ "$CFG_SQL_ibase" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ibase "InterBase" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ibase "InterBase" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_ibase" = "auto" ]; then
                         CFG_SQL_ibase=plugin
                     fi
@@ -4518,7 +4537,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         sqlite2)
             if [ "$CFG_SQL_sqlite2" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sqlite2 "SQLite2" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sqlite2 "SQLite2" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_sqlite2" = "auto" ]; then
                         CFG_SQL_sqlite2=plugin
                     fi
@@ -4543,7 +4562,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                         QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
                         QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
                     fi
-                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $L_FLAGS $QT_CFLAGS_SQLITE $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $L_FLAGS $QT_CFLAGS_SQLITE $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                         if [ "$CFG_SQL_sqlite" = "auto" ]; then
                             CFG_SQL_sqlite=plugin
                         fi
@@ -4580,7 +4599,7 @@ done
 
 # auto-detect NIS support
 if [ "$CFG_NIS" != "no" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/nis "NIS" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/nis "NIS" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_NIS=yes
     else
         if [ "$CFG_NIS" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4597,7 +4616,7 @@ fi
 
 # auto-detect CUPS support
 if [ "$CFG_CUPS" != "no" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/cups "Cups" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/cups "Cups" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_CUPS=yes
     else
         if [ "$CFG_CUPS" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4616,9 +4635,9 @@ fi
 if [ "$CFG_ICONV" != "no" ]; then
     if [ "$PLATFORM_QWS" = "yes" ]; then
 	CFG_ICONV=no
-    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=yes
-    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/gnu-libiconv" "GNU libiconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/gnu-libiconv" "GNU libiconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=gnu
     else
         if [ "$CFG_ICONV" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -4639,7 +4658,7 @@ if [ "$CFG_DBUS" != "no" ]; then
         QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
         QT_LIBS_DBUS=`$PKG_CONFIG --libs dbus-1 2>/dev/null`
     fi
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/dbus "D-Bus" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DBUS $QT_LIBS_DBUS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/dbus "D-Bus" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DBUS $QT_LIBS_DBUS $MAC_CONFIG_TEST_COMMANDLINE; then
         [ "$CFG_DBUS" = "auto" ] && CFG_DBUS=yes
         QMakeVar set QT_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
         QMakeVar set QT_LIBS_DBUS "$QT_LIBS_DBUS"
@@ -4748,7 +4767,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     fi
 
     # Check we actually have X11 :-)
-    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+    if [ $? != "0" ]; then
         echo "Basic XLib functionality test failed!"
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_X11 and QMAKE_LIBDIR_X11 in ${XQMAKESPEC}."
@@ -4779,7 +4799,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
        hpux*)
            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
            if [ "$CFG_OPENGL" = "desktop" ]; then
-               if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+               "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+               if [ $? != "0" ]; then
                    QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
                fi
            fi
@@ -4789,7 +4810,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
        esac
     elif [ "$CFG_OPENGL" = "es1cl" ]; then
         # OpenGL ES 1.x common lite
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4798,7 +4820,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4807,7 +4830,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4816,7 +4840,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "desktop" ]; then
         # Desktop OpenGL support
-        if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4826,7 +4851,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         case "$PLATFORM" in
         hpux*)
             # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+            "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+            if [ $? != "0" ]; then
                 QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
             fi
 	    ;;
@@ -5101,7 +5127,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -5110,7 +5137,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -5126,7 +5154,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     # screen drivers
     for screen in ${CFG_GFX_ON} ${CFG_GFX_PLUGIN}; do
        if [ "${screen}" = "ahi" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/ahi "Ahi" $L_FLAGS $I_FLAGS $l_FLAGS; then
+           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/ahi "Ahi" $L_FLAGS $I_FLAGS $l_FLAGS
+           if [ $? != "0" ]; then
                echo "The Ahi screen driver functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
@@ -5136,7 +5165,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
        fi
 
        if [ "${screen}" = "svgalib" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/svgalib "SVGAlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/svgalib "SVGAlib" $L_FLAGS $I_FLAGS $l_FLAGS
+           if [ $? != "0" ]; then
                echo "The SVGAlib screen driver functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
@@ -5165,7 +5195,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
                QMakeVar set QT_DEFINES_DIRECTFB "QT3_SUPPORT"
            fi
 
-           if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/directfb "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DIRECTFB $QT_LIBS_DIRECTFB; then
+           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/directfb "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DIRECTFB $QT_LIBS_DIRECTFB
+           if [ $? != "0" ]; then
                echo "The DirectFB screen driver functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QT_CFLAGS_DIRECTFB and QT_LIBS_DIRECTFB in"
@@ -5179,7 +5210,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     # mouse drivers
     for mouse in ${CFG_MOUSE_ON} ${CFG_MOUSE_PLUGIN}; do
 	if [ "${mouse}" = "tslib" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-	    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tslib "tslib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tslib "tslib" $L_FLAGS $I_FLAGS $l_FLAGS
+            if [ $? != "0" ]; then
                echo "The tslib functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
@@ -5192,7 +5224,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     CFG_QGTKSTYLE=no
 
     # sound
-    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/sound "sound" $L_FLAGS $I_FLAGS $l_FLAGS; then
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/sound "sound" $L_FLAGS $I_FLAGS $l_FLAGS
+    if [ $? != "0" ]; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SOUND"
     fi
 
@@ -5202,7 +5235,7 @@ fi # QWS
 [ "x$CFG_EMBEDDED" != "xno" ] && CFG_LIBFREETYPE="$CFG_QWS_FREETYPE"
 [ "x$PLATFORM_MAC" = "xyes" ] && CFG_LIBFREETYPE=no
 if [ "$CFG_LIBFREETYPE" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/freetype "FreeType" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/freetype "FreeType" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_LIBFREETYPE=system
     else
         CFG_LIBFREETYPE=yes
@@ -5319,7 +5352,7 @@ fi
 
 # find if the platform supports IPv6
 if [ "$CFG_IPV6" != "no" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_IPV6=yes
     else
         if [ "$CFG_IPV6" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
@@ -5450,7 +5483,7 @@ fi
 
 # detect OpenSSL
 if [ "$CFG_OPENSSL" != "no" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/openssl "OpenSSL" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/openssl "OpenSSL" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         if [ "$CFG_OPENSSL" = "auto" ]; then
             CFG_OPENSSL=yes
         fi
@@ -6681,6 +6714,9 @@ fi
 if [ -n "$QT_LFLAGS_SQLITE" ]; then
     echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$CACHEFILE.tmp"
 fi
+if [ -n "$QT_LFLAGS_ODBC" ]; then
+    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$CACHEFILE.tmp"
+fi
 
 if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
     echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$CACHEFILE.tmp"
@@ -7162,7 +7198,7 @@ for file in .projects .projects.3; do
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;
         esac
-        dir=`dirname $a | sed -e "s;$sepath;.;g"`
+        dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
         test -d "$dir" || mkdir -p "$dir"
         OUTDIR="$outpath/$dir"
         if [ -f "${OUTDIR}/Makefile" ] && [ "$OPT_FAST" = "yes" ]; then
@@ -7305,7 +7341,7 @@ if [ -n "$RPATH_MESSAGE" ]; then
     echo "$RPATH_MESSAGE"
 fi
 
-MAKE=`basename $MAKE`
+MAKE=`basename "$MAKE"`
 echo
 echo Qt is now configured for building. Just run \'$MAKE\'.
 if [ "$relpath" = "$QT_INSTALL_PREFIX" ]; then

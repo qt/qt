@@ -100,14 +100,8 @@ void MainWindow::setRenderingSystem()
 {
     QWidget *viewport = 0;
 
-    if (Colors::direct3dRendering){
-        viewport->setAttribute(Qt::WA_MSWindowsUseDirect3D);
-        setCacheMode(QGraphicsView::CacheNone);
-        if (Colors::verbose)
-            qDebug() << "- using Direct3D";
-    }
 #ifndef QT_NO_OPENGL
-    else if (Colors::openGlRendering){
+    if (Colors::openGlRendering) {
         QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
         if (Colors::noScreenSync)
             glw->format().setSwapInterval(0);
@@ -116,9 +110,10 @@ void MainWindow::setRenderingSystem()
         setCacheMode(QGraphicsView::CacheNone);
         if (Colors::verbose)
             qDebug() << "- using OpenGL";
-    }
+    } else // software rendering
 #endif
-    else{ // software rendering
+    {
+        // software rendering
         viewport = new QWidget;
         setCacheMode(QGraphicsView::CacheBackground);
         if (Colors::verbose)
@@ -190,6 +185,7 @@ void MainWindow::switchTimerOnOff(bool on)
 
     if (on && !Colors::noTimerUpdate){
         this->useTimer = true;
+        this->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
         this->fpsTime = QTime::currentTime();
         this->updateTimer.start(int(1000 / Colors::fps));
     }
@@ -261,6 +257,7 @@ void MainWindow::tick()
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->tick();
 
+    this->viewport()->update();
     if (this->useTimer)
         this->updateTimer.start(int(1000 / Colors::fps));
 }
@@ -384,8 +381,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             s += "Rendering system: ";
             if (Colors::openGlRendering)
                 s += "OpenGL";
-            else if (Colors::direct3dRendering)
-                s += "Direct3D";
             else
                 s += "software";
 
@@ -430,7 +425,9 @@ void MainWindow::focusInEvent(QFocusEvent *)
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->pause(false);
 
-    this->switchTimerOnOff(true);
+    int code = MenuManager::instance()->currentMenuCode;
+    if (code == MenuManager::ROOT || code == MenuManager::MENU1)
+        this->switchTimerOnOff(true);
 
     this->pausedLabel->setRecursiveVisible(false);
 }
@@ -443,7 +440,9 @@ void MainWindow::focusOutEvent(QFocusEvent *)
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->pause(true);
 
-    this->switchTimerOnOff(false);
+    int code = MenuManager::instance()->currentMenuCode;
+    if (code == MenuManager::ROOT || code == MenuManager::MENU1)
+        this->switchTimerOnOff(false);
 
     this->pausedLabel->setRecursiveVisible(true);
 }

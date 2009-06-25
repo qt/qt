@@ -467,7 +467,7 @@ QString QScriptContext::toString() const
         QScriptValue arg = argument(i);
         result.append(safeValueToString(arg));
     }
-    result.append(QLatin1String(")"));
+    result.append(QLatin1Char(')'));
 
     QString fileName = info.fileName();
     int lineNumber = info.lineNumber();

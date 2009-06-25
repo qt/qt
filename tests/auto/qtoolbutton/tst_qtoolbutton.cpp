@@ -65,6 +65,7 @@ private slots:
     void getSetCheck();
     void triggered();
     void task230994_iconSize();
+    void task176137_autoRepeatOfAction();
 
 protected slots:
     void sendMouseClick();
@@ -177,6 +178,25 @@ void tst_QToolButton::task230994_iconSize()
     QStyleOptionToolButton option;
     button.initStyleOption(&option);
     QVERIFY(option.iconSize.isValid());
+}
+
+void tst_QToolButton::task176137_autoRepeatOfAction()
+{
+    QAction action(0);
+    QToolButton tb;
+    tb.setDefaultAction (&action);
+    tb.show();
+    QSignalSpy spy(&action,SIGNAL(triggered()));
+    QTest::mousePress ( &tb, Qt::LeftButton);
+    QTest::mouseRelease ( &tb, Qt::LeftButton, 0, QPoint (), 2000);
+    QCOMPARE(spy.count(),1);
+
+    // try again with auto repeat
+    tb.setAutoRepeat (true);
+    QSignalSpy repeatSpy(&action,SIGNAL(triggered())); // new spy
+    QTest::mousePress ( &tb, Qt::LeftButton);
+    QTest::mouseRelease ( &tb, Qt::LeftButton, 0, QPoint (), 2000);
+    QCOMPARE (repeatSpy.count(), (2000 - tb.autoRepeatDelay()) / tb.autoRepeatInterval() + 1);
 }
 
 

@@ -583,7 +583,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     QScriptValuePrivate *p = QScriptValuePrivate::get(scriptObject);
     if (!p || !p->value.isObject())
         return newQObject(qtObject, ownership, options);
-    if (p->value.isVariant()) {
+    if (p->value.isQObject()) {
         QScript::ExtQObject::Instance *data;
         data = d->qobjectConstructor->get(p->value);
         Q_ASSERT(data != 0);

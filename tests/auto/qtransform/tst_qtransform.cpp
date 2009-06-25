@@ -603,6 +603,13 @@ void tst_QTransform::types()
                  1.0f, 0.0f, 0.0f,
                  0.0f, 0.0f, 2.0f);
     QCOMPARE(m3.type(), QTransform::TxProject);
+
+    QTransform m4;
+    m4.scale(5, 5);
+    m4.translate(4, 2);
+    m4.rotate(45);
+
+    QCOMPARE(m4.type(), QTransform::TxRotate);
 }
 
 

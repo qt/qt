@@ -242,12 +242,15 @@
 
     \snippet tutorials/addressbook/part1/main.cpp main function
 
-    We construct a new \c AddressBook widget on the heap using the \c new
-    keyword and invoke its \l{QWidget::show()}{show()} function to display it.
+    We construct a new \c AddressBook widget on the stack and invoke
+    its \l{QWidget::show()}{show()} function to display it.
     However, the widget will not be shown until the application's event loop
     is started. We start the event loop by calling the application's
     \l{QApplication::}{exec()} function; the result returned by this function
-    is used as the return value from the \c main() function.
+    is used as the return value from the \c main() function. At this point,
+    it becomes apparent why we instanciated \c AddressBook on the stack: It
+    will now go out of scope. Therefore, \c AddressBook and all its child widgets
+    will be deleted, thus preventing memory leaks.
 */
 
 /*!
@@ -643,11 +646,11 @@
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 1
 
-    For \c NavigationMode, however, we include conditions within the
-    parameters of the QPushButton::setEnabled(). This is to ensure that
-    the \c editButton and \c removeButton push buttons are enabled when there
-    is at least one contact in the address book; \c nextButton and \c previousButton
-    are only enabled when there is more than one contact in the address book.
+    For \c NavigationMode, however, we include conditions within the parameters
+    of the QPushButton::setEnabled() function. This is to ensure that
+    \c editButton and \c removeButton are enabled when there is at least one
+    contact in the address book; \c nextButton and \c previousButton are only
+    enabled when there is more than one contact in the address book.
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 2
 

@@ -49,14 +49,15 @@
 #include <QtOpenGL>
 
 #include "gltrianglemesh.h"
-#include "vector.h"
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector2d.h>
 #include "glbuffers.h"
 
 struct P3T2N3Vertex
 {
-    gfx::Vector3f position;
-    gfx::Vector2f texCoord;
-    gfx::Vector3f normal;
+    QVector3D position;
+    QVector2D texCoord;
+    QVector3D normal;
     static VertexDescription description[];
 };
 

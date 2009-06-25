@@ -193,6 +193,7 @@ void QAbstractSpinBox::setButtonSymbols(ButtonSymbols buttonSymbols)
     Q_D(QAbstractSpinBox);
     if (d->buttonSymbols != buttonSymbols) {
         d->buttonSymbols = buttonSymbols;
+        d->updateEditFieldGeometry();
         update();
     }
 }
@@ -1791,8 +1792,8 @@ void QAbstractSpinBoxPrivate::interpret(EmitPolicy ep)
         q->fixup(tmp);
         QASBDEBUG() << "QAbstractSpinBoxPrivate::interpret() text '"
                     << edit->displayText()
-                    << "' >> '" << copy << "'"
-                    << "' >> '" << tmp << "'";
+                    << "' >> '" << copy << '\''
+                    << "' >> '" << tmp << '\'';
 
         doInterpret = tmp != copy && (q->validate(tmp, pos) == QValidator::Acceptable);
         if (!doInterpret) {

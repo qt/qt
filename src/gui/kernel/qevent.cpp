@@ -861,6 +861,17 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
     uint platform = QApplicationPrivate::currentPlatform();
 
+#ifdef Q_WS_MAC
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        uint oldSearchKey = searchkey;
+        searchkey &= ~(Qt::ControlModifier | Qt::MetaModifier);
+        if (oldSearchKey & Qt::ControlModifier)
+            searchkey |= Qt::MetaModifier;
+        if (oldSearchKey & Qt::MetaModifier)
+            searchkey |= Qt::ControlModifier;
+    }
+#endif
+
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     int first = 0;
     int last = N - 1;
@@ -3081,7 +3092,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
                       << ", " << me->button()
                       << ", " << hex << (int)me->buttons()
                       << ", " << hex << (int)me->modifiers()
-                      << ")";
+                      << ')';
     }
     return dbg.space();
 
@@ -3102,7 +3113,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         dbg.nospace() << "QWheelEvent("  << static_cast<const QWheelEvent *>(e)->delta()
-                      << ")";
+                      << ')';
         return dbg.space();
 #endif
     case QEvent::KeyPress:
@@ -3128,7 +3139,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
                           << ", \"" << ke->text()
                           << "\", " << ke->isAutoRepeat()
                           << ", " << ke->count()
-                          << ")";
+                          << ')';
         }
         return dbg.space();
     case QEvent::FocusIn:

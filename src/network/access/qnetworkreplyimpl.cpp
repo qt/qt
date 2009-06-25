@@ -46,13 +46,15 @@
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qdatetime.h"
 #include "QtNetwork/qsslconfiguration.h"
+#include "qnetworkaccesshttpbackend_p.h"
 
 #include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
-    : copyDevice(0), networkCache(0),
+    : backend(0), outgoingData(0), outgoingDataBuffer(0),
+      copyDevice(0), networkCache(0),
       cacheEnabled(false), cacheSaveDevice(0),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
       state(Idle)
@@ -61,8 +63,13 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
-    // This function is called exactly once
+    // ensure this function is only being called once
+    if (state == Working) {
+        qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
+        return;
+    }
     state = Working;
+
     if (!backend) {
         error(QNetworkReplyImpl::ProtocolUnknownError,
               QCoreApplication::translate("QNetworkReply", "Protocol \"%1\" is unknown").arg(url.scheme())); // not really true!;
@@ -74,55 +81,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     if (state != Finished) {
         if (operation == QNetworkAccessManager::GetOperation)
             pendingNotifications.append(NotifyDownstreamReadyWrite);
-        if (outgoingData) {
-            _q_sourceReadyRead();
-#if 0 // ### FIXME
-            if (outgoingData->atEndOfStream() && writeBuffer.isEmpty())
-                // empty upload
-                emit q->uploadProgress(0, 0);
-#endif
-        }
 
         handleNotifications();
     }
-}
-
-void QNetworkReplyImplPrivate::_q_sourceReadyRead()
-{
-    // read data from the outgoingData QIODevice into our internal buffer
-    enum { DesiredBufferSize = 32 * 1024 };
-
-    if (writeBuffer.size() >= DesiredBufferSize)
-        return;                 // don't grow the buffer too much
-
-    // read as many bytes are available or up until we fill up the buffer
-    // but always read at least one byte
-    qint64 bytesToRead = qBound<qint64>(1, outgoingData->bytesAvailable(),
-                                        DesiredBufferSize - writeBuffer.size());
-    char *ptr = writeBuffer.reserve(bytesToRead);
-    qint64 bytesActuallyRead = outgoingData->read(ptr, bytesToRead);
-    if (bytesActuallyRead == -1) {
-        // EOF
-        writeBuffer.chop(bytesToRead);
-        backendNotify(NotifyCloseUpstreamChannel);
-        return;
-    }
-
-    if (bytesActuallyRead < bytesToRead)
-        writeBuffer.chop(bytesToRead - bytesActuallyRead);
-
-    // if we did read anything, let the backend know and handle it
-    if (bytesActuallyRead)
-        backendNotify(NotifyUpstreamReadyRead);
-
-    // check for EOF again
-    if (!outgoingData->isSequential() && outgoingData->atEnd())
-        backendNotify(NotifyCloseUpstreamChannel);
-}
-
-void QNetworkReplyImplPrivate::_q_sourceReadChannelFinished()
-{
-    _q_sourceReadyRead();
 }
 
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
@@ -143,7 +104,7 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
         if (bytesActuallyRead == -1) {
             readBuffer.chop(bytesToRead);
             backendNotify(NotifyCopyFinished);
-            return;
+            break;
         }
 
         if (bytesActuallyRead != bytesToRead)
@@ -151,6 +112,7 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
 
         if (!copyDevice->isSequential() && copyDevice->atEnd()) {
             backendNotify(NotifyCopyFinished);
+            bytesDownloaded += bytesActuallyRead;
             break;
         }
 
@@ -174,6 +136,67 @@ void QNetworkReplyImplPrivate::_q_copyReadChannelFinished()
     _q_copyReadyRead();
 }
 
+void QNetworkReplyImplPrivate::_q_bufferOutgoingDataFinished()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    // make sure this is only called once, ever.
+    //_q_bufferOutgoingData may call it or the readChannelFinished emission
+    if (state != Buffering)
+        return;
+
+    // disconnect signals
+    QObject::disconnect(outgoingData, SIGNAL(readyRead()), q, SLOT(_q_bufferOutgoingData()));
+    QObject::disconnect(outgoingData, SIGNAL(readChannelFinished()), q, SLOT(_q_bufferOutgoingDataFinished()));
+
+    // finally, start the request
+    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+}
+
+void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    if (!outgoingDataBuffer) {
+        // first call, create our buffer
+        outgoingDataBuffer = new QRingBuffer();
+
+        QObject::connect(outgoingData, SIGNAL(readyRead()), q, SLOT(_q_bufferOutgoingData()));
+        QObject::connect(outgoingData, SIGNAL(readChannelFinished()), q, SLOT(_q_bufferOutgoingDataFinished()));
+    }
+
+    qint64 bytesBuffered = 0;
+    qint64 bytesToBuffer = 0;
+
+    // read data into our buffer
+    forever {
+        bytesToBuffer = outgoingData->bytesAvailable();
+        // unknown? just try 2 kB, this also ensures we always try to read the EOF
+        if (bytesToBuffer <= 0)
+            bytesToBuffer = 2*1024;
+
+        char *dst = outgoingDataBuffer->reserve(bytesToBuffer);
+        bytesBuffered = outgoingData->read(dst, bytesToBuffer);
+
+        if (bytesBuffered == -1) {
+            // EOF has been reached.
+            outgoingDataBuffer->chop(bytesToBuffer);
+
+            _q_bufferOutgoingDataFinished();
+            break;
+        } else if (bytesBuffered == 0) {
+            // nothing read right now, just wait until we get called again
+            outgoingDataBuffer->chop(bytesToBuffer);
+
+            break;
+        } else {
+            // don't break, try to read() again
+            outgoingDataBuffer->chop(bytesToBuffer - bytesBuffered);
+        }
+    }
+}
+
+
 void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
 {
@@ -184,13 +207,42 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     url = request.url();
     operation = op;
 
-    if (outgoingData) {
-        q->connect(outgoingData, SIGNAL(readyRead()), SLOT(_q_sourceReadyRead()));
-        q->connect(outgoingData, SIGNAL(readChannelFinished()), SLOT(_q_sourceReadChannelFinished()));
+    if (outgoingData && backend) {
+        // there is data to be uploaded, e.g. HTTP POST.
+
+        if (!backend->needsResetableUploadData() || !outgoingData->isSequential()) {
+            // backend does not need upload buffering or
+            // fixed size non-sequential
+            // just start the operation
+            QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+        } else {
+            bool bufferingDisallowed =
+                    req.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
+                                             false).toBool();
+
+            if (bufferingDisallowed) {
+                // if a valid content-length header for the request was supplied, we can disable buffering
+                // if not, we will buffer anyway
+                if (req.header(QNetworkRequest::ContentLengthHeader).isValid()) {
+                    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+                } else {
+                    state = Buffering;
+                    QMetaObject::invokeMethod(q, "_q_bufferOutgoingData", Qt::QueuedConnection);
+                }
+            } else {
+                // _q_startOperation will be called when the buffering has finished.
+                state = Buffering;
+                QMetaObject::invokeMethod(q, "_q_bufferOutgoingData", Qt::QueuedConnection);
+            }
+        }
+    } else {
+        // No outgoing data (e.g. HTTP GET request)
+        // or no backend
+        // if no backend, _q_startOperation will handle the error of this
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
     }
 
     q->QIODevice::open(QIODevice::ReadOnly);
-    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 }
 
 void QNetworkReplyImplPrivate::setNetworkCache(QAbstractNetworkCache *nc)
@@ -226,16 +278,8 @@ void QNetworkReplyImplPrivate::handleNotifications()
                 backend->downstreamReadyWrite();
             break;
 
-        case NotifyUpstreamReadyRead:
-            backend->upstreamReadyRead();
-            break;
-
         case NotifyCloseDownstreamChannel:
             backend->closeDownstreamChannel();
-            break;
-
-        case NotifyCloseUpstreamChannel:
-            backend->closeUpstreamChannel();
             break;
 
         case NotifyCopyFinished: {
@@ -299,28 +343,13 @@ void QNetworkReplyImplPrivate::completeCacheSave()
     cacheEnabled = false;
 }
 
-void QNetworkReplyImplPrivate::consume(qint64 count)
+void QNetworkReplyImplPrivate::emitUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 {
     Q_Q(QNetworkReplyImpl);
-    if (count <= 0) {
-        qWarning("QNetworkConnection: backend signalled that it consumed %ld bytes", long(count));
-        return;
-    }
-
-    if (outgoingData)
-        // schedule another read from the source
-        QMetaObject::invokeMethod(q_func(), "_q_sourceReadyRead", Qt::QueuedConnection);
-
-    writeBuffer.skip(count);
-    if (bytesUploaded == -1)
-        bytesUploaded = count;
-    else
-        bytesUploaded += count;
-
-    QVariant totalSize = request.header(QNetworkRequest::ContentLengthHeader);
-    emit q->uploadProgress(bytesUploaded,
-                           totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+    bytesUploaded = bytesSent;
+    emit q->uploadProgress(bytesSent, bytesTotal);
 }
+
 
 qint64 QNetworkReplyImplPrivate::nextDownstreamBlockSize() const
 {
@@ -331,7 +360,9 @@ qint64 QNetworkReplyImplPrivate::nextDownstreamBlockSize() const
     return qMax<qint64>(0, readBufferMaxSize - readBuffer.size());
 }
 
-void QNetworkReplyImplPrivate::feed(const QByteArray &data)
+// we received downstream data and send this to the cache
+// and to our readBuffer (which in turn gets read by the user of QNetworkReply)
+void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
 {
     Q_Q(QNetworkReplyImpl);
     if (!q->isOpen())
@@ -379,7 +410,8 @@ void QNetworkReplyImplPrivate::feed(const QByteArray &data)
     }
 }
 
-void QNetworkReplyImplPrivate::feed(QIODevice *data)
+// this is used when it was fetched from the cache, right?
+void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 {
     Q_Q(QNetworkReplyImpl);
     if (!q->isOpen())
@@ -410,9 +442,11 @@ void QNetworkReplyImplPrivate::finished()
     pendingNotifications.clear();
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (bytesDownloaded != lastBytesDownloaded || totalSize.isNull())
+    if (totalSize.isNull() || totalSize == -1) {
         emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
-    if (bytesUploaded == -1 && outgoingData)
+    }
+
+    if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))
         emit q->uploadProgress(0, 0);
 
     completeCacheSave();

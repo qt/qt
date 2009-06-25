@@ -148,6 +148,9 @@ static void ensureInitialized()
     \value PostOperation        send the contents of an HTML form for
     processing via HTTP POST (created with post())
 
+    \value DeleteOperation      delete contents operation (created with
+    deleteResource())
+
     \omitvalue UnknownOperation
 
     \sa QNetworkReply::operation()
@@ -555,7 +558,7 @@ QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
     a new QNetworkReply object opened for reading which emits its
     QIODevice::readyRead() signal whenever new data arrives.
 
-    \sa post(), put()
+    \sa post(), put(), deleteResource()
 */
 QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 {
@@ -577,7 +580,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
     Note: sending a POST request on protocols other than HTTP and
     HTTPS is undefined and will probably fail.
 
-    \sa get(), put()
+    \sa get(), put(), deleteResource()
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
 {
@@ -642,6 +645,20 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 }
 
 /*!
+    \since 4.6
+
+    This function is used to send a request to delete the resource
+    identified by the URL of \a request.
+    This feature is currently available for HTTP only, performing an HTTP DELETE request.
+
+    \sa get(), post(), put()
+*/
+QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &request)
+{
+    return d_func()->postProcess(createRequest(QNetworkAccessManager::DeleteOperation, request));
+}
+
+/*!
     Returns a new QNetworkReply object to handle the operation \a op
     and request \a req. The device \a outgoingData is always 0 for Get and
     Head requests, but is the value passed to post() and put() in
@@ -686,7 +703,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->urlForLastAuthentication = url;
     }
 
-    // third step: setup the reply
+    // third step: find a backend
+    priv->backend = d->findBackend(op, request);
+
+    // fourth step: setup the reply
     priv->setup(op, request, outgoingData);
     if (request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt() !=
         QNetworkRequest::AlwaysNetwork)
@@ -695,9 +715,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
 #endif
-
-    // fourth step: find a backend
-    priv->backend = d->findBackend(op, request);
     if (priv->backend) {
         priv->backend->setParent(reply);
         priv->backend->reply = priv;

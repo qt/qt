@@ -109,7 +109,7 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
 #ifndef QT_NO_STYLE_STYLESHEET
     Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
 #endif
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
@@ -293,7 +293,7 @@ public Q_SLOTS:
 #ifndef QT_NO_STYLE_STYLESHEET
     void setStyleSheet(const QString& sheet);
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void setAutoMaximizeThreshold(const int threshold);
     int autoMaximizeThreshold() const;
 #endif

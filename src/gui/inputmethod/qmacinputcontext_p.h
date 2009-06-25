@@ -78,6 +78,10 @@ public:
     static OSStatus globalEventProcessor(EventHandlerCallRef, EventRef, void *);
     static void initialize();
     static void cleanup();
+
+    EventRef lastKeydownEvent() { return keydownEvent; }
+    void setLastKeydownEvent(EventRef);
+
 protected:
     void mouseHandler(int pos, QMouseEvent *);
 private:
@@ -85,6 +89,7 @@ private:
     bool recursionGuard;
     TSMDocumentID textDocument;
     QString currentText;
+    EventRef keydownEvent;
 };
 
 QT_END_NAMESPACE

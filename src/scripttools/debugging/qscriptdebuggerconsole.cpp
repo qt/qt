@@ -163,10 +163,10 @@ QScriptDebuggerConsoleCommandJob *QScriptDebuggerConsolePrivate::createJob(
                            .arg(name));
                 for (int j = 0; j < completions.size(); ++j) {
                     if (j > 0)
-                        msg.append(QString::fromLatin1(", "));
+                        msg.append(QLatin1String(", "));
                     msg.append(completions.at(j));
                 }
-                msg.append(QString::fromLatin1("."));
+                msg.append(QLatin1Char('.'));
                 messageHandler->message(QtWarningMsg, msg);
                 return 0;
             }

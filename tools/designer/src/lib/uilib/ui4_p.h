@@ -161,6 +161,8 @@ class DomScript;
 class DomWidgetData;
 class DomDesignerData;
 class DomSlots;
+class DomPropertySpecifications;
+class DomStringPropertySpecification;
 
 /*******************************************************************************
 ** Declarations
@@ -1015,6 +1017,12 @@ public:
     inline bool hasElementSlots() const { return m_children & Slots; }
     void clearElementSlots();
 
+    inline DomPropertySpecifications* elementPropertyspecifications() const { return m_propertyspecifications; }
+    DomPropertySpecifications* takeElementPropertyspecifications();
+    void setElementPropertyspecifications(DomPropertySpecifications* a);
+    inline bool hasElementPropertyspecifications() const { return m_children & Propertyspecifications; }
+    void clearElementPropertyspecifications();
+
 private:
     QString m_text;
     void clear(bool clear_all = true);
@@ -1033,6 +1041,7 @@ private:
     DomScript* m_script;
     DomProperties* m_properties;
     DomSlots* m_slots;
+    DomPropertySpecifications* m_propertyspecifications;
     enum Child {
         Class = 1,
         Extends = 2,
@@ -1044,7 +1053,8 @@ private:
         Pixmap = 128,
         Script = 256,
         Properties = 512,
-        Slots = 1024
+        Slots = 1024,
+        Propertyspecifications = 2048
     };
 
     DomCustomWidget(const DomCustomWidget &other);
@@ -3684,6 +3694,91 @@ private:
 
     DomSlots(const DomSlots &other);
     void operator = (const DomSlots&other);
+};
+
+class QDESIGNER_UILIB_EXPORT DomPropertySpecifications {
+public:
+    DomPropertySpecifications();
+    ~DomPropertySpecifications();
+
+    void read(QXmlStreamReader &reader);
+#ifdef QUILOADER_QDOM_READ
+    void read(const QDomElement &node);
+#endif
+    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+    inline QString text() const { return m_text; }
+    inline void setText(const QString &s) { m_text = s; }
+
+    // attribute accessors
+    // child element accessors
+    inline QList<DomStringPropertySpecification*> elementStringpropertyspecification() const { return m_stringpropertyspecification; }
+    void setElementStringpropertyspecification(const QList<DomStringPropertySpecification*>& a);
+
+private:
+    QString m_text;
+    void clear(bool clear_all = true);
+
+    // attribute data
+    // child element data
+    uint m_children;
+    QList<DomStringPropertySpecification*> m_stringpropertyspecification;
+    enum Child {
+        Stringpropertyspecification = 1
+    };
+
+    DomPropertySpecifications(const DomPropertySpecifications &other);
+    void operator = (const DomPropertySpecifications&other);
+};
+
+class QDESIGNER_UILIB_EXPORT DomStringPropertySpecification {
+public:
+    DomStringPropertySpecification();
+    ~DomStringPropertySpecification();
+
+    void read(QXmlStreamReader &reader);
+#ifdef QUILOADER_QDOM_READ
+    void read(const QDomElement &node);
+#endif
+    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+    inline QString text() const { return m_text; }
+    inline void setText(const QString &s) { m_text = s; }
+
+    // attribute accessors
+    inline bool hasAttributeName() const { return m_has_attr_name; }
+    inline QString attributeName() const { return m_attr_name; }
+    inline void setAttributeName(const QString& a) { m_attr_name = a; m_has_attr_name = true; }
+    inline void clearAttributeName() { m_has_attr_name = false; }
+
+    inline bool hasAttributeType() const { return m_has_attr_type; }
+    inline QString attributeType() const { return m_attr_type; }
+    inline void setAttributeType(const QString& a) { m_attr_type = a; m_has_attr_type = true; }
+    inline void clearAttributeType() { m_has_attr_type = false; }
+
+    inline bool hasAttributeNotr() const { return m_has_attr_notr; }
+    inline QString attributeNotr() const { return m_attr_notr; }
+    inline void setAttributeNotr(const QString& a) { m_attr_notr = a; m_has_attr_notr = true; }
+    inline void clearAttributeNotr() { m_has_attr_notr = false; }
+
+    // child element accessors
+private:
+    QString m_text;
+    void clear(bool clear_all = true);
+
+    // attribute data
+    QString m_attr_name;
+    bool m_has_attr_name;
+
+    QString m_attr_type;
+    bool m_has_attr_type;
+
+    QString m_attr_notr;
+    bool m_has_attr_notr;
+
+    // child element data
+    uint m_children;
+
+    DomStringPropertySpecification(const DomStringPropertySpecification &other);
+    void operator = (const DomStringPropertySpecification&other);
 };
 
 

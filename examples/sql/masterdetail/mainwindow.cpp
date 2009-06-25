@@ -362,7 +362,7 @@ void MainWindow::createMenuBar()
 
     addAction->setShortcut(tr("Ctrl+A"));
     deleteAction->setShortcut(tr("Ctrl+D"));
-    quitAction->setShortcut(tr("Ctrl+Q"));
+    quitAction->setShortcuts(QKeySequence::Quit);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(addAction);

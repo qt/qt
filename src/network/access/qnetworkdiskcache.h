@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
+#ifndef QT_NO_NETWORKDISKCACHE
+
 class QNetworkDiskCachePrivate;
 class Q_NETWORK_EXPORT QNetworkDiskCache : public QAbstractNetworkCache
 {
@@ -86,9 +88,10 @@ private:
     Q_DISABLE_COPY(QNetworkDiskCache)
 };
 
+#endif // QT_NO_NETWORKDISKCACHE
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
 #endif // QNETWORKDISKCACHE_H
-

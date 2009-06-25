@@ -163,6 +163,9 @@ public:
     inline QPixmap copy(int x, int y, int width, int height) const;
     QPixmap copy(const QRect &rect = QRect()) const;
 
+    inline void scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed = 0);
+    void scroll(int dx, int dy, const QRect &rect, QRegion *exposed = 0);
+
     int serialNumber() const;
     qint64 cacheKey() const;
 
@@ -259,8 +262,6 @@ private:
     friend class QWidgetPrivate;
     friend class QRasterPaintEngine;
     friend class QRasterBuffer;
-    friend class QDirect3DPaintEngine;
-    friend class QDirect3DPaintEnginePrivate;
     friend class QDetachedPixmap;
 #if !defined(QT_NO_DATASTREAM)
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
@@ -280,6 +281,11 @@ Q_DECLARE_SHARED(QPixmap)
 inline QPixmap QPixmap::copy(int ax, int ay, int awidth, int aheight) const
 {
     return copy(QRect(ax, ay, awidth, aheight));
+}
+
+inline void QPixmap::scroll(int dx, int dy, int ax, int ay, int awidth, int aheight, QRegion *exposed)
+{
+    scroll(dx, dy, QRect(ax, ay, awidth, aheight), exposed);
 }
 
 inline bool QPixmap::loadFromData(const QByteArray &buf, const char *format,

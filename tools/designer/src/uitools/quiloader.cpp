@@ -613,8 +613,7 @@ void QUiLoaderPrivate::setupWidgetMap() const
     reason, you can subclass the QUiLoader class and reimplement these
     functions to intervene the process of constructing a user interface. For
     example, you might want to have a list of the actions created when loading
-    a form or creating a custom widget. However, in your reimplementation, you
-    must call QUiLoader's original implementation of these functions first.
+    a form or creating a custom widget.
 
     For a complete example using the QUiLoader class, see the
     \l{Calculator Builder Example}.

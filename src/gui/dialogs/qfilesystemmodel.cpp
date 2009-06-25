@@ -337,7 +337,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 {
     Q_Q(const QFileSystemModel);
     Q_UNUSED(q);
-    if (path.isEmpty() || path == myComputer() || path.startsWith(QLatin1String(":")))
+    if (path.isEmpty() || path == myComputer() || path.startsWith(QLatin1Char(':')))
         return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
 
     // Construct the nodes up to the new root path if they need to be built
@@ -1419,7 +1419,7 @@ void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileSystemModel);
     d->fileInfoGatherer.setIconProvider(provider);
-    qApp->processEvents();
+    QApplication::processEvents();
     d->root.updateIcon(provider, QString());
 }
 

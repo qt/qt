@@ -282,7 +282,9 @@ void tst_QGraphicsScene::sceneRect()
     QCOMPARE(scene.sceneRect(), QRectF());
 
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
+    qApp->processEvents();
     item->setPos(-5, -5);
+    qApp->processEvents();
 
     QCOMPARE(scene.itemAt(0, 0), item);
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
@@ -1325,8 +1327,9 @@ void tst_QGraphicsScene::removeItem()
     scene.removeItem(hoverItem);
     hoverItem->setAcceptsHoverEvents(false);
     scene.addItem(hoverItem);
-    qApp->processEvents(); // update
-    qApp->processEvents(); // draw
+    qApp->processEvents(); // <- delayed update is called
+    qApp->processEvents(); // <- scene schedules pending update
+    qApp->processEvents(); // <- pending update is sent to view
     QVERIFY(!hoverItem->isHovered);
 }
 
@@ -2722,6 +2725,7 @@ void tst_QGraphicsScene::update()
 
     QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 100, 100);
     scene.addItem(rect);
+    qApp->processEvents();
     rect->setPos(-100, -100);
 
     // This function forces indexing

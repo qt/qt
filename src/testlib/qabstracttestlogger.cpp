@@ -77,6 +77,7 @@ bool QAbstractTestLogger::isTtyOutput()
 #endif
 }
 
+
 void QAbstractTestLogger::startLogging()
 {
     QTEST_ASSERT(!QTest::stream);

@@ -130,7 +130,7 @@ public:
     int alloc_region_index;
 //    int alloc_region_revision;
 #endif
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     uint window_state_internal : 4;
 #endif
     QRect wrect;
@@ -470,7 +470,7 @@ public Q_SLOTS:
 
     virtual void setVisible(bool visible);
     inline void setHidden(bool hidden) { setVisible(!hidden); }
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     inline void show() { setVisible(true); }
 #else
     void show();
@@ -540,6 +540,7 @@ public:
 
     QWidget *focusWidget() const;
     QWidget *nextInFocusChain() const;
+    QWidget *previousInFocusChain() const;
 
     // drag and drop
     bool acceptDrops() const;

@@ -217,7 +217,7 @@ struct QTexturedBrushData : public QBrushData
 
 // returns true if the brush has a pixmap (or bitmap) set as the
 // brush texture, false otherwise
-bool qHasPixmapTexture(const QBrush& brush)
+bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush)
 {
     if (brush.style() != Qt::TexturePattern)
         return false;
@@ -863,7 +863,9 @@ bool QBrush::isOpaque() const
                 return false;
         return true;
     } else if (d->style == Qt::TexturePattern) {
-        return !texture().hasAlpha();
+        return qHasPixmapTexture(*this)
+            ? !texture().hasAlphaChannel() && !texture().isQBitmap()
+            : !textureImage().hasAlphaChannel();
     }
 
     return false;

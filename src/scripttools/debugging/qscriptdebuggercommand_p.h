@@ -106,6 +106,8 @@ public:
         GetActivationObject,
         GetScopeChain,
         ContextsCheckpoint,
+        GetPropertyExpressionValue,
+        GetCompletions,
 
         NewScriptObjectSnapshot,
         ScriptObjectSnapshotCapture,
@@ -229,6 +231,9 @@ public:
     static QScriptDebuggerCommand getActivationObjectCommand(int contextIndex);
     static QScriptDebuggerCommand getScopeChainCommand(int contextIndex);
     static QScriptDebuggerCommand contextsCheckpoint();
+    static QScriptDebuggerCommand getPropertyExpressionValue(int contextIndex, int lineNumber,
+                                                             const QStringList &path);
+    static QScriptDebuggerCommand getCompletions(int contextIndex, const QStringList &path);
 
     static QScriptDebuggerCommand newScriptObjectSnapshotCommand();
     static QScriptDebuggerCommand scriptObjectSnapshotCaptureCommand(int id, const QScriptDebuggerValue &object);

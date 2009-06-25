@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-/*  TRANSLATOR MsgEdit
+/*  TRANSLATOR MessageEditor
 
   This is the right panel of the main window.
 */
@@ -502,6 +502,8 @@ bool MessageEditor::eventFilter(QObject *o, QEvent *e)
                     m_pluralSource->getEditor()->copy();
                     return true;
                 }
+            } else if (ke->key() == Qt::Key_A) {
+                return true;
             }
         }
     } else if (e->type() == QEvent::KeyPress) {

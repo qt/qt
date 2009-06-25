@@ -4,7 +4,7 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.5.2
+   VERSION=4.6.0
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -67,11 +67,6 @@ mac:!static:contains(QT_CONFIG, qt_framework) {
 
 mac {
    CONFIG += explicitlib
-   true { #we want to use O2 on Qt itself (Os was used to fix other failures in older GCC)
-      QMAKE_CFLAGS_RELEASE ~= s,-Os,-O2,
-      QMAKE_CXXFLAGS_RELEASE ~= s,-Os,-O2,
-      QMAKE_OBJECTIVE_CFLAGS_RELEASE ~= s,-Os,-O2,
-   }
    macx-g++ {
        QMAKE_CFLAGS += -fconstant-cfstrings
        QMAKE_CXXFLAGS += -fconstant-cfstrings

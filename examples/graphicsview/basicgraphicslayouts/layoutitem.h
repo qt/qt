@@ -44,18 +44,22 @@
 #include <QtGui>
 
 //! [0]
-class LayoutItem : public QGraphicsWidget
+class LayoutItem : public QGraphicsLayoutItem, public QGraphicsItem
 {
-    Q_OBJECT
-
 public:
     LayoutItem(QGraphicsItem *parent = 0);
     ~LayoutItem();
+    // Inherited from QGraphicsLayoutItem
+    void setGeometry(const QRectF &geom);
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
+
+    // Inherited from QGraphicsItem
+    QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         QWidget *widget = 0);
 
 private:
-    QPixmap *pix;
+    QPixmap *m_pix;
 };
 //! [0]
 

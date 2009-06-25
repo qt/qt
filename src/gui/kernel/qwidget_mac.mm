@@ -390,21 +390,15 @@ QWidget *qt_mac_find_window(OSWindowRef window)
 
 inline static void qt_mac_set_fullscreen_mode(bool b)
 {
-    extern bool qt_mac_app_fullscreen; //qapplication_mac.cpp
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
     if(qt_mac_app_fullscreen == b)
         return;
     qt_mac_app_fullscreen = b;
-#if QT_MAC_USE_COCOA
-    if(b)
-        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
-    else
+    if (b) {
+        SetSystemUIMode(kUIModeAllSuppressed, 0);
+    } else {
         SetSystemUIMode(kUIModeNormal, 0);
-#else
-    if(b)
-        HideMenuBar();
-    else
-        ShowMenuBar();
-#endif
+    }
 }
 
 Q_GUI_EXPORT OSViewRef qt_mac_nativeview_for(const QWidget *w)
@@ -734,6 +728,7 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
 static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowClose },
     { kEventClassWindow, kEventWindowExpanded },
+    { kEventClassWindow, kEventWindowHidden },
     { kEventClassWindow, kEventWindowZoomed },
     { kEventClassWindow, kEventWindowCollapsed },
     { kEventClassWindow, kEventWindowToolbarSwitchMode },
@@ -991,6 +986,19 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                             qt_event_request_window_change(widget);
                         }
                     }
+                }
+            }
+        } else if (ekind == kEventWindowHidden) {
+            // Make sure that we also hide any visible sheets on our window.
+            // Cocoa does the right thing for us.
+            const QObjectList children = widget->children();
+            const int childCount = children.count();
+            for (int i = 0; i < childCount; ++i) {
+                QObject *obj = children.at(i);
+                if (obj->isWidgetType()) {
+                    QWidget *widget = static_cast<QWidget *>(obj);
+                    if (qt_mac_is_macsheet(widget) && widget->isVisible())
+                        widget->hide();
                 }
             }
         } else {
@@ -1592,24 +1600,6 @@ bool QWidgetPrivate::qt_create_root_win()
     if(!qt_root_win)
         return false;
     qAddPostRoutine(qt_clean_root_win);
-    return true;
-}
-
-bool QWidgetPrivate::qt_recreate_root_win()
-{
-    if(!qt_root_win) //sanity check
-        return false;
-    //store old
-    OSWindowRef old_root_win = qt_root_win;
-    //recreate
-    qt_root_win = 0;
-    qt_create_root_win();
-    //cleanup old window
-#ifdef QT_MAC_USE_COCOA
-    [old_root_win release];
-#else
-    CFRelease(old_root_win);
-#endif
     return true;
 }
 
@@ -4440,11 +4430,13 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->resizer = 0;
+    extra->topextra->isSetGeometry = 0;
+    extra->topextra->isMove = 0;
+    extra->topextra->wattr = 0;
     extra->topextra->wclass = 0;
     extra->topextra->group = 0;
     extra->topextra->windowIcon = 0;
-    extra->topextra->resizer = 0;
-    extra->topextra->isSetGeometry = 0;
     extra->topextra->savedWindowAttributesFromMaximized = 0;
 }
 
@@ -4519,14 +4511,6 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
 #endif
 }
 
-extern "C" {
-    typedef struct CGSConnection *CGSConnectionRef;
-    typedef struct CGSWindow *CGSWindowRef;
-    extern OSStatus CGSSetWindowAlpha(CGSConnectionRef, CGSWindowRef, float);
-    extern CGSWindowRef GetNativeWindowFromWindowRef(WindowRef);
-    extern CGSConnectionRef _CGSDefaultConnection();
-}
-
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
@@ -4539,12 +4523,11 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     if (!q->testAttribute(Qt::WA_WState_Created))
         return;
 
-#if QT_MAC_USE_COCOA
     OSWindowRef oswindow = qt_mac_window_for(q);
+#if QT_MAC_USE_COCOA
     [oswindow setAlphaValue:level];
 #else
-    CGSSetWindowAlpha(_CGSDefaultConnection(),
-                      GetNativeWindowFromWindowRef(qt_mac_window_for(q)), level);
+    SetWindowAlpha(oswindow, level);
 #endif
 }
 

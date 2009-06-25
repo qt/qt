@@ -242,7 +242,7 @@ void MainWindow::createActions()
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
 
     quitAct = new QAction(tr("&Quit"), this);
-    quitAct->setShortcut(tr("Ctrl+Q"));
+    quitAct->setShortcuts(QKeySequence::Quit);
     quitAct->setStatusTip(tr("Quit the application"));
     connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
 

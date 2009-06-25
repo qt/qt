@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 
 struct Codecs {
-    const char *name;
+    const char name[10];
     ushort base;
 };
 

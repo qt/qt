@@ -272,12 +272,12 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     QString args;
     if (!program.isEmpty()) {
         QString programName = program;
-        if (!programName.startsWith(QLatin1Char('\"')) && !programName.endsWith(QLatin1Char('\"')) && programName.contains(QLatin1String(" ")))
-            programName = QLatin1String("\"") + programName + QLatin1String("\"");
-        programName.replace(QLatin1String("/"), QLatin1String("\\"));
+        if (!programName.startsWith(QLatin1Char('\"')) && !programName.endsWith(QLatin1Char('\"')) && programName.contains(QLatin1Char(' ')))
+            programName = QLatin1Char('\"') + programName + QLatin1Char('\"');
+        programName.replace(QLatin1Char('/'), QLatin1Char('\\'));
 
         // add the prgram as the first arg ... it works better
-        args = programName + QLatin1String(" ");
+        args = programName + QLatin1Char(' ');
     }
 
     for (int i=0; i<arguments.size(); ++i) {
@@ -285,16 +285,16 @@ static QString qt_create_commandline(const QString &program, const QStringList &
         // in the case of \" already being in the string the \ must also be escaped
         tmp.replace( QLatin1String("\\\""), QLatin1String("\\\\\"") );
         // escape a single " because the arguments will be parsed
-        tmp.replace( QLatin1String("\""), QLatin1String("\\\"") );
+        tmp.replace( QLatin1Char('\"'), QLatin1String("\\\"") );
         if (tmp.isEmpty() || tmp.contains(QLatin1Char(' ')) || tmp.contains(QLatin1Char('\t'))) {
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
-            QString endQuote(QLatin1String("\""));
+            QString endQuote(QLatin1Char('\"'));
             int i = tmp.length();
             while (i>0 && tmp.at(i-1) == QLatin1Char('\\')) {
                 --i;
-                endQuote += QLatin1String("\\");
+                endQuote += QLatin1Char('\\');
             }
             args += QLatin1String(" \"") + tmp.left(i) + endQuote;
         } else {
@@ -304,44 +304,69 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QStringList &environment)
+static QByteArray qt_create_environment(const QHash<QString, QString> *environment)
 {
     QByteArray envlist;
-    if (!environment.isEmpty()) {
-        QStringList envStrings = environment;
-	    int pos = 0;
-	    // add PATH if necessary (for DLL loading)
-        if (envStrings.filter(QRegExp(QLatin1String("^PATH="),Qt::CaseInsensitive)).isEmpty()) {
+    if (environment) {
+        QHash<QString, QString> copy = *environment;
+
+        // add PATH if necessary (for DLL loading)
+        if (!copy.contains(QLatin1String("PATH"))) {
             QByteArray path = qgetenv("PATH");
             if (!path.isEmpty())
-                envStrings.prepend(QString(QLatin1String("PATH=%1")).arg(QString::fromLocal8Bit(path)));
+            copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
         }
+
         // add systemroot if needed
-        if (envStrings.filter(QRegExp(QLatin1String("^SystemRoot="),Qt::CaseInsensitive)).isEmpty()) {
-            QByteArray systemRoot = qgetenv("SystemRoot");
+        if (!copy.contains(QLatin1String("SYSTEMROOT"))) {
+            QByteArray systemRoot = qgetenv("SYSTEMROOT");
             if (!systemRoot.isEmpty())
-                envStrings.prepend(QString(QLatin1String("SystemRoot=%1")).arg(QString::fromLocal8Bit(systemRoot)));
+                copy.insert(QLatin1String("SYSTEMROOT"), QString::fromLocal8Bit(systemRoot));
         }
+
+        int pos = 0;
+        QHash<QString, QString>::ConstIterator it = copy.constBegin(),
+                                              end = copy.constEnd();
 #ifdef UNICODE
         if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
-            for (QStringList::ConstIterator it = envStrings.constBegin(); it != envStrings.constEnd(); ++it) {
-                QString tmp = *it;
-                uint tmpSize = sizeof(TCHAR) * (tmp.length()+1);
+            static const TCHAR equal = L'=';
+            static const TCHAR nul = L'\0';
+
+            for ( ; it != end; ++it) {
+                uint tmpSize = sizeof(TCHAR) * (it.key().length() + it.value().length() + 2);
+                // ignore empty strings
+                if (tmpSize == sizeof(TCHAR)*2)
+                    continue;
                 envlist.resize(envlist.size() + tmpSize);
-                memcpy(envlist.data()+pos, tmp.utf16(), tmpSize);
+
+                tmpSize = it.key().length() * sizeof(TCHAR);
+                memcpy(envlist.data()+pos, it.key().utf16(), tmpSize);
                 pos += tmpSize;
-	        }
-	        // add the 2 terminating 0 (actually 4, just to be on the safe side)
-	        envlist.resize( envlist.size()+4 );
-	        envlist[pos++] = 0;
-	        envlist[pos++] = 0;
-	        envlist[pos++] = 0;
-	        envlist[pos++] = 0;
+
+                memcpy(envlist.data()+pos, &equal, sizeof(TCHAR));
+                pos += sizeof(TCHAR);
+
+                tmpSize = it.value().length() * sizeof(TCHAR);
+                memcpy(envlist.data()+pos, it.value().utf16(), tmpSize);
+                pos += tmpSize;
+
+                memcpy(envlist.data()+pos, &nul, sizeof(TCHAR));
+                pos += sizeof(TCHAR);
+            }
+            // add the 2 terminating 0 (actually 4, just to be on the safe side)
+            envlist.resize( envlist.size()+4 );
+            envlist[pos++] = 0;
+            envlist[pos++] = 0;
+            envlist[pos++] = 0;
+            envlist[pos++] = 0;
         } else
 #endif // UNICODE
         {
-            for (QStringList::ConstIterator it = envStrings.constBegin(); it != envStrings.constEnd(); it++) {
-                QByteArray tmp = (*it).toLocal8Bit();
+            for ( ; it != end; it++) {
+                QByteArray tmp = it.key().toLocal8Bit();
+                tmp.append('=');
+                tmp.append(it.value().toLocal8Bit());
+
                 uint tmpSize = tmp.length() + 1;
                 envlist.resize(envlist.size() + tmpSize);
                 memcpy(envlist.data()+pos, tmp.data(), tmpSize);
@@ -402,7 +427,7 @@ void QProcessPrivate::startProcess()
         QString fullPathProgram = program;
         if (!QDir::isAbsolutePath(fullPathProgram))
             fullPathProgram = QFileInfo(fullPathProgram).absoluteFilePath();
-        fullPathProgram.replace(QLatin1String("/"), QLatin1String("\\"));
+        fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
         success = CreateProcessW((WCHAR*)fullPathProgram.utf16(),
                                  (WCHAR*)args.utf16(),
                                  0, 0, false, 0, 0, 0, 0, pid);
@@ -418,7 +443,7 @@ void QProcessPrivate::startProcess()
         };
         success = CreateProcessW(0, (WCHAR*)args.utf16(),
                                  0, 0, TRUE, dwCreationFlags,
-                                 environment.isEmpty() ? 0 : envlist.data(),
+                                 environment ? envlist.data() : 0,
                                  workingDirectory.isEmpty() ? 0
                                     : (WCHAR*)QDir::toNativeSeparators(workingDirectory).utf16(),
                                  &startupInfo, pid);
@@ -437,7 +462,7 @@ void QProcessPrivate::startProcess()
 	    };
 
 	    success = CreateProcessA(0, args.toLocal8Bit().data(),
-                                     0, 0, TRUE, dwCreationFlags, environment.isEmpty() ? 0 : envlist.data(),
+                                     0, 0, TRUE, dwCreationFlags, environment ? envlist.data() : 0,
                                      workingDirectory.isEmpty() ? 0
                                         : QDir::toNativeSeparators(workingDirectory).toLocal8Bit().data(),
                                      &startupInfo, pid);
@@ -862,8 +887,8 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 #if defined(Q_OS_WINCE)
         QString fullPathProgram = program;
         if (!QDir::isAbsolutePath(fullPathProgram))
-            fullPathProgram.prepend(QDir::currentPath().append(QLatin1String("/")));
-        fullPathProgram.replace(QLatin1String("/"), QLatin1String("\\"));
+            fullPathProgram.prepend(QDir::currentPath().append(QLatin1Char('/')));
+        fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
         success = CreateProcessW((WCHAR*)fullPathProgram.utf16(),
                                  (WCHAR*)args.utf16(),
                                  0, 0, false, CREATE_NEW_CONSOLE, 0, 0, 0, &pinfo);

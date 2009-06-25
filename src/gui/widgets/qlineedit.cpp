@@ -79,7 +79,7 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include "qkeysequence.h"
-#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1String("\t") + QString(QKeySequence(k)) : QString())
+#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1Char('\t') + QString(QKeySequence(k)) : QString())
 #else
 #define ACCEL_KEY(k) QString()
 #endif
@@ -2571,7 +2571,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // draw text, selections and cursors
 #ifndef QT_NO_STYLE_STYLESHEET
     if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
-        cssStyle->focusPalette(this, &panel, &pal);
+        cssStyle->styleSheetPalette(this, &panel, &pal);
     }
 #endif
     p.setPen(pal.text().color());
@@ -3577,6 +3577,8 @@ void QLineEditPrivate::redo() {
         case RemoveSelection:
         case DeleteSelection:
             text.remove(cmd.pos, 1);
+            selstart = cmd.selStart;
+            selend = cmd.selEnd;
             cursor = cmd.pos;
             break;
         case Separator:

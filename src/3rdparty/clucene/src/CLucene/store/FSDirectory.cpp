@@ -624,7 +624,7 @@ LuceneLock* FSDirectory::makeLock(const QString& name)
 
 
     QString lockFile(getLockPrefix());
-    lockFile.append(QLatin1String("-")).append(name);
+    lockFile.append(QLatin1Char('-')).append(name);
 
     return _CLNEW FSLock(lockDir, lockFile);
 }

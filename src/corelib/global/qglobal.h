@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.5.2"
+#define QT_VERSION_STR   "4.6.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040502
+#define QT_VERSION 0x040600
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -772,6 +772,10 @@ namespace QT_NAMESPACE {}
 #  endif
 #elif defined(Q_OS_WINCE)
 #  define Q_WS_WIN32
+#  define Q_WS_WINCE
+#  if defined(Q_OS_WINCE_WM)
+#    define Q_WS_WINCE_WM
+#  endif
 #elif defined(Q_OS_OS2)
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
@@ -791,9 +795,10 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32)
+#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32) || defined(Q_WS_WINCE)
 #  define Q_WS_WIN
 #endif
+
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -848,17 +853,12 @@ typedef quint64 qulonglong;
       sizeof(void *) == sizeof(quintptr)
       && sizeof(void *) == sizeof(qptrdiff)
 */
-template <int> class QUintForSize    { private: typedef void    Type; };
-template <>    class QUintForSize<4> { public:  typedef quint32 Type; };
-template <>    class QUintForSize<8> { public:  typedef quint64 Type; };
-template <typename T> class QUintForType : public QUintForSize<sizeof(T)> { };
-typedef QUintForType<void *>::Type quintptr;
-
-template <int> class QIntForSize    { private: typedef void   Type; };
-template <>    class QIntForSize<4> { public:  typedef qint32 Type; };
-template <>    class QIntForSize<8> { public:  typedef qint64 Type; };
-template <typename T> class QIntForType : public QIntForSize<sizeof(T)> { };
-typedef QIntForType<void *>::Type qptrdiff;
+template <int> struct QIntegerForSize;
+template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
+template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
+template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
+typedef QIntegerForSizeof<void*>::Unsigned quintptr;
+typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 
 /*
    Useful type definitions for Qt
@@ -1037,6 +1037,7 @@ typedef int QNoImplicitBoolCast;
 #define QT_NO_FPU
 #endif
 
+// This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
 #elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
@@ -1805,6 +1806,22 @@ static inline bool qFuzzyCompare(float p1, float p2)
     return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
 
+/*!
+  \internal
+*/
+static inline bool qFuzzyIsNull(double d)
+{
+    return qAbs(d) <= 0.000000000001;
+}
+
+/*!
+  \internal
+*/
+static inline bool qFuzzyIsNull(float f)
+{
+    return qAbs(f) <= 0.00001f;
+}
+
 /*
    This function tests a double for a null value. It doesn't
    check whether the actual value is 0 or close to 0, but whether
@@ -1936,7 +1953,7 @@ enum { /* TYPEINFO flags */
 
 #define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
 template <> \
-class QTypeInfo<TYPE> \
+class QTypeInfo<TYPE > \
 { \
 public: \
     enum { \

@@ -1412,6 +1412,7 @@ QString QHttpRequestHeader::toString() const
  ****************************************************/
 /*!
     \class QHttp
+    \obsolete
     \reentrant
 
     \brief The QHttp class provides an implementation of the HTTP protocol.
@@ -1421,10 +1422,11 @@ QString QHttpRequestHeader::toString() const
     \mainclass
 
     This class provides a direct interface to HTTP that allows you to
-    have more control over the requests and that allows you to access
-    the response header fields. However, for new applications, it is
+    download and upload data with the HTTP protocol.
+    However, for new applications, it is
     recommended to use QNetworkAccessManager and QNetworkReply, as
-    those classes possess a simpler, yet more powerful API.
+    those classes possess a simpler, yet more powerful API
+    and a more modern protocol implementation.
 
     The class works asynchronously, so there are no blocking
     functions. If an operation cannot be executed immediately, the
@@ -1445,7 +1447,7 @@ QString QHttpRequestHeader::toString() const
     that indicates if the request finished with an error.
 
     To make an HTTP request you must set up suitable HTTP headers. The
-    following example demonstrates, how to request the main HTML page
+    following example demonstrates how to request the main HTML page
     from the Trolltech home page (i.e., the URL
     \c http://qtsoftware.com/index.html):
 

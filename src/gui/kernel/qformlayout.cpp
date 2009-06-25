@@ -689,12 +689,16 @@ void QFormLayoutPrivate::setupVerticalLayoutData(int width)
     // are split.
     maxLabelWidth = 0;
     if (!wrapAllRows) {
+        int maxFieldMinWidth = 0; //the maximum minimum size of the field
         for (int i = 0; i < rr; ++i) {
             const QFormLayoutItem *label = m_matrix(i, 0);
             const QFormLayoutItem *field = m_matrix(i, 1);
-            if (label && (label->sizeHint.width() + (field ? field->minSize.width() : 0) <= width))
+            if (label && field && label->sideBySide)
                 maxLabelWidth = qMax(maxLabelWidth, label->sizeHint.width());
+            if (field)
+                maxFieldMinWidth = qMax(maxFieldMinWidth, field->minSize.width() + field->sbsHSpace);
         }
+        maxLabelWidth = qMin(maxLabelWidth, width - maxFieldMinWidth);
     } else {
         maxLabelWidth = width;
     }

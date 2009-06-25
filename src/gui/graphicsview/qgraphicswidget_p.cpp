@@ -66,17 +66,20 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
     isWidget = 1; // QGraphicsItem::isWidget() returns true.
     focusNext = focusPrev = q;
     focusPolicy = Qt::NoFocus;
+
+    adjustWindowFlags(&wFlags);
+    windowFlags = wFlags;
+
     q->setParentItem(parentItem);
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::DefaultType));
     q->setGraphicsItem(q);
 
     resolveLayoutDirection();
-
-    if (!parentItem)
-        adjustWindowFlags(&wFlags);
-    windowFlags = wFlags;
     q->unsetWindowFrameMargins();
+    q->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
+    q->setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
+
 qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const
 {
     Q_Q(const QGraphicsWidget);
@@ -89,56 +92,57 @@ qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options
     return (qreal)height;
 }
 
-void QGraphicsWidgetPrivate::getLayoutItemMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const
+/*!
+    \internal
+*/
+QGraphicsWidgetPrivate::~QGraphicsWidgetPrivate()
 {
-    if (left)
-        *left = leftLayoutItemMargin;
-    if (top)
-        *top = topLayoutItemMargin;
-    if (right)
-        *right = rightLayoutItemMargin;
-    if (bottom)
-        *bottom = bottomLayoutItemMargin;
+    // Remove any lazily allocated data
+    delete[] margins;
+    delete[] windowFrameMargins;
+    delete windowData;
 }
 
-void QGraphicsWidgetPrivate::setLayoutItemMargins(qreal left, qreal top, qreal right, qreal bottom)
-{
-    if (leftLayoutItemMargin == left
-        && topLayoutItemMargin == top
-        && rightLayoutItemMargin == right
-        && bottomLayoutItemMargin == bottom)
-        return;
+/*!
+    \internal
 
-    Q_Q(QGraphicsWidget);
-    leftLayoutItemMargin = left;
-    topLayoutItemMargin = top;
-    rightLayoutItemMargin = right;
-    bottomLayoutItemMargin = bottom;
-    q->updateGeometry();
+     Ensures that margins is allocated.
+     This function must be called before any dereferencing.
+*/
+void QGraphicsWidgetPrivate::ensureMargins() const
+{
+    if (!margins) {
+        margins = new qreal[4];
+        for (int i = 0; i < 4; ++i)
+            margins[i] = 0;
+    }
 }
 
-void QGraphicsWidgetPrivate::setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt)
-{
-    Q_Q(QGraphicsWidget);
-    QStyleOption myOpt;
-    if (!opt) {
-        q->initStyleOption(&myOpt);
-        myOpt.rect.setRect(0, 0, 32768, 32768);     // arbitrary
-        opt = &myOpt;
-    }
+/*!
+    \internal
 
-    QRect liRect = q->style()->subElementRect(element, opt, /* q */ 0);
-    if (liRect.isValid()) {
-        leftLayoutItemMargin = (opt->rect.left() - liRect.left());
-        topLayoutItemMargin = (opt->rect.top() - liRect.top());
-        rightLayoutItemMargin = (liRect.right() - opt->rect.right());
-        bottomLayoutItemMargin = (liRect.bottom() - opt->rect.bottom());
-    } else {
-        leftLayoutItemMargin = 0;
-        topLayoutItemMargin = 0;
-        rightLayoutItemMargin = 0;
-        bottomLayoutItemMargin = 0;
+     Ensures that windowFrameMargins is allocated.
+     This function must be called before any dereferencing.
+*/
+void QGraphicsWidgetPrivate::ensureWindowFrameMargins() const
+{
+    if (!windowFrameMargins) {
+        windowFrameMargins = new qreal[4];
+        for (int i = 0; i < 4; ++i)
+            windowFrameMargins[i] = 0;
     }
+}
+
+/*!
+    \internal
+
+     Ensures that windowData is allocated.
+     This function must be called before any dereferencing.
+*/
+void QGraphicsWidgetPrivate::ensureWindowData()
+{
+    if (!windowData)
+        windowData = new WindowData;
 }
 
 void QGraphicsWidgetPrivate::setPalette_helper(const QPalette &palette)
@@ -297,11 +301,12 @@ QFont QGraphicsWidgetPrivate::naturalWidgetFont() const
 void QGraphicsWidgetPrivate::initStyleOptionTitleBar(QStyleOptionTitleBar *option)
 {
     Q_Q(QGraphicsWidget);
+    ensureWindowData();
     q->initStyleOption(option);
     option->rect.setHeight(titleBarHeight(*option));
     option->titleBarFlags = windowFlags;
     option->subControls = QStyle::SC_TitleBarCloseButton | QStyle::SC_TitleBarLabel | QStyle::SC_TitleBarSysMenu;
-    option->activeSubControls = hoveredSubControl;
+    option->activeSubControls = windowData->hoveredSubControl;
     bool isActive = q->isActiveWindow();
     if (isActive) {
         option->state |= QStyle::State_Active;
@@ -313,7 +318,8 @@ void QGraphicsWidgetPrivate::initStyleOptionTitleBar(QStyleOptionTitleBar *optio
     }
     QFont windowTitleFont = QApplication::font("QWorkspaceTitleBar");
     QRect textRect = q->style()->subControlRect(QStyle::CC_TitleBar, option, QStyle::SC_TitleBarLabel, 0);
-    option->text = QFontMetrics(windowTitleFont).elidedText(windowTitle, Qt::ElideRight, textRect.width());
+    option->text = QFontMetrics(windowTitleFont).elidedText(
+        windowData->windowTitle, Qt::ElideRight, textRect.width());
 }
 
 void QGraphicsWidgetPrivate::adjustWindowFlags(Qt::WindowFlags *flags)
@@ -341,9 +347,10 @@ void QGraphicsWidgetPrivate::adjustWindowFlags(Qt::WindowFlags *flags)
 void QGraphicsWidgetPrivate::windowFrameMouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QGraphicsWidget);
-    if (grabbedSection != Qt::NoSection) {
-        if (grabbedSection == Qt::TitleBarArea) {
-            buttonSunken = false;
+    ensureWindowData();
+    if (windowData->grabbedSection != Qt::NoSection) {
+        if (windowData->grabbedSection == Qt::TitleBarArea) {
+            windowData->buttonSunken = false;
             QStyleOptionTitleBar bar;
             initStyleOptionTitleBar(&bar);
             // make sure that the coordinates (rect and pos) we send to the style are positive.
@@ -351,8 +358,10 @@ void QGraphicsWidgetPrivate::windowFrameMouseReleaseEvent(QGraphicsSceneMouseEve
             bar.rect.moveTo(0,0);
             bar.rect.setHeight(q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &bar));
             QPointF pos = event->pos();
-            pos.rx() += leftWindowFrameMargin;
-            pos.ry() += topWindowFrameMargin;
+            if (windowFrameMargins) {
+                pos.rx() += windowFrameMargins[Left];
+                pos.ry() += windowFrameMargins[Top];
+            }
             bar.subControls = QStyle::SC_TitleBarCloseButton;
             if (q->style()->subControlRect(QStyle::CC_TitleBar, &bar,
                                            QStyle::SC_TitleBarCloseButton,
@@ -361,7 +370,7 @@ void QGraphicsWidgetPrivate::windowFrameMouseReleaseEvent(QGraphicsSceneMouseEve
             }
         }
         if (!(static_cast<QGraphicsSceneMouseEvent *>(event)->buttons()))
-            grabbedSection = Qt::NoSection;
+            windowData->grabbedSection = Qt::NoSection;
         event->accept();
     }
 }
@@ -372,35 +381,16 @@ void QGraphicsWidgetPrivate::windowFrameMousePressEvent(QGraphicsSceneMouseEvent
     if (event->button() != Qt::LeftButton)
         return;
 
-    startGeometry = q->geometry();
-    grabbedSection = q->windowFrameSectionAt(event->pos());
-    switch (grabbedSection) {
-    case Qt::LeftSection:
-    case Qt::TopLeftSection:
-        mouseDelta = event->pos() - q->rect().topLeft();
-        break;
-    case Qt::TopSection:
-    case Qt::TopRightSection:
-        mouseDelta = event->pos() - q->rect().topRight();
-        break;
-    case Qt::RightSection:
-    case Qt::BottomRightSection:
-        mouseDelta = event->pos() - q->rect().bottomRight();
-        break;
-    case Qt::BottomSection:
-    case Qt::BottomLeftSection:
-        mouseDelta = event->pos() - q->rect().bottomLeft();
-        break;
-    case Qt::TitleBarArea:
-        if (hoveredSubControl == QStyle::SC_TitleBarCloseButton) {
-            buttonSunken = true;
-            q->update();
-        }
-        break;
-    case Qt::NoSection:
-        break;
+    ensureWindowData();
+    windowData->startGeometry = q->geometry();
+    windowData->grabbedSection = q->windowFrameSectionAt(event->pos());
+    ensureWindowData();
+    if (windowData->grabbedSection == Qt::TitleBarArea
+        && windowData->hoveredSubControl == QStyle::SC_TitleBarCloseButton) {
+        windowData->buttonSunken = true;
+        q->update();
     }
-    event->setAccepted(grabbedSection != Qt::NoSection);
+    event->setAccepted(windowData->grabbedSection != Qt::NoSection);
 }
 
 static void _q_boundGeometryToSizeConstraints(const QRectF &startGeometry,
@@ -455,7 +445,8 @@ static void _q_boundGeometryToSizeConstraints(const QRectF &startGeometry,
 void QGraphicsWidgetPrivate::windowFrameMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QGraphicsWidget);
-    if (!(event->buttons() & Qt::LeftButton) || hoveredSubControl != QStyle::SC_TitleBarLabel)
+    ensureWindowData();
+    if (!(event->buttons() & Qt::LeftButton) || windowData->hoveredSubControl != QStyle::SC_TitleBarLabel)
         return;
 
     QLineF delta(q->mapFromScene(event->buttonDownScenePos(Qt::LeftButton)), event->pos());
@@ -464,49 +455,56 @@ void QGraphicsWidgetPrivate::windowFrameMouseMoveEvent(QGraphicsSceneMouseEvent 
     QLineF parentYDelta(q->mapToParent(QPointF(0, delta.p1().y())), q->mapToParent(QPointF(0, delta.p2().y())));
 
     QRectF newGeometry;
-    switch (grabbedSection) {
+    switch (windowData->grabbedSection) {
     case Qt::LeftSection:
-        newGeometry = QRectF(startGeometry.topLeft() + QPointF(parentXDelta.dx(), parentXDelta.dy()),
-                             startGeometry.size() - QSizeF(delta.dx(), delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft()
+                             + QPointF(parentXDelta.dx(), parentXDelta.dy()),
+                             windowData->startGeometry.size() - QSizeF(delta.dx(), delta.dy()));
         break;
     case Qt::TopLeftSection:
-        newGeometry = QRectF(startGeometry.topLeft() + QPointF(parentDelta.dx(), parentDelta.dy()),
-                             startGeometry.size() - QSizeF(delta.dx(), delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft()
+                             + QPointF(parentDelta.dx(), parentDelta.dy()),
+                             windowData->startGeometry.size() - QSizeF(delta.dx(), delta.dy()));
         break;
     case Qt::TopSection:
-        newGeometry = QRectF(startGeometry.topLeft() + QPointF(parentYDelta.dx(), parentYDelta.dy()),
-                             startGeometry.size() - QSizeF(0, delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft()
+                             + QPointF(parentYDelta.dx(), parentYDelta.dy()),
+                             windowData->startGeometry.size() - QSizeF(0, delta.dy()));
         break;
     case Qt::TopRightSection:
-        newGeometry = QRectF(startGeometry.topLeft() + QPointF(parentYDelta.dx(), parentYDelta.dy()),
-                             startGeometry.size() - QSizeF(-delta.dx(), delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft()
+                             + QPointF(parentYDelta.dx(), parentYDelta.dy()),
+                             windowData->startGeometry.size() - QSizeF(-delta.dx(), delta.dy()));
         break;
     case Qt::RightSection:
-        newGeometry = QRectF(startGeometry.topLeft(),
-                             startGeometry.size() + QSizeF(delta.dx(), 0));
+        newGeometry = QRectF(windowData->startGeometry.topLeft(),
+                             windowData->startGeometry.size() + QSizeF(delta.dx(), 0));
         break;
     case Qt::BottomRightSection:
-        newGeometry = QRectF(startGeometry.topLeft(),
-                             startGeometry.size() + QSizeF(delta.dx(), delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft(),
+                             windowData->startGeometry.size() + QSizeF(delta.dx(), delta.dy()));
         break;
     case Qt::BottomSection:
-        newGeometry = QRectF(startGeometry.topLeft(),
-                             startGeometry.size() + QSizeF(0, delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft(),
+                             windowData->startGeometry.size() + QSizeF(0, delta.dy()));
         break;
     case Qt::BottomLeftSection:
-        newGeometry = QRectF(startGeometry.topLeft() + QPointF(parentXDelta.dx(), parentXDelta.dy()),
-                             startGeometry.size() - QSizeF(delta.dx(), -delta.dy()));
+        newGeometry = QRectF(windowData->startGeometry.topLeft()
+                             + QPointF(parentXDelta.dx(), parentXDelta.dy()),
+                             windowData->startGeometry.size() - QSizeF(delta.dx(), -delta.dy()));
         break;
     case Qt::TitleBarArea:
-        newGeometry = QRectF(startGeometry.topLeft() + QPointF(parentDelta.dx(), parentDelta.dy()),
-                             startGeometry.size());
+        newGeometry = QRectF(windowData->startGeometry.topLeft()
+                             + QPointF(parentDelta.dx(), parentDelta.dy()),
+                             windowData->startGeometry.size());
         break;
     case Qt::NoSection:
         break;
     }
 
-    if (grabbedSection != Qt::NoSection) {
-        _q_boundGeometryToSizeConstraints(startGeometry, &newGeometry, grabbedSection,
+    if (windowData->grabbedSection != Qt::NoSection) {
+        _q_boundGeometryToSizeConstraints(windowData->startGeometry, &newGeometry,
+                                          windowData->grabbedSection,
                                           q->effectiveSizeHint(Qt::MinimumSize),
                                           q->effectiveSizeHint(Qt::MaximumSize));
         q->setGeometry(newGeometry);
@@ -519,21 +517,25 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
     if (!hasDecoration())
         return;
 
+    ensureWindowData();
+
     if (q->rect().contains(event->pos())) {
-        if (buttonMouseOver || hoveredSubControl != QStyle::SC_None)
+        if (windowData->buttonMouseOver || windowData->hoveredSubControl != QStyle::SC_None)
             windowFrameHoverLeaveEvent(event);
         return;
     }
 
-    bool wasMouseOver = buttonMouseOver;
-    QRect oldButtonRect = buttonRect;
-    buttonRect = QRect();
-    buttonMouseOver = false;
+    bool wasMouseOver = windowData->buttonMouseOver;
+    QRect oldButtonRect = windowData->buttonRect;
+    windowData->buttonRect = QRect();
+    windowData->buttonMouseOver = false;
     QPointF pos = event->pos();
     QStyleOptionTitleBar bar;
     // make sure that the coordinates (rect and pos) we send to the style are positive.
-    pos.rx() += leftWindowFrameMargin;
-    pos.ry() += topWindowFrameMargin;
+    if (windowFrameMargins) {
+        pos.rx() += windowFrameMargins[Left];
+        pos.ry() += windowFrameMargins[Top];
+    }
     initStyleOptionTitleBar(&bar);
     bar.rect = q->windowFrameRect().toRect();
     bar.rect.moveTo(0,0);
@@ -559,14 +561,17 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
             cursorShape = Qt::SizeVerCursor;
             break;
         case Qt::TitleBarArea:
-            buttonRect = q->style()->subControlRect(QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarCloseButton, 0);
+            windowData->buttonRect = q->style()->subControlRect(
+                QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarCloseButton, 0);
 #ifdef Q_WS_MAC
             // On mac we should hover if we are in the 'area' of the buttons
-            buttonRect |= q->style()->subControlRect(QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarMinButton, 0);
-            buttonRect |= q->style()->subControlRect(QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarMaxButton, 0);
+            windowData->buttonRect |= q->style()->subControlRect(
+                QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarMinButton, 0);
+            windowData->buttonRect |= q->style()->subControlRect(
+                QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarMaxButton, 0);
 #endif
-            if (buttonRect.contains(pos.toPoint()))
-                buttonMouseOver = true;
+            if (windowData->buttonRect.contains(pos.toPoint()))
+                windowData->buttonMouseOver = true;
             event->ignore();
             break;
         default:
@@ -578,15 +583,15 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
         q->setCursor(cursorShape);
 #endif
     // update buttons if we hover over them
-    hoveredSubControl = q->style()->hitTestComplexControl(QStyle::CC_TitleBar, &bar, pos.toPoint(), 0);
-    if (hoveredSubControl != QStyle::SC_TitleBarCloseButton)
-        hoveredSubControl = QStyle::SC_TitleBarLabel;
+    windowData->hoveredSubControl = q->style()->hitTestComplexControl(QStyle::CC_TitleBar, &bar, pos.toPoint(), 0);
+    if (windowData->hoveredSubControl != QStyle::SC_TitleBarCloseButton)
+        windowData->hoveredSubControl = QStyle::SC_TitleBarLabel;
 
-    if (buttonMouseOver != wasMouseOver) {
+    if (windowData->buttonMouseOver != wasMouseOver) {
         if (!oldButtonRect.isNull())
             q->update(QRectF(oldButtonRect).translated(q->windowFrameRect().topLeft()));
-        if (!buttonRect.isNull())
-            q->update(QRectF(buttonRect).translated(q->windowFrameRect().topLeft()));
+        if (!windowData->buttonRect.isNull())
+            q->update(QRectF(windowData->buttonRect).translated(q->windowFrameRect().topLeft()));
     }
 }
 
@@ -600,16 +605,19 @@ void QGraphicsWidgetPrivate::windowFrameHoverLeaveEvent(QGraphicsSceneHoverEvent
         q->unsetCursor();
 #endif
 
+        ensureWindowData();
+
         bool needsUpdate = false;
-        if (hoveredSubControl == QStyle::SC_TitleBarCloseButton || buttonMouseOver)
+        if (windowData->hoveredSubControl == QStyle::SC_TitleBarCloseButton
+            || windowData->buttonMouseOver)
             needsUpdate = true;
 
         // update the hover state (of buttons etc...)
-        hoveredSubControl = QStyle::SC_None;
-        buttonMouseOver = false;
-        buttonRect = QRect();
+        windowData->hoveredSubControl = QStyle::SC_None;
+        windowData->buttonMouseOver = false;
+        windowData->buttonRect = QRect();
         if (needsUpdate)
-            q->update(buttonRect);
+            q->update(windowData->buttonRect);
     }
 }
 

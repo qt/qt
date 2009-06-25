@@ -5469,7 +5469,7 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
 
                     if (skipIt) {
                         if (contentHnd) {
-                            if (!contentHnd->skippedEntity(QString::fromLatin1("%") + ref())) {
+                            if (!contentHnd->skippedEntity(QLatin1Char('%') + ref())) {
                                 reportParseError(contentHnd->errorString());
                                 return false;
                             }
@@ -5481,7 +5481,7 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
                                 return false;
                         } else if (parsePEReference_context == InDTD) {
                             // Included as PE
-                            if (!insertXmlRef(QString::fromLatin1(" ")+xmlRefString+QString::fromLatin1(" "), ref(), false))
+                            if (!insertXmlRef(QLatin1Char(' ') + xmlRefString + QLatin1Char(' '), ref(), false))
                                 return false;
                         }
                     }
@@ -6733,7 +6733,7 @@ bool QXmlSimpleReaderPrivate::parseEntityDecl()
                 if ( !entityExist(name())) {
                     parameterEntities.insert(name(), string());
                     if (declHnd) {
-                        if (!declHnd->internalEntityDecl(QString::fromLatin1("%")+name(), string())) {
+                        if (!declHnd->internalEntityDecl(QLatin1Char('%') + name(), string())) {
                             reportParseError(declHnd->errorString());
                             return false;
                         }
@@ -6745,7 +6745,7 @@ bool QXmlSimpleReaderPrivate::parseEntityDecl()
                 if ( !entityExist(name())) {
                     externParameterEntities.insert(name(), QXmlSimpleReaderPrivate::ExternParameterEntity(publicId, systemId));
                     if (declHnd) {
-                        if (!declHnd->externalEntityDecl(QString::fromLatin1("%")+name(), publicId, systemId)) {
+                        if (!declHnd->externalEntityDecl(QLatin1Char('%') + name(), publicId, systemId)) {
                             reportParseError(declHnd->errorString());
                             return false;
                         }
@@ -7869,8 +7869,8 @@ bool QXmlSimpleReaderPrivate::insertXmlRef(const QString &data, const QString &n
 {
     if (inLiteral) {
         QString tmp = data;
-        xmlRefStack.push(XmlRef(name, tmp.replace(QLatin1String("\""),
-                            QLatin1String("&quot;")).replace(QLatin1String("'"), QLatin1String("&apos;"))));
+        xmlRefStack.push(XmlRef(name, tmp.replace(QLatin1Char('\"'),
+                            QLatin1String("&quot;")).replace(QLatin1Char('\''), QLatin1String("&apos;"))));
     } else {
         xmlRefStack.push(XmlRef(name, data));
     }

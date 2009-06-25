@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QMutexPool
 {
 public:
-    explicit QMutexPool(bool recursive = false, int size = 128);
+    explicit QMutexPool(QMutex::RecursionMode recursionMode = QMutex::NonRecursive, int size = 131);
     ~QMutexPool();
 
     QMutex *get(const void *address);
@@ -72,9 +72,8 @@ public:
     static QMutex *globalInstanceGet(const void *address);
 
 private:
-    QVarLengthArray<QAtomicPointer<QMutex>, 128> mutexes;
-    int count;
-    bool recurs;
+    QVarLengthArray<QAtomicPointer<QMutex>, 131> mutexes;
+    QMutex::RecursionMode recursionMode;
 };
 
 extern Q_CORE_EXPORT QMutexPool *qt_global_mutexpool;

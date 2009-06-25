@@ -1085,6 +1085,13 @@ Requires:
 Name: QNetworkInterface
 SeeAlso: ???
 
+Feature: NETWORKDISKCACHE
+Description: Supports a disk cache for network resources
+Section: Networking
+Requires: TEMPORARYFILE
+Name: QNetworkDiskCache
+SeeAlso: ???
+
 # Utilities
 
 Feature: COMPLETER
@@ -1149,6 +1156,21 @@ Section: Utilities
 Requires: PROPERTIES
 Name: Accessibility
 SeeAlso: ???
+
+Feature: ANIMATION
+Description: Provides a framework for animations.
+Section: Utilities
+Requires: PROPERTIES
+Name: Animation
+SeeAlso: ???
+
+Feature: STATEMACHINE
+Description: Provides hierarchical finite state machines.
+Section: Utilities
+Requires: PROPERTIES
+Name: State machine
+SeeAlso: ???
+
 
 # SVG
 

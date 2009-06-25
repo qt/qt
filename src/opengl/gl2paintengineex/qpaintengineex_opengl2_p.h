@@ -53,21 +53,39 @@
 // We mean it.
 //
 
+#include <QDebug>
+
 #include <private/qpaintengineex_p.h>
+#include <private/qglengineshadermanager_p.h>
+#include <private/qgl2pexvertexarray_p.h>
+
+enum EngineMode {
+    ImageDrawingMode,
+    TextDrawingMode,
+    BrushDrawingMode
+};
+
+QT_BEGIN_NAMESPACE
 
 class QGL2PaintEngineExPrivate;
 
 
-class QOpenGLPaintEngineState : public QPainterState
+class QOpenGL2PaintEngineState : public QPainterState
 {
 public:
-    QOpenGLPaintEngineState(QOpenGLPaintEngineState &other);
-    QOpenGLPaintEngineState();
-    ~QOpenGLPaintEngineState();
+    QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other);
+    QOpenGL2PaintEngineState();
+    ~QOpenGL2PaintEngineState();
 
-    QRegion clipRegion;
-    bool hasClipping;
-    QRect fastClip;
+    bool needsDepthBufferClear;
+    qreal depthBufferClearValue;
+
+    bool depthTestEnabled;
+    bool scissorTestEnabled;
+    qreal currentDepth;
+    qreal maxDepth;
+
+    bool canRestoreClip;
 };
 
 
@@ -80,6 +98,8 @@ public:
 
     bool begin(QPaintDevice *device);
     bool end();
+
+    void ensureActive();
 
     virtual void fill(const QVectorPath &path, const QBrush &brush);
     virtual void stroke(const QVectorPath &path, const QPen &pen);
@@ -100,26 +120,106 @@ public:
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     Type type() const { return OpenGL; }
 
-
-    // State stuff is just for clipping and ripped off from QGLPaintEngine
     void setState(QPainterState *s);
     QPainterState *createState(QPainterState *orig) const;
-    inline QOpenGLPaintEngineState *state() {
-        return static_cast<QOpenGLPaintEngineState *>(QPaintEngineEx::state());
+    inline QOpenGL2PaintEngineState *state() {
+        return static_cast<QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    inline const QOpenGLPaintEngineState *state() const {
-        return static_cast<const QOpenGLPaintEngineState *>(QPaintEngineEx::state());
+    inline const QOpenGL2PaintEngineState *state() const {
+        return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    void updateClipRegion(const QRegion &clipRegion, Qt::ClipOperation op);
+    virtual void sync();
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
 
+class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
+{
+    Q_DECLARE_PUBLIC(QGL2PaintEngineEx)
+public:
+    QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
+            q(q_ptr),
+            width(0), height(0),
+            ctx(0),
+            currentBrush( &(q->state()->brush) ),
+            inverseScale(1),
+            shaderManager(0)
+    { }
 
+    ~QGL2PaintEngineExPrivate();
+
+    void updateBrushTexture();
+    void updateBrushUniforms();
+    void updateMatrix();
+    void updateCompositionMode();
+    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform);
+
+    void setBrush(const QBrush* brush);
+
+    void transferMode(EngineMode newMode);
+
+    // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
+    void fill(const QVectorPath &path);
+    void drawOutline(const QVectorPath& path);
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
+    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
+
+    void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
+        // ^ draws whatever is in the vertex array
+    void composite(const QGLRect& boundingRect);
+        // ^ Composites the bounding rect onto dest buffer
+    void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
+        // ^ Calls drawVertexArrays to render into stencil buffer
+
+    void prepareForDraw(bool srcPixelsAreOpaque);
+
+    inline void useSimpleShader();
+    inline QColor premultiplyColor(QColor c, GLfloat opacity);
+
+    QGL2PaintEngineEx* q;
+    QGLDrawable drawable;
+    int width, height;
+    QGLContext *ctx;
+    EngineMode mode;
+
+    mutable QOpenGL2PaintEngineState *last_created_state;
+
+    // Dirty flags
+    bool matrixDirty; // Implies matrix uniforms are also dirty
+    bool compositionModeDirty;
+    bool brushTextureDirty;
+    bool brushUniformsDirty;
+    bool simpleShaderMatrixUniformDirty;
+    bool shaderMatrixUniformDirty;
+    bool stencilBufferDirty;
+    bool depthUniformDirty;
+    bool simpleShaderDepthUniformDirty;
+
+    const QBrush*    currentBrush; // May not be the state's brush!
+
+    GLfloat     inverseScale;
+
+    QGL2PEXVertexArray vertexCoordinateArray;
+    QGL2PEXVertexArray textureCoordinateArray;
+
+    GLfloat staticVertexCoordinateArray[8];
+    GLfloat staticTextureCoordinateArray[8];
+
+    GLfloat pmvMatrix[4][4];
+
+    QGLEngineShaderManager* shaderManager;
+
+    void writeClip(const QVectorPath &path, float depth);
+    void updateDepthScissorTest();
+    void regenerateDepthClip();
+    void systemStateChanged();
+    uint use_system_clip : 1;
+};
+
+QT_END_NAMESPACE
 
 #endif

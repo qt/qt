@@ -231,6 +231,7 @@ private slots:
     void extendedBlendModes();
 
     void zeroOpacity();
+    void clippingBug();
 
 private:
     void fillData();
@@ -4195,6 +4196,29 @@ void tst_QPainter::zeroOpacity()
     p.end();
 
     QCOMPARE(target.pixel(0, 0), 0xff000000);
+}
+
+void tst_QPainter::clippingBug()
+{
+    QImage img(32, 32, QImage::Format_ARGB32_Premultiplied);
+    img.fill(0);
+
+    QImage expected = img;
+    QPainter p(&expected);
+    p.fillRect(1, 1, 30, 30, Qt::red);
+    p.end();
+
+    QPainterPath path;
+    path.addRect(1, 1, 30, 30);
+    path.addRect(1, 1, 30, 30);
+    path.addRect(1, 1, 30, 30);
+
+    p.begin(&img);
+    p.setClipPath(path);
+    p.fillRect(0, 0, 32, 32, Qt::red);
+    p.end();
+
+    QCOMPARE(img, expected);
 }
 
 QTEST_MAIN(tst_QPainter)

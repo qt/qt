@@ -87,6 +87,7 @@ class CodeParser
 
  private:
     static QList<CodeParser *> parsers;
+    static bool showInternal;
 };
 
 QT_END_NAMESPACE

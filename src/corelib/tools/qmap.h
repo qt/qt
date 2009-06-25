@@ -1016,7 +1016,7 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
 {
     int n = 0;
     typename QMap<Key, T>::iterator i(find(key));
-    typename QMap<Key, T>::const_iterator end(QMap<Key, T>::constEnd());
+    typename QMap<Key, T>::iterator end(QMap<Key, T>::end());
     while (i != end && !qMapLessThanKey<Key>(key, i.key())) {
         if (i.value() == value) {
 #if defined(Q_CC_RVCT)  

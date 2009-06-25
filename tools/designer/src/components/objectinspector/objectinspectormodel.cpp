@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ObjectInspector
-*/
-
 #include "objectinspectormodel_p.h"
 
 #include <qlayout_widget_p.h>

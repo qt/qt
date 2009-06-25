@@ -154,6 +154,10 @@
 #define kThemeBrushAlternatePrimaryHighlightColor -5
 #endif
 
+#define kCMDeviceUnregisteredNotification CFSTR("CMDeviceUnregisteredNotification")
+#define kCMDefaultDeviceNotification CFSTR("CMDefaultDeviceNotification")
+#define kCMDeviceProfilesNotification CFSTR("CMDeviceProfilesNotification")
+#define kCMDefaultDeviceProfileNotification CFSTR("CMDefaultDeviceProfileNotification")
 
 QT_BEGIN_NAMESPACE
 
@@ -1040,11 +1044,29 @@ void qt_release_app_proc_handler()
 #endif
 }
 
+void qt_color_profile_changed(CFNotificationCenterRef, void *, CFStringRef, const void *,
+                              CFDictionaryRef)
+{
+    QCoreGraphicsPaintEngine::cleanUpMacColorSpaces();
+}
 /* platform specific implementations */
 void qt_init(QApplicationPrivate *priv, int)
 {
     if (qt_is_gui_used) {
         CGDisplayRegisterReconfigurationCallback(qt_mac_display_change_callbk, 0);
+        CFNotificationCenterRef center = CFNotificationCenterGetDistributedCenter();
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDeviceUnregisteredNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDefaultDeviceNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDeviceProfilesNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDefaultDeviceProfileNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
         ProcessSerialNumber psn;
         if (GetCurrentProcess(&psn) == noErr) {
             // Jambi needs to transform itself since most people aren't "used"
@@ -1196,10 +1218,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [qtMenuLoader release];
     }
 #endif
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
-        extern void qt_mac_set_native_menubar(bool);
-        qt_mac_set_native_menubar(false);
-    }
     // Register for Carbon tablet proximity events on the event monitor target.
     // This means that we should receive proximity events even when we aren't the active application.
     if (!tablet_proximity_handler) {
@@ -1228,6 +1246,12 @@ void qt_release_apple_event_handler()
 void qt_cleanup()
 {
     CGDisplayRemoveReconfigurationCallback(qt_mac_display_change_callbk, 0);
+    CFNotificationCenterRef center = CFNotificationCenterGetDistributedCenter();
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceUnregisteredNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceProfilesNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceProfileNotification, 0);
+
 #ifndef QT_MAC_USE_COCOA
     qt_release_app_proc_handler();
     if (app_proc_handlerUPP) {
@@ -1642,15 +1666,6 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
         bool inNonClientArea = false;
         GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, 0,
                           sizeof(where), 0, &where);
-        if(ekind == kEventMouseMoved && qt_mac_app_fullscreen &&
-            QApplication::desktop()->screenNumber(QPoint(where.h, where.v)) ==
-            QApplication::desktop()->primaryScreen()) {
-            if(where.v <= 0)
-                ShowMenuBar();
-            else if(qt_mac_window_at(where.h, where.v, 0) != inMenuBar)
-                HideMenuBar();
-        }
-
 #if defined(DEBUG_MOUSE_MAPS)
         const char *edesc = 0;
         switch(ekind) {

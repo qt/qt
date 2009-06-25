@@ -84,6 +84,7 @@ Q_GUI_EXPORT
     bool composing;
     int composingLength;
     bool sendKeyEvents;
+    QString *composingText;
     QStringList *currentCustomTypes;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;

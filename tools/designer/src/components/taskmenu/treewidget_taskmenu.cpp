@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::TreeWidgetTaskMenu
-*/
-
 #include "treewidget_taskmenu.h"
 #include "treewidgeteditor.h"
 

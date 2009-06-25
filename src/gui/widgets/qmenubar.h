@@ -64,6 +64,7 @@ class Q_GUI_EXPORT QMenuBar : public QWidget
     Q_OBJECT
 
     Q_PROPERTY(bool defaultUp READ isDefaultUp WRITE setDefaultUp)
+    Q_PROPERTY(bool nativeMenuBar READ isNativeMenuBar WRITE setNativeMenuBar)
 
 public:
     explicit QMenuBar(QWidget *parent = 0);
@@ -110,13 +111,16 @@ public:
     static bool macUpdateMenuBar();
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void setDefaultAction(QAction *);
     QAction *defaultAction() const;
 
     static void wceCommands(uint command, HWND controlHandle);
     static void wceRefresh();
 #endif
+
+    bool isNativeMenuBar() const;
+    void setNativeMenuBar(bool nativeMenuBar);
 
 public Q_SLOTS:
     virtual void setVisible(bool visible);
@@ -339,7 +343,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_internalShortcutActivated(int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateLayout())
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_PRIVATE_SLOT(d_func(), void _q_updateDefaultAction())
 #endif
 

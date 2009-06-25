@@ -48,6 +48,10 @@
 #include "qstringlist.h"
 #include <limits.h>
 
+#ifdef QIODEVICE_DEBUG
+#  include <ctype.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QIODEVICE_DEBUG
@@ -1756,7 +1760,7 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
     }
     qSort(modeList);
     debug << modeList.join(QLatin1String("|"));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif

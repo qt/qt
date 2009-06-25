@@ -855,6 +855,24 @@ void QTextDocumentLayoutPrivate::drawBorder(QPainter *painter, const QRectF &rec
 
 void QTextDocumentLayoutPrivate::drawFrameDecoration(QPainter *painter, QTextFrame *frame, QTextFrameData *fd, const QRectF &clip, const QRectF &rect) const
 {
+
+    const QBrush bg = frame->frameFormat().background();
+    if (bg != Qt::NoBrush) {
+        QRectF bgRect = rect;
+        bgRect.adjust((fd->leftMargin + fd->border).toReal(),
+                      (fd->topMargin + fd->border).toReal(),
+                      - (fd->rightMargin + fd->border).toReal(),
+                      - (fd->bottomMargin + fd->border).toReal());
+
+        QRectF gradientRect; // invalid makes it default to bgRect
+        QPointF origin = bgRect.topLeft();
+        if (!frame->parentFrame()) {
+            bgRect = clip;
+            gradientRect.setWidth(painter->device()->width());
+            gradientRect.setHeight(painter->device()->height());
+        }
+        fillBackground(painter, bgRect, bg, origin, gradientRect);
+    }
     if (fd->border != 0) {
         painter->save();
         painter->setBrush(Qt::lightGray);
@@ -874,24 +892,6 @@ void QTextDocumentLayoutPrivate::drawFrameDecoration(QPainter *painter, QTextFra
                    border, frame->frameFormat().borderBrush(), frame->frameFormat().borderStyle());
 
         painter->restore();
-    }
-
-    const QBrush bg = frame->frameFormat().background();
-    if (bg != Qt::NoBrush) {
-        QRectF bgRect = rect;
-        bgRect.adjust((fd->leftMargin + fd->border).toReal(),
-                      (fd->topMargin + fd->border).toReal(),
-                      - (fd->rightMargin + fd->border).toReal(),
-                      - (fd->bottomMargin + fd->border).toReal());
-
-        QRectF gradientRect; // invalid makes it default to bgRect
-        QPointF origin = bgRect.topLeft();
-        if (!frame->parentFrame()) {
-            bgRect = clip;
-            gradientRect.setWidth(painter->device()->width());
-            gradientRect.setHeight(painter->device()->height());
-        }
-        fillBackground(painter, bgRect, bg, origin, gradientRect);
     }
 }
 
@@ -2500,7 +2500,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
     LDEBUG << "layoutBlock from=" << layoutFrom << "to=" << layoutTo;
 
-//    qDebug() << "layoutBlock; width" << layoutStruct->x_right - layoutStruct->x_left << "(maxWidth is btw" << tl->maximumWidth() << ")";
+//    qDebug() << "layoutBlock; width" << layoutStruct->x_right - layoutStruct->x_left << "(maxWidth is btw" << tl->maximumWidth() << ')';
 
     if (previousBlockFormat) {
         qreal margin = qMax(blockFormat.topMargin(), previousBlockFormat->bottomMargin());
@@ -3205,18 +3205,16 @@ bool QTextDocumentLayout::contentHasAlignment() const
 
 qreal QTextDocumentLayoutPrivate::scaleToDevice(qreal value) const
 {
-    QPaintDevice *dev = q_func()->paintDevice();
-    if (!dev)
+    if (!paintDevice)
         return value;
-    return value * dev->logicalDpiY() / qreal(qt_defaultDpi());
+    return value * paintDevice->logicalDpiY() / qreal(qt_defaultDpi());
 }
 
 QFixed QTextDocumentLayoutPrivate::scaleToDevice(QFixed value) const
 {
-    QPaintDevice *dev = q_func()->paintDevice();
-    if (!dev)
+    if (!paintDevice)
         return value;
-    return value * QFixed(dev->logicalDpiY()) / QFixed(qt_defaultDpi());
+    return value * QFixed(paintDevice->logicalDpiY()) / QFixed(qt_defaultDpi());
 }
 
 QT_END_NAMESPACE

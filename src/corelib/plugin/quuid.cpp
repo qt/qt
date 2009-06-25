@@ -405,7 +405,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     }
     return s;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     Returns true if this is the null UUID

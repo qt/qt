@@ -115,7 +115,7 @@ struct QMenuMergeItem
 typedef QList<QMenuMergeItem> QMenuMergeList;
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 struct QWceMenuAction {
     uint command;    
     QPointer<QAction> action;
@@ -144,7 +144,7 @@ public:
 #ifdef Q_WS_MAC
                       ,mac_menu(0)
 #endif
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
 #ifdef Q_OS_SYMBIAN
@@ -160,7 +160,7 @@ public:
 #ifdef Q_WS_MAC
         delete mac_menu;
 #endif
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
 #ifdef Q_OS_SYMBIAN
@@ -180,7 +180,7 @@ public:
     void calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
     void updateActions();
     QRect popupGeometry(int screen=-1) const;
-    QList<QAction *> filterActions(const QList<QAction *> &actions) const;
+    QList<QAction *> filteredActions() const;
     uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
@@ -239,7 +239,7 @@ public:
     virtual QList<QPointer<QWidget> > calcCausedStack() const;
     QMenuCaused causedPopup;
     void hideUpToMenuBar();
-    void hideMenu(QMenu *menu);
+    void hideMenu(QMenu *menu, bool justRegister = false);
 
     //index mappings
     inline QAction *actionAt(int i) const { return q_func()->actions().at(i); }
@@ -312,7 +312,7 @@ public:
     bool emitHighlighted;
 #endif
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
     struct QWceMenuPrivate {
         QList<QWceMenuAction*> actionItems;
         HMENU menuHandle;

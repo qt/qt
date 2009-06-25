@@ -135,6 +135,9 @@ void tst_Headers::licenseCheck()
     QByteArray data = f.readAll();
     QStringList content = QString::fromLocal8Bit(data.replace('\r',"")).split("\n");
 
+    if (content.first().contains("generated"))
+        content.takeFirst();
+
     QVERIFY(licensePattern.exactMatch(content.at(7)) ||
             licensePattern.exactMatch(content.at(4)));
     QString licenseType = licensePattern.cap(1);

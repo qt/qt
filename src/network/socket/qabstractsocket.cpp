@@ -852,7 +852,7 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         if (i != 0) s += ", ";
         s += addresses.at(i).toString();
     }
-    s += "}";
+    s += '}';
     qDebug("QAbstractSocketPrivate::_q_startConnecting(hostInfo == %s)", s.toLatin1().constData());
 #endif
 
@@ -2597,7 +2597,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketError er
         debug << "QAbstractSocket::ProxyProtocolError";
         break;
     default:
-        debug << "QAbstractSocket::SocketError(" << int(error) << ")";
+        debug << "QAbstractSocket::SocketError(" << int(error) << ')';
         break;
     }
     return debug;
@@ -2628,7 +2628,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketState st
         debug << "QAbstractSocket::ClosingState";
         break;
     default:
-        debug << "QAbstractSocket::SocketState(" << int(state) << ")";
+        debug << "QAbstractSocket::SocketState(" << int(state) << ')';
         break;
     }
     return debug;

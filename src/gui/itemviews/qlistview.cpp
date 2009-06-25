@@ -588,7 +588,7 @@ void QListView::scrollTo(const QModelIndex &index, ScrollHint hint)
 
     const QRect rect = visualRect(index);
     if (hint == EnsureVisible && d->viewport->rect().contains(rect)) {
-        d->setDirtyRegion(rect);
+        d->viewport->update(rect);
         return;
     }
 
@@ -610,7 +610,7 @@ int QListViewPrivate::horizontalScrollToValue(const QModelIndex &index, const QR
     const bool rightOf = q->isRightToLeft()
                          ? rect.right() > area.right()
                          : (rect.right() > area.right()) && (rect.left() > area.left());
-    int horizontalValue = q->horizontalScrollBar()->value();
+    int horizontalValue = hbar->value();
 
     // ScrollPerItem
     if (q->horizontalScrollMode() == QAbstractItemView::ScrollPerItem && viewMode == QListView::ListMode) {
@@ -652,10 +652,10 @@ int QListViewPrivate::verticalScrollToValue(const QModelIndex &index, const QRec
     const bool above = (hint == QListView::EnsureVisible && rect.top() < area.top());
     const bool below = (hint == QListView::EnsureVisible && rect.bottom() > area.bottom());
 
-    int verticalValue = q->verticalScrollBar()->value();
+    int verticalValue = vbar->value();
 
     // ScrollPerItem
-    if (q->verticalScrollMode() == QAbstractItemView::ScrollPerItem && viewMode == QListView::ListMode) {
+    if (verticalScrollMode == QAbstractItemView::ScrollPerItem && viewMode == QListView::ListMode) {
         const QListViewItem item = indexToListViewItem(index);
         const QRect rect = q->visualRect(index);
         verticalValue = staticListView->verticalPerItemValue(itemIndex(item),
@@ -755,7 +755,7 @@ void QListView::scrollContentsBy(int dx, int dy)
     // update the dragged items
     if (d->viewMode == IconMode) // ### move to dynamic class
     if (!d->dynamicListView->draggedItems.isEmpty())
-        d->setDirtyRegion(d->dynamicListView->draggedItemsRect().translated(dx, dy));
+        d->viewport->update(d->dynamicListView->draggedItemsRect().translated(dx, dy));
 }
 
 /*!
@@ -835,7 +835,7 @@ void QListView::mouseMoveEvent(QMouseEvent *e)
         && d->selectionMode != NoSelection) {
         QRect rect(d->pressedPosition, e->pos() + QPoint(horizontalOffset(), verticalOffset()));
         rect = rect.normalized();
-        d->setDirtyRegion(d->mapToViewport(rect.united(d->elasticBand), d->viewMode == QListView::ListMode));
+        d->viewport->update(d->mapToViewport(rect.united(d->elasticBand), d->viewMode == QListView::ListMode));
         d->elasticBand = rect;
     }
 }
@@ -849,7 +849,7 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
     QAbstractItemView::mouseReleaseEvent(e);
     // #### move this implementation into a dynamic class
     if (d->showElasticBand && d->elasticBand.isValid()) {
-        d->setDirtyRegion(d->mapToViewport(d->elasticBand, d->viewMode == QListView::ListMode));
+        d->viewport->update(d->mapToViewport(d->elasticBand, d->viewMode == QListView::ListMode));
         d->elasticBand = QRect();
     }
 }
@@ -914,11 +914,11 @@ void QListView::dragMoveEvent(QDragMoveEvent *e)
         if (d->canDecode(e)) {
             // get old dragged items rect
             QRect itemsRect = d->dynamicListView->itemsRect(d->dynamicListView->draggedItems);
-            d->setDirtyRegion(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
+            d->viewport->update(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
             // update position
             d->dynamicListView->draggedItemsPos = e->pos();
             // get new items rect
-            d->setDirtyRegion(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
+            d->viewport->update(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
             // set the item under the cursor to current
             QModelIndex index;
             if (d->movement == Snap) {
@@ -1007,12 +1007,12 @@ void QListView::internalDrop(QDropEvent *event)
     for (int i = 0; i < indexes.count(); ++i) {
         QModelIndex index = indexes.at(i);
         QRect rect = rectForIndex(index);
-        d->setDirtyRegion(d->mapToViewport(rect, d->viewMode == QListView::ListMode));
+        d->viewport->update(d->mapToViewport(rect, d->viewMode == QListView::ListMode));
         QPoint dest = rect.topLeft() + delta;
         if (isRightToLeft())
             dest.setX(d->flipX(dest.x()) - rect.width());
         d->dynamicListView->moveItem(index.row(), dest);
-        d->setDirtyRegion(visualRect(index));
+        update(index);
     }
     stopAutoScroll();
     d->dynamicListView->draggedItems.clear();
@@ -1100,14 +1100,8 @@ void QListView::paintEvent(QPaintEvent *e)
     QPainter painter(d->viewport);
     QRect area = e->rect();
 
-    QVector<QModelIndex> toBeRendered;
-//     QVector<QRect> rects = e->region().rects();
-//     for (int i = 0; i < rects.size(); ++i) {
-//         d->intersectingSet(rects.at(i).translated(horizontalOffset(), verticalOffset()));
-//         toBeRendered += d->intersectVector;
-//     }
     d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
-    toBeRendered = d->intersectVector;
+    const QVector<QModelIndex> toBeRendered = d->intersectVector;
 
     const QModelIndex current = currentIndex();
     const QModelIndex hover = d->hover;
@@ -1455,9 +1449,9 @@ void QListView::setPositionForIndex(const QPoint &position, const QModelIndex &i
     if (index.row() >= d->dynamicListView->items.count())
         return;
     const QSize oldContents = d->contentsSize();
-    d->setDirtyRegion(visualRect(index)); // update old position
+    update(index); // update old position
     d->dynamicListView->moveItem(index.row(), position);
-    d->setDirtyRegion(visualRect(index)); // update new position
+    update(index); // update new position
 
     if (d->contentsSize() != oldContents)
         updateGeometries(); // update the scroll bars
@@ -1608,6 +1602,10 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
         if (!selection.at(i).isValid())
             continue;
         QModelIndex parent = selection.at(i).topLeft().parent();
+        //we only display the children of the root in a listview
+        //we're not interested in the other model indexes
+        if (parent != d->root)
+            continue;
         int t = selection.at(i).topLeft().row();
         int b = selection.at(i).bottomRight().row();
         if (d->viewMode == IconMode || d->isWrapping()) { // in non-static mode, we have to go through all selected items
@@ -1616,8 +1614,8 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
         } else { // in static mode, we can optimize a bit
             while (t <= b && d->isHidden(t)) ++t;
             while (b >= t && d->isHidden(b)) --b;
-            const QModelIndex top = d->model->index(t, c, d->root);
-            const QModelIndex bottom = d->model->index(b, c, d->root);
+            const QModelIndex top = d->model->index(t, c, parent);
+            const QModelIndex bottom = d->model->index(b, c, parent);
             QRect rect(visualRect(top).topLeft(),
                        visualRect(bottom).bottomRight());
             selectionRegion += QRegion(rect);
@@ -1969,10 +1967,16 @@ void QListViewPrivate::prepareItemsLayout()
     int frameAroundContents = 0;
     if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents))
         frameAroundContents = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth) * 2;
-    int verticalMargin = vbarpolicy==Qt::ScrollBarAlwaysOff ? 0 :
-        q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->verticalScrollBar()) + frameAroundContents;
-    int horizontalMargin =  hbarpolicy==Qt::ScrollBarAlwaysOff ? 0 :
-        q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->horizontalScrollBar()) + frameAroundContents;
+
+    // maximumViewportSize() already takes scrollbar into account if policy is
+    // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
+    // is Qt::ScrollBarAsNeeded
+    int verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, vbar) + frameAroundContents
+        : 0;
+    int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, hbar) + frameAroundContents
+        : 0;
 
     layoutBounds.adjust(0, 0, -verticalMargin, -horizontalMargin);
 

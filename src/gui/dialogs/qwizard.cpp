@@ -69,7 +69,7 @@
 #include "private/qdialog_p.h"
 #include <qdebug.h>
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 #endif
 
@@ -377,7 +377,7 @@ void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
         /*
             There is no widthForHeight() function, so we simulate it with a loop.
         */
-        int candidateSubTitleWidth = qMin(512, 2 * qApp->desktop()->width() / 3);
+        int candidateSubTitleWidth = qMin(512, 2 * QApplication::desktop()->width() / 3);
         int delta = candidateSubTitleWidth >> 1;
         while (delta > 0) {
             if (subTitleLabel->heightForWidth(candidateSubTitleWidth - delta)
@@ -1241,8 +1241,10 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
 #endif
     QSize minimumSize = mainLayout->totalMinimumSize() + QSize(0, extraHeight);
     QSize maximumSize;
+    bool skipMaxSize = false;
 #if defined(Q_WS_WIN)
-    if (QSysInfo::WindowsVersion > QSysInfo::WV_Me) // ### See Tasks 164078 and 161660
+    if (QSysInfo::WindowsVersion <= QSysInfo::WV_Me) // ### See Tasks 164078 and 161660
+        skipMaxSize = true;
 #endif
     maximumSize = mainLayout->totalMaximumSize();
     if (info.header && headerWidget->maximumWidth() != QWIDGETSIZE_MAX) {
@@ -1263,11 +1265,13 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     }
     if (q->maximumWidth() == maximumWidth) {
         maximumWidth = maximumSize.width();
-        q->setMaximumWidth(maximumWidth);
+        if (!skipMaxSize)
+            q->setMaximumWidth(maximumWidth);
     }
     if (q->maximumHeight() == maximumHeight) {
         maximumHeight = maximumSize.height();
-        q->setMaximumHeight(maximumHeight);
+        if (!skipMaxSize)
+            q->setMaximumHeight(maximumHeight);
     }
 }
 
@@ -2120,7 +2124,7 @@ QWizard::QWizard(QWidget *parent, Qt::WindowFlags flags)
 {
     Q_D(QWizard);
     d->init();
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (!qt_wince_is_mobile())
         setWindowFlags(windowFlags() & ~Qt::WindowOkButtonHint);
 #endif

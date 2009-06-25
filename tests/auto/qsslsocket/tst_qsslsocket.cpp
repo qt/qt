@@ -137,6 +137,7 @@ private slots:
     void addCaCertificates2();
     void ciphers();
     void connectToHostEncrypted();
+    void connectToHostEncryptedWithVerificationPeerName();
     void sessionCipher();
     void flush();
     void isEncrypted();
@@ -607,6 +608,32 @@ void tst_QSslSocket::connectToHostEncrypted()
     QCOMPARE(socket->mode(), QSslSocket::UnencryptedMode);
 
     QVERIFY(socket->waitForDisconnected());
+}
+
+void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    this->socket = socket;
+
+    socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem"));
+#ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
+    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)),
+            this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
+#endif
+
+    // connect to the server with its local name, but use the full name for verification.
+    socket->connectToHostEncrypted(QtNetworkSettings::serverLocalName(), 443, QtNetworkSettings::serverName());
+
+    // This should pass unconditionally when using fluke's CA certificate.
+    QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
+
+    socket->disconnectFromHost();
+    QVERIFY(socket->waitForDisconnected());
+
+    QCOMPARE(socket->mode(), QSslSocket::SslClientMode);
 }
 
 void tst_QSslSocket::sessionCipher()
@@ -1287,6 +1314,8 @@ protected:
         // delayed start of encryption
         QTest::qSleep(100);
         QSslSocket *socket = server.socket;
+        Q_ASSERT(socket);
+        Q_ASSERT(socket->isValid());
         socket->ignoreSslErrors();
         socket->startServerEncryption();
         if (!socket->waitForEncrypted(2000))

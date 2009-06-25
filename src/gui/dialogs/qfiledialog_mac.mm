@@ -911,8 +911,9 @@ void QFileDialogPrivate::createNavServicesDialog()
 
     navOptions.windowTitle = QCFString::toCFStringRef(q->windowTitle());
 
-    static const int w = 450, h = 350;
-    navOptions.location.h = navOptions.location.v = -1;
+    navOptions.location.h = -1;
+    navOptions.location.v = -1;
+
     QWidget *parent = q->parentWidget();
     if (parent && parent->isVisible()) {
         WindowClass wclass;
@@ -920,20 +921,6 @@ void QFileDialogPrivate::createNavServicesDialog()
         parent = parent->window();
         QString s = parent->windowTitle();
         navOptions.clientName = QCFString::toCFStringRef(s);
-        navOptions.location.h = (parent->x() + (parent->width() / 2)) - (w / 2);
-        navOptions.location.v = (parent->y() + (parent->height() / 2)) - (h / 2);
-
-        QRect r = QApplication::desktop()->screenGeometry(
-                QApplication::desktop()->screenNumber(parent));
-        const int border = 10;
-        if (navOptions.location.h + w > r.right())
-            navOptions.location.h -= (navOptions.location.h + w) - r.right() + border;
-        if (navOptions.location.v + h > r.bottom())
-            navOptions.location.v -= (navOptions.location.v + h) - r.bottom() + border;
-        if (navOptions.location.h < r.left())
-            navOptions.location.h = r.left() + border;
-        if (navOptions.location.v < r.top())
-            navOptions.location.v = r.top() + border;
     }
 
     filterInfo.currentSelection = 0;

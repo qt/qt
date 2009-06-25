@@ -172,7 +172,7 @@ void QUnixSocketServer::close()
 #ifdef QUNIXSOCKET_DEBUG
         if(0 != closerv) {
             qDebug() << "QUnixSocketServer: Unable to close socket ("
-                     << strerror(errno) << ")";
+                     << strerror(errno) << ')';
         }
 #endif
     }
@@ -245,7 +245,7 @@ bool QUnixSocketServer::listen(const QByteArray & path)
     if(-1 == d->fd) {
 #ifdef QUNIXSOCKETSERVER_DEBUG
         qDebug() << "QUnixSocketServer: Unable to create socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         close();
         d->error = ResourceError;
@@ -263,7 +263,7 @@ bool QUnixSocketServer::listen(const QByteArray & path)
     if(-1 == ::bind(d->fd, (sockaddr *)&addr, sizeof(sockaddr_un))) {
 #ifdef QUNIXSOCKETSERVER_DEBUG
         qDebug() << "QUnixSocketServer: Unable to bind socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         close();
         d->error = BindError;
@@ -274,7 +274,7 @@ bool QUnixSocketServer::listen(const QByteArray & path)
     if(-1 == ::listen(d->fd, d->maxConns)) {
 #ifdef QUNIXSOCKETSERVER_DEBUG
         qDebug() << "QUnixSocketServer: Unable to listen socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         close();
         d->error = ListenError;

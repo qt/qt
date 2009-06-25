@@ -122,7 +122,7 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst();
 Q_CORE_EXPORT HINSTANCE qWinAppPrevInst();
-Q_GUI_EXPORT int           qWinAppCmdShow();
+Q_CORE_EXPORT int       qWinAppCmdShow();
 Q_GUI_EXPORT HDC           qt_win_display_dc();
 
 QT_END_NAMESPACE

@@ -421,7 +421,7 @@ public:
                         argv[p + 1] = varp + p + 1;
                     } else {
                         argv[p + 1] = const_cast<void*>(varp[p + 1].constData());
-                        if (ptype.endsWith("*")) {
+                        if (ptype.endsWith('*')) {
                             argv_pointer[p + 1] = argv[p + 1];
                             argv[p + 1] = argv_pointer + p + 1;
                         }
@@ -648,7 +648,7 @@ QByteArray QAxEventSink::findProperty(DISPID dispID)
     int index = mo->indexOfProperty(propname);
     const QMetaProperty prop = mo->property(index);
     propsignal += prop.typeName();
-    propsignal += ")";
+    propsignal += ')';
     addProperty(dispID, propname, propsignal);
 
     return propname;
@@ -1660,11 +1660,15 @@ private:
     QMap<QByteArray, Property> property_list;
     void addProperty(const QByteArray &type, const QByteArray &name, uint flags)
     {
+        QByteArray propertyType(type);
+        if (propertyType.endsWith('&'))
+            propertyType.chop(1);
+
         Property &prop = property_list[name];
-        if (!type.isEmpty() && type != "HRESULT") {
-            prop.type = replaceType(type);
-            if (prop.type != type)
-                prop.realType = type;
+        if (!propertyType.isEmpty() && propertyType != "HRESULT") {
+            prop.type = replaceType(propertyType);
+            if (prop.type != propertyType)
+                prop.realType = propertyType;
         }
         if (flags & Writable)
             flags |= Stored;
@@ -2042,11 +2046,11 @@ QByteArray MetaObjectGenerator::guessTypes(const TYPEDESC &tdesc, ITypeInfo *inf
         case VT_INT:
         case VT_UINT:
         case VT_CY:
-            str += "&";
+            str += '&';
             break;
         case VT_PTR:
             if (str == "QFont" || str == "QPixmap") {
-                str += "&";
+                str += '&';
                 break;
             } else if (str == "void*") {
                 str = "void **";
@@ -2055,19 +2059,19 @@ QByteArray MetaObjectGenerator::guessTypes(const TYPEDESC &tdesc, ITypeInfo *inf
             // FALLTHROUGH
         default:
             if (str == "QColor")
-                str += "&";
+                str += '&';
             else if (str == "QDateTime")
-                str += "&";
+                str += '&';
             else if (str == "QVariantList")
-                str += "&";
+                str += '&';
             else if (str == "QByteArray")
-                str += "&";
+                str += '&';
             else if (str == "QStringList")
-                str += "&";
+                str += '&';
             else if (!str.isEmpty() && hasEnum(str))
-                str += "&";
+                str += '&';
             else if (!str.isEmpty() && str != "QFont" && str != "QPixmap" && str != "QVariant")
-                str += "*";
+                str += '*';
         }
         break;
     case VT_SAFEARRAY:
@@ -2085,7 +2089,7 @@ QByteArray MetaObjectGenerator::guessTypes(const TYPEDESC &tdesc, ITypeInfo *inf
         default:
             str = guessTypes(tdesc.lpadesc->tdescElem, info, function);
             if (!str.isEmpty())
-                str = "QList<" + str + ">";
+                str = "QList<" + str + '>';
             break;
         }
         break;
@@ -2093,7 +2097,7 @@ QByteArray MetaObjectGenerator::guessTypes(const TYPEDESC &tdesc, ITypeInfo *inf
         str = guessTypes(tdesc.lpadesc->tdescElem, info, function);
         if (!str.isEmpty()) {
             for (int index = 0; index < tdesc.lpadesc->cDims; ++index)
-                str += "[" + QByteArray::number((int)tdesc.lpadesc->rgbounds[index].cElements) + "]";
+                str += '[' + QByteArray::number((int)tdesc.lpadesc->rgbounds[index].cElements) + ']';
         }
         break;
     case VT_USERDEFINED:
@@ -2110,7 +2114,7 @@ QByteArray MetaObjectGenerator::guessTypes(const TYPEDESC &tdesc, ITypeInfo *inf
     }
 
     if (tdesc.vt & VT_BYREF)
-        str += "&";
+        str += '&';
 
     str.replace("&*", "**");
     return str;
@@ -2137,7 +2141,7 @@ void MetaObjectGenerator::readClassInfo()
             if (d->useClassInfo && !hasClassInfo("CoClass")) {
                 QString coClassIDstr = iidnames.value(QLatin1String("/CLSID/") + coClassID + QLatin1String("/Default"), coClassID).toString();
                 addClassInfo("CoClass", coClassIDstr.isEmpty() ? coClassID.toLatin1() : coClassIDstr.toLatin1());
-                QByteArray version = QByteArray::number(typeattr->wMajorVerNum) + "." + QByteArray::number(typeattr->wMinorVerNum);
+                QByteArray version = QByteArray::number(typeattr->wMajorVerNum) + '.' + QByteArray::number(typeattr->wMinorVerNum);
                 if (version != "0.0")
                     addClassInfo("Version", version);
             }
@@ -2170,7 +2174,7 @@ void MetaObjectGenerator::readClassInfo()
             while (tlfile.isEmpty() && vit != versions.end()) {
                 QString version = *vit;
                 ++vit;
-                tlfile = controls.value(QLatin1String("/") + version + QLatin1String("/0/win32/.")).toString();
+                tlfile = controls.value(QLatin1Char('/') + version + QLatin1String("/0/win32/.")).toString();
             }
             controls.endGroup();
         } else {
@@ -2343,7 +2347,7 @@ void MetaObjectGenerator::addChangedSignal(const QByteArray &function, const QBy
     // generate changed signal
     QByteArray signalName(function);
     signalName += "Changed";
-    QByteArray signalProto = signalName + "(" + replaceType(type) + ")";
+    QByteArray signalProto = signalName + '(' + replaceType(type) + ')';
     if (!hasSignal(signalProto))
         addSignal(signalProto, function);
     if (eventSink)
@@ -2360,7 +2364,7 @@ void MetaObjectGenerator::addSetterSlot(const QByteArray &property)
         set = "set";
         prototype[0] = toupper(prototype[0]);
     }
-    prototype = set + prototype + "(" + propertyType(property) + ")";
+    prototype = set + prototype + '(' + propertyType(property) + ')';
     if (!hasSlot(prototype))
         addSlot(0, prototype, property);
 }
@@ -2377,7 +2381,7 @@ QByteArray MetaObjectGenerator::createPrototype(FUNCDESC *funcdesc, ITypeInfo *t
         type = guessTypes(funcdesc->lprgelemdescParam->tdesc, typeinfo, function);
     }
 
-    prototype = function + "(";
+    prototype = function + '(';
     if (funcdesc->invkind == INVOKE_FUNC && type == hresult)
         type = 0;
 
@@ -2391,7 +2395,7 @@ QByteArray MetaObjectGenerator::createPrototype(FUNCDESC *funcdesc, ITypeInfo *t
 
         QByteArray ptype = guessTypes(tdesc, typeinfo, function);
         if (pdesc.wParamFlags & PARAMFLAG_FRETVAL) {
-            if (ptype.endsWith("&")) {
+            if (ptype.endsWith('&')) {
                 ptype.truncate(ptype.length() - 1);
             } else if (ptype.endsWith("**")) {
                 ptype.truncate(ptype.length() - 1);
@@ -2399,8 +2403,8 @@ QByteArray MetaObjectGenerator::createPrototype(FUNCDESC *funcdesc, ITypeInfo *t
             type = ptype;
         } else {
             prototype += ptype;
-            if (pdesc.wParamFlags & PARAMFLAG_FOUT && !ptype.endsWith("&") && !ptype.endsWith("**"))
-                prototype += "&";
+            if (pdesc.wParamFlags & PARAMFLAG_FOUT && !ptype.endsWith('&') && !ptype.endsWith("**"))
+                prototype += '&';
             if (optional || pdesc.wParamFlags & PARAMFLAG_FOPT)
                 paramName += "=0";
             else if (pdesc.wParamFlags & PARAMFLAG_FHASDEFAULT) {
@@ -2410,22 +2414,22 @@ QByteArray MetaObjectGenerator::createPrototype(FUNCDESC *funcdesc, ITypeInfo *t
             parameters << paramName;
         }
         if (p < funcdesc->cParams && !(pdesc.wParamFlags & PARAMFLAG_FRETVAL))
-            prototype += ",";
+            prototype += ',';
     }
 
     if (!prototype.isEmpty()) {
-        if (prototype.right(1) == ",") {
+        if (prototype.endsWith(',')) {
             if (funcdesc->invkind == INVOKE_PROPERTYPUT && p == funcdesc->cParams) {
                 TYPEDESC tdesc = funcdesc->lprgelemdescParam[p-1].tdesc;
                 QByteArray ptype = guessTypes(tdesc, typeinfo, function);
                 prototype += ptype;
-                prototype += ")";
+                prototype += ')';
                 parameters << "rhs";
             } else {
                 prototype[prototype.length()-1] = ')';
             }
         } else {
-            prototype += ")";
+            prototype += ')';
         }
     }
 
@@ -2573,11 +2577,11 @@ void MetaObjectGenerator::readFuncsInfo(ITypeInfo *typeinfo, ushort nFuncs)
 
                     if (defargs) {
                         parameters.takeLast();
-                        int lastParam = prototype.lastIndexOf(",");
+                        int lastParam = prototype.lastIndexOf(',');
                         if (lastParam == -1)
-                            lastParam = prototype.indexOf("(") + 1;
+                            lastParam = prototype.indexOf('(') + 1;
                         prototype.truncate(lastParam);
-                        prototype += ")";
+                        prototype += ')';
                     }
                 } while (defargs);
             }
@@ -2593,8 +2597,8 @@ void MetaObjectGenerator::readFuncsInfo(ITypeInfo *typeinfo, ushort nFuncs)
         QString strDocu = QString::fromUtf16((const ushort*)bstrDocu);
         SysFreeString(bstrDocu);
         if (!!strDocu)
-            desc += "[" + strDocu + "]";
-        desc += "\n";
+            desc += '[' + strDocu + ']';
+        desc += '\n';
 #endif
         typeinfo->ReleaseFuncDesc(funcdesc);
     }
@@ -2676,8 +2680,8 @@ void MetaObjectGenerator::readVarsInfo(ITypeInfo *typeinfo, ushort nVars)
         QString strDocu = QString::fromUtf16((const ushort*)bstrDocu);
         SysFreeString(bstrDocu);
         if (!!strDocu)
-            desc += "[" + strDocu + "]";
-        desc += "\n";
+            desc += '[' + strDocu + ']';
+        desc += '\n';
 #endif
         typeinfo->ReleaseVarDesc(vardesc);
     }
@@ -2823,8 +2827,8 @@ void MetaObjectGenerator::readEventInterface(ITypeInfo *eventinfo, IConnectionPo
         QString strDocu = QString::fromUtf16((const ushort*)bstrDocu);
         SysFreeString(bstrDocu);
         if (!!strDocu)
-            desc += "[" + strDocu + "]";
-        desc += "\n";
+            desc += '[' + strDocu + ']';
+        desc += '\n';
 #endif
         eventinfo->ReleaseFuncDesc(funcdesc);
     }
@@ -4394,8 +4398,8 @@ QVariant QAxBase::asVariant() const
         cn = cn.mid(cn.lastIndexOf(':') + 1);
         QObject *object = qObject();
         if (QMetaType::type(cn))
-            qvar = QVariant(qRegisterMetaType<QObject*>(cn + "*"), &object);
-//            qVariantSetValue(qvar, qObject(), cn + "*");
+            qvar = QVariant(qRegisterMetaType<QObject*>(cn + '*'), &object);
+//            qVariantSetValue(qvar, qObject(), cn + '*');
     }
 
     return qvar;

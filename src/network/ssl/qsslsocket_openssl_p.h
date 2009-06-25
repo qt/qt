@@ -82,6 +82,10 @@
 #include <openssl/rsa.h>
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+typedef _STACK STACK;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QSslSocketBackendPrivate : public QSslSocketPrivate
@@ -106,7 +110,7 @@ public:
     void startClientEncryption();
     void startServerEncryption();
     void transmit();
-    bool testConnection();
+    bool startHandshake();
     void disconnectFromHost();
     void disconnected();
     QSslCipher sessionCipher() const;

@@ -42,6 +42,7 @@
 #ifndef QTIMELINE_H
 #define QTIMELINE_H
 
+#include <QtCore/qeasingcurve.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
@@ -60,6 +61,7 @@ class Q_CORE_EXPORT QTimeLine : public QObject
     Q_PROPERTY(Direction direction READ direction WRITE setDirection)
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
     Q_PROPERTY(CurveShape curveShape READ curveShape WRITE setCurveShape)
+    Q_PROPERTY(QEasingCurve easingCurve READ easingCurve WRITE setEasingCurve)
 public:
     enum State {
         NotRunning,
@@ -104,6 +106,9 @@ public:
 
     CurveShape curveShape() const;
     void setCurveShape(CurveShape shape);
+
+    QEasingCurve easingCurve() const;
+    void setEasingCurve(const QEasingCurve &curve);
 
     int currentTime() const;
     int currentFrame() const;

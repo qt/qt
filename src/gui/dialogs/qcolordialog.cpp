@@ -1066,7 +1066,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     QGridLayout *gl = new QGridLayout(this);
     gl->setMargin(gl->spacing());
     lab = new QColorShowLabel(this);
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     lab->setMinimumWidth(60);
 #else
     lab->setMinimumWidth(20);
@@ -1369,13 +1369,13 @@ void QColorDialogPrivate::init(const QColor &initial)
 
     leftLay = 0;
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     smallDisplay = true;
     const int lumSpace = 20;
 #else
     // small displays (e.g. PDAs) cannot fit the full color dialog,
     // so just use the color picker.
-    smallDisplay = (qApp->desktop()->width() < 480 || qApp->desktop()->height() < 350);
+    smallDisplay = (QApplication::desktop()->width() < 480 || QApplication::desktop()->height() < 350);
     const int lumSpace = topLay->spacing() / 2;
 #endif
 
@@ -1409,7 +1409,7 @@ void QColorDialogPrivate::init(const QColor &initial)
         leftLay->addWidget(lblBasicColors);
         leftLay->addWidget(standard);
 
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
         leftLay->addStretch();
 #endif
 
@@ -1578,10 +1578,11 @@ void QColorDialog::setCurrentColor(const QColor &color)
 {
     Q_D(QColorDialog);
     d->setCurrentColor(color.rgb());
-    d->selectColor(color.rgb());
+    d->selectColor(color);
     d->setCurrentAlpha(color.alpha());
 
 #ifdef Q_WS_MAC
+    d->setCurrentQColor(color);
     if (d->delegate)
         QColorDialogPrivate::setColor(d->delegate, color);
 #endif

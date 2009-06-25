@@ -428,6 +428,20 @@ QClipboard::QClipboard(QObject *parent)
     // XFixesSelectionNotify events when someone changes the
     // clipboard.
     (void)QApplication::desktop();
+
+#ifndef QT_NO_XFIXES
+    if (X11->use_xfixes && X11->ptrXFixesSelectSelectionInput) {
+        const unsigned long eventMask =
+            XFixesSetSelectionOwnerNotifyMask | XFixesSelectionWindowDestroyNotifyMask | XFixesSelectionClientCloseNotifyMask;
+        for (int i = 0; i < X11->screenCount; ++i) {
+            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(i),
+                                               XA_PRIMARY, eventMask);
+            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(i),
+                                               ATOM(CLIPBOARD), eventMask);
+        }
+    }
+#endif // QT_NO_XFIXES
+
     if (X11->time == CurrentTime) {
         // send a dummy event to myself to get the timestamp from X11.
         qt_init_timestamp_data data;
@@ -786,7 +800,7 @@ static Atom send_selection(QClipboardData *d, Atom target, Window window, Atom p
     QByteArray data;
 
     QByteArray fmt = X11->xdndAtomToString(target);
-    if (fmt.isEmpty() || !QInternalMimeData::hasFormatHelper(QString::fromAscii(fmt), d->source())) { // Not a MIME type we have
+    if (fmt.isEmpty()) { // Not a MIME type we have
         DEBUG("QClipboard: send_selection(): converting to type '%s' is not supported", fmt.data());
         return XNone;
     }

@@ -149,6 +149,12 @@ public:
     bool contains(const QRectF &rect) const;
     bool intersects(const QRectF &rect) const;
 
+    void translate(qreal dx, qreal dy);
+    inline void translate(const QPointF &offset);
+
+    QPainterPath translated(qreal dx, qreal dy) const;
+    inline QPainterPath translated(const QPointF &offset) const;
+
     QRectF boundingRect() const;
     QRectF controlPointRect() const;
 
@@ -367,6 +373,12 @@ inline void QPainterPath::addText(qreal x, qreal y, const QFont &f, const QStrin
 {
     addText(QPointF(x, y), f, text);
 }
+
+inline void QPainterPath::translate(const QPointF &offset)
+{ translate(offset.x(), offset.y()); }
+
+inline QPainterPath QPainterPath::translated(const QPointF &offset) const
+{ return translated(offset.x(), offset.y()); }
 
 inline bool QPainterPath::isEmpty() const
 {

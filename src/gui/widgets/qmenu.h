@@ -149,7 +149,7 @@ public:
     OSMenuRef macMenu(OSMenuRef merge=0);
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     HMENU wceMenu(bool create = false);
 #endif
 
@@ -181,7 +181,7 @@ protected:
     bool focusNextPrevChild(bool next);
     void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     QAction* wceCommands(uint command);
 #endif
 

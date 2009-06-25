@@ -124,6 +124,14 @@ QString TicTacToePlugin::domXml() const
     return QLatin1String("\
 <ui language=\"c++\">\
     <widget class=\"TicTacToe\" name=\"ticTacToe\"/>\
+    <customwidgets>\
+        <customwidget>\
+            <class>TicTacToe</class>\
+            <propertyspecifications>\
+            <stringpropertyspecification name=\"state\" notr=\"true\" type=\"singleline\"/>\
+            </propertyspecifications>\
+        </customwidget>\
+    </customwidgets>\
 </ui>");
 }
 

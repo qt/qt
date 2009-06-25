@@ -84,7 +84,7 @@ QPixmapData* QSimplePixmapDataFactory::create(QPixmapData::PixelType type)
 #endif
 }
 
-Q_GLOBAL_STATIC(QSimplePixmapDataFactory, factory);
+Q_GLOBAL_STATIC(QSimplePixmapDataFactory, factory)
 
 #endif // !defined(Q_WS_QWS)
 

@@ -461,7 +461,7 @@ QDebug operator<<(QDebug debug, const QSslKey &key)
           << (key.type() == QSsl::PublicKey ? "PublicKey" : "PrivateKey")
           << ", " << (key.algorithm() == QSsl::Rsa ? "RSA" : "DSA")
           << ", " << key.length()
-          << ")";
+          << ')';
     return debug;
 }
 #endif

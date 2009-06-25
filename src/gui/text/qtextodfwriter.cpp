@@ -295,28 +295,13 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         writer.writeAttribute(textNS, QString::fromLatin1("style-name"), QString::fromLatin1("c%1")
             .arg(frag.fragment().charFormatIndex()));
         bool escapeNextSpace = true;
-        int precedingSpaces = 0, precedingTabs = 0;
+        int precedingSpaces = 0;
         int exportedIndex = 0;
         for (int i=0; i <= fragmentText.count(); ++i) {
-            bool isTab = false, isSpace = false;
-            if (i < fragmentText.count()) {
+            bool isSpace = false;
                 QChar character = fragmentText[i];
-                isTab = character.unicode() == '\t';
                 isSpace = character.unicode() == ' ';
-                if (character.unicode() == 0x2028) { // soft-return
-                    writer.writeCharacters(fragmentText.mid(exportedIndex, i));
-                    writer.writeEmptyElement(textNS, QString::fromLatin1("line-break"));
-                    exportedIndex = i+1;
-                    continue;
-                }
-                if (isSpace) {
-                    ++precedingSpaces;
-                    escapeNextSpace = true;
-                }
-                else if (isTab) {
-                    precedingTabs++;
-                }
-            }
+
             // find more than one space. -> <text:s text:c="2" />
             if (!isSpace && escapeNextSpace && precedingSpaces > 1) {
                 const bool startParag = exportedIndex == 0 && i == precedingSpaces;
@@ -329,17 +314,27 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
                 precedingSpaces = 0;
                 exportedIndex = i;
             }
-            // find tabs.   ->  <text:tab text:tab-ref="3" />  or <text:tab/>
-            if (!isTab && precedingTabs) {
-                writer.writeCharacters(fragmentText.mid(exportedIndex, i - precedingTabs - exportedIndex));
-                writer.writeEmptyElement(textNS, QString::fromLatin1("tab"));
-                if (precedingTabs > 1)
-                    writer.writeAttribute(textNS, QString::fromLatin1("tab-ref"), QString::number(precedingTabs));
-                precedingTabs = 0;
-                exportedIndex = i;
+
+            if (i < fragmentText.count()) {
+                if (character.unicode() == 0x2028) { // soft-return
+                    //if (exportedIndex < i)
+                        writer.writeCharacters(fragmentText.mid(exportedIndex, i - exportedIndex));
+                    writer.writeEmptyElement(textNS, QString::fromLatin1("line-break"));
+                    exportedIndex = i+1;
+                    continue;
+                } else if (character.unicode() == '\t') { // Tab
+                    //if (exportedIndex < i)
+                        writer.writeCharacters(fragmentText.mid(exportedIndex, i - exportedIndex));
+                    writer.writeEmptyElement(textNS, QString::fromLatin1("tab"));
+                    exportedIndex = i+1;
+                    precedingSpaces = 0;
+                } else if (isSpace) {
+                    ++precedingSpaces;
+                    escapeNextSpace = true;
+                } else if (!isSpace) {
+                    precedingSpaces = 0;
+                }
             }
-            if (!isSpace && !isTab)
-                precedingSpaces = 0;
         }
 
         writer.writeCharacters(fragmentText.mid(exportedIndex));
@@ -477,7 +472,7 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
     if (format.hasProperty(QTextFormat::BlockRightMargin))
         writer.writeAttribute(foNS, QString::fromLatin1("margin-right"), pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
     if (format.hasProperty(QTextFormat::TextIndent))
-        writer.writeAttribute(foNS, QString::fromLatin1("text-indent"), QString::number(format.textIndent()));
+        writer.writeAttribute(foNS, QString::fromLatin1("text-indent"), pixelToPoint(format.textIndent()));
     if (format.hasProperty(QTextFormat::PageBreakPolicy)) {
         if (format.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore)
             writer.writeAttribute(foNS, QString::fromLatin1("break-before"), QString::fromLatin1("page"));

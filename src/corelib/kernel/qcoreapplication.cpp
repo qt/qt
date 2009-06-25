@@ -420,12 +420,12 @@ QString qAppName()
     QLibrary) can be retrieved with libraryPaths() and manipulated by
     setLibraryPaths(), addLibraryPath(), and removeLibraryPath().
 
-	On Unix/Linux Qt is configured to use the system local settings by 
-	default. This can cause a conflict when using POSIX functions, for 
-	instance, when converting between data types such as floats and 
-	strings, since the notation may differ between locales. To get 
-	around this problem call the POSIX function setlocale(LC_NUMERIC,"C") 
-	right after initializing QApplication or QCoreApplication to reset 
+	On Unix/Linux Qt is configured to use the system local settings by
+	default. This can cause a conflict when using POSIX functions, for
+	instance, when converting between data types such as floats and
+	strings, since the notation may differ between locales. To get
+	around this problem call the POSIX function setlocale(LC_NUMERIC,"C")
+	right after initializing QApplication or QCoreApplication to reset
 	the locale that is used for number formatting to "C"-locale.
 
     \sa QApplication, QAbstractEventDispatcher, QEventLoop,
@@ -613,6 +613,20 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
+#ifdef Q_OS_MAC
+    // Turn on the no native menubar here, since we used to
+    // do this implicitly. We DO NOT flip it off if someone sets
+    // it to false.
+    // Ideally, we'd have magic that would be something along the lines of
+    // "follow MacPluginApplication" unless explicitly set.
+    // Considering this attribute isn't only at the beginning
+    // it's unlikely it will ever be a problem, but I want
+    // to have the behavior documented here.
+    if (attribute == Qt::AA_MacPluginApplication && on
+          && !testAttribute(Qt::AA_DontUseNativeMenuBar)) {
+        setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+    }
+#endif
 }
 
 /*!
@@ -1880,7 +1894,7 @@ QString QCoreApplication::applicationFilePath()
         */
         QByteArray pEnv = qgetenv("PATH");
         QDir currentDir = QDir::current();
-        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1String(":"));
+        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1Char(':'));
         for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
             if ((*p).isEmpty())
                 continue;
@@ -1990,7 +2004,7 @@ QStringList QCoreApplication::arguments()
     wchar_t tempFilename[MAX_PATH+1];
     if (GetModuleFileNameW(0, tempFilename, MAX_PATH)) {
         tempFilename[MAX_PATH] = 0;
-        cmdline.prepend(QString(QLatin1String("\"")) + QString::fromUtf16((unsigned short *)tempFilename) + QString(QLatin1String("\" ")));
+        cmdline.prepend(QLatin1Char('\"') + QString::fromUtf16((unsigned short *)tempFilename) + QLatin1String("\" "));
     }
 #endif // Q_OS_WINCE
 
@@ -2004,8 +2018,7 @@ QStringList QCoreApplication::arguments()
                 l1arg == "-qdebug" ||
                 l1arg == "-reverse" ||
                 l1arg == "-stylesheet" ||
-                l1arg == "-widgetcount" ||
-                l1arg == "-direct3d")
+                l1arg == "-widgetcount")
                 ;
             else if (l1arg.startsWith("-style="))
                 ;

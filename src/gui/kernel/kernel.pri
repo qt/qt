@@ -214,7 +214,7 @@ embedded {
         MENU_NIB.path = Resources 
         MENU_NIB.version = Versions
         QMAKE_BUNDLE_DATA += MENU_NIB 
-        RESOURCES += mac/maccursors.qrc
+        RESOURCES += mac/macresources.qrc
 
         LIBS += -framework AppKit
 }

@@ -80,12 +80,15 @@ int main(int argc, char **argv)
     }
 
     QTranslator translator;
-    translator.load(QLatin1String("linguist_") + QLocale::system().name(), resourceDir);
-    app.installTranslator(&translator);
-
     QTranslator qtTranslator;
-    qtTranslator.load(QLatin1String("qt_") + QLocale::system().name(), resourceDir);
-    app.installTranslator(&qtTranslator);
+    QString sysLocale = QLocale::system().name();
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        if (qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir))
+            app.installTranslator(&qtTranslator);
+        else
+            app.removeTranslator(&translator);
+    }
 
     app.setOrganizationName(QLatin1String("Trolltech"));
     app.setApplicationName(QLatin1String("Linguist"));

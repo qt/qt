@@ -109,16 +109,16 @@ void QAbstractItemViewPrivate::init()
     Q_Q(QAbstractItemView);
     q->setItemDelegate(new QStyledItemDelegate(q));
 
-    q->verticalScrollBar()->setRange(0, 0);
-    q->horizontalScrollBar()->setRange(0, 0);
+    vbar->setRange(0, 0);
+    hbar->setRange(0, 0);
 
-    QObject::connect(q->verticalScrollBar(), SIGNAL(actionTriggered(int)),
+    QObject::connect(vbar, SIGNAL(actionTriggered(int)),
                      q, SLOT(verticalScrollbarAction(int)));
-    QObject::connect(q->horizontalScrollBar(), SIGNAL(actionTriggered(int)),
+    QObject::connect(hbar, SIGNAL(actionTriggered(int)),
                      q, SLOT(horizontalScrollbarAction(int)));
-    QObject::connect(q->verticalScrollBar(), SIGNAL(valueChanged(int)),
+    QObject::connect(vbar, SIGNAL(valueChanged(int)),
                      q, SLOT(verticalScrollbarValueChanged(int)));
-    QObject::connect(q->horizontalScrollBar(), SIGNAL(valueChanged(int)),
+    QObject::connect(hbar, SIGNAL(valueChanged(int)),
                      q, SLOT(horizontalScrollbarValueChanged(int)));
 
     viewport->setBackgroundRole(QPalette::Base);
@@ -1427,10 +1427,10 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
     case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent*>(event);
         d->hover = indexAt(he->pos());
-        d->viewport->update(visualRect(d->hover));
+        update(d->hover);
         break; }
     case QEvent::HoverLeave: {
-        d->viewport->update(visualRect(d->hover)); // update old
+        update(d->hover); // update old
         d->hover = QModelIndex();
         break; }
     case QEvent::HoverMove: {
@@ -1643,7 +1643,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         if (d->isIndexValid(index)
             && d->isIndexEnabled(index)
             && d->sendDelegateEvent(index, event))
-            d->viewport->update(visualRect(index));
+            update(index);
         return;
     }
 
@@ -2169,11 +2169,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
 #endif
         bool modified = (event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier));
-        if (!event->text().isEmpty() && !modified) {
-            if (!edit(currentIndex(), AnyKeyPressed, event))
-                keyboardSearch(event->text());
+        if (!event->text().isEmpty() && !modified && !edit(currentIndex(), AnyKeyPressed, event)) {
+            keyboardSearch(event->text());
+            event->accept();
+        } else {
+            event->ignore();
         }
-        event->ignore();
         break; }
     }
 }
@@ -2329,7 +2330,7 @@ bool QAbstractItemView::edit(const QModelIndex &index, EditTrigger trigger, QEve
     }
 
     if (d->sendDelegateEvent(index, event)) {
-        d->viewport->update(visualRect(index));
+        update(index);
         return true;
     }
 
@@ -2401,8 +2402,8 @@ void QAbstractItemView::updateEditorGeometries()
 
     //we release the editor outside of the loop because it might change the focus and try
     //to change the d->editors list.
-    foreach(QWidget *editor, editorsToRelease) {
-        d->releaseEditor(editor);
+    for (int i = 0; i < editorsToRelease.count(); ++i) {
+        d->releaseEditor(editorsToRelease.at(i));
     }
 }
 
@@ -2848,9 +2849,9 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         d->persistent.insert(widget);
         d->addEditor(index, widget, true);
         widget->show();
+        dataChanged(index, index); // update the geometry
         if (!d->delayedPendingLayout)
             widget->setGeometry(visualRect(index));
-        dataChanged(index, index); // update the geometry
     }
 }
 
@@ -2930,7 +2931,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         }
         if (isVisible() && !d->delayedPendingLayout) {
             // otherwise the items will be update later anyway
-            d->viewport->update(visualRect(topLeft));
+            update(topLeft);
         }
         return;
     }
@@ -3135,9 +3136,7 @@ void QAbstractItemView::selectionChanged(const QItemSelection &selected,
 {
     Q_D(QAbstractItemView);
     if (isVisible() && updatesEnabled()) {
-        d->setDirtyRegion(visualRegionForSelection(deselected));
-        d->setDirtyRegion(visualRegionForSelection(selected));
-        d->updateDirtyRegion();
+        d->viewport->update(visualRegionForSelection(deselected) | visualRegionForSelection(selected));
     }
 }
 
@@ -3165,16 +3164,15 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
                 closeEditor(editor, QAbstractItemDelegate::NoHint);
         }
         if (isVisible()) {
-            d->setDirtyRegion(visualRect(previous));
-            d->updateDirtyRegion();
+            update(previous);
         }
     }
+
     if (current.isValid() && !d->autoScrollTimer.isActive()) {
         if (isVisible()) {
             if (d->autoScroll)
                 scrollTo(current);
-            d->setDirtyRegion(visualRect(current));
-            d->updateDirtyRegion();
+            update(current);
             edit(current, CurrentChanged, 0);
             if (current.row() == (d->model->rowCount(d->root) - 1))
                 d->_q_fetchMore();
@@ -3790,7 +3788,7 @@ void QAbstractItemViewPrivate::clearOrRemove()
 void QAbstractItemViewPrivate::checkPersistentEditorFocus()
 {
     Q_Q(QAbstractItemView);
-    if (QWidget *widget = qApp->focusWidget()) {
+    if (QWidget *widget = QApplication::focusWidget()) {
         if (persistent.contains(widget)) {
             //a persistent editor has gained the focus
             QModelIndex index = indexForEditor(widget);

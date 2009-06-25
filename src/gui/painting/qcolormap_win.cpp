@@ -44,7 +44,7 @@
 #include "qvector.h"
 #include "qt_windows.h"
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qguifunctions_wince.h"
 #endif
 

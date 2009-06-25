@@ -1290,6 +1290,14 @@ void QMacPixmapData::copy(const QPixmapData *data, const QRect &rect)
     has_mask = macData->has_mask;
 }
 
+bool QMacPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
+    Q_UNUSED(rect);
+    return false;
+}
+
 /*!
     \since 4.2
 

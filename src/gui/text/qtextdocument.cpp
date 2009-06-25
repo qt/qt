@@ -2201,7 +2201,7 @@ void QTextHtmlExporter::emitTextLength(const char *attribute, const QTextLength 
     if (length.type() == QTextLength::PercentageLength)
         html += QLatin1String("%\"");
     else
-        html += QLatin1String("\"");
+        html += QLatin1Char('\"');
 }
 
 void QTextHtmlExporter::emitAlignment(Qt::Alignment align)

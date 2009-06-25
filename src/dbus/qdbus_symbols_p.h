@@ -353,7 +353,7 @@ DEFINEFUNC(dbus_bool_t     , dbus_signature_validate_single, (const char       *
                                                               DBusError        *error),
            (signature, error), return)
 DEFINEFUNC(dbus_bool_t     , dbus_type_is_basic, (int            typecode),
-           (typecode), return);
+           (typecode), return)
 DEFINEFUNC(dbus_bool_t     , dbus_type_is_fixed, (int            typecode),
            (typecode), return)
 

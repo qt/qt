@@ -579,7 +579,7 @@ static inline char qToLower(char c)
         return c;
 }
 
-Q_CORE_EXPORT QByteArray::Data QByteArray::shared_null = {Q_BASIC_ATOMIC_INITIALIZER(1),
+QByteArray::Data QByteArray::shared_null = {Q_BASIC_ATOMIC_INITIALIZER(1),
                                                           0, 0, shared_null.array, {0} };
 QByteArray::Data QByteArray::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
                                               0, 0, shared_empty.array, {0} };
@@ -2581,6 +2581,8 @@ void QByteArray::clear()
     d->ref.ref();
 }
 
+#ifndef QT_NO_DATASTREAM
+
 /*! \relates QByteArray
 
     Writes byte array \a ba to the stream \a out and returns a reference
@@ -2588,7 +2590,6 @@ void QByteArray::clear()
 
     \sa {Format of the QDataStream operators}
 */
-#ifndef QT_NO_DATASTREAM
 
 QDataStream &operator<<(QDataStream &out, const QByteArray &ba)
 {
@@ -2631,7 +2632,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     return in;
 }
-#endif //QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 /*! \fn bool QByteArray::operator==(const QString &str) const
 

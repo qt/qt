@@ -315,7 +315,6 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "QT3SUPPORT" ]      = "yes";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
-    dictionary[ "DIRECT3D" ]        = "auto";
     dictionary[ "IPV6" ]            = "yes"; // Always, dynamicly loaded
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
@@ -845,11 +844,7 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-iwmmxt")
             dictionary[ "IWMMXT" ] = "yes";
 
-        else if (configCmdLine.at(i) == "-no-direct3d") {
-            dictionary["DIRECT3D"] = "no";
-        }else if (configCmdLine.at(i) == "-direct3d") {
-            dictionary["DIRECT3D"] = "auto"; // have to pass auto detection to enable Direct3D
-        } else if( configCmdLine.at(i) == "-no-openssl" ) {
+        else if( configCmdLine.at(i) == "-no-openssl" ) {
               dictionary[ "OPENSSL"] = "no";
         } else if( configCmdLine.at(i) == "-openssl" ) {
               dictionary[ "OPENSSL" ] = "yes";
@@ -1377,7 +1372,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "MMX" ]                 = "no";
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
-        dictionary[ "DIRECT3D" ]            = "no";
         dictionary[ "WEBKIT" ]              = "no";
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
@@ -1519,7 +1513,7 @@ bool Configure::displayHelp()
                     "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
                     "[-no-libmng] [-qt-libmng] [-system-libmng] [-no-qt3support] [-mmx]\n"
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
-                    "[-no-iwmmxt] [-iwmmxt] [-direct3d] [-openssl] [-openssl-linked]\n"
+                    "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-no-phonon] [-phonon]\n"
                     "[-no-phonon-backend] [-phonon-backend]\n"
@@ -1686,7 +1680,6 @@ bool Configure::displayHelp()
         desc("SSE", "yes",      "-sse",                 "Compile with use of SSE instructions");
         desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions");
         desc("SSE2", "yes",      "-sse2",               "Compile with use of SSE2 instructions");
-        desc("DIRECT3D", "yes",  "-direct3d",           "Compile in Direct3D support (experimental - see INSTALL for more info)");
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile in OpenSSL support");
         desc("OPENSSL", "yes",   "-openssl",            "Compile in run-time OpenSSL support");
         desc("OPENSSL", "linked","-openssl-linked",     "Compile in linked OpenSSL support");
@@ -1948,47 +1941,6 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "DIRECT3D") {
-        QString sdk_dir(QString::fromLocal8Bit(getenv("DXSDK_DIR")));
-        QDir dir;
-        bool has_d3d = false;
-
-        if (!sdk_dir.isEmpty() && dir.exists(sdk_dir))
-            has_d3d = true;
-
-        if (has_d3d && !QFile::exists(sdk_dir + QLatin1String("\\include\\d3d9.h"))) {
-            cout << "No Direct3D version 9 SDK found." << endl;
-           has_d3d = false;
-        }
-
-        // find the first dxguid.lib in the current LIB paths, if it is NOT
-        // the D3D SDK one, we're most likely in trouble..
-        if (has_d3d) {
-            has_d3d = false;
-            QString env_lib(QString::fromLocal8Bit(getenv("LIB")));
-            QStringList lib_paths = env_lib.split(';');
-            for (int i=0; i<lib_paths.size(); ++i) {
-               QString lib_path = lib_paths.at(i);
-                if (QFile::exists(lib_path + QLatin1String("\\dxguid.lib")))
-                {
-                    if (lib_path.startsWith(sdk_dir)) {
-                        has_d3d = true;
-                    } else {
-                        cout << "Your D3D/Platform SDK library paths seem to appear in the wrong order." << endl;
-                    }
-                    break;
-                }
-            }
-        }
-
-        available = has_d3d;
-        if (!has_d3d) {
-            cout << "Setting Direct3D to NO, since the proper Direct3D SDK was not detected." << endl
-                 << "Make sure you have the Direct3D SDK installed, and that you have run" << endl
-                 << "the <path to SDK>\\Utilities\\Bin\\dx_setenv.cmd script." << endl
-                 << "The D3D SDK library path *needs* to appear before the Platform SDK library" << endl
-                 << "path in your LIB environment variable." << endl;
-        }
     } else if (part == "PHONON") {
         available = findFile("vmr9.h") && findFile("dshow.h") && findFile("strmiids.lib") &&
                         findFile("dmoguids.lib") && findFile("msdmo.lib") && findFile("d3d9.h");
@@ -2082,8 +2034,6 @@ void Configure::autoDetection()
         dictionary["SCRIPTTOOLS"] = checkAvailability("SCRIPTTOOLS") ? "yes" : "no";
     if (dictionary["XMLPATTERNS"] == "auto")
         dictionary["XMLPATTERNS"] = checkAvailability("XMLPATTERNS") ? "yes" : "no";
-    if (dictionary["DIRECT3D"] == "auto")
-        dictionary["DIRECT3D"] = checkAvailability("DIRECT3D") ? "yes" : "no";
     if (dictionary["PHONON"] == "auto")
         dictionary["PHONON"] = checkAvailability("PHONON") ? "yes" : "no";
     if (dictionary["WEBKIT"] == "auto")
@@ -2423,9 +2373,6 @@ void Configure::generateOutputVars()
 
      if ( dictionary["DIRECTSHOW"] == "yes" )
         qtConfig += "directshow";
-
-    if (dictionary[ "DIRECT3D" ] == "yes")
-        qtConfig += "direct3d";
 
     if (dictionary[ "OPENSSL" ] == "yes")
         qtConfig += "openssl";
@@ -2832,7 +2779,6 @@ void Configure::generateConfigfiles()
         if(dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if(dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
         if(dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
-        if(dictionary["DIRECT3D"] == "no")          qconfigList += "QT_NO_DIRECT3D";
         if(dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if(dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if(dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
@@ -3097,7 +3043,6 @@ void Configure::displayConfig()
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     cout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
-    cout << "Direct3D support............" << dictionary[ "DIRECT3D" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;

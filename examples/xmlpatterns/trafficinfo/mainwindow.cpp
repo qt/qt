@@ -55,7 +55,7 @@ MainWindow::MainWindow()
     : QWidget(0, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
 {
     QAction *quitAction = new QAction(tr("E&xit"), this);
-    quitAction->setShortcut(tr("Ctrl+Q"));
+    quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QAction *configAction = new QAction(tr("&Select station..."), this);
@@ -69,16 +69,15 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("Traffic Info Oslo"));
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateTimeInformation()));
-    timer->start(1000*60*5);
-
     const QSettings settings("Qt Software", "trafficinfo");
     m_station = StationInformation(settings.value("stationId", "03012130").toString(),
                                    settings.value("stationName", "Nydalen [T-bane] (OSL)").toString());
     m_lines = settings.value("lines", QStringList()).toStringList();
 
-    updateTimeInformation();
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateTimeInformation()));
+    timer->start(1000*60*5);
+    QMetaObject::invokeMethod(this, SLOT(updateTimeInformation()), Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()

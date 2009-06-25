@@ -44,6 +44,7 @@
 #ifndef QT_NO_DIRMODEL
 #include <qstack.h>
 #include <qfile.h>
+#include <qfilesystemmodel.h>
 #include <qurl.h>
 #include <qmime.h>
 #include <qpair.h>
@@ -1340,14 +1341,14 @@ QString QDirModelPrivate::size(const QModelIndex &index) const
     const quint64 tb = 1024 * gb;
     quint64 bytes = n->info.size();
     if (bytes >= tb)
-        return QLocale().toString(bytes / tb) + QString::fromLatin1(" TB");
+        return QFileSystemModel::tr("%1 TB").arg(QLocale().toString(qreal(bytes) / tb, 'f', 3));
     if (bytes >= gb)
-        return QLocale().toString(bytes / gb) + QString::fromLatin1(" GB");
+        return QFileSystemModel::tr("%1 GB").arg(QLocale().toString(qreal(bytes) / gb, 'f', 2));
     if (bytes >= mb)
-        return QLocale().toString(bytes / mb) + QString::fromLatin1(" MB");
+        return QFileSystemModel::tr("%1 MB").arg(QLocale().toString(qreal(bytes) / mb, 'f', 1));
     if (bytes >= kb)
-        return QLocale().toString(bytes / kb) + QString::fromLatin1(" KB");
-    return QLocale().toString(bytes) + QString::fromLatin1(" bytes");
+        return QFileSystemModel::tr("%1 KB").arg(QLocale().toString(bytes / kb));
+    return QFileSystemModel::tr("%1 bytes").arg(QLocale().toString(bytes));
 }
 
 QString QDirModelPrivate::type(const QModelIndex &index) const

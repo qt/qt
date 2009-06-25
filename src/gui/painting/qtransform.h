@@ -159,6 +159,19 @@ public:
     static QTransform fromScale(qreal dx, qreal dy);
 
 private:
+    inline QTransform(qreal h11, qreal h12, qreal h13,
+                      qreal h21, qreal h22, qreal h23,
+                      qreal h31, qreal h32, qreal h33, bool)
+        : affine(h11, h12, h21, h22, h31, h32, true)
+        , m_13(h13), m_23(h23), m_33(h33)
+        , m_type(TxNone)
+        , m_dirty(TxProject) {}
+    inline QTransform(bool)
+        : affine(true)
+        , m_13(0), m_23(0), m_33(1)
+        , m_type(TxNone)
+        , m_dirty(TxNone) {}
+    inline TransformationType inline_type() const;
     QMatrix affine;
     qreal   m_13;
     qreal   m_23;
@@ -173,18 +186,25 @@ private:
 Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
 
 /******* inlines *****/
+inline QTransform::TransformationType QTransform::inline_type() const
+{
+    if (m_dirty == TxNone)
+        return static_cast<TransformationType>(m_type);
+    return type();
+}
+
 inline bool QTransform::isAffine() const
 {
-    return type() < TxProject;
+    return inline_type() < TxProject;
 }
 inline bool QTransform::isIdentity() const
 {
-    return type() == TxNone;
+    return inline_type() == TxNone;
 }
 
 inline bool QTransform::isInvertible() const
 {
-    return !qFuzzyCompare(determinant() + 1, 1);
+    return !qFuzzyIsNull(determinant());
 }
 
 inline bool QTransform::isScaling() const
@@ -193,12 +213,12 @@ inline bool QTransform::isScaling() const
 }
 inline bool QTransform::isRotating() const
 {
-    return type() >= TxRotate;
+    return inline_type() >= TxRotate;
 }
 
 inline bool QTransform::isTranslating() const
 {
-    return type() >= TxTranslate;
+    return inline_type() >= TxTranslate;
 }
 
 inline qreal QTransform::determinant() const
@@ -312,8 +332,10 @@ inline QTransform &QTransform::operator-=(qreal num)
 }
 
 /****** stream functions *******************/
+#ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTransform &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTransform &);
+#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QTransform &);

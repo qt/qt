@@ -280,7 +280,7 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
 
     m_fileActions->addAction(createSeparator(this));
 
-    m_quitAction->setShortcut(tr("CTRL+Q"));
+    m_quitAction->setShortcuts(QKeySequence::Quit);
     m_quitAction->setMenuRole(QAction::QuitRole);
     connect(m_quitAction, SIGNAL(triggered()), this, SLOT(shutdown()));
     m_fileActions->addAction(m_quitAction);

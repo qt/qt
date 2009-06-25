@@ -1203,9 +1203,9 @@ QString QAxScriptManager::scriptFileFilter()
             continue;
         
         allFiles += QLatin1String(" *") + engine.extension;
-        specialFiles += QLatin1String(";;") + engine.name + QLatin1String(" Files (*") + engine.extension + QLatin1String(")");
+        specialFiles += QLatin1String(";;") + engine.name + QLatin1String(" Files (*") + engine.extension + QLatin1Char(')');
     }
-    allFiles += QLatin1String(")");
+    allFiles += QLatin1Char(')');
     
     return allFiles + specialFiles + QLatin1String(";;All Files (*.*)");
 }

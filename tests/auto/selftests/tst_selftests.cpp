@@ -54,9 +54,13 @@ private slots:
     void runSubTest();
     void checkXML() const;
     void checkXML_data();
+    void checkXunitxml() const;
+    void checkXunitxml_data();
 
 private:
     QStringList m_checkXMLBlacklist;
+    QStringList m_checkXunitBlacklist;
+    void doRunSubTest(QString &subdir, QStringList &arguments );
 };
 
 struct BenchmarkResult
@@ -97,7 +101,7 @@ inline bool qCompare
         variance = 0.001;
     }
     else if (r1.unit == "ticks") {
-        variance = 0.0001;
+        variance = 0.001;
     }
     if (variance == 0.) {
         /* No variance allowed - compare whole string */
@@ -186,17 +190,16 @@ void tst_Selftests::runSubTest_data()
     QTest::newRow("benchlibtickcounter") << "benchlibtickcounter" << QStringList("-tickcounter");
 #endif
 
+    QTest::newRow("xunit") << "xunit" << QStringList("-xunitxml");
+
 }
 
-void tst_Selftests::runSubTest()
+void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
 {
-    QFETCH(QString, subdir);
-    QFETCH(QStringList, arguments);
-
     QProcess proc;
     proc.setEnvironment(QStringList(""));
     proc.start(subdir + "/" + subdir, arguments);
-    QVERIFY(proc.waitForFinished());
+    QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
     const QByteArray out(proc.readAllStandardOutput());
     const QByteArray err(proc.readAllStandardError());
@@ -206,8 +209,8 @@ void tst_Selftests::runSubTest()
 #if defined(Q_OS_WIN)
     if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
 #endif
-    QVERIFY2(err.isEmpty(), err.constData());
-
+    if(subdir != QLatin1String("xunit"))
+        QVERIFY2(err.isEmpty(), err.constData());
 
     QList<QByteArray> res = splitLines(out);
     QList<QByteArray> exp = expectedResult(subdir);
@@ -255,8 +258,8 @@ void tst_Selftests::runSubTest()
         {
             if(output != expected && qstrcmp(QTest::currentDataTag(), "subtest") == 0)
             {
-	        /* The floating point formatting differs between platforms, so let's just skip it. */
-	        continue;
+            /* The floating point formatting differs between platforms, so let's just skip it. */
+            continue;
             }
             else {
                 /*
@@ -284,6 +287,14 @@ void tst_Selftests::runSubTest()
     }
 }
 
+void tst_Selftests::runSubTest()
+{
+    QFETCH(QString, subdir);
+    QFETCH(QStringList, arguments);
+
+    doRunSubTest(subdir, arguments);
+}
+
 void tst_Selftests::initTestCase()
 {
     m_checkXMLBlacklist.append("crashes"); // This test crashes
@@ -300,6 +311,8 @@ void tst_Selftests::initTestCase()
     m_checkXMLBlacklist.append("subtest");
     m_checkXMLBlacklist.append("globaldata");
     m_checkXMLBlacklist.append("warnings");
+
+    m_checkXunitBlacklist = m_checkXMLBlacklist;
 }
 
 void tst_Selftests::checkXML() const
@@ -310,7 +323,53 @@ void tst_Selftests::checkXML() const
     if(m_checkXMLBlacklist.contains(subdir))
         return;
 
-    arguments.prepend("-xml");
+    QStringList args;
+    /* Test both old (-flush) and new XML logger implementation */
+    for (int i = 0; i < 2; ++i) {
+        bool flush = i;
+        args = arguments;
+        args.prepend("-xml");
+        if (flush) args.prepend("-flush");
+
+        QProcess proc;
+        proc.setEnvironment(QStringList(""));
+        proc.start(subdir + "/" + subdir, args);
+        QVERIFY(proc.waitForFinished());
+
+        QByteArray out(proc.readAllStandardOutput());
+        QByteArray err(proc.readAllStandardError());
+
+        /* Some platforms decides to output a message for uncaught exceptions. For instance,
+         * this is what windows platforms says:
+         * "This application has requested the Runtime to terminate it in an unusual way.
+         * Please contact the application's support team for more information." */
+        if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
+            QVERIFY2(err.isEmpty(), err.constData());
+
+        QXmlStreamReader reader(out);
+
+        while(!reader.atEnd())
+            reader.readNext();
+
+        QVERIFY2(!reader.error(), qPrintable(QString("(flush %0) line %1, col %2: %3")
+            .arg(flush)
+            .arg(reader.lineNumber())
+            .arg(reader.columnNumber())
+            .arg(reader.errorString())
+        ));
+    }
+}
+
+void tst_Selftests::checkXunitxml() const
+{
+    QFETCH(QString, subdir);
+    QFETCH(QStringList, arguments);
+
+    if(m_checkXunitBlacklist.contains(subdir))
+        return;
+
+    arguments.prepend("-xunitxml");
+    arguments.prepend("-flush");
 
     QProcess proc;
     proc.setEnvironment(QStringList(""));
@@ -319,6 +378,8 @@ void tst_Selftests::checkXML() const
 
     QByteArray out(proc.readAllStandardOutput());
     QByteArray err(proc.readAllStandardError());
+
+//    qDebug()<<out;
 
     /* Some platforms decides to output a message for uncaught exceptions. For instance,
      * this is what windows platforms says:
@@ -332,12 +393,26 @@ void tst_Selftests::checkXML() const
     while(!reader.atEnd())
         reader.readNext();
 
-    QVERIFY(!reader.error());
+    QVERIFY2(!reader.error(), qPrintable(QString("line %1, col %2: %3")
+        .arg(reader.lineNumber())
+        .arg(reader.columnNumber())
+        .arg(reader.errorString())
+    ));
+}
+
+void tst_Selftests::checkXunitxml_data()
+{
+    checkXML_data();
 }
 
 void tst_Selftests::checkXML_data()
 {
     runSubTest_data();
+    QTest::newRow("badxml 1") << "badxml" << QStringList();
+    QTest::newRow("badxml 2") << "badxml" << (QStringList() << "-badstring" << "0");
+    QTest::newRow("badxml 3") << "badxml" << (QStringList() << "-badstring" << "1");
+    QTest::newRow("badxml 4") << "badxml" << (QStringList() << "-badstring" << "2");
+    QTest::newRow("badxml 5") << "badxml" << (QStringList() << "-badstring" << "3");
 }
 
 /* Parse line into the BenchmarkResult it represents. */

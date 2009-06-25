@@ -412,7 +412,7 @@ void MainWindow::setupActions()
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(tr("CTRL+Q"));
+    tmp->setShortcut(QKeySequence::Quit);
     tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));
@@ -468,7 +468,7 @@ void MainWindow::setupActions()
 
     menu = menuBar()->addMenu(tr("&Go"));
     m_homeAction = menu->addAction(tr("&Home"), m_centralWidget, SLOT(home()));
-    m_homeAction->setShortcut(tr("Ctrl+Home"));
+    m_homeAction->setShortcut(tr("ALT+Home"));
     m_homeAction->setIcon(QIcon(resourcePath + QLatin1String("/home.png")));
 
     m_backAction = menu->addAction(tr("&Back"), m_centralWidget, SLOT(backward()));
@@ -748,7 +748,7 @@ void MainWindow::copyAvailable(bool yes)
 
 void MainWindow::addNewBookmark(const QString &title, const QString &url)
 {
-    if (url.isEmpty())
+    if (url.isEmpty() || url == QLatin1String("about:blank"))
         return;
 
     m_bookmarkManager->showBookmarkDialog(this, title, url);
@@ -797,23 +797,16 @@ void MainWindow::showAboutDialog()
             aboutDia.setPixmap(pix);
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
-        // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
-        QString edition;
-        QString info;
-        QString moreInfo;
-
         QByteArray resources;
         aboutDia.setText(QString::fromLatin1("<center>"
             "<h3>%1</h3>"
-            "<p>Version %2 %3</p></center>"
-            "<p>%4</p>"
-            "<p>%5</p>"
+            "<p>Version %2</p></center>"
             "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)"
             ".</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
             " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
             " PARTICULAR PURPOSE.<p/>")
-            .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR))
-            .arg(edition).arg(info).arg(moreInfo), resources);
+            .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
+            resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");
         aboutDia.setPixmap(QString(path));
     }

@@ -2177,6 +2177,16 @@ void QX11PixmapData::copy(const QPixmapData *data, const QRect &rect)
     }
 }
 
+bool QX11PixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    GC gc = XCreateGC(X11->display, hd, 0, 0);
+    XCopyArea(X11->display, hd, hd, gc,
+              rect.left(), rect.top(), rect.width(), rect.height(),
+              rect.left() + dx, rect.top() + dy);
+    XFreeGC(X11->display, gc);
+    return true;
+}
+
 #if !defined(QT_NO_XRENDER)
 void QX11PixmapData::convertToARGB32(bool preserveContents)
 {

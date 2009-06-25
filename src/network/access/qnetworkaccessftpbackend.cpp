@@ -42,6 +42,7 @@
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
 #include "QtNetwork/qauthenticator.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 
 #ifndef QT_NO_FTP
 
@@ -80,41 +81,6 @@ QNetworkAccessFtpBackendFactory::create(QNetworkAccessManager::Operation op,
         return new QNetworkAccessFtpBackend;
     return 0;
 }
-
-class QNetworkAccessFtpIODevice: public QIODevice
-{
-    //Q_OBJECT
-public:
-    QNetworkAccessFtpBackend *backend;
-    bool eof;
-
-    inline QNetworkAccessFtpIODevice(QNetworkAccessFtpBackend *parent)
-        : QIODevice(parent), backend(parent), eof(false)
-        { open(ReadOnly); }
-
-    bool isSequential() const { return true; }
-    bool atEnd() const { return backend->upstreamBytesAvailable() == 0; }
-
-    qint64 bytesAvailable() const { return backend->upstreamBytesAvailable(); }
-    qint64 bytesToWrite() const { return backend->downstreamBytesToConsume(); }
-protected:
-    qint64 readData(char *data, qint64 maxlen)
-    {
-        const QByteArray toSend = backend->readUpstream();
-        maxlen = qMin<qint64>(maxlen, toSend.size());
-        if (!maxlen)
-            return eof ? -1 : 0;
-
-        backend->upstreamBytesConsumed(maxlen);
-        memcpy(data, toSend.constData(), maxlen);
-        return maxlen;
-    }
-
-    qint64 writeData(const char *, qint64)
-    { return -1; }
-
-    friend class QNetworkAccessFtpBackend;
-};
 
 class QNetworkAccessFtpFtp: public QFtp, public QNetworkAccessCache::CacheableObject
 {
@@ -198,7 +164,11 @@ void QNetworkAccessFtpBackend::open()
         ftpConnectionReady(ftp);
     }
 
-    uploadDevice = new QNetworkAccessFtpIODevice(this);
+    // Put operation
+    if (operation() == QNetworkAccessManager::PutOperation) {
+        uploadDevice = QNonContiguousByteDeviceFactory::wrap(createUploadByteDevice());
+        uploadDevice->setParent(this);
+    }
 }
 
 void QNetworkAccessFtpBackend::closeDownstreamChannel()
@@ -210,16 +180,6 @@ void QNetworkAccessFtpBackend::closeDownstreamChannel()
 #else
         exit(3);
 #endif
-}
-
-void QNetworkAccessFtpBackend::closeUpstreamChannel()
-{
-    if (operation() == QNetworkAccessManager::PutOperation) {
-        Q_ASSERT(uploadDevice);
-        uploadDevice->eof = true;
-        if (!upstreamBytesAvailable())
-            emit uploadDevice->readyRead();
-    }
 }
 
 bool QNetworkAccessFtpBackend::waitForDownstreamReadyRead(int ms)
@@ -237,18 +197,6 @@ bool QNetworkAccessFtpBackend::waitForDownstreamReadyRead(int ms)
 
     qCritical("QNetworkAccess: FTP backend does not support waitForReadyRead()");
     return false;
-}
-
-bool QNetworkAccessFtpBackend::waitForUpstreamBytesWritten(int ms)
-{
-    Q_UNUSED(ms);
-    qCritical("QNetworkAccess: FTP backend does not support waitForBytesWritten()");
-    return false;
-}
-
-void QNetworkAccessFtpBackend::upstreamReadyRead()
-{
-    // uh... how does QFtp operate?
 }
 
 void QNetworkAccessFtpBackend::downstreamReadyWrite()

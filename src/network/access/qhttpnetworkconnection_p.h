@@ -140,14 +140,13 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_readyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_disconnected())
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
-    Q_PRIVATE_SLOT(d_func(), void _q_restartPendingRequest())
+    Q_PRIVATE_SLOT(d_func(), void _q_restartAuthPendingRequests())
     Q_PRIVATE_SLOT(d_func(), void _q_connected())
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))
 #ifndef QT_NO_NETWORKPROXY
     Q_PRIVATE_SLOT(d_func(), void _q_proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*))
 #endif
-    Q_PRIVATE_SLOT(d_func(), void _q_dataReadyReadBuffer())
-    Q_PRIVATE_SLOT(d_func(), void _q_dataReadyReadNoBuffer())
+    Q_PRIVATE_SLOT(d_func(), void _q_uploadDataReadyRead())
 
 #ifndef QT_NO_OPENSSL
     Q_PRIVATE_SLOT(d_func(), void _q_encrypted())
@@ -190,7 +189,7 @@ public:
     bool isSocketReading(QAbstractSocket *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
-    void unqueueRequest(QAbstractSocket *socket);
+    void unqueueAndSendRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
     bool sendRequest(QAbstractSocket *socket);
     void receiveReply(QAbstractSocket *socket, QHttpNetworkReply *reply);
@@ -203,14 +202,14 @@ public:
     void _q_readyRead(); // pending data to read
     void _q_disconnected(); // disconnected from host
     void _q_startNextRequest(); // send the next request from the queue
-    void _q_restartPendingRequest(); // send the currently blocked request
+    void _q_restartAuthPendingRequests(); // send the currently blocked request
     void _q_connected(); // start sending request
     void _q_error(QAbstractSocket::SocketError); // error from socket
 #ifndef QT_NO_NETWORKPROXY
     void _q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth); // from transparent proxy
 #endif
-    void _q_dataReadyReadNoBuffer();
-    void _q_dataReadyReadBuffer();
+
+    void _q_uploadDataReadyRead();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
     bool ensureConnection(QAbstractSocket *socket);
@@ -219,7 +218,6 @@ public:
 #ifndef QT_NO_COMPRESS
     bool expand(QAbstractSocket *socket, QHttpNetworkReply *reply, bool dataComplete);
 #endif
-    void bufferData(HttpMessagePair &request);
     void removeReply(QHttpNetworkReply *reply);
 
     QString hostName;
@@ -252,7 +250,7 @@ public:
         {}
     };
     static const int channelCount;
-    Channel channels[2]; // maximum of 2 socket connections to the server
+    Channel *channels; // parallel connections to the server
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
@@ -263,7 +261,7 @@ public:
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
     void allDone(QAbstractSocket *socket, QHttpNetworkReply *reply);
     void handleStatus(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    inline bool emitSignals(QHttpNetworkReply *reply);
+    inline bool shouldEmitSignals(QHttpNetworkReply *reply);
     inline bool expectContent(QHttpNetworkReply *reply);
 
 #ifndef QT_NO_OPENSSL
@@ -284,9 +282,6 @@ public:
 
 
 QT_END_NAMESPACE
-
-//Q_DECLARE_METATYPE(QHttpNetworkRequest)
-//Q_DECLARE_METATYPE(QHttpNetworkReply)
 
 #endif // QT_NO_HTTP
 

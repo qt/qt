@@ -76,11 +76,45 @@ class Q_AUTOTEST_EXPORT QScriptDebugger : public QObject
 {
     Q_OBJECT
 public:
+    // mirrors QScriptEngineDebugger::DebuggerWidget
+    enum DebuggerWidget {
+        ConsoleWidget,
+        StackWidget,
+        ScriptsWidget,
+        LocalsWidget,
+        CodeWidget,
+        CodeFinderWidget,
+        BreakpointsWidget,
+        DebugOutputWidget,
+        ErrorLogWidget
+    };
+    // mirrors QScriptEngineDebugger::DebuggerAction
+    enum DebuggerAction {
+        InterruptAction,
+        ContinueAction,
+        StepIntoAction,
+        StepOverAction,
+        StepOutAction,
+        RunToCursorAction,
+        RunToNewScriptAction,
+        ToggleBreakpointAction,
+        ClearDebugOutputAction,
+        ClearErrorLogAction,
+        ClearConsoleAction,
+        FindInScriptAction,
+        FindNextInScriptAction,
+        FindPreviousInScriptAction,
+        GoToLineAction
+    };
+
     QScriptDebugger(QObject *parent = 0);
     ~QScriptDebugger();
 
     QScriptDebuggerFrontend *frontend() const;
     void setFrontend(QScriptDebuggerFrontend *frontend);
+
+    QWidget *widget(DebuggerWidget widget);
+    QAction *action(DebuggerAction action, QObject *parent);
 
     QScriptDebuggerConsoleWidgetInterface *consoleWidget() const;
     void setConsoleWidget(QScriptDebuggerConsoleWidgetInterface *consoleWidget);

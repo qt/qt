@@ -62,22 +62,25 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkAccessFileBackend: public QNetworkAccessBackend
 {
+    Q_OBJECT
 public:
     QNetworkAccessFileBackend();
     virtual ~QNetworkAccessFileBackend();
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
     virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
 
-    virtual void upstreamReadyRead();
     virtual void downstreamReadyWrite();
 
+public slots:
+    void uploadReadyReadSlot();
+protected:
+    QNonContiguousByteDevice *uploadByteDevice;
 private:
     QFile file;
     qint64 totalBytes;
+    bool hasUploadFinished;
 
     bool loadFileInfo();
     bool readMoreFromFile();

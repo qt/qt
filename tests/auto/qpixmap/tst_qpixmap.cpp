@@ -48,6 +48,8 @@
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
 
+#include <private/qpixmapdata_p.h>
+
 #include <QSet>
 
 #ifdef Q_WS_WIN
@@ -97,6 +99,9 @@ private slots:
     void convertFromImage();
 
     void testMetrics();
+
+    void scroll_data();
+    void scroll();
 
     void fill_data();
     void fill();
@@ -151,6 +156,38 @@ private slots:
 
     void fromData();
 };
+
+static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
+{
+    QImage expectedImage = expected.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage actualImage = actual.toImage().convertToFormat(QImage::Format_RGB32);
+
+    if (expectedImage.size() != actualImage.size())
+        return false;
+
+    int size = actual.width() * actual.height();
+
+    QRgb *a = (QRgb *)actualImage.bits();
+    QRgb *e = (QRgb *)expectedImage.bits();
+    for (int i = 0; i < size; ++i) {
+        QColor ca(a[i]);
+        QColor ce(e[i]);
+
+        bool result = true;
+
+        if (qAbs(ca.red() - ce.red()) > 2)
+            result = false;
+        if (qAbs(ca.green() - ce.green()) > 2)
+            result = false;
+        if (qAbs(ca.blue() - ce.blue()) > 2)
+            result = false;
+
+        if (!result)
+            return false;
+    }
+
+    return true;
+}
 
 Q_DECLARE_METATYPE(QImage)
 Q_DECLARE_METATYPE(QPixmap)
@@ -214,7 +251,7 @@ void tst_QPixmap::setAlphaChannel()
     pixmap.setAlphaChannel(alphaChannel);
 
 #ifdef Q_WS_X11
-    if (!pixmap.x11PictureHandle())
+    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
 
@@ -273,7 +310,7 @@ void tst_QPixmap::fromImage()
 
     const QPixmap pixmap = QPixmap::fromImage(image);
 #ifdef Q_WS_X11
-    if (!pixmap.x11PictureHandle())
+    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
     const QImage result = pixmap.toImage();
@@ -318,6 +355,99 @@ void tst_QPixmap::convertFromImage()
 
     QPixmap res = QPixmap::fromImage(img2);
     QVERIFY( pixmapsAreEqual(&pix, &res) );
+}
+
+void tst_QPixmap::scroll_data()
+{
+    QTest::addColumn<QImage>("input");
+    QTest::addColumn<int>("dx");
+    QTest::addColumn<int>("dy");
+    QTest::addColumn<QRect>("rect");
+    QTest::addColumn<QRegion>("exposed");
+    QTest::addColumn<bool>("newPix");
+
+    QImage input(":/images/designer.png");
+
+    // Noop tests
+    QTest::newRow("null") << QImage() << 0 << 0 << QRect() << QRegion() << false;
+    QTest::newRow("dx_0_dy_0_null") << input << 0 << 0 << QRect() << QRegion() << false;
+    QTest::newRow("dx_1_dy_0_null") << input << 1 << 0 << QRect() << QRegion() << false;
+    QTest::newRow("dx_0_dy_1_null") << input << 0 << 1 << QRect() << QRegion() << false;
+    QTest::newRow("dx_0_dy_0_x_y_w_h") << input << 0 << 0 << input.rect() << QRegion() << false;
+
+    QRegion r;
+    // Scroll whole pixmap
+    r = QRegion(); r += QRect(0, 0, 128, 10);
+    QTest::newRow("dx_0_dy_10_x_y_w_h") << input << 0 << 10 << input.rect() << r << true;
+    r = QRegion(); r += QRect(0, 0, 10, 128);
+    QTest::newRow("dx_10_dy_0_x_y_w_h") << input << 10 << 0 << input.rect() << r << true;
+    r = QRegion(); r += QRect(0, 0, 128, 10); r += QRect(0, 10, 10, 118);
+    QTest::newRow("dx_10_dy_10_x_y_w_h") << input << 10 << 10 << input.rect() << r << true;
+    r = QRegion(); r += QRect(118, 0, 10, 128);
+    QTest::newRow("dx_-10_dy_0_x_y_w_h") << input << -10 << 0 << input.rect() << r << true;
+    r = QRegion(); r += QRect(0, 118, 128, 10);
+    QTest::newRow("dx_0_dy_-10_x_y_w_h") << input << 0 << -10 << input.rect() << r << true;
+    r = QRegion(); r += QRect(118, 0, 10, 118); r += QRect(0, 118, 128, 10);
+    QTest::newRow("dx_-10_dy_-10_x_y_w_h") << input << -10 << -10 << input.rect() << r << true;
+
+    // Scroll part of pixmap
+    QTest::newRow("dx_0_dy_0_50_50_100_100") << input << 0 << 0 << QRect(50, 50, 100, 100) << QRegion() << false;
+    r = QRegion(); r += QRect(50, 50, 10, 78);
+    QTest::newRow("dx_10_dy_0_50_50_100_100") << input << 10 << 0 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(50, 50, 78, 10);
+    QTest::newRow("dx_0_dy_10_50_50_100_100") << input << 0 << 10 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(50, 50, 78, 10); r += QRect(50, 60, 10, 68);
+    QTest::newRow("dx_10_dy_10_50_50_100_100") << input << 10 << 10 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(118, 50, 10, 78);
+    QTest::newRow("dx_-10_dy_0_50_50_100_100") << input << -10 << 0 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(50, 118, 78, 10);
+    QTest::newRow("dx_0_dy_-10_50_50_100_100") << input << 0 << -10 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(118, 50, 10, 68); r += QRect(50, 118, 78, 10);
+    QTest::newRow("dx_-10_dy_-10_50_50_100_100") << input << -10 << -10 << QRect(50, 50, 100, 100) << r << true;
+
+    // Scroll away the whole pixmap
+    r = input.rect();
+    QTest::newRow("dx_128_dy_0_x_y_w_h") << input << 128 << 0 << input.rect() << r << false;
+    QTest::newRow("dx_0_dy_128_x_y_w_h") << input << 0 << 128 << input.rect() << r << false;
+    QTest::newRow("dx_128_dy_128_x_y_w_h") << input << 128 << 128 << input.rect() << r << false;
+    QTest::newRow("dx_-128_dy_0_x_y_w_h") << input << -128 << 0 << input.rect() << r << false;
+    QTest::newRow("dx_0_dy_-128_x_y_w_h") << input << 0 << -128 << input.rect() << r << false;
+    QTest::newRow("dx_-128_dy_-128_x_y_w_h") << input << -128 << -128 << input.rect() << r << false;
+
+    // Scroll away part of the pixmap
+    r = QRegion(); r += QRect(64, 64, 64, 64);
+    QTest::newRow("dx_128_dy_128_64_64_128_128") << input << 128 << 128 << QRect(64, 64, 128, 128) << r << false;
+}
+
+void tst_QPixmap::scroll()
+{
+    QFETCH(QImage, input);
+    QFETCH(int, dx);
+    QFETCH(int, dy);
+    QFETCH(QRect, rect);
+    QFETCH(QRegion, exposed);
+    QFETCH(bool, newPix);
+
+    QPixmap pixmap = QPixmap::fromImage(input);
+    QRegion exp;
+    qint64 oldKey = pixmap.cacheKey();
+    pixmap.scroll(dx, dy, rect, &exp);
+    if (!newPix)
+        QCOMPARE(pixmap.cacheKey(), oldKey);
+    else
+        QVERIFY(pixmap.cacheKey() != oldKey);
+
+#if 0
+    // Remember to add to resources.
+    QString fileName = QString("images/%1.png").arg(QTest::currentDataTag());
+    pixmap.toImage().save(fileName);
+#else
+    QString fileName = QString(":/images/%1.png").arg(QTest::currentDataTag());
+#endif
+    QPixmap output(fileName);
+    QVERIFY(input.isNull() == output.isNull());
+    QVERIFY(lenientCompare(pixmap, output));
+    QCOMPARE(exp, exposed);
 }
 
 void tst_QPixmap::fill_data()
@@ -385,7 +515,7 @@ void tst_QPixmap::fill()
         pm = QPixmap(400, 400);
 
 #if defined(Q_WS_X11)
-    if (!bitmap && !pm.x11PictureHandle())
+    if (!bitmap && pm.pixmapData()->classId() == QPixmapData::X11Class && !pm.x11PictureHandle())
         QSKIP("Requires XRender support", SkipSingle);
 #endif
 
@@ -397,7 +527,7 @@ void tst_QPixmap::fill()
     QImage image = pm.toImage();
     if (bitmap && syscolor) {
         int pixelindex = (pixel == Qt::color0) ? 0 : 1;
-        QVERIFY(image.pixelIndex(0,0) == pixelindex);
+        QCOMPARE(image.pixelIndex(0,0), pixelindex);
     }
     QImage::Format format = compareColor.alpha() != 255
                             ? QImage::Format_ARGB32
@@ -415,7 +545,7 @@ void tst_QPixmap::fill_transparent()
 {
     QPixmap pixmap(10, 10);
 #ifdef Q_WS_X11
-    if (!pixmap.x11PictureHandle())
+    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
     pixmap.fill(Qt::transparent);
@@ -535,7 +665,7 @@ void tst_QPixmap::testMetrics()
 
     QCOMPARE(pixmap.width(), 100);
     QCOMPARE(pixmap.height(), 100);
-    QCOMPARE(pixmap.depth(), QPixmap::defaultDepth());
+    QVERIFY(pixmap.depth() >= QPixmap::defaultDepth());
 
     QBitmap bitmap(100, 100);
 
@@ -597,7 +727,11 @@ void tst_QPixmap::drawBitmap()
     painter2.setPen(Qt::red);
     painter2.drawPixmap(0,0,10,10, bitmap);
     painter2.end();
-    QCOMPARE(pixmap.toImage().pixel(5,5), QColor(Qt::red).rgb());
+
+    QPixmap expected(10, 10);
+    expected.fill(Qt::red);
+
+    QVERIFY(lenientCompare(pixmap, expected));
 }
 
 void tst_QPixmap::grabWidget()
@@ -610,8 +744,7 @@ void tst_QPixmap::grabWidget()
     expected.fill(Qt::green);
 
     QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
-
-    QCOMPARE(actual, expected);
+    QVERIFY(lenientCompare(actual, expected));
 }
 
 void tst_QPixmap::grabWindow()
@@ -642,7 +775,7 @@ void tst_QPixmap::grabWindow()
 
     QPixmap grabWindowPixmap = QPixmap::grabWindow(child.winId());
     QPixmap grabWidgetPixmap = QPixmap::grabWidget(&child);
-    QCOMPARE(grabWindowPixmap, grabWidgetPixmap);
+    lenientCompare(grabWindowPixmap, grabWidgetPixmap);
 }
 
 void tst_QPixmap::isNull()
@@ -978,10 +1111,10 @@ void tst_QPixmap::copy()
     }
 
     QPixmap dest = src.copy(10, 10, 10, 10);
-    QImage result = dest.toImage().convertToFormat(QImage::Format_RGB32);
-    QImage expected(10, 10, QImage::Format_RGB32);
-    expected.fill(0xff0000ff);
-    QCOMPARE(result, expected);
+
+    QPixmap expected(10, 10);
+    expected.fill(Qt::blue);
+    QVERIFY(lenientCompare(dest, expected));
 }
 
 #ifdef QT3_SUPPORT
@@ -1049,27 +1182,33 @@ void tst_QPixmap::transformed()
     }
 
     QPixmap p2(10, 20);
-    p2.fill(Qt::red);
     {
         QPainter p(&p2);
-        p.drawRect(0, 0, p2.width() - 1, p2.height() - 1);
+        p.rotate(90);
+        p.drawPixmap(0, -p1.height(), p1);
+    }
+
+    QPixmap p3(20, 10);
+    {
+        QPainter p(&p3);
+        p.rotate(180);
+        p.drawPixmap(-p1.width(), -p1.height(), p1);
+    }
+
+    QPixmap p4(10, 20);
+    {
+        QPainter p(&p4);
+        p.rotate(270);
+        p.drawPixmap(-p1.width(), 0, p1);
     }
 
     QPixmap p1_90 = p1.transformed(QTransform().rotate(90));
     QPixmap p1_180 = p1.transformed(QTransform().rotate(180));
     QPixmap p1_270 = p1.transformed(QTransform().rotate(270));
 
-    QCOMPARE(p1_90.size(), p2.size());
-    QCOMPARE(p1_90.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             p2.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
-
-    QCOMPARE(p1_180.size(), p1.size());
-    QCOMPARE(p1_180.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             p1.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
-
-    QCOMPARE(p1_270.size(), p2.size());
-    QCOMPARE(p1_270.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             p2.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QVERIFY(lenientCompare(p1_90, p2));
+    QVERIFY(lenientCompare(p1_180, p3));
+    QVERIFY(lenientCompare(p1_270, p4));
 }
 
 void tst_QPixmap::transformed2()
@@ -1097,9 +1236,7 @@ void tst_QPixmap::transformed2()
     p.drawRect(3, 6, 3, 3);
     p.end();
 
-    QCOMPARE(actual.size(), expected.size());
-    QCOMPARE(actual.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             expected.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QVERIFY(lenientCompare(actual, expected));
 }
 
 void tst_QPixmap::fromImage_crash()

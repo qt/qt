@@ -304,6 +304,8 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     QString key = QLatin1String("$qt_icon_")
                   + QString::number(pm.cacheKey())
                   + QString::number(pe->mode)
+                  + QString::number(QApplication::palette().cacheKey())
+                  + QLatin1Char('_')
                   + QString::number(actualSize.width())
                   + QLatin1Char('_')
                   + QString::number(actualSize.height())

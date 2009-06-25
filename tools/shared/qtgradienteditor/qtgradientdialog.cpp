@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::QtGradientDialog
-*/
-
 #include "qtgradientdialog.h"
 #include "ui_qtgradientdialog.h"
 #include <QtGui/QPushButton>

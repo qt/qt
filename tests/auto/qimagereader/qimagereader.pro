@@ -3,6 +3,7 @@ SOURCES += tst_qimagereader.cpp
 MOC_DIR=tmp
 QT += network
 RESOURCES += qimagereader.qrc
+DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 !contains(QT_CONFIG, no-gif):DEFINES += QTEST_HAVE_GIF
 !contains(QT_CONFIG, no-jpeg):DEFINES += QTEST_HAVE_JPEG
@@ -22,6 +23,7 @@ wince*: {
     imagePlugins.path = imageformats
 
     DEPLOYMENT += images imagePlugins
+    DEFINES += SRCDIR=\\\".\\\"
 }
 
 symbian*: {

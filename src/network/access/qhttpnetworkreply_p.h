@@ -139,7 +139,7 @@ Q_SIGNALS:
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
     void headerChanged();
     void dataReadProgress(int done, int total);
-    void dataSendProgress(int done, int total);
+    void dataSendProgress(qint64 done, qint64 total);
 
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
@@ -162,8 +162,8 @@ public:
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
 
-    qint64 transferRaw(QIODevice *in, QIODevice *out, qint64 size);
-    qint64 transferChunked(QIODevice *in, QIODevice *out);
+    qint64 readReplyBodyRaw(QIODevice *in, QIODevice *out, qint64 size);
+    qint64 readReplyBodyChunked(QIODevice *in, QIODevice *out);
     qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
 
     qint64 bytesAvailable() const;
@@ -206,8 +206,6 @@ public:
 
     QByteArray responseData; // uncompressed body
     QByteArray compressedData; // compressed body (temporary)
-    QBuffer requestDataBuffer;
-    bool requestIsBuffering;
     bool requestIsPrepared;
 };
 

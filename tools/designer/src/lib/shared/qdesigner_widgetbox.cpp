@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::QDesignerWidgetBox
-*/
-
 #include "qdesigner_widgetbox_p.h"
 #include "qdesigner_utils_p.h"
 

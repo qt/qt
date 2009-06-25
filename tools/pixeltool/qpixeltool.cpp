@@ -179,13 +179,13 @@ void QPixelTool::paintEvent(QPaintEvent *)
 
     if (m_displayZoom) {
         render_string(&p, w, h,
-                      QString(QLatin1String("Zoom: x%1")).arg(m_zoom),
+            QString::fromLatin1("Zoom: x%1").arg(m_zoom),
                       Qt::AlignTop | Qt::AlignRight);
     }
 
     if (m_displayGridSize) {
         render_string(&p, w, h,
-                      QString(QLatin1String("Grid size: %1")).arg(m_gridSize),
+            QString::fromLatin1("Grid size: %1").arg(m_gridSize),
                       Qt::AlignBottom | Qt::AlignLeft);
     }
 

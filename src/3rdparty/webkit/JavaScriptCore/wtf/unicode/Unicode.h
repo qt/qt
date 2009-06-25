@@ -32,6 +32,6 @@
 #error "Unknown Unicode implementation"
 #endif
 
-COMPILE_ASSERT(sizeof(UChar) == 2, UCharIsTwoBytes);
+COMPILE_ASSERT(sizeof(UChar) == 2, UCharIsTwoBytes)
 
 #endif // WTF_UNICODE_H

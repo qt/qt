@@ -60,6 +60,7 @@ public:
 
 private slots:
     void getSetCheck();
+    void task245918_show();
 };
 
 tst_Q3TabDialog::tst_Q3TabDialog()
@@ -93,6 +94,33 @@ void tst_Q3TabDialog::getSetCheck()
     QCOMPARE(obj1.tabBar(), oldTabBar);
 
     delete var1;
+}
+
+class task245918_Dialog : public Q3TabDialog
+{
+    Q_OBJECT
+public:
+    task245918_Dialog()
+    {
+        QTimer::singleShot(100, this, SLOT(closeWhenVisible()));
+    }
+
+ private slots:
+    void closeWhenVisible()
+    {
+        if (isVisible())
+            accept();
+        else
+            QTimer::singleShot(100, this, SLOT(closeWhenVisible()));
+    }
+};
+
+void tst_Q3TabDialog::task245918_show()
+{
+    task245918_Dialog dialog;
+    QSignalSpy spy(&dialog, SIGNAL(aboutToShow()));
+    dialog.exec();
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_Q3TabDialog)

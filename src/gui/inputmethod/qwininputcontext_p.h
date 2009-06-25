@@ -83,6 +83,7 @@ public:
     static void TranslateMessage(const MSG *msg);
     static LRESULT DefWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+    static void updateImeStatus(QWidget *w, bool hasFocus);
     static void enablePopupChild(QWidget *w, bool e);
     static void enable(QWidget *w, bool e);
 
