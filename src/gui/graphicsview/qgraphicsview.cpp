@@ -612,7 +612,10 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
-    qt_sendSpontaneousEvent(scene, &mouseEvent);
+    if (event->isSpontaneous())
+        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    else
+        QApplication::sendEvent(scene, &mouseEvent);
 
     // Remember whether the last event was accepted or not.
     lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -3025,7 +3028,10 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setAccepted(false);
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
-    qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+    if (event->isSpontaneous())
+        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    else
+        QApplication::sendEvent(scene, &mouseEvent);
 }
 
 /*!
@@ -3064,7 +3070,10 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setButton(event->button());
             mouseEvent.setModifiers(event->modifiers());
             mouseEvent.setAccepted(false);
-            qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+            if (event->isSpontaneous())
+                qt_sendSpontaneousEvent(scene, &mouseEvent);
+            else
+                QApplication::sendEvent(scene, &mouseEvent);
 
             // Update the original mouse event accepted state.
             bool isAccepted = mouseEvent.isAccepted();
@@ -3234,7 +3243,10 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setAccepted(false);
-    qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+    if (event->isSpontaneous())
+        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    else
+        QApplication::sendEvent(scene, &mouseEvent);
 
     // Update the last mouse event selected state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -3365,7 +3377,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         // Find all exposed items
         bool allItems = false;
         QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems);
-        
+
         if (!itemList.isEmpty()) {
             // Generate the style options.
             const int numItems = itemList.size();
