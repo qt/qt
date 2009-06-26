@@ -146,6 +146,10 @@ class HtmlGenerator : public PageGenerator
 			     CodeMarker *marker, 
                              CodeMarker::SynopsisStyle style);
 #ifdef QDOC_NAME_ALIGNMENT
+    void generateSection(const NodeList& nl,
+                         const Node *relative,
+                         CodeMarker *marker,
+                         CodeMarker::SynopsisStyle style);
     void generateSynopsis(const Node *node, 
                           const Node *relative, 
                           CodeMarker *marker,

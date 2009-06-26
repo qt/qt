@@ -739,8 +739,11 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             // Note: Setting the access to Private hides the documentation,
             // but setting the status to Internal makes the node available
             // in the XML output when the WebXMLGenerator is used.
+#if 0
+            // Reimplemented functions now reported in separate sections.
             func->setAccess(Node::Private);
             func->setStatus(Node::Internal);
+#endif            
         }
         else {
             doc.location().warning(tr("Ignored '\\%1' in %2")

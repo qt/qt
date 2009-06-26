@@ -43,6 +43,7 @@
   cppcodemarker.cpp
 */
 
+#include <qdebug.h>
 #include "atom.h"
 #include "cppcodemarker.h"
 #include "node.h"
@@ -411,6 +412,21 @@ QString CppCodeMarker::functionEndRegExp(const QString& /* funcName */)
     return "^\\}$";
 }
 
+#if 0
+	    FastSection privateReimpFuncs(classe,
+                                          "Private Reimplemented Functions",
+                                          "private reimplemented function",
+                                          "private reimplemented functions");
+	    FastSection protectedReimpFuncs(classe,
+                                            "Protected Reimplemented Functions",
+                                            "protected reimplemented function",
+                                            "protected reimplemented functions");
+	    FastSection publicReimpFuncs(classe,
+                                         "Public Reimplemented Functions",
+                                         "public reimplemented function",
+                                         "public reimplemented functions");
+#endif
+
 QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                        SynopsisStyle style,
                                        Status status)
@@ -421,29 +437,55 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
         const ClassNode *classe = static_cast<const ClassNode *>(inner);
 
         if (style == Summary) {
-	    FastSection privateFunctions(classe, "Private Functions", "private function",
+	    FastSection privateFunctions(classe,
+                                         "Private Functions",
+                                         "private function",
 				         "private functions");
 	    FastSection privateSlots(classe, "Private Slots", "private slot", "private slots");
 	    FastSection privateTypes(classe, "Private Types", "private type", "private types");
-	    FastSection protectedFunctions(classe, "Protected Functions", "protected function",
+	    FastSection protectedFunctions(classe,
+                                           "Protected Functions",
+                                           "protected function",
 				           "protected functions");
-	    FastSection protectedSlots(classe, "Protected Slots", "protected slot", "protected slots");
-	    FastSection protectedTypes(classe, "Protected Types", "protected type", "protected types");
-	    FastSection protectedVariables(classe, "Protected Variables", "protected type", "protected variables");
-	    FastSection publicFunctions(classe, "Public Functions", "public function",
-				        "public functions");
+	    FastSection protectedSlots(classe,
+                                       "Protected Slots",
+                                       "protected slot",
+                                       "protected slots");
+	    FastSection protectedTypes(classe,
+                                       "Protected Types",
+                                       "protected type",
+                                       "protected types");
+	    FastSection protectedVariables(classe,
+                                           "Protected Variables",
+                                           "protected type",
+                                           "protected variables");
+	    FastSection publicFunctions(classe,
+                                        "Public Functions",
+                                        "public function",
+                                        "public functions");
 	    FastSection publicSignals(classe, "Signals", "signal", "signals");
 	    FastSection publicSlots(classe, "Public Slots", "public slot", "public slots");
 	    FastSection publicTypes(classe, "Public Types", "public type", "public types");
-	    FastSection publicVariables(classe, "Public Variables", "public type", "public variables");
+	    FastSection publicVariables(classe,
+                                        "Public Variables",
+                                        "public type",
+                                        "public variables");
 	    FastSection properties(classe, "Properties", "property", "properties");
-	    FastSection relatedNonMembers(classe, "Related Non-Members", "related non-member",
+	    FastSection relatedNonMembers(classe,
+                                          "Related Non-Members",
+                                          "related non-member",
                                           "related non-members");
-	    FastSection staticPrivateMembers(classe, "Static Private Members", "static private member",
+	    FastSection staticPrivateMembers(classe,
+                                             "Static Private Members",
+                                             "static private member",
 					     "static private members");
-	    FastSection staticProtectedMembers(classe, "Static Protected Members",
-					       "static protected member", "static protected members");
-	    FastSection staticPublicMembers(classe, "Static Public Members", "static public member",
+	    FastSection staticProtectedMembers(classe,
+                                               "Static Protected Members",
+					       "static protected member",
+                                               "static protected members");
+	    FastSection staticPublicMembers(classe,
+                                            "Static Public Members",
+                                            "static public member",
 					    "static public members");
             FastSection macros(inner, "Macros", "macro", "macros");
 
@@ -505,7 +547,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                 insert(publicVariables, *c, style, status);
 		        }
                         else if ((*c)->type() == Node::Function) {
-                            insert(publicFunctions, *c, style, status);
+                            if (!insertReimpFunc(publicFunctions,*c,status))
+                                insert(publicFunctions, *c, style, status);
 		        }
                         else {
 		            insert(publicTypes, *c, style, status);
@@ -525,7 +568,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                 insert(protectedVariables, *c, style, status);
 		        }
                         else if ((*c)->type() == Node::Function) {
-		            insert(protectedFunctions, *c, style, status);
+                            if (!insertReimpFunc(protectedFunctions,*c,status))
+                                insert(protectedFunctions, *c, style, status);
 		        }
                         else {
 		            insert(protectedTypes, *c, style, status);
@@ -541,7 +585,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 		                insert(staticPrivateMembers, *c, style, status);
 		        }
                         else if ((*c)->type() == Node::Function) {
-		            insert(privateFunctions, *c, style, status);
+                            if (!insertReimpFunc(privateFunctions,*c,status))
+                                insert(privateFunctions, *c, style, status);
 		        }
                         else {
 		            insert(privateTypes, *c, style, status);
