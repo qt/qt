@@ -53,8 +53,7 @@ QT_MODULE(Gui)
 
 class QStaticTextPrivate;
 class Q_GUI_EXPORT QStaticText
-{
-    Q_DECLARE_PRIVATE(QStaticText);
+{    
 public:
     QStaticText();
     QStaticText(const QString &text, const QFont &font = QFont(), const QSizeF &maximumSize = QSizeF());
@@ -80,6 +79,7 @@ private:
     void detach();
 
     QStaticTextPrivate *d_ptr;
+    friend class QStaticTextPrivate;
 };
 
 QT_END_NAMESPACE
