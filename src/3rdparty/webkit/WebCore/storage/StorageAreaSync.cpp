@@ -24,53 +24,58 @@
  */
 
 #include "config.h"
-#include "LocalStorageArea.h"
+#include "StorageAreaSync.h"
 
 #if ENABLE(DOM_STORAGE)
 
 #include "CString.h"
-#include "DOMWindow.h"
 #include "EventNames.h"
-#include "Frame.h"
 #include "HTMLElement.h"
-#include "LocalStorage.h"
-#include "Page.h"
-#include "PageGroup.h"
 #include "SQLiteStatement.h"
-#include "StorageEvent.h"
+#include "StorageArea.h"
 #include "SuddenTermination.h"
 
 namespace WebCore {
 
-// If the LocalStorageArea undergoes rapid changes, don't sync each change to disk.
+// If the StorageArea undergoes rapid changes, don't sync each change to disk.
 // Instead, queue up a batch of items to sync and actually do the sync at the following interval.
-static const double LocalStorageSyncInterval = 1.0;
+static const double StorageSyncInterval = 1.0;
 
-LocalStorageArea::LocalStorageArea(SecurityOrigin* origin, PassRefPtr<StorageSyncManager> syncManager)
-    : StorageArea(origin)
-    , m_syncTimer(this, &LocalStorageArea::syncTimerFired)
+PassRefPtr<StorageAreaSync> StorageAreaSync::create(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageArea> storageArea)
+{
+    return adoptRef(new StorageAreaSync(storageSyncManager, storageArea));
+}
+
+StorageAreaSync::StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageArea> storageArea)
+    : m_syncTimer(this, &StorageAreaSync::syncTimerFired)
     , m_itemsCleared(false)
     , m_finalSyncScheduled(false)
-    , m_syncManager(syncManager)
+    , m_storageArea(storageArea)
+    , m_syncManager(storageSyncManager)
     , m_clearItemsWhileSyncing(false)
     , m_syncScheduled(false)
     , m_importComplete(false)
 {
-    if (!m_syncManager || !m_syncManager->scheduleImport(this))
+    ASSERT(m_storageArea);
+    ASSERT(m_syncManager);
+
+    // FIXME: If it can't import, then the default WebKit behavior should be that of private browsing,
+    // not silently ignoring it.  https://bugs.webkit.org/show_bug.cgi?id=25894
+    if (!m_syncManager->scheduleImport(this))
         m_importComplete = true;
 }
 
-LocalStorageArea::~LocalStorageArea()
+#ifndef NDEBUG
+StorageAreaSync::~StorageAreaSync()
 {
     ASSERT(!m_syncTimer.isActive());
 }
+#endif
 
-void LocalStorageArea::scheduleFinalSync()
+void StorageAreaSync::scheduleFinalSync()
 {
     ASSERT(isMainThread());
-    if (!m_syncManager)
-        return;
-
+    
     if (m_syncTimer.isActive())
         m_syncTimer.stop();
     else {
@@ -78,67 +83,20 @@ void LocalStorageArea::scheduleFinalSync()
         // syncTimerFired function.
         disableSuddenTermination();
     }
+    // FIXME: This is synchronous.  We should do it on the background process, but
+    // we should do it safely.
     syncTimerFired(&m_syncTimer);
     m_finalSyncScheduled = true;
 }
 
-void LocalStorageArea::itemChanged(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame)
-{
-    ASSERT(isMainThread());
-
-    scheduleItemForSync(key, newValue);
-    dispatchStorageEvent(key, oldValue, newValue, sourceFrame);
-}
-
-void LocalStorageArea::itemRemoved(const String& key, const String& oldValue, Frame* sourceFrame)
-{
-    ASSERT(isMainThread());
-
-    scheduleItemForSync(key, String());
-    dispatchStorageEvent(key, oldValue, String(), sourceFrame);
-}
-
-void LocalStorageArea::areaCleared(Frame* sourceFrame)
-{
-    ASSERT(isMainThread());
-
-    scheduleClear();
-    dispatchStorageEvent(String(), String(), String(), sourceFrame);
-}
-
-void LocalStorageArea::dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame)
-{
-    ASSERT(isMainThread());
-
-    Page* page = sourceFrame->page();
-    if (!page)
-        return;
-
-    // Need to copy all relevant frames from every page to a vector, since sending the event to one frame might mutate the frame tree
-    // of any given page in the group, or mutate the page group itself
-    Vector<RefPtr<Frame> > frames;
-    const HashSet<Page*>& pages = page->group().pages();
-    
-    HashSet<Page*>::const_iterator end = pages.end();
-    for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-            if (frame->document()->securityOrigin()->equal(securityOrigin()))
-                frames.append(frame);
-        }
-    }
-
-    for (unsigned i = 0; i < frames.size(); ++i)
-        frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key, oldValue, newValue, sourceFrame->document()->documentURI(), sourceFrame->domWindow(), frames[i]->domWindow()->localStorage()));
-}
-
-void LocalStorageArea::scheduleItemForSync(const String& key, const String& value)
+void StorageAreaSync::scheduleItemForSync(const String& key, const String& value)
 {
     ASSERT(isMainThread());
     ASSERT(!m_finalSyncScheduled);
 
     m_changedItems.set(key, value);
     if (!m_syncTimer.isActive()) {
-        m_syncTimer.startOneShot(LocalStorageSyncInterval);
+        m_syncTimer.startOneShot(StorageSyncInterval);
 
         // The following is balanced by the call to enableSuddenTermination in the
         // syncTimerFired function.
@@ -146,7 +104,7 @@ void LocalStorageArea::scheduleItemForSync(const String& key, const String& valu
     }
 }
 
-void LocalStorageArea::scheduleClear()
+void StorageAreaSync::scheduleClear()
 {
     ASSERT(isMainThread());
     ASSERT(!m_finalSyncScheduled);
@@ -154,7 +112,7 @@ void LocalStorageArea::scheduleClear()
     m_changedItems.clear();
     m_itemsCleared = true;
     if (!m_syncTimer.isActive()) {
-        m_syncTimer.startOneShot(LocalStorageSyncInterval);
+        m_syncTimer.startOneShot(StorageSyncInterval);
 
         // The following is balanced by the call to enableSuddenTermination in the
         // syncTimerFired function.
@@ -162,11 +120,9 @@ void LocalStorageArea::scheduleClear()
     }
 }
 
-void LocalStorageArea::syncTimerFired(Timer<LocalStorageArea>*)
+void StorageAreaSync::syncTimerFired(Timer<StorageAreaSync>*)
 {
     ASSERT(isMainThread());
-    if (!m_syncManager)
-        return;
 
     HashMap<String, String>::iterator it = m_changedItems.begin();
     HashMap<String, String>::iterator end = m_changedItems.end();
@@ -201,14 +157,12 @@ void LocalStorageArea::syncTimerFired(Timer<LocalStorageArea>*)
     m_changedItems.clear();
 }
 
-void LocalStorageArea::performImport()
+void StorageAreaSync::performImport()
 {
     ASSERT(!isMainThread());
     ASSERT(!m_database.isOpen());
-    if (!m_syncManager)
-        return;
 
-    String databaseFilename = m_syncManager->fullDatabaseFilename(securityOrigin());
+    String databaseFilename = m_syncManager->fullDatabaseFilename(m_storageArea->securityOrigin());
 
     if (databaseFilename.isEmpty()) {
         LOG_ERROR("Filename for local storage database is empty - cannot open for persistent storage");
@@ -255,29 +209,33 @@ void LocalStorageArea::performImport()
     HashMap<String, String>::iterator end = itemMap.end();
     
     for (; it != end; ++it)
-        importItem(it->first, it->second);
+        m_storageArea->importItem(it->first, it->second);
     
+    // Break the (ref count) cycle.
+    m_storageArea = 0;
     m_importComplete = true;
     m_importCondition.signal();
 }
 
-void LocalStorageArea::markImported()
+void StorageAreaSync::markImported()
 {
     ASSERT(!isMainThread());
 
     MutexLocker locker(m_importLock);
+    // Break the (ref count) cycle.
+    m_storageArea = 0;
     m_importComplete = true;
     m_importCondition.signal();
 }
 
-// FIXME: In the future, we should allow use of localStorage while it's importing (when safe to do so).
+// FIXME: In the future, we should allow use of StorageAreas while it's importing (when safe to do so).
 // Blocking everything until the import is complete is by far the simplest and safest thing to do, but
 // there is certainly room for safe optimization: Key/length will never be able to make use of such an
 // optimization (since the order of iteration can change as items are being added). Get can return any
 // item currently in the map. Get/remove can work whether or not it's in the map, but we'll need a list
 // of items the import should not overwrite. Clear can also work, but it'll need to kill the import
 // job first.
-void LocalStorageArea::blockUntilImportComplete() const
+void StorageAreaSync::blockUntilImportComplete() const
 {
     ASSERT(isMainThread());
 
@@ -289,9 +247,10 @@ void LocalStorageArea::blockUntilImportComplete() const
     while (!m_importComplete)
         m_importCondition.wait(m_importLock);
     ASSERT(m_importComplete);
+    ASSERT(!m_storageArea);
 }
 
-void LocalStorageArea::sync(bool clearItems, const HashMap<String, String>& items)
+void StorageAreaSync::sync(bool clearItems, const HashMap<String, String>& items)
 {
     ASSERT(!isMainThread());
 
@@ -347,7 +306,7 @@ void LocalStorageArea::sync(bool clearItems, const HashMap<String, String>& item
     }
 }
 
-void LocalStorageArea::performSync()
+void StorageAreaSync::performSync()
 {
     ASSERT(!isMainThread());
 

@@ -329,6 +329,8 @@ IDL_BINDINGS += \
     html/CanvasGradient.idl \
     html/CanvasPattern.idl \
     html/CanvasRenderingContext2D.idl \
+    html/DataGridColumn.idl \
+    html/DataGridColumnList.idl \
     html/File.idl \
     html/FileList.idl \
     html/HTMLAudioElement.idl \
@@ -459,6 +461,7 @@ SOURCES += \
     bindings/js/JSCustomPositionErrorCallback.cpp \
     bindings/js/JSCustomVoidCallback.cpp \
     bindings/js/JSCustomXPathNSResolver.cpp \
+    bindings/js/JSDataGridColumnListCustom.cpp \
     bindings/js/JSDataGridDataSource.cpp \
     bindings/js/JSDocumentCustom.cpp \
     bindings/js/JSDocumentFragmentCustom.cpp \
@@ -735,6 +738,7 @@ SOURCES += \
     history/CachedFrame.cpp \
     history/CachedPage.cpp \
     history/HistoryItem.cpp \
+    history/qt/HistoryItemQt.cpp \
     history/PageCache.cpp \
     html/CanvasGradient.cpp \
     html/CanvasPattern.cpp \
@@ -742,6 +746,8 @@ SOURCES += \
     html/CanvasRenderingContext2D.cpp \
     html/CanvasStyle.cpp \
     html/CollectionCache.cpp \
+    html/DataGridColumn.cpp \
+    html/DataGridColumnList.cpp \
     html/File.cpp \
     html/FileList.cpp \
     html/FormDataList.cpp \
@@ -1361,19 +1367,19 @@ contains(DEFINES, ENABLE_DOM_STORAGE=1) {
         storage/Storage.h \
         storage/StorageEvent.h \
         storage/SessionStorage.h \
-        storage/SessionStorageArea.h
+        storage/StorageSyncManager.h \
+        storage/StorageAreaSync.h
 
     SOURCES += \
         storage/LocalStorage.cpp \
-        storage/LocalStorageArea.cpp \
         storage/LocalStorageTask.cpp \
         storage/LocalStorageThread.cpp \
         storage/Storage.cpp \
         storage/StorageArea.cpp \
+        storage/StorageAreaSync.cpp \
         storage/StorageMap.cpp \
         storage/StorageEvent.cpp \
         storage/SessionStorage.cpp \
-        storage/SessionStorageArea.cpp \
         storage/StorageSyncManager.cpp \
         bindings/js/JSStorageCustom.cpp
 

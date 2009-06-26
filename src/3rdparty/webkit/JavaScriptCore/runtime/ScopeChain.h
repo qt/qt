@@ -30,7 +30,7 @@ namespace JSC {
     class JSObject;
     class ScopeChainIterator;
     
-    class ScopeChainNode : public WTF::FastAllocBase {
+    class ScopeChainNode : public FastAllocBase {
     public:
         ScopeChainNode(ScopeChainNode* next, JSObject* object, JSGlobalData* globalData, JSObject* globalThis)
             : next(next)
@@ -154,7 +154,7 @@ namespace JSC {
 
     class NoScopeChain {};
 
-    class ScopeChain {
+    class ScopeChain : public FastAllocBase {
         friend class JIT;
     public:
         ScopeChain(NoScopeChain)

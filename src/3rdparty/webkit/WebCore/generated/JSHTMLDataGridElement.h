@@ -63,6 +63,7 @@ public:
 
 JSC::JSValue jsHTMLDataGridElementDataSource(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLDataGridElementDataSource(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLDataGridElementColumns(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLDataGridElementAutofocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLDataGridElementAutofocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLDataGridElementDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

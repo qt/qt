@@ -1,3 +1,1253 @@
+2009-06-26  Adele Peterson  <adele@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Fix for <rdar://problem/7000796>
+        REGRESSION(34681): Breaking up quoted text makes new, unquoted text blue after certain steps; repros with some messages
+
+        Test: editing/inserting/break-blockquote-after-delete.html
+
+        Keep track of whether the typing style should be preserved after the TypingCommand is applied.  When adding onto an open
+        typing command, keep that flag up to date.
+
+        In this case, an InsertParagraphSeparatorInQuotedContent command, which should not preserve typing style, 
+        was following an open Delete command, which does preserve the typing style.  So we were applying the original
+        typing style (from before the delete, so blue text) to the cursor in the unquoted area after breaking up the blockquote.
+
+        * editing/TypingCommand.cpp:
+        (WebCore::TypingCommand::TypingCommand):
+        (WebCore::TypingCommand::typingAddedToOpenCommand):
+        (WebCore::TypingCommand::insertTextRunWithoutNewlines):
+        (WebCore::TypingCommand::insertLineBreak):
+        (WebCore::TypingCommand::insertParagraphSeparator):
+        (WebCore::TypingCommand::insertParagraphSeparatorInQuotedContent):
+        (WebCore::TypingCommand::deleteKeyPressed):
+        (WebCore::TypingCommand::forwardDeleteKeyPressed):
+        (WebCore::TypingCommand::deleteSelection):
+        (WebCore::TypingCommand::updatePreservesTypingStyle):
+        * editing/TypingCommand.h: (WebCore::TypingCommand::preservesTypingStyle):
+
+2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add support for saving and loading of QWebHistory to and from a QByteArray.
+
+        This includes streaming operators for QWebHistory. for convenience.
+
+        New autotests that test QWebHistory and QWebHistoryItem serialization.
+
+        * WebCore.pro:
+        * history/HistoryItem.h:
+        (WebCore::HistoryItem::dailyVisitCounts):
+        (WebCore::HistoryItem::weeklyVisitCounts):
+        * history/qt/HistoryItemQt.cpp: Added.
+        (WebCore::HistoryItem::restoreState):
+        (WebCore::HistoryItem::saveState):
+
+2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add support for QDataStream operators to String and IntPoint.
+
+        * platform/graphics/IntPoint.h:
+        (WebCore::operator<<):
+        (WebCore::operator>>):
+        * platform/text/PlatformString.h:
+        * platform/text/qt/StringQt.cpp:
+        (WebCore::operator<<):
+        (WebCore::operator>>):
+
+2009-06-26  Ben Murdoch  <benm@google.com>
+
+        Reviewed by Darin Fisher.
+
+        Add #if ENABLE(DOM_STORAGE) to the V8 custom bindings for local/session storage.
+        https://bugs.webkit.org/show_bug.cgi?id=26757
+
+        * bindings/v8/custom/V8StorageCustom.cpp
+
+2009-06-26  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Test: platform/qt/fast/events/event-sender-keydown-frame.html
+
+        Bug 20303: [Qt] Key events are not working in frames.
+
+        Merge scrolling handling code in qt and win port, move it to
+        EventHandler.
+
+        * page/EventHandler.cpp:
+        (WebCore::EventHandler::scrollRecursively):
+        * page/EventHandler.h:
+
+2009-06-26  Rob Buis  <rwlbuis@gmail.com>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26682
+        Bug 26682: It should be possible to add image to SVG DOM programmatically (using JavaScript)
+
+        Make sure the xlink:href animated property setting syncs the corresponding attribute with the right namespace.
+
+        Test: svg/custom/createImageElement.svg
+
+        * svg/SVGAnimatedProperty.h:
+        (WebCore::synchronizeProperty):
+
+2009-06-26  Takeshi Yoshino  <tyoshino@google.com>
+
+        Reviewed by Timothy Hatcher.
+
+        Bug 26156: In view-source mode, always render the contents using HTMLViewSourceDocument
+        https://bugs.webkit.org/show_bug.cgi?id=26156
+
+        When in view-source mode, render the contents using HTMLViewSourceDocument
+        regardless it's applicable for any plugin or not.
+
+        Chromium tells WebCore to render the contents of specified URL when
+        view-source: prefix is added to the URL. But currently, DOMImplementation
+        ignores inViewSourceMode() when the MIME type is indicating that the contents
+        are neither texts nor HTML family documents.
+
+        For example, we can check the contents of asf file without launching media
+        player. Rendering contents for view-source:-specified input is not what user
+        expects.
+
+        http://code.google.com/p/chromium/issues/detail?id=10545
+
+        I want to fix this issue by this patch. IMHO, regardless of this Chromium
+        specific issue, I think we should force use of HTMLViewSourceDocument when
+        inViewSourceMode() is specified.
+
+        Test: fast/frames/viewsource-on-image-file.html
+
+        * dom/DOMImplementation.cpp:
+        (WebCore::DOMImplementation::createDocument):
+        * html/HTMLViewSourceDocument.cpp:
+        (WebCore::HTMLViewSourceDocument::createTokenizer):
+        * html/HTMLViewSourceDocument.h:
+
+2009-06-26  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Jan Alonzo.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25529
+        [Gtk] Expected states not exposed to assistive technologies
+
+        Add support for VISIBLE, EDITABLE and SENSITIVE states.
+
+        * accessibility/gtk/AccessibilityObjectWrapperAtk.cpp:
+        (setAtkStateSetFromCoreObject):
+
+2009-06-26  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        "Pointer to incomplete class type is not allowed" error with RVCT
+        https://bugs.webkit.org/show_bug.cgi?id=26721
+
+        Based on Norbert Leser's work.
+
+        * dom/Document.cpp:
+        (WebCore::Document::setFocusedNode):
+        * dom/Node.cpp:
+        (WebCore::Node::dispatchMouseEvent):
+        * dom/Node.h: Remove the default value for PassRefPtr<Event> args,
+        to eliminate dependency on the Event class definition
+
+2009-06-26  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        [Qt] Build fix after r45183
+        https://bugs.webkit.org/show_bug.cgi?id=26748
+
+        * WebCore.pro:
+
+2009-06-25  Alexey Proskuryakov  <ap@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26681
+        <rdar://problem/7003461> Problem updating applicationCache when server returns 304
+
+        Test: http/tests/appcache/update-cache.html
+
+        * loader/appcache/ApplicationCacheGroup.cpp: (WebCore::ApplicationCacheGroup::didReceiveResponse):
+        We're already done with the resource, don't try to load it again.
+
+2009-06-25  Simon Fraser  <simon.fraser@apple.com>
+
+        Reviewed by Oliver Hunt.
+        
+        <rdar://problem/6990481>
+        
+        Handle perspective computation on non-layer objects.
+
+        Test: transforms/3d/general/perspective-non-layer.html
+
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::getTransformFromContainer):
+
+2009-06-25  Pierre d'Herbemont  <pdherbemont@apple.com>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26653
+
+        Use flex box in the mediaControls.css style, to nicely scale if a button gets
+        dynamically added or removed.
+
+        Media tests results are affected by this changes.
+
+        * css/mediaControls.css:
+        * css/mediaControlsQT.css:
+
+2009-06-25  Albert J. Wong  <ajwong@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26724
+
+        Move relavent part of setDefaultFontSize from RenderThemeChromiumWin
+        up into RenderThemeChromiumSkia.
+
+        * rendering/RenderThemeChromiumSkia.cpp:
+        (WebCore::RenderThemeChromiumSkia::setDefaultFontSize):
+        * rendering/RenderThemeChromiumSkia.h:
+        * rendering/RenderThemeChromiumWin.cpp:
+        (WebCore::RenderThemeChromiumWin::setDefaultFontSize):
+        * rendering/RenderThemeChromiumWin.h:
+
+2009-06-25  Matt Perry  <mpcomplete@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26733
+
+        Add V8-only methods to FrameLoaderClient that V8 can use to send
+        out notifications when it creates/destroys a script context.
+
+        * loader/EmptyClients.h:
+        (WebCore::EmptyFrameLoaderClient::didCreateScriptContext):
+        (WebCore::EmptyFrameLoaderClient::didDestroyScriptContext):
+        * loader/FrameLoaderClient.h:
+        (WebCore::FrameLoaderClient::didCreateScriptContext):
+        (WebCore::FrameLoaderClient::didDestroyScriptContext):
+
+2009-06-25  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by David Levin.
+
+        Correct a few typos that snuck in when I was reformatting CodeGeneratorV8.pm
+        to match WebKit style.
+
+        * bindings/scripts/CodeGeneratorV8.pm: Corrected lots of typos.
+
+2009-06-25  Adam Langley  <agl@google.com>
+
+        TBRed: fix for Chromium tree.
+
+        Add missing include for r45199.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26736
+
+        r45199 added a reference to throwError without including V8Proxy.h
+
+        * bindings/v8/WorkerScriptController.cpp:
+
+2009-06-25  Adam Langley  <agl@google.com>
+
+        TBRed: fix for Chromium tree.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26735
+
+        Fix V8IsolatedWorld to point to the correct include file.
+
+        The deprecated v8_index.h was removed from the Chromium tree in r19291
+        and upstreamed into WebKit with r45193. However V8IsolatedWorld
+        slipped in between the cracks and broke the build.
+
+        * bindings/v8/V8IsolatedWorld.h: update with new header location.
+
+2009-06-25  Chris Marrin  <cmarrin@apple.com>
+
+        Reviewed by Simon Fraser  <simon.fraser@apple.com>.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26651
+        
+        Preference is named "WebKitAcceleratedCompositingEnabled"
+        and is a boolean value. When false, prevents compositing layers from
+        being created, which prevents hardware animation from running.
+        Also forces video to do software rendering. Added a cache for
+        the flag in RenderLayerCompositing and made it all work
+        on-the-fly when the flag is changed while a page is loaded.
+
+        * WebCore.base.exp:
+        * page/FrameView.cpp:
+        (WebCore::FrameView::updateCompositingLayers):
+        * page/Settings.cpp:
+        (WebCore::setNeedsReapplyStylesInAllFrames):
+        (WebCore::Settings::Settings):
+        (WebCore::Settings::setAcceleratedCompositingEnabled):
+        * page/Settings.h:
+        (WebCore::Settings::acceleratedCompositingEnabled):
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::hasAcceleratedCompositing):
+        (WebCore::RenderLayer::updateTransform):
+        (WebCore::RenderLayer::currentTransform):
+        * rendering/RenderLayer.h:
+        * rendering/RenderLayerBacking.cpp:
+        (WebCore::RenderLayerBacking::updateLayerTransform):
+        * rendering/RenderLayerCompositor.cpp:
+        (WebCore::RenderLayerCompositor::RenderLayerCompositor):
+        (WebCore::RenderLayerCompositor::enableCompositingMode):
+        (WebCore::RenderLayerCompositor::cacheAcceleratedCompositingEnabledFlag):
+        (WebCore::RenderLayerCompositor::updateCompositingLayers):
+        (WebCore::RenderLayerCompositor::canAccelerateVideoRendering):
+        (WebCore::RenderLayerCompositor::rebuildCompositingLayerTree):
+        (WebCore::RenderLayerCompositor::needsToBeComposited):
+        (WebCore::RenderLayerCompositor::destroyRootPlatformLayer):
+        * rendering/RenderLayerCompositor.h:
+        (WebCore::RenderLayerCompositor::hasAcceleratedCompositing):
+        * rendering/RenderObject.h:
+        (WebCore::makeMatrixRenderable):
+
+2009-06-25  Jian Li  <jianli@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Bug 26701: Implement the missing code for "FIXME: Need to return an
+        exception" in WorkerScriptController::evaluate for v8 bindings.
+        https://bugs.webkit.org/show_bug.cgi?id=26701
+
+        * bindings/v8/WorkerScriptController.cpp:
+        (WebCore::WorkerScriptController::evaluate):
+
+2009-06-25  Nate Chapin  <japhet@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Upstream V8Index.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26495
+
+        * bindings/v8/V8Index.cpp: Added.
+        (WebCore::V8ClassIndex::GetFactory): Moved from src.chromium.org.
+        (WebCore::V8ClassIndex::GetCache): Moved from src.chromium.org.
+        * bindings/v8/V8Index.h:
+        (WebCore::V8ClassIndex::): Moved from src.chromium.org.
+        (WebCore::V8ClassIndex::ToInt): Moved from src.chromium.org.
+        (WebCore::V8ClassIndex::FromInt): Moved from src.chromium.org.
+
+2009-06-25  Adam Langley  <agl@google.com>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26529
+
+        This is hopefully the last step before our renderers can run
+        cleanly in a chroot.
+
+        WebKit needs to be able to ask for the correct font to use in
+        the case that the current font doesn't include glyphs for
+        certain code points. Currently we make a fontconfig call in our
+        WebKit port to handle this.
+
+        This patch changes this so that the call is sent our via
+        ChromiumBridge.
+
+        http://codereview.chromium.org/132007
+
+        This should not affect any layout tests.
+
+        * platform/chromium/ChromiumBridge.h:
+        * platform/graphics/chromium/FontCacheLinux.cpp:
+        (WebCore::FontCache::getFontDataForCharacters):
+
+2009-06-25  Albert J. Wong  <ajwong@chromium.org>
+
+        Reviewed by David Levin.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26566
+        Upstream these files from the chromium v8 code.  No tests were
+        affected because this is essentially a code move.
+
+        * bindings/v8/NPV8Object.cpp: Added.
+        (allocV8NPObject):
+        (freeV8NPObject):
+        (listFromVariantArgs):
+        (npIdentifierToV8Identifier):
+        (npCreateV8ScriptObject):
+        (NPN_Invoke):
+        (NPN_InvokeDefault):
+        (NPN_Evaluate):
+        (NPN_EvaluateHelper):
+        (NPN_GetProperty):
+        (NPN_SetProperty):
+        (NPN_RemoveProperty):
+        (NPN_HasProperty):
+        (NPN_HasMethod):
+        (NPN_SetException):
+        (NPN_Enumerate):
+        (NPN_Construct):
+        * bindings/v8/NPV8Object.h: Added.
+        (PrivateIdentifier::):
+        * bindings/v8/V8NPUtils.cpp: Added.
+        (convertV8ObjectToNPVariant):
+        (convertNPVariantToV8Object):
+        (getStringIdentifier):
+        * bindings/v8/V8NPUtils.h: Added.
+
+2009-06-25  Shinichiro Hamaji  <hamaji@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26436
+
+        Windows Chromium bug fix: save context of destination canvas in
+        TransparencyWin::compositeTextComposite() before the function
+        modifies the context.
+
+        Test: fast/canvas/translate-text.html
+
+        * platform/graphics/chromium/TransparencyWin.cpp:
+        (WebCore::TransparencyWin::compositeTextComposite):
+
+2009-06-25  Patrick Mueller  <Patrick_Mueller@us.ibm.com>
+
+        Reviewed by Timothy Hatcher.
+
+        Show the filename and first line for "(program)" in the Profiler/Debugger
+        https://bugs.webkit.org/show_bug.cgi?id=25475
+
+        Add support to associate a sourceURL with an eval()'d string
+        via a @sourceURL comment.  Currently the sourceURL is only available
+        in the script debugger, not in the console or profiler, but it's
+        most needed in the script debugger.
+
+        * English.lproj/localizedStrings.js: added new "(program): %s" string
+        * inspector/front-end/Script.js:
+        (WebInspector.Script): if no sourceURL is available for the Script,
+        search for a comment of the form //@ sourceURL=(url) to use
+        as the sourceURL instead.
+        * manual-tests/inspector/named-evals.html: Added.
+
+2009-06-25  John Gregg  <johnnyg@google.com>
+
+        Reviewed by Sam Weinig.
+
+        Bug 23721: Changing dropdown's selectedIndex within onchange handler fires another onchange
+        https://bugs.webkit.org/show_bug.cgi?id=23721
+
+        onchange events fire when a SELECT element has
+        focus and the selectedIndex is updated by script in some way--either
+        during another onchange, onkeypress, onfocus, or timer--and then
+        focus is lost. 
+
+        Fixed by making a separate method for user-driven selectedIndex 
+        changes, leaving scripts to use one which doesn't cause onchange to
+        be queued.
+        
+        Test: fast/forms/select-script-onchange.html
+
+        * dom/SelectElement.cpp: check if the pending change is user driven
+        before calling onchange
+        (WebCore::SelectElement::menuListOnChange):
+        (WebCore::SelectElement::setSelectedIndex):
+        * dom/SelectElement.h: store whether the pending change is user driven
+        (WebCore::SelectElementData::userDrivenChange):
+        (WebCore::SelectElementData::setUserDrivenChange):
+        * html/HTMLSelectElement.cpp: split into two methods -- script version
+        [non-user-driven] corresponds to IDL defined property name
+        (WebCore::HTMLSelectElement::setSelectedIndex):
+        (WebCore::HTMLSelectElement::setSelectedIndexByUser):
+        * html/HTMLSelectElement.h: 
+        * rendering/RenderMenuList.cpp: use ByUser method when coming through
+        the renderer
+        (WebCore::RenderMenuList::valueChanged):
+
+2009-06-25  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26698
+
+        Combined LocalStorageArea and SessionStorageArea into StorageArea since
+        (after my other refactorings) there are no longer substantial
+        differences between the two.
+
+        * GNUmakefile.am:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * WebCoreSources.bkl:
+        * storage/LocalStorage.cpp:
+        (WebCore::LocalStorage::storageArea):
+        * storage/LocalStorage.h:
+        * storage/LocalStorageArea.cpp: Removed.
+        * storage/LocalStorageArea.h: Removed.
+        * storage/SessionStorage.cpp:
+        (WebCore::SessionStorage::copy):
+        (WebCore::SessionStorage::storageArea):
+        * storage/SessionStorage.h:
+        * storage/SessionStorageArea.cpp: Removed.
+        * storage/SessionStorageArea.h: Removed.
+        * storage/StorageArea.cpp:
+        (WebCore::StorageArea::createLocalStorage):
+        (WebCore::StorageArea::StorageArea):
+        (WebCore::StorageArea::createSessionStorage):
+        (WebCore::StorageArea::copy):
+        (WebCore::StorageArea::setItem):
+        (WebCore::StorageArea::removeItem):
+        (WebCore::StorageArea::clear):
+        (WebCore::StorageArea::scheduleFinalSync):
+        (WebCore::StorageArea::blockUntilImportComplete):
+        (WebCore::StorageArea::dispatchStorageEvent):
+        * storage/StorageArea.h:
+        * storage/StorageAreaSync.cpp:
+        (WebCore::StorageAreaSync::StorageAreaSync):
+        (WebCore::StorageAreaSync::scheduleFinalSync):
+        (WebCore::StorageAreaSync::syncTimerFired):
+        (WebCore::StorageAreaSync::performImport):
+        * storage/StorageAreaSync.h:
+        * storage/StorageSyncManager.h:
+
+2009-06-25  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Darin Adler.
+
+        - fix https://bugs.webkit.org/show_bug.cgi?id=26671
+          <rdar://problem/7001880> Safari 4.0 crashes in
+          WebCore::DOMTimer::fired()
+
+        Test: fast/dom/style-sheet-candidate-remove-unrendered-document.html
+
+        When a "style sheet candidate" element is removed from a document,
+        call Document::removeStyleSheetCandidateNode() regardless of whether
+        the document is rendered. Otherwise, the document's style sheet
+        candidate set can end up containing stale references.
+
+        * dom/ProcessingInstruction.cpp:
+        (WebCore::ProcessingInstruction::removedFromDocument):
+        * html/HTMLLinkElement.cpp:
+        (WebCore::HTMLLinkElement::removedFromDocument):
+        * html/HTMLStyleElement.cpp:
+        (WebCore::HTMLStyleElement::removedFromDocument):
+
+2009-06-25  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        Update CodeGeneratorV8.pm to sync up with the changes downstream.
+
+        * bindings/scripts/CodeGeneratorV8.pm: Added HTMLFrameSetElement check,
+          FileList as a ref-counted type, and DataGridColumn as typeCanFailConversion.
+
+2009-06-25  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Unreviewed, build fix.
+
+        Add FileList.h include to fix Chromium build.
+
+        * platform/chromium/ClipboardChromium.cpp: Added FileList.h include.
+
+2009-06-25  Joseph Pecoraro  <joepeck02@gmail.com>
+
+        Reviewed by Jan Alonzo.
+
+        Bug 26489: Web Inspector: Typo in DatabaseQuery Error Message
+        https://bugs.webkit.org/show_bug.cgi?id=26489
+
+        Fixed a Typo in a Web Inspector error message.
+
+        * English.lproj/localizedStrings.js:
+        * inspector/front-end/DatabaseQueryView.js:
+        (WebInspector.DatabaseQueryView.prototype._queryError):
+
+2009-06-25  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Fix the Qt build, add missing StorageAreaSync files to the build.
+
+        * WebCore.pro:
+
+2009-06-25  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by and done with Tor Arne Vestbø.
+
+        Fix shortcut keyboard handling with plugins on the Qt/Mac build.
+
+        When we receive shortcut events like Ctrl+V then the text in the QKeyEvent is
+        empty. If we're asked to disambiguate the event into a Char keyboard event,
+        we try to detect this situation and still set the text, to ensure that the
+        general event handling sends a key press event after this disambiguation.
+
+        * platform/qt/PlatformKeyboardEventQt.cpp:
+        (WebCore::PlatformKeyboardEvent::disambiguateKeyDownEvent):
+
+2009-06-25  Eric Seidel  <eric@webkit.org>
+
+        Build fix only, no review.
+
+        Add FileList.h and NotImplemented.h includes in an attempt to fix bots.
+
+        * platform/gtk/ClipboardGtk.cpp:
+        * platform/qt/ClipboardQt.cpp:
+        * platform/win/ClipboardWin.cpp:
+        * platform/wx/ClipboardWx.cpp:
+
+2009-05-21  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Maciej Stachowiak.
+
+        Expose files in the clipboard in ondrop events
+        https://bugs.webkit.org/show_bug.cgi?id=25916
+
+        Make it possible for applications like gmail to implement
+        drag and drop of attachments onto email messages.
+
+        This patch exposes an event.dataTransfer.files accessor
+        on the drop event.  No information is exposed during dragover.
+        This follows the HTML 5 drag and drop security model:
+        http://www.w3.org/TR/html5/editing.html#security-risks-in-the-drag-and-drop-model
+        The test http/tests/security/clipboard/clipboard-file-access.html
+        verifies this behavior.
+
+        Internet Explorer shows historical documentation of supporting
+        getData('File') as a way of exposing files on the pasteboard.  The current version of their docs:
+        http://msdn.microsoft.com/en-us/library/ms537658(VS.85).aspx
+        has removed this reference (as far as I can tell IE never implemented it)
+        I have a printed copy of that URL from 2008 on my desk describing getData('File') in IE.
+        IE does not follow the HTML5 clipboard security model and always allows access to the full clipboard, even on dragover.
+
+        I choose not to use IE's getData('File') and instead added .files
+        so that the accessor could have a type, matching WebKit's existing
+        .files accessor on HTMLInputElement.
+
+        Mozilla has equivalent file access:
+        event.dataTransfer.mozGetDataAt("application/x-moz-file", 0);
+        which also does not return a typed value.
+        https://developer.mozilla.org/En/DragDrop/Recommended_Drag_Types#Dragging_Files
+
+        This is only implemented for Mac WebKit.  All other platforms (including Apple's Win WebKit)
+        have incomplete Clipboard implementations and will require experts from those platforms
+        to add this functionality.  Right now they all have Clipboard*::files() methods which call notImplemented();
+
+        Test: http/tests/security/clipboard/clipboard-file-access.html
+
+        * dom/Clipboard.h:
+        * dom/Clipboard.idl:
+        * platform/chromium/ClipboardChromium.cpp:
+        (WebCore::ClipboardChromium::files):
+        * platform/chromium/ClipboardChromium.h:
+        * platform/gtk/ClipboardGtk.cpp:
+        (WebCore::ClipboardGtk::files):
+        * platform/gtk/ClipboardGtk.h:
+        * platform/mac/ClipboardMac.h:
+        * platform/mac/ClipboardMac.mm:
+        (WebCore::absoluteURLsFromPasteboardFilenames):
+        (WebCore::absoluteURLsFromPasteboard):
+        (WebCore::ClipboardMac::files):
+        * platform/qt/ClipboardQt.cpp:
+        (WebCore::ClipboardQt::files):
+        * platform/qt/ClipboardQt.h:
+        * platform/win/ClipboardWin.cpp:
+        (WebCore::ClipboardWin::files):
+        * platform/win/ClipboardWin.h:
+        * platform/wx/ClipboardWx.cpp:
+        (WebCore::ClipboardWx::files):
+        * platform/wx/ClipboardWx.h:
+
+2009-06-25  Eric Seidel  <eric@webkit.org>
+
+        No review, only completing revert of r45144.
+
+        Add back files deleted by r45144.
+
+        * storage/LocalStorageArea.cpp: Added.
+        (WebCore::LocalStorageArea::create):
+        (WebCore::LocalStorageArea::LocalStorageArea):
+        (WebCore::LocalStorageArea::scheduleFinalSync):
+        (WebCore::LocalStorageArea::itemChanged):
+        (WebCore::LocalStorageArea::itemRemoved):
+        (WebCore::LocalStorageArea::areaCleared):
+        (WebCore::LocalStorageArea::blockUntilImportComplete):
+        (WebCore::LocalStorageArea::dispatchStorageEvent):
+        * storage/LocalStorageArea.h: Added.
+        * storage/SessionStorageArea.cpp: Added.
+        (WebCore::SessionStorageArea::copy):
+        (WebCore::SessionStorageArea::SessionStorageArea):
+        (WebCore::SessionStorageArea::itemChanged):
+        (WebCore::SessionStorageArea::itemRemoved):
+        (WebCore::SessionStorageArea::areaCleared):
+        (WebCore::SessionStorageArea::blockUntilImportComplete):
+        (WebCore::SessionStorageArea::dispatchStorageEvent):
+        * storage/SessionStorageArea.h: Added.
+        (WebCore::SessionStorageArea::create):
+
+2009-06-25  Eric Seidel  <eric@webkit.org>
+
+        No review, reverting r45144 only.
+
+        Roll out r45144 after 18 test failures appeared on the bots.
+        https://bugs.webkit.org/show_bug.cgi?id=26698
+
+        * GNUmakefile.am:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * WebCoreSources.bkl:
+        * storage/LocalStorage.cpp:
+        (WebCore::LocalStorage::storageArea):
+        * storage/LocalStorage.h:
+        * storage/SessionStorage.cpp:
+        (WebCore::SessionStorage::copy):
+        (WebCore::SessionStorage::storageArea):
+        * storage/SessionStorage.h:
+        * storage/StorageArea.cpp:
+        (WebCore::StorageArea::StorageArea):
+        (WebCore::StorageArea::~StorageArea):
+        (WebCore::StorageArea::setItem):
+        (WebCore::StorageArea::removeItem):
+        (WebCore::StorageArea::clear):
+        * storage/StorageArea.h:
+        * storage/StorageAreaSync.cpp:
+        (WebCore::StorageAreaSync::StorageAreaSync):
+        (WebCore::StorageAreaSync::scheduleFinalSync):
+        (WebCore::StorageAreaSync::syncTimerFired):
+        (WebCore::StorageAreaSync::performImport):
+        * storage/StorageAreaSync.h:
+        * storage/StorageSyncManager.h:
+
+2009-06-24  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26698
+
+        Combined LocalStorageArea and SessionStorageArea into StorageArea since
+        (after my other refactorings) there are no longer substantial
+        differences between the two.
+
+        * GNUmakefile.am:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * WebCoreSources.bkl:
+        * storage/LocalStorage.cpp:
+        (WebCore::LocalStorage::storageArea):
+        * storage/LocalStorage.h:
+        * storage/LocalStorageArea.cpp: Removed.
+        * storage/LocalStorageArea.h: Removed.
+        * storage/SessionStorage.cpp:
+        (WebCore::SessionStorage::copy):
+        (WebCore::SessionStorage::storageArea):
+        * storage/SessionStorage.h:
+        * storage/SessionStorageArea.cpp: Removed.
+        * storage/SessionStorageArea.h: Removed.
+        * storage/StorageArea.cpp:
+        (WebCore::StorageArea::createLocalStorage):
+        (WebCore::StorageArea::StorageArea):
+        (WebCore::StorageArea::createSessionStorage):
+        (WebCore::StorageArea::copy):
+        (WebCore::StorageArea::setItem):
+        (WebCore::StorageArea::removeItem):
+        (WebCore::StorageArea::clear):
+        (WebCore::StorageArea::scheduleFinalSync):
+        (WebCore::StorageArea::blockUntilImportComplete):
+        (WebCore::StorageArea::dispatchStorageEvent):
+        * storage/StorageArea.h:
+        * storage/StorageAreaSync.cpp:
+        (WebCore::StorageAreaSync::StorageAreaSync):
+        (WebCore::StorageAreaSync::scheduleFinalSync):
+        (WebCore::StorageAreaSync::syncTimerFired):
+        (WebCore::StorageAreaSync::performImport):
+        * storage/StorageAreaSync.h:
+        * storage/StorageSyncManager.h:
+
+2009-06-24  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        - fix <rdar://problem/7001817> REGRESSION (r41902): Base position track
+          at UCSC Genome Browser doesn't work because image map prevents img
+          from hit-testing
+
+        Test: fast/replaced/image-map-2.html
+
+        * rendering/RenderImage.cpp:
+        (WebCore::RenderImage::nodeAtPoint): Do not reset 'inside' to false if
+        the image map failed the hit test.
+
+2009-06-22  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26366
+
+        Refactor V8DOMMap to support isolated worlds.
+
+        * bindings/v8/ScriptController.cpp:
+        (WebCore::ScriptController::evaluateInNewWorld):
+        * bindings/v8/ScriptController.h:
+        * bindings/v8/V8DOMMap.cpp:
+        (WebCore::DOMDataStore::InternalDOMWrapperMap::InternalDOMWrapperMap):
+        (WebCore::DOMDataStore::allStores):
+        (WebCore::DOMDataStore::allStoresMutex):
+        (WebCore::DOMDataStore::domData):
+        (WebCore::ScopedDOMDataStore::ScopedDOMDataStore):
+        (WebCore::ScopedDOMDataStore::~ScopedDOMDataStore):
+        (WebCore::StaticDOMDataStore::StaticDOMDataStore):
+        (WebCore::):
+        (WebCore::MainThreadDOMData::MainThreadDOMData):
+        (WebCore::MainThreadDOMData::getStore):
+        (WebCore::ChildThreadDOMData::ChildThreadDOMData):
+        (WebCore::ChildThreadDOMData::getStore):
+        (WebCore::DOMDataStore::DOMDataStore):
+        (WebCore::DOMDataStore::~DOMDataStore):
+        (WebCore::DOMDataStoreHandle::DOMDataStoreHandle):
+        (WebCore::DOMDataStoreHandle::~DOMDataStoreHandle):
+        (WebCore::::forget):
+        (WebCore::getDOMNodeMap):
+        (WebCore::getDOMObjectMap):
+        (WebCore::getActiveDOMObjectMap):
+        (WebCore::getDOMSVGElementInstanceMap):
+        (WebCore::getDOMSVGObjectWithContextMap):
+        (WebCore::DOMData::getCurrent):
+        (WebCore::DOMData::handleWeakObject):
+        (WebCore::DOMData::ensureDeref):
+        (WebCore::weakDOMObjectCallback):
+        (WebCore::weakActiveDOMObjectCallback):
+        (WebCore::weakNodeCallback):
+        (WebCore::weakSVGElementInstanceCallback):
+        (WebCore::weakSVGObjectWithContextCallback):
+        (WebCore::DOMData::derefObject):
+        (WebCore::DOMData::derefDelayedObjects):
+        (WebCore::DOMData::derefDelayedObjectsInCurrentThread):
+        (WebCore::DOMData::removeObjectsFromWrapperMap):
+        (WebCore::removeAllDOMObjectsInCurrentThreadHelper):
+        (WebCore::visitDOMNodesInCurrentThread):
+        (WebCore::visitDOMObjectsInCurrentThread):
+        (WebCore::visitActiveDOMObjectsInCurrentThread):
+        (WebCore::visitDOMSVGElementInstancesInCurrentThread):
+        (WebCore::visitSVGObjectsInCurrentThread):
+        * bindings/v8/V8DOMMap.h:
+        (WebCore::DOMDataStoreHandle::getStore):
+        * bindings/v8/V8IsolatedWorld.cpp: Added.
+        (WebCore::getIsolatedWorldKey):
+        (WebCore::contextWeakReferenceCallback):
+        (WebCore::V8IsolatedWorld::evaluate):
+        (WebCore::V8IsolatedWorld::V8IsolatedWorld):
+        (WebCore::V8IsolatedWorld::~V8IsolatedWorld):
+        (WebCore::V8IsolatedWorld::getEntered):
+        * bindings/v8/V8IsolatedWorld.h: Added.
+        (WebCore::V8IsolatedWorld::getDOMDataStore):
+
+2009-06-24  Mikhail Naganov  <mnaganov@chromium.org>
+
+        Reviewed by Timothy Hatcher.
+
+        Bug 26604: Search doesn't work in Web Inspector Profiler
+        https://bugs.webkit.org/show_bug.cgi?id=26604
+
+        Seems like search was damaged in revision 42808.
+
+        * inspector/front-end/ProfileView.js:
+        (WebInspector.ProfileView.prototype.refresh):
+        Here and in other functions: nodes we're searching in are profile data grid
+        nodes, so there is no more need for '_dataGridNode' references.
+        (WebInspector.ProfileView.prototype.searchCanceled):
+        (WebInspector.ProfileView.prototype.performSearch.matchesQuery):
+        Fixed accidental semicolon that caused 'matchesQuery' always return true.
+        (WebInspector.ProfileView.prototype.performSearch):
+        To perform search correctly in the case of bottom up tree, we need to populate
+        the tree, because there's no 1-to-1 correspondence between profile nodes and
+        data grid nodes in this case.
+        (WebInspector.ProfileView.prototype._jumpToSearchResult):
+
+2009-06-24  Simon Fraser  <simon.fraser@apple.com>
+
+        Reviewed by Darin Adler.
+        
+        <rdar://problem/6450239&6574516>
+    
+        Fix flashing issues caused by compositing layers rendering content before
+        a deferred layout has happened. Because the -viewWillDraw machinery doesn't
+        work for composited layers, we need to use scheduleViewUpdate() to queue
+        up a layout via the run loop observer in WebKit, whenever we know we
+        are going to be painting soon.
+
+        * rendering/RenderLayerBacking.cpp:
+        (WebCore::RenderLayerBacking::setContentsNeedDisplay):
+        (WebCore::RenderLayerBacking::setContentsNeedDisplayInRect):
+
+2009-06-24  David Levin  <levin@chromium.org>
+
+        Fix all builds.
+
+        * ForwardingHeaders/wtf/FastAllocBase.h: Added.
+
+2009-06-24  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26658
+
+        Split the syncing portions of LocalStorageArea into StorageAreaSync.
+        This name will make more sense in the next patch (in this set) when
+        LocalStorageArea and SessionStorageArea are merged to become simply
+        StorageArea.  (Thus the synching portion of StorageArea is in
+        StorageAreaSync.)
+
+        This looks like a big patch, but really all it's doing is splitting
+        code and patching split-related things up.
+
+        * GNUmakefile.am:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * WebCoreSources.bkl:
+        * storage/LocalStorageArea.cpp:
+        (WebCore::LocalStorageArea::create):
+        (WebCore::LocalStorageArea::LocalStorageArea):
+        (WebCore::LocalStorageArea::scheduleFinalSync):
+        (WebCore::LocalStorageArea::itemChanged):
+        (WebCore::LocalStorageArea::itemRemoved):
+        (WebCore::LocalStorageArea::areaCleared):
+        (WebCore::LocalStorageArea::blockUntilImportComplete):
+        * storage/LocalStorageArea.h:
+        * storage/LocalStorageTask.cpp:
+        (WebCore::LocalStorageTask::LocalStorageTask):
+        * storage/LocalStorageTask.h:
+        (WebCore::LocalStorageTask::createImport):
+        (WebCore::LocalStorageTask::createSync):
+        * storage/LocalStorageThread.cpp:
+        (WebCore::LocalStorageThread::scheduleImport):
+        (WebCore::LocalStorageThread::scheduleSync):
+        * storage/LocalStorageThread.h:
+        * storage/SessionStorageArea.cpp:
+        (WebCore::SessionStorageArea::blockUntilImportComplete):
+        * storage/SessionStorageArea.h:
+        * storage/StorageArea.h:
+        * storage/StorageAreaSync.cpp: Copied from WebCore/storage/LocalStorageArea.cpp.
+        * storage/StorageAreaSync.h: Copied from WebCore/storage/LocalStorageArea.h.
+        * storage/StorageSyncManager.cpp:
+        (WebCore::StorageSyncManager::scheduleImport):
+        (WebCore::StorageSyncManager::scheduleSync):
+        * storage/StorageSyncManager.h:
+
+2009-06-24  Adam Treat  <adam.treat@torchmobile.com>
+
+        Fix Qt build.
+
+        * WebCore.pro:
+
+2009-06-24  David Levin  <levin@chromium.org>
+
+        Reviewed by David Hyatt.
+
+        Bug 26696: Member functions in DataGridColumnList should return pointers instead of PassRefPtr.
+        https://bugs.webkit.org/show_bug.cgi?id=26696
+
+        * html/DataGridColumnList.cpp:
+        (WebCore::DataGridColumnList::itemWithName):
+        (WebCore::DataGridColumnList::add):
+        * html/DataGridColumnList.h:
+        (WebCore::DataGridColumnList::item):
+        (WebCore::DataGridColumnList::primaryColumn):
+        (WebCore::DataGridColumnList::sortColumn):
+
+2009-06-24  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Dave "Messy" Hyatt.
+
+        Little bit of style cleanup.
+
+        * html/DataGridColumn.cpp:
+        * html/DataGridColumn.h:
+        * html/DataGridColumn.idl:
+        * html/DataGridColumnList.cpp:
+        * html/DataGridColumnList.h:
+        * html/DataGridColumnList.idl:
+        * html/HTMLDataGridCellElement.cpp:
+        * html/HTMLDataGridCellElement.h:
+        * html/HTMLDataGridCellElement.idl:
+        * html/HTMLDataGridColElement.cpp:
+        * html/HTMLDataGridColElement.h:
+        * html/HTMLDataGridColElement.idl:
+        * html/HTMLDataGridElement.h:
+        * html/HTMLDataGridElement.idl:
+        * html/HTMLDataGridRowElement.cpp:
+        * html/HTMLDataGridRowElement.h:
+        * html/HTMLDataGridRowElement.idl:
+
+2009-06-24  Chris Fleizach  <cfleizach@apple.com>
+
+        Reviewed by Oliver Hunt.
+
+        Bug 26668: AX: need a way to retrieve the language for an element
+        
+        Provides a way to retrieve the language associated with a specific accessibility element.
+
+        Test: accessibility/language-attribute.html
+
+        * accessibility/AccessibilityObject.cpp:
+        (WebCore::AccessibilityObject::language):
+        * accessibility/AccessibilityObject.h:
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::language):
+        * accessibility/AccessibilityRenderObject.h:
+        * accessibility/mac/AccessibilityObjectWrapper.mm:
+        (-[AccessibilityObjectWrapper accessibilityAttributeValue:]):
+
+2009-06-24  Brady Eidson  <beidson@apple.com>
+
+        Reviewed by Dan Bernstein.
+        
+        <rdar://problem/6893811> Instead of downloading files linked from Google Earth, file contents displayed in browser window as text.
+
+        * platform/network/mac/WebCoreURLResponse.mm:
+        (createBinaryExtensionsSet): Add '.kmz' to the list of known-to-be-binary extensions.
+
+2009-06-24  Nicolas Weber  <thakis@chromium.org>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26685
+        Accomodate for backwards-incompatible skia api changes.
+
+        * platform/graphics/skia/GraphicsContextSkia.cpp:
+        (WebCore::GraphicsContext::clearRect):
+        (WebCore::GraphicsContext::setCompositeOperation):
+        * platform/graphics/skia/ImageBufferSkia.cpp:
+        (WebCore::ImageBuffer::ImageBuffer):
+        * platform/graphics/skia/ImageSkia.cpp:
+        (WebCore::paintSkBitmap):
+        (WebCore::Image::drawPattern):
+        * platform/graphics/skia/PlatformContextSkia.cpp:
+        (PlatformContextSkia::State::State):
+        (PlatformContextSkia::setupPaintCommon):
+        (PlatformContextSkia::setXfermodeMode):
+        (PlatformContextSkia::applyClipFromImage):
+        * platform/graphics/skia/PlatformContextSkia.h:
+        * platform/graphics/skia/SkiaUtils.cpp:
+        (WebCore::):
+        (WebCore::WebCoreCompositeToSkiaComposite):
+        * platform/graphics/skia/SkiaUtils.h:
+
+2009-06-24  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Gtk build fix. Add files that were added in r45093 and r45096
+
+        * GNUmakefile.am:
+
+2009-06-24  Brady Eidson  <beidson@apple.com>
+
+        Fix 64-bit SnowLeopard build.
+
+        * html/DataGridColumnList.cpp:
+        (WebCore::DataGridColumnList::remove):
+        (WebCore::DataGridColumnList::move):
+
+2009-06-24  Rob Buis  <rwlbuis@gmail.com>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26392
+        Bug 26392: In html, modification of xlink:href of an newly inserted svg image does not work.
+        https://bugs.webkit.org/show_bug.cgi?id=26328
+        Bug 26328: changing href attribute of svg images does not work when changing display attribute as well
+
+        React to href updates even when there is no renderer, i.e. display=none.
+
+        Tests: svg/custom/js-update-image-and-display.svg
+               svg/custom/js-update-image-and-display2.svg
+               svg/custom/js-update-image-and-display3.svg
+
+        * svg/SVGImageElement.cpp:
+        (WebCore::SVGImageElement::svgAttributeChanged):
+
+2009-06-24  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26687
+
+        Add basic back-end column support to datagrid.
+
+        Added fast/dom/HTMLDataGridElement/ column tests.
+
+        * DerivedSources.cpp:
+        * DerivedSources.make:
+        * WebCore.pro:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * WebCoreSources.bkl:
+        * html/DataGridColumn.cpp: Added.
+        (WebCore::DataGridColumn::setPrimary):
+        * html/DataGridColumn.h: Added.
+        (WebCore::DataGridColumn::create):
+        (WebCore::DataGridColumn::id):
+        (WebCore::DataGridColumn::setId):
+        (WebCore::DataGridColumn::label):
+        (WebCore::DataGridColumn::setLabel):
+        (WebCore::DataGridColumn::type):
+        (WebCore::DataGridColumn::setType):
+        (WebCore::DataGridColumn::sortable):
+        (WebCore::DataGridColumn::setSortable):
+        (WebCore::DataGridColumn::sortDirection):
+        (WebCore::DataGridColumn::setSortDirection):
+        (WebCore::DataGridColumn::primary):
+        (WebCore::DataGridColumn::detachFromColumnList):
+        (WebCore::DataGridColumn::DataGridColumn):
+        * html/DataGridColumn.idl: Added.
+        * html/DataGridColumnList.cpp: Added.
+        (WebCore::DataGridColumnList::~DataGridColumnList):
+        (WebCore::DataGridColumnList::itemWithName):
+        (WebCore::DataGridColumnList::add):
+        (WebCore::DataGridColumnList::remove):
+        (WebCore::DataGridColumnList::move):
+        (WebCore::DataGridColumnList::clear):
+        (WebCore::DataGridColumnList::primaryColumnChanged):
+        * html/DataGridColumnList.h: Added.
+        (WebCore::DataGridColumnList::create):
+        (WebCore::DataGridColumnList::length):
+        (WebCore::DataGridColumnList::item):
+        (WebCore::DataGridColumnList::primaryColumn):
+        (WebCore::DataGridColumnList::sortColumn):
+        * html/DataGridColumnList.idl: Added.
+        * html/HTMLDataGridColElement.cpp:
+        (WebCore::HTMLDataGridColElement::sortable):
+        (WebCore::HTMLDataGridColElement::setSortable):
+        (WebCore::HTMLDataGridColElement::sortDirection):
+        (WebCore::HTMLDataGridColElement::setSortDirection):
+        * html/HTMLDataGridColElement.h:
+        * html/HTMLDataGridColElement.idl:
+        * html/HTMLDataGridElement.cpp:
+        (WebCore::HTMLDataGridElement::HTMLDataGridElement):
+        * html/HTMLDataGridElement.h:
+        (WebCore::HTMLDataGridElement::columns):
+        * html/HTMLDataGridElement.idl:
+        * rendering/RenderDataGrid.cpp:
+        (WebCore::RenderDataGrid::paintObject):
+        (WebCore::RenderDataGrid::paintColumnHeaders):
+        (WebCore::RenderDataGrid::rebuildColumns):
+        * rendering/RenderDataGrid.h:
+        (WebCore::RenderDataGrid::gridElement):
+
+2009-06-24  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by Adam Roben.
+
+        Partially fixes: https://bugs.webkit.org/show_bug.cgi?id=24735
+        (<rdar://problem/5015942>)
+        Where on windows it was not possible to set an element as the drag
+        image using setDragImage on the dataTransfer object.
+        
+        Does not "fix" the case of dragging a link where the default link image
+        is still used, even when the -webkit-user-drag is set to "element". This
+        is the same behavior as is found on OS X.
+        
+        Added a manual test because it is not possible to check that what is
+        contained in the image snapshot is indeed the requested element.
+
+        * dom/Clipboard.h:
+        (WebCore::Clipboard::dragImageElement):
+        Made getting the raw pointer from the RefPtr a const operation.
+        * manual-tests/drag-with-div-or-image-as-data-image.html: Added.
+        * platform/win/ClipboardWin.cpp:
+        (WebCore::ClipboardWin::createDragImage):
+        Get an image of the rendered element and its subtree.
+
+2009-06-24  Darin Fisher  <darin@chromium.org>
+
+        Reviewed by David Levin.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26683
+        Fix Chromium build bustage: Add custom binding for HTMLDataGridElement.dataSource
+
+        This change just adds a stub implementation for now to help fix the build.
+
+        * bindings/v8/custom/V8CustomBinding.h:
+        * bindings/v8/custom/V8HTMLDataGridElementCustom.cpp: Added.
+
+2009-06-24  David Kilzer  <ddkilzer@apple.com>
+
+        Build fixes for ENABLE(PLUGIN_PROXY_FOR_VIDEO)
+
+        Reviewed by Adam Roben.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::deliverNotification): Removed
+        ExceptionCode parameter from togglePlayState().
+        (WebCore::HTMLMediaElement::initialURL): Don't convert a KURL
+        object to a String when assigning to a KURL variable.
+
+2009-06-24  Nikolas Zimmermann  <nikolas.zimmermann@torchmobile.com>
+
+        Reviewed by Adam Treat.
+
+        Save memory by not storing attribute values in member variables, if not absolutely needed.
+        Also fixes bugs where we're substituting variables too early (noticeable with the upcoming <select> element).
+
+        * wml/WMLDoElement.cpp:
+        (WebCore::WMLDoElement::parseMappedAttribute):
+        (WebCore::WMLDoElement::label):
+        * wml/WMLDoElement.h:
+        * wml/WMLFieldSetElement.cpp:
+        (WebCore::WMLFieldSetElement::insertedIntoDocument):
+        * wml/WMLFieldSetElement.h:
+        * wml/WMLOptGroupElement.cpp:
+        (WebCore::WMLOptGroupElement::title):
+        (WebCore::WMLOptGroupElement::parseMappedAttribute):
+        (WebCore::WMLOptGroupElement::groupLabelText):
+        * wml/WMLOptGroupElement.h:
+        * wml/WMLPostfieldElement.cpp:
+        (WebCore::WMLPostfieldElement::name):
+        (WebCore::WMLPostfieldElement::value):
+        (WebCore::WMLPostfieldElement::encodeData):
+        * wml/WMLPostfieldElement.h:
+        * wml/WMLSetvarElement.cpp:
+        (WebCore::WMLSetvarElement::parseMappedAttribute):
+        (WebCore::WMLSetvarElement::name):
+        (WebCore::WMLSetvarElement::value):
+        * wml/WMLSetvarElement.h:
+        * wml/WMLTimerElement.cpp:
+        (WebCore::WMLTimerElement::parseMappedAttribute):
+        (WebCore::WMLTimerElement::insertedIntoDocument):
+        (WebCore::WMLTimerElement::timerFired):
+        (WebCore::WMLTimerElement::start):
+        (WebCore::WMLTimerElement::value):
+        * wml/WMLTimerElement.h:
+
+2009-06-24  Nikolas Zimmermann  <nikolas.zimmermann@torchmobile.com>
+
+        Reviewed by Adam Roben.
+
+        Forgot to initialize m_task member variable. Results in crashes sometimes.
+
+        * wml/WMLAnchorElement.cpp:
+        (WebCore::WMLAnchorElement::WMLAnchorElement):
+
+2009-06-24  Nikolas Zimmermann  <nikolas.zimmermann@torchmobile.com>
+
+        Not reviewed. Forgot to include within last patch.
+
+        * manual-tests/wml/card-title-attr.wml: Added.
+
+2009-06-24  Wajahat Siddiqui <wajahatmeister@gmail.com>
+ 
+        Reviewed by Nikolas Zimmermann.
+
+        Fixes: https://bugs.webkit.org/show_bug.cgi?id=26474
+        Adding WML <card> title attribute handling.
+
+        * wml/WMLElement.h: marking parseValueSubstitutingVariableReferences and parseValueForbiddingVariableReferences as const
+        * wml/WMLElement.cpp:
+        * wml/WMLCardElement.h: 
+        (WebCore::WMLCardElement::title):
+        * wml/WMLCardElement.cpp:
+        * wml/manual-test/card-title-attr.wml: Manual test  
+ 
 2009-06-24  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Tor Arne Vestbø.

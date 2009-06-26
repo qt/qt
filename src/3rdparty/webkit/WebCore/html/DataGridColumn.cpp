@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Apple Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +13,7 @@
  * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,39 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef SessionStorageArea_h
-#define SessionStorageArea_h
+#include "config.h"
+#include "DataGridColumn.h"
 
-#if ENABLE(DOM_STORAGE)
-
-#include "StorageArea.h"
+#include "DataGridColumnList.h"
 
 namespace WebCore {
 
-    class Page;
-    
-    class SessionStorageArea : public StorageArea {
-    public:
-        static PassRefPtr<SessionStorageArea> create(SecurityOrigin* origin, Page* page) { return adoptRef(new SessionStorageArea(origin, page)); }
-        PassRefPtr<SessionStorageArea> copy(SecurityOrigin*, Page*);
-                
-        Page* page() { return m_page; }
-
-    private:
-        SessionStorageArea(SecurityOrigin*, Page*);
-        SessionStorageArea(SecurityOrigin*, Page*, SessionStorageArea*);
-
-        virtual void itemChanged(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame);
-        virtual void itemRemoved(const String& key, const String& oldValue, Frame* sourceFrame);
-        virtual void areaCleared(Frame* sourceFrame);
-
-        void dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame);
-        
-        Page* m_page;
-    };
+void DataGridColumn::setPrimary(bool primary)
+{
+    if (m_primary != primary) {
+        m_primary = primary;
+        if (m_columns)
+            m_columns->primaryColumnChanged(this);
+    }
+}
 
 } // namespace WebCore
-
-#endif // ENABLE(DOM_STORAGE)
-
-#endif // SessionStorageArea_h
