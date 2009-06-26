@@ -178,13 +178,6 @@ public:
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
 
-    void generateStyleOptions(const QList<QGraphicsItem *> &itemList,
-			      QGraphicsItem **itemArray,
-			      QStyleOptionGraphicsItem *styleOptionArray,
-			      const QTransform &worldTransform,
-			      bool allItems,
-			      const QRegion &exposedRegion) const;
-
     QPointF mapToScene(const QPointF &point) const;
     QRectF mapToScene(const QRectF &rect) const;
     static void translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent);
