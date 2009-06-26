@@ -2262,7 +2262,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
                     break;
                 }
             }
-            if (e->button() || isContextMenu)
+            if (e->button() == Qt::LeftButton || isContextMenu)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }
