@@ -770,11 +770,22 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
                                                               const QPointF &scenePos,
                                                               QWidget *widget) const
 {
-    Q_UNUSED(screenPos);
     Q_Q(const QGraphicsScene);
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
-    return q->items(scenePos, Qt::IntersectsItemShape, Qt::AscendingOrder,
-                    view ? view->viewportTransform() : QTransform());
+    if (!view)
+        return q->items(scenePos, Qt::IntersectsItemShape, Qt::AscendingOrder, QTransform());
+
+    const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
+    if (!view->isTransformed())
+        return q->items(pointRect, Qt::IntersectsItemShape, Qt::AscendingOrder);
+
+    const QTransform viewTransform = view->viewportTransform();
+    if (viewTransform.type() <= QTransform::TxScale) {
+        return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
+                        Qt::AscendingOrder, viewTransform);
+    }
+    return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
+                    Qt::AscendingOrder, viewTransform);
 }
 
 /*!
