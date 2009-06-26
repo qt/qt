@@ -2053,12 +2053,12 @@ bool ExtQMetaObjectData::resolve(const QScriptValueImpl &object,
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
-
         for (int j = 0; j < e.keyCount(); ++j) {
             const char *key = e.key(j);
-
             if (! qstrcmp (key, name.constData())) {
-                member->native(nameId, e.value(j), QScriptValue::ReadOnly);
+                member->native(nameId, e.value(j),
+                               QScriptValue::ReadOnly
+                               | QScriptValue::Undeletable);
                 *base = object;
                 return true;
             }
