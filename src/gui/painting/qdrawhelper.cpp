@@ -657,7 +657,15 @@ Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
                                                   int y, int x, int length)
 {
+#ifdef Q_CC_RVCT // needed to avoid compiler crash in RVCT 2.2
+    FetchPixelProc fetch;
+    if (format != QImage::Format_Invalid)
+        fetch = qt_fetchPixel<format>;
+    else
+        fetch = fetchPixelProc[data->texture.format];
+#else
     FetchPixelProc fetch = (format != QImage::Format_Invalid) ? FetchPixelProc(qt_fetchPixel<format>) : fetchPixelProc[data->texture.format];
+#endif
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
