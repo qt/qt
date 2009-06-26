@@ -1954,7 +1954,7 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.AllAbility").toInt32()),
              MyQObject::AllAbility);
 
-    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly;
+    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly | QScriptValue::Undeletable;
     QCOMPARE(myClass.propertyFlags("FooPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BarPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BazPolicy"), expectedEnumFlags);
@@ -2005,6 +2005,15 @@ void tst_QScriptExtQObject::classEnums()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 0);
         QCOMPARE(ret.isNumber(), true);
     }
+
+    // enum properties are not deletable or writable
+    QVERIFY(!m_engine->evaluate("delete MyQObject.BazPolicy").toBool());
+    myClass.setProperty("BazPolicy", QScriptValue());
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
+    myClass.setProperty("BazPolicy", MyQObject::FooPolicy);
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
 }
 
 QT_BEGIN_NAMESPACE
