@@ -752,7 +752,11 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
 typedef BOOL (WINAPI *PtrUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, const POINT *pptDst,
     const SIZE *psize, HDC hdcSrc, const POINT *pptSrc, COLORREF crKey,
     const Q_BLENDFUNCTION *pblend, DWORD dwflags);
+
+typedef BOOL (WINAPI *PtrSetProcessDPIAware) (VOID);
+
 static PtrUpdateLayeredWindow ptrUpdateLayeredWindow = 0;
+static PtrSetProcessDPIAware ptrSetProcessDPIAware = 0;
 
 static BOOL WINAPI qt_updateLayeredWindowIndirect(HWND hwnd, const Q_UPDATELAYEREDWINDOWINFO *info)
 {
@@ -878,6 +882,11 @@ void qt_init(QApplicationPrivate *priv, int)
 
     if (ptrUpdateLayeredWindow && !ptrUpdateLayeredWindowIndirect)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
+
+    // Notify Vista and Windows 7 that we support highter DPI settings
+    if (ptrSetProcessDPIAware = (PtrSetProcessDPIAware)
+        QLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware"))
+    ptrSetProcessDPIAware();
 #endif
 }
 
@@ -1940,10 +1949,14 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // don't show resize-cursors for fixed-size widgets
                 QRect fs = widget->frameStrut();
                 if (!widget->isMinimized()) {
+                    if (widget->minimumHeight() == widget->maximumHeight()) {
+                        if (pos.y() < -(fs.top() - fs.left()))
+                            return HTCAPTION;
+                        if (pos.y() >= widget->height())
+                            return HTBORDER;
+                    }
                     if (widget->minimumWidth() == widget->maximumWidth() && (pos.x() < 0 || pos.x() >= widget->width()))
-                        break;
-                    if (widget->minimumHeight() == widget->maximumHeight() && (pos.y() < -(fs.top() - fs.left()) || pos.y() >= widget->height()))
-                        break;
+                        return HTBORDER;
                 }
             }
 
