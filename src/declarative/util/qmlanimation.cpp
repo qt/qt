@@ -1439,7 +1439,10 @@ QVariant QmlPropertyAnimationPrivate::interpolateVariant(const QVariant &from, c
         return QVariant();
 
     QVariantAnimation::Interpolator interpolator = QVariantAnimationPrivate::getInterpolator(from.userType());
-    return interpolator(from.constData(), to.constData(), progress);
+    if (interpolator)
+        return interpolator(from.constData(), to.constData(), progress);
+    else
+        return QVariant();
 }
 
 //convert a variant from string type to another animatable type
@@ -1851,8 +1854,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             if (d->toIsDefined)
                 myAction.toValue = d->to;
 
-            d->convertVariant(myAction.fromValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
-            d->convertVariant(myAction.toValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
+            d->convertVariant(myAction.fromValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+            d->convertVariant(myAction.toValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
 
             modified << action.property;
 
@@ -1868,10 +1871,10 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
             if (d->fromIsDefined) {
-                d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
+                d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
                 myAction.fromValue = d->from;
             }
-            d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
+            d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
             myAction.toValue = d->to;
             myAction.bv = 0;
             myAction.event = 0;
