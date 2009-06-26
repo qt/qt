@@ -41,6 +41,10 @@
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
 
+#ifndef QT_NO_QOBJECT
+#include <QtCore/qcoreapplication.h>
+#endif
+
 Q_DECLARE_METATYPE(QScriptValue)
 Q_DECLARE_METATYPE(QVariant)
 #ifndef QT_NO_QOBJECT
@@ -513,6 +517,124 @@ JSC::JSValue functionGC(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, cons
 JSC::JSValue functionVersion(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
 {
     return JSC::JSValue(exec, 1);
+}
+
+static JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+static JSC::JSValue JSC_HOST_CALL functionQsTranslateNoOp(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+static JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+static JSC::JSValue JSC_HOST_CALL functionQsTrNoOp(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+
+JSC::JSValue functionQsTranslate(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+{
+    if (args.size() < 2)
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate() requires at least two arguments");
+    if (!args.at(0).isString())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): first argument (context) must be a string");
+    if (!args.at(1).isString())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): second argument (text) must be a string");
+    if ((args.size() > 2) && !args.at(2).isString())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (comment) must be a string");
+    if ((args.size() > 3) && !args.at(3).isString())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): fourth argument (encoding) must be a string");
+    if ((args.size() > 4) && !args.at(4).isNumber())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): fifth argument (n) must be a number");
+#ifndef QT_NO_QOBJECT
+    QString context = qtStringFromJSCUString(args.at(0).toString(exec));
+#endif
+    QString text = qtStringFromJSCUString(args.at(1).toString(exec));
+#ifndef QT_NO_QOBJECT
+    QString comment;
+    if (args.size() > 2)
+        comment = qtStringFromJSCUString(args.at(2).toString(exec));
+    QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
+    if (args.size() > 3) {
+        QString encStr = qtStringFromJSCUString(args.at(3).toString(exec));
+        if (encStr == QLatin1String("CodecForTr"))
+            encoding = QCoreApplication::CodecForTr;
+        else if (encStr == QLatin1String("UnicodeUTF8"))
+            encoding = QCoreApplication::UnicodeUTF8;
+        else
+            return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr)));
+    }
+    int n = -1;
+    if (args.size() > 4)
+        n = args.at(4).toInt32(exec);
+#endif
+    QString result;
+#ifndef QT_NO_QOBJECT
+    result = QCoreApplication::translate(context.toLatin1().constData(),
+                                         text.toLatin1().constData(),
+                                         comment.toLatin1().constData(),
+                                         encoding, n);
+#else
+    result = text;
+#endif
+    return JSC::jsString(exec, qtStringToJSCUString(result));
+}
+
+JSC::JSValue functionQsTranslateNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+{
+    if (args.size() < 2)
+        return JSC::jsUndefined();
+    return args.at(1);
+}
+
+JSC::JSValue functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+{
+    if (args.size() < 1)
+        return JSC::throwError(exec, JSC::GeneralError, "qsTr() requires at least one argument");
+    if (!args.at(0).isString())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTr(): first argument (text) must be a string");
+    if ((args.size() > 1) && !args.at(1).isString())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTr(): second argument (comment) must be a string");
+    if ((args.size() > 2) && !args.at(2).isNumber())
+        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
+#ifndef QT_NO_QOBJECT
+    QString context;
+// ### implement context resolution
+//    if (ctx->parentContext())
+//        context = QFileInfo(ctx->parentContext()->fileName()).baseName();
+#endif
+    QString text = qtStringFromJSCUString(args.at(0).toString(exec));
+#ifndef QT_NO_QOBJECT
+    QString comment;
+    if (args.size() > 1)
+        comment = qtStringFromJSCUString(args.at(1).toString(exec));
+    int n = -1;
+    if (args.size() > 2)
+        n = args.at(2).toInt32(exec);
+#endif
+    QString result;
+#ifndef QT_NO_QOBJECT
+    result = QCoreApplication::translate(context.toLatin1().constData(),
+                                         text.toLatin1().constData(),
+                                         comment.toLatin1().constData(),
+                                         QCoreApplication::CodecForTr, n);
+#else
+    result = text;
+#endif
+    return JSC::jsString(exec, qtStringToJSCUString(result));
+}
+
+JSC::JSValue functionQsTrNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+{
+    if (args.size() < 1)
+        return JSC::jsUndefined();
+    return args.at(0);
+}
+
+static JSC::JSValue JSC_HOST_CALL stringProtoFuncArg(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+
+JSC::JSValue stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisObject, const JSC::ArgList &args)
+{
+    QString value = qtStringFromJSCUString(thisObject.toString(exec));
+    JSC::JSValue arg = (args.size() != 0) ? args.at(0) : JSC::jsUndefined();
+    QString result;
+    if (arg.isString())
+        result = value.arg(qtStringFromJSCUString(arg.toString(exec)));
+    else if (arg.isNumber())
+        result = value.arg(arg.toNumber(exec));
+    return JSC::jsString(exec, qtStringToJSCUString(result));
 }
 
 } // namespace QScript
@@ -2136,8 +2258,18 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
 */
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 {
-    qWarning("QScriptEngine::installTranslatorFunctions() not implemented");
-    Q_UNUSED(object);
+    Q_D(QScriptEngine);
+    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::JSValue jscObject = d->scriptValueToJSCValue(object);
+    if (!jscObject || !jscObject.isObject())
+        jscObject = d->globalObject;
+//    unsigned attribs = JSC::DontEnum;
+    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, d->globalObject->prototypeFunctionStructure(), 5, JSC::Identifier(exec, "qsTranslate"), QScript::functionQsTranslate));
+    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, d->globalObject->prototypeFunctionStructure(), 2, JSC::Identifier(exec, "QT_TRANSLATE_NOOP"), QScript::functionQsTranslateNoOp));
+    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, d->globalObject->prototypeFunctionStructure(), 3, JSC::Identifier(exec, "qsTr"), QScript::functionQsTr));
+    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, d->globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "QT_TR_NOOP"), QScript::functionQsTrNoOp));
+
+    d->globalObject->stringPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, d->globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "arg"), QScript::stringProtoFuncArg));
 }
 
 /*!
