@@ -157,7 +157,7 @@ public:
     QRect actionRect(QAction *) const;
 
     mutable QVector<QRect> actionRects;
-    mutable QHash<QAction *, QWidget *> widgetItems;
+    mutable QWidgetList widgetItems;
     void updateActionRects() const;
     QRect popupGeometry(int screen=-1) const;
     mutable uint ncols : 4; //4 bits is probably plenty

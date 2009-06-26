@@ -233,7 +233,7 @@ void QMenuPrivate::updateActionRects() const
 
     for (int i = 0; i < actions.count(); ++i) {
         QAction *action = actions.at(i);
-        if (action->isSeparator() || !action->isVisible() || widgetItems.contains(action))
+        if (action->isSeparator() || !action->isVisible() || widgetItems.at(i))
             continue;
         //..and some members
         hasCheckableItems |= action->isCheckable();
@@ -262,7 +262,7 @@ void QMenuPrivate::updateActionRects() const
         const QFontMetrics &fm = opt.fontMetrics;
 
         QSize sz;
-        if (QWidget *w = widgetItems.value(action)) {
+        if (QWidget *w = widgetItems.at(i)) {
           sz = w->sizeHint().expandedTo(w->minimumSize()).expandedTo(w->minimumSizeHint()).boundedTo(w->maximumSize());
         } else {
             //calc what I think the size is..
@@ -335,10 +335,9 @@ void QMenuPrivate::updateActionRects() const
         rect.setWidth(max_column_width); //uniform width
 
         //we need to update the widgets geometry
-        QAction *action = actions.at(i);
-        if (QWidget *widget = widgetItems.value(action)) {
+        if (QWidget *widget = widgetItems.at(i)) {
             widget->setGeometry(rect);
-            widget->setVisible(action->isVisible());
+            widget->setVisible(actions.at(i)->isVisible());
         }
 
         y += rect.height();
@@ -545,9 +544,10 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
                     popupAction(currentAction, popup, activateFirst);
             }
             q->update(actionRect(action));
-            QWidget *widget = widgetItems.value(action);
 
             if (reason == SelectedFromKeyboard) {
+                const int actionIndex = actions.indexOf(action);
+                QWidget *widget = widgetItems.at(actionIndex);
                 if (widget) {
                     if (widget->focusPolicy() != Qt::NoFocus)
                         widget->setFocus(Qt::TabFocusReason);
@@ -1335,14 +1335,13 @@ QMenu::QMenu(QMenuPrivate &dd, QWidget *parent)
 QMenu::~QMenu()
 {
     Q_D(QMenu);
-    for (QHash<QAction *, QWidget *>::ConstIterator item = d->widgetItems.constBegin(),
-         end = d->widgetItems.constEnd(); item != end; ++item) {
-        QWidgetAction *action = static_cast<QWidgetAction *>(item.key());
-        QWidget *widget = item.value();
-        if (action && widget)
+    for (int i = 0; i < d->widgetItems.count(); ++i) {
+        if (QWidget *widget = d->widgetItems.at(i)) {
+            QWidgetAction *action = static_cast<QWidgetAction *>(d->actions.at(i));
             action->releaseWidget(widget);
+            d->widgetItems[i] = 0;
+        }
     }
-    d->widgetItems.clear();
 
     if (d->eventLoop)
         d->eventLoop->exit();
@@ -2075,7 +2074,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         QAction *action = d->actions.at(i);
         QRect adjustedActionRect = d->actionRects.at(i);
         if (!e->rect().intersects(adjustedActionRect)
-            || d->widgetItems.value(action))
+            || d->widgetItems.at(i))
            continue;
         //set the clip region to be extra safe (and adjust for the scrollers)
         QRegion adjustedActionReg(adjustedActionRect);
@@ -2786,30 +2785,25 @@ void QMenu::actionEvent(QActionEvent *e)
             connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
             connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
         }
+        QWidget *widget = 0;
+        if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action()))
+            widget = wa->requestWidget(this);
 
-        if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
-            QWidget *widget = wa->requestWidget(this);
-            if (widget)
-                d->widgetItems.insert(wa, widget);
-        }
+        int index = d->actions.indexOf(e->action());
+        Q_ASSERT(index != -1);
+        d->widgetItems.insert(index, widget);
+
     } else if (e->type() == QEvent::ActionRemoved) {
-        d->actionRects.clear();
         e->action()->disconnect(this);
         if (e->action() == d->currentAction)
             d->currentAction = 0;
+        int index = d->actions.indexOf(e->before()) + 1;
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
-            QWidget *widget = d->widgetItems.take(wa);
-            if (widget)
+            if (QWidget *widget = d->widgetItems.at(index))
                 wa->releaseWidget(widget);
-        } else {
-            // If this is called from the QAction destructor, the
-            // previous call to qobject_cast will fail because the
-            // QWidgetAction has been destroyed already. We need to
-            // remove it from the hash anyway or it might crash later
-            // the widget itself has been already destroyed in
-            // ~QWidgetAction
-            d->widgetItems.remove(e->action());
         }
+        Q_ASSERT(index != -1);
+        d->widgetItems.removeAt(index);
     }
 
 #ifdef Q_WS_MAC
