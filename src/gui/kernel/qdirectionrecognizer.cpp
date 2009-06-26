@@ -45,7 +45,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static const int SIZE = 20;
+enum {
+    DistanceDelta = 20
+};
 
 QDirectionSimpleRecognizer::QDirectionSimpleRecognizer()
 {
@@ -66,17 +68,17 @@ Direction QDirectionSimpleRecognizer::addPosition(const QPoint &pos)
     int dy = pos.y() - lastPoint.y();
     Qt::DirectionType direction = Qt::NoDirection;
     if (dx < 0) {
-        if (-1*dx >= SIZE/2)
+        if (-1*dx >= DistanceDelta/2)
             direction = Qt::LeftDirection;
     } else {
-        if (dx >= SIZE/2)
+        if (dx >= DistanceDelta/2)
             direction = Qt::RightDirection;
     }
     if (dy < 0) {
-        if (-1*dy >= SIZE/2)
+        if (-1*dy >= DistanceDelta/2)
             direction = Qt::UpDirection;
     } else {
-        if (dy >= SIZE/2)
+        if (dy >= DistanceDelta/2)
             direction = Qt::DownDirection;
     }
     if (direction == Qt::NoDirection)
@@ -120,7 +122,7 @@ Direction QDirectionDiagonalRecognizer::addPosition(const QPoint &pos)
     int dx = pos.x() - lastPoint.x();
     int dy = pos.y() - lastPoint.y();
     int distance = sqrt(static_cast<double>(dx*dx + dy*dy));
-    if (distance < SIZE/2)
+    if (distance < DistanceDelta/2)
         return Direction();
 
     Qt::DirectionType direction = Qt::NoDirection;
