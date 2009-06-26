@@ -276,80 +276,6 @@ public:
     QScriptValue prototype;
 };
 
-namespace JSC {
-
-static JSValue JSC_HOST_CALL functionPrint(ExecState*, JSObject*, JSValue, const ArgList&);
-static JSValue JSC_HOST_CALL functionGC(ExecState*, JSObject*, JSValue, const ArgList&);
-static JSValue JSC_HOST_CALL functionVersion(ExecState*, JSObject*, JSValue, const ArgList&);
-static JSValue JSC_HOST_CALL functionLoad(ExecState*, JSObject*, JSValue, const ArgList&);
-
-JSValue functionPrint(ExecState* exec, JSObject*, JSValue, const ArgList& args)
-{
-    for (unsigned i = 0; i < args.size(); ++i) {
-        if (i != 0)
-            putchar(' ');
-        
-        printf("%s", args.at(i).toString(exec).UTF8String().c_str());
-    }
-    
-    putchar('\n');
-    fflush(stdout);
-    return jsUndefined();
-}
-
-JSValue functionGC(ExecState* exec, JSObject*, JSValue, const ArgList&)
-{
-    JSLock lock(false);
-    exec->heap()->collect();
-    return jsUndefined();
-}
-
-JSValue functionVersion(ExecState *exec, JSObject*, JSValue, const ArgList&)
-{
-    return JSC::JSValue(exec, 1);
-}
-
-static bool fillBufferWithContentsOfFile(const UString& fileName, Vector<char>& buffer)
-{
-    FILE* f = fopen(fileName.UTF8String().c_str(), "r");
-    if (!f) {
-        fprintf(stderr, "Could not open file: %s\n", fileName.UTF8String().c_str());
-        return false;
-    }
-
-    size_t buffer_size = 0;
-    size_t buffer_capacity = 1024;
-
-    buffer.resize(buffer_capacity);
-
-    while (!feof(f) && !ferror(f)) {
-        buffer_size += fread(buffer.data() + buffer_size, 1, buffer_capacity - buffer_size, f);
-        if (buffer_size == buffer_capacity) { // guarantees space for trailing '\0'
-            buffer_capacity *= 2;
-            buffer.resize(buffer_capacity);
-        }
-    }
-    fclose(f);
-    buffer[buffer_size] = '\0';
-
-    return true;
-}
-
-JSValue functionLoad(ExecState* exec, JSObject*, JSValue, const ArgList& args)
-{
-    UString fileName = args.at(0).toString(exec);
-    Vector<char> script;
-    if (!fillBufferWithContentsOfFile(fileName, script))
-        return throwError(exec, GeneralError, "Could not open file.");
-
-    JSGlobalObject* globalObject = exec->dynamicGlobalObject();
-    JSC::evaluate(globalObject->globalExec(), globalObject->globalScopeChain(), makeSource(script.data(), fileName));
-
-    return jsUndefined();
-}
-
-} // namespace JSC
-
 namespace QScript
 {
 
@@ -555,12 +481,47 @@ void GlobalObject::mark()
 #endif
 }
 
+static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+static JSC::JSValue JSC_HOST_CALL functionGC(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+static JSC::JSValue JSC_HOST_CALL functionVersion(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+
+JSC::JSValue functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList& args)
+{
+    QString result;
+    for (unsigned i = 0; i < args.size(); ++i) {
+        if (i != 0)
+            result.append(QLatin1Char(' '));
+        QString s = QScript::qtStringFromJSCUString(args.at(i).toString(exec));
+        if (exec->hadException())
+            break;
+        result.append(s);
+    }
+    if (!exec->hadException()) {
+        qDebug(qPrintable(result));
+        return exec->exception();
+    }
+    return JSC::jsUndefined();
+}
+
+JSC::JSValue functionGC(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
+{
+    JSC::JSLock lock(false);
+    exec->heap()->collect();
+    return JSC::jsUndefined();
+}
+
+JSC::JSValue functionVersion(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
+{
+    return JSC::JSValue(exec, 1);
+}
+
 } // namespace QScript
 
-namespace JSC
-{
+namespace JSC {
+
 ASSERT_CLASS_FITS_IN_CELL(QScript::GlobalObject);
-}
+
+} // namespace JSC
 
 QScriptEnginePrivate::QScriptEnginePrivate()
 {
@@ -578,10 +539,9 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     variantPrototype = new (exec) QScript::QVariantPrototype(exec, QScript::QVariantPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     variantWrapperObjectStructure = QScript::QVariantWrapperObject::createStructure(variantPrototype);
 
-    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "print"), JSC::functionPrint));
-    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "gc"), JSC::functionGC));
-    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "version"), JSC::functionVersion));
-    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "load"), JSC::functionLoad));
+    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "print"), QScript::functionPrint));
+    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "gc"), QScript::functionGC));
+    globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "version"), QScript::functionVersion));
 
     // ### rather than extending Function.prototype, consider creating a QtSignal.prototype
     globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "disconnect"), QScript::functionDisconnect));
