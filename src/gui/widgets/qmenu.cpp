@@ -381,14 +381,20 @@ QList<QAction *> QMenuPrivate::filteredActions() const
 
 QRect QMenuPrivate::actionRect(QAction *act) const
 {
-    Q_Q(const QMenu);
-    QRect ret;
     for (int i = 0; i < actionRects.count(); ++i) {
-        if (act == actionRects.at(i).action) {
-            ret = actionRects.at(i).rect;
-            break; //we found the action
-        }
+        if (act == actionRects.at(i).action)
+            return actionRect(i); //we found the action
     }
+
+    return QRect();
+}
+
+QRect QMenuPrivate::actionRect(int index) const
+{
+    Q_ASSERT(index >= 0 || index < actionRects.count());
+
+    Q_Q(const QMenu);
+    QRect ret = actionRects.at(index).rect;
     if (ret.isNull())
         return ret;
     if (scroll)
@@ -2111,7 +2117,7 @@ void QMenu::paintEvent(QPaintEvent *e)
     //draw the items that need updating..
     for (int i = 0; i < d->actionRects.count(); ++i) {
         QAction *action = d->actionRects.at(i).action;
-        QRect adjustedActionRect = d->actionRects.at(i).rect;
+        QRect adjustedActionRect = d->actionRect(i);
         if (!e->rect().intersects(adjustedActionRect)
             || d->widgetItems.value(action))
            continue;

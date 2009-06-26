@@ -155,6 +155,7 @@ public:
     mutable uint itemsDirty : 1;
     mutable uint maxIconWidth, tabWidth;
     QRect actionRect(QAction *) const;
+    QRect actionRect(int index) const;
 
     struct ActionRectInfo {
         QAction *action;
