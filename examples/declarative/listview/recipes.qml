@@ -14,7 +14,7 @@ Rect {
                 width: List.width
                 // Create a property to contain the visibility of the details.
                 // We can bind multiple element's opacity to this one property,
-                // rather than having a "SetProperty" line for each element we
+                // rather than having a "SetProperties" line for each element we
                 // want to fade.
                 property real detailsOpacity : 0
 
@@ -94,20 +94,17 @@ Rect {
                 states: [
                     State {
                         name: "Details"
-                        SetProperty { target: background; property: "color"; value: "white" }
+                        SetProperties { target: background; color: "white" }
                         // Make the picture bigger
                         SetProperties { target: recipePic; width: 128; height: 128 }
                         // Make details visible
                         SetProperties { target: wrapper; detailsOpacity: 1; x: 0 }
                         // Make the detailed view fill the entire list area
-                        SetProperty { target: wrapper; property: "height"; value: List.height }
+                        SetProperties { target: wrapper; height: List.height }
                         // Move the list so that this item is at the top.
-                        SetProperty {
-                            target: wrapper.ListView.view
-                            property: "yPosition"; value: wrapper.y
-                        }
+                        SetProperties { target: wrapper.ListView.view; explicit: true; yPosition: wrapper.y }
                         // Disallow flicking while we're in detailed view
-                        SetProperty { target: wrapper.ListView.view; property: "locked"; value: 1 }
+                        SetProperties { target: wrapper.ListView.view; locked: 1 }
                     }
                 ]
                 transitions: [

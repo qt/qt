@@ -14,10 +14,9 @@ Item {
                 target: Label
                 text: Container.label + ": "
             }
-            SetProperty {
+            SetProperties {
                 target: Label
-                property: "x"
-                binding: 10
+                x: 10
             }
             SetProperties {
                 target: Editor

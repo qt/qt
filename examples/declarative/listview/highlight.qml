@@ -23,9 +23,7 @@ Rect {
                 State {
                     name: "Current"
                     when: Wrapper.ListView.isCurrentItem
-                    SetProperty {
-                        target: Wrapper; property: "x"; value: 10
-                    }
+                    SetProperties { target: Wrapper; x: 10 }
                 }
             ]
             transitions: [

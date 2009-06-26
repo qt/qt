@@ -60,15 +60,18 @@ class Action
 public:
     Action();
 
+    bool restore:1;
+    bool actionDone:1;
+
     QmlMetaProperty property;
-    bool restore;
     QVariant fromValue;
     QVariant toValue;
-    QString fromBinding;
-    QString toBinding;
-    QmlBindableValue *bv;
+
+    QmlBindableValue *fromBinding;
+    QmlBindableValue *toBinding;
     ActionEvent *event;
-    bool actionDone;
+
+    void deleteFromBinding();
 };
 
 class ActionEvent 

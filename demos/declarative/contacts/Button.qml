@@ -24,10 +24,9 @@ Item {
             State {
                 name: "pressed"
                 when: buttonMouseRegion.pressed == true
-                SetProperty {
+                SetProperties {
                     target: buttonRect
-                    property: "color"
-                    value: "green"
+                    color: "green"
                 }
             }
         ]

@@ -52,23 +52,21 @@ class SimpleAction
 {
 public:
     enum State { StartState, EndState };
-    SimpleAction(const Action &a, State state = StartState) : bv(0)
+    SimpleAction(const Action &a, State state = StartState) 
     {
         property = a.property;
         if (state == StartState) {
             value = a.fromValue;
-            binding = a.fromBinding;
+            binding = property.binding();
         } else {
             value = a.toValue;
             binding = a.toBinding;
         }
-        bv = a.bv;
     }
 
     QmlMetaProperty property;
     QVariant value;
-    QString binding;
-    QmlBindableValue *bv;
+    QmlBindableValue *binding;
 };
 
 class QmlStatePrivate : public QObjectPrivate

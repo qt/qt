@@ -94,40 +94,33 @@ Rect {
     states: [
         State {
             name: "editing"
-            SetProperty {
+            SetProperties {
                 target: confirmIcon
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: cancelIcon
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: textEdit
-                property: "readOnly"
-                value: false
+                readOnly: false
             }
-            SetProperty {
+            SetProperties {
                 target: textEdit
-                property: "focus"
-                value: true
+                focus: true
             }
-            SetProperty {
+            SetProperties {
                 target: editRegion
-                property: "opacity"
-                value: 0
+                opacity: 0
             }
-            SetProperty {
+            SetProperties {
                 target: textEdit.anchors
-                property: "leftMargin"
-                value: 39
+                leftMargin: 39
             }
-            SetProperty {
+            SetProperties {
                 target: textEdit.anchors
-                property: "rightMargin"
-                value: 39
+                rightMargin: 39
             }
         }
     ]

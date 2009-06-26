@@ -151,20 +151,12 @@ Item {
                     State {
                         name: "Normal"
                         when: WebView.progress == 1.0
-                        SetProperty {
-                            target: Header
-                            property: "progressOff"
-                            value: 1
-                        }
+                        SetProperties { target: Header; progressOff: 1 }
                     },
                     State {
                         name: "ProgressShown"
                         when: WebView.progress < 1.0
-                        SetProperty {
-                            target: Header
-                            property: "progressOff"
-                            value: 0
-                        }
+                        SetProperties { target: Header; progressOff: 0; }
                     }
                 ]
                 transitions: [
@@ -255,30 +247,14 @@ Item {
                     State {
                         name: "Enabled"
                         when: WebView.back.enabled==true
-                        SetProperty {
-                            target: back_e
-                            property: "opacity"
-                            value: 1
-                        }
-                        SetProperty {
-                            target: back_d
-                            property: "opacity"
-                            value: 0
-                        }
+                        SetProperties { target: back_e; opacity: 1 }
+                        SetProperties { target: back_d; opacity: 0 }
                     },
                     State {
                         name: "Disabled"
                         when: WebView.back.enabled==false
-                        SetProperty {
-                            target: back_e
-                            property: "opacity"
-                            value: 0
-                        }
-                        SetProperty {
-                            target: back_d
-                            property: "opacity"
-                            value: 1
-                        }
+                        SetProperties { target: back_e; opacity: 0 }
+                        SetProperties { target: back_d; opacity: 1 }
                     }
                 ]
                 transitions: [
@@ -327,30 +303,14 @@ Item {
                     State {
                         name: "Enabled"
                         when: WebView.forward.enabled==true
-                        SetProperty {
-                            target: forward_e
-                            property: "opacity"
-                            value: 1
-                        }
-                        SetProperty {
-                            target: forward_d
-                            property: "opacity"
-                            value: 0
-                        }
+                        SetProperties { target: forward_e; opacity: 1 }
+                        SetProperties { target: forward_d; opacity: 0 }
                     },
                     State {
                         name: "Disabled"
                         when: WebView.forward.enabled==false
-                        SetProperty {
-                            target: forward_e
-                            property: "opacity"
-                            value: 0
-                        }
-                        SetProperty {
-                            target: forward_d
-                            property: "opacity"
-                            value: 1
-                        }
+                        SetProperties { target: forward_e; opacity: 0 }
+                        SetProperties { target: forward_d; opacity: 1 }
                     }
                 ]
                 transitions: [
@@ -372,29 +332,13 @@ Item {
     states: [
         State {
             name: "Normal"
-            SetProperty {
-                target: WebView
-                property: "zoomedOut"
-                value: 0
-            }
-            SetProperty {
-                target: Flick
-                property: "xPosition"
-                value: Math.min(WebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2))
-            }
-            SetProperty {
-                target: Flick
-                property: "yPosition"
-                value: Math.min(WebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2))
-            }
+            SetProperties { target: WebView; zoomedOut: 0 }
+            SetProperties { target: Flick; explicit: true; xPosition: Math.min(WebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
+            SetProperties { target: Flick; explicit: true; yPosition: Math.min(WebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
         },
         State {
             name: "ZoomedOut"
-            SetProperty {
-                target: WebView
-                property: "zoomedOut"
-                value: 1
-            }
+            SetProperties { target: WebView; zoomedOut: 1 }
         }
     ]
     transitions: [

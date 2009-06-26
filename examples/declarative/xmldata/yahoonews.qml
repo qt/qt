@@ -64,16 +64,8 @@ Rect {
                     states: [
                         State {
                             name: "Details"
-                            SetProperty {
-                                target: Wrapper
-                                property: "height"
-                                binding: "contents.height + 10"
-                            }
-                            SetProperty {
-                                target: Description
-                                property: "opacity"
-                                value: 1
-                            }
+                            SetProperties { target: Wrapper; height: contents.height + 10 }
+                            SetProperties { target: Description; opacity: 1 } 
                         }
                     ]
                     transitions: [

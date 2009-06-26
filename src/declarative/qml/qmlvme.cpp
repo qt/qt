@@ -564,7 +564,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 QmlMetaProperty mp(target, instr.assignBinding.property,
                                    (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
 
-                QmlBindableValue *bind = new QmlBindableValue((void *)datas.at(instr.assignBinding.value).constData(), comp, context, 0);
+                QmlBindableValue *bind = new QmlBindableValue((void *)datas.at(instr.assignBinding.value).constData(), comp, context, QmlContext::activeContext(), 0);
                 bindValues.append(bind);
                 QmlBindableValuePrivate *p = 
                     static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bind));
@@ -584,7 +584,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 QmlMetaProperty mp(target, instr.assignBinding.property, 
                                    (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
 
-                QmlBindableValue *bind = new QmlBindableValue(primitives.at(instr.assignBinding.value), context, false);
+                QmlBindableValue *bind = new QmlBindableValue(primitives.at(instr.assignBinding.value), context, QmlContext::activeContext());
                 bindValues.append(bind);
                 QmlBindableValuePrivate *p = 
                     static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bind));

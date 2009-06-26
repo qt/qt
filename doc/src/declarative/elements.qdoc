@@ -18,7 +18,6 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o
 \list
 \o \l State
-\o \l SetProperty
 \o \l SetProperties
 \o \l ParentChange
 \o \l RunScript

@@ -64,11 +64,7 @@ Item {
                     State {
                         name: "back"
                         when: modelData.flipped == true
-                        SetProperty {
-                            target: flipable
-                            property: "rotation"
-                            value: 180
-                        }
+                        SetProperties { target: flipable; rotation: 180 }
                     }
                 ]
                 transitions: [

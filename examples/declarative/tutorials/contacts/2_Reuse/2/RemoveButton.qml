@@ -81,31 +81,26 @@ Rect {
         State {
             name: "opened"
 //! [use width]
-            SetProperty {
+            SetProperties {
                 target: removeButton
-                property: "width"
-                value: removeButton.expandedWidth
+                width: removeButton.expandedWidth
             }
 //! [use width]
-            SetProperty {
+            SetProperties {
                 target: text
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: confirmIcon
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: cancelIcon
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: trashIcon
-                property: "opacity"
-                value: 0
+                opacity: 0
             }
         }
     ]

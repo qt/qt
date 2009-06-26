@@ -89,15 +89,13 @@ Item {
     states: [
         State {
             name: "moved"
-            SetProperty {
+            SetProperties {
                 target: myrect
-                property: "x"
-                value: 50
+                x: 50
             }
-            SetProperty {
+            SetProperties {
                 target: myrect
-                property: "y"
-                value: 50
+                y: 50
             }
         }
     ]

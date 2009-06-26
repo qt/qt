@@ -958,8 +958,6 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
                 myAction.fromValue = QVariant(d->fromValue);
 
             myAction.toValue = QVariant(d->toValue);
-            myAction.bv = 0;
-            myAction.event = 0;
             data->actions << myAction;
         }
     }
@@ -1766,8 +1764,6 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
                 myAction.fromValue = QVariant(d->from);
 
             myAction.toValue = QVariant(d->to);
-            myAction.bv = 0;
-            myAction.event = 0;
             data->actions << myAction;
         }
     }
@@ -2332,8 +2328,6 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
 
             d->convertVariant(d->to, (QVariant::Type)myAction.property.propertyType());
             myAction.toValue = d->to;
-            myAction.bv = 0;
-            myAction.event = 0;
             data->actions << myAction;
         }
     }

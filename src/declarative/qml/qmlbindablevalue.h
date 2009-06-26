@@ -62,8 +62,8 @@ class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource,
 {
 Q_OBJECT
 public:
-    QmlBindableValue(const QString &, QObject *, QObject *parent=0);
-    QmlBindableValue(void *, QmlRefCount *, QObject *, QObject *parent);
+    QmlBindableValue(const QString &, QObject *, QmlContext *, QObject *parent=0);
+    QmlBindableValue(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
     ~QmlBindableValue();
 
     virtual void setTarget(const QmlMetaProperty &);
@@ -74,8 +74,12 @@ public:
     virtual void setExpression(const QString &);
 
     void init();
+    void forceUpdate();
 
-private Q_SLOTS:
+    void setEnabled(bool);
+    bool enabled() const;
+
+public Q_SLOTS:
     void update();
 
 protected:

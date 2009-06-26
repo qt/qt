@@ -48,7 +48,6 @@ Item {
                     Script {
                         function photoClicked() {
                             Background.imageDetails.photoTitle = title;
-                            Background.imageDetails.flickableArea.yPosition = 0;
                             Background.imageDetails.photoDescription = description;
                             Background.imageDetails.photoTags = tags;
                             Background.imageDetails.photoWidth = photoWidth;
@@ -129,15 +128,12 @@ Item {
                     states: [
                         State {
                             name: "gridView"
-                            SetProperty { target: Wrapper; property: "moveToParent"; value: GridViewPackage }
+                            SetProperties { target: Wrapper; explicit: true; property: "moveToParent"; value: GridViewPackage }
                         },
                         State {
                             name: "pathView"
-                            SetProperty { target: Wrapper; property: "scale"; value: PathViewPackage.PathView.scale }
-                            SetProperty { target: Wrapper; property: "scale"; binding: "PathViewPackage.PathView.scale" }
-                            SetProperty { target: Wrapper; property: "angle"; value: PathViewPackage.PathView.angle }
-                            SetProperty { target: Wrapper; property: "angle"; binding: "PathViewPackage.PathView.angle" }
-                            SetProperty { target: Wrapper; property: "moveToParent"; value: PathViewPackage }
+                            SetProperties { target: Wrapper; scale: PathViewPackage.PathView.scale; angle: PathViewPackage.PathView.angle; }
+                            SetProperties { target: Wrapper; explicit: true; moveToParent: PathViewPackage }
                         }
                     ]
                     transitions: [
