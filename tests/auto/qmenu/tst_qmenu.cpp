@@ -92,7 +92,7 @@ private slots:
     void activeSubMenuPosition();
     void task242454_sizeHint();
     void task176201_clear();
-    void task250673_activeMutliColumnSubMenuPosition();
+    void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
 protected slots:
     void onActivated(QAction*);
@@ -680,7 +680,7 @@ void tst_QMenu::task176201_clear()
     QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center());
 }
 
-void tst_QMenu::task250673_activeMutliColumnSubMenuPosition()
+void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
 {
     class MyMenu : public QMenu
     {

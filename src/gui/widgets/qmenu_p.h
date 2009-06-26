@@ -155,19 +155,12 @@ public:
     mutable uint itemsDirty : 1;
     mutable uint maxIconWidth, tabWidth;
     QRect actionRect(QAction *) const;
-    QRect actionRect(int index) const;
 
-    struct ActionRectInfo {
-        QAction *action;
-        QRect rect;
-    };
-    mutable QVector<ActionRectInfo> actionRects;
+    mutable QVector<QRect> actionRects;
     mutable QHash<QAction *, QWidget *> widgetItems;
-    void calcActionRects() const;
-    void updateActions();
+    void updateActionRects() const;
     QRect popupGeometry(int screen=-1) const;
-    QList<QAction *> filteredActions() const;
-    uint ncols : 4; //4 bits is probably plenty
+    mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
     uint activationRecursionGuard : 1;
@@ -239,7 +232,7 @@ public:
 
     //sloppy selection
     static QBasicTimer sloppyDelayTimer;
-    QAction *sloppyAction;
+    mutable QAction *sloppyAction;
     QRegion sloppyRegion;
 
     //default action
