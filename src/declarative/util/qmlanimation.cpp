@@ -85,11 +85,17 @@ QEasingCurve stringToCurve(const QString &curve)
         QString prop_str =
             easeName.mid(idx + 1, easeName.length() - 1 - idx - 1);
         normalizedCurve = easeName.left(idx);
+        if (!normalizedCurve.startsWith(QLatin1String("ease"))) {
+            qWarning("QEasingCurve: Easing function '%s' must start with 'ease'",
+                     curve.toLatin1().constData());
+        }
 
         props = prop_str.split(QLatin1Char(','));
     }
 
-    normalizedCurve = normalizedCurve.mid(4);
+    if (normalizedCurve.startsWith(QLatin1String("ease")))
+        normalizedCurve = normalizedCurve.mid(4);
+
     //XXX optimize?
     int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
     QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
