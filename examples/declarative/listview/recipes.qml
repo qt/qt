@@ -115,7 +115,7 @@ Rect {
                         // Make the state changes smooth
                         ParallelAnimation {
                             ColorAnimation { duration: 500 }
-                            NumericAnimation {
+                            NumberAnimation {
                                 duration: 300; properties: "detailsOpacity,x,yPosition,height,width"
                             }
                         }

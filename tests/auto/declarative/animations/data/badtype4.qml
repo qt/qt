@@ -18,6 +18,6 @@ Rect {
     }
     transitions: Transition {
         ColorAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
-        //NumericAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
+        //NumberAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
     }
 }

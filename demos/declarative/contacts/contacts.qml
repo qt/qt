@@ -123,7 +123,7 @@ Rect {
                 ]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             duration: 500
                             properties: "yPosition,height,opacity"
                         }
@@ -221,7 +221,7 @@ Rect {
                 color: 'white'
                 opacity: contacts.mode == 'list' ? 1 : 0
                 opacity: Behavior {
-                    NumericAnimation {
+                    NumberAnimation {
                         property: "opacity"
                         duration: 250
                     }
@@ -288,7 +288,7 @@ Rect {
             Transition {
                 fromState: "*"
                 toState: "*"
-                NumericAnimation {
+                NumberAnimation {
                     property: "bottomMargin"
                     duration: 250
                 }
@@ -319,7 +319,7 @@ Rect {
         Transition {
             fromState: "*"
             toState: "*"
-            NumericAnimation {
+            NumberAnimation {
                 property: "opacity"
                 duration: 500
             }

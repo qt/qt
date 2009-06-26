@@ -7,11 +7,11 @@ Rect {
         y: 200; width: 60; height: 20
         y: SequentialAnimation {
             running: true; repeat: true
-            NumericAnimation {
+            NumberAnimation {
                 to: 20; duration: 500
                 easing: "easeInOutQuad"
             }
-            NumericAnimation {
+            NumberAnimation {
                 to: 200; duration: 2000
                 easing: "easeOutBounce"
             }

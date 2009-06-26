@@ -30,7 +30,7 @@ Rect {
             ]
             transitions: [
                 Transition {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "x"; duration: 200
                     }
                 }

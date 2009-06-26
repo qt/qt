@@ -317,7 +317,7 @@ public:
 };
 QML_DECLARE_TYPE(QmlColorAnimation)
 
-class QmlNumericAnimation : public QmlPropertyAnimation
+class QmlNumberAnimation : public QmlPropertyAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPropertyAnimation)
@@ -326,8 +326,8 @@ class QmlNumericAnimation : public QmlPropertyAnimation
     Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
 
 public:
-    QmlNumericAnimation(QObject *parent=0);
-    virtual ~QmlNumericAnimation();
+    QmlNumberAnimation(QObject *parent=0);
+    virtual ~QmlNumberAnimation();
 
     qreal from() const;
     void setFrom(qreal);
@@ -335,7 +335,7 @@ public:
     qreal to() const;
     void setTo(qreal);
 };
-QML_DECLARE_TYPE(QmlNumericAnimation)
+QML_DECLARE_TYPE(QmlNumberAnimation)
 
 class QmlAnimationGroupPrivate;
 class QmlAnimationGroup : public QmlAbstractAnimation

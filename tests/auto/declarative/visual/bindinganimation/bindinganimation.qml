@@ -27,7 +27,7 @@ Rect {
     ]
     transitions: [
         Transition {
-            NumericAnimation {
+            NumberAnimation {
                 properties: "x"
             }
         }

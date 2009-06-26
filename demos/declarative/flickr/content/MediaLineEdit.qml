@@ -41,7 +41,7 @@ Item {
     ]
     transitions: [
         Transition {
-            NumericAnimation { properties: "x,width"; duration: 500; easing: "easeInOutQuad" }
+            NumberAnimation { properties: "x,width"; duration: 500; easing: "easeInOutQuad" }
         }
     ]
 

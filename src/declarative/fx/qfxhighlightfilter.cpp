@@ -80,7 +80,7 @@ Text {
     text: "Highlight"
     filter: Highlight {
         source: "pics/highlight.png"
-        xOffset: NumericAnimation {
+        xOffset: NumberAnimation {
             running: true
             repeat: true
             from: 320

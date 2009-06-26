@@ -32,7 +32,7 @@ Rect {
                 toState: "down"
                 reversible: true
                 ParallelAnimation {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "y"
                         duration: 500
                         easing: "easeOutBounce"

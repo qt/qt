@@ -56,7 +56,7 @@ Rect {
         id: bluerect
         x: Behavior {
             SequentialAnimation {
-                NumericAnimation {
+                NumberAnimation {
                     target: bluerect
                     properties: "y"
                     from: 0
@@ -64,7 +64,7 @@ Rect {
                     easing: "easeOutBounce(amplitude:30)"
                     duration: 250
                 }
-                NumericAnimation {
+                NumberAnimation {
                     target: bluerect
                     properties: "y"
                     from: 10
@@ -73,18 +73,18 @@ Rect {
                     duration: 250
                 }
             }
-            NumericAnimation { duration: 500 }
+            NumberAnimation { duration: 500 }
         }
         parent: Behavior {
             SequentialAnimation {
-                NumericAnimation {
+                NumberAnimation {
                     target: bluerect
                     properties: "opacity"
                     to: 0
                     duration: 150
                 }
                 SetPropertyAction {}
-                NumericAnimation {
+                NumberAnimation {
                     target: bluerect
                     properties: "opacity"
                     to: 1

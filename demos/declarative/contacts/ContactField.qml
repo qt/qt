@@ -51,7 +51,7 @@ Item {
             fromState: ""
             toState: "*"
             reversible: true
-            NumericAnimation {
+            NumberAnimation {
                 properties: "width,rightMargin"
                 duration: 200
             }

@@ -49,7 +49,7 @@ Item {
         ]
     }
     opacity: Behavior {
-        NumericAnimation {
+        NumberAnimation {
             property: "opacity"
             duration: 250
         }

@@ -32,7 +32,7 @@ Rect {
             Transition {
                 fromState: "*"
                 toState: "*"
-                NumericAnimation {
+                NumberAnimation {
                     properties: "opacity"
                     duration: 400
                 }

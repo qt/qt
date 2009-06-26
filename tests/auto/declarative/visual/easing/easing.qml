@@ -169,7 +169,7 @@ Rect {
                             fromState: "*"
                             toState: "to"
                             reversible: true
-                            NumericAnimation {
+                            NumberAnimation {
                                 properties: "x"
                                 easing: type
                             }

@@ -179,7 +179,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     \code
     Rect {
         width: 100; height: 100
-        x: NumericAnimation {
+        x: NumberAnimation {
             running: MyMouse.pressed
             from: 0; to: 100
         }
@@ -192,7 +192,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     or not the animation is running.
 
     \code
-    NumericAnimation { id: MyAnimation }
+    NumberAnimation { id: MyAnimation }
     Text { text: MyAnimation.running ? "Animation is running" : "Animation is not running" }
     \endcode
 
@@ -349,7 +349,7 @@ void QmlAbstractAnimation::setFinishPlaying(bool f)
 
     \code
     Rect {
-        rotation: NumericAnimation { running: true; repeat: true; from: 0 to: 360 }
+        rotation: NumberAnimation { running: true; repeat: true; from: 0 to: 360 }
     }
     \endcode
 */
@@ -512,7 +512,7 @@ void QmlAbstractAnimation::resume()
     no further influence on property values.  In this example animation
     \code
     Rect {
-        x: NumericAnimation { from: 0; to: 100; duration: 500 }
+        x: NumberAnimation { from: 0; to: 100; duration: 500 }
     }
     \endcode
     was stopped at time 250ms, the \c x property will have a value of 50.
@@ -550,7 +550,7 @@ void QmlAbstractAnimation::restart()
     its end.  In the following example,
     \code
     Rect {
-        x: NumericAnimation { from: 0; to: 100; duration: 500 }
+        x: NumberAnimation { from: 0; to: 100; duration: 500 }
     }
     \endcode
     calling \c stop() at time 250ms will result in the \c x property having
@@ -606,9 +606,9 @@ void QmlAbstractAnimation::timelineComplete()
     A 500ms animation sequence, with a 100ms pause between two animations:
     \code
     SequentialAnimation {
-        NumericAnimation { ... duration: 200 }
+        NumberAnimation { ... duration: 200 }
         PauseAnimation { duration: 100 }
-        NumericAnimation { ... duration: 200 }
+        NumberAnimation { ... duration: 200 }
     }
     \endcode
 */
@@ -1175,29 +1175,29 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
 QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction)
 
 /*!
-    \qmlclass NumericAnimation QmlNumericAnimation
+    \qmlclass NumberAnimation QmlNumberAnimation
     \inherits PropertyAnimation
-    \brief The NumericAnimation allows you to animate changes in properties of type qreal.
+    \brief The NumberAnimation allows you to animate changes in properties of type qreal.
 
     Animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
-    NumericAnimation { properties: "x,y,scale"; duration: 200 }
+    NumberAnimation { properties: "x,y,scale"; duration: 200 }
     \endcode
 */
 
 /*!
     \internal
-    \class QmlNumericAnimation
+    \class QmlNumberAnimation
     \ingroup group_animation
     \ingroup group_states
-    \brief The QmlNumericAnimation class allows you to animate changes in properties of type qreal.
+    \brief The QmlNumberAnimation class allows you to animate changes in properties of type qreal.
 
-    A QmlNumericAnimation object can be instantiated in Qml using the tag
-    \l{xmlNumericAnimation} {&lt;NumericAnimation&gt;}.
+    A QmlNumberAnimation object can be instantiated in Qml using the tag
+    \l{xmlNumberAnimation} {&lt;NumberAnimation&gt;}.
 */
 
-QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
+QmlNumberAnimation::QmlNumberAnimation(QObject *parent)
 : QmlPropertyAnimation(parent)
 {
     Q_D(QmlPropertyAnimation);
@@ -1206,51 +1206,51 @@ QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
 
-QmlNumericAnimation::~QmlNumericAnimation()
+QmlNumberAnimation::~QmlNumberAnimation()
 {
 }
 
 /*!
-    \qmlproperty real NumericAnimation::from
+    \qmlproperty real NumberAnimation::from
     This property holds the starting value.
     If not set, then the value defined in the start state of the transition.
 */
 /*!
-    \property QmlNumericAnimation::from
+    \property QmlNumberAnimation::from
     \brief the starting value.
 */
-qreal QmlNumericAnimation::from() const
+qreal QmlNumberAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
     return d->from.toDouble();    //### toFloat?
 }
 
-void QmlNumericAnimation::setFrom(qreal f)
+void QmlNumberAnimation::setFrom(qreal f)
 {
     QmlPropertyAnimation::setFrom(f);
 }
 
 /*!
-    \qmlproperty real NumericAnimation::to
+    \qmlproperty real NumberAnimation::to
     This property holds the ending value.
     If not set, then the value defined in the end state of the transition.
 */
 /*!
-    \property QmlNumericAnimation::to
+    \property QmlNumberAnimation::to
     \brief the ending value.
 */
-qreal QmlNumericAnimation::to() const
+qreal QmlNumberAnimation::to() const
 {
     Q_D(const QmlPropertyAnimation);
     return d->to.toDouble();    //### toFloat?
 }
 
-void QmlNumericAnimation::setTo(qreal t)
+void QmlNumberAnimation::setTo(qreal t)
 {
     QmlPropertyAnimation::setTo(t);
 }
 
-QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation)
+QML_DEFINE_TYPE(QmlNumberAnimation,NumberAnimation)
 
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)
@@ -1279,8 +1279,8 @@ QmlList<QmlAbstractAnimation *> *QmlAnimationGroup::animations()
 
     \code
     SequentialAnimation {
-        NumericAnimation { target: MyItem; property: "x"; to: 100 }
-        NumericAnimation { target: MyItem; property: "x"; to: 0 }
+        NumberAnimation { target: MyItem; property: "x"; to: 100 }
+        NumberAnimation { target: MyItem; property: "x"; to: 0 }
     }
     \endcode
 
@@ -1362,8 +1362,8 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation)
 
     \code
     ParallelAnimation {
-        NumericAnimation { target: MyItem; property: "x"; to: 100 }
-        NumericAnimation { target: MyItem; property: "y"; to: 100 }
+        NumberAnimation { target: MyItem; property: "x"; to: 100 }
+        NumberAnimation { target: MyItem; property: "y"; to: 100 }
     }
     \endcode
 
@@ -1782,7 +1782,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     struct PropertyUpdater : public QmlTimeLineValue
     {
         QmlStateActions actions;
-        int interpolatorType;       //for Numeric/ColorAnimation
+        int interpolatorType;       //for Number/ColorAnimation
         int prevInterpolatorType;   //for generic
         QVariantAnimation::Interpolator interpolator;
         void setValue(qreal v)

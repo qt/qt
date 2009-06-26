@@ -82,12 +82,12 @@ Rect {
                             toState: "Details"
                             reversible: true
                             SequentialAnimation {
-                                NumericAnimation {
+                                NumberAnimation {
                                     duration: 200
                                     properties: "height"
                                     easing: "easeOutQuad"
                                 }
-                                NumericAnimation {
+                                NumberAnimation {
                                     duration: 200
                                     properties: "opacity"
                                 }

@@ -46,7 +46,7 @@ Rect {
                 toState: "down"
                 reversible: true
                 ParallelAnimation {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "y"
                         duration: 500
                         easing: "easeOutBounce"
@@ -114,7 +114,7 @@ Because we want the same transition to be run in reverse when changing back from
 
 \code
 ParallelAnimation {
-    NumericAnimation {
+    NumberAnimation {
         properties: "y"
         duration: 500
         easing: "easeOutBounce"

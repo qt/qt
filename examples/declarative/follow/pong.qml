@@ -16,9 +16,9 @@ Rect {
         // Move the ball to the right and back to the left repeatedly
         x: SequentialAnimation {
             running: true; repeat: true
-            NumericAnimation { to: Page.width-40; duration: 2000 }
+            NumberAnimation { to: Page.width-40; duration: 2000 }
             SetPropertyAction { target: Ball; property: "direction"; value: "left" }
-            NumericAnimation { to: 20; duration: 2000 }
+            NumberAnimation { to: 20; duration: 2000 }
             SetPropertyAction { target: Ball; property: "direction"; value: "right" }
         }
 

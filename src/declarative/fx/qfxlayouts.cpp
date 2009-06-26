@@ -132,7 +132,7 @@ BaseLayout {
     id: layout
     y: 0
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "y"
             ease: "easeOutBounce"
         }
@@ -161,7 +161,7 @@ BaseLayout {
     id: layout
     y: 0
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -196,7 +196,7 @@ BaseLayout {
     id: layout
     y: 0
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -512,7 +512,7 @@ VerticalLayout {
 VerticalLayout {
     id: layout
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -539,7 +539,7 @@ VerticalLayout {
 VerticalLayout {
     id: layout
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -566,7 +566,7 @@ VerticalLayout {
 VerticalLayout {
     id: layout
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "y"
             ease: "easeOutBounce"
         }
@@ -683,7 +683,7 @@ HorizontalLayout {
 HorizontalLayout {
     id: layout
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -705,7 +705,7 @@ HorizontalLayout {
 HorizontalLayout {
     id: layout
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -727,7 +727,7 @@ HorizontalLayout {
 HorizontalLayout {
     id: layout
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "x"
             ease: "easeOutBounce"
         }
@@ -875,7 +875,7 @@ GridLayout {
 GridLayout {
     id: layout
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -900,7 +900,7 @@ GridLayout {
 GridLayout {
     id: layout
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -923,7 +923,7 @@ GridLayout {
 GridLayout {
     id: layout
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "x,y"
             ease: "easeOutBounce"
         }
