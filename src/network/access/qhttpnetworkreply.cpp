@@ -549,6 +549,30 @@ bool QHttpNetworkReplyPrivate::connectionCloseEnabled()
             headerField("proxy-connection").toLower().contains("close"));
 }
 
+// note this function can only be used for non-chunked, non-compressed with
+// known content length
+qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QRingBuffer *rb)
+{   
+    quint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
+    char* dst = rb->reserve(toBeRead);
+    qint64 haveRead = socket->read(dst, toBeRead);
+    if (haveRead == -1) {
+        rb->chop(toBeRead);
+        return 0; // ### error checking here;
+    }
+
+    rb->chop(toBeRead - haveRead);
+
+    if (contentRead + haveRead == bodyLength) {
+        state = AllDoneState;
+        socket->readAll(); // Read the rest to clean (CRLF) ### will break pipelining
+    }
+
+    contentRead += haveRead;
+    return haveRead;
+}
+
+
 qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *out)
 {
     qint64 bytes = 0;
@@ -562,7 +586,7 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *ou
         bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
     }
     if (state == AllDoneState)
-        socket->readAll(); // Read the rest to clean (CRLF)
+        socket->readAll(); // Read the rest to clean (CRLF) ### will break pipelining
     contentRead += bytes;
     return bytes;
 }

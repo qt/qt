@@ -649,36 +649,58 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             }
             break;
         case QHttpNetworkReplyPrivate::ReadingDataState: {
-            QBuffer fragment;
-            fragment.open(QIODevice::WriteOnly);
-            bytes = reply->d_func()->readBody(socket, &fragment);
-            if (bytes) {
-                if (reply->d_func()->autoDecompress)
-                    appendCompressedData(*reply, fragment.data());
-                else
-                    appendUncompressedData(*reply, fragment.data());
+            if (!reply->d_func()->isChunked() && !reply->d_func()->autoDecompress
+                && reply->d_func()->bodyLength > 0) {
+                // bulk files like images should fulfill these properties and
+                // we can therefore save on memory copying
+                bytes = reply->d_func()->readBodyFast(socket, &reply->d_func()->responseData);
+                reply->d_func()->totalProgress += bytes;
+                if (shouldEmitSignals(reply)) {
+                    emit reply->readyRead();
+                    // make sure that the reply is valid
+                    if (channels[i].reply != reply)
+                        return;
+                    emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                    // make sure that the reply is valid
+                    if (channels[i].reply != reply)
+                        return;
+                }
+            }
+            else
+            {
+                // use the traditional slower reading (for compressed encoding, chunked encoding,
+                // no content-length etc)
+                QBuffer fragment;
+                fragment.open(QIODevice::WriteOnly);
+                bytes = reply->d_func()->readBody(socket, &fragment);
+                if (bytes) {
+                    if (reply->d_func()->autoDecompress)
+                        appendCompressedData(*reply, fragment.data());
+                    else
+                        appendUncompressedData(*reply, fragment.data());
 
-                if (!reply->d_func()->autoDecompress) {
-                    reply->d_func()->totalProgress += fragment.size();
-                    if (shouldEmitSignals(reply)) {
-                        emit reply->readyRead();
-                        // make sure that the reply is valid
-                        if (channels[i].reply != reply)
-                            return;
-                        // emit dataReadProgress signal (signal is currently not connected
-                        // to the rest of QNAM) since readProgress of the
-                        // QNonContiguousByteDevice is used
-                        emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
-                        // make sure that the reply is valid
-                        if (channels[i].reply != reply)
-                            return;
+                    if (!reply->d_func()->autoDecompress) {
+                        reply->d_func()->totalProgress += fragment.size();
+                        if (shouldEmitSignals(reply)) {
+                            emit reply->readyRead();
+                            // make sure that the reply is valid
+                            if (channels[i].reply != reply)
+                                return;
+                            // emit dataReadProgress signal (signal is currently not connected
+                            // to the rest of QNAM) since readProgress of the
+                            // QNonContiguousByteDevice is used
+                            emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                            // make sure that the reply is valid
+                            if (channels[i].reply != reply)
+                                return;
+                        }
                     }
-                }
 #ifndef QT_NO_COMPRESS
-                else if (!expand(socket, reply, false)) { // expand a chunk if possible
-                    return; // ### expand failed
-                }
+                    else if (!expand(socket, reply, false)) { // expand a chunk if possible
+                        return; // ### expand failed
+                    }
 #endif
+                }
             }
             if (reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState)
                 break;

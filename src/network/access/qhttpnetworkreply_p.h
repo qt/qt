@@ -160,6 +160,7 @@ public:
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
     qint64 readBody(QAbstractSocket *socket, QIODevice *out);
+    qint64 readBodyFast(QAbstractSocket *socket, QRingBuffer *rb);
     bool findChallenge(bool forProxy, QByteArray &challenge) const;
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
