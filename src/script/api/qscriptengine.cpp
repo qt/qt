@@ -532,6 +532,8 @@ void GlobalObject::mark()
 
     if (engine->qobjectPrototype)
         engine->qobjectPrototype->mark();
+    if (engine->qmetaobjectPrototype)
+        engine->qmetaobjectPrototype->mark();
     if (engine->variantPrototype)
         engine->variantPrototype->mark();
 
@@ -571,6 +573,8 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
     qobjectPrototype = new (exec) QScript::QObjectPrototype(exec, QScript::QObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     qobjectWrapperObjectStructure = QScript::QObjectWrapperObject::createStructure(qobjectPrototype);
+    qmetaobjectPrototype = new (exec) QScript::QMetaObjectPrototype(exec, QScript::QMetaObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
+    qmetaobjectWrapperObjectStructure = QScript::QMetaObjectWrapperObject::createStructure(qmetaobjectPrototype);
     variantPrototype = new (exec) QScript::QVariantPrototype(exec, QScript::QVariantPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     variantWrapperObjectStructure = QScript::QVariantWrapperObject::createStructure(variantPrototype);
 
@@ -756,6 +760,16 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
         return JSC::jsNull();
     JSC::ExecState* exec = globalObject->globalExec();
     QScript::QObjectWrapperObject *result = new (exec) QScript::QObjectWrapperObject(object, ownership, options, qobjectWrapperObjectStructure);
+    return result;
+}
+
+JSC::JSValue QScriptEnginePrivate::newQMetaObject(
+    const QMetaObject *metaObject, JSC::JSValue ctor)
+{
+    if (!metaObject)
+        return JSC::jsNull();
+    JSC::ExecState* exec = globalObject->globalExec();
+    QScript::QMetaObjectWrapperObject *result = new (exec) QScript::QMetaObjectWrapperObject(metaObject, ctor, qmetaobjectWrapperObjectStructure);
     return result;
 }
 
@@ -1411,8 +1425,10 @@ QScriptValue QScriptEngine::newDate(const QDateTime &value)
 QScriptValue QScriptEngine::newQMetaObject(
     const QMetaObject *metaObject, const QScriptValue &ctor)
 {
-    qWarning("QScriptEngine::newQMetaObject() not implemented");
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    JSC::JSValue jscCtor = d->scriptValueToJSCValue(ctor);
+    JSC::JSValue jscQMetaObject = d->newQMetaObject(metaObject, jscCtor);
+    return d->scriptValueFromJSCValue(jscQMetaObject);
 }
 
 /*!

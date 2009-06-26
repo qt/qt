@@ -1794,9 +1794,9 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
         result |= QScriptValue::Undeletable;
 
     // ### faster/better way?
-    if (JSC::asObject(d->jscValue)->lookupGetter(exec, id))
+    if (QScript::isFunction(JSC::asObject(d->jscValue)->lookupGetter(exec, id)))
         result |= QScriptValue::PropertyGetter;
-    if (JSC::asObject(d->jscValue)->lookupSetter(exec, id))
+    if (QScript::isFunction(JSC::asObject(d->jscValue)->lookupSetter(exec, id)))
         result |= QScriptValue::PropertySetter;
 
     result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);

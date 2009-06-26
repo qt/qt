@@ -46,6 +46,7 @@ namespace JSC
 namespace QScript
 {
     class QObjectPrototype;
+    class QMetaObjectPrototype;
     class QVariantPrototype;
 #ifndef QT_NO_QOBJECT
     class QObjectData;
@@ -101,6 +102,8 @@ public:
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
         const QScriptEngine:: QObjectWrapOptions &options = 0);
+    JSC::JSValue newQMetaObject(const QMetaObject *metaObject,
+                                JSC::JSValue ctor);
     
     static bool convertToNativeQObject(const QScriptValue &value,
                                        const QByteArray &targetType,
@@ -135,6 +138,8 @@ public:
 
     QScript::QObjectPrototype *qobjectPrototype;
     WTF::RefPtr<JSC::Structure> qobjectWrapperObjectStructure;
+    QScript::QMetaObjectPrototype *qmetaobjectPrototype;
+    WTF::RefPtr<JSC::Structure> qmetaobjectWrapperObjectStructure;
     QScript::QVariantPrototype *variantPrototype;
     WTF::RefPtr<JSC::Structure> variantWrapperObjectStructure;
 

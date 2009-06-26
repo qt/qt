@@ -66,6 +66,8 @@ public:
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(JSC::ExecState*,
                                 const JSC::Identifier& propertyName);
+    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
+                                       unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
@@ -164,6 +166,57 @@ public:
 
 private:
     Data *data;
+};
+
+class QMetaObjectWrapperObject : public JSC::JSObject
+{
+public:
+    // work around CELL_SIZE limitation
+    struct Data
+    {
+        const QMetaObject *value;
+        JSC::JSValue ctor;
+
+        Data(const QMetaObject *mo, JSC::JSValue c)
+            : value(mo), ctor(c) {}
+    };
+
+    explicit QMetaObjectWrapperObject(
+        const QMetaObject *metaobject, JSC::JSValue ctor,
+        WTF::PassRefPtr<JSC::Structure> sid);
+    ~QMetaObjectWrapperObject();
+    
+    virtual bool getOwnPropertySlot(JSC::ExecState*,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertySlot&);
+    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                     JSC::JSValue, JSC::PutPropertySlot&);
+    virtual bool deleteProperty(JSC::ExecState*,
+                                const JSC::Identifier& propertyName);
+    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
+                                       unsigned&) const;
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+
+    virtual const JSC::ClassInfo* classInfo() const { return &info; }
+    static const JSC::ClassInfo info;
+
+    inline const QMetaObject *value() const { return data->value; }
+    inline void setValue(const QMetaObject* value) { data->value = value; }
+
+    static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+    }
+
+protected:
+    Data *data;
+};
+
+class QMetaObjectPrototype : public QMetaObjectWrapperObject
+{
+public:
+    QMetaObjectPrototype(JSC::ExecState*, WTF::PassRefPtr<JSC::Structure>,
+                         JSC::Structure* prototypeFunctionStructure);
 };
 
 } // namespace QScript

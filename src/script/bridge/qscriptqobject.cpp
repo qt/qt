@@ -33,6 +33,8 @@ namespace JSC
 {
 ASSERT_CLASS_FITS_IN_CELL(QScript::QObjectWrapperObject);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QObjectPrototype);
+ASSERT_CLASS_FITS_IN_CELL(QScript::QMetaObjectWrapperObject);
+ASSERT_CLASS_FITS_IN_CELL(QScript::QMetaObjectPrototype);
 }
 
 namespace QScript
@@ -1110,6 +1112,13 @@ bool QObjectWrapperObject::deleteProperty(JSC::ExecState *exec,
     return JSC::JSObject::deleteProperty(exec, propertyName);
 }
 
+bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
+                                                 const JSC::Identifier &propertyName,
+                                                 unsigned &attributes) const
+{
+    return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
+}
+
 void QObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyNameArray &propertyNames)
 {
     QObject *qobject = data->value;
@@ -1178,6 +1187,137 @@ QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::St
 {
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, exec->propertyNames().toString, qobjectProtoFuncToString), JSC::DontEnum);
     // ### findChild(), findChildren()
+}
+
+const JSC::ClassInfo QMetaObjectWrapperObject::info = { "QMetaObject", 0, 0, 0 };
+
+QMetaObjectWrapperObject::QMetaObjectWrapperObject(
+    const QMetaObject *metaObject, JSC::JSValue ctor,
+    WTF::PassRefPtr<JSC::Structure> sid)
+    : JSC::JSObject(sid), data(new Data(metaObject, ctor))
+{
+}
+
+QMetaObjectWrapperObject::~QMetaObjectWrapperObject()
+{
+}
+    
+bool QMetaObjectWrapperObject::getOwnPropertySlot(
+    JSC::ExecState *exec, const JSC::Identifier& propertyName,
+    JSC::PropertySlot &slot)
+{
+    const QMetaObject *meta = data->value;
+    if (!meta)
+        return false;
+
+    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    if (name == "prototype") {
+        qWarning("getting of metaobject.prototype not implemented");
+        return false;
+    }
+
+    for (int i = 0; i < meta->enumeratorCount(); ++i) {
+        QMetaEnum e = meta->enumerator(i);
+        for (int j = 0; j < e.keyCount(); ++j) {
+            const char *key = e.key(j);
+            if (!qstrcmp(key, name.constData())) {
+                slot.setValue(JSC::JSValue(exec, e.value(j)));
+                return true;
+            }
+        }
+    }
+
+    return JSC::JSObject::getOwnPropertySlot(exec, propertyName, slot);
+}
+
+void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                                   JSC::JSValue value, JSC::PutPropertySlot &slot)
+{
+    const QMetaObject *meta = data->value;
+    if (meta) {
+        QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+        for (int i = 0; i < meta->enumeratorCount(); ++i) {
+            QMetaEnum e = meta->enumerator(i);
+            for (int j = 0; j < e.keyCount(); ++j) {
+                if (!qstrcmp(e.key(j), name.constData()))
+                    return;
+            }
+        }
+    }
+    JSC::JSObject::put(exec, propertyName, value, slot);
+}
+
+bool QMetaObjectWrapperObject::deleteProperty(
+    JSC::ExecState *exec, const JSC::Identifier& propertyName)
+{
+    const QMetaObject *meta = data->value;
+    if (meta) {
+        QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+        for (int i = 0; i < meta->enumeratorCount(); ++i) {
+            QMetaEnum e = meta->enumerator(i);
+            for (int j = 0; j < e.keyCount(); ++j) {
+                if (!qstrcmp(e.key(j), name.constData()))
+                    return false;
+            }
+        }
+    }
+    return JSC::JSObject::deleteProperty(exec, propertyName);
+}
+
+bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
+                                                     const JSC::Identifier &propertyName,
+                                                     unsigned &attributes) const
+{
+    const QMetaObject *meta = data->value;
+    if (meta) {
+        QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+        for (int i = 0; i < meta->enumeratorCount(); ++i) {
+            QMetaEnum e = meta->enumerator(i);
+            for (int j = 0; j < e.keyCount(); ++j) {
+                if (!qstrcmp(e.key(j), name.constData())) {
+                    attributes = JSC::ReadOnly | JSC::DontDelete;
+                    return true;
+                }
+            }
+        }
+    }
+    return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
+}
+
+void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyNameArray &propertyNames)
+{
+    const QMetaObject *meta = data->value;
+    if (!meta)
+        return;
+    for (int i = 0; i < meta->enumeratorCount(); ++i) {
+        QMetaEnum e = meta->enumerator(i);
+        for (int j = 0; j < e.keyCount(); ++j)
+            propertyNames.add(JSC::Identifier(exec, e.key(j)));
+    }
+    JSC::JSObject::getPropertyNames(exec, propertyNames);
+}
+
+struct StaticQtMetaObject : public QObject
+{
+    static const QMetaObject *get()
+        { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
+};
+
+static JSC::JSValue JSC_HOST_CALL qmetaobjectProtoFuncClassName(
+    JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisValue, const JSC::ArgList&)
+{
+    if (!thisValue.isObject(&QMetaObjectWrapperObject::info))
+        return throwError(exec, JSC::TypeError);
+    const QMetaObject *meta = static_cast<QMetaObjectWrapperObject*>(JSC::asObject(thisValue))->value();
+    return JSC::jsString(exec, meta->className());
+}
+
+QMetaObjectPrototype::QMetaObjectPrototype(
+    JSC::ExecState *exec, WTF::PassRefPtr<JSC::Structure> structure,
+    JSC::Structure* prototypeFunctionStructure)
+    : QMetaObjectWrapperObject(StaticQtMetaObject::get(), /*ctor=*/JSC::JSValue(), structure)
+{
+    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, JSC::Identifier(exec, "className"), qmetaobjectProtoFuncClassName), JSC::DontEnum);
 }
 
 static const uint qt_meta_data_QObjectConnectionManager[] = {
