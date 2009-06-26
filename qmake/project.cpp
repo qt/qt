@@ -512,6 +512,7 @@ enum isForSymbian_enum {
     isForSymbian_FALSE = 0,
     isForSymbian_ABLD = 1,
     isForSymbian_SBSV2 = 2,
+    isForSymbian_MAKEFILE = 3,
 };
 
 static isForSymbian_enum isForSymbian_value = isForSymbian_NOT_SET;
@@ -529,6 +530,8 @@ static void init_symbian(const QMap<QString, QStringList>& vars)
         isForSymbian_value = isForSymbian_ABLD;
     } else if (spec.startsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
         isForSymbian_value = isForSymbian_SBSV2;
+    } else if (spec.startsWith("symbian/", Qt::CaseInsensitive)) {
+        isForSymbian_value = isForSymbian_MAKEFILE;
     } else {
         QStringList generatorList = vars["MAKEFILE_GENERATOR"];
 
@@ -557,7 +560,7 @@ bool isForSymbian()
     if (isForSymbian_value == isForSymbian_NOT_SET)
         init_symbian(QMap<QString, QStringList>());
 
-    return (isForSymbian_value != isForSymbian_FALSE);
+    return (isForSymbian_value != isForSymbian_NOT_SET && isForSymbian_value != isForSymbian_FALSE);
 }
 
 bool isForSymbianSbsv2()
