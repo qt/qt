@@ -612,7 +612,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
-    if (event->isSpontaneous())
+    if (event->spontaneous())
         qt_sendSpontaneousEvent(scene, &mouseEvent);
     else
         QApplication::sendEvent(scene, &mouseEvent);
@@ -3028,10 +3028,10 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setAccepted(false);
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
-    if (event->isSpontaneous())
-        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
-        QApplication::sendEvent(scene, &mouseEvent);
+        QApplication::sendEvent(d->scene, &mouseEvent);
 }
 
 /*!
@@ -3070,10 +3070,10 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setButton(event->button());
             mouseEvent.setModifiers(event->modifiers());
             mouseEvent.setAccepted(false);
-            if (event->isSpontaneous())
-                qt_sendSpontaneousEvent(scene, &mouseEvent);
+            if (event->spontaneous())
+                qt_sendSpontaneousEvent(d->scene, &mouseEvent);
             else
-                QApplication::sendEvent(scene, &mouseEvent);
+                QApplication::sendEvent(d->scene, &mouseEvent);
 
             // Update the original mouse event accepted state.
             bool isAccepted = mouseEvent.isAccepted();
@@ -3243,10 +3243,10 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setAccepted(false);
-    if (event->isSpontaneous())
-        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
-        QApplication::sendEvent(scene, &mouseEvent);
+        QApplication::sendEvent(d->scene, &mouseEvent);
 
     // Update the last mouse event selected state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
