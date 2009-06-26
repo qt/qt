@@ -436,8 +436,8 @@ void QVector<T>::realloc(int asize, int aalloc)
     if (QTypeInfo<T>::isComplex && asize < d->size && d->ref == 1 ) {
         // call the destructor on all objects that need to be
         // destroyed when shrinking
-        pOld = d->array + d->size;
-        pNew = d->array + asize;
+        pOld = p->array + d->size;
+        pNew = p->array + asize;
         while (asize < d->size) {
             (--pOld)->~T();
             d->size--;
@@ -447,23 +447,23 @@ void QVector<T>::realloc(int asize, int aalloc)
     if (aalloc != d->alloc || d->ref != 1) {
         // (re)allocate memory
         if (QTypeInfo<T>::isStatic) {
-            x.p = malloc(aalloc);
+            x.d = malloc(aalloc);
             Q_CHECK_PTR(x.p);
             x.d->size = 0;
         } else if (d->ref != 1) {
-            x.p = malloc(aalloc);
+            x.d = malloc(aalloc);
             Q_CHECK_PTR(x.p);
             if (QTypeInfo<T>::isComplex) {
                 x.d->size = 0;
             } else {
-                ::memcpy(x.p, p, sizeOfTypedData() + (qMin(aalloc, p->alloc) - 1) * sizeof(T));
+                ::memcpy(x.p, p, sizeOfTypedData() + (qMin(aalloc, d->alloc) - 1) * sizeof(T));
                 x.d->size = d->size;
             }
         } else {
             QT_TRY {
                 QVectorData *mem = static_cast<QVectorData *>(qRealloc(p, sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
                 Q_CHECK_PTR(mem);
-                x.p = p = mem;
+                x.d = d = mem;
                 x.d->size = d->size;
             } QT_CATCH (const std::bad_alloc &) {
                 if (aalloc > d->alloc) // ignore the error in case we are just shrinking.
@@ -478,8 +478,8 @@ void QVector<T>::realloc(int asize, int aalloc)
 
     if (QTypeInfo<T>::isComplex) {
         QT_TRY {
-            pOld = d->array + x.d->size;
-            pNew = x.d->array + x.d->size;
+            pOld = p->array + x.d->size;
+            pNew = x.p->array + x.d->size;
             // copy objects from the old array into the new array
             while (x.d->size < qMin(asize, d->size)) {
                 new (pNew++) T(*pOld++);
@@ -491,13 +491,13 @@ void QVector<T>::realloc(int asize, int aalloc)
                 x.d->size++;
             }
         } QT_CATCH (...) {
-            free(x.d);
+            free(x.p);
             QT_RETHROW;
         }
 
     } else if (asize > x.d->size) {
         // initialize newly allocated memory to 0
-        qMemSet(x.d->array + x.d->size, 0, (asize - x.d->size) * sizeof(T));
+        qMemSet(x.p->array + x.d->size, 0, (asize - x.d->size) * sizeof(T));
     }
     x.d->size = asize;
 

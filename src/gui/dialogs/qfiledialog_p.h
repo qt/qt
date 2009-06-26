@@ -235,7 +235,7 @@ public:
     QFileSystemModel *model;
 
 #ifndef QT_NO_COMPLETER
-    QFSCompletor *completer;
+    QFSCompleter *completer;
 #endif //QT_NO_COMPLETER
 
     QFileDialog::FileMode fileMode;

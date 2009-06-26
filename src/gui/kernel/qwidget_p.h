@@ -282,9 +282,6 @@ public:
     QPalette naturalWidgetPalette(uint inheritedMask) const;
 
     void setMask_sys(const QRegion &);
-#ifdef Q_WS_S60
-    void s60UpdateIsOpaque();
-#endif
 
     void raise_sys();
     void lower_sys();
@@ -658,8 +655,10 @@ public:
 #elif defined(Q_WS_S60) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
+    void s60UpdateIsOpaque();
+    void reparentChildren();
 #endif
-      
+
 };
 
 inline QWExtra *QWidgetPrivate::extraData() const

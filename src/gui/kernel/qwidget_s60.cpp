@@ -144,7 +144,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }
 
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool, const QRect &)
 {
 
 }

@@ -211,6 +211,21 @@ public:
 # endif
 };
 
+// thread wrapper for the main() thread
+class QAdoptedThread : public QThread
+{
+    Q_DECLARE_PRIVATE(QThread)
+
+public:
+    QAdoptedThread(QThreadData *data = 0);
+    ~QAdoptedThread();
+    void init();
+
+    static QThread *createThreadForAdoption();
+private:
+    void run();
+};
+
 QT_END_NAMESPACE
 
 #endif // QTHREAD_P_H

@@ -986,7 +986,7 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
 
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
-        QGraphicsItemPrivate *childd = child->d_ptr;
+        QGraphicsItemPrivate *childd = child->d_ptr.data();
         bool hasPos = !childd->pos.isNull();
         if (hasPos || childd->transformData) {
             // COMBINE
@@ -1142,7 +1142,6 @@ QGraphicsItem::~QGraphicsItem()
         d_ptr->setParentItemHelper(0);
 
     delete d_ptr->transformData;
-    delete d_ptr;
 
     qt_dataStore()->data.remove(this);
 }
@@ -3325,7 +3324,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     QTransform x;
     const QGraphicsItem *p = child;
     do {
-        p->d_ptr->.data()->combineTransformToParent(&x);
+        p->d_ptr.data()->combineTransformToParent(&x);
     } while ((p = p->d_ptr->parent) && p != root);
     if (parentOfOther)
         return x.inverted(ok);

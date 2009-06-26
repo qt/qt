@@ -450,7 +450,6 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::auto_sip_on_mouse_focus = false;
-QString* QApplicationPrivate::styleOverride = 0;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
@@ -1948,7 +1947,7 @@ QString desktopstyle;
 #elif defined(Q_WS_X11) && defined(Q_OS_SOLARIS)
             desktopstyle = QLatin1String("CDE");                        // default style for X11 on Solaris
 #elif defined(Q_WS_S60)
-            style = QLatin1String("S60");
+            desktopstyle = QLatin1String("S60");
 #elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
             desktopstyle = QLatin1String("SGI");                        // default style for X11 on IRIX
 #elif defined(Q_WS_QWS)

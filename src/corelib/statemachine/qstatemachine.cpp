@@ -2074,7 +2074,7 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         switch (_id) {
         case 0: {
 // ### in Qt 4.6 we can use QObject::senderSignalIndex()
-            QObjectPrivate *d = static_cast<QObjectPrivate *>(d_ptr);
+            QObjectPrivate *d = static_cast<QObjectPrivate *>(d_ptr.data());
             int signalIndex = -1;
             QObject *sender = this->sender();
             if (sender && d->currentSender)
