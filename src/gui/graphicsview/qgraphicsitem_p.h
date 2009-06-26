@@ -148,7 +148,7 @@ public:
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
-        geometryChanged(0),
+        geometryChanged(1),
         inDestructor(0),
         isObject(0),
         ignoreVisible(0),

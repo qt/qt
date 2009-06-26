@@ -326,6 +326,16 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     Q_Q(QGraphicsScene);
     calledEmitUpdated = false;
 
+    if (dirtyGrowingItemsBoundingRect) {
+        if (!hasSceneRect) {
+            const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
+            growingItemsBoundingRect |= q->itemsBoundingRect();
+            if (oldGrowingItemsBoundingRect != growingItemsBoundingRect)
+                emit q->sceneRectChanged(growingItemsBoundingRect);
+        }
+        dirtyGrowingItemsBoundingRect = false;
+    }
+
     // Ensure all views are connected if anything is connected. This disables
     // the optimization that items send updates directly to the views, but it
     // needs to happen in order to keep compatibility with the behavior from
@@ -373,20 +383,6 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 
 /*!
     \internal
-
-    Updates all items in the pending update list. At this point, the list is
-    unlikely to contain partially constructed items.
-*/
-void QGraphicsScenePrivate::_q_updateLater()
-{
-    QRectF null;
-    foreach (QGraphicsItem *item, pendingUpdateItems)
-        markDirty(item, null);
-    pendingUpdateItems.clear();
-}
-
-/*!
-    \internal
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
@@ -412,10 +408,8 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
     processDirtyItemsRecursive(0);
     dirtyGrowingItemsBoundingRect = false;
-    if (oldGrowingItemsBoundingRect != growingItemsBoundingRect) {
-        index->sceneRectChanged();
+    if (!hasSceneRect && oldGrowingItemsBoundingRect != growingItemsBoundingRect)
         emit q_func()->sceneRectChanged(growingItemsBoundingRect);
-    }
 
     if (wasPendingSceneUpdate)
         return;
@@ -507,7 +501,6 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
     unpolishedItems.removeAll(item);
-    pendingUpdateItems.removeAll(item);
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
@@ -1303,18 +1296,19 @@ QGraphicsScene::~QGraphicsScene()
 QRectF QGraphicsScene::sceneRect() const
 {
     Q_D(const QGraphicsScene);
-    if (!d->hasSceneRect && d->dirtyGrowingItemsBoundingRect) {
+    if (d->hasSceneRect)
+        return d->sceneRect;
+
+    if (d->dirtyGrowingItemsBoundingRect) {
         // Lazily update the growing items bounding rect
         QGraphicsScenePrivate *thatd = const_cast<QGraphicsScenePrivate *>(d);
         QRectF oldGrowingBoundingRect = thatd->growingItemsBoundingRect;
         thatd->growingItemsBoundingRect |= itemsBoundingRect();
         thatd->dirtyGrowingItemsBoundingRect = false;
-        if (oldGrowingBoundingRect != thatd->growingItemsBoundingRect) {
-            thatd->index->sceneRectChanged();
+        if (oldGrowingBoundingRect != thatd->growingItemsBoundingRect)
             emit const_cast<QGraphicsScene *>(this)->sceneRectChanged(thatd->growingItemsBoundingRect);
-        }
     }
-    return d->hasSceneRect ? d->sceneRect : d->growingItemsBoundingRect;
+    return d->growingItemsBoundingRect;
 }
 void QGraphicsScene::setSceneRect(const QRectF &rect)
 {
@@ -1322,7 +1316,6 @@ void QGraphicsScene::setSceneRect(const QRectF &rect)
     if (rect != d->sceneRect) {
         d->hasSceneRect = !rect.isNull();
         d->sceneRect = rect;
-        d->index->sceneRectChanged();
         emit sceneRectChanged(d->hasSceneRect ? rect : d->growingItemsBoundingRect);
     }
 }
@@ -2101,13 +2094,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Add to list of items that require an update. We cannot assume that the
     // item is fully constructed, so calling item->update() can lead to a pure
     // virtual function call to boundingRect().
-    if (!d->updateAll) {
-        if (d->pendingUpdateItems.isEmpty())
-            QMetaObject::invokeMethod(this, "_q_updateLater", Qt::QueuedConnection);
-        d->pendingUpdateItems << item;
-    } else {
-        d->dirtyGrowingItemsBoundingRect = true;
-    }
+    d->markDirty(item);
+    d->dirtyGrowingItemsBoundingRect = true;
 
     // Disable selectionChanged() for individual items
     ++d->selectionChanging;
@@ -4245,7 +4233,6 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
                                       bool removingItemFromScene)
 {
     Q_ASSERT(item);
-    dirtyGrowingItemsBoundingRect = true;
     if (updateAll)
         return;
 
@@ -4351,6 +4338,13 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             item->d_ptr->dirty = 0;
             item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
         }
+
+        if (item->d_ptr->geometryChanged) {
+            // Update growingItemsBoundingRect.
+            if (!hasSceneRect && !itemIsHidden)
+                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
+            item->d_ptr->geometryChanged = 0;
+        }
     }
 
     // Process item.
@@ -4358,13 +4352,6 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
         const bool untransformableItem = item->d_ptr->itemIsUntransformable();
         const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
-
-        if (item->d_ptr->geometryChanged) {
-            // Update growingItemsBoundingRect.
-            if (!hasSceneRect)
-                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
-            item->d_ptr->geometryChanged = 0;
-        }
 
         if (useCompatUpdate && !untransformableItem && qFuzzyIsNull(item->boundingRegionGranularity())) {
             // This block of code is kept for compatibility. Since 4.5, by default

@@ -101,6 +101,9 @@ public:
     virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect,
                                                  Qt::SortOrder order, const QTransform &deviceTransform) const = 0;
 
+protected Q_SLOTS:
+    virtual void updateSceneRect(const QRectF &rect);
+
 protected:
     virtual void clear();
     virtual void addItem(QGraphicsItem *item) = 0;
@@ -109,7 +112,6 @@ protected:
 
     virtual void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
     virtual void prepareBoundingRectChange(const QGraphicsItem *item);
-    virtual void sceneRectChanged();
 
     QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene);
 

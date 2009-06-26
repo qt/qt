@@ -655,10 +655,10 @@ void QGraphicsSceneBspTreeIndex::setBspTreeDepth(int depth)
     This method react to the  \a rect change of the scene and
     reset the BSP tree index.
 */
-void QGraphicsSceneBspTreeIndex::sceneRectChanged()
+void QGraphicsSceneBspTreeIndex::updateSceneRect(const QRectF &rect)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
-    d->sceneRect = d->scene->sceneRect();
+    d->sceneRect = rect;
     d->resetIndex();
 }
 

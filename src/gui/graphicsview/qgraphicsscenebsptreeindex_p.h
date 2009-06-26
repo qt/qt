@@ -90,6 +90,9 @@ public:
     int bspTreeDepth();
     void setBspTreeDepth(int depth);
 
+protected Q_SLOTS:
+    void updateSceneRect(const QRectF &rect);
+
 protected:
     bool event(QEvent *event);
     void clear();
@@ -98,7 +101,6 @@ protected:
     void removeItem(QGraphicsItem *item);
     void prepareBoundingRectChange(const QGraphicsItem *item);
 
-    void sceneRectChanged();
     void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
 
 private :

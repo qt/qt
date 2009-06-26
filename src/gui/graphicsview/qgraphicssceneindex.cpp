@@ -335,6 +335,10 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
 QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsScene *scene)
 : QObject(*new QGraphicsSceneIndexPrivate(scene), scene)
 {
+    if (scene) {
+        connect(scene, SIGNAL(sceneRectChanged(const QRectF&)),
+                this, SLOT(updateSceneRect(const QRectF&)));
+    }
 }
 
 /*!
@@ -527,6 +531,18 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, 
     \a order.
 */
 
+
+/*!
+    Notifies the index that the scene's scene rect has changed. \a rect
+    is thew new scene rect.
+
+    \sa QGraphicsScene::sceneRect()
+*/
+void QGraphicsSceneIndex::updateSceneRect(const QRectF &rect)
+{
+    Q_UNUSED(rect);
+}
+
 /*!
     This virtual function removes all items in the scene index.
 */
@@ -594,15 +610,6 @@ void QGraphicsSceneIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::G
 void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
     Q_UNUSED(item);
-}
-
-/*!
-    This virtual function is called when the scene changes its bounding
-    rectangle. \a rect is the new value of the scene rectangle.
-    \sa QGraphicsScene::sceneRect()
-*/
-void QGraphicsSceneIndex::sceneRectChanged()
-{
 }
 
 QT_END_NAMESPACE

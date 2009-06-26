@@ -46,12 +46,6 @@
 */
 
 /*!
-    \fn void QGraphicsSceneLinearIndex::sceneRectChanged(const QRectF &rect);
-    \reimp
-    This method react to the  \a rect change of the scene.
-*/
-
-/*!
     \fn void QGraphicsSceneLinearIndex::clear();
     \reimp
     Clear the all the BSP index.

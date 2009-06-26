@@ -291,7 +291,6 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsScene)
     Q_DISABLE_COPY(QGraphicsScene)
     Q_PRIVATE_SLOT(d_func(), void _q_emitUpdated())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateLater())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())
     Q_PRIVATE_SLOT(d_func(), void _q_processDirtyItems())
     friend class QGraphicsItem;
