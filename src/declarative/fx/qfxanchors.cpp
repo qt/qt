@@ -772,6 +772,7 @@ void QFxAnchors::setLeftMargin(int offset)
     if (d->leftMargin == offset)
         return;
     d->leftMargin = offset;
+    d->updateHorizontalAnchors();
     emit leftMarginChanged();
 }
 
@@ -787,6 +788,7 @@ void QFxAnchors::setRightMargin(int offset)
     if (d->rightMargin == offset)
         return;
     d->rightMargin = offset;
+    d->updateHorizontalAnchors();
     emit rightMarginChanged();
 }
 
@@ -802,6 +804,7 @@ void QFxAnchors::setHorizontalCenterOffset(int offset)
     if (d->hCenterOffset == offset)
         return;
     d->hCenterOffset = offset;
+    d->updateHorizontalAnchors();
     emit horizontalCenterOffsetChanged();
 }
 
@@ -817,6 +820,7 @@ void QFxAnchors::setTopMargin(int offset)
     if (d->topMargin == offset)
         return;
     d->topMargin = offset;
+    d->updateVerticalAnchors();
     emit topMarginChanged();
 }
 
@@ -832,6 +836,7 @@ void QFxAnchors::setBottomMargin(int offset)
     if (d->bottomMargin == offset)
         return;
     d->bottomMargin = offset;
+    d->updateVerticalAnchors();
     emit bottomMarginChanged();
 }
 
@@ -847,6 +852,7 @@ void QFxAnchors::setVerticalCenterOffset(int offset)
     if (d->vCenterOffset == offset)
         return;
     d->vCenterOffset = offset;
+    d->updateVerticalAnchors();
     emit verticalCenterOffsetChanged();
 }
 

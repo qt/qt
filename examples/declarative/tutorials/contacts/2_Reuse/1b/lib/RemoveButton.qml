@@ -103,7 +103,7 @@ Rect {
             fromState: "*"
             toState: "opened"
             reversible: true
-            NumericAnimation {
+            NumberAnimation {
                 properties: "opacity,x,width"
                 duration: 200
             }

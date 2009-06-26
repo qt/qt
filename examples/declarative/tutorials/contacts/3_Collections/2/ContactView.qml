@@ -98,7 +98,7 @@ Item {
 //! [transitions]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             duration: 500
                             properties: "yPosition,height,opacity"
                         }

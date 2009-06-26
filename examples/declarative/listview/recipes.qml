@@ -111,8 +111,8 @@ Rect {
                     Transition {
                         // Make the state changes smooth
                         ParallelAnimation {
-                            ColorAnimation { duration: 500 }
-                            NumericAnimation {
+                            ColorAnimation { property: "color"; duration: 500 }
+                            NumberAnimation {
                                 duration: 300; properties: "detailsOpacity,x,yPosition,height,width"
                             }
                         }

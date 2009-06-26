@@ -183,7 +183,7 @@ void QmlFollowPrivate::stop()
         y: SequentialAnimation {
             running: true
             repeat: true
-            NumericAnimation {
+            NumberAnimation {
                 to: 200
                 easing: "easeOutBounce(amplitude:100)"
                 duration: 2000

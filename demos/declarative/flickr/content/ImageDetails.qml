@@ -135,7 +135,7 @@ Flipable {
 
     transitions: [
         Transition {
-            NumericAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+            NumberAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
         }
     ]
 }

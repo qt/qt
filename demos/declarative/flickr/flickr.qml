@@ -99,13 +99,13 @@ Item {
                 Transition {
                     fromState: "*"; toState: "Details"
                     ParentChangeAction { }
-                    NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                    NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                 },
                 Transition {
                     fromState: "Details"; toState: "*"
                     SequentialAnimation {
                         ParentChangeAction { }
-                        NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                         SetPropertyAction { filter: Wrapper; properties: "z" }
                     }
                 }
@@ -194,7 +194,7 @@ Item {
         transitions: [
             Transition {
                 fromState: "*"; toState: "*"
-                NumericAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
+                NumberAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]
     }

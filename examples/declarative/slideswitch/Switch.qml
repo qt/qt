@@ -50,7 +50,7 @@ Item {
     ]
     transitions: [
         Transition {
-            NumericAnimation { properties: "x"; easing: "easeInOutQuad"; duration: 200 }
+            NumberAnimation { properties: "x"; easing: "easeInOutQuad"; duration: 200 }
         }
     ]
 }

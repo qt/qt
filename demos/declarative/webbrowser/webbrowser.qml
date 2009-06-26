@@ -161,7 +161,7 @@ Item {
                 ]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             target: Header
                             properties: "progressOff"
                             easing: "easeInOutQuad"
@@ -259,7 +259,7 @@ Item {
                 ]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             properties: "opacity"
                             easing: "easeInOutQuad"
                             duration: 300
@@ -315,7 +315,7 @@ Item {
                 ]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             properties: "opacity"
                             easing: "easeInOutQuad"
                             duration: 320
@@ -350,13 +350,13 @@ Item {
                     value: false
                 }
                 ParallelAnimation {
-                    NumericAnimation {
+                    NumberAnimation {
                         target: WebView
                         properties: "zoomedOut"
                         easing: "easeInOutQuad"
                         duration: 200
                     }
-                    NumericAnimation {
+                    NumberAnimation {
                         target: Flick
                         properties: "xPosition,yPosition"
                         easing: "easeInOutQuad"

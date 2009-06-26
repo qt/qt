@@ -26,15 +26,21 @@ Rect {
         // In state 'Position1', change the 'myrect' item x, y to 150, 50.
         State {
             name: "Position1"
-            SetProperties { target: myrect; x: 150 }
-            SetProperties { target: myrect; y: 50 }
+            SetProperties {
+                target: myrect
+                x: 150
+                y: 50
+            }
         },
         // In state 'Position2', change y to 100.  We do not specify 'x' here - 
         // it will therefore be restored to its default value of 0, if it
         // had been changed.
         State {
             name: "Position2"
-            SetProperties { target: myrect; y: 200 }
+            SetProperties {
+                target: myrect
+                y: 200
+            }
         }
     ]
 }

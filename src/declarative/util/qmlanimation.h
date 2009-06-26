@@ -86,6 +86,9 @@ public:
     bool repeat() const;
     void setRepeat(bool);
 
+    int currentTime();
+    void setCurrentTime(int);
+
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 
@@ -156,53 +159,6 @@ protected:
     virtual void prepare(QmlMetaProperty &);
 };
 QML_DECLARE_TYPE(QmlPauseAnimation)
-
-class QmlColorAnimationPrivate;
-class QmlColorAnimation : public QmlAbstractAnimation
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlColorAnimation)
-    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
-    Q_PROPERTY(QColor from READ from WRITE setFrom NOTIFY fromChanged)
-    Q_PROPERTY(QColor to READ to WRITE setTo NOTIFY toChanged)
-    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
-    Q_PROPERTY(QList<QObject *>* filter READ filter)
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
-
-public:
-    QmlColorAnimation(QObject *parent=0);
-    virtual ~QmlColorAnimation();
-
-    int duration() const;
-    void setDuration(int);
-
-    QColor from() const;
-    void setFrom(const QColor &);
-
-    QColor to() const;
-    void setTo(const QColor &);
-
-    QString easing() const;
-    void setEasing(const QString &);
-
-    QList<QObject *> *filter();
-
-    QList<QObject *> *exclude();
-
-protected:
-    virtual void transition(QmlStateActions &actions,
-                            QmlMetaProperties &modified,
-                            TransitionDirection direction);
-    virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
-
-Q_SIGNALS:
-    void durationChanged(int);
-    void fromChanged(const QColor &);
-    void toChanged(const QColor &);
-    void easingChanged(const QString &);
-};
-QML_DECLARE_TYPE(QmlColorAnimation)
 
 class QmlRunScriptActionPrivate;
 class QmlRunScriptAction : public QmlAbstractAnimation
@@ -290,32 +246,32 @@ protected:
 };
 QML_DECLARE_TYPE(QmlParentChangeAction)
 
-class QmlNumericAnimationPrivate;
-class QmlNumericAnimation : public QmlAbstractAnimation
+class QmlPropertyAnimationPrivate;
+class QmlPropertyAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlNumericAnimation)
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
 
     Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
-    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
-    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
     Q_PROPERTY(QList<QObject *>* filter READ filter)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:
-    QmlNumericAnimation(QObject *parent=0);
-    virtual ~QmlNumericAnimation();
+    QmlPropertyAnimation(QObject *parent=0);
+    virtual ~QmlPropertyAnimation();
 
     int duration() const;
     void setDuration(int);
 
-    qreal from() const;
-    void setFrom(qreal);
+    QVariant from() const;
+    void setFrom(const QVariant &);
 
-    qreal to() const;
-    void setTo(qreal);
+    QVariant to() const;
+    void setTo(const QVariant &);
 
     QString easing() const;
     void setEasing(const QString &);
@@ -335,19 +291,51 @@ protected:
 
 Q_SIGNALS:
     void durationChanged(int);
-    void fromChanged(qreal);
-    void toChanged(qreal);
+    void fromChanged(QVariant);
+    void toChanged(QVariant);
     void easingChanged(const QString &);
     void propertiesChanged(const QString &);
 };
-QML_DECLARE_TYPE(QmlNumericAnimation)
+QML_DECLARE_TYPE(QmlPropertyAnimation)
 
-#if 0
-class QmlDiscreteAnimation : public QmlAbstractAnimation
+class QmlColorAnimation : public QmlPropertyAnimation
 {
-Q_OBJECT
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
+    Q_PROPERTY(QColor from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QColor to READ to WRITE setTo NOTIFY toChanged)
+
+public:
+    QmlColorAnimation(QObject *parent=0);
+    virtual ~QmlColorAnimation();
+
+    QColor from() const;
+    void setFrom(const QColor &);
+
+    QColor to() const;
+    void setTo(const QColor &);
 };
-#endif
+QML_DECLARE_TYPE(QmlColorAnimation)
+
+class QmlNumberAnimation : public QmlPropertyAnimation
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
+
+    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+
+public:
+    QmlNumberAnimation(QObject *parent=0);
+    virtual ~QmlNumberAnimation();
+
+    qreal from() const;
+    void setFrom(qreal);
+
+    qreal to() const;
+    void setTo(qreal);
+};
+QML_DECLARE_TYPE(QmlNumberAnimation)
 
 class QmlAnimationGroupPrivate;
 class QmlAnimationGroup : public QmlAbstractAnimation
@@ -400,58 +388,6 @@ protected:
     virtual void prepare(QmlMetaProperty &);
 };
 QML_DECLARE_TYPE(QmlParallelAnimation)
-
-class QmlVariantAnimationPrivate;
-class QmlVariantAnimation : public QmlAbstractAnimation
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlVariantAnimation)
-
-    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
-    Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
-    Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
-    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
-    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* filter READ filter)
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
-
-public:
-    QmlVariantAnimation(QObject *parent=0);
-    virtual ~QmlVariantAnimation();
-
-    int duration() const;
-    void setDuration(int);
-
-    QVariant from() const;
-    void setFrom(const QVariant &);
-
-    QVariant to() const;
-    void setTo(const QVariant &);
-
-    QString easing() const;
-    void setEasing(const QString &);
-
-    QString properties() const;
-    void setProperties(const QString &);
-
-    QList<QObject *> *filter();
-    QList<QObject *> *exclude();
-
-protected:
-    virtual void transition(QmlStateActions &actions,
-                            QmlMetaProperties &modified,
-                            TransitionDirection direction);
-    virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
-
-Q_SIGNALS:
-    void durationChanged(int);
-    void fromChanged(QVariant);
-    void toChanged(QVariant);
-    void easingChanged(const QString &);
-    void propertiesChanged(const QString &);
-};
-QML_DECLARE_TYPE(QmlVariantAnimation)
 
 QT_END_NAMESPACE
 

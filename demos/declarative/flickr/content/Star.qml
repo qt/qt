@@ -35,7 +35,7 @@ Item {
     ]
     transitions: [
         Transition {
-            NumericAnimation {
+            NumberAnimation {
                 properties: "opacity,scale,x,y"
                 easing: "easeOutBounce"
             }

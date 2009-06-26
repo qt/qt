@@ -74,7 +74,7 @@ Rect {
         text: fieldText.label
         opacity: textEdit.text == '' ? 1 : 0
         opacity: Behavior {
-            NumericAnimation {
+            NumberAnimation {
                 property: "opacity"
                 duration: 250
             }
@@ -139,11 +139,12 @@ Rect {
             fromState: ""
             toState: "*"
             reversible: true
-            NumericAnimation {
+            NumberAnimation {
                 properties: "opacity,leftMargin,rightMargin"
                 duration: 200
             }
             ColorAnimation {
+                property: "color"
                 duration: 150
             }
         }

@@ -99,13 +99,13 @@ Item {
                         Transition {
                             fromState: "*"; toState: "Details"
                             ParentChangeAction { }
-                            NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                            NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                         },
                         Transition {
                             fromState: "Details"; toState: "*"
                             SequentialAnimation {
                                 ParentChangeAction { }
-                                NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                                NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                                 SetPropertyAction { filter: Wrapper; properties: "z" }
                             }
                         }
@@ -142,14 +142,14 @@ Item {
                             SequentialAnimation {
                                 SetPropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
-                                    NumericAnimation {
+                                    NumberAnimation {
                                         target: Wrapper
                                         properties: "x,y"
                                         to: 0
                                         easing: "easeOutQuad"
                                         duration: 350
                                     }
-                                    NumericAnimation { target: Wrapper; properties: "scale,angle"; duration: 350 }
+                                    NumberAnimation { target: Wrapper; properties: "scale,angle"; duration: 350 }
                                 }
                             }
                         },
@@ -159,14 +159,14 @@ Item {
                                 PauseAnimation { duration: Math.floor(index/7)*100 }
                                 SetPropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
-                                    NumericAnimation {
+                                    NumberAnimation {
                                         target: Wrapper
                                         properties: "x,y"
                                         to: 0
                                         easing: "easeOutQuad"
                                         duration: 250
                                     }
-                                    NumericAnimation { target: Wrapper; properties: "scale,angle"; duration: 250 }
+                                    NumberAnimation { target: Wrapper; properties: "scale,angle"; duration: 250 }
                                 }
                             }
                         }

@@ -969,11 +969,11 @@ void QmlDomValueBinding::setBinding(const QString &expression)
     In QML, value sources are special value generating types that may be 
     assigned to properties.  Value sources inherit the QmlPropertyValueSource
     class.  In the example below, the "x" property is being assigned the 
-    NumericAnimation value source.
+    NumberAnimation value source.
 
     \qml
 Rect {
-    x: NumericAnimation {
+    x: NumberAnimation {
         from: 0
         to: 100
         repeat: true
@@ -1018,11 +1018,11 @@ QmlDomValueValueSource &QmlDomValueValueSource::operator=(const QmlDomValueValue
 /*!
     Return the value source object.
 
-    In the example below, an object representing the NumericAnimation will be
+    In the example below, an object representing the NumberAnimation will be
     returned.
     \qml
 Rect {
-    x: NumericAnimation {
+    x: NumberAnimation {
         from: 0
         to: 100
         repeat: true
@@ -1367,7 +1367,7 @@ Item {
     \qml
 Item {
     x: 10
-    x: NumericAnimation {
+    x: NumberAnimation {
         running: false
         from: 0
         to: 100

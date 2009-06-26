@@ -26,15 +26,21 @@ Rect {
         // In state 'Position1', change the 'myrect' item x, y to 150, 50.
         State {
             name: "Position1"
-            SetProperties { target: myrect; x: 150; }
-            SetProperties { target: myrect; y: 50; }
+            SetProperties {
+                target: myrect
+                x: 150
+                y: 50
+            }
         },
         // In state 'Position2', change y to 100.  We do not specify 'x' here - 
         // it will therefore be restored to its default value of 0, if it
         // had been changed.
         State {
             name: "Position2"
-            SetProperties { target: myrect; y: 200 }
+            SetProperties {
+                target: myrect
+                y: 200
+            }
         }
     ]
 
@@ -44,17 +50,17 @@ Rect {
         // with easeOutBounce easing function.
         Transition {
             fromState: "*"; toState: "Position1"
-            NumericAnimation { properties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
+            NumberAnimation { properties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
         },
         // When transitioning to 'Position2' move x,y over a duration of 2 seconds,
         // with easeInOutQuad easing function.
         Transition {
             fromState: "*"; toState: "Position2"
-            NumericAnimation { properties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
+            NumberAnimation { properties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
         },
         // For any other state changes move x,y linearly over duration of 200ms.
         Transition {
-            NumericAnimation { properties: "x,y"; duration: 200 }
+            NumberAnimation { properties: "x,y"; duration: 200 }
         }
     ]
 }

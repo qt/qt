@@ -23,8 +23,8 @@ Rect {
             fromState: "" ; toState: "rotated"
             reversible: true
             SequentialAnimation {
-                NumericAnimation { filter: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
-                NumericAnimation { filter: [LeftBar, RightBar]; properties: "x,y"; easing: "easeInOutQuad"}
+                NumberAnimation { filter: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
+                NumberAnimation { filter: [LeftBar, RightBar]; properties: "x,y"; easing: "easeInOutQuad"}
             }
         }
 
@@ -66,7 +66,7 @@ Rect {
                         SequentialAnimation { 
                             ParentChangeAction{} 
                             PauseAnimation { duration: 50 * List.FlowView.column }
-                            NumericAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
+                            NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
                     },
                     Transition {
@@ -74,7 +74,7 @@ Rect {
                         SequentialAnimation { 
                             ParentChangeAction{} 
                             PauseAnimation { duration: 50 * (Grid.FlowView.row * 2 + Grid.FlowView.column) }
-                            NumericAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
+                            NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
                     }
                     ]

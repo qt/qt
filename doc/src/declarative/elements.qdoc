@@ -25,9 +25,9 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l NumericAnimation
+\o \l PropertyAnimation
+\o \l NumberAnimation
 \o \l ColorAnimation
-\o \l VariantAnimation
 \o \l PauseAnimation
 \o \l SequentialAnimation
 \o \l ParallelAnimation

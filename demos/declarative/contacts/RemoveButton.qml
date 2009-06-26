@@ -77,7 +77,7 @@ Rect {
         opacity: 0
     }
     opacity: Behavior {
-        NumericAnimation {
+        NumberAnimation {
             property: "opacity"
             duration: 250
         }
@@ -112,7 +112,7 @@ Rect {
             fromState: "*"
             toState: "opened"
             reversible: true
-            NumericAnimation {
+            NumberAnimation {
                 properties: "opacity,x,width"
                 duration: 200
             }

@@ -35,6 +35,7 @@ Item {
                 fromState: "*"
                 toState: "pressed"
                 ColorAnimation {
+                    property: "color"
                     duration: 200
                 }
             },
@@ -42,13 +43,14 @@ Item {
                 fromState: "pressed"
                 toState: "*"
                 ColorAnimation {
+                    property: "color"
                     duration: 1000
                 }
             }
         ]
     }
     opacity: Behavior {
-        NumericAnimation {
+        NumberAnimation {
             property: "opacity"
             duration: 250
         }
