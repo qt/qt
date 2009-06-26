@@ -143,6 +143,7 @@ public:
     int position() const;
     int length() const;
 
+    QUrl url() const;
 private:
     friend class QmlDomDocument;
     friend class QmlDomComponent;

@@ -102,6 +102,8 @@ namespace QmlParser
         // QmlCompiledData::types array, or -1 if the object is a fetched
         // object.
         int type;
+        // The url of this object if it is an external type.  Used by the DOM
+        QUrl url;
         // The name of this type
         QByteArray typeName;
         // The id assigned to the object (if any).

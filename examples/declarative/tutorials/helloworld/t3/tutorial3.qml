@@ -14,15 +14,10 @@ Rect {
             State {
                 name: "down"
                 when: MouseRegion.pressed == true
-                SetProperty {
+                SetProperties {
                     target: HelloText
-                    property: "y"
-                    value: 160
-                }
-                SetProperty {
-                    target: HelloText
-                    property: "color"
-                    value: "red"
+                    y: 160
+                    color: "red"
                 }
             }
         ]

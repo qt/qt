@@ -48,6 +48,29 @@
 
 QT_BEGIN_NAMESPACE
 
+class SimpleAction
+{
+public:
+    enum State { StartState, EndState };
+    SimpleAction(const Action &a, State state = StartState) : bv(0)
+    {
+        property = a.property;
+        if (state == StartState) {
+            value = a.fromValue;
+            binding = a.fromBinding;
+        } else {
+            value = a.toValue;
+            binding = a.toBinding;
+        }
+        bv = a.bv;
+    }
+
+    QmlMetaProperty property;
+    QVariant value;
+    QString binding;
+    QmlBindableValue *bv;
+};
+
 class QmlStatePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlState)
@@ -56,13 +79,15 @@ public:
     QmlStatePrivate()
     : when(0), transition(0), inState(false), group(0) {}
 
+    typedef QList<SimpleAction> SimpleActionList;
+
     QString name;
     QmlBindableValue *when;
     QmlConcreteList<QmlStateOperation *> operations;
     QmlTransition *transition;
-    QmlStateOperation::RevertActionList revertList;
+    SimpleActionList revertList;
     QList<QmlMetaProperty> reverting;
-    QmlStateOperation::RevertActionList completeList;
+    SimpleActionList completeList;
     QmlStateOperation::ActionList bindingsList;
     QString extends;
     mutable bool inState;
