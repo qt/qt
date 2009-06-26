@@ -3964,6 +3964,7 @@ public:
     :QWidget(parent)
     {
         setAttribute(Qt::WA_StaticContents);
+        setAttribute(Qt::WA_OpaquePaintEvent);
         setPalette(Qt::red); // Make sure we have an opaque palette.
         setAutoFillBackground(true);
         gotPaintEvent = false;

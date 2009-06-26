@@ -3749,7 +3749,7 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
     // Perform a normal (complete repaint) update in some cases:
     if (
         // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && qd->isOpaque == false) ||
+        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||
@@ -4273,7 +4273,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
                         HIRect bounds = CGRectMake(w->data->crect.x(), w->data->crect.y(),
                                                    w->data->crect.width(), w->data->crect.height());
                         HIViewRef hiview = qt_mac_nativeview_for(w);
-                        const bool opaque = qt_widget_private(w)->isOpaque;
+                        const bool opaque = q->testAttribute(Qt::WA_OpaquePaintEvent);
 
                         if (opaque)
                             HIViewSetDrawingEnabled(hiview,  false);
