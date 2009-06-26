@@ -2,22 +2,27 @@
 
 FVISIBILITY_SUPPORT=no
 COMPILER=$1
-VERBOSE=$2
+HIDESYMS=$2
+VERBOSE=$3
 
 RunCompileTest() {
     cat >>fvisibility.c << EOF
+#if defined(__ARMCC__) || defined(__CC_ARM)
+__declspec(dllexport) void blah(void);
+#elif defined(__GNUC__)
+# if __GNUC__ < 4
+#  error "GCC3 with backported visibility patch is known to miscompile Qt"
+# endif
 __attribute__((visibility("default"))) void blah();
-#if !defined(__GNUC__)
-# error "Visiblility support requires GCC"
-#elif __GNUC__ < 4
-# error "GCC3 with backported visibility patch is known to miscompile Qt"
+#else
+# error "Visibility support requires GCC or RVCT"
 #endif
 EOF
 
     if [ "$VERBOSE" = "yes" ] ; then
-        "$COMPILER" -c -fvisibility=hidden fvisibility.c && FVISIBILITY_SUPPORT=yes
+        "$COMPILER" -c $HIDESYMS fvisibility.c && FVISIBILITY_SUPPORT=yes
     else
-        "$COMPILER" -c -fvisibility=hidden fvisibility.c >/dev/null 2>&1 && FVISIBILITY_SUPPORT=yes
+        "$COMPILER" -c $HIDESYMS fvisibility.c >/dev/null 2>&1 && FVISIBILITY_SUPPORT=yes
     fi
     rm -f fvisibility.c fvisibility.o
 }

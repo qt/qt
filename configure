@@ -2893,6 +2893,10 @@ QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | 
 TEST_COMPILER="$CC"
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
 
+QMAKE_CONF_HIDESYMS=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CFLAGS_HIDESYMS" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
+TEST_HIDESYMS=$QMAKE_CONF_HIDESYMS
+[ -z "$TEST_HIDESYMS" ] && TEST_HIDESYMS="-fvisibility=hidden"
+
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
     if [ `echo "$CFG_MAC_ARCHS" | wc -w` -gt 1 ]; then
@@ -2957,7 +2961,7 @@ fi
 
 # auto-detect -fvisibility support
 if [ "$CFG_REDUCE_EXPORTS" = "auto" ]; then
-    if "$unixtests/fvisibility.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+    if "$unixtests/fvisibility.test" "$TEST_COMPILER" "$TEST_HIDESYMS" "$OPT_VERBOSE"; then
        CFG_REDUCE_EXPORTS=no
     else
        CFG_REDUCE_EXPORTS=yes
