@@ -220,9 +220,7 @@ void tst_QScriptEngine::newFunction()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QEXPECT_FAIL("", "Flags are wrong", Continue);
             QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QEXPECT_FAIL("", "Flags are wrong", Continue);
             QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
@@ -244,9 +242,7 @@ void tst_QScriptEngine::newFunction()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QEXPECT_FAIL("", "Flags are wrong", Continue);
             QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QEXPECT_FAIL("", "Flags are wrong", Continue);
             QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype

@@ -713,7 +713,7 @@ bool QScriptValue::isError() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&JSC::ErrorInstance::info);
+    return d->jscValue.isObject(&JSC::ErrorInstance::info);
 }
 
 /*!
@@ -727,7 +727,7 @@ bool QScriptValue::isArray() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&JSC::JSArray::info);
+    return d->jscValue.isObject(&JSC::JSArray::info);
 }
 
 /*!
@@ -741,7 +741,7 @@ bool QScriptValue::isDate() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&JSC::DateInstance::info);
+    return d->jscValue.isObject(&JSC::DateInstance::info);
 }
 
 /*!
@@ -755,7 +755,7 @@ bool QScriptValue::isRegExp() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&JSC::RegExpObject::info);
+    return d->jscValue.isObject(&JSC::RegExpObject::info);
 }
 
 /*!
@@ -1550,10 +1550,9 @@ QObject *QScriptValue::toQObject() const
 */
 const QMetaObject *QScriptValue::toQMetaObject() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-//    Q_D(const QScriptValue);
-//    if (isQMetaObject())
-//        return static_cast<QScript::QMetaObjectWrapperObject*>(JSC::asObject(d->jscValue))->value();
+    Q_D(const QScriptValue);
+    if (isQMetaObject())
+        return static_cast<QScript::QMetaObjectWrapperObject*>(JSC::asObject(d->jscValue))->value();
     return 0;
 }
 
@@ -2258,8 +2257,7 @@ bool QScriptValue::isQMetaObject() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return false;
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-//    return JSC::asObject(d->jscValue)->isObject(&QScript::QMetaObjectWrapperObject::info);
+    return JSC::asObject(d->jscValue)->isObject(&QScript::QMetaObjectWrapperObject::info);
     return false;
 }
 
