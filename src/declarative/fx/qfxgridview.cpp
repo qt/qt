@@ -234,6 +234,8 @@ public:
                 int count = columns - 1 - (modelIndex - visibleItems.last()->index - 1) % columns;
                 return visibleItems.last()->colPos() - count * colSize();
             }
+        } else {
+            return (modelIndex % columns) * colSize();
         }
         return 0;
     }
@@ -252,6 +254,8 @@ public:
                 int rows = col / (columns * colSize());
                 return visibleItems.last()->rowPos() + rows * rowSize();
             }
+        } else {
+             return (modelIndex / columns) * rowSize();
         }
         return 0;
     }

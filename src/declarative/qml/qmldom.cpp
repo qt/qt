@@ -791,6 +791,16 @@ int QmlDomObject::length() const
         return 0;
 }
 
+// Returns the URL of the type, if it is an external type, or an empty URL if
+// not
+QUrl QmlDomObject::url() const
+{
+    if (d && d->object)
+        return d->object->url;
+    else
+        return QUrl();
+}
+
 QmlDomBasicValuePrivate::QmlDomBasicValuePrivate()
 : value(0)
 {

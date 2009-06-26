@@ -296,6 +296,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int star
     cc->addref();
     d->start = start;
     d->count = count;
+    d->url = cc->url;
 }
 
 /*!
