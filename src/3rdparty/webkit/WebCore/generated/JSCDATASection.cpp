@@ -19,14 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSCDATASection.h"
 
-#include <wtf/GetPtr.h>
-
 #include "CDATASection.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

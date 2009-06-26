@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSScreen.h"
 
-#include <wtf/GetPtr.h>
-
 #include "Screen.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

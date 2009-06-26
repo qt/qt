@@ -19,14 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSComment.h"
 
-#include <wtf/GetPtr.h>
-
 #include "Comment.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

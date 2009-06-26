@@ -28,6 +28,7 @@ QCLuceneFieldPrivate::QCLuceneFieldPrivate(const QCLuceneFieldPrivate &other)
     : QSharedData()
 {
     field = _CL_POINTER(other.field);
+    deleteCLuceneField = other.deleteCLuceneField;
 }
 
 QCLuceneFieldPrivate::~QCLuceneFieldPrivate()

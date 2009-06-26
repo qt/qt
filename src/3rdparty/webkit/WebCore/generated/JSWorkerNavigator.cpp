@@ -20,17 +20,14 @@
 
 #include "config.h"
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorkerNavigator.h"
 
-#include <wtf/GetPtr.h>
-
 #include "KURL.h"
 #include "WorkerNavigator.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

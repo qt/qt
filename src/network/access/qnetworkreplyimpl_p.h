@@ -166,7 +166,6 @@ public:
 #endif
 
     QRingBuffer readBuffer;
-    QRingBuffer writeBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;

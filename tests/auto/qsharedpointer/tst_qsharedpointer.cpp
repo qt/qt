@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-
+#define QT_SHAREDPOINTER_TRACK_POINTERS
 #include "qsharedpointer.h"
 #include "externaltests.h"
 #include <QtTest/QtTest>
@@ -995,6 +995,7 @@ void tst_QSharedPointer::invalidConstructs()
     test.setDebugMode(true);
     test.setQtModules(QTest::QExternalTest::QtCore);
     test.setProgramHeader(
+        "#define QT_SHAREDPOINTER_TRACK_POINTERS\n"
         "#include <QtCore/qsharedpointer.h>\n"
         "\n"
         "struct Data { int i; };\n"

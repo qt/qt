@@ -155,8 +155,13 @@ public:
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
     virtual QRectF bounds() const;
+    void setFillRule(Qt::FillRule f)
+    {
+        m_fillRule = f;
+    }
 private:
     QPolygonF m_poly;
+    Qt::FillRule m_fillRule;
 };
 
 class QSvgPolyline : public QSvgNode

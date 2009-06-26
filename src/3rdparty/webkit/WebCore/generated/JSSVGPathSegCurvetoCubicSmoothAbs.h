@@ -21,10 +21,10 @@
 #ifndef JSSVGPathSegCurvetoCubicSmoothAbs_h
 #define JSSVGPathSegCurvetoCubicSmoothAbs_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGPathSeg.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

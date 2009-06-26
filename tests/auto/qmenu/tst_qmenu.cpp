@@ -93,6 +93,7 @@ private slots:
     void task242454_sizeHint();
     void task176201_clear();
     void task250673_activeMutliColumnSubMenuPosition();
+    void task256918_setFont();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -713,5 +714,19 @@ void tst_QMenu::task250673_activeMutliColumnSubMenuPosition()
     const int subMenuOffset = main.style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, &main);
     QVERIFY((sub.geometry().left() - subMenuOffset + 5) < main.geometry().right());
 }
+
+
+void tst_QMenu::task256918_setFont()
+{
+    QMenu menu;
+    QAction *action = menu.addAction("foo");
+    QFont f;
+    f.setPointSize(30);
+    action->setFont(f);
+    menu.show(); //ensures that the actiongeometry are calculated
+    QVERIFY(menu.actionGeometry(action).height() > f.pointSize());
+}
+
+
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

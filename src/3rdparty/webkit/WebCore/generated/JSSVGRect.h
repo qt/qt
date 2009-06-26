@@ -21,14 +21,14 @@
 #ifndef JSSVGRect_h
 #define JSSVGRect_h
 
-
 #if ENABLE(SVG)
 
+#include "FloatRect.h"
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "FloatRect.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 

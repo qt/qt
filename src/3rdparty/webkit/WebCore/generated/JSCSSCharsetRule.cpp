@@ -19,15 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSCSSCharsetRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSCharsetRule.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

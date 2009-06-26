@@ -664,6 +664,9 @@ WidgetBoxTreeWidget::CategoryList WidgetBoxTreeWidget::loadCustomCategoryList() 
 void WidgetBoxTreeWidget::adjustSubListSize(QTreeWidgetItem *cat_item)
 {
     QTreeWidgetItem *embedItem = cat_item->child(0);
+    if (embedItem == 0)
+        return;
+
     WidgetBoxCategoryListView *list_widget = static_cast<WidgetBoxCategoryListView*>(itemWidget(embedItem, 0));
     list_widget->setFixedWidth(header()->width());
     list_widget->doItemsLayout();

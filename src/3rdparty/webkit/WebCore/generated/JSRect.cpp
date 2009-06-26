@@ -19,16 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSRect.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSPrimitiveValue.h"
 #include "JSCSSPrimitiveValue.h"
 #include "Rect.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

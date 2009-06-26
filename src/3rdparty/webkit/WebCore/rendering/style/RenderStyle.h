@@ -301,10 +301,10 @@ public:
 
     void inheritFrom(const RenderStyle* inheritParent);
 
-    PseudoId styleType() { return static_cast<PseudoId>(noninherited_flags._styleType); }
+    PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags._styleType); }
     void setStyleType(PseudoId styleType) { noninherited_flags._styleType = styleType; }
 
-    RenderStyle* getCachedPseudoStyle(PseudoId);
+    RenderStyle* getCachedPseudoStyle(PseudoId) const;
     RenderStyle* addCachedPseudoStyle(PassRefPtr<RenderStyle>);
 
     bool affectedByHoverRules() const { return noninherited_flags._affectedByHover; }
@@ -1025,7 +1025,7 @@ public:
     const CounterDirectiveMap* counterDirectives() const;
     CounterDirectiveMap& accessCounterDirectives();
 
-    bool inheritedNotEqual(RenderStyle*) const;
+    bool inheritedNotEqual(const RenderStyle*) const;
 
     StyleDifference diff(const RenderStyle*, unsigned& changedContextSensitiveProperties) const;
 

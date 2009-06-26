@@ -19,14 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLDListElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLDListElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

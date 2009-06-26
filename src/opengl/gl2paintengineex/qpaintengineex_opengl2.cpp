@@ -248,9 +248,13 @@ QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
     }
 }
 
-void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform)
+void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
 {
 //    glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
+    if (id != -1 && id == lastTexture)
+        return;
+
+    lastTexture = id;
 
     if (smoothPixmapTransform) {
         glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -368,7 +372,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
 
     if (style == Qt::SolidPattern) {
         QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
-        shaderManager->currentProgram()->setUniformValue("fragmentColor", col);
+        shaderManager->currentProgram()->setUniformValue(location(FragmentColor), col);
     }
     else {
         // All other brushes have a transform and thus need the translation point:
@@ -379,10 +383,10 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
 
             QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
 
-            shaderManager->currentProgram()->setUniformValue("patternColor", col);
+            shaderManager->currentProgram()->setUniformValue(location(PatternColor), col);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
-            shaderManager->currentProgram()->setUniformValue("halfViewportSize", halfViewportSize);
+            shaderManager->currentProgram()->setUniformValue(location(HalfViewportSize), halfViewportSize);
         }
         else if (style == Qt::LinearGradientPattern) {
             const QLinearGradient *g = static_cast<const QLinearGradient *>(currentBrush->gradient());
@@ -399,10 +403,10 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
                 1.0f / (l.x() * l.x() + l.y() * l.y())
             );
 
-            shaderManager->currentProgram()->setUniformValue("linearData", linearData);
+            shaderManager->currentProgram()->setUniformValue(location(LinearData), linearData);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
-            shaderManager->currentProgram()->setUniformValue("halfViewportSize", halfViewportSize);
+            shaderManager->currentProgram()->setUniformValue(location(HalfViewportSize), halfViewportSize);
         }
         else if (style == Qt::ConicalGradientPattern) {
             const QConicalGradient *g = static_cast<const QConicalGradient *>(currentBrush->gradient());
@@ -410,10 +414,10 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
 
             GLfloat angle = -(g->angle() * 2 * Q_PI) / 360.0;
 
-            shaderManager->currentProgram()->setUniformValue("angle", angle);
+            shaderManager->currentProgram()->setUniformValue(location(Angle), angle);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
-            shaderManager->currentProgram()->setUniformValue("halfViewportSize", halfViewportSize);
+            shaderManager->currentProgram()->setUniformValue(location(HalfViewportSize), halfViewportSize);
         }
         else if (style == Qt::RadialGradientPattern) {
             const QRadialGradient *g = static_cast<const QRadialGradient *>(currentBrush->gradient());
@@ -423,15 +427,15 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
             translationPoint   = realFocal;
 
             QPointF fmp = realCenter - realFocal;
-            shaderManager->currentProgram()->setUniformValue("fmp", fmp);
+            shaderManager->currentProgram()->setUniformValue(location(Fmp), fmp);
 
             GLfloat fmp2_m_radius2 = -fmp.x() * fmp.x() - fmp.y() * fmp.y() + realRadius*realRadius;
-            shaderManager->currentProgram()->setUniformValue("fmp2_m_radius2", fmp2_m_radius2);
-            shaderManager->currentProgram()->setUniformValue("inverse_2_fmp2_m_radius2",
+            shaderManager->currentProgram()->setUniformValue(location(Fmp2MRadius2), fmp2_m_radius2);
+            shaderManager->currentProgram()->setUniformValue(location(Inverse2Fmp2MRadius2),
                                                              GLfloat(1.0 / (2.0*fmp2_m_radius2)));
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
-            shaderManager->currentProgram()->setUniformValue("halfViewportSize", halfViewportSize);
+            shaderManager->currentProgram()->setUniformValue(location(HalfViewportSize), halfViewportSize);
         }
         else if (style == Qt::TexturePattern) {
             translationPoint = q->state()->brushOrigin;
@@ -440,14 +444,14 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
 
             if (qHasPixmapTexture(*currentBrush) && currentBrush->texture().isQBitmap()) {
                 QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
-                shaderManager->currentProgram()->setUniformValue("patternColor", col);
+                shaderManager->currentProgram()->setUniformValue(location(PatternColor), col);
             }
 
             QSizeF invertedTextureSize( 1.0 / texPixmap.width(), 1.0 / texPixmap.height() );
-            shaderManager->currentProgram()->setUniformValue("invertedTextureSize", invertedTextureSize);
+            shaderManager->currentProgram()->setUniformValue(location(InvertedTextureSize), invertedTextureSize);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
-            shaderManager->currentProgram()->setUniformValue("halfViewportSize", halfViewportSize);
+            shaderManager->currentProgram()->setUniformValue(location(HalfViewportSize), halfViewportSize);
         }
         else
             qWarning("QGL2PaintEngineEx: Unimplemented fill style");
@@ -456,8 +460,8 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         QTransform gl_to_qt(1, 0, 0, -1, 0, height);
         QTransform inv_matrix = gl_to_qt * (brushQTransform * q->state()->matrix).inverted() * translate;
 
-        shaderManager->currentProgram()->setUniformValue("brushTransform", inv_matrix);
-        shaderManager->currentProgram()->setUniformValue("brushTexture", QT_BRUSH_TEXTURE_UNIT);
+        shaderManager->currentProgram()->setUniformValue(location(BrushTransform), inv_matrix);
+        shaderManager->currentProgram()->setUniformValue(location(BrushTexture), QT_BRUSH_TEXTURE_UNIT);
     }
     brushUniformsDirty = false;
 }
@@ -591,21 +595,16 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
 
 void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
 {
-    transferMode(ImageDrawingMode);
-
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
-
     // Setup for texture drawing
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
     shaderManager->setTextureCoordsEnabled(true);
-    prepareForDraw(opaque);
+    if (prepareForDraw(opaque))
+        shaderManager->currentProgram()->setUniformValue(location(ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
     if (pattern) {
         QColor col = premultiplyColor(q->state()->pen.color(), (GLfloat)q->state()->opacity);
-        shaderManager->currentProgram()->setUniformValue("patternColor", col);
+        shaderManager->currentProgram()->setUniformValue(location(PatternColor), col);
     }
-
-    shaderManager->currentProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
     GLfloat dx = 1.0 / textureSize.width();
     GLfloat dy = 1.0 / textureSize.height();
@@ -651,8 +650,13 @@ void QGL2PaintEngineEx::sync()
     glLoadMatrixf(&mv_matrix[0][0]);
 #endif
 
+    d->lastTexture = GLuint(-1);
+
     glDisable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
+
+    d->needsSync = true;
+    d->shaderManager->setDirty();
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
@@ -663,6 +667,8 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     if (mode == TextDrawingMode || mode == ImageDrawingMode) {
         glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
         glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+
+        lastTexture = GLuint(-1);
     }
 
     if (mode == TextDrawingMode)
@@ -796,7 +802,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
-void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
+bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 {
     if (brushTextureDirty && mode != ImageDrawingMode)
         updateBrushTexture();
@@ -808,12 +814,14 @@ void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         updateMatrix();
 
     const bool stateHasOpacity = q->state()->opacity < 0.99f;
-    if (q->state()->compositionMode() == QPainter::CompositionMode_Source
-        || (q->state()->compositionMode() == QPainter::CompositionMode_SourceOver
+    if (q->state()->composition_mode == QPainter::CompositionMode_Source
+        || (q->state()->composition_mode == QPainter::CompositionMode_SourceOver
             && srcPixelsAreOpaque && !stateHasOpacity))
+    {
         glDisable(GL_BLEND);
-    else
+    } else {
         glEnable(GL_BLEND);
+    }
 
     bool useGlobalOpacityUniform = stateHasOpacity;
     if (stateHasOpacity && (mode != ImageDrawingMode)) {
@@ -827,29 +835,35 @@ void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
     shaderManager->setUseGlobalOpacity(useGlobalOpacityUniform);
 
 
+    bool changed = shaderManager->useCorrectShaderProg();
     // If the shader program needs changing, we change it and mark all uniforms as dirty
-    if (shaderManager->useCorrectShaderProg()) {
+    if (changed) {
         // The shader program has changed so mark all uniforms as dirty:
         brushUniformsDirty = true;
         shaderMatrixUniformDirty = true;
         depthUniformDirty = true;
+        opacityUniformDirty = true;
     }
 
     if (brushUniformsDirty && mode != ImageDrawingMode)
         updateBrushUniforms();
 
     if (shaderMatrixUniformDirty) {
-        shaderManager->currentProgram()->setUniformValue("pmvMatrix", pmvMatrix);
+        shaderManager->currentProgram()->setUniformValue(location(PmvMatrix), pmvMatrix);
         shaderMatrixUniformDirty = false;
     }
 
     if (depthUniformDirty) {
-        shaderManager->currentProgram()->setUniformValue("depth", (GLfloat)q->state()->currentDepth);
+        shaderManager->currentProgram()->setUniformValue(location(Depth), (GLfloat)q->state()->currentDepth);
         depthUniformDirty = false;
     }
 
-    if (useGlobalOpacityUniform)
-        shaderManager->currentProgram()->setUniformValue("globalOpacity", (GLfloat)q->state()->opacity);
+    if (useGlobalOpacityUniform && opacityUniformDirty) {
+        shaderManager->currentProgram()->setUniformValue(location(GlobalOpacity), (GLfloat)q->state()->opacity);
+        opacityUniformDirty = false;
+    }
+
+    return changed;
 }
 
 void QGL2PaintEngineExPrivate::composite(const QGLRect& boundingRect)
@@ -971,6 +985,7 @@ void QGL2PaintEngineEx::opacityChanged()
 
     Q_ASSERT(d->shaderManager);
     d->brushUniformsDirty = true;
+    d->opacityUniformDirty = true;
 }
 
 void QGL2PaintEngineEx::compositionModeChanged()
@@ -990,6 +1005,8 @@ void QGL2PaintEngineEx::renderHintsChanged()
         glDisable(GL_MULTISAMPLE);
 #endif
 
+    Q_D(QGL2PaintEngineEx);
+    d->lastTexture = GLuint(-1);
 //    qDebug("QGL2PaintEngineEx::renderHintsChanged() not implemented!");
 }
 
@@ -1008,11 +1025,13 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
+    GLuint id = ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
     bool isBitmap = pixmap.isQBitmap();
     bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
 
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+                           state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, pixmap.size(), isOpaque, isBitmap);
 }
 
@@ -1025,8 +1044,10 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    GLuint id = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+                           state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
@@ -1121,7 +1142,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
 
     prepareForDraw(false); // Text always causes src pixels to be transparent
 
-    shaderManager->currentProgram()->setUniformValue("maskTexture", QT_MASK_TEXTURE_UNIT);
+    shaderManager->currentProgram()->setUniformValue(location(MaskTexture), QT_MASK_TEXTURE_UNIT);
 
     if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
@@ -1161,8 +1182,26 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
 
-    if (!d->shaderManager)
+    if (!d->shaderManager) {
         d->shaderManager = new QGLEngineShaderManager(d->ctx);
+
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::ImageTexture] = d->shaderManager->getUniformIdentifier("imageTexture");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::PatternColor] = d->shaderManager->getUniformIdentifier("patternColor");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::GlobalOpacity] = d->shaderManager->getUniformIdentifier("globalOpacity");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::Depth] = d->shaderManager->getUniformIdentifier("depth");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::PmvMatrix] = d->shaderManager->getUniformIdentifier("pmvMatrix");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::MaskTexture] = d->shaderManager->getUniformIdentifier("maskTexture");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::FragmentColor] = d->shaderManager->getUniformIdentifier("fragmentColor");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::LinearData] = d->shaderManager->getUniformIdentifier("linearData");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::Angle] = d->shaderManager->getUniformIdentifier("angle");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::HalfViewportSize] = d->shaderManager->getUniformIdentifier("halfViewportSize");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::Fmp] = d->shaderManager->getUniformIdentifier("fmp");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::Fmp2MRadius2] = d->shaderManager->getUniformIdentifier("fmp2_m_radius2");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::Inverse2Fmp2MRadius2] = d->shaderManager->getUniformIdentifier("inverse_2_fmp2_m_radius2");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::InvertedTextureSize] = d->shaderManager->getUniformIdentifier("invertedTextureSize");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::BrushTransform] = d->shaderManager->getUniformIdentifier("brushTransform");
+        d->uniformIdentifiers[QGL2PaintEngineExPrivate::BrushTexture] = d->shaderManager->getUniformIdentifier("brushTexture");
+    }
 
     glViewport(0, 0, d->width, d->height);
 
@@ -1179,6 +1218,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->stencilBufferDirty = true;
     d->simpleShaderDepthUniformDirty = true;
     d->depthUniformDirty = true;
+    d->opacityUniformDirty = true;
+    d->needsSync = false;
 
     d->use_system_clip = !systemClip().isEmpty();
 
@@ -1210,6 +1251,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
         source->bind(false);
 
         QRect rect(0, 0, source->width(), source->height());
+        d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
         d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
     }
 
@@ -1256,11 +1298,15 @@ void QGL2PaintEngineEx::ensureActive()
 
         ctx->d_ptr->active_engine = this;
 
-        glDisable(GL_DEPTH_TEST);
+        d->needsSync = true;
+    }
 
+    if (d->needsSync) {
         glViewport(0, 0, d->width, d->height);
-
+        glDepthMask(false);
+        glDepthFunc(GL_LEQUAL);
         setState(state());
+        d->needsSync = false;
     }
 }
 
@@ -1506,6 +1552,7 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
     d->depthUniformDirty = true;
     d->simpleShaderMatrixUniformDirty = true;
     d->shaderMatrixUniformDirty = true;
+    d->opacityUniformDirty = true;
 
     if (old_state && old_state != s && old_state->canRestoreClip) {
         d->updateDepthScissorTest();

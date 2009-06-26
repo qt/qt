@@ -150,7 +150,6 @@ bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
     if (e->type() == QEvent::ApplicationPaletteChange) {
         // Only do this the first time since this will also
         // generate applicationPaletteChange events
-        extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
         if (!qt_app_palettes_hash() ||  qt_app_palettes_hash()->isEmpty()) {
             QGtk::applyCustomPaletteHash();
         }

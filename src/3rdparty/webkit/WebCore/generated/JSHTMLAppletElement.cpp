@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLAppletElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "AtomicString.h"
 #include "HTMLAppletElement.h"
 #include "JSHTMLAppletElementCustom.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -141,7 +137,7 @@ bool JSHTMLAppletElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
         slot.setCustom(this, nameGetter);
         return true;
     }
-    if (customGetOwnPropertySlot(exec, propertyName, slot))
+    if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSHTMLAppletElement, Base>(exec, &JSHTMLAppletElementTable, this, propertyName, slot);
 }
@@ -229,7 +225,7 @@ JSValue jsHTMLAppletElementConstructor(ExecState* exec, const Identifier&, const
 }
 void JSHTMLAppletElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     lookupPut<JSHTMLAppletElement, Base>(exec, propertyName, value, &JSHTMLAppletElementTable, this, slot);
 }

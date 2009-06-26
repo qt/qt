@@ -988,6 +988,10 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
     VisiblePosition visiblePos(original);
     Node* enclosingAnchor = enclosingAnchorElement(original);
     Position result = original;
+
+    if (!enclosingAnchor)
+        return result;
+
     // Don't avoid block level anchors, because that would insert content into the wrong paragraph.
     if (enclosingAnchor && !isBlock(enclosingAnchor)) {
         VisiblePosition firstInAnchor(firstDeepEditingPositionForNode(enclosingAnchor));
@@ -1020,6 +1024,9 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
                 pushAnchorElementDown(enclosingAnchor);
                 enclosingAnchor = enclosingAnchorElement(original);
             }
+            if (!enclosingAnchor)
+                return original;
+
             result = positionBeforeNode(enclosingAnchor);
         }
     }

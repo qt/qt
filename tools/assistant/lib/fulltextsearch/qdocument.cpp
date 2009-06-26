@@ -29,6 +29,7 @@ QCLuceneDocumentPrivate::QCLuceneDocumentPrivate(const QCLuceneDocumentPrivate &
     : QSharedData()
 {
     document = _CL_POINTER(other.document);
+    deleteCLuceneDocument = other.deleteCLuceneDocument;
 }
 
 QCLuceneDocumentPrivate::~QCLuceneDocumentPrivate()

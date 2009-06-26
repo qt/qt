@@ -21,14 +21,14 @@
 #ifndef JSSVGPoint_h
 #define JSSVGPoint_h
 
-
 #if ENABLE(SVG)
 
+#include "FloatPoint.h"
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "FloatPoint.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 

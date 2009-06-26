@@ -90,7 +90,6 @@ void QDirectFBPixmapData::resize(int width, int height)
     setSerialNumber(++global_ser_no);
 }
 
-
 // mostly duplicated from qimage.cpp (QImageData::checkForAlphaPixels)
 static bool checkForAlphaPixels(const QImage &img)
 {
@@ -209,6 +208,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         QPixmapData::copy(data, rect);
         return;
     }
+    unlockDirectFB();
 
     const QDirectFBPixmapData *otherData = static_cast<const QDirectFBPixmapData*>(data);
     IDirectFBSurface *src = otherData->directFBSurface();
@@ -237,6 +237,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     w = rect.width();
     h = rect.height();
     d = otherData->d;
+    is_null = (w <= 0 || h <= 0);
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
@@ -295,10 +296,10 @@ void QDirectFBPixmapData::fill(const QColor &color)
 QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
                                          Qt::TransformationMode mode) const
 {
+    QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
     if (!dfbSurface || transform.type() != QTransform::TxScale
         || mode != Qt::FastTransformation)
     {
-        QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
         const QImage *image = that->buffer();
         Q_ASSERT(image);
         const QImage transformed = image->transformed(transform, mode);
@@ -307,6 +308,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         data->fromImage(transformed, Qt::AutoColor);
         return QPixmap(data);
     }
+    that->unlockDirectFB();
 
     const QSize size = transform.mapRect(QRect(0, 0, w, h)).size();
     if (size.isEmpty())
@@ -330,6 +332,8 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
     data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
     data->w = size.width();
     data->h = size.height();
+    data->is_null = (data->w <= 0 || data->h <= 0);
+
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     data->dfbSurface->ReleaseSource(data->dfbSurface);
 #endif

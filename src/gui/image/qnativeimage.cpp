@@ -52,6 +52,10 @@
 #include <qwidget.h>
 #endif
 
+#ifdef Q_WS_MAC
+#include <private/qpaintengine_mac_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
@@ -225,18 +229,19 @@ QImage::Format QNativeImage::systemFormat()
 
 #elif defined(Q_WS_MAC)
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *widget)
     : image(width, height, format)
 {
-    cgColorSpace = CGColorSpaceCreateDeviceRGB();
+
+
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
 
-    cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(), cgColorSpace, cgflags);
+    cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(),
+                               QCoreGraphicsPaintEngine::macDisplayColorSpace(widget), cgflags);
     CGContextTranslateCTM(cg, 0, height);
     CGContextScaleCTM(cg, 1, -1);
 
@@ -248,7 +253,6 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
 QNativeImage::~QNativeImage()
 {
     CGContextRelease(cg);
-    CGColorSpaceRelease(cgColorSpace);
 }
 
 QImage::Format QNativeImage::systemFormat()

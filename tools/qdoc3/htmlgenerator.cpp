@@ -2290,7 +2290,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         if (nameAlignment)
-            out() << "<li><div bar=2 class=\"fn\"></div>";
+            out() << "<li><div bar=\"2\" class=\"fn\"></div>";
         else
             out() << "<li><div class=\"fn\"></div>";
         out() << (*p).second << " ";
@@ -2577,7 +2577,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div bar=2 class=\"fn\"></div>";
+        out() << "<li><div bar=\"2\" class=\"fn\"></div>";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;

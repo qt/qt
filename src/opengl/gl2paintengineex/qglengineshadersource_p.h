@@ -64,19 +64,23 @@ QT_MODULE(OpenGL)
 
 
 static const char* const qglslMainVertexShader = "\
+    uniform   highp float   depth;\
     void setPosition();\
     void main(void)\
     {\
             setPosition();\
+            gl_Position.z = depth * gl_Position.w;\
     }";
 
 static const char* const qglslMainWithTexCoordsVertexShader = "\
     attribute lowp  vec2    textureCoordArray; \
     varying   lowp  vec2    textureCoords; \
+    uniform   highp float   depth;\
     void setPosition();\
     void main(void) \
     {\
             setPosition();\
+            gl_Position.z = depth * gl_Position.w;\
             textureCoords = textureCoordArray; \
     }";
 
@@ -84,20 +88,16 @@ static const char* const qglslMainWithTexCoordsVertexShader = "\
 static const char* const qglslPositionOnlyVertexShader = "\
     attribute highp vec4    vertexCoordsArray;\
     uniform   highp mat4    pmvMatrix;\
-    uniform   highp float   depth;\
     void setPosition(void)\
     {\
             gl_Position = pmvMatrix * vertexCoordsArray;\
-            gl_Position.z = depth;\
     }";
 
 static const char* const qglslUntransformedPositionVertexShader = "\
     attribute highp vec4    vertexCoordsArray;\
-    uniform   highp float   depth;\
     void setPosition(void)\
     {\
             gl_Position = vertexCoordsArray;\
-            gl_Position.z = depth;\
     }";
 
 // Pattern Brush - This assumes the texture size is 8x8 and thus, the inverted size is 0.125
@@ -108,11 +108,9 @@ static const char* const qglslPositionWithPatternBrushVertexShader = "\
     uniform   mediump vec2  invertedTextureSize; \
     uniform   mediump mat3  brushTransform; \
     varying   mediump vec2  patternTexCoords; \
-    uniform   highp   float depth;\
     void setPosition(void) { \
             gl_Position = pmvMatrix * vertexCoordsArray;\
             gl_Position.xy = gl_Position.xy / gl_Position.w; \
-            gl_Position.z = depth;\
             mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
             mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
             mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
@@ -142,11 +140,9 @@ static const char* const qglslPositionWithLinearGradientBrushVertexShader = "\
     uniform   highp   vec3  linearData; \
     uniform   highp   mat3  brushTransform; \
     varying   mediump float index ; \
-    uniform   highp   float depth;\
     void setPosition() { \
         gl_Position = pmvMatrix * vertexCoordsArray;\
         gl_Position.xy = gl_Position.xy / gl_Position.w; \
-        gl_Position.z = depth;\
         mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
         mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
         mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
@@ -174,12 +170,10 @@ static const char* const qglslPositionWithConicalGradientBrushVertexShader = "\
     uniform   mediump vec2  halfViewportSize; \
     uniform   highp   mat3  brushTransform; \
     varying   highp   vec2  A; \
-    uniform   highp   float depth;\
     void setPosition(void)\
     {\
         gl_Position = pmvMatrix * vertexCoordsArray;\
         gl_Position.xy = gl_Position.xy / gl_Position.w; \
-        gl_Position.z = depth; \
         mediump vec2  viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
         mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
         mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
@@ -215,12 +209,10 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\
     uniform   highp   vec2 fmp; \
     varying   highp   float b; \
     varying   highp   vec2  A; \
-    uniform   highp   float depth;\
     void setPosition(void) \
     {\
         gl_Position = pmvMatrix * vertexCoordsArray;\
         gl_Position.xy = gl_Position.xy / gl_Position.w; \
-        gl_Position.z = depth; \
         mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
         mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
         mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
@@ -254,11 +246,9 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
     uniform   mediump vec2  invertedTextureSize; \
     uniform   mediump mat3  brushTransform; \
     varying   mediump vec2  brushTextureCoords; \
-    uniform   highp   float depth;\
     void setPosition(void) { \
             gl_Position = pmvMatrix * vertexCoordsArray;\
             gl_Position.xy = gl_Position.xy / gl_Position.w; \
-            gl_Position.z = depth; \
             mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
             mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
             mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \

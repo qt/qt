@@ -27,6 +27,7 @@ QCLuceneIndexWriterPrivate::QCLuceneIndexWriterPrivate(const QCLuceneIndexWriter
     : QSharedData()
 {
     writer = _CL_POINTER(other.writer);
+    deleteCLuceneIndexWriter = other.deleteCLuceneIndexWriter;
 }
 
 QCLuceneIndexWriterPrivate::~QCLuceneIndexWriterPrivate()

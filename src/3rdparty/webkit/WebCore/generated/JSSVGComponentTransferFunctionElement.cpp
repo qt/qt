@@ -20,20 +20,15 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
-#include "SVGElement.h"
 #include "JSSVGComponentTransferFunctionElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedEnumeration.h"
 #include "JSSVGAnimatedNumber.h"
 #include "JSSVGAnimatedNumberList.h"
 #include "SVGComponentTransferFunctionElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

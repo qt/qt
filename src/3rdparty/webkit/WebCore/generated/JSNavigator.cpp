@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSNavigator.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSMimeTypeArray.h"
 #include "JSPluginArray.h"
@@ -30,9 +27,9 @@
 #include "MimeTypeArray.h"
 #include "Navigator.h"
 #include "PluginArray.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

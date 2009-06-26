@@ -78,7 +78,9 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
 
-@protocol NSWindowDelegate <NSObject> @end
+@protocol NSWindowDelegate <NSObject>
+- (NSSize)windowWillResize:(NSWindow *)window toSize:(NSSize)proposedFrameSize;
+@end
 
 #endif
 

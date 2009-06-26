@@ -19,15 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSEntity.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Entity.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

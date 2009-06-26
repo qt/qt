@@ -97,6 +97,7 @@ static bool getIBaseError(QString& msg, ISC_STATUS* status, ISC_LONG &sqlcode, Q
 static void createDA(XSQLDA *&sqlda)
 {
     sqlda = (XSQLDA *) malloc(XSQLDA_LENGTH(1));
+    if (sqlda == (XSQLDA*)0) return;
     sqlda->sqln = 1;
     sqlda->sqld = 0;
     sqlda->version = SQLDA_CURRENT_VERSION;
@@ -106,8 +107,10 @@ static void createDA(XSQLDA *&sqlda)
 
 static void enlargeDA(XSQLDA *&sqlda, int n)
 {
-    free(sqlda);
+    if (sqlda != (XSQLDA*)0)
+        free(sqlda);
     sqlda = (XSQLDA *) malloc(XSQLDA_LENGTH(n));
+    if (sqlda == (XSQLDA*)0) return;
     sqlda->sqln = n;
     sqlda->version = SQLDA_CURRENT_VERSION;
 }
@@ -126,14 +129,14 @@ static void initDA(XSQLDA *sqlda)
         case SQL_TYPE_DATE:
         case SQL_TEXT:
         case SQL_BLOB:
-            sqlda->sqlvar[i].sqldata = (char*)malloc(sqlda->sqlvar[i].sqllen);
+            sqlda->sqlvar[i].sqldata = new char[sqlda->sqlvar[i].sqllen];
             break;
         case SQL_ARRAY:
-            sqlda->sqlvar[i].sqldata = (char*)malloc(sizeof(ISC_QUAD));
+            sqlda->sqlvar[i].sqldata = new char[sizeof(ISC_QUAD)];
             memset(sqlda->sqlvar[i].sqldata, 0, sizeof(ISC_QUAD));
             break;
         case SQL_VARYING:
-            sqlda->sqlvar[i].sqldata = (char*)malloc(sqlda->sqlvar[i].sqllen + sizeof(short));
+            sqlda->sqlvar[i].sqldata = new char[sqlda->sqlvar[i].sqllen + sizeof(short)];
             break;
         default:
             // not supported - do not bind.
@@ -141,7 +144,7 @@ static void initDA(XSQLDA *sqlda)
             break;
         }
         if (sqlda->sqlvar[i].sqltype & 1) {
-            sqlda->sqlvar[i].sqlind = (short*)malloc(sizeof(short));
+            sqlda->sqlvar[i].sqlind = new short[1];
             *(sqlda->sqlvar[i].sqlind) = 0;
         } else {
             sqlda->sqlvar[i].sqlind = 0;
@@ -154,8 +157,8 @@ static void delDA(XSQLDA *&sqlda)
     if (!sqlda)
         return;
     for (int i = 0; i < sqlda->sqld; ++i) {
-        free(sqlda->sqlvar[i].sqlind);
-        free(sqlda->sqlvar[i].sqldata);
+        delete [] sqlda->sqlvar[i].sqlind;
+        delete [] sqlda->sqlvar[i].sqldata;
     }
     free(sqlda);
     sqlda = 0;
@@ -300,7 +303,7 @@ struct QIBaseEventBuffer {
 #endif
     ISC_LONG bufferLength;
     ISC_LONG eventId;
-    
+
     enum QIBaseSubscriptionState { Starting, Subscribed, Finished };
     QIBaseSubscriptionState subscriptionState;
 };
@@ -451,8 +454,8 @@ QVariant QIBaseResultPrivate::fetchBlob(ISC_QUAD *bId)
     }
     ba.resize(read);
 
-    bool isErr = (status[1] == isc_segstr_eof ? false : 
-                    isError(QT_TRANSLATE_NOOP("QIBaseResult", 
+    bool isErr = (status[1] == isc_segstr_eof ? false :
+                    isError(QT_TRANSLATE_NOOP("QIBaseResult",
                                                 "Unable to read BLOB"),
                                                 QSqlError::StatementError));
 
@@ -519,7 +522,7 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                         valList.append(tc->toUnicode(buffer, o));
                     else
                         valList.append(QString::fromUtf8(buffer, o));
-                    
+
                     buffer += strLen;
                 }
                 break; }
@@ -644,8 +647,8 @@ char* fillList<float>(char *buffer, const QList<QVariant> &list, float*)
     return buffer;
 }
 
-static char* qFillBufferWithString(char *buffer, const QString& string, 
-                                   short buflen, bool varying, bool array, 
+static char* qFillBufferWithString(char *buffer, const QString& string,
+                                   short buflen, bool varying, bool array,
                                    QTextCodec *tc)
 {
     QByteArray str = encodeString(tc, string); // keep a copy of the string alive in this scope
@@ -885,7 +888,16 @@ bool QIBaseResult::prepare(const QString& query)
     setAt(QSql::BeforeFirstRow);
 
     createDA(d->sqlda);
+    if (d->sqlda == (XSQLDA*)0) {
+        qWarning()<<"QIOBaseResult: createDA(): failed to allocate memory";
+        return false;
+    }
+
     createDA(d->inda);
+    if (d->inda == (XSQLDA*)0){
+        qWarning()<<"QIOBaseResult: createDA():  failed to allocate memory";
+        return false;
+    }
 
     if (!d->transaction())
         return false;
@@ -906,6 +918,10 @@ bool QIBaseResult::prepare(const QString& query)
         return false;
     if (d->inda->sqld > d->inda->sqln) {
         enlargeDA(d->inda, d->inda->sqld);
+        if (d->inda == (XSQLDA*)0) {
+            qWarning()<<"QIOBaseResult: enlargeDA(): failed to allocate memory";
+            return false;
+        }
 
         isc_dsql_describe_bind(d->status, &d->stmt, FBVERSION, d->inda);
         if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult",
@@ -916,6 +932,10 @@ bool QIBaseResult::prepare(const QString& query)
     if (d->sqlda->sqld > d->sqlda->sqln) {
         // need more field descriptors
         enlargeDA(d->sqlda, d->sqlda->sqld);
+        if (d->sqlda == (XSQLDA*)0) {
+            qWarning()<<"QIOBaseResult: enlargeDA(): failed to allocate memory";
+            return false;
+        }
 
         isc_dsql_describe(d->status, &d->stmt, FBVERSION, d->sqlda);
         if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not describe statement"),
@@ -983,14 +1003,14 @@ bool QIBaseResult::exec()
                 break;
             case SQL_LONG:
                 if (d->inda->sqlvar[para].sqlscale < 0)
-                    *((long*)d->inda->sqlvar[para].sqldata) = 
+                    *((long*)d->inda->sqlvar[para].sqldata) =
                         (long)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
                 else
                     *((long*)d->inda->sqlvar[para].sqldata) = (long)val.toLongLong();
                 break;
             case SQL_SHORT:
                 if (d->inda->sqlvar[para].sqlscale < 0)
-                    *((short*)d->inda->sqlvar[para].sqldata) = 
+                    *((short*)d->inda->sqlvar[para].sqldata) =
                         (short)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
                 else
                     *((short*)d->inda->sqlvar[para].sqldata) = (short)val.toInt();
@@ -1592,12 +1612,16 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
 
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-
+    QString table = tablename;
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
     q.exec(QLatin1String("SELECT a.RDB$FIELD_NAME, b.RDB$FIELD_TYPE, b.RDB$FIELD_LENGTH, "
            "b.RDB$FIELD_SCALE, b.RDB$FIELD_PRECISION, a.RDB$NULL_FLAG "
            "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
            "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-           "AND a.RDB$RELATION_NAME = '") + tablename.toUpper() + QLatin1String("' "
+           "AND a.RDB$RELATION_NAME = '") + table + QLatin1String("' "
            "ORDER BY a.RDB$FIELD_POSITION"));
 
     while (q.next()) {
@@ -1625,12 +1649,18 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
     if (!isOpen())
         return index;
 
+    QString tablename = table;
+    if (isIdentifierEscaped(tablename, QSqlDriver::TableName))
+        tablename = stripDelimiters(tablename, QSqlDriver::TableName);
+    else
+        tablename = tablename.toUpper();
+
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
     q.exec(QLatin1String("SELECT a.RDB$INDEX_NAME, b.RDB$FIELD_NAME, d.RDB$FIELD_TYPE, d.RDB$FIELD_SCALE "
            "FROM RDB$RELATION_CONSTRAINTS a, RDB$INDEX_SEGMENTS b, RDB$RELATION_FIELDS c, RDB$FIELDS d "
            "WHERE a.RDB$CONSTRAINT_TYPE = 'PRIMARY KEY' "
-           "AND a.RDB$RELATION_NAME = '") + table.toUpper() +
+           "AND a.RDB$RELATION_NAME = '") + tablename +
            QLatin1String(" 'AND a.RDB$INDEX_NAME = b.RDB$INDEX_NAME "
            "AND c.RDB$RELATION_NAME = a.RDB$RELATION_NAME "
            "AND c.RDB$FIELD_NAME = b.RDB$FIELD_NAME "
@@ -1707,7 +1737,7 @@ static isc_callback qEventCallback(char *result, short length, char *updated)
     qMutex()->lock();
     QIBaseDriver *driver = qBufferDriverMap()->value(result);
     qMutex()->unlock();
-    
+
     // We use an asynchronous call (i.e., queued connection) because the event callback
     // is executed in a different thread than the one in which the driver lives.
     if (driver)

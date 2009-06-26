@@ -21,10 +21,10 @@
 #ifndef JSSVGTextPathElement_h
 #define JSSVGTextPathElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGTextContentElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

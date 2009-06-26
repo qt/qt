@@ -1,3 +1,72 @@
+2009-06-20  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Jan Alonzo.
+
+        Adding files for the new test case for loading statuses.
+
+        * GNUmakefile.am:
+
+2009-06-15  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Gustavo Noronha.
+
+        Version bump in preparation for 1.1.10 release.
+
+        * configure.ac:
+
+2009-06-12  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Xan Lopez.
+
+        Refactor handling of options in the build-webkit script
+        
+        Options are now defined in one place, and then reused when creating
+        the usage help text, the arguments to GetOptions(), and when passing
+        the options on to the underlying port-dependent build systems.
+        
+        This allows the Qt port to read the defaults for the options from the
+        pro file (dynamically), and to pass the options on to qmake at build.
+
+        * configure.ac:
+
+2009-06-11  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Fix release build detection
+        https://bugs.webkit.org/show_bug.cgi?id=26267
+
+        * WebKit.pri:
+
+2009-06-10  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Xan Lopez.
+
+        Add unit tests for our WebKitNetworkRequest object.
+
+        * GNUmakefile.am:
+
+2009-06-10  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Gustavo Noronha.
+
+        Version bump in preparation for 1.1.9 release.
+
+        * configure.ac:
+
+2009-06-10  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Jan Alonzo.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25415
+        [GTK][ATK] Please implement support for get_text_at_offset
+
+        Add new dependency on the Gail utils library, needed for our a11y
+        implementation.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
 2009-05-29  Gustavo Noronha Silva  <gns@gnome.org>
 
         Reviewed by Jan Alonzo.

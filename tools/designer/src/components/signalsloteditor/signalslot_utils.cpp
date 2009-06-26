@@ -275,7 +275,7 @@ namespace qdesigner_internal {
                     const QDesignerMemberSheet *memberSheet
                             = qobject_cast<QDesignerMemberSheet*>(core->extensionManager()->extension(object,
                                                                                                       Q_TYPEID(QDesignerMemberSheetExtension)));
-                    return memberSheet->isQt3Signal(i);
+                    return (memberSheet && memberSheet->isQt3Signal(i));
                 }
         }
 
@@ -294,7 +294,7 @@ namespace qdesigner_internal {
                     const QDesignerMemberSheet *memberSheet
                             = qobject_cast<QDesignerMemberSheet*>(core->extensionManager()->extension(object,
                                                                                                       Q_TYPEID(QDesignerMemberSheetExtension)));
-                    return memberSheet->isQt3Slot(i);
+                    return (memberSheet && memberSheet->isQt3Slot(i));
                 }
         }
         return false;

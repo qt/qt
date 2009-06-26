@@ -21,8 +21,9 @@
 #ifndef JSHTMLOptionsCollection_h
 #define JSHTMLOptionsCollection_h
 
-#include "JSHTMLCollection.h"
 #include "HTMLOptionsCollection.h"
+#include "JSHTMLCollection.h"
+
 namespace WebCore {
 
 class HTMLOptionsCollection;
