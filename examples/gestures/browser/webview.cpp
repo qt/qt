@@ -48,6 +48,7 @@
 #include "webview.h"
 
 #include <QtGui/QClipboard>
+#include <QtGui/QGesture>
 #include <QtGui/QMenu>
 #include <QtGui/QMessageBox>
 #include <QtGui/QMouseEvent>

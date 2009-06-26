@@ -57,6 +57,7 @@
 #include "qbasictimer.h"
 #include "qdebug.h"
 
+#include "qgesture.h"
 #include "qgesturerecognizer.h"
 #include "private/qdirectionrecognizer_p.h"
 

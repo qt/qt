@@ -59,8 +59,6 @@
 #include <QtGui/qevent.h>
 #endif
 
-#include <QtGui/qgesture.h>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -98,6 +96,7 @@ class QIcon;
 class QWindowSurface;
 class QLocale;
 class QGraphicsProxyWidget;
+class QGestureManager;
 #if defined(Q_WS_X11)
 class QX11Info;
 #endif

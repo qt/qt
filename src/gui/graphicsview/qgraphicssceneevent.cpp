@@ -270,6 +270,7 @@
 #include <QtCore/qstring.h>
 #include "qgraphicsview.h"
 #include "qgraphicsitem.h"
+#include <QtGui/qgesture.h>
 #include <private/qevent_p.h>
 
 QT_BEGIN_NAMESPACE

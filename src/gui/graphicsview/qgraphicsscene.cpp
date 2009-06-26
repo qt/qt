@@ -241,6 +241,7 @@
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qtooltip.h>
 #include <QtGui/qtransform.h>
+#include <QtGui/qgesture.h>
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11

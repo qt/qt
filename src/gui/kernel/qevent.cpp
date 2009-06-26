@@ -49,6 +49,7 @@
 #include "qmime.h"
 #include "qdnd_p.h"
 #include "qevent_p.h"
+#include "qgesture.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -54,7 +54,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qset.h>
-#include <QtGui/qgesture.h>
 
 QT_BEGIN_HEADER
 
@@ -63,6 +62,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QAction;
+class QGesture;
 
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
