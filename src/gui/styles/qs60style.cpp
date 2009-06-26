@@ -844,7 +844,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
         case QS60StyleEnums::SP_QsnCpScrollHandleTop:
             result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
-            result.setWidth(pixelMetric(QStyle::PM_ScrollBarExtent));
+            result.setWidth(pixelMetric(QStyle::PM_ScrollBarSliderMin));
             break;
         default:
             // Generic frame part size gathering.
@@ -2339,12 +2339,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 const uint range = scrollbarOption->maximum - scrollbarOption->minimum;
                 sliderlen = (qint64(scrollbarOption->pageStep) * maxlen) / (range + scrollbarOption->pageStep);
 
-                int slidermin = pixelMetric(PM_ScrollBarSliderMin, scrollbarOption, widget);
-                if (isHorizontal && slidermin < scrollBarRect.height())
-                    slidermin = scrollBarRect.height();
-                else if (!isHorizontal && slidermin < scrollBarRect.width())
-                    slidermin = scrollBarRect.width();
-
+                const int slidermin = pixelMetric(PM_ScrollBarSliderMin, scrollbarOption, widget);
                 if (sliderlen < slidermin || range > (INT_MAX>>1))
                     sliderlen = slidermin;
                 if (sliderlen > maxlen)
