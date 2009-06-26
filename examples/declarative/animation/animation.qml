@@ -37,11 +37,13 @@ Rect {
             running: true
             repeat: true
             ColorAnimation {
+                property: "color"
                 from: "#FF0000"
                 to: "#00FF00"
                 duration: 5000
             }
             ColorAnimation {
+                property: "color"
                 from: "#00FF00"
                 to: "#FF0000"
                 duration: 5000

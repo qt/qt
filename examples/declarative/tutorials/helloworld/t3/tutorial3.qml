@@ -32,7 +32,7 @@ Rect {
                         duration: 500
                         easing: "easeOutBounce"
                     }
-                    ColorAnimation { duration: 500 }
+                    ColorAnimation { property: "color"; duration: 500 }
                 }
             }
         ]

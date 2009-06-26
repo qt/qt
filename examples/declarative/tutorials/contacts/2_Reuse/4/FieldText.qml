@@ -142,6 +142,7 @@ Rect {
                 duration: 200
             }
             ColorAnimation {
+                property: "color"
                 duration: 150
             }
         }

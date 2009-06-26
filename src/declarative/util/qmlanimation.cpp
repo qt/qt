@@ -699,10 +699,6 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
     \code
     ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
     \endcode
-
-    The default property animated is \c color, but like other animations,
-    this can be changed by setting \c property. The \c color property will
-    still animate. XXX is this a bug?
 */
 /*!
     \internal

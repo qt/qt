@@ -132,7 +132,7 @@ Transition {
 }
 \endcode
 
-Transitions can happen in parallel, in sequence, or in any combination of the two:;
+Transitions can happen in parallel, in sequence, or in any combination of the two:
 
 \code
 Transition {
@@ -141,6 +141,7 @@ Transition {
     reversible: true
     SequentialAnimation {
         ColorAnimation {
+            property: "color"
             duration: 1000
         }
         PauseAnimation {
