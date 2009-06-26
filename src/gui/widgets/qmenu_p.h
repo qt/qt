@@ -155,10 +155,14 @@ public:
     mutable uint itemsDirty : 1;
     mutable uint maxIconWidth, tabWidth;
     QRect actionRect(QAction *) const;
-    mutable QMap<QAction*, QRect> actionRects;
-    mutable QList<QAction*> actionList;
+
+    struct ActionRectInfo {
+        QAction *action;
+        QRect rect;
+    };
+    mutable QVector<ActionRectInfo> actionRects;
     mutable QHash<QAction *, QWidget *> widgetItems;
-    void calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
+    void calcActionRects() const;
     void updateActions();
     QRect popupGeometry(int screen=-1) const;
     QList<QAction *> filteredActions() const;

@@ -255,6 +255,7 @@ private slots:
     void convertByteArrayToBool() const;
     void convertByteArrayToBool_data() const;
     void toIntFromQString() const;
+    void task256984_setValue();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -2966,6 +2967,22 @@ void tst_QVariant::toIntFromQString() const
     QCOMPARE(v.toInt(&ok), 10);
     QVERIFY(ok);
 }
+
+void tst_QVariant::task256984_setValue()
+{
+    QTransform t; //we just take a value so that we're sure that it will be shared
+    QVariant v1 = t;
+    QVERIFY( v1.isDetached() );
+    QVariant v2 = v1;
+    QVERIFY( !v1.isDetached() );
+    QVERIFY( !v2.isDetached() );
+
+    qVariantSetValue(v2, 3); //set an integer value
+    
+    QVERIFY( v1.isDetached() );
+    QVERIFY( v2.isDetached() );
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

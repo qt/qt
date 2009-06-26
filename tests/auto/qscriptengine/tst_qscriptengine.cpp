@@ -1562,7 +1562,7 @@ static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
 void tst_QScriptEngine::importExtension()
 {
     QStringList libPaths = QCoreApplication::instance()->libraryPaths();
-    QCoreApplication::instance()->setLibraryPaths(QStringList() << ".");
+    QCoreApplication::instance()->setLibraryPaths(QStringList() << SRCDIR);
 
     QStringList availableExtensions;
     {
