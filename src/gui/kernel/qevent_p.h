@@ -43,6 +43,7 @@
 #define QEVENT_P_H
 
 #include <QtCore/qglobal.h>
+#include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
 
