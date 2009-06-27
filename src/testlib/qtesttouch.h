@@ -137,6 +137,7 @@ namespace QTest
         friend QTouchEventSequence touchEvent(QWidget *, QTouchEvent::DeviceType);
     };
 
+    inline
     QTouchEventSequence touchEvent(QWidget *widget = 0,
                                    QTouchEvent::DeviceType deviceType = QTouchEvent::TouchScreen)
     {
