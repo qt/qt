@@ -483,16 +483,15 @@ QLibraryInfo::location(LibraryLocation loc)
 
 QT_END_NAMESPACE
 
-#if defined(Q_CC_GNU) && defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(QT_BOOTSTRAPPED)
-
+#if defined(Q_CC_GNU) && defined(ELF_INTERPRETER)
 #  include <stdio.h>
 #  include <stdlib.h>
 
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
-    = "/lib/ld-linux.so.2";
+    = ELF_INTERPRETER;
 
 extern "C"
-void qt_core_init_boilerplate()
+void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_VERSION_STR "\n"
            "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
