@@ -402,8 +402,8 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
     if (fill || centeredIn || !isItemComplete())
         return;
 
-    if (!updatingVerticalAnchor) {
-        updatingVerticalAnchor = true;
+    if (updatingVerticalAnchor < 2) {
+        ++updatingVerticalAnchor;
         if (usedAnchors & QFxAnchors::HasTopAnchor) {
             //Handle stretching
             bool invalid = true;
@@ -455,7 +455,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
                 setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
             }
         }
-        updatingVerticalAnchor = false;
+        --updatingVerticalAnchor;
     } else {
         // ### Make this certain :)
         qmlInfo(item) << "Possible anchor loop detected on vertical anchor.";
@@ -467,8 +467,8 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
     if (fill || centeredIn || !isItemComplete())
         return;
 
-    if (!updatingHorizontalAnchor) {
-        updatingHorizontalAnchor = true;
+    if (updatingHorizontalAnchor < 2) {
+        ++updatingHorizontalAnchor;
 
         if (usedAnchors & QFxAnchors::HasLeftAnchor) {
             //Handle stretching
@@ -514,7 +514,7 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
             }
         }
 
-        updatingHorizontalAnchor = false;
+        --updatingHorizontalAnchor;
     } else {
         // ### Make this certain :)
         qmlInfo(item) << "Possible anchor loop detected on horizontal anchor.";
