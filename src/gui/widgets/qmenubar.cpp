@@ -198,8 +198,6 @@ void QMenuBarPrivate::updateGeometries()
     }
 #endif
     calcActionRects(q_width, q_start);
-    itemsWidth = q_width;
-    itemsStart = q_start;
     currentAction = 0;
 #ifndef QT_NO_SHORTCUT
     if(itemsDirty) {
@@ -270,6 +268,9 @@ QRect QMenuBarPrivate::actionRect(QAction *act) const
     const int index = actions.indexOf(act);
     if (index == -1)
         return QRect();
+
+    //makes sure the geometries are up-to-date
+    const_cast<QMenuBarPrivate*>(this)->updateGeometries();
 
     QRect ret = actionRects.at(index);
     const int fw = q->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, q);
@@ -415,9 +416,9 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
 {
     Q_Q(const QMenuBar);
 
-    if(!itemsDirty && itemsWidth == max_width && itemsStart == start) {
+    if(!itemsDirty)
         return;
-    }
+
     //let's reinitialize the buffer
     actionRects.resize(actions.count());
     actionRects.fill(QRect());
@@ -1658,17 +1659,11 @@ QSize QMenuBar::sizeHint() const
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
     int spaceBelowMenuBar = style()->styleHint(QStyle::SH_MainWindow_SpaceBelowMenuBar, 0, this);
     if(as_gui_menubar) {
-        QMap<QAction*, QRect> actionRects;
-        QList<QAction*> actionList;
         const int w = parentWidget() ? parentWidget()->width() : QApplication::desktop()->width();
         d->calcActionRects(w - (2 * fw), 0);
-        for (QMap<QAction*, QRect>::const_iterator i = actionRects.constBegin();
-             i != actionRects.constEnd(); ++i) {
-            QRect actionRect(i.value());
-            if(actionRect.x() + actionRect.width() > ret.width())
-                ret.setWidth(actionRect.x() + actionRect.width());
-            if(actionRect.y() + actionRect.height() > ret.height())
-                ret.setHeight(actionRect.y() + actionRect.height());
+        for (int i = 0; i < d->actionRects.count(); ++i) {
+            const QRect &actionRect = d->actionRects.at(i);
+            ret = ret.expandedTo(QSize(actionRect.x() + actionRect.width(), actionRect.y() + actionRect.height()));
         }
         ret += QSize(2*fw + 2*hmargin, 2*fw + 2*vmargin);
     }

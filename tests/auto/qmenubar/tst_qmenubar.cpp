@@ -50,6 +50,7 @@
 #include <qstyle.h>
 #include <qdesktopwidget.h>
 #include <qaction.h>
+#include <qstyleoption.h>
 
 #ifdef Q_WS_WIN
 #include <windows.h>
@@ -150,6 +151,7 @@ private slots:
     void check_menuPosition();
     void task223138_triggered();
     void task256322_highlight();
+    void menubarSizeHint();
     
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -1554,6 +1556,47 @@ void tst_QMenuBar::task256322_highlight()
     QVERIFY(!menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QVERIFY(!win.menuBar()->activeAction());
+}
+
+void tst_QMenuBar::menubarSizeHint()
+{
+    QMenuBar mb;
+    //this is a list of arbitrary strings so that we check the geometry
+    QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
+    foreach(QString str, list)
+        mb.addAction(str);
+
+    int left, top, right, bottom;
+    mb.getContentsMargins(&left, &top, &right, &bottom);
+    const int panelWidth = mb.style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, &mb);
+
+    mb.show();
+    QRect result;
+    foreach(QAction *action, mb.actions()) {
+        result |= mb.actionGeometry(action);
+        QCOMPARE(result.x(), left + panelWidth);
+        QCOMPARE(result.y(), top + panelWidth);
+    }
+
+    //this code is copied from QMenuBar
+    //there is no public member that allows to initialize a styleoption instance
+    QStyleOptionMenuItem opt;
+    opt.rect = mb.rect();
+    opt.menuRect = mb.rect();
+    opt.state = QStyle::State_None;
+    opt.menuItemType = QStyleOptionMenuItem::Normal;
+    opt.checkType = QStyleOptionMenuItem::NotCheckable;
+    opt.palette = mb.palette();
+
+    QSize resSize = QSize(result.x(), result.y()) + result.size()
+        + QSize(right + panelWidth, top + panelWidth);
+
+
+    resSize = mb.style()->sizeFromContents(QStyle::CT_MenuBar, &opt,
+                                         resSize.expandedTo(QApplication::globalStrut()),
+                                         &mb);
+
+    QCOMPARE(resSize, mb.sizeHint());
 }
 
 
