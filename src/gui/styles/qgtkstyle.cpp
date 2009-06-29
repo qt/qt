@@ -686,11 +686,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
 
         QPixmap pixmap;
-        QPixmapCache::find(pmKey, pixmap);
         QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
 
         // Only draw through style once
-        if (pixmap.isNull()) {
+        if (!QPixmapCache::find(pmKey, pixmap)) {
             pixmap = QPixmap(pmSize, pmSize);
             pixmap.fill(Qt::transparent);
             QPainter pmPainter(&pixmap);
