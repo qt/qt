@@ -150,7 +150,6 @@ private:
 void QMenuPrivate::init()
 {
     Q_Q(QMenu);
-    activationRecursionGuard = false;
 #ifndef QT_NO_WHATSTHIS
     q->setAttribute(Qt::WA_CustomWhatsThis);
 #endif
@@ -2712,7 +2711,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     d->motions++;
     if (d->motions == 0) // ignore first mouse move event (see enterEvent())
         return;
-    d->hasHadMouse |= rect().contains(e->pos());
+    d->hasHadMouse = d->hasHadMouse || rect().contains(e->pos());
 
     QAction *action = d->actionAt(e->pos());
     if (!action) {

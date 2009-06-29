@@ -223,7 +223,7 @@ static quintptr tabId(const QDockAreaLayoutItem &item)
 QDockAreaLayoutInfo::QDockAreaLayoutInfo()
     : sep(0), dockPos(QInternal::LeftDock), o(Qt::Horizontal), mainWindow(0)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth)
+    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth), tabBarVisible(false)
 #endif
 {
 }
@@ -233,7 +233,7 @@ QDockAreaLayoutInfo::QDockAreaLayoutInfo(int _sep, QInternal::DockPosition _dock
                                             QMainWindow *window)
     : sep(_sep), dockPos(_dockPos), o(_o), mainWindow(window)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape))
+    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape)), tabBarVisible(false)
 #endif
 {
 #ifdef QT_NO_TABBAR
