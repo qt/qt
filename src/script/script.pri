@@ -1,3 +1,5 @@
+# disable JIT for now
+DEFINES += ENABLE_JIT=0
 # FIXME: shared the statically built JavaScriptCore
 include($$PWD/../3rdparty/webkit/JavaScriptCore/JavaScriptCore.pri)
 
