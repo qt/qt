@@ -4193,7 +4193,7 @@ int QCustomRasterPaintDevice::bytesPerLine() const
 
 #elif defined(Q_WS_S60)
 
-void QRasterBuffer::prepareBuffer(int width, int height)
+void QRasterBuffer::prepareBuffer(int /* width */, int /* height */)
 {
 }
 

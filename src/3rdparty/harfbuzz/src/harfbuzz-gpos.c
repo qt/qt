@@ -2723,7 +2723,7 @@ static HB_Error  Load_Mark2Array( HB_Mark2Array*  m2a,
 {
   HB_Error  error;
 
-  HB_UShort        k, m, n, count;
+  HB_UShort        m, n, count;
   HB_UInt          cur_offset, new_offset, base_offset;
 
   HB_Mark2Record  *m2r;
