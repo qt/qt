@@ -1327,12 +1327,14 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     }
 
     QList<QSimplexConstraint *> trunkConstraints;
+    QList<QSimplexConstraint *> nonTrunkConstraints;
     QSet<QSimplexVariable *> trunkVariables;
 
     trunkVariables += edgeL1;
     trunkVariables += edgeL2;
 
     bool dirty;
+    bool hasNonTrunkConstraints = false;
     do {
         dirty = false;
 
@@ -1358,7 +1360,9 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
                 it = remainingConstraints.erase(it);
                 dirty = true;
             } else {
-                ++it;
+                nonTrunkConstraints += c;
+                it = remainingConstraints.erase(it);
+                hasNonTrunkConstraints = true;
             }
         }
     } while (dirty);
@@ -1366,15 +1370,8 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     QList< QList<QSimplexConstraint *> > result;
     result += trunkConstraints;
 
-    if (!remainingConstraints.isEmpty()) {
-        QList<QSimplexConstraint *> nonTrunkConstraints;
-        QLinkedList<QSimplexConstraint *>::iterator it = remainingConstraints.begin();
-        while (it != remainingConstraints.end()) {
-            nonTrunkConstraints += *it;
-            ++it;
-        }
+    if (hasNonTrunkConstraints)
         result += nonTrunkConstraints;
-    }
 
     return result;
 }
