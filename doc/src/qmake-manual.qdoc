@@ -858,9 +858,11 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 21
 
-
     Each time you update the project file, you need to run \c qmake to generate
     an updated Visual Studio project.
+
+    \note If you are using the Visual Studio Add-in, you can import \c .pro
+    files via the \gui{Qt->Import from .pro file} menu item.
 
     \section2 Visual Studio 2005 Manifest Files
 
