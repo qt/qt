@@ -538,9 +538,13 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     QByteArray baunzip;
     int res;
     do {
-        baunzip.resize(len);
-        res = ::uncompress((uchar*)baunzip.data(), &len,
-                            (uchar*)data+4, nbytes-4);
+        QT_TRY {
+            baunzip.resize(len);
+            res = ::uncompress((uchar*)baunzip.data(), &len,
+                                (uchar*)data+4, nbytes-4);
+        } QT_CATCH (const std::bad_alloc &) {
+            res = Z_MEM_ERROR;
+        }
 
         switch (res) {
         case Z_OK:
