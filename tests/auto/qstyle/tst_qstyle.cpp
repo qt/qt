@@ -217,7 +217,8 @@ void tst_QStyle::drawItemPixmap()
 {
     testWidget->resize(300, 300);
     testWidget->show();
-    QPixmap p("task_25863.png", "PNG");
+
+    QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
     QPixmap actualPix = QPixmap::grabWidget(testWidget);
     QVERIFY(pixmapsAreEqual(&actualPix,&p));
     testWidget->hide();
