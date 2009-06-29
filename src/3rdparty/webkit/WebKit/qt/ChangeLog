@@ -1,3 +1,37 @@
+2009-06-29  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Fix the Qt build, add missing isSpeaking() implementation to
+        ContextMenuClient.
+
+        * WebCoreSupport/ContextMenuClientQt.cpp:
+        (WebCore::ContextMenuClientQt::isSpeaking):
+        * WebCoreSupport/ContextMenuClientQt.h:
+
+2009-06-28  Sriram Yadavalli  <sriram.yadavalli@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Fix build break for Qt
+        https://bugs.webkit.org/show_bug.cgi?id=26779
+
+        * Api/qwebpage.cpp:
+        (QWebPage::swallowContextMenuEvent):
+
+2009-06-27  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Build fix for Qt under Windows.
+
+        * Api/qwebhistory.h: Use consistent export linkage for the datastream operators.
+
+2009-06-26  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Simon Fraser.
+        
+        Changed call of scrollbarUnderMouse to scrollbarUnderPoint to match new API.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::swallowContextMenuEvent):
+
 2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
 
         Reviewed by Simon Hausmann.
