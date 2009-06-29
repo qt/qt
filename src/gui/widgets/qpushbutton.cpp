@@ -387,8 +387,9 @@ bool QPushButton::isDefault() const
 QSize QPushButton::sizeHint() const
 {
     Q_D(const QPushButton);
-    if (d->sizeHint.isValid())
+    if (d->sizeHint.isValid() && d->lastAutoDefault == autoDefault())
         return d->sizeHint;
+    d->lastAutoDefault = autoDefault();
     ensurePolished();
 
     int w = 0, h = 0;
@@ -657,6 +658,8 @@ bool QPushButton::event(QEvent *e)
                ) {
 		d->resetLayoutItemMargins();
 		updateGeometry();
+    } else if (e->type() == QEvent::PolishRequest) {
+        updateGeometry();
     }
     return QAbstractButton::event(e);
 }
