@@ -60,7 +60,7 @@
      <x>0</x>
      <y>0</y>
      <width>673</width>
-     <height>30</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuPhrases">
@@ -116,6 +116,7 @@
     <addaction name="actionResetSorting"/>
     <addaction name="actionDisplayGuesses"/>
     <addaction name="actionStatistics"/>
+    <addaction name="actionLenghtVariants"/>
     <addaction name="separator"/>
     <addaction name="menuToolbars"/>
     <addaction name="menuViewViews"/>
@@ -875,6 +876,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionLenghtVariants">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lenght Variants</string>
    </property>
   </action>
  </widget>

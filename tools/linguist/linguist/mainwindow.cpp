@@ -480,6 +480,10 @@ MainWindow::MainWindow()
     readConfig();
     m_statistics = 0;
 
+    connect(m_ui.actionLenghtVariants, SIGNAL(toggled(bool)),
+            m_messageEditor, SLOT(setLenghtVariants(bool)));
+    m_messageEditor->setLenghtVariants(m_ui.actionLenghtVariants->isChecked());
+
     m_focusWatcher = new FocusWatcher(m_messageEditor, this);
     m_contextView->installEventFilter(m_focusWatcher);
     m_messageView->installEventFilter(m_focusWatcher);
@@ -2358,6 +2362,13 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
             }
             QStringList translations = m->translations();
 
+            // Truncated variants are permitted to be "denormalized"
+            for (int i = 0; i < translations.count(); ++i) {
+                int sep = translations.at(i).indexOf(QChar(Translator::BinaryVariantSeparator));
+                if (sep >= 0)
+                    translations[i].truncate(sep);
+            }
+
             if (m_ui.actionAccelerators->isChecked()) {
                 bool sk = !QKeySequence::mnemonic(source).isEmpty();
                 bool tk = true;
@@ -2500,6 +2511,8 @@ void MainWindow::readConfig()
         config.value(settingPath("Validators/PhraseMatch"), true).toBool());
     m_ui.actionPlaceMarkerMatches->setChecked(
         config.value(settingPath("Validators/PlaceMarkers"), true).toBool());
+    m_ui.actionLenghtVariants->setChecked(
+        config.value(settingPath("Options/LengthVariants"), false).toBool());
 
     recentFiles().readConfig();
 
@@ -2524,6 +2537,8 @@ void MainWindow::writeConfig()
         m_ui.actionPhraseMatches->isChecked());
     config.setValue(settingPath("Validators/PlaceMarkers"),
         m_ui.actionPlaceMarkerMatches->isChecked());
+    config.setValue(settingPath("Options/LengthVariants"),
+        m_ui.actionLenghtVariants->isChecked());
     config.setValue(settingPath("MainWindowState"),
         saveState());
     recentFiles().writeConfig();
