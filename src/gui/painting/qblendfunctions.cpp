@@ -317,9 +317,9 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
         const uchar *src = srcPixels + y * sbpl;
         const uchar *srcEnd = src + srcOffset;
         while (src < srcEnd) {
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
-            // non-16-bit aligned memory access is not possible on PowerPC &
-            // ARM <v6 (QT_ARCH_ARMV6)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
+            // non-16-bit aligned memory access is not possible on PowerPC,
+            // ARM <v6 (QT_ARCH_ARMV6) & SH
             quint16 spix = (quint16(src[2])<<8) + src[1];
 #else
             quint16 spix = *(quint16 *) (src + 1);
