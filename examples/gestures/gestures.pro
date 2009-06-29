@@ -3,8 +3,7 @@ TEMPLATE      = \
 SUBDIRS       = \
               imageviewer \
               graphicsview \
-              collidingmice \
-              pannablewebview
+              collidingmice
 
 contains(QT_CONFIG, webkit) {
         SUBDIRS += pannablewebview
