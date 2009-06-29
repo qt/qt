@@ -90,7 +90,7 @@ public:
     JSSVGLengthConstructor(ExecState* exec)
         : DOMObject(JSSVGLengthConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGLengthPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGLengthPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -138,9 +138,9 @@ static const HashTable JSSVGLengthPrototypeTable =
 
 const ClassInfo JSSVGLengthPrototype::s_info = { "SVGLengthPrototype", 0, &JSSVGLengthPrototypeTable, 0 };
 
-JSObject* JSSVGLengthPrototype::self(ExecState* exec)
+JSObject* JSSVGLengthPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGLength>(exec);
+    return getDOMPrototype<JSSVGLength>(exec, globalObject);
 }
 
 bool JSSVGLengthPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -164,9 +164,9 @@ JSSVGLength::~JSSVGLength()
 
 }
 
-JSObject* JSSVGLength::createPrototype(ExecState* exec)
+JSObject* JSSVGLength::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGLengthPrototype(JSSVGLengthPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGLengthPrototype(JSSVGLengthPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGLength::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

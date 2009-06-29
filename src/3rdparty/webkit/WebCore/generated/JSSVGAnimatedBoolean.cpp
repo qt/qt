@@ -68,9 +68,9 @@ static const HashTable JSSVGAnimatedBooleanPrototypeTable =
 
 const ClassInfo JSSVGAnimatedBooleanPrototype::s_info = { "SVGAnimatedBooleanPrototype", 0, &JSSVGAnimatedBooleanPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedBooleanPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedBooleanPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedBoolean>(exec);
+    return getDOMPrototype<JSSVGAnimatedBoolean>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedBoolean::s_info = { "SVGAnimatedBoolean", 0, &JSSVGAnimatedBooleanTable, 0 };
@@ -88,9 +88,9 @@ JSSVGAnimatedBoolean::~JSSVGAnimatedBoolean()
 
 }
 
-JSObject* JSSVGAnimatedBoolean::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedBoolean::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedBooleanPrototype(JSSVGAnimatedBooleanPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedBooleanPrototype(JSSVGAnimatedBooleanPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedBoolean::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

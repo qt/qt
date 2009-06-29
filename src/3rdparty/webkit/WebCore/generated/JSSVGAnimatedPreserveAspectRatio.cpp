@@ -70,9 +70,9 @@ static const HashTable JSSVGAnimatedPreserveAspectRatioPrototypeTable =
 
 const ClassInfo JSSVGAnimatedPreserveAspectRatioPrototype::s_info = { "SVGAnimatedPreserveAspectRatioPrototype", 0, &JSSVGAnimatedPreserveAspectRatioPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedPreserveAspectRatioPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedPreserveAspectRatioPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedPreserveAspectRatio>(exec);
+    return getDOMPrototype<JSSVGAnimatedPreserveAspectRatio>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedPreserveAspectRatio::s_info = { "SVGAnimatedPreserveAspectRatio", 0, &JSSVGAnimatedPreserveAspectRatioTable, 0 };
@@ -90,9 +90,9 @@ JSSVGAnimatedPreserveAspectRatio::~JSSVGAnimatedPreserveAspectRatio()
 
 }
 
-JSObject* JSSVGAnimatedPreserveAspectRatio::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedPreserveAspectRatioPrototype(JSSVGAnimatedPreserveAspectRatioPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedPreserveAspectRatioPrototype(JSSVGAnimatedPreserveAspectRatioPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

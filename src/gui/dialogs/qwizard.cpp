@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -560,6 +560,7 @@ public:
     void enableUpdates();
     void _q_emitCustomButtonClicked();
     void _q_updateButtonStates();
+    void _q_handleFieldObjectDestroyed(QObject *);
     void setStyle(QStyle *style);
 #ifdef Q_WS_MAC
     static QPixmap findDefaultBackgroundPixmap();
@@ -731,6 +732,8 @@ void QWizardPrivate::cleanupPagesNotInHistory()
 
 void QWizardPrivate::addField(const QWizardField &field)
 {
+    Q_Q(QWizard);
+
     QWizardField myField = field;
     myField.resolve(defaultPropertyTable);
 
@@ -744,15 +747,23 @@ void QWizardPrivate::addField(const QWizardField &field)
     if (myField.mandatory && !myField.changedSignal.isEmpty())
         QObject::connect(myField.object, myField.changedSignal,
                          myField.page, SLOT(_q_maybeEmitCompleteChanged()));
+    QObject::connect(
+        myField.object, SIGNAL(destroyed(QObject *)), q,
+        SLOT(_q_handleFieldObjectDestroyed(QObject *)));
 }
 
 void QWizardPrivate::removeFieldAt(int index)
 {
+    Q_Q(QWizard);
+
     const QWizardField &field = fields.at(index);
     fieldIndexMap.remove(field.name);
     if (field.mandatory && !field.changedSignal.isEmpty())
         QObject::disconnect(field.object, field.changedSignal,
                             field.page, SLOT(_q_maybeEmitCompleteChanged()));
+    QObject::disconnect(
+        field.object, SIGNAL(destroyed(QObject *)), q,
+        SLOT(_q_handleFieldObjectDestroyed(QObject *)));
     fields.remove(index);
 }
 
@@ -1589,6 +1600,20 @@ void QWizardPrivate::_q_updateButtonStates()
 #endif
 
     enableUpdates();
+}
+
+void QWizardPrivate::_q_handleFieldObjectDestroyed(QObject *object)
+{
+    QVector<QWizardField>::iterator it = fields.begin();
+    while (it != fields.end()) {
+        const QWizardField &field = *it;
+        if (field.object == object) {
+            fieldIndexMap.remove(field.name);
+            it = fields.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void QWizardPrivate::setStyle(QStyle *style)

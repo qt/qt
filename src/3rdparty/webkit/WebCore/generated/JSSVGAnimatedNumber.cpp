@@ -69,9 +69,9 @@ static const HashTable JSSVGAnimatedNumberPrototypeTable =
 
 const ClassInfo JSSVGAnimatedNumberPrototype::s_info = { "SVGAnimatedNumberPrototype", 0, &JSSVGAnimatedNumberPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedNumberPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedNumberPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedNumber>(exec);
+    return getDOMPrototype<JSSVGAnimatedNumber>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedNumber::s_info = { "SVGAnimatedNumber", 0, &JSSVGAnimatedNumberTable, 0 };
@@ -89,9 +89,9 @@ JSSVGAnimatedNumber::~JSSVGAnimatedNumber()
 
 }
 
-JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedNumberPrototype(JSSVGAnimatedNumberPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedNumberPrototype(JSSVGAnimatedNumberPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedNumber::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

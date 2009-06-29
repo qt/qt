@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,13 +57,6 @@
 
 
     \section1 Issues with Third Party Software
-
-    \section2 Intel Compiler Support
-
-    Although it is possible to build applications against Qt 4.5.x using Intel
-    CC 10, these applications will crash when run.  We recommend that developers
-    who rely on this compiler wait until a fix is available before upgrading to
-    the Qt 4.5.x series of releases.
 
     \section2 X11 Hardware Support
 

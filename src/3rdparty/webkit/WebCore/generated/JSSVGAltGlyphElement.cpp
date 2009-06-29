@@ -73,9 +73,9 @@ static const HashTable JSSVGAltGlyphElementPrototypeTable =
 
 const ClassInfo JSSVGAltGlyphElementPrototype::s_info = { "SVGAltGlyphElementPrototype", 0, &JSSVGAltGlyphElementPrototypeTable, 0 };
 
-JSObject* JSSVGAltGlyphElementPrototype::self(ExecState* exec)
+JSObject* JSSVGAltGlyphElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAltGlyphElement>(exec);
+    return getDOMPrototype<JSSVGAltGlyphElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAltGlyphElement::s_info = { "SVGAltGlyphElement", &JSSVGTextPositioningElement::s_info, &JSSVGAltGlyphElementTable, 0 };
@@ -85,9 +85,9 @@ JSSVGAltGlyphElement::JSSVGAltGlyphElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGAltGlyphElement::createPrototype(ExecState* exec)
+JSObject* JSSVGAltGlyphElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAltGlyphElementPrototype(JSSVGAltGlyphElementPrototype::createStructure(JSSVGTextPositioningElementPrototype::self(exec)));
+    return new (exec) JSSVGAltGlyphElementPrototype(JSSVGAltGlyphElementPrototype::createStructure(JSSVGTextPositioningElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGAltGlyphElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

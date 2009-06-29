@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,7 @@
     money. The Free Software Foundation (creators of the GNU GPL) speaks
     of free in this context as in "free speech", not as in "no cost".
 
-    Qt Software supports the free software concept by providing the Qt Open Source
+    Nokia supports the free software concept by providing the Qt Open Source
     Edition, which is licensed under the \l{GNU General Public License (GPL)}
     (version 3) and the \l{GNU Lesser General Public License (LGPL)} (version 2.1).
     You can use this edition of Qt to create and distribute software with licenses
@@ -81,8 +81,8 @@
     used in Qt.
 
     Information about Qt Commercial License Agreements is available
-    in the \l{Qt Licensing Overview} on the Qt website or by email
-    from \l{mailto:qt-sales@nokia.com}{qt-sales@nokia.com}.
+    in the \l{Qt Licensing Overview} on the Qt website or by contacting
+    the sales department at http://www.qtsoftware.com/contact.
 
     If you are in doubt what edition of Qt is right for your project,
     please contact

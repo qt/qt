@@ -79,9 +79,9 @@ static const HashTable JSSVGStopElementPrototypeTable =
 
 const ClassInfo JSSVGStopElementPrototype::s_info = { "SVGStopElementPrototype", 0, &JSSVGStopElementPrototypeTable, 0 };
 
-JSObject* JSSVGStopElementPrototype::self(ExecState* exec)
+JSObject* JSSVGStopElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGStopElement>(exec);
+    return getDOMPrototype<JSSVGStopElement>(exec, globalObject);
 }
 
 bool JSSVGStopElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -96,9 +96,9 @@ JSSVGStopElement::JSSVGStopElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGStopElement::createPrototype(ExecState* exec)
+JSObject* JSSVGStopElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGStopElementPrototype(JSSVGStopElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGStopElementPrototype(JSSVGStopElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGStopElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

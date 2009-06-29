@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -129,6 +129,9 @@ public:
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
     void setNetworkCache(QAbstractNetworkCache *networkCache);
+
+    void pauseNotificationHandling();
+    void resumeNotificationHandling();
     void backendNotify(InternalNotifications notification);
     void handleNotifications();
     void createCache();
@@ -156,6 +159,8 @@ public:
     QIODevice *cacheSaveDevice;
 
     NotificationQueue pendingNotifications;
+    bool notificationHandlingPaused;
+
     QUrl urlForLastAuthentication;
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy lastProxyAuthentication;

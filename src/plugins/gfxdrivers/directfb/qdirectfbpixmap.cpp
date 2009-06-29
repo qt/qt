@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,10 +81,8 @@ void QDirectFBPixmapData::resize(int width, int height)
         qWarning("QDirectFBPixmapData::resize(): Unable to allocate surface");
         return;
     }
-
     setSerialNumber(++global_ser_no);
 }
-
 
 // mostly duplicated from qimage.cpp (QImageData::checkForAlphaPixels)
 static bool checkForAlphaPixels(const QImage &img)
@@ -200,6 +198,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         QPixmapData::copy(data, rect);
         return;
     }
+    unlockDirectFB();
 
     IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
     alpha = data->hasAlphaChannel();
@@ -225,7 +224,9 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     const DFBRectangle blitRect = { rect.x(), rect.y(),
                                     rect.width(), rect.height() };
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
+#endif
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::copy()", result);
         invalidate();
@@ -280,10 +281,10 @@ void QDirectFBPixmapData::fill(const QColor &color)
 QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
                                          Qt::TransformationMode mode) const
 {
+    QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
     if (!dfbSurface || transform.type() != QTransform::TxScale
         || mode != Qt::FastTransformation)
     {
-        QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
         const QImage *image = that->buffer();
         Q_ASSERT(image);
         const QImage transformed = image->transformed(transform, mode);
@@ -292,6 +293,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         data->fromImage(transformed, Qt::AutoColor);
         return QPixmap(data);
     }
+    that->unlockDirectFB();
 
     int w, h;
     dfbSurface->GetSize(dfbSurface, &w, &h);
@@ -316,8 +318,9 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
 
     const DFBRectangle destRect = { 0, 0, size.width(), size.height() };
     data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     data->dfbSurface->ReleaseSource(data->dfbSurface);
-
+#endif
     return QPixmap(data);
 }
 
@@ -336,7 +339,9 @@ QImage QDirectFBPixmapData::toImage() const
             imgSurface->SetBlittingFlags(imgSurface, DSBLIT_NOFX);
         }
         imgSurface->Blit(imgSurface, dfbSurface, 0, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
         imgSurface->ReleaseSource(imgSurface);
+#endif
         imgSurface->Release(imgSurface);
         return ret;
     }

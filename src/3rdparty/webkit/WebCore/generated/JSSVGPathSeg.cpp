@@ -96,7 +96,7 @@ public:
     JSSVGPathSegConstructor(ExecState* exec)
         : DOMObject(JSSVGPathSegConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGPathSegPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGPathSegPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -151,9 +151,9 @@ static const HashTable JSSVGPathSegPrototypeTable =
 
 const ClassInfo JSSVGPathSegPrototype::s_info = { "SVGPathSegPrototype", 0, &JSSVGPathSegPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSeg>(exec);
+    return getDOMPrototype<JSSVGPathSeg>(exec, globalObject);
 }
 
 bool JSSVGPathSegPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -176,9 +176,9 @@ JSSVGPathSeg::~JSSVGPathSeg()
 
 }
 
-JSObject* JSSVGPathSeg::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSeg::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegPrototype(JSSVGPathSegPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGPathSegPrototype(JSSVGPathSegPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGPathSeg::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

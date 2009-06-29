@@ -15,10 +15,8 @@ build_all:!build_pass {
 DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 SOURCES += main.cpp
 
-include(../../../src/qt_professional.pri)
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
-include(../shared/translatortools.pri)
 
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS        += target

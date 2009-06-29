@@ -67,9 +67,9 @@ static const HashTable JSSQLResultSetRowListPrototypeTable =
 
 const ClassInfo JSSQLResultSetRowListPrototype::s_info = { "SQLResultSetRowListPrototype", 0, &JSSQLResultSetRowListPrototypeTable, 0 };
 
-JSObject* JSSQLResultSetRowListPrototype::self(ExecState* exec)
+JSObject* JSSQLResultSetRowListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSQLResultSetRowList>(exec);
+    return getDOMPrototype<JSSQLResultSetRowList>(exec, globalObject);
 }
 
 bool JSSQLResultSetRowListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -91,9 +91,9 @@ JSSQLResultSetRowList::~JSSQLResultSetRowList()
 
 }
 
-JSObject* JSSQLResultSetRowList::createPrototype(ExecState* exec)
+JSObject* JSSQLResultSetRowList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSQLResultSetRowListPrototype(JSSQLResultSetRowListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSQLResultSetRowListPrototype(JSSQLResultSetRowListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSQLResultSetRowList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

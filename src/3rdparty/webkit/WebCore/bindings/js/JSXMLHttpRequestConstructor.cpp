@@ -37,8 +37,7 @@ JSXMLHttpRequestConstructor::JSXMLHttpRequestConstructor(ExecState* exec, Script
 {
     ASSERT(context->isDocument());
     m_document = static_cast<JSDocument*>(asObject(toJS(exec, static_cast<Document*>(context))));
-
-    putDirect(exec->propertyNames().prototype, JSXMLHttpRequestPrototype::self(exec), None);
+    putDirect(exec->propertyNames().prototype, JSXMLHttpRequestPrototype::self(exec, exec->lexicalGlobalObject()), None);
 }
 
 static JSObject* constructXMLHttpRequest(ExecState* exec, JSObject* constructor, const ArgList&)

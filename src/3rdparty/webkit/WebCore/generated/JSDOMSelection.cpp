@@ -97,9 +97,9 @@ static const HashTable JSDOMSelectionPrototypeTable =
 
 const ClassInfo JSDOMSelectionPrototype::s_info = { "DOMSelectionPrototype", 0, &JSDOMSelectionPrototypeTable, 0 };
 
-JSObject* JSDOMSelectionPrototype::self(ExecState* exec)
+JSObject* JSDOMSelectionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMSelection>(exec);
+    return getDOMPrototype<JSDOMSelection>(exec, globalObject);
 }
 
 bool JSDOMSelectionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -121,9 +121,9 @@ JSDOMSelection::~JSDOMSelection()
 
 }
 
-JSObject* JSDOMSelection::createPrototype(ExecState* exec)
+JSObject* JSDOMSelection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMSelectionPrototype(JSDOMSelectionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMSelectionPrototype(JSDOMSelectionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMSelection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2585,6 +2585,9 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
     Q_D(QPainter);
 
     if (d->extended) {
+        if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+            op = Qt::ReplaceClip;
+
         if (!d->engine) {
             qWarning("QPainter::setClipRect: Painter not active");
             return;
@@ -2638,6 +2641,9 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
+    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+        op = Qt::ReplaceClip;
+
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(rect, op);
@@ -2645,9 +2651,6 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
-
-    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
-        op = Qt::ReplaceClip;
 
     d->state->clipRegion = rect;
     d->state->clipOperation = op;
@@ -2691,6 +2694,9 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         return;
     }
 
+    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+        op = Qt::ReplaceClip;
+
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(r, op);
@@ -2698,9 +2704,6 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
-
-    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
-        op = Qt::ReplaceClip;
 
     d->state->clipRegion = r;
     d->state->clipOperation = op;
@@ -3088,6 +3091,9 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         return;
     }
 
+    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+        op = Qt::ReplaceClip;
+
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(path, op);
@@ -3095,11 +3101,6 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
-
-
-
-    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
-        op = Qt::ReplaceClip;
 
     d->state->clipPath = path;
     d->state->clipOperation = op;

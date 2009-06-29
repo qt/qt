@@ -34,7 +34,7 @@ class JSSVGFEPointLightElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
     JSSVGFEPointLightElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEPointLightElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -49,7 +49,7 @@ public:
 
 class JSSVGFEPointLightElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGFEPointLightElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

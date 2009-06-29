@@ -70,7 +70,7 @@ public:
     JSCSSCharsetRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSCharsetRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSCharsetRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSCharsetRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -105,9 +105,9 @@ static const HashTable JSCSSCharsetRulePrototypeTable =
 
 const ClassInfo JSCSSCharsetRulePrototype::s_info = { "CSSCharsetRulePrototype", 0, &JSCSSCharsetRulePrototypeTable, 0 };
 
-JSObject* JSCSSCharsetRulePrototype::self(ExecState* exec)
+JSObject* JSCSSCharsetRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSCharsetRule>(exec);
+    return getDOMPrototype<JSCSSCharsetRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSCharsetRule::s_info = { "CSSCharsetRule", &JSCSSRule::s_info, &JSCSSCharsetRuleTable, 0 };
@@ -117,9 +117,9 @@ JSCSSCharsetRule::JSCSSCharsetRule(PassRefPtr<Structure> structure, PassRefPtr<C
 {
 }
 
-JSObject* JSCSSCharsetRule::createPrototype(ExecState* exec)
+JSObject* JSCSSCharsetRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSCharsetRulePrototype(JSCSSCharsetRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSCharsetRulePrototype(JSCSSCharsetRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSCharsetRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

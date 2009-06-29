@@ -76,7 +76,7 @@ public:
     JSPositionErrorConstructor(ExecState* exec)
         : DOMObject(JSPositionErrorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSPositionErrorPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSPositionErrorPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -115,9 +115,9 @@ static const HashTable JSPositionErrorPrototypeTable =
 
 const ClassInfo JSPositionErrorPrototype::s_info = { "PositionErrorPrototype", 0, &JSPositionErrorPrototypeTable, 0 };
 
-JSObject* JSPositionErrorPrototype::self(ExecState* exec)
+JSObject* JSPositionErrorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSPositionError>(exec);
+    return getDOMPrototype<JSPositionError>(exec, globalObject);
 }
 
 bool JSPositionErrorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -139,9 +139,9 @@ JSPositionError::~JSPositionError()
 
 }
 
-JSObject* JSPositionError::createPrototype(ExecState* exec)
+JSObject* JSPositionError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSPositionErrorPrototype(JSPositionErrorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSPositionErrorPrototype(JSPositionErrorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSPositionError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

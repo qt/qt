@@ -68,9 +68,9 @@ static const HashTable JSSQLErrorPrototypeTable =
 
 const ClassInfo JSSQLErrorPrototype::s_info = { "SQLErrorPrototype", 0, &JSSQLErrorPrototypeTable, 0 };
 
-JSObject* JSSQLErrorPrototype::self(ExecState* exec)
+JSObject* JSSQLErrorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSQLError>(exec);
+    return getDOMPrototype<JSSQLError>(exec, globalObject);
 }
 
 const ClassInfo JSSQLError::s_info = { "SQLError", 0, &JSSQLErrorTable, 0 };
@@ -87,9 +87,9 @@ JSSQLError::~JSSQLError()
 
 }
 
-JSObject* JSSQLError::createPrototype(ExecState* exec)
+JSObject* JSSQLError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSQLErrorPrototype(JSSQLErrorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSQLErrorPrototype(JSSQLErrorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSQLError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

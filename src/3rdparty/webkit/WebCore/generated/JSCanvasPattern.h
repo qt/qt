@@ -34,7 +34,7 @@ class JSCanvasPattern : public DOMObject {
 public:
     JSCanvasPattern(PassRefPtr<JSC::Structure>, PassRefPtr<CanvasPattern>);
     virtual ~JSCanvasPattern();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -49,7 +49,7 @@ CanvasPattern* toCanvasPattern(JSC::JSValuePtr);
 
 class JSCanvasPatternPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSCanvasPatternPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

@@ -34,7 +34,7 @@ class JSTextMetrics : public DOMObject {
 public:
     JSTextMetrics(PassRefPtr<JSC::Structure>, PassRefPtr<TextMetrics>);
     virtual ~JSTextMetrics();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -56,7 +56,7 @@ TextMetrics* toTextMetrics(JSC::JSValuePtr);
 
 class JSTextMetricsPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSTextMetricsPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

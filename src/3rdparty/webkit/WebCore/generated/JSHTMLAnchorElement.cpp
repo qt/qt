@@ -90,7 +90,7 @@ public:
     JSHTMLAnchorElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLAnchorElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLAnchorElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLAnchorElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -126,9 +126,9 @@ static const HashTable JSHTMLAnchorElementPrototypeTable =
 
 const ClassInfo JSHTMLAnchorElementPrototype::s_info = { "HTMLAnchorElementPrototype", 0, &JSHTMLAnchorElementPrototypeTable, 0 };
 
-JSObject* JSHTMLAnchorElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLAnchorElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLAnchorElement>(exec);
+    return getDOMPrototype<JSHTMLAnchorElement>(exec, globalObject);
 }
 
 bool JSHTMLAnchorElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -143,9 +143,9 @@ JSHTMLAnchorElement::JSHTMLAnchorElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLAnchorElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLAnchorElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLAnchorElementPrototype(JSHTMLAnchorElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLAnchorElementPrototype(JSHTMLAnchorElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLAnchorElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

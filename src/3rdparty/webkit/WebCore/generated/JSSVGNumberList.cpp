@@ -78,9 +78,9 @@ static const HashTable JSSVGNumberListPrototypeTable =
 
 const ClassInfo JSSVGNumberListPrototype::s_info = { "SVGNumberListPrototype", 0, &JSSVGNumberListPrototypeTable, 0 };
 
-JSObject* JSSVGNumberListPrototype::self(ExecState* exec)
+JSObject* JSSVGNumberListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGNumberList>(exec);
+    return getDOMPrototype<JSSVGNumberList>(exec, globalObject);
 }
 
 bool JSSVGNumberListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -103,9 +103,9 @@ JSSVGNumberList::~JSSVGNumberList()
 
 }
 
-JSObject* JSSVGNumberList::createPrototype(ExecState* exec)
+JSObject* JSSVGNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGNumberListPrototype(JSSVGNumberListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGNumberListPrototype(JSSVGNumberListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGNumberList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

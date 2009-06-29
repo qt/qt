@@ -37,7 +37,7 @@ class JSSVGTransform : public DOMObject {
 public:
     JSSVGTransform(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> >, SVGElement* context);
     virtual ~JSSVGTransform();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -61,7 +61,7 @@ SVGTransform toSVGTransform(JSC::JSValuePtr);
 
 class JSSVGTransformPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

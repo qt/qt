@@ -70,9 +70,9 @@ static const HashTable JSSVGPathSegMovetoRelPrototypeTable =
 
 const ClassInfo JSSVGPathSegMovetoRelPrototype::s_info = { "SVGPathSegMovetoRelPrototype", 0, &JSSVGPathSegMovetoRelPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegMovetoRelPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegMovetoRelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegMovetoRel>(exec);
+    return getDOMPrototype<JSSVGPathSegMovetoRel>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegMovetoRel::s_info = { "SVGPathSegMovetoRel", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoRelTable, 0 };
@@ -82,9 +82,9 @@ JSSVGPathSegMovetoRel::JSSVGPathSegMovetoRel(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGPathSegMovetoRel::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegMovetoRel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegMovetoRelPrototype(JSSVGPathSegMovetoRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegMovetoRelPrototype(JSSVGPathSegMovetoRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegMovetoRel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

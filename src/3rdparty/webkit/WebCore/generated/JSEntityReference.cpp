@@ -68,7 +68,7 @@ public:
     JSEntityReferenceConstructor(ExecState* exec)
         : DOMObject(JSEntityReferenceConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSEntityReferencePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSEntityReferencePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -103,9 +103,9 @@ static const HashTable JSEntityReferencePrototypeTable =
 
 const ClassInfo JSEntityReferencePrototype::s_info = { "EntityReferencePrototype", 0, &JSEntityReferencePrototypeTable, 0 };
 
-JSObject* JSEntityReferencePrototype::self(ExecState* exec)
+JSObject* JSEntityReferencePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSEntityReference>(exec);
+    return getDOMPrototype<JSEntityReference>(exec, globalObject);
 }
 
 const ClassInfo JSEntityReference::s_info = { "EntityReference", &JSNode::s_info, &JSEntityReferenceTable, 0 };
@@ -115,9 +115,9 @@ JSEntityReference::JSEntityReference(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSEntityReference::createPrototype(ExecState* exec)
+JSObject* JSEntityReference::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSEntityReferencePrototype(JSEntityReferencePrototype::createStructure(JSNodePrototype::self(exec)));
+    return new (exec) JSEntityReferencePrototype(JSEntityReferencePrototype::createStructure(JSNodePrototype::self(exec, globalObject)));
 }
 
 bool JSEntityReference::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

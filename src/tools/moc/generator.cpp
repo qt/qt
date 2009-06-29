@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -918,7 +918,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "        switch (_id) {\n");
     for (int ctorindex = 0; ctorindex < cdef->constructorList.count(); ++ctorindex) {
         fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
-                cdef->classname.constData(), cdef->classname.constData());
+                cdef->qualified.constData(), cdef->qualified.constData());
         const FunctionDef &f = cdef->constructorList.at(ctorindex);
         int offset = 1;
         for (int j = 0; j < f.arguments.count(); ++j) {
@@ -936,7 +936,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "    }\n");
 
     if (!isQObject)
-        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->classname.constData());
+        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->qualified.constData());
 
     fprintf(out, "    if (_id < 0)\n        return _id;\n");
 

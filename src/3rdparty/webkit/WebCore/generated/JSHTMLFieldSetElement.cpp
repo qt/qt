@@ -72,7 +72,7 @@ public:
     JSHTMLFieldSetElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLFieldSetElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFieldSetElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFieldSetElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,9 +107,9 @@ static const HashTable JSHTMLFieldSetElementPrototypeTable =
 
 const ClassInfo JSHTMLFieldSetElementPrototype::s_info = { "HTMLFieldSetElementPrototype", 0, &JSHTMLFieldSetElementPrototypeTable, 0 };
 
-JSObject* JSHTMLFieldSetElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLFieldSetElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLFieldSetElement>(exec);
+    return getDOMPrototype<JSHTMLFieldSetElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLFieldSetElement::s_info = { "HTMLFieldSetElement", &JSHTMLElement::s_info, &JSHTMLFieldSetElementTable, 0 };
@@ -119,9 +119,9 @@ JSHTMLFieldSetElement::JSHTMLFieldSetElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLFieldSetElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLFieldSetElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLFieldSetElementPrototype(JSHTMLFieldSetElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLFieldSetElementPrototype(JSHTMLFieldSetElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLFieldSetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

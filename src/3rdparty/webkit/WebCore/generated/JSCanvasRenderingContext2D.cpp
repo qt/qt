@@ -98,7 +98,7 @@ public:
     JSCanvasRenderingContext2DConstructor(ExecState* exec)
         : DOMObject(JSCanvasRenderingContext2DConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCanvasRenderingContext2DPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCanvasRenderingContext2DPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -177,9 +177,9 @@ static const HashTable JSCanvasRenderingContext2DPrototypeTable =
 
 const ClassInfo JSCanvasRenderingContext2DPrototype::s_info = { "CanvasRenderingContext2DPrototype", 0, &JSCanvasRenderingContext2DPrototypeTable, 0 };
 
-JSObject* JSCanvasRenderingContext2DPrototype::self(ExecState* exec)
+JSObject* JSCanvasRenderingContext2DPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCanvasRenderingContext2D>(exec);
+    return getDOMPrototype<JSCanvasRenderingContext2D>(exec, globalObject);
 }
 
 bool JSCanvasRenderingContext2DPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -201,9 +201,9 @@ JSCanvasRenderingContext2D::~JSCanvasRenderingContext2D()
 
 }
 
-JSObject* JSCanvasRenderingContext2D::createPrototype(ExecState* exec)
+JSObject* JSCanvasRenderingContext2D::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCanvasRenderingContext2DPrototype(JSCanvasRenderingContext2DPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCanvasRenderingContext2DPrototype(JSCanvasRenderingContext2DPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCanvasRenderingContext2D::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

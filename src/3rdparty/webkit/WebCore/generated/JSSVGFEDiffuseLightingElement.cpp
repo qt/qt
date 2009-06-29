@@ -89,9 +89,9 @@ static const HashTable JSSVGFEDiffuseLightingElementPrototypeTable =
 
 const ClassInfo JSSVGFEDiffuseLightingElementPrototype::s_info = { "SVGFEDiffuseLightingElementPrototype", 0, &JSSVGFEDiffuseLightingElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEDiffuseLightingElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEDiffuseLightingElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEDiffuseLightingElement>(exec);
+    return getDOMPrototype<JSSVGFEDiffuseLightingElement>(exec, globalObject);
 }
 
 bool JSSVGFEDiffuseLightingElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -106,9 +106,9 @@ JSSVGFEDiffuseLightingElement::JSSVGFEDiffuseLightingElement(PassRefPtr<Structur
 {
 }
 
-JSObject* JSSVGFEDiffuseLightingElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEDiffuseLightingElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEDiffuseLightingElementPrototype(JSSVGFEDiffuseLightingElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEDiffuseLightingElementPrototype(JSSVGFEDiffuseLightingElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEDiffuseLightingElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

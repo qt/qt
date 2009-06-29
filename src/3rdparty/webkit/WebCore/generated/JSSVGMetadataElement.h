@@ -34,7 +34,7 @@ class JSSVGMetadataElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
     JSSVGMetadataElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGMetadataElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -43,7 +43,7 @@ public:
 
 class JSSVGMetadataElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGMetadataElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -888,7 +888,14 @@ QSslCipher QSslSocketBackendPrivate::sessionCipher() const
 {
     if (!ssl || !ctx)
         return QSslCipher();
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+    // FIXME This is fairly evil, but needed to keep source level compatibility
+    // with the OpenSSL 0.9.x implementation at maximum -- some other functions
+    // don't take a const SSL_CIPHER* when they should
+    SSL_CIPHER *sessionCipher = const_cast<SSL_CIPHER *>(q_SSL_get_current_cipher(ssl));
+#else
     SSL_CIPHER *sessionCipher = q_SSL_get_current_cipher(ssl);
+#endif
     return sessionCipher ? QSslCipher_from_SSL_CIPHER(sessionCipher) : QSslCipher();
 }
 

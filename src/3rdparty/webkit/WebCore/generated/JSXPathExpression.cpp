@@ -75,7 +75,7 @@ public:
     JSXPathExpressionConstructor(ExecState* exec)
         : DOMObject(JSXPathExpressionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXPathExpressionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXPathExpressionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSXPathExpressionPrototypeTable =
 
 const ClassInfo JSXPathExpressionPrototype::s_info = { "XPathExpressionPrototype", 0, &JSXPathExpressionPrototypeTable, 0 };
 
-JSObject* JSXPathExpressionPrototype::self(ExecState* exec)
+JSObject* JSXPathExpressionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathExpression>(exec);
+    return getDOMPrototype<JSXPathExpression>(exec, globalObject);
 }
 
 bool JSXPathExpressionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,9 +135,9 @@ JSXPathExpression::~JSXPathExpression()
 
 }
 
-JSObject* JSXPathExpression::createPrototype(ExecState* exec)
+JSObject* JSXPathExpression::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathExpressionPrototype(JSXPathExpressionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathExpressionPrototype(JSXPathExpressionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXPathExpression::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

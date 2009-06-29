@@ -51,9 +51,9 @@ static const HashTable JSVoidCallbackPrototypeTable =
 
 const ClassInfo JSVoidCallbackPrototype::s_info = { "VoidCallbackPrototype", 0, &JSVoidCallbackPrototypeTable, 0 };
 
-JSObject* JSVoidCallbackPrototype::self(ExecState* exec)
+JSObject* JSVoidCallbackPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSVoidCallback>(exec);
+    return getDOMPrototype<JSVoidCallback>(exec, globalObject);
 }
 
 bool JSVoidCallbackPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -75,9 +75,9 @@ JSVoidCallback::~JSVoidCallback()
 
 }
 
-JSObject* JSVoidCallback::createPrototype(ExecState* exec)
+JSObject* JSVoidCallback::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSVoidCallbackPrototype(JSVoidCallbackPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSVoidCallbackPrototype(JSVoidCallbackPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSValuePtr jsVoidCallbackPrototypeFunctionHandleEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)

@@ -113,7 +113,7 @@ public:
     JSHTMLMediaElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLMediaElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMediaElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMediaElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -160,9 +160,9 @@ static const HashTable JSHTMLMediaElementPrototypeTable =
 
 const ClassInfo JSHTMLMediaElementPrototype::s_info = { "HTMLMediaElementPrototype", 0, &JSHTMLMediaElementPrototypeTable, 0 };
 
-JSObject* JSHTMLMediaElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLMediaElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLMediaElement>(exec);
+    return getDOMPrototype<JSHTMLMediaElement>(exec, globalObject);
 }
 
 bool JSHTMLMediaElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -177,9 +177,9 @@ JSHTMLMediaElement::JSHTMLMediaElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLMediaElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLMediaElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLMediaElementPrototype(JSHTMLMediaElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLMediaElementPrototype(JSHTMLMediaElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLMediaElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -56,6 +56,7 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLAnchorElement.h"
+#include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameElement.h"
 #include "HTMLNames.h"
@@ -238,6 +239,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_isRunningScript(false)
     , m_didCallImplicitClose(false)
     , m_wasUnloadEventEmitted(false)
+    , m_unloadEventBeingDispatched(false)
     , m_isComplete(false)
     , m_isLoadingMainResource(false)
     , m_cancellingWithLoadInProgress(false)
@@ -587,7 +589,9 @@ void FrameLoader::stopLoading(bool sendUnload)
                 Node* currentFocusedNode = m_frame->document()->focusedNode();
                 if (currentFocusedNode)
                     currentFocusedNode->aboutToUnload();
+                m_unloadEventBeingDispatched = true;
                 m_frame->document()->dispatchWindowEvent(eventNames().unloadEvent, false, false);
+                m_unloadEventBeingDispatched = false;
                 if (m_frame->document())
                     m_frame->document()->updateRendering();
                 m_wasUnloadEventEmitted = true;
@@ -2539,6 +2543,9 @@ void FrameLoader::stopLoadingSubframes()
 
 void FrameLoader::stopAllLoaders()
 {
+    if (m_unloadEventBeingDispatched)
+        return;
+
     // If this method is called from within this method, infinite recursion can occur (3442218). Avoid this.
     if (m_inStopAllLoaders)
         return;
@@ -4059,6 +4066,24 @@ void FrameLoader::applyUserAgent(ResourceRequest& request)
     request.setHTTPUserAgent(userAgent);
 }
 
+bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, const KURL& url)
+{
+    Frame* topFrame = m_frame->tree()->top();
+    if (m_frame == topFrame)
+        return false;
+
+    if (equalIgnoringCase(content, "deny"))
+        return true;
+
+    if (equalIgnoringCase(content, "sameorigin")) {
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
+        if (!origin->isSameSchemeHostPort(topFrame->document()->securityOrigin()))
+            return true;
+    }
+
+    return false;
+}
+
 bool FrameLoader::canGoBackOrForward(int distance) const
 {
     if (Page* page = m_frame->page()) {
@@ -5000,12 +5025,15 @@ void FrameLoader::dispatchWindowObjectAvailable()
 Widget* FrameLoader::createJavaAppletWidget(const IntSize& size, Element* element, const HashMap<String, String>& args)
 {
     String baseURLString;
+    String codeBaseURLString;
     Vector<String> paramNames;
     Vector<String> paramValues;
     HashMap<String, String>::const_iterator end = args.end();
     for (HashMap<String, String>::const_iterator it = args.begin(); it != end; ++it) {
         if (equalIgnoringCase(it->first, "baseurl"))
             baseURLString = it->second;
+        else if (equalIgnoringCase(it->first, "codebase"))
+            codeBaseURLString = it->second;
         paramNames.append(it->first);
         paramValues.append(it->second);
     }
@@ -5014,10 +5042,14 @@ Widget* FrameLoader::createJavaAppletWidget(const IntSize& size, Element* elemen
         baseURLString = m_frame->document()->baseURL().string();
     KURL baseURL = completeURL(baseURLString);
 
-    Widget* widget = m_client->createJavaAppletWidget(size, element, baseURL, paramNames, paramValues);
-    if (widget)
-        m_containsPlugIns = true;
-    
+    Widget* widget = 0;
+    KURL codeBaseURL = completeURL(codeBaseURLString);
+    if (canLoad(codeBaseURL, String(), element->document())) {
+        widget = m_client->createJavaAppletWidget(size, element, baseURL, paramNames, paramValues);
+        if (widget)
+            m_containsPlugIns = true;
+    }
+
     return widget;
 }
 

@@ -53,9 +53,9 @@ static const HashTable JSSVGDefinitionSrcElementPrototypeTable =
 
 const ClassInfo JSSVGDefinitionSrcElementPrototype::s_info = { "SVGDefinitionSrcElementPrototype", 0, &JSSVGDefinitionSrcElementPrototypeTable, 0 };
 
-JSObject* JSSVGDefinitionSrcElementPrototype::self(ExecState* exec)
+JSObject* JSSVGDefinitionSrcElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGDefinitionSrcElement>(exec);
+    return getDOMPrototype<JSSVGDefinitionSrcElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGDefinitionSrcElement::s_info = { "SVGDefinitionSrcElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGDefinitionSrcElement::JSSVGDefinitionSrcElement(PassRefPtr<Structure> struc
 {
 }
 
-JSObject* JSSVGDefinitionSrcElement::createPrototype(ExecState* exec)
+JSObject* JSSVGDefinitionSrcElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGDefinitionSrcElementPrototype(JSSVGDefinitionSrcElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGDefinitionSrcElementPrototype(JSSVGDefinitionSrcElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

@@ -69,9 +69,9 @@ static const HashTable JSSQLResultSetPrototypeTable =
 
 const ClassInfo JSSQLResultSetPrototype::s_info = { "SQLResultSetPrototype", 0, &JSSQLResultSetPrototypeTable, 0 };
 
-JSObject* JSSQLResultSetPrototype::self(ExecState* exec)
+JSObject* JSSQLResultSetPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSQLResultSet>(exec);
+    return getDOMPrototype<JSSQLResultSet>(exec, globalObject);
 }
 
 const ClassInfo JSSQLResultSet::s_info = { "SQLResultSet", 0, &JSSQLResultSetTable, 0 };
@@ -88,9 +88,9 @@ JSSQLResultSet::~JSSQLResultSet()
 
 }
 
-JSObject* JSSQLResultSet::createPrototype(ExecState* exec)
+JSObject* JSSQLResultSet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSQLResultSetPrototype(JSSQLResultSetPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSQLResultSetPrototype(JSSQLResultSetPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSQLResultSet::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

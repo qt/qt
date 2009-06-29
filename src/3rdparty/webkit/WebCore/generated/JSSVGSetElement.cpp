@@ -53,9 +53,9 @@ static const HashTable JSSVGSetElementPrototypeTable =
 
 const ClassInfo JSSVGSetElementPrototype::s_info = { "SVGSetElementPrototype", 0, &JSSVGSetElementPrototypeTable, 0 };
 
-JSObject* JSSVGSetElementPrototype::self(ExecState* exec)
+JSObject* JSSVGSetElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGSetElement>(exec);
+    return getDOMPrototype<JSSVGSetElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGSetElement::s_info = { "SVGSetElement", &JSSVGAnimationElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGSetElement::JSSVGSetElement(PassRefPtr<Structure> structure, PassRefPtr<SVG
 {
 }
 
-JSObject* JSSVGSetElement::createPrototype(ExecState* exec)
+JSObject* JSSVGSetElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGSetElementPrototype(JSSVGSetElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec)));
+    return new (exec) JSSVGSetElementPrototype(JSSVGSetElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec, globalObject)));
 }
 
 

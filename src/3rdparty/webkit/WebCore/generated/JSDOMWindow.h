@@ -57,6 +57,8 @@ public:
     virtual JSC::JSValuePtr lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);
 
     // Custom attributes
+    JSC::JSValuePtr history(JSC::ExecState*) const;
+    JSC::JSValuePtr location(JSC::ExecState*) const;
     void setLocation(JSC::ExecState*, JSC::JSValuePtr);
 
     // Custom functions

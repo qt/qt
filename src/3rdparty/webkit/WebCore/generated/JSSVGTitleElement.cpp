@@ -81,9 +81,9 @@ static const HashTable JSSVGTitleElementPrototypeTable =
 
 const ClassInfo JSSVGTitleElementPrototype::s_info = { "SVGTitleElementPrototype", 0, &JSSVGTitleElementPrototypeTable, 0 };
 
-JSObject* JSSVGTitleElementPrototype::self(ExecState* exec)
+JSObject* JSSVGTitleElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTitleElement>(exec);
+    return getDOMPrototype<JSSVGTitleElement>(exec, globalObject);
 }
 
 bool JSSVGTitleElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -98,9 +98,9 @@ JSSVGTitleElement::JSSVGTitleElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSSVGTitleElement::createPrototype(ExecState* exec)
+JSObject* JSSVGTitleElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTitleElementPrototype(JSSVGTitleElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGTitleElementPrototype(JSSVGTitleElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGTitleElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

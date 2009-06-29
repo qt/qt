@@ -20,6 +20,7 @@
 #include "videowidget.h"
 #include "audiodevice.h"
 #include "quicktimestreamreader.h"
+#include "quicktimemetadata.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEventLoop>
@@ -52,6 +53,7 @@ QuickTimeVideoPlayer::QuickTimeVideoPlayer() : QObject(0)
 {
     m_state = NoMedia;
     m_mediaSource = MediaSource();
+    m_metaData = new QuickTimeMetaData(this);
     m_QTMovie = 0;
     m_streamReader = 0;
     m_playbackRate = 1.0f;
@@ -67,6 +69,8 @@ QuickTimeVideoPlayer::QuickTimeVideoPlayer() : QObject(0)
 	m_primaryRenderingTarget = 0;
 	m_primaryRenderingCIImage = 0;
     m_QImagePixelBuffer = 0;
+    m_folderTracks = 0;
+    m_currentTrack = 0;
 
 #ifdef QUICKTIME_C_API_AVAILABLE
     OSStatus err = EnterMovies();
@@ -77,7 +81,8 @@ QuickTimeVideoPlayer::QuickTimeVideoPlayer() : QObject(0)
 
 QuickTimeVideoPlayer::~QuickTimeVideoPlayer()
 {
-    unsetVideo();
+    unsetCurrentMediaSource();
+    delete m_metaData;
     [(NSObject*)m_primaryRenderingTarget release];
     m_primaryRenderingTarget = 0;
 #ifdef QUICKTIME_C_API_AVAILABLE
@@ -397,7 +402,7 @@ QRect QuickTimeVideoPlayer::videoRect() const
     return QRect(0, 0, size.width, size.height);
 }
 
-void QuickTimeVideoPlayer::unsetVideo()
+void QuickTimeVideoPlayer::unsetCurrentMediaSource()
 {
     if (!m_QTMovie)
         return;
@@ -411,10 +416,13 @@ void QuickTimeVideoPlayer::unsetVideo()
     m_isDrmProtected = false;
     m_isDrmAuthorized = true;
     m_mediaSource = MediaSource();
+    m_movieCompactDiscPath.clear();
 	[(CIImage *)m_primaryRenderingCIImage release];
 	m_primaryRenderingCIImage = 0;
     delete m_QImagePixelBuffer;
     m_QImagePixelBuffer = 0;
+    [m_folderTracks release];
+    m_folderTracks = 0;
 }
 
 QuickTimeVideoPlayer::State QuickTimeVideoPlayer::state() const
@@ -524,18 +532,25 @@ bool QuickTimeVideoPlayer::codecExistsAccordingToSuffix(const QString &fileName)
 void QuickTimeVideoPlayer::setMediaSource(const MediaSource &mediaSource)
 {
     PhononAutoReleasePool pool;
-    unsetVideo();
+    unsetCurrentMediaSource();
+
     m_mediaSource = mediaSource;
     if (mediaSource.type() == MediaSource::Empty || mediaSource.type() == MediaSource::Invalid){
         m_state = NoMedia;
         return;
     }
+
     openMovieFromCurrentMediaSource();
     if (errorOccured()){
-        unsetVideo();
+        unsetCurrentMediaSource();
         return;
     }
 
+    prepareCurrentMovieForPlayback();
+}
+
+void QuickTimeVideoPlayer::prepareCurrentMovieForPlayback()
+{
 #ifdef QUICKTIME_C_API_AVAILABLE
     if (m_visualContext)
         SetMovieVisualContext([m_QTMovie quickTimeMovie], m_visualContext);
@@ -543,14 +558,14 @@ void QuickTimeVideoPlayer::setMediaSource(const MediaSource &mediaSource)
 
     waitStatePlayable();
     if (errorOccured()){
-        unsetVideo();
+        unsetCurrentMediaSource();
         return;
     }
 
     readProtection();
     preRollMovie();
     if (errorOccured()){
-        unsetVideo();
+        unsetCurrentMediaSource();
         return;
     }
 
@@ -560,6 +575,7 @@ void QuickTimeVideoPlayer::setMediaSource(const MediaSource &mediaSource)
     enableAudio(m_audioEnabled);
     setMute(m_mute);
     setVolume(m_masterVolume, m_relativeVolume);
+    m_metaData->update();
     pause();
 }
 
@@ -573,7 +589,7 @@ void QuickTimeVideoPlayer::openMovieFromCurrentMediaSource()
         openMovieFromUrl();
         break;
     case MediaSource::Disc:
-        CASE_UNSUPPORTED("Could not open media source.", FATAL_ERROR)
+        openMovieFromCompactDisc();
         break;
     case MediaSource::Stream:
         openMovieFromStream();
@@ -635,7 +651,7 @@ void QuickTimeVideoPlayer::openMovieFromDataGuessType(QByteArray *data)
     // than using e.g [QTMovie movieFileTypes:QTIncludeCommonTypes]. Some
     // codecs *think* they can decode the stream, and crash...
 #define TryOpenMovieWithCodec(type) gClearError(); \
-    openMovieFromData(data, "."type); \
+    openMovieFromData(data, (char *)"."type); \
     if (m_QTMovie) return;
 
     TryOpenMovieWithCodec("avi");
@@ -673,6 +689,50 @@ void QuickTimeVideoPlayer::openMovieFromStream()
     if (!m_streamReader->readAllData())
         return;
     openMovieFromDataGuessType(m_streamReader->pointerToData());
+}
+
+typedef void (*qt_sighandler_t)(int);
+static void sigtest(int) {
+    qApp->exit(0);
+}
+
+void QuickTimeVideoPlayer::openMovieFromCompactDisc()
+{
+    // Interrupting the application while the device is open
+    // causes the application to hang. So we need to handle
+    // this in a more graceful way:
+    qt_sighandler_t hndl = signal(SIGINT, sigtest);
+    if (hndl)
+        signal(SIGINT, hndl);
+
+    PhononAutoReleasePool pool;
+    NSString *cd = 0;
+    QString devName = m_mediaSource.deviceName();
+    if (devName.isEmpty()) {
+        cd = pathToCompactDisc();
+        if (!cd) {
+            SET_ERROR("Could not open media source.", NORMAL_ERROR)
+            return;
+        }
+        m_movieCompactDiscPath = PhononCFString::toQString(reinterpret_cast<CFStringRef>(cd));
+    } else {
+       if (!QFileInfo(devName).isAbsolute())
+           devName = QLatin1String("/Volumes/") + devName;
+       cd = [reinterpret_cast<const NSString *>(PhononCFString::toCFStringRef(devName)) autorelease];
+       if (!isCompactDisc(cd)) {
+           SET_ERROR("Could not open media source.", NORMAL_ERROR)
+           return;
+       }
+       m_movieCompactDiscPath = devName;
+    }
+
+    m_folderTracks = [scanFolder(cd) retain];
+    setCurrentTrack(0);
+}
+
+QString QuickTimeVideoPlayer::movieCompactDiscPath() const
+{
+    return m_movieCompactDiscPath;
 }
 
 MediaSource QuickTimeVideoPlayer::mediaSource() const
@@ -948,6 +1008,94 @@ void QuickTimeVideoPlayer::readProtection()
         if (!isDrmAuthorized)
             m_isDrmAuthorized = false;
     }
+}
+
+QMultiMap<QString, QString> QuickTimeVideoPlayer::metaData()
+{
+    return m_metaData->metaData();
+}
+
+int QuickTimeVideoPlayer::trackCount() const
+{
+    if (!m_folderTracks)
+        return 0;
+    return [m_folderTracks count];
+}
+
+int QuickTimeVideoPlayer::currentTrack() const
+{
+    return m_currentTrack;
+}
+
+QString QuickTimeVideoPlayer::currentTrackPath() const
+{
+    if (!m_folderTracks)
+        return QString();
+
+    PhononAutoReleasePool pool;
+    NSString *trackPath = [m_folderTracks objectAtIndex:m_currentTrack];
+    return PhononCFString::toQString(reinterpret_cast<CFStringRef>(trackPath));
+}
+
+NSString* QuickTimeVideoPlayer::pathToCompactDisc()
+{
+    PhononAutoReleasePool pool;
+    NSArray *devices = [[NSWorkspace sharedWorkspace] mountedRemovableMedia];
+    for (unsigned int i=0; i<[devices count]; ++i) {
+        NSString *dev = [devices objectAtIndex:i];
+        if (isCompactDisc(dev))
+            return [dev retain];
+    }
+    return 0;
+}
+
+bool QuickTimeVideoPlayer::isCompactDisc(NSString *path)
+{
+    PhononAutoReleasePool pool;
+    NSString *type = [NSString string];
+    [[NSWorkspace sharedWorkspace] getFileSystemInfoForPath:path
+        isRemovable:0
+        isWritable:0
+        isUnmountable:0
+        description:0
+        type:&type];
+    return [type hasPrefix:@"cdd"];
+}
+
+NSArray* QuickTimeVideoPlayer::scanFolder(NSString *path)
+{
+    NSMutableArray *tracks = [NSMutableArray arrayWithCapacity:20];
+    if (!path)
+        return tracks;
+
+    NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager] enumeratorAtPath:path];
+    while (NSString *track = [enumerator nextObject]) {
+        if (![track hasPrefix:@"."])
+            [tracks addObject:[path stringByAppendingPathComponent:track]];
+    }
+    return tracks;
+}
+
+void QuickTimeVideoPlayer::setCurrentTrack(int track)
+{
+    PhononAutoReleasePool pool;
+    [m_QTMovie release];
+	m_QTMovie = 0;
+    m_currentTime = 0;
+    m_currentTrack = track;
+
+    if (!m_folderTracks)
+        return;
+    if (track < 0 || track >= (int)[m_folderTracks count])
+        return;
+
+    NSString *trackPath = [m_folderTracks objectAtIndex:track];
+    QTDataReference *dataRef = [QTDataReference dataReferenceWithReferenceToFile:trackPath];
+    State currentState = m_state;
+    openMovieFromDataRef(dataRef);
+    prepareCurrentMovieForPlayback();
+    if (currentState == Playing)
+        play();
 }
 
 }}

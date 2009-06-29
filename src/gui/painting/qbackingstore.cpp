@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -258,7 +258,10 @@ void QWidgetBackingStore::unflushPaint(QWidget *widget, const QRegion &rgn)
 bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *widget)
 {
     const QPoint pos(tlwOffset + widget->mapTo(tlw, rect.topLeft()));
-    return windowSurface->scroll(QRect(pos, rect.size()), dx, dy);
+    const QRect tlwRect(QRect(pos, rect.size()));
+    if (dirty.intersects(tlwRect))
+        return false; // We don't want to scroll junk.
+    return windowSurface->scroll(tlwRect, dx, dy);
 }
 
 void QWidgetBackingStore::releaseBuffer()

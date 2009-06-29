@@ -88,7 +88,7 @@ public:
     JSSVGPreserveAspectRatioConstructor(ExecState* exec)
         : DOMObject(JSSVGPreserveAspectRatioConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGPreserveAspectRatioPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGPreserveAspectRatioPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -137,9 +137,9 @@ static const HashTable JSSVGPreserveAspectRatioPrototypeTable =
 
 const ClassInfo JSSVGPreserveAspectRatioPrototype::s_info = { "SVGPreserveAspectRatioPrototype", 0, &JSSVGPreserveAspectRatioPrototypeTable, 0 };
 
-JSObject* JSSVGPreserveAspectRatioPrototype::self(ExecState* exec)
+JSObject* JSSVGPreserveAspectRatioPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPreserveAspectRatio>(exec);
+    return getDOMPrototype<JSSVGPreserveAspectRatio>(exec, globalObject);
 }
 
 bool JSSVGPreserveAspectRatioPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -162,9 +162,9 @@ JSSVGPreserveAspectRatio::~JSSVGPreserveAspectRatio()
 
 }
 
-JSObject* JSSVGPreserveAspectRatio::createPrototype(ExecState* exec)
+JSObject* JSSVGPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPreserveAspectRatioPrototype(JSSVGPreserveAspectRatioPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGPreserveAspectRatioPrototype(JSSVGPreserveAspectRatioPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGPreserveAspectRatio::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

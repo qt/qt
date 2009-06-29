@@ -1,3 +1,32 @@
+2009-02-02  Darin Adler  <darin@apple.com>
+
+        Reviewed by Dave Hyatt.
+
+        Bug 23676: Speed up uses of reserveCapacity on new vectors by adding a new reserveInitialCapacity
+        https://bugs.webkit.org/show_bug.cgi?id=23676
+
+        * API/JSObjectRef.cpp:
+        (JSObjectCopyPropertyNames): Use reserveInitialCapacity.
+        * parser/Lexer.cpp:
+        (JSC::Lexer::Lexer): Ditto.
+        (JSC::Lexer::clear): Ditto.
+
+        * wtf/Vector.h: Added reserveInitialCapacity, a more efficient version of
+        reserveCapacity for use when the vector is brand new (still size 0 with no
+        capacity other than the inline capacity).
+
+2009-03-19  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Oliver Hunt.
+        
+        Fixed <rdar://problem/6033712> -- a little bit of hardening in the Collector.
+        
+        SunSpider reports no change. I also verified in the disassembly that
+        we end up with a single compare to constant.
+
+        * runtime/Collector.cpp:
+        (JSC::Heap::heapAllocate):
+
 2009-01-22  Oliver Hunt  <oliver@apple.com>
 
         Reviewed by Geoff Garen.

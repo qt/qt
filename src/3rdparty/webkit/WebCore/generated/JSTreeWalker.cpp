@@ -78,7 +78,7 @@ public:
     JSTreeWalkerConstructor(ExecState* exec)
         : DOMObject(JSTreeWalkerConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -120,9 +120,9 @@ static const HashTable JSTreeWalkerPrototypeTable =
 
 const ClassInfo JSTreeWalkerPrototype::s_info = { "TreeWalkerPrototype", 0, &JSTreeWalkerPrototypeTable, 0 };
 
-JSObject* JSTreeWalkerPrototype::self(ExecState* exec)
+JSObject* JSTreeWalkerPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSTreeWalker>(exec);
+    return getDOMPrototype<JSTreeWalker>(exec, globalObject);
 }
 
 bool JSTreeWalkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -144,9 +144,9 @@ JSTreeWalker::~JSTreeWalker()
 
 }
 
-JSObject* JSTreeWalker::createPrototype(ExecState* exec)
+JSObject* JSTreeWalker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSTreeWalkerPrototype(JSTreeWalkerPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSTreeWalkerPrototype(JSTreeWalkerPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSTreeWalker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

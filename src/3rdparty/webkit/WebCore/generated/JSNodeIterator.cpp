@@ -79,7 +79,7 @@ public:
     JSNodeIteratorConstructor(ExecState* exec)
         : DOMObject(JSNodeIteratorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSNodeIteratorPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSNodeIteratorPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,9 +117,9 @@ static const HashTable JSNodeIteratorPrototypeTable =
 
 const ClassInfo JSNodeIteratorPrototype::s_info = { "NodeIteratorPrototype", 0, &JSNodeIteratorPrototypeTable, 0 };
 
-JSObject* JSNodeIteratorPrototype::self(ExecState* exec)
+JSObject* JSNodeIteratorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNodeIterator>(exec);
+    return getDOMPrototype<JSNodeIterator>(exec, globalObject);
 }
 
 bool JSNodeIteratorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,9 +141,9 @@ JSNodeIterator::~JSNodeIterator()
 
 }
 
-JSObject* JSNodeIterator::createPrototype(ExecState* exec)
+JSObject* JSNodeIterator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNodeIteratorPrototype(JSNodeIteratorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNodeIteratorPrototype(JSNodeIteratorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSNodeIterator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

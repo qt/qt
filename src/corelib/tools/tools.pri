@@ -26,6 +26,8 @@ HEADERS +=  \
 	tools/qregexp.h \
 	tools/qringbuffer_p.h \
 	tools/qshareddata.h \
+        tools/qsharedpointer.h \
+        tools/qsharedpointer_impl.h \
 	tools/qset.h \
         tools/qsize.h \
 	tools/qstack.h \

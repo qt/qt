@@ -75,7 +75,7 @@ public:
     JSOverflowEventConstructor(ExecState* exec)
         : DOMObject(JSOverflowEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSOverflowEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSOverflowEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSOverflowEventPrototypeTable =
 
 const ClassInfo JSOverflowEventPrototype::s_info = { "OverflowEventPrototype", 0, &JSOverflowEventPrototypeTable, 0 };
 
-JSObject* JSOverflowEventPrototype::self(ExecState* exec)
+JSObject* JSOverflowEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSOverflowEvent>(exec);
+    return getDOMPrototype<JSOverflowEvent>(exec, globalObject);
 }
 
 bool JSOverflowEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,9 +131,9 @@ JSOverflowEvent::JSOverflowEvent(PassRefPtr<Structure> structure, PassRefPtr<Ove
 {
 }
 
-JSObject* JSOverflowEvent::createPrototype(ExecState* exec)
+JSObject* JSOverflowEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSOverflowEventPrototype(JSOverflowEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSOverflowEventPrototype(JSOverflowEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSOverflowEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -88,7 +88,7 @@ public:
     JSSVGComponentTransferFunctionElementConstructor(ExecState* exec)
         : DOMObject(JSSVGComponentTransferFunctionElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGComponentTransferFunctionElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGComponentTransferFunctionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -129,9 +129,9 @@ static const HashTable JSSVGComponentTransferFunctionElementPrototypeTable =
 
 const ClassInfo JSSVGComponentTransferFunctionElementPrototype::s_info = { "SVGComponentTransferFunctionElementPrototype", 0, &JSSVGComponentTransferFunctionElementPrototypeTable, 0 };
 
-JSObject* JSSVGComponentTransferFunctionElementPrototype::self(ExecState* exec)
+JSObject* JSSVGComponentTransferFunctionElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGComponentTransferFunctionElement>(exec);
+    return getDOMPrototype<JSSVGComponentTransferFunctionElement>(exec, globalObject);
 }
 
 bool JSSVGComponentTransferFunctionElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -146,9 +146,9 @@ JSSVGComponentTransferFunctionElement::JSSVGComponentTransferFunctionElement(Pas
 {
 }
 
-JSObject* JSSVGComponentTransferFunctionElement::createPrototype(ExecState* exec)
+JSObject* JSSVGComponentTransferFunctionElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGComponentTransferFunctionElementPrototype(JSSVGComponentTransferFunctionElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGComponentTransferFunctionElementPrototype(JSSVGComponentTransferFunctionElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGComponentTransferFunctionElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

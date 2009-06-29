@@ -70,9 +70,9 @@ static const HashTable JSSVGPathSegCurvetoQuadraticSmoothAbsPrototypeTable =
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::s_info = { "SVGPathSegCurvetoQuadraticSmoothAbsPrototype", 0, &JSSVGPathSegCurvetoQuadraticSmoothAbsPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegCurvetoQuadraticSmoothAbs>(exec);
+    return getDOMPrototype<JSSVGPathSegCurvetoQuadraticSmoothAbs>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothAbs::s_info = { "SVGPathSegCurvetoQuadraticSmoothAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoQuadraticSmoothAbsTable, 0 };
@@ -82,9 +82,9 @@ JSSVGPathSegCurvetoQuadraticSmoothAbs::JSSVGPathSegCurvetoQuadraticSmoothAbs(Pas
 {
 }
 
-JSObject* JSSVGPathSegCurvetoQuadraticSmoothAbs::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegCurvetoQuadraticSmoothAbs::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype(JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype(JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegCurvetoQuadraticSmoothAbs::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -534,7 +534,7 @@ bool QPSQLResult::prepare(const QString &query)
 {
     if (!d->preparedQueriesEnabled)
         return QSqlResult::prepare(query);
-    
+
     cleanup();
 
     if (!d->preparedStmtId.isEmpty())
@@ -824,7 +824,20 @@ bool QPSQLDriver::commitTransaction()
         return false;
     }
     PGresult* res = PQexec(d->connection, "COMMIT");
-    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
+
+    bool transaction_failed = false;
+
+    // XXX
+    // This hack is used to tell if the transaction has succeeded for the protocol versions of
+    // PostgreSQL below. For 7.x and other protocol versions we are left in the dark.
+    // This hack can dissapear once there is an API to query this sort of information.
+    if (d->pro == QPSQLDriver::Version8 ||
+        d->pro == QPSQLDriver::Version81 ||
+        d->pro == QPSQLDriver::Version82) {
+        transaction_failed = qstrcmp(PQcmdStatus(res), "ROLLBACK") == 0;
+    }
+
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK || transaction_failed) {
         PQclear(res);
         setLastError(qMakeError(tr("Could not commit transaction"),
                                 QSqlError::TransactionError, d));
@@ -894,16 +907,6 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     QString schema;
     qSplitTableName(tbl, schema);
 
-    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
-        tbl = stripDelimiters(tbl, QSqlDriver::TableName);
-    else
-        tbl = tbl.toLower();
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = schema.toLower();
-
     switch(d->pro) {
     case QPSQLDriver::Version6:
         stmt = QLatin1String("select pg_att1.attname, int(pg_att1.atttypid), pg_cl.relname "
@@ -936,7 +939,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
                 "FROM pg_attribute, pg_class "
                 "WHERE %1 pg_class.oid IN "
                 "(SELECT indexrelid FROM pg_index WHERE indisprimary = true AND indrelid IN "
-                " (SELECT oid FROM pg_class WHERE relname = '%2')) "
+                " (SELECT oid FROM pg_class WHERE lower(relname) = '%2')) "
                 "AND pg_attribute.attrelid = pg_class.oid "
                 "AND pg_attribute.attisdropped = false "
                 "ORDER BY pg_attribute.attnum");
@@ -944,11 +947,11 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
             stmt = stmt.arg(QLatin1String("pg_table_is_visible(pg_class.oid) AND"));
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
-                   "pg_namespace where pg_namespace.nspname = '%1') AND ").arg(schema));
+                   "pg_namespace where pg_namespace.nspname = '%1') AND ").arg(schema.toLower()));
         break;
     }
 
-    i.exec(stmt.arg(tbl));
+    i.exec(stmt.arg(tbl.toLower()));
     while (i.isActive() && i.next()) {
         QSqlField f(i.value(0).toString(), qDecodePSQLType(i.value(1).toInt()));
         idx.append(f);
@@ -966,16 +969,6 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
     QString tbl = tablename;
     QString schema;
     qSplitTableName(tbl, schema);
-
-    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
-        tbl = stripDelimiters(tbl, QSqlDriver::TableName);
-    else
-        tbl = tbl.toLower();
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = schema.toLower();
 
     QString stmt;
     switch(d->pro) {
@@ -1021,7 +1014,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "left join pg_attrdef on (pg_attrdef.adrelid = "
                 "pg_attribute.attrelid and pg_attrdef.adnum = pg_attribute.attnum) "
                 "where %1 "
-                "and pg_class.relname = '%2' "
+                "and lower(pg_class.relname) = '%2' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid "
                 "and pg_attribute.attisdropped = false "
@@ -1030,12 +1023,12 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
             stmt = stmt.arg(QLatin1String("pg_table_is_visible(pg_class.oid)"));
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
-                   "pg_namespace where pg_namespace.nspname = '%1')").arg(schema));
+                   "pg_namespace where pg_namespace.nspname = '%1')").arg(schema.toLower()));
         break;
     }
 
     QSqlQuery query(createResult());
-    query.exec(stmt.arg(tbl));
+    query.exec(stmt.arg(tbl.toLower()));
     if (d->pro >= QPSQLDriver::Version71) {
         while (query.next()) {
             int len = query.value(3).toInt();
@@ -1192,12 +1185,12 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
             qPrintable(name));
         return false;
     }
-    
+
     int socket = PQsocket(d->connection);
     if (socket) {
         QString query = QString(QLatin1String("LISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
-        if (PQresultStatus(PQexec(d->connection, 
-                                  d->isUtf8 ? query.toUtf8().constData() 
+        if (PQresultStatus(PQexec(d->connection,
+                                  d->isUtf8 ? query.toUtf8().constData()
                                             : query.toLocal8Bit().constData())
                           ) != PGRES_COMMAND_OK) {
             setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d));
@@ -1228,8 +1221,8 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
     }
 
     QString query = QString(QLatin1String("UNLISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
-    if (PQresultStatus(PQexec(d->connection, 
-                              d->isUtf8 ? query.toUtf8().constData() 
+    if (PQresultStatus(PQexec(d->connection,
+                              d->isUtf8 ? query.toUtf8().constData()
                                         : query.toLocal8Bit().constData())
                       ) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(tr("Unable to unsubscribe"), QSqlError::StatementError, d));
@@ -1262,7 +1255,7 @@ void QPSQLDriver::_q_handleNotification(int)
         if (d->seid.contains(name))
             emit notification(name);
         else
-            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.", 
+            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
                 qPrintable(name));
 
         qPQfreemem(notify);

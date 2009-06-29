@@ -74,7 +74,7 @@ public:
     JSMimeTypeArrayConstructor(ExecState* exec)
         : DOMObject(JSMimeTypeArrayConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMimeTypeArrayPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMimeTypeArrayPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSMimeTypeArrayPrototypeTable =
 
 const ClassInfo JSMimeTypeArrayPrototype::s_info = { "MimeTypeArrayPrototype", 0, &JSMimeTypeArrayPrototypeTable, 0 };
 
-JSObject* JSMimeTypeArrayPrototype::self(ExecState* exec)
+JSObject* JSMimeTypeArrayPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMimeTypeArray>(exec);
+    return getDOMPrototype<JSMimeTypeArray>(exec, globalObject);
 }
 
 bool JSMimeTypeArrayPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,9 +135,9 @@ JSMimeTypeArray::~JSMimeTypeArray()
 
 }
 
-JSObject* JSMimeTypeArray::createPrototype(ExecState* exec)
+JSObject* JSMimeTypeArray::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMimeTypeArrayPrototype(JSMimeTypeArrayPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSMimeTypeArrayPrototype(JSMimeTypeArrayPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSMimeTypeArray::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

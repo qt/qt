@@ -74,7 +74,7 @@ public:
     JSRectConstructor(ExecState* exec)
         : DOMObject(JSRectConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSRectPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSRectPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSRectPrototypeTable =
 
 const ClassInfo JSRectPrototype::s_info = { "RectPrototype", 0, &JSRectPrototypeTable, 0 };
 
-JSObject* JSRectPrototype::self(ExecState* exec)
+JSObject* JSRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSRect>(exec);
+    return getDOMPrototype<JSRect>(exec, globalObject);
 }
 
 const ClassInfo JSRect::s_info = { "Rect", 0, &JSRectTable, 0 };
@@ -128,9 +128,9 @@ JSRect::~JSRect()
 
 }
 
-JSObject* JSRect::createPrototype(ExecState* exec)
+JSObject* JSRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSRectPrototype(JSRectPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSRectPrototype(JSRectPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

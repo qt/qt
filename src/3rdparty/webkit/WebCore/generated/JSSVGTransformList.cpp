@@ -82,9 +82,9 @@ static const HashTable JSSVGTransformListPrototypeTable =
 
 const ClassInfo JSSVGTransformListPrototype::s_info = { "SVGTransformListPrototype", 0, &JSSVGTransformListPrototypeTable, 0 };
 
-JSObject* JSSVGTransformListPrototype::self(ExecState* exec)
+JSObject* JSSVGTransformListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTransformList>(exec);
+    return getDOMPrototype<JSSVGTransformList>(exec, globalObject);
 }
 
 bool JSSVGTransformListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -107,9 +107,9 @@ JSSVGTransformList::~JSSVGTransformList()
 
 }
 
-JSObject* JSSVGTransformList::createPrototype(ExecState* exec)
+JSObject* JSSVGTransformList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTransformListPrototype(JSSVGTransformListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGTransformListPrototype(JSSVGTransformListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGTransformList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -69,7 +69,7 @@ public:
     JSTextMetricsConstructor(ExecState* exec)
         : DOMObject(JSTextMetricsConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSTextMetricsPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSTextMetricsPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -104,9 +104,9 @@ static const HashTable JSTextMetricsPrototypeTable =
 
 const ClassInfo JSTextMetricsPrototype::s_info = { "TextMetricsPrototype", 0, &JSTextMetricsPrototypeTable, 0 };
 
-JSObject* JSTextMetricsPrototype::self(ExecState* exec)
+JSObject* JSTextMetricsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSTextMetrics>(exec);
+    return getDOMPrototype<JSTextMetrics>(exec, globalObject);
 }
 
 const ClassInfo JSTextMetrics::s_info = { "TextMetrics", 0, &JSTextMetricsTable, 0 };
@@ -123,9 +123,9 @@ JSTextMetrics::~JSTextMetrics()
 
 }
 
-JSObject* JSTextMetrics::createPrototype(ExecState* exec)
+JSObject* JSTextMetrics::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSTextMetricsPrototype(JSTextMetricsPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSTextMetricsPrototype(JSTextMetricsPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSTextMetrics::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

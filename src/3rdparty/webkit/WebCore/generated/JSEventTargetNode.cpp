@@ -113,9 +113,9 @@ static const HashTable JSEventTargetNodePrototypeTable =
 
 const ClassInfo JSEventTargetNodePrototype::s_info = { "EventTargetNodePrototype", 0, &JSEventTargetNodePrototypeTable, 0 };
 
-JSObject* JSEventTargetNodePrototype::self(ExecState* exec)
+JSObject* JSEventTargetNodePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSEventTargetNode>(exec);
+    return getDOMPrototype<JSEventTargetNode>(exec, globalObject);
 }
 
 bool JSEventTargetNodePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -130,9 +130,9 @@ JSEventTargetNode::JSEventTargetNode(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSEventTargetNode::createPrototype(ExecState* exec)
+JSObject* JSEventTargetNode::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSEventTargetNodePrototype(JSEventTargetNodePrototype::createStructure(JSNodePrototype::self(exec)));
+    return new (exec) JSEventTargetNodePrototype(JSEventTargetNodePrototype::createStructure(JSNodePrototype::self(exec, globalObject)));
 }
 
 bool JSEventTargetNode::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -68,7 +68,7 @@ public:
     JSCommentConstructor(ExecState* exec)
         : DOMObject(JSCommentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCommentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCommentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -103,9 +103,9 @@ static const HashTable JSCommentPrototypeTable =
 
 const ClassInfo JSCommentPrototype::s_info = { "CommentPrototype", 0, &JSCommentPrototypeTable, 0 };
 
-JSObject* JSCommentPrototype::self(ExecState* exec)
+JSObject* JSCommentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSComment>(exec);
+    return getDOMPrototype<JSComment>(exec, globalObject);
 }
 
 const ClassInfo JSComment::s_info = { "Comment", &JSCharacterData::s_info, &JSCommentTable, 0 };
@@ -115,9 +115,9 @@ JSComment::JSComment(PassRefPtr<Structure> structure, PassRefPtr<Comment> impl)
 {
 }
 
-JSObject* JSComment::createPrototype(ExecState* exec)
+JSObject* JSComment::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCommentPrototype(JSCommentPrototype::createStructure(JSCharacterDataPrototype::self(exec)));
+    return new (exec) JSCommentPrototype(JSCommentPrototype::createStructure(JSCharacterDataPrototype::self(exec, globalObject)));
 }
 
 bool JSComment::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

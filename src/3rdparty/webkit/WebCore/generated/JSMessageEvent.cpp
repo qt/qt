@@ -80,7 +80,7 @@ public:
     JSMessageEventConstructor(ExecState* exec)
         : DOMObject(JSMessageEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMessageEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMessageEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -120,9 +120,9 @@ static const HashTable* getJSMessageEventPrototypeTable(ExecState* exec)
 }
 const ClassInfo JSMessageEventPrototype::s_info = { "MessageEventPrototype", 0, 0, getJSMessageEventPrototypeTable };
 
-JSObject* JSMessageEventPrototype::self(ExecState* exec)
+JSObject* JSMessageEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMessageEvent>(exec);
+    return getDOMPrototype<JSMessageEvent>(exec, globalObject);
 }
 
 bool JSMessageEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,9 +141,9 @@ JSMessageEvent::JSMessageEvent(PassRefPtr<Structure> structure, PassRefPtr<Messa
 {
 }
 
-JSObject* JSMessageEvent::createPrototype(ExecState* exec)
+JSObject* JSMessageEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMessageEventPrototype(JSMessageEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSMessageEventPrototype(JSMessageEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSMessageEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

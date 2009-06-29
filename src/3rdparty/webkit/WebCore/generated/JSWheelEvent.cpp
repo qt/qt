@@ -83,7 +83,7 @@ public:
     JSWheelEventConstructor(ExecState* exec)
         : DOMObject(JSWheelEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWheelEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWheelEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -118,9 +118,9 @@ static const HashTable JSWheelEventPrototypeTable =
 
 const ClassInfo JSWheelEventPrototype::s_info = { "WheelEventPrototype", 0, &JSWheelEventPrototypeTable, 0 };
 
-JSObject* JSWheelEventPrototype::self(ExecState* exec)
+JSObject* JSWheelEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWheelEvent>(exec);
+    return getDOMPrototype<JSWheelEvent>(exec, globalObject);
 }
 
 const ClassInfo JSWheelEvent::s_info = { "WheelEvent", &JSUIEvent::s_info, &JSWheelEventTable, 0 };
@@ -130,9 +130,9 @@ JSWheelEvent::JSWheelEvent(PassRefPtr<Structure> structure, PassRefPtr<WheelEven
 {
 }
 
-JSObject* JSWheelEvent::createPrototype(ExecState* exec)
+JSObject* JSWheelEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWheelEventPrototype(JSWheelEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSWheelEventPrototype(JSWheelEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSWheelEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -35,7 +35,7 @@ class JSSVGAnimatedLengthList : public DOMObject {
 public:
     JSSVGAnimatedLengthList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedLengthList>, SVGElement* context);
     virtual ~JSSVGAnimatedLengthList();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -58,7 +58,7 @@ SVGAnimatedLengthList* toSVGAnimatedLengthList(JSC::JSValuePtr);
 
 class JSSVGAnimatedLengthListPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimatedLengthListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

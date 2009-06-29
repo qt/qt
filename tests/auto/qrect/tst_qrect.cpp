@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4125,6 +4125,7 @@ void tst_QRect::unitedRect_data()
     QTest::newRow("test 13") << QRect() << QRect(10, 10, 10, 10) << QRect(10, 10, 10, 10);
     QTest::newRow("test 14") << QRect(10, 10, 10, 10) << QRect() << QRect(10, 10, 10, 10);
     QTest::newRow("test 15") << QRect() << QRect() << QRect();
+    QTest::newRow("test 16") << QRect(0, 0, 100, 0) << QRect(0, 0, 0, 100) << QRect(0, 0, 100, 100);
 }
 
 void tst_QRect::unitedRect()
@@ -4160,6 +4161,7 @@ void tst_QRect::unitedRectF_data()
     QTest::newRow("test 13") << QRectF() << QRectF(10, 10, 10, 10) << QRectF(10, 10, 10, 10);
     QTest::newRow("test 14") << QRectF(10, 10, 10, 10) << QRectF() << QRectF(10, 10, 10, 10);
     QTest::newRow("test 15") << QRectF() << QRectF() << QRectF();
+    QTest::newRow("test 16") << QRectF(0, 0, 100, 0) << QRectF(0, 0, 0, 100) << QRectF(0, 0, 100, 100);
 }
 
 void tst_QRect::unitedRectF()

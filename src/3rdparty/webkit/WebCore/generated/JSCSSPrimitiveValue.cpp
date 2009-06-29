@@ -103,7 +103,7 @@ public:
     JSCSSPrimitiveValueConstructor(ExecState* exec)
         : DOMObject(JSCSSPrimitiveValueConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSPrimitiveValuePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSPrimitiveValuePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -171,9 +171,9 @@ static const HashTable JSCSSPrimitiveValuePrototypeTable =
 
 const ClassInfo JSCSSPrimitiveValuePrototype::s_info = { "CSSPrimitiveValuePrototype", 0, &JSCSSPrimitiveValuePrototypeTable, 0 };
 
-JSObject* JSCSSPrimitiveValuePrototype::self(ExecState* exec)
+JSObject* JSCSSPrimitiveValuePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSPrimitiveValue>(exec);
+    return getDOMPrototype<JSCSSPrimitiveValue>(exec, globalObject);
 }
 
 bool JSCSSPrimitiveValuePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -188,9 +188,9 @@ JSCSSPrimitiveValue::JSCSSPrimitiveValue(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSCSSPrimitiveValue::createPrototype(ExecState* exec)
+JSObject* JSCSSPrimitiveValue::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSPrimitiveValuePrototype(JSCSSPrimitiveValuePrototype::createStructure(JSCSSValuePrototype::self(exec)));
+    return new (exec) JSCSSPrimitiveValuePrototype(JSCSSPrimitiveValuePrototype::createStructure(JSCSSValuePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSPrimitiveValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

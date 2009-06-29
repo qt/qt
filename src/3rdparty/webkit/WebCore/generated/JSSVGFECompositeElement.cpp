@@ -103,7 +103,7 @@ public:
     JSSVGFECompositeElementConstructor(ExecState* exec)
         : DOMObject(JSSVGFECompositeElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFECompositeElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFECompositeElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -146,9 +146,9 @@ static const HashTable JSSVGFECompositeElementPrototypeTable =
 
 const ClassInfo JSSVGFECompositeElementPrototype::s_info = { "SVGFECompositeElementPrototype", 0, &JSSVGFECompositeElementPrototypeTable, 0 };
 
-JSObject* JSSVGFECompositeElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFECompositeElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFECompositeElement>(exec);
+    return getDOMPrototype<JSSVGFECompositeElement>(exec, globalObject);
 }
 
 bool JSSVGFECompositeElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -163,9 +163,9 @@ JSSVGFECompositeElement::JSSVGFECompositeElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSSVGFECompositeElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFECompositeElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFECompositeElementPrototype(JSSVGFECompositeElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFECompositeElementPrototype(JSSVGFECompositeElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFECompositeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

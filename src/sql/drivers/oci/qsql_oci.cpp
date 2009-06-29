@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2108,7 +2108,7 @@ bool QOCIDriver::open(const QString & db,
 
     setOpen(true);
     setOpenError(false);
-    d->user = user;
+    d->user = user.toUpper();
 
     return true;
 }
@@ -2210,15 +2210,8 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
                 "and owner != 'WKSYS'"
                 "and owner != 'CTXSYS'"
                 "and owner != 'WMSYS'"));
-
-        QString user = d->user;
-        if ( isIdentifierEscaped(user, QSqlDriver::TableName))
-            user = stripDelimiters(user, QSqlDriver::TableName);
-        else
-            user = user.toUpper();
-
         while (t.next()) {
-            if (t.value(0).toString().toUpper() != user.toUpper())
+            if (t.value(0).toString().toUpper() != d->user.toUpper())
                 tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
@@ -2254,10 +2247,10 @@ void qSplitTableAndOwner(const QString & tname, QString * tbl,
 {
     int i = tname.indexOf(QLatin1Char('.')); // prefixed with owner?
     if (i != -1) {
-        *tbl = tname.right(tname.length() - i - 1);
-        *owner = tname.left(i);
+        *tbl = tname.right(tname.length() - i - 1).toUpper();
+        *owner = tname.left(i).toUpper();
     } else {
-        *tbl = tname;
+        *tbl = tname.toUpper();
     }
 }
 
@@ -2273,7 +2266,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     QString stmt(QLatin1String("select column_name, data_type, data_length, "
                   "data_precision, data_scale, nullable, data_default%1"
                   "from all_tab_columns "
-                  "where table_name=%2"));
+                  "where upper(table_name)=%2"));
     if (d->serverVersion >= 9)
         stmt = stmt.arg(QLatin1String(", char_length "));
     else
@@ -2281,23 +2274,11 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     bool buildRecordInfo = false;
     QString table, owner, tmpStmt;
     qSplitTableAndOwner(tablename, &table, &owner);
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = table.toUpper();
-
     tmpStmt = stmt.arg(QLatin1Char('\'') + table + QLatin1Char('\''));
     if (owner.isEmpty()) {
         owner = d->user;
     }
-
-    if (isIdentifierEscaped(owner, QSqlDriver::TableName))
-        owner = stripDelimiters(owner, QSqlDriver::TableName);
-    else
-        owner = owner.toUpper();
-
-    tmpStmt += QLatin1String(" and owner='") + owner + QLatin1String("'");
+    tmpStmt += QLatin1String(" and upper(owner)='") + owner + QLatin1String("'");
     t.setForwardOnly(true);
     t.exec(tmpStmt);
     if (!t.next()) { // try and see if the tablename is a synonym
@@ -2346,23 +2327,11 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     bool buildIndex = false;
     QString table, owner, tmpStmt;
     qSplitTableAndOwner(tablename, &table, &owner);
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = table.toUpper();
-
-    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + QLatin1String("'");
+    tmpStmt = stmt + QLatin1String(" and upper(a.table_name)='") + table + QLatin1String("'");
     if (owner.isEmpty()) {
         owner = d->user;
     }
-
-    if (isIdentifierEscaped(owner, QSqlDriver::TableName))
-        owner = stripDelimiters(owner, QSqlDriver::TableName);
-    else
-        owner = owner.toUpper();
-
-    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1String("'");
+    tmpStmt += QLatin1String(" and upper(a.owner)='") + owner + QLatin1String("'");
     t.setForwardOnly(true);
     t.exec(tmpStmt);
 
@@ -2456,14 +2425,13 @@ QVariant QOCIDriver::handle() const
     return qVariantFromValue(d->env);
 }
 
-QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
+QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType /* type */) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
+    res.replace(QLatin1Char('"'), QLatin1String("\"\""));
+    if (identifier.indexOf(QLatin1Char(' ')) != -1)
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
-    }
+//     res.replace(QLatin1Char('.'), QLatin1String("\".\""));
     return res;
 }
 

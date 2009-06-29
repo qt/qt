@@ -3,7 +3,7 @@
 # Configures to build the Qt library
 #
 # Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-# Contact: Qt Software Information (qt-info@nokia.com)
+# Contact: Nokia Corporation (qt-info@nokia.com)
 #
 # This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
@@ -311,7 +311,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are using an old license file."
             echo
-            echo "Please install the license file supplied by Qt Software,"
+            echo "Please install the license file supplied by Nokia,"
             echo "or install the Qt Open Source Edition if you intend to"
             echo "develop free software."
             exit 1
@@ -7035,9 +7035,9 @@ BEGIN {
 
 FNR == 1 {
     if ( input_file ) {
-  if ( ! target_file )
-      target_file = third
-  print input_file >target_file
+        if ( ! target_file )
+            target_file = third
+        print input_file >target_file
     }
 
     matched_target = 0
@@ -7048,32 +7048,32 @@ FNR == 1 {
 
 /^(TARGET.*=)/ {
     if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
-  target_file = first
+        target_file = first
         matched_target = 1
     }
 }
 
 matched_target == 0 && /^(TEMPLATE.*=)/ {
     if ( \$3 == "subdirs" )
-  target_file = second
+        target_file = second
     else if ( \$3 == "lib" )
-  template_lib = 1
+        template_lib = 1
     else
-  target_file = third
+        target_file = third
 }
 
 matched_target == 0 && template_lib == 1 && /^(CONFIG.*=)/ {
     if ( \$0 ~ /plugin/ )
         target_file = third
     else
-  target_file = second
+        target_file = second
 }
 
 END {
     if ( input_file ) {
-  if ( ! target_file )
-      target_file = third
-  print input_file >>target_file
+        if ( ! target_file )
+            target_file = third
+        print input_file >>target_file
     }
 }
 

@@ -98,9 +98,9 @@ static const HashTable JSDOMApplicationCachePrototypeTable =
 
 const ClassInfo JSDOMApplicationCachePrototype::s_info = { "DOMApplicationCachePrototype", 0, &JSDOMApplicationCachePrototypeTable, 0 };
 
-JSObject* JSDOMApplicationCachePrototype::self(ExecState* exec)
+JSObject* JSDOMApplicationCachePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMApplicationCache>(exec);
+    return getDOMPrototype<JSDOMApplicationCache>(exec, globalObject);
 }
 
 bool JSDOMApplicationCachePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -122,9 +122,9 @@ JSDOMApplicationCache::~JSDOMApplicationCache()
 
 }
 
-JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec)
+JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMApplicationCachePrototype(JSDOMApplicationCachePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMApplicationCachePrototype(JSDOMApplicationCachePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMApplicationCache::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

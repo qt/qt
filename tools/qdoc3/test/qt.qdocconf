@@ -22,7 +22,7 @@ edition.DesktopLight.groups       = -graphicsview-api
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.452
+qhp.Qt.namespace           = com.trolltech.qt.453
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
 qhp.Qt.indexRoot           =
@@ -31,15 +31,14 @@ qhp.Qt.indexRoot           =
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = classic.css \
                              images/qt-logo.png \
-                             images/trolltech-logo \
                              images/taskmenuextension-example.png \
                              images/coloreditorfactoryimage.png \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.5.2 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.5.2
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.5.2
+qhp.Qt.filterAttributes    = qt 4.5.3 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.5.3
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.5.3
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes

@@ -10,6 +10,10 @@ cross_compile: CONFIG += nostrip
 isEmpty(QT_BUILD_PARTS) { #defaults
    QT_BUILD_PARTS = libs tools examples demos docs translations
 } else { #make sure the order makes sense
+   contains(QT_BUILD_PARTS, translations) {
+       QT_BUILD_PARTS -= translations
+       QT_BUILD_PARTS = translations $$QT_BUILD_PARTS
+   }
    contains(QT_BUILD_PARTS, tools) {
        QT_BUILD_PARTS -= tools
        QT_BUILD_PARTS = tools $$QT_BUILD_PARTS

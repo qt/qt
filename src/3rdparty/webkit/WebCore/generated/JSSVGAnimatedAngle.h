@@ -35,7 +35,7 @@ class JSSVGAnimatedAngle : public DOMObject {
 public:
     JSSVGAnimatedAngle(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedAngle>, SVGElement* context);
     virtual ~JSSVGAnimatedAngle();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -58,7 +58,7 @@ SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValuePtr);
 
 class JSSVGAnimatedAnglePrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimatedAnglePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

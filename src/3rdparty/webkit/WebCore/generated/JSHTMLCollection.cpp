@@ -77,7 +77,7 @@ public:
     JSHTMLCollectionConstructor(ExecState* exec)
         : DOMObject(JSHTMLCollectionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLCollectionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLCollectionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -115,9 +115,9 @@ static const HashTable JSHTMLCollectionPrototypeTable =
 
 const ClassInfo JSHTMLCollectionPrototype::s_info = { "HTMLCollectionPrototype", 0, &JSHTMLCollectionPrototypeTable, 0 };
 
-JSObject* JSHTMLCollectionPrototype::self(ExecState* exec)
+JSObject* JSHTMLCollectionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLCollection>(exec);
+    return getDOMPrototype<JSHTMLCollection>(exec, globalObject);
 }
 
 bool JSHTMLCollectionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -139,9 +139,9 @@ JSHTMLCollection::~JSHTMLCollection()
 
 }
 
-JSObject* JSHTMLCollection::createPrototype(ExecState* exec)
+JSObject* JSHTMLCollection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLCollectionPrototype(JSHTMLCollectionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSHTMLCollectionPrototype(JSHTMLCollectionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSHTMLCollection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

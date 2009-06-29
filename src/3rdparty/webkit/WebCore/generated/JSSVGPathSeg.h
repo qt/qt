@@ -37,7 +37,7 @@ class JSSVGPathSeg : public DOMObject {
 public:
     JSSVGPathSeg(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSeg>, SVGElement* context);
     virtual ~JSSVGPathSeg();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -61,7 +61,7 @@ SVGPathSeg* toSVGPathSeg(JSC::JSValuePtr);
 
 class JSSVGPathSegPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

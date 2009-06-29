@@ -71,7 +71,7 @@ public:
     JSNotationConstructor(ExecState* exec)
         : DOMObject(JSNotationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSNotationPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSNotationPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSNotationPrototypeTable =
 
 const ClassInfo JSNotationPrototype::s_info = { "NotationPrototype", 0, &JSNotationPrototypeTable, 0 };
 
-JSObject* JSNotationPrototype::self(ExecState* exec)
+JSObject* JSNotationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNotation>(exec);
+    return getDOMPrototype<JSNotation>(exec, globalObject);
 }
 
 const ClassInfo JSNotation::s_info = { "Notation", &JSNode::s_info, &JSNotationTable, 0 };
@@ -118,9 +118,9 @@ JSNotation::JSNotation(PassRefPtr<Structure> structure, PassRefPtr<Notation> imp
 {
 }
 
-JSObject* JSNotation::createPrototype(ExecState* exec)
+JSObject* JSNotation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNotationPrototype(JSNotationPrototype::createStructure(JSNodePrototype::self(exec)));
+    return new (exec) JSNotationPrototype(JSNotationPrototype::createStructure(JSNodePrototype::self(exec, globalObject)));
 }
 
 bool JSNotation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

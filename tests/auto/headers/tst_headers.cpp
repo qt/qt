@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -145,7 +145,7 @@ void tst_Headers::licenseCheck()
     if (licenseType != "3RDPARTY") {
         QCOMPARE(content.at(i++), QString("**"));
         QVERIFY(copyrightPattern.exactMatch(content.at(i++)));
-        QCOMPARE(content.at(i++), QString("** Contact: Qt Software Information (qt-info@nokia.com)"));
+        QCOMPARE(content.at(i++), QString("** Contact: Nokia Corporation (qt-info@nokia.com)"));
     }
     QCOMPARE(content.at(i++), QString("**"));
     QVERIFY(moduleTest.exactMatch(content.at(i++)));

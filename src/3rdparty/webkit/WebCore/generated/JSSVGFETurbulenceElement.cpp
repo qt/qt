@@ -102,7 +102,7 @@ public:
     JSSVGFETurbulenceElementConstructor(ExecState* exec)
         : DOMObject(JSSVGFETurbulenceElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFETurbulenceElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFETurbulenceElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -144,9 +144,9 @@ static const HashTable JSSVGFETurbulenceElementPrototypeTable =
 
 const ClassInfo JSSVGFETurbulenceElementPrototype::s_info = { "SVGFETurbulenceElementPrototype", 0, &JSSVGFETurbulenceElementPrototypeTable, 0 };
 
-JSObject* JSSVGFETurbulenceElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFETurbulenceElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFETurbulenceElement>(exec);
+    return getDOMPrototype<JSSVGFETurbulenceElement>(exec, globalObject);
 }
 
 bool JSSVGFETurbulenceElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -161,9 +161,9 @@ JSSVGFETurbulenceElement::JSSVGFETurbulenceElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGFETurbulenceElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFETurbulenceElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFETurbulenceElementPrototype(JSSVGFETurbulenceElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFETurbulenceElementPrototype(JSSVGFETurbulenceElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFETurbulenceElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -71,7 +71,7 @@ public:
     JSHTMLParagraphElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLParagraphElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLParagraphElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLParagraphElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLParagraphElementPrototypeTable =
 
 const ClassInfo JSHTMLParagraphElementPrototype::s_info = { "HTMLParagraphElementPrototype", 0, &JSHTMLParagraphElementPrototypeTable, 0 };
 
-JSObject* JSHTMLParagraphElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLParagraphElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLParagraphElement>(exec);
+    return getDOMPrototype<JSHTMLParagraphElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLParagraphElement::s_info = { "HTMLParagraphElement", &JSHTMLElement::s_info, &JSHTMLParagraphElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLParagraphElement::JSHTMLParagraphElement(PassRefPtr<Structure> structure, 
 {
 }
 
-JSObject* JSHTMLParagraphElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLParagraphElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLParagraphElementPrototype(JSHTMLParagraphElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLParagraphElementPrototype(JSHTMLParagraphElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLParagraphElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

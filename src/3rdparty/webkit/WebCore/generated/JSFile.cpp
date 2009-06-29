@@ -72,7 +72,7 @@ public:
     JSFileConstructor(ExecState* exec)
         : DOMObject(JSFileConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,9 +107,9 @@ static const HashTable JSFilePrototypeTable =
 
 const ClassInfo JSFilePrototype::s_info = { "FilePrototype", 0, &JSFilePrototypeTable, 0 };
 
-JSObject* JSFilePrototype::self(ExecState* exec)
+JSObject* JSFilePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSFile>(exec);
+    return getDOMPrototype<JSFile>(exec, globalObject);
 }
 
 const ClassInfo JSFile::s_info = { "File", 0, &JSFileTable, 0 };
@@ -126,9 +126,9 @@ JSFile::~JSFile()
 
 }
 
-JSObject* JSFile::createPrototype(ExecState* exec)
+JSObject* JSFile::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSFilePrototype(JSFilePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSFilePrototype(JSFilePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSFile::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

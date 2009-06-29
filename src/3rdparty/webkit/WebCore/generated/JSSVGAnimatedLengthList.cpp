@@ -70,9 +70,9 @@ static const HashTable JSSVGAnimatedLengthListPrototypeTable =
 
 const ClassInfo JSSVGAnimatedLengthListPrototype::s_info = { "SVGAnimatedLengthListPrototype", 0, &JSSVGAnimatedLengthListPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedLengthListPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedLengthListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedLengthList>(exec);
+    return getDOMPrototype<JSSVGAnimatedLengthList>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedLengthList::s_info = { "SVGAnimatedLengthList", 0, &JSSVGAnimatedLengthListTable, 0 };
@@ -90,9 +90,9 @@ JSSVGAnimatedLengthList::~JSSVGAnimatedLengthList()
 
 }
 
-JSObject* JSSVGAnimatedLengthList::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedLengthList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedLengthListPrototype(JSSVGAnimatedLengthListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedLengthListPrototype(JSSVGAnimatedLengthListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedLengthList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

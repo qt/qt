@@ -64,9 +64,9 @@ static const HashTable JSBarInfoPrototypeTable =
 
 const ClassInfo JSBarInfoPrototype::s_info = { "BarInfoPrototype", 0, &JSBarInfoPrototypeTable, 0 };
 
-JSObject* JSBarInfoPrototype::self(ExecState* exec)
+JSObject* JSBarInfoPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSBarInfo>(exec);
+    return getDOMPrototype<JSBarInfo>(exec, globalObject);
 }
 
 const ClassInfo JSBarInfo::s_info = { "BarInfo", 0, &JSBarInfoTable, 0 };
@@ -83,9 +83,9 @@ JSBarInfo::~JSBarInfo()
 
 }
 
-JSObject* JSBarInfo::createPrototype(ExecState* exec)
+JSObject* JSBarInfo::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSBarInfoPrototype(JSBarInfoPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSBarInfoPrototype(JSBarInfoPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSBarInfo::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

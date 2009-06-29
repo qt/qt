@@ -81,9 +81,9 @@ static const HashTable JSSVGViewElementPrototypeTable =
 
 const ClassInfo JSSVGViewElementPrototype::s_info = { "SVGViewElementPrototype", 0, &JSSVGViewElementPrototypeTable, 0 };
 
-JSObject* JSSVGViewElementPrototype::self(ExecState* exec)
+JSObject* JSSVGViewElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGViewElement>(exec);
+    return getDOMPrototype<JSSVGViewElement>(exec, globalObject);
 }
 
 bool JSSVGViewElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -98,9 +98,9 @@ JSSVGViewElement::JSSVGViewElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGViewElement::createPrototype(ExecState* exec)
+JSObject* JSSVGViewElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGViewElementPrototype(JSSVGViewElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGViewElementPrototype(JSSVGViewElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGViewElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

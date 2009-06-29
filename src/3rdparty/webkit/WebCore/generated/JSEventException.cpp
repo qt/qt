@@ -75,7 +75,7 @@ public:
     JSEventExceptionConstructor(ExecState* exec)
         : DOMObject(JSEventExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSEventExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSEventExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,9 +112,9 @@ static const HashTable JSEventExceptionPrototypeTable =
 
 const ClassInfo JSEventExceptionPrototype::s_info = { "EventExceptionPrototype", 0, &JSEventExceptionPrototypeTable, 0 };
 
-JSObject* JSEventExceptionPrototype::self(ExecState* exec)
+JSObject* JSEventExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSEventException>(exec);
+    return getDOMPrototype<JSEventException>(exec, globalObject);
 }
 
 bool JSEventExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -136,9 +136,9 @@ JSEventException::~JSEventException()
 
 }
 
-JSObject* JSEventException::createPrototype(ExecState* exec)
+JSObject* JSEventException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSEventExceptionPrototype(JSEventExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSEventExceptionPrototype(JSEventExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSEventException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

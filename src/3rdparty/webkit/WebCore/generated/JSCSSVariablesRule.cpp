@@ -74,7 +74,7 @@ public:
     JSCSSVariablesRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSVariablesRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSVariablesRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSVariablesRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSCSSVariablesRulePrototypeTable =
 
 const ClassInfo JSCSSVariablesRulePrototype::s_info = { "CSSVariablesRulePrototype", 0, &JSCSSVariablesRulePrototypeTable, 0 };
 
-JSObject* JSCSSVariablesRulePrototype::self(ExecState* exec)
+JSObject* JSCSSVariablesRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSVariablesRule>(exec);
+    return getDOMPrototype<JSCSSVariablesRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSVariablesRule::s_info = { "CSSVariablesRule", &JSCSSRule::s_info, &JSCSSVariablesRuleTable, 0 };
@@ -121,9 +121,9 @@ JSCSSVariablesRule::JSCSSVariablesRule(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSCSSVariablesRule::createPrototype(ExecState* exec)
+JSObject* JSCSSVariablesRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSVariablesRulePrototype(JSCSSVariablesRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSVariablesRulePrototype(JSCSSVariablesRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSVariablesRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -208,6 +208,7 @@ SUBDIRS += _networkselftest \
            qnetworkproxy \
 	   qnetworkrequest \
 	   qnetworkreply \
+           qnetworkaccessmanager_and_qprogressdialog \
            qnumeric \
            qobject \
            qobjectrace \
