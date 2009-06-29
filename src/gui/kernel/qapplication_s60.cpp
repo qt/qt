@@ -650,7 +650,7 @@ void QSymbianControl::PositionChanged()
     }
 }
 
-void QSymbianControl::FocusChanged(TDrawNow aDrawNow)
+void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
     if (m_ignoreFocusChanged)
         return;
@@ -715,7 +715,7 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
-void qt_init(QApplicationPrivate *priv, int)
+void qt_init(QApplicationPrivate * /* priv */, int)
 {
     S60 = new QS60Data;
 
@@ -800,12 +800,12 @@ bool QApplicationPrivate::modalState()
     return false;
 }
 
-void QApplicationPrivate::enterModal_sys(QWidget *widget)
+void QApplicationPrivate::enterModal_sys(QWidget * /* widget */)
 {
     // TODO: Implement QApplicationPrivate::enterModal_sys(QWidget *widget)
 }
 
-void QApplicationPrivate::leaveModal_sys(QWidget *widget)
+void QApplicationPrivate::leaveModal_sys(QWidget * /* widget */)
 {
     // TODO: Implement QApplicationPrivate::leaveModal_sys(QWidget *widget)
 }
@@ -910,7 +910,7 @@ QWidget * QApplication::topLevelAt(QPoint const& point)
     return found;
 }
 
-void QApplication::alert(QWidget *widget, int duration)
+void QApplication::alert(QWidget * /* widget */, int /* duration */)
 {
     // TODO: Implement QApplication::alert(QWidget *widget, int duration)
 }
@@ -1052,7 +1052,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     return 0;
 }
 
-bool QApplication::s60EventFilter(TWsEvent *aEvent)
+bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
     return false;
 }
@@ -1135,13 +1135,13 @@ void QApplication::setWheelScrollLines(int n)
 }
 #endif //QT_NO_WHEELEVENT
 
-bool QApplication::isEffectEnabled(Qt::UIEffect effect)
+bool QApplication::isEffectEnabled(Qt::UIEffect /* effect */)
 {
     // TODO: Implement QApplication::isEffectEnabled(Qt::UIEffect effect)
     return false;
 }
 
-void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
+void QApplication::setEffectEnabled(Qt::UIEffect /* effect */, bool /* enable */)
 {
     // TODO: Implement QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 }
@@ -1159,7 +1159,7 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
 }
 
 #ifndef QT_NO_SESSIONMANAGER
-QSessionManager::QSessionManager(QApplication * app, QString &id, QString& key)
+QSessionManager::QSessionManager(QApplication * /* app */, QString & /* id */, QString& /* key */)
 {
 
 }

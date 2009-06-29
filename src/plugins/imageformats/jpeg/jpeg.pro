@@ -13,6 +13,10 @@ wince*: {
 	contains(CE_ARCH,x86):CONFIG += exceptions_off
 }
 
+symbian: {
+	QMAKE_CXXFLAGS.CW += -W nounusedarg
+}
+
 contains(QT_CONFIG, system-jpeg) {
         unix:LIBS += -ljpeg
         win32:LIBS += libjpeg.lib

@@ -162,12 +162,12 @@ const QRect QDesktopWidget::screenGeometry(int /* screen */) const
     return QRect(0, 0, S60->screenWidthInPixels, S60->screenHeightInPixels);
     }
 
-int QDesktopWidget::screenNumber(const QWidget *widget) const
+int QDesktopWidget::screenNumber(const QWidget * /* widget */) const
 {
     return QDesktopWidgetPrivate::primaryScreen;
 }
 
-int QDesktopWidget::screenNumber(const QPoint &point) const
+int QDesktopWidget::screenNumber(const QPoint & /* point */) const
 {
     return QDesktopWidgetPrivate::primaryScreen;
 }
