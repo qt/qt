@@ -1513,7 +1513,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
 
     m_engine->evaluate("gotSignal = false");
     QVERIFY(m_engine->evaluate("myObject.mySignal2.connect(myHandler)").isUndefined());
-    QSKIP("Rest of the test causes crash", SkipAll);
     m_myObject->emitMySignal2(true);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
@@ -1582,6 +1581,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->emitMySignalWithVariantArg(123);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isNumber());
     QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
 
@@ -1793,7 +1793,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
 
 void tst_QScriptExtQObject::cppConnectAndDisconnect()
 {
-    QSKIP("Crashes", SkipAll);
+    QSKIP("Crashes (GC-related)", SkipAll);
     QScriptEngine eng;
     QLineEdit edit;
     QLineEdit edit2;

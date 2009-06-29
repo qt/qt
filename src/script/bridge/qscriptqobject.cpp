@@ -1443,6 +1443,8 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::CallData callData;
     JSC::CallType callType = slot.getCallData(callData);
     if (callType == JSC::CallTypeJS) {
+        if (exec->hadException())
+            exec->clearException(); // ### otherwise JSC asserts
         (void)JSC::asFunction(slot)->call(exec, thisObject, jscArgs);
     } else if (callType == JSC::CallTypeHost) {
         (void)callData.native.function(exec, JSC::asObject(slot), thisObject, jscArgs);
