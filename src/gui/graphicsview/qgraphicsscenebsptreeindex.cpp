@@ -350,7 +350,7 @@ void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool rec
             // Avoid virtual function calls from the destructor.
             purgePending = true;
             removedItems << item;
-        } else if (!item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+        } else if (!(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
             bsp.removeItem(item, item->sceneBoundingRect());
         }
     } else {
@@ -518,7 +518,7 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
         return;
 
     if (item->d_ptr->index == -1 || item->d_ptr->itemIsUntransformable()
-        || item->d_func()->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+        || (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
         return; // Item is not in BSP tree; nothing to do.
     }
 
