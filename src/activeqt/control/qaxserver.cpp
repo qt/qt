@@ -351,6 +351,10 @@ HRESULT UpdateRegistry(BOOL bRegister)
             qAxFactory()->registerClass(*key, &settings);
         }
     } else {
+        if (qAxOutProcServer) {
+            settings.remove(QLatin1String("/AppID/") + appId + QLatin1String("/."));
+            settings.remove(QLatin1String("/AppID/") + module + QLatin1String(".EXE"));
+        }
         QStringList keys = qAxFactory()->featureList();
         for (QStringList::Iterator key = keys.begin(); key != keys.end(); ++key) {
             QString className = *key;
