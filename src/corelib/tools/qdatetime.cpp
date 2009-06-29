@@ -1848,8 +1848,7 @@ QTime QTime::currentTime()
 #else
     time_t ltime; // no millisecond resolution
     ::time(&ltime);
-    tm *t = 0;
-    localtime(&ltime);
+    const tm *const t = localtime(&ltime);
     ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec;
 #endif
     return ct;
