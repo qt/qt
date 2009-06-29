@@ -1,8 +1,6 @@
 HEADERS += \
            fx/qfxanchors.h \
            fx/qfxanchors_p.h \
-           fx/qfxanimatedimageitem.h \
-           fx/qfxblendedimage.h \
            fx/qfxblurfilter.h \
            fx/qfxcomponentinstance.h \
            fx/qfxcomponentinstance_p.h \
@@ -15,7 +13,6 @@ HEADERS += \
            fx/qfxfocuspanel.h \
            fx/qfxfocusrealm.h \
            fx/qfxgridview.h \
-           fx/qfxflowview.h \
            fx/qfxhighlightfilter.h \
            fx/qfximage.h \
            fx/qfxpainteditem.h \
@@ -53,8 +50,6 @@ HEADERS += \
 
 SOURCES += \
            fx/qfxanchors.cpp \
-           fx/qfxanimatedimageitem.cpp \
-           fx/qfxblendedimage.cpp \
            fx/qfxblurfilter.cpp \
            fx/qfxcomponentinstance.cpp \
            fx/qfxcontentwrapper.cpp \
@@ -64,7 +59,6 @@ SOURCES += \
            fx/qfxfocuspanel.cpp \
            fx/qfxfocusrealm.cpp \
            fx/qfxgridview.cpp \
-           fx/qfxflowview.cpp \
            fx/qfxhighlightfilter.cpp \
            fx/qfximage.cpp \
            fx/qfxpainteditem.cpp \
