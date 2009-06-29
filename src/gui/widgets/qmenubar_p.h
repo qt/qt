@@ -71,7 +71,10 @@ class QMenuBarPrivate : public QWidgetPrivate
 public:
     QMenuBarPrivate() : itemsDirty(0), currentAction(0), mouseDown(0),
                          closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
-                         nativeMenuBar(-1)
+                         nativeMenuBar(-1), doChildEffects(false)
+#ifdef QT3_SUPPORT
+                         , doAutoResize(false)
+#endif
 #ifdef Q_WS_MAC
                          , mac_menubar(0)
 #endif
