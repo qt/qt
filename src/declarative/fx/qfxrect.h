@@ -58,7 +58,7 @@ class Q_DECLARATIVE_EXPORT QFxPen : public QObject
     Q_PROPERTY(QColor color READ color WRITE setColor)
 public:
     QFxPen(QObject *parent=0)
-        : QObject(parent), _width(0), _color("#000000"), _valid(false)
+        : QObject(parent), _width(1), _color("#000000"), _valid(false)
     {}
 
     int width() const { return _width; }
