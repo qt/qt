@@ -20,61 +20,55 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
-#include "config.h"
-#include "SessionStorage.h"
+
+#ifndef StorageNamespace_h
+#define StorageNamespace_h
 
 #if ENABLE(DOM_STORAGE)
 
-#include "EventNames.h"
-#include "Frame.h"
-#include "FrameTree.h"
-#include "Page.h"
-#include "SecurityOrigin.h"
+#include "SecurityOriginHash.h"
 #include "StorageArea.h"
-#include "StorageMap.h"
+
+#include <wtf/HashMap.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-PassRefPtr<SessionStorage> SessionStorage::create(Page* page)
-{
-    return adoptRef(new SessionStorage(page));
-}
+    class StorageArea;
+    class StorageSyncManager;
 
-SessionStorage::SessionStorage(Page* page)
-    : m_page(page)
-{
-    ASSERT(m_page);
-}
+    class StorageNamespace : public RefCounted<StorageNamespace> {
+    public:
+        ~StorageNamespace();
 
-PassRefPtr<SessionStorage> SessionStorage::copy(Page* newPage)
-{
-    ASSERT(newPage);
-    RefPtr<SessionStorage> newSession = SessionStorage::create(newPage);
-    
-    SessionStorageAreaMap::iterator end = m_storageAreaMap.end();
-    for (SessionStorageAreaMap::iterator i = m_storageAreaMap.begin(); i != end; ++i) {
-        RefPtr<SessionStorageArea> areaCopy = i->second->copy(i->first.get(), newPage);
-        newSession->m_storageAreaMap.set(i->first, areaCopy.release());
-    }
-    
-    return newSession.release();
-}
+        static PassRefPtr<StorageNamespace> localStorageNamespace(const String& path);
+        static PassRefPtr<StorageNamespace> sessionStorageNamespace();
 
-PassRefPtr<StorageArea> SessionStorage::storageArea(SecurityOrigin* origin)
-{
-    RefPtr<SessionStorageArea> storageArea;
-    if (storageArea = m_storageAreaMap.get(origin))
-        return storageArea.release();
-        
-    storageArea = SessionStorageArea::create(origin, m_page);
-    m_storageAreaMap.set(origin, storageArea);
-    return storageArea.release();
-}
+        PassRefPtr<StorageArea> storageArea(SecurityOrigin*);
+        PassRefPtr<StorageNamespace> copy();
+        void close();
 
-}
+    private:
+        StorageNamespace(StorageType, const String& path);
+
+        typedef HashMap<RefPtr<SecurityOrigin>, RefPtr<StorageArea>, SecurityOriginHash> StorageAreaMap;
+        StorageAreaMap m_storageAreaMap;
+
+        StorageType m_storageType;
+
+        // Only used if m_storageType == LocalStorage and the path was not "" in our constructor.
+        String m_path;
+        RefPtr<StorageSyncManager> m_syncManager;
+
+#ifndef NDEBUG
+        bool m_isShutdown;
+#endif
+    };
+
+} // namespace WebCore
 
 #endif // ENABLE(DOM_STORAGE)
 
+#endif // StorageNamespace_h

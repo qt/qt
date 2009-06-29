@@ -165,6 +165,7 @@ bool ScrollView::canBlitOnScroll() const
     return m_canBlitOnScroll;
 }
 
+#if !PLATFORM(GTK)
 IntRect ScrollView::visibleContentRect(bool includeScrollbars) const
 {
     if (platformWidget())
@@ -173,6 +174,7 @@ IntRect ScrollView::visibleContentRect(bool includeScrollbars) const
                    IntSize(max(0, width() - (verticalScrollbar() && !includeScrollbars ? verticalScrollbar()->width() : 0)), 
                            max(0, height() - (horizontalScrollbar() && !includeScrollbars ? horizontalScrollbar()->height() : 0))));
 }
+#endif
 
 int ScrollView::layoutWidth() const
 {
@@ -638,12 +640,12 @@ void ScrollView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppre
     }
 }
 
-Scrollbar* ScrollView::scrollbarUnderMouse(const PlatformMouseEvent& mouseEvent)
+Scrollbar* ScrollView::scrollbarUnderPoint(const IntPoint& windowPoint)
 {
     if (platformWidget())
         return 0;
 
-    IntPoint viewPoint = convertFromContainingWindow(mouseEvent.pos());
+    IntPoint viewPoint = convertFromContainingWindow(windowPoint);
     if (m_horizontalScrollbar && m_horizontalScrollbar->frameRect().contains(viewPoint))
         return m_horizontalScrollbar.get();
     if (m_verticalScrollbar && m_verticalScrollbar->frameRect().contains(viewPoint))

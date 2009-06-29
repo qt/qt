@@ -29,6 +29,10 @@
 #if ENABLE(DOM_STORAGE)
 
 #include "PlatformString.h"
+#include "SecurityOrigin.h"
+#include "StorageAreaSync.h"
+#include "StorageMap.h"
+#include "StorageSyncManager.h"
 
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
@@ -38,14 +42,19 @@
 namespace WebCore {
 
     class Frame;
+    class Page;
     class SecurityOrigin;
+    class StorageAreaSync;
     class StorageMap;
+    class StorageSyncManager;
     typedef int ExceptionCode;
+    enum StorageType { LocalStorage, SessionStorage };
 
-    class StorageArea : public RefCounted<StorageArea> {
+    class StorageArea : public ThreadSafeShared<StorageArea> {
     public:
-        virtual ~StorageArea();
-        
+        static PassRefPtr<StorageArea> create(StorageType, SecurityOrigin*, PassRefPtr<StorageSyncManager>);
+        PassRefPtr<StorageArea> copy(SecurityOrigin*);
+
         // The HTML5 DOM Storage API
         unsigned length() const;
         String key(unsigned index, ExceptionCode& ec) const;
@@ -55,24 +64,31 @@ namespace WebCore {
         void clear(Frame* sourceFrame);
 
         bool contains(const String& key) const;
+        void close();
 
+        // Could be called from a background thread.
+        void importItem(const String& key, const String& value);
         SecurityOrigin* securityOrigin() { return m_securityOrigin.get(); }
 
     protected:
-        StorageArea(SecurityOrigin*);
+        StorageArea(StorageType, SecurityOrigin*, PassRefPtr<StorageSyncManager>);
         StorageArea(SecurityOrigin*, StorageArea*);
-                
-        // This is meant to be called from a background thread for LocalStorageArea's background thread import procedure.
-        void importItem(const String& key, const String& value);
 
     private:
-        virtual void itemChanged(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame) = 0;
-        virtual void itemRemoved(const String& key, const String& oldValue, Frame* sourceFrame) = 0;
-        virtual void areaCleared(Frame* sourceFrame) = 0;
-        virtual void blockUntilImportComplete() const { }
+        void blockUntilImportComplete() const;
 
+        void dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame);
+
+        StorageType m_storageType;
         RefPtr<SecurityOrigin> m_securityOrigin;
         RefPtr<StorageMap> m_storageMap;
+
+        RefPtr<StorageAreaSync> m_storageAreaSync;
+        RefPtr<StorageSyncManager> m_storageSyncManager;
+
+#ifndef NDEBUG
+        bool m_isShutdown;
+#endif
     };
 
 } // namespace WebCore

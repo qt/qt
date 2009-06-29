@@ -289,7 +289,7 @@ static ExpressionNode* makeSubNode(void*, ExpressionNode*, ExpressionNode*, bool
 static ExpressionNode* makeLeftShiftNode(void*, ExpressionNode*, ExpressionNode*, bool rightHasAssignments);
 static ExpressionNode* makeRightShiftNode(void*, ExpressionNode*, ExpressionNode*, bool rightHasAssignments);
 static StatementNode* makeVarStatementNode(void*, ExpressionNode*);
-static ExpressionNode* combineVarInitializers(void*, ExpressionNode* list, AssignResolveNode* init);
+static ExpressionNode* combineCommaNodes(void*, ExpressionNode* list, ExpressionNode* init);
 
 #if COMPILER(MSVC)
 
@@ -3811,17 +3811,17 @@ yyreduce:
 
   case 196:
 #line 781 "../parser/Grammar.y"
-    { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) CommaNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
+    { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 198:
 #line 786 "../parser/Grammar.y"
-    { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) CommaNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
+    { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 200:
 #line 791 "../parser/Grammar.y"
-    { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) CommaNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
+    { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 218:
@@ -3888,7 +3888,7 @@ yyreduce:
 #line 855 "../parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(3) - (4)].ident), (yyvsp[(4) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(3) - (4)]).first_column, (yylsp[(4) - (4)]).first_column + 1, (yylsp[(4) - (4)]).last_column);
-                                          (yyval.varDeclList).m_node = combineVarInitializers(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
+                                          (yyval.varDeclList).m_node = combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
                                           (yyval.varDeclList).m_varDeclarations = (yyvsp[(1) - (4)].varDeclList).m_varDeclarations;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(3) - (4)].ident), DeclarationStacks::HasInitializer);
                                           (yyval.varDeclList).m_funcDeclarations = 0;
@@ -3936,7 +3936,7 @@ yyreduce:
 #line 892 "../parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(3) - (4)].ident), (yyvsp[(4) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].expressionNode).m_features & AssignFeature);
                                           SET_EXCEPTION_LOCATION(node, (yylsp[(3) - (4)]).first_column, (yylsp[(4) - (4)]).first_column + 1, (yylsp[(4) - (4)]).last_column);
-                                          (yyval.varDeclList).m_node = combineVarInitializers(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
+                                          (yyval.varDeclList).m_node = combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
                                           (yyval.varDeclList).m_varDeclarations = (yyvsp[(1) - (4)].varDeclList).m_varDeclarations;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(3) - (4)].ident), DeclarationStacks::HasInitializer);
                                           (yyval.varDeclList).m_funcDeclarations = 0;
@@ -5092,10 +5092,14 @@ static bool allowAutomaticSemicolon(Lexer& lexer, int yychar)
     return yychar == CLOSEBRACE || yychar == 0 || lexer.prevTerminator();
 }
 
-static ExpressionNode* combineVarInitializers(void* globalPtr, ExpressionNode* list, AssignResolveNode* init)
+static ExpressionNode* combineCommaNodes(void* globalPtr, ExpressionNode* list, ExpressionNode* init)
 {
     if (!list)
         return init;
+    if (list->isCommaNode()) {
+        static_cast<CommaNode*>(list)->append(init);
+        return list;
+    }
     return new (GLOBAL_DATA) CommaNode(GLOBAL_DATA, list, init);
 }
 

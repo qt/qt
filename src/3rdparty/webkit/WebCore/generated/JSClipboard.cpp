@@ -22,6 +22,8 @@
 #include "JSClipboard.h"
 
 #include "Clipboard.h"
+#include "FileList.h"
+#include "JSFileList.h"
 #include "KURL.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
@@ -34,20 +36,21 @@ ASSERT_CLASS_FITS_IN_CELL(JSClipboard);
 
 /* Hash table */
 
-static const HashTableValue JSClipboardTableValues[5] =
+static const HashTableValue JSClipboardTableValues[6] =
 {
     { "dropEffect", DontDelete, (intptr_t)jsClipboardDropEffect, (intptr_t)setJSClipboardDropEffect },
     { "effectAllowed", DontDelete, (intptr_t)jsClipboardEffectAllowed, (intptr_t)setJSClipboardEffectAllowed },
     { "types", DontDelete|ReadOnly, (intptr_t)jsClipboardTypes, (intptr_t)0 },
+    { "files", DontDelete|ReadOnly, (intptr_t)jsClipboardFiles, (intptr_t)0 },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsClipboardConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static const HashTable JSClipboardTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 15, JSClipboardTableValues, 0 };
+    { 63, JSClipboardTableValues, 0 };
 #else
-    { 10, 7, JSClipboardTableValues, 0 };
+    { 17, 15, JSClipboardTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -158,6 +161,13 @@ JSValue jsClipboardEffectAllowed(ExecState* exec, const Identifier&, const Prope
 JSValue jsClipboardTypes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSClipboard*>(asObject(slot.slotBase()))->types(exec);
+}
+
+JSValue jsClipboardFiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    Clipboard* imp = static_cast<Clipboard*>(static_cast<JSClipboard*>(asObject(slot.slotBase()))->impl());
+    return toJS(exec, WTF::getPtr(imp->files()));
 }
 
 JSValue jsClipboardConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

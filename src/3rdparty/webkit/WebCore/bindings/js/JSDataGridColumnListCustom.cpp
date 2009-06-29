@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +13,7 @@
  * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,44 +23,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef LocalStorage_h
-#define LocalStorage_h
+#include "config.h"
+#include "JSDataGridColumnList.h"
 
-#if ENABLE(DOM_STORAGE)
+#include "AtomicString.h"
+#include "DataGridColumn.h"
+#include "DataGridColumnList.h"
+#include "JSDataGridColumn.h"
 
-#include "LocalStorageArea.h"
-#include "SecurityOriginHash.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
+using namespace JSC;
 
 namespace WebCore {
 
-    class StorageArea;
-    class StorageSyncManager;
+bool JSDataGridColumnList::canGetItemsForName(ExecState*, DataGridColumnList* impl, const Identifier& propertyName)
+{
+    return impl->itemWithName(propertyName);
+}
 
-    class LocalStorage : public RefCounted<LocalStorage> {
-    public:
-        ~LocalStorage();
-
-        static PassRefPtr<LocalStorage> localStorage(const String& path);
-
-        PassRefPtr<StorageArea> storageArea(SecurityOrigin*);
-
-        void close();
-
-    private:
-        LocalStorage(const String& path);
-
-        typedef HashMap<RefPtr<SecurityOrigin>, RefPtr<LocalStorageArea>, SecurityOriginHash> LocalStorageAreaMap;
-        LocalStorageAreaMap m_storageAreaMap;
-
-        String m_path;
-        RefPtr<StorageSyncManager> m_syncManager;
-    };
+JSValue JSDataGridColumnList::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+{
+    JSDataGridColumnList* thisObj = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
+    return toJS(exec, thisObj->impl()->itemWithName(propertyName));
+}
 
 } // namespace WebCore
-
-#endif // ENABLE(DOM_STORAGE)
-
-#endif // LocalStorage_h

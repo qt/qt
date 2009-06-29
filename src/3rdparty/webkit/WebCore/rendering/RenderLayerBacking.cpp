@@ -120,7 +120,7 @@ void RenderLayerBacking::updateLayerTransform()
     TransformationMatrix t;
     if (m_owningLayer->hasTransform()) {
         style->applyTransform(t, toRenderBox(renderer())->borderBoxRect().size(), RenderStyle::ExcludeTransformOrigin);
-        makeMatrixRenderable(t);
+        makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
     
     m_graphicsLayer->setTransform(t);
@@ -543,29 +543,29 @@ bool RenderLayerBacking::hasNonCompositingContent() const
     // FIXME: test for overflow controls.
     if (m_owningLayer->isStackingContext()) {
         // Use the m_hasCompositingDescendant bit to optimize?
-        Vector<RenderLayer*>* negZOrderList = m_owningLayer->negZOrderList();
-        if (negZOrderList && negZOrderList->size() > 0) {
-            for (Vector<RenderLayer*>::const_iterator it = negZOrderList->begin(); it != negZOrderList->end(); ++it) {
-                RenderLayer* curLayer = (*it);
+        if (Vector<RenderLayer*>* negZOrderList = m_owningLayer->negZOrderList()) {
+            size_t listSize = negZOrderList->size();
+            for (size_t i = 0; i < listSize; ++i) {
+                RenderLayer* curLayer = negZOrderList->at(i);
                 if (!curLayer->isComposited())
                     return true;
             }
         }
 
-        Vector<RenderLayer*>* posZOrderList = m_owningLayer->posZOrderList();
-        if (posZOrderList && posZOrderList->size() > 0) {
-            for (Vector<RenderLayer*>::const_iterator it = posZOrderList->begin(); it != posZOrderList->end(); ++it) {
-                RenderLayer* curLayer = (*it);
+        if (Vector<RenderLayer*>* posZOrderList = m_owningLayer->posZOrderList()) {
+            size_t listSize = posZOrderList->size();
+            for (size_t i = 0; i < listSize; ++i) {
+                RenderLayer* curLayer = posZOrderList->at(i);
                 if (!curLayer->isComposited())
                     return true;
             }
         }
     }
 
-    Vector<RenderLayer*>* normalFlowList = m_owningLayer->normalFlowList();
-    if (normalFlowList && normalFlowList->size() > 0) {
-        for (Vector<RenderLayer*>::const_iterator it = normalFlowList->begin(); it != normalFlowList->end(); ++it) {
-            RenderLayer* curLayer = (*it);
+    if (Vector<RenderLayer*>* normalFlowList = m_owningLayer->normalFlowList()) {
+        size_t listSize = normalFlowList->size();
+        for (size_t i = 0; i < listSize; ++i) {
+            RenderLayer* curLayer = normalFlowList->at(i);
             if (!curLayer->isComposited())
                 return true;
         }
@@ -698,27 +698,47 @@ bool RenderLayerBacking::paintingGoesToWindow() const
 
 void RenderLayerBacking::setContentsNeedDisplay()
 {
-    if (m_graphicsLayer)
+    bool needViewUpdate = false;
+
+    if (m_graphicsLayer && m_graphicsLayer->drawsContent()) {
         m_graphicsLayer->setNeedsDisplay();
-    if (m_contentsLayer)
+        needViewUpdate = true;
+    }
+    
+    if (m_contentsLayer && m_contentsLayer->drawsContent()) {
         m_contentsLayer->setNeedsDisplay();
+        needViewUpdate = true;
+    }
+    
+    // Make sure layout happens before we get rendered again.
+    if (needViewUpdate)
+        compositor()->scheduleViewUpdate();
 }
 
 // r is in the coordinate space of the layer's render object
 void RenderLayerBacking::setContentsNeedDisplayInRect(const IntRect& r)
 {
-    if (m_graphicsLayer) {
+    bool needViewUpdate = false;
+
+    if (m_graphicsLayer && m_graphicsLayer->drawsContent()) {
         FloatPoint dirtyOrigin = contentsToGraphicsLayerCoordinates(m_graphicsLayer, FloatPoint(r.x(), r.y()));
         FloatRect dirtyRect(dirtyOrigin, r.size());
         FloatRect bounds(FloatPoint(), m_graphicsLayer->size());
-        if (bounds.intersects(dirtyRect))
+        if (bounds.intersects(dirtyRect)) {
             m_graphicsLayer->setNeedsDisplayInRect(dirtyRect);
+            needViewUpdate = true;
+        }
     }
 
-    if (m_contentsLayer) {
+    if (m_contentsLayer && m_contentsLayer->drawsContent()) {
         // FIXME: do incremental repaint
         m_contentsLayer->setNeedsDisplay();
+        needViewUpdate = true;
     }
+
+    // Make sure layout happens before we get rendered again.
+    if (needViewUpdate)
+        compositor()->scheduleViewUpdate();
 }
 
 static void setClip(GraphicsContext* p, const IntRect& paintDirtyRect, const IntRect& clipRect)
@@ -774,7 +794,9 @@ void RenderLayerBacking::paintIntoLayer(RenderLayer* rootLayer, GraphicsContext*
     if (paintingRoot && !renderer()->isDescendantOf(paintingRoot))
         paintingRootForRenderer = paintingRoot;
 
-    if (paintingPhase & GraphicsLayerPaintBackgroundMask) {
+    bool shouldPaint = m_owningLayer->hasVisibleContent() && m_owningLayer->isSelfPaintingLayer();
+
+    if (shouldPaint && (paintingPhase & GraphicsLayerPaintBackgroundMask)) {
         // If this is the root then we need to send in a bigger bounding box
         // because we'll be painting the background as well (see RenderBox::paintRootBoxDecorations()).
         IntRect paintBox = clipRectToApply;
@@ -818,7 +840,7 @@ void RenderLayerBacking::paintIntoLayer(RenderLayer* rootLayer, GraphicsContext*
         restoreClip(context, paintDirtyRect, damageRect);
     }
                 
-    if (paintingPhase & GraphicsLayerPaintForegroundMask) {
+    if (shouldPaint && (paintingPhase & GraphicsLayerPaintForegroundMask)) {
         // Now walk the sorted list of children with negative z-indices. Only RenderLayers without compositing layers will paint.
         // FIXME: should these be painted as background?
         Vector<RenderLayer*>* negZOrderList = m_owningLayer->negZOrderList();
