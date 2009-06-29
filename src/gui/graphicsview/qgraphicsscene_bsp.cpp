@@ -148,6 +148,9 @@ QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect) const
     QList<QGraphicsItem *> tmp;
     findVisitor->foundItems = &tmp;
     climbTree(findVisitor, rect);
+    // Reset discovery bits.
+    for (int i = 0; i < tmp.size(); ++i)
+        tmp.at(i)->d_ptr->itemDiscovered = 0;
     return tmp;
 }
 
@@ -156,6 +159,9 @@ QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QPointF &pos) const
     QList<QGraphicsItem *> tmp;
     findVisitor->foundItems = &tmp;
     climbTree(findVisitor, pos);
+    // Reset discovery bits.
+    for (int i = 0; i < tmp.size(); ++i)
+        tmp.at(i)->d_ptr->itemDiscovered = 0;
     return tmp;
 }
 
@@ -241,7 +247,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
         return;
 
     const Node &node = nodes.at(index);
-    int childIndex = firstChildIndex(index);
+    const int childIndex = firstChildIndex(index);
 
     switch (node.type) {
     case Node::Leaf: {
@@ -271,7 +277,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
         return;
 
     const Node &node = nodes.at(index);
-    int childIndex = firstChildIndex(index);
+    const int childIndex = firstChildIndex(index);
 
     switch (node.type) {
     case Node::Leaf: {
@@ -288,7 +294,6 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
         }
         break;
     case Node::Horizontal:
-        int childIndex = firstChildIndex(index);
         if (rect.top() < node.offset) {
             climbTree(visitor, rect, childIndex);
             if (rect.bottom() >= node.offset)

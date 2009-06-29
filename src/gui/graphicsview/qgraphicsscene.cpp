@@ -1097,8 +1097,11 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::topLevelItemsInStackingOrder(const
 
     QList<QGraphicsItem *> tmp = index->estimateItems(sceneRect, Qt::SortOrder(-1),
                                                       viewTransform ? *viewTransform : QTransform());
-    for (int i = 0; i < tmp.size(); ++i)
-        tmp.at(i)->topLevelItem()->d_ptr->itemDiscovered = 1;
+    for (int i = 0; i < tmp.size(); ++i) {
+        QGraphicsItem *item = tmp.at(i);
+        if (!item->d_ptr->parent)
+            item->d_ptr->itemDiscovered = 1;
+    }
 
     // Sort if the toplevel list is unsorted.
     if (needSortTopLevelItems) {

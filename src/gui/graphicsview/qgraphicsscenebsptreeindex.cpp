@@ -130,7 +130,7 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
      // Add unindexedItems to indexedItems
     for (int i = 0; i < unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = unindexedItems.at(i)) {
-            item->d_ptr->itemDiscovered = 0;
+            Q_ASSERT(!item->d_ptr->itemDiscovered);
             if (!freeItemIndexes.isEmpty()) {
                 int freeIndex = freeItemIndexes.takeFirst();
                 item->d_func()->index = freeIndex;
@@ -224,7 +224,7 @@ void QGraphicsSceneBspTreeIndexPrivate::resetIndex()
     for (int i = 0; i < indexedItems.size(); ++i) {
         if (QGraphicsItem *item = indexedItems.at(i)) {
             item->d_ptr->index = -1;
-            item->d_ptr->itemDiscovered = 0;
+            Q_ASSERT(!item->d_ptr->itemDiscovered);
             unindexedItems << item;
         }
     }
@@ -339,10 +339,10 @@ void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool rec
     if (item->d_ptr->index != -1) {
         Q_ASSERT(item->d_ptr->index < indexedItems.size());
         Q_ASSERT(indexedItems.at(item->d_ptr->index) == item);
+        Q_ASSERT(!item->d_ptr->itemDiscovered);
         freeItemIndexes << item->d_ptr->index;
         indexedItems[item->d_ptr->index] = 0;
         item->d_ptr->index = -1;
-        item->d_ptr->itemDiscovered = 0;
 
         if (item->d_ptr->itemIsUntransformable()) {
             untransformableItems.removeOne(item);
@@ -481,8 +481,8 @@ void QGraphicsSceneBspTreeIndex::clear()
     for (int i = 0; i < d->indexedItems.size(); ++i) {
         // Ensure item bits are reset properly.
         if (QGraphicsItem *item = d->indexedItems.at(i)) {
+            Q_ASSERT(!item->d_ptr->itemDiscovered);
             item->d_ptr->index = -1;
-            item->d_ptr->itemDiscovered = 0;
         }
     }
     d->indexedItems.clear();
@@ -547,25 +547,20 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &r
     Q_UNUSED(deviceTransform);
 
     QList<QGraphicsItem *> rectItems = d->bsp.items(rect);
+
     // Fill in with any unindexed items
     for (int i = 0; i < d->unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = d->unindexedItems.at(i)) {
-            if (!item->d_ptr->itemDiscovered && item->d_ptr->visible && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
+            if (item->d_ptr->visible
+                && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
                 QRectF boundingRect = item->sceneBoundingRect();
-                if (QRectF_intersects(boundingRect, rect)) {
-                    item->d_ptr->itemDiscovered = 1;
+                if (QRectF_intersects(boundingRect, rect))
                     rectItems << item;
-                }
             }
         }
     }
 
-     // Reset the discovered state of all discovered items
-    for (int i = 0; i < rectItems.size(); ++i)
-        rectItems.at(i)->d_func()->itemDiscovered = 0;
-
     rectItems += d->untransformableItems;
-
     d->sortItems(&rectItems, order, d->sortCacheEnabled);
 
     return rectItems;
