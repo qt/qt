@@ -273,8 +273,6 @@ QRect QMenuBarPrivate::actionRect(QAction *act) const
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
 
     QRect ret = actionRects.at(index);
-    const int fw = q->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, q);
-    ret.translate(fw, fw);
     return QStyle::visualRect(q->layoutDirection(), q->rect(), ret);
 }
 
@@ -480,8 +478,9 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
     }
 
     //calculate position
-    int x = ((start == -1) ? hmargin : start) + itemSpacing;
-    int y = vmargin;
+    const int fw = q->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, q);
+    int x = fw + ((start == -1) ? hmargin : start) + itemSpacing;
+    int y = fw + vmargin;
     for(int i = 0; i < actions.count(); i++) {
         QRect &rect = actionRects[i];
         if (rect.isNull())
@@ -1665,7 +1664,9 @@ QSize QMenuBar::sizeHint() const
             const QRect &actionRect = d->actionRects.at(i);
             ret = ret.expandedTo(QSize(actionRect.x() + actionRect.width(), actionRect.y() + actionRect.height()));
         }
-        ret += QSize(2*fw + 2*hmargin, 2*fw + 2*vmargin);
+        //the action geometries already contain the top and left
+        //margins. So we only need to add those from right and bottom.
+        ret += QSize(fw + hmargin, fw + vmargin);
     }
     int margin = 2*vmargin + 2*fw + spaceBelowMenuBar;
     if(d->leftWidget) {

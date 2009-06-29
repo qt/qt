@@ -48,6 +48,7 @@
 #include <q3popupmenu.h>
 #endif
 #include <qstyle.h>
+#include <qwindowsstyle.h>
 #include <qdesktopwidget.h>
 #include <qaction.h>
 #include <qstyleoption.h>
@@ -1560,22 +1561,47 @@ void tst_QMenuBar::task256322_highlight()
 
 void tst_QMenuBar::menubarSizeHint()
 {
+    struct MyStyle : public QWindowsStyle
+    {
+        virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0, const QWidget * widget = 0 ) const
+        {
+            // I chose strange values (prime numbers to be more sure that the size of the menubar is correct)
+            switch (metric) 
+            {
+            case QStyle::PM_MenuBarItemSpacing:
+                return 7;
+            case PM_MenuBarHMargin:
+                return 13;
+            case PM_MenuBarVMargin:
+                return 11;
+            case PM_MenuBarPanelWidth:
+                return 1;
+            }
+            return QWindowsStyle::pixelMetric(metric, option, widget);
+        }
+    } style;
+
     QMenuBar mb;
+    mb.setStyle(&style);
     //this is a list of arbitrary strings so that we check the geometry
     QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
     foreach(QString str, list)
         mb.addAction(str);
 
-    int left, top, right, bottom;
-    mb.getContentsMargins(&left, &top, &right, &bottom);
-    const int panelWidth = mb.style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, &mb);
+    const int panelWidth = style.pixelMetric(QStyle::PM_MenuBarPanelWidth);
+    const int hmargin = style.pixelMetric(QStyle::PM_MenuBarHMargin);
+    const int vmargin = style.pixelMetric(QStyle::PM_MenuBarVMargin);
+    const int spacing = style.pixelMetric(QStyle::PM_MenuBarItemSpacing);
 
     mb.show();
     QRect result;
     foreach(QAction *action, mb.actions()) {
-        result |= mb.actionGeometry(action);
-        QCOMPARE(result.x(), left + panelWidth);
-        QCOMPARE(result.y(), top + panelWidth);
+        const QRect actionRect = mb.actionGeometry(action);
+        if (!result.isNull()) //this is the first item
+            QCOMPARE(actionRect.left() - result.right() - 1, spacing);
+        result |= actionRect;
+        QCOMPARE(result.x(), panelWidth + hmargin + spacing);
+        QCOMPARE(result.y(), panelWidth + vmargin);
     }
 
     //this code is copied from QMenuBar
@@ -1589,10 +1615,10 @@ void tst_QMenuBar::menubarSizeHint()
     opt.palette = mb.palette();
 
     QSize resSize = QSize(result.x(), result.y()) + result.size()
-        + QSize(right + panelWidth, top + panelWidth);
+        + QSize(panelWidth + hmargin, panelWidth + vmargin);
 
 
-    resSize = mb.style()->sizeFromContents(QStyle::CT_MenuBar, &opt,
+    resSize = style.sizeFromContents(QStyle::CT_MenuBar, &opt,
                                          resSize.expandedTo(QApplication::globalStrut()),
                                          &mb);
 
