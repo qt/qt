@@ -70,7 +70,7 @@ HB_INTERNAL HB_Error
 _hb_stream_seek( HB_Stream stream,
 		 HB_UInt pos )
 {
-  HB_Error  error = 0;
+  HB_Error  error = (HB_Error)0;
 
   stream->pos = pos;
   if (pos > stream->size)
