@@ -91,16 +91,15 @@ public:
         }
 
     void init();
-    QStyleOptionMenuItem getStyleOption(const QAction *action) const;
+    QAction *getNextAction(const int start, const int increment) const;
 
     //item calculations
     uint itemsDirty : 1;
     int itemsWidth, itemsStart;
 
     QVector<int> shortcutIndexMap;
-    mutable QMap<QAction*, QRect> actionRects;
-    mutable QList<QAction*> actionList;
-    void calcActionRects(int max_width, int start, QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
+    mutable QVector<QRect> actionRects;
+    void calcActionRects(int max_width, int start) const;
     QRect actionRect(QAction *) const;
     void updateGeometries();
 
@@ -116,6 +115,7 @@ public:
     QPointer<QMenu> activeMenu;
 
     //keyboard mode for keyboard navigation
+    void focusFirstAction();
     void setKeyboardMode(bool);
     uint keyboardState : 1, altPressed : 1;
     QPointer<QWidget> keyboardFocusWidget;
