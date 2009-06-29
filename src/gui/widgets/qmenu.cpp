@@ -1711,17 +1711,18 @@ QSize QMenu::sizeHint() const
     }
     if (d->tearoff)
         s.rheight() += style()->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, this);
-    if (const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this)) {
-        s.rwidth() += fw*2;
-        s.rheight() += fw*2;
-    }
     // Note that the action rects calculated above already include
     // the top and left margins, so we only need to add margins for
     // the bottom and right.
+    if (const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this)) {
+        s.rwidth() += fw;
+        s.rheight() += fw;
+    }
+
     s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this);
     s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this);
 
-    s += QSize(d->leftmargin + d->rightmargin, d->topmargin + d->bottommargin);
+    s += QSize(d->rightmargin, d->bottommargin);
 
     return style()->sizeFromContents(QStyle::CT_Menu, &opt,
                                     s.expandedTo(QApplication::globalStrut()), this);
