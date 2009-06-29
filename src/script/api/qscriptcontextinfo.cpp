@@ -69,6 +69,20 @@ public:
     QScriptContextInfoPrivate(const QScriptContext *context);
     ~QScriptContextInfoPrivate();
 
+    qint64 scriptId;
+    int lineNumber;
+    int columnNumber;
+    QString fileName;
+
+    QString functionName;
+    QScriptContextInfo::FunctionType functionType;
+
+    int functionStartLineNumber;
+    int functionEndLineNumber;
+    int functionMetaIndex;
+
+    QStringList parameterNames;
+
     QBasicAtomicInt ref;
 
     QScriptContextInfo *q_ptr;
@@ -80,7 +94,13 @@ public:
 QScriptContextInfoPrivate::QScriptContextInfoPrivate()
 {
     ref = 0;
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    functionType = QScriptContextInfo::NativeFunction;
+    functionMetaIndex = -1;
+    functionStartLineNumber = -1;
+    functionEndLineNumber = -1;
+    scriptId = -1;
+    lineNumber = -1;
+    columnNumber = -1;
 }
 
 /*!
@@ -89,8 +109,15 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate()
 QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
 {
     Q_ASSERT(context);
+    qWarning("QScriptContextInfo is not implemented");
     ref = 0;
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    functionType = QScriptContextInfo::NativeFunction;
+    functionMetaIndex = -1;
+    functionStartLineNumber = -1;
+    functionEndLineNumber = -1;
+    scriptId = -1;
+    lineNumber = -1;
+    columnNumber = -1;
 }
 
 /*!
@@ -177,8 +204,10 @@ QScriptContextInfo &QScriptContextInfo::operator=(const QScriptContextInfo &othe
 */
 qint64 QScriptContextInfo::scriptId() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return -1;
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return -1;
+    return d->scriptId;
 }
 
 /*!
@@ -192,8 +221,10 @@ qint64 QScriptContextInfo::scriptId() const
 */
 QString QScriptContextInfo::fileName() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return QString();
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return QString();
+    return d->fileName;
 }
 
 /*!
@@ -207,8 +238,10 @@ QString QScriptContextInfo::fileName() const
 */
 int QScriptContextInfo::lineNumber() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return -1;    
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return -1;
+    return d->lineNumber;
 }
 
 /*!
@@ -222,8 +255,10 @@ int QScriptContextInfo::lineNumber() const
 */
 int QScriptContextInfo::columnNumber() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return -1;
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return -1;
+    return d->columnNumber;
 }
 
 /*!
@@ -239,7 +274,10 @@ int QScriptContextInfo::columnNumber() const
 */
 QString QScriptContextInfo::functionName() const
 {
-    return QString();
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return QString();
+    return d->functionName;
 }
 
 /*!
@@ -249,8 +287,10 @@ QString QScriptContextInfo::functionName() const
 */
 QScriptContextInfo::FunctionType QScriptContextInfo::functionType() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return ScriptFunction;
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return NativeFunction;
+    return d->functionType;
 }
 
 /*!
@@ -264,8 +304,10 @@ QScriptContextInfo::FunctionType QScriptContextInfo::functionType() const
 */
 int QScriptContextInfo::functionStartLineNumber() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return -1;
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return -1;
+    return d->functionStartLineNumber;
 }
 
 /*!
@@ -279,8 +321,10 @@ int QScriptContextInfo::functionStartLineNumber() const
 */
 int QScriptContextInfo::functionEndLineNumber() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return -1;
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return -1;
+    return d->functionEndLineNumber;
 }
 
 /*!
@@ -291,8 +335,10 @@ int QScriptContextInfo::functionEndLineNumber() const
 */
 QStringList QScriptContextInfo::functionParameterNames() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return QStringList();
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return QStringList();
+    return d->parameterNames;
 }
 
 /*!
@@ -310,8 +356,10 @@ QStringList QScriptContextInfo::functionParameterNames() const
 */
 int QScriptContextInfo::functionMetaIndex() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return -1;
+    Q_D(const QScriptContextInfo);
+    if (!d)
+        return -1;
+    return d->functionMetaIndex;
 }
 
 /*!
@@ -320,8 +368,8 @@ int QScriptContextInfo::functionMetaIndex() const
 */
 bool QScriptContextInfo::isNull() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return false;
+    Q_D(const QScriptContextInfo);
+    return (d == 0);
 }
 
 /*!
@@ -336,8 +384,16 @@ bool QScriptContextInfo::operator==(const QScriptContextInfo &other) const
         return true;
     if (!d || !od)
         return false;
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return false;
+    return ((d->scriptId == od->scriptId)
+            && (d->lineNumber == od->lineNumber)
+            && (d->columnNumber == od->columnNumber)
+            && (d->fileName == od->fileName)
+            && (d->functionName == od->functionName)
+            && (d->functionType == od->functionType)
+            && (d->functionStartLineNumber == od->functionStartLineNumber)
+            && (d->functionEndLineNumber == od->functionEndLineNumber)
+            && (d->functionMetaIndex == od->functionMetaIndex)
+            && (d->parameterNames == od->parameterNames));
 }
 
 /*!
