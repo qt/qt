@@ -449,6 +449,7 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
            qwebpage \
            qwebhistoryinterface \
-           qwebelement
+           qwebelement \
+           qwebhistory
 
 SUBDIRS += math3d
