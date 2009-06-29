@@ -6,17 +6,17 @@ Rect {
         XmlListModel {
             id: feedModel
             source: "http://daringfireball.net/index.xml"
-            query: "doc($src)/feed/entry"
+            query: "/feed/entry"
             namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';"
-            Role {
+            XmlRole {
                 name: "title"
                 query: "title/string()"
             }
-            Role {
+            XmlRole {
                 name: "tagline"
                 query: "author/name/string()"
             }
-            Role {
+            XmlRole {
                 name: "content"
                 query: "content/string()"
             }

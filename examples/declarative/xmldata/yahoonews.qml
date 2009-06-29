@@ -9,16 +9,16 @@ Rect {
         XmlListModel {
             id: feedModel
             source: "http://rss.news.yahoo.com/rss/oceania"
-            query: "doc($src)/rss/channel/item"
-            Role {
+            query: "/rss/channel/item"
+            XmlRole {
                 name: "title"
                 query: "title/string()"
             }
-            Role {
+            XmlRole {
                 name: "link"
                 query: "link/string()"
             }
-            Role {
+            XmlRole {
                 name: "description"
                 query: "description/string()"
             }
