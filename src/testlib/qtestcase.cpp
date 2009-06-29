@@ -850,7 +850,7 @@ static void qParseArgs(int argc, char *argv[])
         " -median  n      : Sets the number of median iterations.\n"
         " -vb             : Print out verbose benchmarking information.\n"
 #ifndef QT_NO_PROCESS
-// Will be enabled when tools are integrated.    
+// Will be enabled when tools are integrated.
 //        " -chart          : Runs the chart generator after the test. No output is printed to the console\n"
 #endif
          "\n"
@@ -1011,7 +1011,7 @@ QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
 
     if (count == 1)
         return container.at(0);
-    
+
     QList<QBenchmarkResult> containerCopy = container;
     qSort(containerCopy);
 
@@ -1061,7 +1061,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
                     QTestResult::currentDataTag()
                     ? QTestResult::currentDataTag() : "");
 
-            invokeOk = QMetaObject::invokeMethod(QTest::currentTestObject, slot, 
+            invokeOk = QMetaObject::invokeMethod(QTest::currentTestObject, slot,
                                                  Qt::DirectConnection);
             if (!invokeOk)
                 QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
@@ -1082,7 +1082,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
         if (i > -1)  // iteration -1 is the warmup iteration.
             results.append(QBenchmarkTestMethodData::current->result);
 
-        if (QBenchmarkTestMethodData::current->isBenchmark() && 
+        if (QBenchmarkTestMethodData::current->isBenchmark() &&
             QBenchmarkGlobalData::current->verboseOutput) {
                 if (i == -1) {
                     qDebug() << "warmup stage result      :" << QBenchmarkTestMethodData::current->result.value;
@@ -1213,13 +1213,13 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
 
 /*!
   \fn char* QTest::toHexRepresentation(const char *ba, int length)
-  
+
   Returns a pointer to a string that is the string \a ba represented
   as a space-separated sequence of hex characters. If the input is
   considered too long, it is truncated. A trucation is indicated in
   the returned string as an ellipsis at the end.
 
-  \a length is the length of the string \a ba. 
+  \a length is the length of the string \a ba.
  */
 char *toHexRepresentation(const char *ba, int length)
 {
@@ -1278,56 +1278,56 @@ char *toHexRepresentation(const char *ba, int length)
     return result;
 }
 
-static void qInvokeTestMethods(QObject *testObject) 
-{ 
-    const QMetaObject *metaObject = testObject->metaObject(); 
-    QTEST_ASSERT(metaObject); 
- 
-    QTestLog::startLogging(); 
+static void qInvokeTestMethods(QObject *testObject)
+{
+    const QMetaObject *metaObject = testObject->metaObject();
+    QTEST_ASSERT(metaObject);
 
-    QTestResult::setCurrentTestFunction("initTestCase"); 
-    QTestResult::setCurrentTestLocation(QTestResult::DataFunc); 
-    QTestTable::globalTestTable(); 
-    QMetaObject::invokeMethod(testObject, "initTestCase_data", Qt::DirectConnection); 
- 
-    if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) { 
-        QTestResult::setCurrentTestLocation(QTestResult::InitFunc); 
-        QMetaObject::invokeMethod(testObject, "initTestCase"); 
- 
-        // finishedCurrentTestFunction() resets QTestResult::testFailed(), so use a local copy. 
-        const bool previousFailed = QTestResult::testFailed(); 
-        QTestResult::finishedCurrentTestFunction(); 
- 
-        if(!QTestResult::skipCurrentTest() && !previousFailed) { 
- 
-            if (lastTestFuncIdx >= 0) { 
-                for (int i = 0; i <= lastTestFuncIdx; ++i) { 
-                    if (!qInvokeTestMethod(metaObject->method(testFuncs[i].function).signature(), 
-                                           testFuncs[i].data)) 
-                        break; 
-                } 
-            } else { 
-                int methodCount = metaObject->methodCount(); 
-                for (int i = 0; i < methodCount; ++i) { 
-                    QMetaMethod slotMethod = metaObject->method(i); 
-                    if (!isValidSlot(slotMethod)) 
-                        continue; 
-                    if (!qInvokeTestMethod(slotMethod.signature())) 
-                        break; 
-                } 
-            } 
-        } 
- 
-        QTestResult::setSkipCurrentTest(false); 
-        QTestResult::setCurrentTestFunction("cleanupTestCase"); 
-        QMetaObject::invokeMethod(testObject, "cleanupTestCase"); 
-    } 
-    QTestResult::finishedCurrentTestFunction(); 
-    QTestResult::setCurrentTestFunction(0); 
-    QTestTable::clearGlobalTestTable(); 
- 
-    QTestLog::stopLogging(); 
-} 
+    QTestLog::startLogging();
+
+    QTestResult::setCurrentTestFunction("initTestCase");
+    QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
+    QTestTable::globalTestTable();
+    QMetaObject::invokeMethod(testObject, "initTestCase_data", Qt::DirectConnection);
+
+    if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
+        QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
+        QMetaObject::invokeMethod(testObject, "initTestCase");
+
+        // finishedCurrentTestFunction() resets QTestResult::testFailed(), so use a local copy.
+        const bool previousFailed = QTestResult::testFailed();
+        QTestResult::finishedCurrentTestFunction();
+
+        if(!QTestResult::skipCurrentTest() && !previousFailed) {
+
+            if (lastTestFuncIdx >= 0) {
+                for (int i = 0; i <= lastTestFuncIdx; ++i) {
+                    if (!qInvokeTestMethod(metaObject->method(testFuncs[i].function).signature(),
+                                           testFuncs[i].data))
+                        break;
+                }
+            } else {
+                int methodCount = metaObject->methodCount();
+                for (int i = 0; i < methodCount; ++i) {
+                    QMetaMethod slotMethod = metaObject->method(i);
+                    if (!isValidSlot(slotMethod))
+                        continue;
+                    if (!qInvokeTestMethod(slotMethod.signature()))
+                        break;
+                }
+            }
+        }
+
+        QTestResult::setSkipCurrentTest(false);
+        QTestResult::setCurrentTestFunction("cleanupTestCase");
+        QMetaObject::invokeMethod(testObject, "cleanupTestCase");
+    }
+    QTestResult::finishedCurrentTestFunction();
+    QTestResult::setCurrentTestFunction(0);
+    QTestTable::clearGlobalTestTable();
+
+    QTestLog::stopLogging();
+}
 
 } // namespace
 
@@ -1788,7 +1788,7 @@ bool QTest::qCompare<double>(double const &t1, double const &t2, const char *act
 }
 
 #define COMPARE_IMPL2(TYPE, FORMAT) \
-template <> char *QTest::toString<TYPE >(const TYPE &t) \
+template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
     qt_snprintf(msg, 128, #FORMAT, t); \
