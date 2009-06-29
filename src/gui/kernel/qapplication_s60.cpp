@@ -416,7 +416,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
         events.append(Event(alienWidget,mEvent));
         QEventDispatcherS60 *dispatcher;
         // It is theoretically possible for someone to install a different event dispatcher.
-        if (dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) {
+        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) != 0) {
             if (dispatcher->excludeUserInputEvents()) {
                 for (int i=0;i < events.count();++i)
                 {
@@ -509,7 +509,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
 
         QEventDispatcherS60 *dispatcher;
         // It is theoretically possible for someone to install a different event dispatcher.
-        if (dispatcher = qobject_cast<QEventDispatcherS60 *>(widget->d_func()->threadData->eventDispatcher)) {
+        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widget->d_func()->threadData->eventDispatcher)) != 0) {
             if (dispatcher->excludeUserInputEvents()) {
                 dispatcher->saveInputEvent(this, widget, new QKeyEventEx(qKeyEvent));
                 return EKeyWasConsumed;
