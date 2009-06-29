@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -128,6 +128,16 @@ extern "C" {
 
 #include <private/qbackingstore_p.h>
 
+#ifdef QT_RX71_MULTITOUCH
+#  include <qsocketnotifier.h>
+#  include <linux/input.h>
+#  include <errno.h>
+#endif
+
+#if _POSIX_VERSION+0 < 200112L && !defined(Q_OS_BSD4)
+# define QT_NO_UNSETENV
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //#define X_NOT_BROKEN
@@ -157,6 +167,8 @@ static const char * x11_atomnames = {
     "WM_TAKE_FOCUS\0"
     "_NET_WM_PING\0"
     "_NET_WM_CONTEXT_HELP\0"
+    "_NET_WM_SYNC_REQUEST\0"
+    "_NET_WM_SYNC_REQUEST_COUNTER\0"
 
     // ICCCM window state
     "WM_STATE\0"
@@ -508,6 +520,7 @@ static Bool qt_xfixes_scanner(Display*, XEvent *event, XPointer arg)
 class QETWidget : public QWidget                // event translator widget
 {
 public:
+    QWidgetPrivate* d_func() { return QWidget::d_func(); }
     bool translateMouseEvent(const XEvent *);
     void translatePaintEvent(const XEvent *);
     bool translateConfigEvent(const XEvent *);
@@ -718,6 +731,44 @@ static int qt_xio_errhandler(Display *)
 }
 #endif
 
+#ifndef QT_NO_XSYNC
+struct qt_sync_request_event_data
+{
+    WId window;
+};
+
+#if defined(Q_C_CALLBACKS)
+extern "C" {
+#endif
+
+static Bool qt_sync_request_scanner(Display*, XEvent *event, XPointer arg)
+{
+    qt_sync_request_event_data *data =
+        reinterpret_cast<qt_sync_request_event_data*>(arg);
+    if (event->type == ClientMessage &&
+        event->xany.window == data->window &&
+        event->xclient.message_type == ATOM(WM_PROTOCOLS) &&
+        (Atom)event->xclient.data.l[0] == ATOM(_NET_WM_SYNC_REQUEST)) {
+        QWidget *w = QWidget::find(event->xany.window);
+        if (QTLWExtra *tlw = ((QETWidget*)w)->d_func()->maybeTopData()) {
+            const ulong timestamp = (const ulong) event->xclient.data.l[1];
+            if (timestamp > X11->time)
+                X11->time = timestamp;
+            if (timestamp == CurrentTime || timestamp > tlw->syncRequestTimestamp) {
+                tlw->syncRequestTimestamp = timestamp;
+                tlw->newCounterValueLo = event->xclient.data.l[2];
+                tlw->newCounterValueHi = event->xclient.data.l[3];
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+#if defined(Q_C_CALLBACKS)
+}
+#endif
+#endif // QT_NO_XSYNC
 
 static void qt_x11_create_intern_atoms()
 {
@@ -758,6 +809,14 @@ Q_GUI_EXPORT void qt_x11_apply_settings_in_all_apps()
                     PropModeReplace, (unsigned char *)stamp.data(), stamp.size());
 }
 
+static int kdeSessionVersion()
+{
+    static int kdeVersion = 0;
+    if (!kdeVersion)
+        kdeVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
+    return kdeVersion;
+}
+
 /*! \internal
     Gets the current KDE 3 or 4 home path
 */
@@ -767,10 +826,9 @@ QString QApplicationPrivate::kdeHome()
     if (kdeHomePath.isEmpty()) {
         kdeHomePath = QString::fromLocal8Bit(qgetenv("KDEHOME"));
         if (kdeHomePath.isEmpty()) {
-            int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
             QDir homeDir(QDir::homePath());
             QString kdeConfDir(QLatin1String("/.kde"));
-            if (4 == kdeSessionVersion && homeDir.exists(QLatin1String(".kde4")))
+            if (4 == kdeSessionVersion() && homeDir.exists(QLatin1String(".kde4")))
                 kdeConfDir = QLatin1String("/.kde4");
             kdeHomePath = QDir::homePath() + kdeConfDir;
         }
@@ -839,13 +897,11 @@ bool QApplicationPrivate::x11_apply_settings()
             QApplicationPrivate::setSystemPalette(pal);
     }
 
-    int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
-
     if (!appFont) {
         QFont font(QApplication::font());
         QString fontDescription;
         // Override Qt font if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
+        if (4 == kdeSessionVersion()) {
             QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
             fontDescription = kdeSettings.value(QLatin1String("font")).toString();
             if (fontDescription.isEmpty()) {
@@ -875,29 +931,16 @@ bool QApplicationPrivate::x11_apply_settings()
 
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
-    if (stylename.isEmpty() && !QApplicationPrivate::styleOverride && X11->use_xrender) {
-        QStringList availableStyles = QStyleFactory::keys();
-        // Override Qt style if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
-            QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-            QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
-                                                  QLatin1String("Oxygen")).toString();
-            foreach (const QString &style, availableStyles) {
-                if (style.toLower() == kde4Style.toLower())
-                    stylename = kde4Style;
-            }
-        // Set QGtkStyle for GNOME
-        } else if (X11->desktopEnvironment == DE_GNOME) {
-            QString gtkStyleKey = QString::fromLatin1("GTK+");
-            if (availableStyles.contains(gtkStyleKey))
-                stylename = gtkStyleKey;
-        }
+
+
+    if (stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull() && X11->use_xrender) {
+        stylename = x11_desktop_style();
     }
 
     static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
-        if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
-            QApplicationPrivate::styleOverride = new QString(stylename);
+        if (!stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull())
+            QApplicationPrivate::styleOverride = stylename;
     } else {
         if (currentStyleName != stylename) {
             currentStyleName = stylename;
@@ -1048,10 +1091,8 @@ static void qt_set_input_encoding()
 }
 
 // Reads a KDE color setting
-static QColor kdeColor(const QString &key)
+static QColor kdeColor(const QString &key, const QSettings &kdeSettings)
 {
-    QSettings kdeSettings(QApplicationPrivate::kdeHome() +
-                          QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
     QVariant variant = kdeSettings.value(key);
     if (variant.isValid()) {
         QStringList values = variant.toStringList();
@@ -1270,36 +1311,40 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         }
 
         if (kdeColors) {
+            const QSettings theKdeSettings(
+                QApplicationPrivate::kdeHome()
+                + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+
             // Setup KDE palette
             QColor color;
-            color = kdeColor(QLatin1String("buttonBackground"));
+            color = kdeColor(QLatin1String("buttonBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Button/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Button/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 btn = color;
 
-            color = kdeColor(QLatin1String("background"));
+            color = kdeColor(QLatin1String("background"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Window/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Window/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 bg = color;
 
-            color = kdeColor(QLatin1String("foreground"));
+            color = kdeColor(QLatin1String("foreground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:View/ForegroundNormal"), theKdeSettings);
             if (color.isValid()) {
                 fg = color;
             }
 
-            color = kdeColor(QLatin1String("windowForeground"));
+            color = kdeColor(QLatin1String("windowForeground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Window/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Window/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 wfg = color;
 
-            color = kdeColor(QLatin1String("windowBackground"));
+            color = kdeColor(QLatin1String("windowBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:View/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 base = color;
         }
@@ -1318,29 +1363,33 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         }
         // Use KDE3 or KDE4 color settings if present
         if (kdeColors) {
-            QColor color = kdeColor(QLatin1String("selectBackground"));
+            const QSettings theKdeSettings(
+                QApplicationPrivate::kdeHome()
+                + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+
+            QColor color = kdeColor(QLatin1String("selectBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Selection/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Selection/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 highlight = color;
 
-            color = kdeColor(QLatin1String("selectForeground"));
+            color = kdeColor(QLatin1String("selectForeground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Selection/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Selection/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 highlightText = color;
 
-            color = kdeColor(QLatin1String("alternateBackground"));
+            color = kdeColor(QLatin1String("alternateBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/BackgroundAlternate"));
+                color = kdeColor(QLatin1String("Colors:View/BackgroundAlternate"), theKdeSettings);
             if (color.isValid())
                 pal.setColor(QPalette::AlternateBase, color);
             else
                 pal.setBrush(QPalette::AlternateBase, pal.base().color().darker(110));
 
-            color = kdeColor(QLatin1String("buttonForeground"));
+            color = kdeColor(QLatin1String("buttonForeground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 pal.setColor(QPalette::ButtonText, color);
         }
@@ -1724,7 +1773,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->pattern_fills[i].screen = -1;
 #endif
 
-    X11->startupId = X11->originalStartupId = 0;
+    X11->startupId = 0;
 
     int argc = priv->argc;
     char **argv = priv->argv;
@@ -2062,14 +2111,6 @@ void qt_init(QApplicationPrivate *priv, int,
                 X11->xfixes_major = major;
             }
         }
-        if (X11->use_xfixes && X11->ptrXFixesSelectSelectionInput) {
-            const unsigned long eventMask =
-                XFixesSetSelectionOwnerNotifyMask | XFixesSelectionWindowDestroyNotifyMask | XFixesSelectionClientCloseNotifyMask;
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               XA_PRIMARY, eventMask);
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               ATOM(CLIPBOARD), eventMask);
-        }
 #endif // QT_NO_XFIXES
 
 #ifndef QT_NO_XCURSOR
@@ -2089,6 +2130,13 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->ptrXcursorLibraryLoadCursor = XcursorLibraryLoadCursor;
 #endif // QT_RUNTIME_XCURSOR
 #endif // QT_NO_XCURSOR
+
+#ifndef QT_NO_XSYNC
+        int xsync_evbase, xsync_errbase;
+        int major, minor;
+        if (XSyncQueryExtension(X11->display, &xsync_evbase, &xsync_errbase))
+            XSyncInitialize(X11->display, &major, &minor);
+#endif // QT_NO_XSYNC
 
 #ifndef QT_NO_XINERAMA
 #ifdef QT_RUNTIME_XINERAMA
@@ -2523,10 +2571,15 @@ void qt_init(QApplicationPrivate *priv, int,
 #endif // QT_NO_TABLET
 
         X11->startupId = getenv("DESKTOP_STARTUP_ID");
-        X11->originalStartupId = X11->startupId;
-        static char desktop_startup_id[] = "DESKTOP_STARTUP_ID=";
-        putenv(desktop_startup_id);
-
+        if (X11->startupId) {
+#ifndef QT_NO_UNSETENV
+            unsetenv("DESKTOP_STARTUP_ID");
+#else
+            // it's a small memory leak, however we won't crash if Qt is
+            // unloaded and someones tries to use the envoriment.
+            putenv(strdup("DESKTOP_STARTUP_ID="));
+#endif
+        }
    } else {
         // read some non-GUI settings when not using the X server...
 
@@ -2585,31 +2638,49 @@ void qt_init(QApplicationPrivate *priv, int,
 /*!
     \internal
 */
-void QApplicationPrivate::x11_initialize_style()
+QString QApplicationPrivate::x11_desktop_style()
 {
-    if (QApplicationPrivate::app_style)
-        return;
+    QString stylename;
+    QStringList availableStyles = QStyleFactory::keys();
+    // Override Qt style if KDE4 settings can be used
+    if (4 == kdeSessionVersion()) {
+        QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
+                                              QLatin1String("Oxygen")).toString();
+        foreach (const QString &style, availableStyles) {
+            if (style.toLower() == kde4Style.toLower())
+                stylename = kde4Style;
+        }
+    // Set QGtkStyle for GNOME
+    } else if (X11->desktopEnvironment == DE_GNOME) {
+        QString gtkStyleKey = QString::fromLatin1("GTK+");
+        if (availableStyles.contains(gtkStyleKey))
+            stylename = gtkStyleKey;
+    }
 
-    switch(X11->desktopEnvironment) {
+    if (stylename.isEmpty()) {
+        switch(X11->desktopEnvironment) {
         case DE_KDE:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("plastique"));
+                stylename = QLatin1String("plastique");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_GNOME:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cleanlooks"));
+                stylename = QLatin1String("cleanlooks");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_CDE:
-            QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cde"));
+            stylename = QLatin1String("cde");
             break;
         default:
             // Don't do anything
             break;
+        }
     }
+    return stylename;
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -2639,10 +2710,6 @@ void qt_cleanup()
         devices->clear();
 #endif
     }
-
-    // restore original value back. This is also done in QWidgetPrivate::show_sys.
-    if (X11->originalStartupId)
-        putenv(X11->originalStartupId);
 
 #ifndef QT_NO_XRENDER
     for (int i = 0; i < X11->solid_fill_count; ++i) {
@@ -3116,6 +3183,19 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                     XSendEvent(event->xclient.display, event->xclient.window,
                                 False, SubstructureNotifyMask|SubstructureRedirectMask, event);
                 }
+#ifndef QT_NO_XSYNC
+            } else if (a == ATOM(_NET_WM_SYNC_REQUEST)) {
+                const ulong timestamp = (const ulong) event->xclient.data.l[1];
+                if (timestamp > X11->time)
+                    X11->time = timestamp;
+                if (QTLWExtra *tlw = w->d_func()->maybeTopData()) {
+                    if (timestamp == CurrentTime || timestamp > tlw->syncRequestTimestamp) {
+                        tlw->syncRequestTimestamp = timestamp;
+                        tlw->newCounterValueLo = event->xclient.data.l[2];
+                        tlw->newCounterValueHi = event->xclient.data.l[3];
+                    }
+                }
+#endif
             }
         } else if (event->xclient.message_type == ATOM(_QT_SCROLL_DONE)) {
             widget->translateScrollDoneEvent(event);
@@ -3146,6 +3226,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
 {
     Q_D(QApplication);
     QScopedLoopLevelCounter loopLevelCounter(d->threadData);
+
 #ifdef ALIEN_DEBUG
     //qDebug() << "QApplication::x11ProcessEvent:" << event->type;
 #endif
@@ -4144,7 +4225,9 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
                 || ((nextEvent.type == EnterNotify || nextEvent.type == LeaveNotify)
                     && qt_button_down == this)
                 || (nextEvent.type == ClientMessage
-                    && nextEvent.xclient.message_type == ATOM(_QT_SCROLL_DONE))) {
+                    && (nextEvent.xclient.message_type == ATOM(_QT_SCROLL_DONE) ||
+                    (nextEvent.xclient.message_type == ATOM(WM_PROTOCOLS) &&
+                     (Atom)nextEvent.xclient.data.l[0] == ATOM(_NET_WM_SYNC_REQUEST))))) {
                 qApp->x11ProcessEvent(&nextEvent);
                 continue;
             } else if (nextEvent.type != MotionNotify ||
@@ -4414,7 +4497,6 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
         QMouseEvent e(type, pos, globalPos, button, buttons, modifiers);
         QApplicationPrivate::sendMouseEvent(widget, &e, alienWidget, this, &qt_button_down,
                                             qt_last_mouse_receiver);
-
         if (type == QEvent::MouseButtonPress
             && button == Qt::RightButton
             && (openPopupCount == oldOpenPopupCount)) {
@@ -4541,6 +4623,46 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
 }
 #endif
 
+struct qt_tablet_motion_data
+{
+    Time timestamp;
+    int tabletMotionType;
+    bool error; // found a reason to stop searching
+};
+
+static Bool qt_mouseMotion_scanner(Display *, XEvent *event, XPointer arg)
+{
+    qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
+    if (data->error)
+        return false;
+
+    if (event->type == MotionNotify)
+        return true;
+
+    data->error = event->type != data->tabletMotionType; // we stop compression when another event gets in between.
+    return false;
+}
+
+static Bool qt_tabletMotion_scanner(Display *, XEvent *event, XPointer arg)
+{
+    qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
+    if (data->error)
+        return false;
+
+    if (event->type == data->tabletMotionType) {
+        if (data->timestamp > 0) {
+            if ((reinterpret_cast<const XDeviceMotionEvent*>(event))->time > data->timestamp) {
+                data->error = true;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    data->error = event->type != MotionNotify; // we stop compression when another event gets in between.
+    return false;
+}
+
 bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet)
 {
 #if defined (Q_OS_IRIX)
@@ -4567,7 +4689,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     qreal rotation = 0;
     int deviceType = QTabletEvent::NoDevice;
     int pointerType = QTabletEvent::UnknownPointer;
-    XEvent xinputMotionEvent;
     XEvent mouseMotionEvent;
     const XDeviceMotionEvent *motion = 0;
     XDeviceButtonEvent *button = 0;
@@ -4575,8 +4696,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     QEvent::Type t;
     Qt::KeyboardModifiers modifiers = 0;
     bool reinsertMouseEvent = false;
-    bool neverFoundMouseEvent = true;
-    XEvent xinputMotionEventNext;
     XEvent mouseMotionEventSave;
 #if !defined (Q_OS_IRIX)
     XID device_id;
@@ -4584,72 +4703,41 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
 
     if (ev->type == tablet->xinput_motion) {
         motion = reinterpret_cast<const XDeviceMotionEvent*>(ev);
-        for (;;) {
-            // get the corresponding mouseMotionEvent for motion
-            if (XCheckTypedWindowEvent(X11->display, internalWinId(), MotionNotify, &mouseMotionEvent)) {
+
+        // Do event compression.  Skip over tablet+mouse move events if there are newer ones.
+        qt_tablet_motion_data tabletMotionData;
+        tabletMotionData.tabletMotionType = tablet->xinput_motion;
+        while (true) {
+            // Find first mouse event since we expect them in pairs inside Qt
+            tabletMotionData.error =false;
+            tabletMotionData.timestamp = 0;
+            if (XCheckIfEvent(X11->display, &mouseMotionEvent, &qt_mouseMotion_scanner, (XPointer) &tabletMotionData)) {
                 mouseMotionEventSave = mouseMotionEvent;
                 reinsertMouseEvent = true;
-                neverFoundMouseEvent = false;
-
-                if (mouseMotionEvent.xmotion.time > motion->time) {
-                    XEvent xinputMotionEventLoop = *ev;
-
-                    // xinput event is older than the mouse event --> search for the corresponding xinput event for the given mouse event
-                    while (mouseMotionEvent.xmotion.time > (reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEventLoop))->time) {
-                        if (XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventLoop)) {
-                            xinputMotionEvent = xinputMotionEventLoop;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                    motion = reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent);
-                }
-
-                // get the next xinputMotionEvent, for the next loop run
-                if (!XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventNext)) {
-                    XPutBackEvent(X11->display, &mouseMotionEvent);
-                    reinsertMouseEvent = false;
-                    break;
-                }
-
-                if (mouseMotionEvent.xmotion.time != motion->time) {
-                    // reinsert in order
-                    if (mouseMotionEvent.xmotion.time >= motion->time) {
-                        XPutBackEvent(X11->display, &mouseMotionEvent);
-                        XPutBackEvent(X11->display, &xinputMotionEventNext);
-                        // next entry in queue is xinputMotionEventNext
-                    }
-                    else {
-                        XPutBackEvent(X11->display, &xinputMotionEventNext);
-                        XPutBackEvent(X11->display, &mouseMotionEvent);
-                        // next entry in queue is mouseMotionEvent
-                    }
-                    reinsertMouseEvent = false;
-                    break;
-                }
-            }
-            else {
+            } else {
                 break;
             }
 
-            xinputMotionEvent = xinputMotionEventNext;
-            motion = (reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent));
+            // Now discard any duplicate tablet events.
+            XEvent dummy;
+            tabletMotionData.error = false;
+            tabletMotionData.timestamp = mouseMotionEvent.xmotion.time;
+            while (XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
+            }
+
+            // now check if there are more recent tablet motion events since we'll compress the current one with
+            // newer ones in that case
+            tabletMotionData.error = false;
+            tabletMotionData.timestamp = 0;
+            if (! XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                break; // done with compression
+            }
+            motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
         }
 
         if (reinsertMouseEvent) {
-          XPutBackEvent(X11->display, &mouseMotionEventSave);
-        }
-
-        if (neverFoundMouseEvent) {
-            XEvent xinputMotionEventLoop;
-            bool eventFound = false;
-            // xinput event without mouseMotionEvent --> search the newest xinputMotionEvent
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventLoop)) {
-                xinputMotionEvent = xinputMotionEventLoop;
-                eventFound = true;
-            }
-            if (eventFound) motion = reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent);
+            XPutBackEvent(X11->display, &mouseMotionEventSave);
         }
 
         t = QEvent::TabletMove;
@@ -5022,6 +5110,7 @@ bool QETWidget::translatePropertyEvent(const XEvent *event)
     return true;
 }
 
+
 //
 // Paint event translation
 //
@@ -5200,6 +5289,14 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                                    otherEvent.xconfigure.border_width;
                 }
             }
+#ifndef QT_NO_XSYNC
+            qt_sync_request_event_data sync_event;
+            sync_event.window = internalWinId();
+            for (XEvent ev;;) {
+                if (!XCheckIfEvent(X11->display, &ev, &qt_sync_request_scanner, (XPointer)&sync_event))
+                    break;
+            }
+#endif // QT_NO_XSYNC
         }
 
         QRect cr (geometry());
@@ -5285,6 +5382,20 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         if (d->extra && d->extra->topextra)
             d->extra->topextra->inTopLevelResize = false;
     }
+#ifndef QT_NO_XSYNC
+    if (QTLWExtra *tlwExtra = d->maybeTopData()) {
+        if (tlwExtra->newCounterValueLo != 0 || tlwExtra->newCounterValueHi != 0) {
+            XSyncValue value;
+            XSyncIntsToValue(&value,
+                             tlwExtra->newCounterValueLo,
+                             tlwExtra->newCounterValueHi);
+
+            XSyncSetCounter(X11->display, tlwExtra->syncUpdateCounter, value);
+            tlwExtra->newCounterValueHi = 0;
+            tlwExtra->newCounterValueLo = 0;
+        }
+    }
+#endif
     return true;
 }
 
@@ -5900,5 +6011,226 @@ void QSessionManager::requestPhase2()
 }
 
 #endif // QT_NO_SESSIONMANAGER
+
+#if defined(QT_RX71_MULTITOUCH)
+
+static inline int testBit(const char *array, int bit)
+{
+    return (array[bit/8] & (1<<(bit%8)));
+}
+
+static int openRX71Device(const QByteArray &deviceName)
+{
+    int fd = open(deviceName, O_RDONLY | O_NONBLOCK);
+    if (fd == -1) {
+        fd = -errno;
+        return fd;
+    }
+
+    // fetch the event type mask and check that the device reports absolute coordinates
+    char eventTypeMask[(EV_MAX + sizeof(char) - 1) * sizeof(char) + 1];
+    memset(eventTypeMask, 0, sizeof(eventTypeMask));
+    if (ioctl(fd, EVIOCGBIT(0, sizeof(eventTypeMask)), eventTypeMask) < 0) {
+        close(fd);
+        return -1;
+    }
+    if (!testBit(eventTypeMask, EV_ABS)) {
+        close(fd);
+        return -1;
+    }
+
+    // make sure that we can get the absolute X and Y positions from the device
+    char absMask[(ABS_MAX + sizeof(char) - 1) * sizeof(char) + 1];
+    memset(absMask, 0, sizeof(absMask));
+    if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absMask)), absMask) < 0) {
+        close(fd);
+        return -1;
+    }
+    if (!testBit(absMask, ABS_X) || !testBit(absMask, ABS_Y)) {
+        close(fd);
+        return -1;
+    }
+
+    return fd;
+}
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{
+    Q_Q(QApplication);
+
+    QByteArray deviceName = QByteArray("/dev/input/event");
+    int currentDeviceNumber = 0;
+    for (;;) {
+        int fd = openRX71Device(QByteArray(deviceName + QByteArray::number(currentDeviceNumber++)));
+        if (fd == -ENOENT) {
+            // no more devices
+            break;
+        }
+        if (fd < 0) {
+            // not a touch device
+            continue;
+        }
+
+        struct input_absinfo abs_x, abs_y, abs_z;
+        ioctl(fd, EVIOCGABS(ABS_X), &abs_x);
+        ioctl(fd, EVIOCGABS(ABS_Y), &abs_y);
+        ioctl(fd, EVIOCGABS(ABS_Z), &abs_z);
+
+        int deviceNumber = allRX71TouchPoints.count();
+
+        QSocketNotifier *socketNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, q);
+        QObject::connect(socketNotifier, SIGNAL(activated(int)), q, SLOT(_q_readRX71MultiTouchEvents()));
+
+        RX71TouchPointState touchPointState = {
+            socketNotifier,
+            QTouchEvent::TouchPoint(deviceNumber),
+
+            abs_x.minimum, abs_x.maximum, q->desktop()->screenGeometry().width(),
+            abs_y.minimum, abs_y.maximum, q->desktop()->screenGeometry().height(),
+            abs_z.minimum, abs_z.maximum
+        };
+        allRX71TouchPoints.append(touchPointState);
+    }
+
+    hasRX71MultiTouch = allRX71TouchPoints.count() > 1;
+    if (!hasRX71MultiTouch) {
+        for (int i = 0; i < allRX71TouchPoints.count(); ++i) {
+            QSocketNotifier *socketNotifier = allRX71TouchPoints.at(i).socketNotifier;
+            close(socketNotifier->socket());
+            delete socketNotifier;
+        }
+        allRX71TouchPoints.clear();
+    }
+}
+
+void QApplicationPrivate::cleanupMultitouch_sys()
+{
+    hasRX71MultiTouch = false;
+    for (int i = 0; i < allRX71TouchPoints.count(); ++i) {
+        QSocketNotifier *socketNotifier = allRX71TouchPoints.at(i).socketNotifier;
+        close(socketNotifier->socket());
+        delete socketNotifier;
+    }
+    allRX71TouchPoints.clear();
+}
+
+bool QApplicationPrivate::readRX71MultiTouchEvents(int deviceNumber)
+{
+    RX71TouchPointState &touchPointState = allRX71TouchPoints[deviceNumber];
+    QSocketNotifier *socketNotifier = touchPointState.socketNotifier;
+    int fd = socketNotifier->socket();
+
+    QTouchEvent::TouchPoint &touchPoint = touchPointState.touchPoint;
+
+    bool down = touchPoint.state() != Qt::TouchPointReleased;
+    if (down)
+        touchPoint.setState(Qt::TouchPointStationary);
+
+    bool changed = false;
+    for (;;) {
+        struct input_event inputEvent;
+        int bytesRead = read(fd, &inputEvent, sizeof(inputEvent));
+        if (bytesRead <= 0)
+            break;
+        if (bytesRead != sizeof(inputEvent)) {
+            qWarning("Qt: INTERNAL ERROR: short read in readRX71MultiTouchEvents()");
+            return false;
+        }
+
+        switch (inputEvent.type) {
+        case EV_SYN:
+            changed = true;
+            switch (touchPoint.state()) {
+            case Qt::TouchPointPressed:
+            case Qt::TouchPointReleased:
+                // make sure we don't compress pressed and releases with any other events
+                return changed;
+            default:
+                break;
+            }
+            continue;
+        case EV_KEY:
+        case EV_ABS:
+            break;
+        default:
+            qWarning("Qt: WARNING: unknown event type %d on multitouch device", inputEvent.type);
+            continue;
+        }
+
+        QPointF screenPos = touchPoint.screenPos();
+        switch (inputEvent.code) {
+        case BTN_TOUCH:
+            if (!down && inputEvent.value != 0)
+                touchPoint.setState(Qt::TouchPointPressed);
+            else if (down && inputEvent.value == 0)
+                touchPoint.setState(Qt::TouchPointReleased);
+            break;
+        case ABS_TOOL_WIDTH:
+        case ABS_VOLUME:
+        case ABS_PRESSURE:
+            // ignore for now
+            break;
+        case ABS_X:
+        {
+            qreal newValue = ((qreal(inputEvent.value - touchPointState.minX)
+                              / qreal(touchPointState.maxX - touchPointState.minX))
+                              * touchPointState.scaleX);
+            screenPos.rx() = newValue;
+            touchPoint.setScreenPos(screenPos);
+            break;
+        }
+        case ABS_Y:
+        {
+            qreal newValue = ((qreal(inputEvent.value - touchPointState.minY)
+                              / qreal(touchPointState.maxY - touchPointState.minY))
+                              * touchPointState.scaleY);
+            screenPos.ry() = newValue;
+            touchPoint.setScreenPos(screenPos);
+            break;
+        }
+        case ABS_Z:
+        {
+            // map Z (signal strength) to pressure for now
+            qreal newValue = (qreal(inputEvent.value - touchPointState.minZ)
+                              / qreal(touchPointState.maxZ - touchPointState.minZ));
+            touchPoint.setPressure(newValue);
+            break;
+        }
+        default:
+            qWarning("Qt: WARNING: unknown event code %d on multitouch device", inputEvent.code);
+            continue;
+        }
+    }
+
+    if (down && touchPoint.state() != Qt::TouchPointReleased)
+        touchPoint.setState(changed ? Qt::TouchPointMoved : Qt::TouchPointStationary);
+
+    return changed;
+}
+
+void QApplicationPrivate::_q_readRX71MultiTouchEvents()
+{
+    // read touch events from all devices
+    bool changed = false;
+    for (int i = 0; i < allRX71TouchPoints.count(); ++i)
+        changed = readRX71MultiTouchEvents(i) || changed;
+    if (!changed)
+        return;
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    for (int i = 0; i < allRX71TouchPoints.count(); ++i)
+        touchPoints.append(allRX71TouchPoints.at(i).touchPoint);
+
+    translateRawTouchEvent(0, QTouchEvent::TouchScreen, touchPoints);
+}
+
+#else // !QT_RX71_MULTITOUCH
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
+
+#endif // QT_RX71_MULTITOUCH
 
 QT_END_NAMESPACE

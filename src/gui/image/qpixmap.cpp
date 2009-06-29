@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -552,7 +552,7 @@ bool QPixmap::isQBitmap() const
 */
 bool QPixmap::isNull() const
 {
-    return data->width() == 0;
+    return data->isNull();
 }
 
 /*!
@@ -1317,7 +1317,7 @@ QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)
     return stream;
 }
 
-#endif //QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 #ifdef QT3_SUPPORT
 Q_GUI_EXPORT void copyBlt(QPixmap *dst, int dx, int dy,
@@ -1446,10 +1446,9 @@ QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Tran
     if (newSize == size())
         return *this;
 
-    QPixmap pix;
-    QTransform wm;
-    wm.scale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
-    pix = transformed(wm, mode);
+    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(),
+                                          (qreal)newSize.height() / height());
+    QPixmap pix = transformed(wm, mode);
     return pix;
 }
 
@@ -1476,9 +1475,8 @@ QPixmap QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QPixmap();
 
-    QTransform wm;
     qreal factor = (qreal) w / width();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -1505,9 +1503,8 @@ QPixmap QPixmap::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QPixmap();
 
-    QTransform wm;
     qreal factor = (qreal) h / height();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 

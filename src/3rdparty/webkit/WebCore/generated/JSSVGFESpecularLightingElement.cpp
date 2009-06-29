@@ -20,13 +20,9 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFESpecularLightingElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -37,14 +33,14 @@
 #include "JSSVGAnimatedNumber.h"
 #include "JSSVGAnimatedString.h"
 #include "SVGFESpecularLightingElement.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFESpecularLightingElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFESpecularLightingElement);
 
 /* Hash table */
 
@@ -88,9 +84,9 @@ static const HashTable JSSVGFESpecularLightingElementPrototypeTable =
 
 const ClassInfo JSSVGFESpecularLightingElementPrototype::s_info = { "SVGFESpecularLightingElementPrototype", 0, &JSSVGFESpecularLightingElementPrototypeTable, 0 };
 
-JSObject* JSSVGFESpecularLightingElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFESpecularLightingElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFESpecularLightingElement>(exec);
+    return getDOMPrototype<JSSVGFESpecularLightingElement>(exec, globalObject);
 }
 
 bool JSSVGFESpecularLightingElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -105,9 +101,9 @@ JSSVGFESpecularLightingElement::JSSVGFESpecularLightingElement(PassRefPtr<Struct
 {
 }
 
-JSObject* JSSVGFESpecularLightingElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFESpecularLightingElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFESpecularLightingElementPrototype(JSSVGFESpecularLightingElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFESpecularLightingElementPrototype(JSSVGFESpecularLightingElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFESpecularLightingElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -115,96 +111,108 @@ bool JSSVGFESpecularLightingElement::getOwnPropertySlot(ExecState* exec, const I
     return getStaticValueSlot<JSSVGFESpecularLightingElement, Base>(exec, &JSSVGFESpecularLightingElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementSurfaceScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementSurfaceScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->surfaceScaleAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementSpecularConstant(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementSpecularConstant(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->specularConstantAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementSpecularExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementSpecularExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->specularExponentAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpecularLightingElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpecularLightingElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(static_cast<JSSVGFESpecularLightingElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGFESpecularLightingElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGFESpecularLightingElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGFESpecularLightingElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGFESpecularLightingElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFESpecularLightingElement* castedThisObj = static_cast<JSSVGFESpecularLightingElement*>(asObject(thisValue));
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

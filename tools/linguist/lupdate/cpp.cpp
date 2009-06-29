@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -319,12 +319,27 @@ uint CppParser::getChar()
         if (yyInPos >= yyInStr.size())
             return EOF;
         uint c = yyInStr[yyInPos++].unicode();
-        if (c == '\\' && yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n') {
-            ++yyCurLineNo;
-            ++yyInPos;
-            continue;
+        if (c == '\\' && yyInPos < yyInStr.size()) {
+            if (yyInStr[yyInPos].unicode() == '\n') {
+                ++yyCurLineNo;
+                ++yyInPos;
+                continue;
+            }
+            if (yyInStr[yyInPos].unicode() == '\r') {
+                ++yyCurLineNo;
+                ++yyInPos;
+                if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+                    ++yyInPos;
+                continue;
+            }
         }
-        if (c == '\n') {
+        if (c == '\r') {
+            if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+                ++yyInPos;
+            c = '\n';
+            ++yyCurLineNo;
+            yyAtNewline = true;
+        } else if (c == '\n') {
             ++yyCurLineNo;
             yyAtNewline = true;
         } else if (c != ' ' && c != '\t' && c != '#') {
@@ -1138,7 +1153,9 @@ bool CppParser::matchString(QString *s)
     s->clear();
     while (yyTok == Tok_String) {
         *s += yyString;
-        yyTok = getToken();
+        do {
+            yyTok = getToken();
+        } while (yyTok == Tok_Comment);
     }
     return matches;
 }

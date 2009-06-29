@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,16 +61,40 @@ void tst_QItemEditorFactory::createEditor()
 
 void tst_QItemEditorFactory::createCustomEditor()
 {
-    QItemEditorFactory editorFactory;
+    //we make it inherit from QObject so that we can use QPointer
+    class MyEditor : public QObject, public QStandardItemEditorCreator<QDoubleSpinBox>
+    {
+    };
 
-    QItemEditorCreatorBase *creator = new QStandardItemEditorCreator<QDoubleSpinBox>();
-    editorFactory.registerEditor(QVariant::Rect, creator);
+    QPointer<MyEditor> creator = new MyEditor;
+    QPointer<MyEditor> creator2 = new MyEditor;
 
-    QWidget parent;
+    {
+        QItemEditorFactory editorFactory;
 
-    QWidget *w = editorFactory.createEditor(QVariant::Rect, &parent);
-    QCOMPARE(w->metaObject()->className(), "QDoubleSpinBox");
-    QCOMPARE(w->metaObject()->userProperty().type(), QVariant::Double);
+        editorFactory.registerEditor(QVariant::Rect, creator);
+        editorFactory.registerEditor(QVariant::RectF, creator);
+
+        //creator should not be deleted as a result of calling the next line
+        editorFactory.registerEditor(QVariant::Rect, creator2);
+        QVERIFY(creator);
+
+        //this should erase creator2
+        editorFactory.registerEditor(QVariant::Rect, creator);
+        QVERIFY(creator2.isNull());
+
+
+        QWidget parent;
+
+        QWidget *w = editorFactory.createEditor(QVariant::Rect, &parent);
+        QCOMPARE(w->metaObject()->className(), "QDoubleSpinBox");
+        QCOMPARE(w->metaObject()->userProperty().type(), QVariant::Double);
+    }
+
+    //editorFactory has been deleted, so should be creator
+    //because editorFActory has the ownership
+    QVERIFY(creator.isNull());
+    QVERIFY(creator2.isNull());
 
     delete creator;
 }

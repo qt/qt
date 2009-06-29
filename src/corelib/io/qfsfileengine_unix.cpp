@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -558,24 +558,8 @@ static bool _q_isMacHidden(const QString &path)
 
     FSRef fsRef;
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        err = FSPathMakeRefWithOptions(reinterpret_cast<const UInt8 *>(QFile::encodeName(QDir::cleanPath(path)).constData()),
-                                        kFSPathMakeRefDoNotFollowLeafSymlink, &fsRef, 0);
-    } else
-#endif
-    {
-        QFileInfo fi(path);
-        FSRef parentRef;
-        err = FSPathMakeRef(reinterpret_cast<const UInt8 *>(fi.absoluteDir().absolutePath().toUtf8().constData()),
-                            &parentRef, 0);
-        if (err == noErr) {
-            QString fileName = fi.fileName();
-            err = FSMakeFSRefUnicode(&parentRef, fileName.length(),
-                                     reinterpret_cast<const UniChar *>(fileName.unicode()),
-                                     kTextEncodingUnknown, &fsRef);
-        }
-    }
+    err = FSPathMakeRefWithOptions(reinterpret_cast<const UInt8 *>(QFile::encodeName(QDir::cleanPath(path)).constData()),
+                                    kFSPathMakeRefDoNotFollowLeafSymlink, &fsRef, 0);
     if (err != noErr)
         return false;
 

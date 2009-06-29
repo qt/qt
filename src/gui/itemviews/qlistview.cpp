@@ -1,7 +1,7 @@
 /***************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -610,7 +610,7 @@ int QListViewPrivate::horizontalScrollToValue(const QModelIndex &index, const QR
     const bool rightOf = q->isRightToLeft()
                          ? rect.right() > area.right()
                          : (rect.right() > area.right()) && (rect.left() > area.left());
-    int horizontalValue = q->horizontalScrollBar()->value();
+    int horizontalValue = hbar->value();
 
     // ScrollPerItem
     if (q->horizontalScrollMode() == QAbstractItemView::ScrollPerItem && viewMode == QListView::ListMode) {
@@ -652,10 +652,10 @@ int QListViewPrivate::verticalScrollToValue(const QModelIndex &index, const QRec
     const bool above = (hint == QListView::EnsureVisible && rect.top() < area.top());
     const bool below = (hint == QListView::EnsureVisible && rect.bottom() > area.bottom());
 
-    int verticalValue = q->verticalScrollBar()->value();
+    int verticalValue = vbar->value();
 
     // ScrollPerItem
-    if (q->verticalScrollMode() == QAbstractItemView::ScrollPerItem && viewMode == QListView::ListMode) {
+    if (verticalScrollMode == QAbstractItemView::ScrollPerItem && viewMode == QListView::ListMode) {
         const QListViewItem item = indexToListViewItem(index);
         const QRect rect = q->visualRect(index);
         verticalValue = staticListView->verticalPerItemValue(itemIndex(item),
@@ -827,6 +827,8 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 */
 void QListView::mouseMoveEvent(QMouseEvent *e)
 {
+    if (!isVisible())
+	return;
     Q_D(QListView);
     QAbstractItemView::mouseMoveEvent(e);
     if (state() == DragSelectingState
@@ -1100,14 +1102,8 @@ void QListView::paintEvent(QPaintEvent *e)
     QPainter painter(d->viewport);
     QRect area = e->rect();
 
-    QVector<QModelIndex> toBeRendered;
-//     QVector<QRect> rects = e->region().rects();
-//     for (int i = 0; i < rects.size(); ++i) {
-//         d->intersectingSet(rects.at(i).translated(horizontalOffset(), verticalOffset()));
-//         toBeRendered += d->intersectVector;
-//     }
     d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
-    toBeRendered = d->intersectVector;
+    const QVector<QModelIndex> toBeRendered = d->intersectVector;
 
     const QModelIndex current = currentIndex();
     const QModelIndex hover = d->hover;
@@ -1978,10 +1974,10 @@ void QListViewPrivate::prepareItemsLayout()
     // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
     // is Qt::ScrollBarAsNeeded
     int verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
-        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->verticalScrollBar()) + frameAroundContents
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, vbar) + frameAroundContents
         : 0;
     int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
-        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->horizontalScrollBar()) + frameAroundContents
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, hbar) + frameAroundContents
         : 0;
 
     layoutBounds.adjust(0, 0, -verticalMargin, -horizontalMargin);
@@ -2242,7 +2238,7 @@ QListViewItem QStaticListViewBase::indexToListViewItem(const QModelIndex &index)
 {
     if (flowPositions.isEmpty()
         || segmentPositions.isEmpty()
-        || index.row() > flowPositions.count())
+        || index.row() >= flowPositions.count())
         return QListViewItem();
 
     const int segment = qBinarySearch<int>(segmentStartRows, index.row(),

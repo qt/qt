@@ -27,10 +27,21 @@
 #include "FontPlatformData.h"
 #include "Font.h"
 #include "StringHash.h"
+#include <wtf/StdLibExtras.h>
 
 #include <QHash>
 
 namespace WebCore {
+
+FontCache* fontCache()
+{
+    DEFINE_STATIC_LOCAL(FontCache, globalFontCache, ());
+    return &globalFontCache;
+}
+
+FontCache::FontCache()
+{
+}
 
 void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigned>& traitsMasks)
 {
@@ -83,6 +94,14 @@ void FontCache::addClient(FontSelector*)
 
 void FontCache::removeClient(FontSelector*)
 {
+}
+
+void FontCache::invalidate()
+{
+    if (!gFontPlatformDataCache)
+        return;
+
+    gFontPlatformDataCache->clear();
 }
 
 } // namespace WebCore

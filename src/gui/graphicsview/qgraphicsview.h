@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -112,7 +112,8 @@ public:
     enum OptimizationFlag {
         DontClipPainter = 0x1, // obsolete
         DontSavePainterState = 0x2,
-        DontAdjustForAntialiasing = 0x4
+        DontAdjustForAntialiasing = 0x4,
+        IndirectPainting = 0x8
     };
     Q_DECLARE_FLAGS(OptimizationFlags, OptimizationFlag)
 
@@ -169,6 +170,7 @@ public:
     void resetMatrix();
     QTransform transform() const;
     QTransform viewportTransform() const;
+    bool isTransformed() const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
     void rotate(qreal angle);
@@ -273,7 +275,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_setViewportCursor(const QCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_unsetViewportCursor())
 #endif
-    Q_PRIVATE_SLOT(d_func(), void _q_updateLaterSlot())
     friend class QGraphicsSceneWidget;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,13 +68,11 @@ void QSvgG::draw(QPainter *p, QSvgExtraStates &states)
     QList<QSvgNode*>::iterator itr = m_renderers.begin();
     applyStyle(p, states);
 
-    if (displayMode() != QSvgNode::NoneMode) {
-        while (itr != m_renderers.end()) {
-            QSvgNode *node = *itr;
-            if (node->isVisible())
-                node->draw(p, states);
-            ++itr;
-        }
+    while (itr != m_renderers.end()) {
+        QSvgNode *node = *itr;
+        if ((node->isVisible()) && (node->displayMode() != QSvgNode::NoneMode))
+            node->draw(p, states);
+        ++itr;
     }
     revertStyle(p, states);
 }
@@ -321,63 +319,61 @@ void QSvgSwitch::draw(QPainter *p, QSvgExtraStates &states)
     QList<QSvgNode*>::iterator itr = m_renderers.begin();
     applyStyle(p, states);
 
-    if (displayMode() != QSvgNode::NoneMode) {
-        while (itr != m_renderers.end()) {
-            QSvgNode *node = *itr;
-            if (node->isVisible()) {
-                const QStringList &features  = node->requiredFeatures();
-                const QStringList &extensions = node->requiredExtensions();
-                const QStringList &languages = node->requiredLanguages();
-                const QStringList &formats = node->requiredFormats();
-                const QStringList &fonts = node->requiredFonts();
+    while (itr != m_renderers.end()) {
+        QSvgNode *node = *itr;
+        if (node->isVisible() && (node->displayMode() != QSvgNode::NoneMode)) {
+            const QStringList &features  = node->requiredFeatures();
+            const QStringList &extensions = node->requiredExtensions();
+            const QStringList &languages = node->requiredLanguages();
+            const QStringList &formats = node->requiredFormats();
+            const QStringList &fonts = node->requiredFonts();
 
-                bool okToRender = true;
-                if (!features.isEmpty()) {
-                    QStringList::const_iterator sitr = features.constBegin();
-                    for (; sitr != features.constEnd(); ++sitr) {
-                        if (!isSupportedSvgFeature(*sitr)) {
-                            okToRender = false;
-                            break;
-                        }
+            bool okToRender = true;
+            if (!features.isEmpty()) {
+                QStringList::const_iterator sitr = features.constBegin();
+                for (; sitr != features.constEnd(); ++sitr) {
+                    if (!isSupportedSvgFeature(*sitr)) {
+                        okToRender = false;
+                        break;
                     }
-                }
-
-                if (okToRender && !extensions.isEmpty()) {
-                    QStringList::const_iterator sitr = extensions.constBegin();
-                    for (; sitr != extensions.constEnd(); ++sitr) {
-                        if (!isSupportedSvgExtension(*sitr)) {
-                            okToRender = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (okToRender && !languages.isEmpty()) {
-                    QStringList::const_iterator sitr = languages.constBegin();
-                    okToRender = false;
-                    for (; sitr != languages.constEnd(); ++sitr) {
-                        if ((*sitr).startsWith(m_systemLanguagePrefix)) {
-                            okToRender = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (okToRender && !formats.isEmpty()) {
-                    okToRender = false;
-                }
-
-                if (okToRender && !fonts.isEmpty()) {
-                    okToRender = false;
-                }
-
-                if (okToRender) {
-                    node->draw(p, states);
-                    break;
                 }
             }
-            ++itr;
+
+            if (okToRender && !extensions.isEmpty()) {
+                QStringList::const_iterator sitr = extensions.constBegin();
+                for (; sitr != extensions.constEnd(); ++sitr) {
+                    if (!isSupportedSvgExtension(*sitr)) {
+                        okToRender = false;
+                        break;
+                    }
+                }
+            }
+
+            if (okToRender && !languages.isEmpty()) {
+                QStringList::const_iterator sitr = languages.constBegin();
+                okToRender = false;
+                for (; sitr != languages.constEnd(); ++sitr) {
+                    if ((*sitr).startsWith(m_systemLanguagePrefix)) {
+                        okToRender = true;
+                        break;
+                    }
+                }
+            }
+
+            if (okToRender && !formats.isEmpty()) {
+                okToRender = false;
+            }
+
+            if (okToRender && !fonts.isEmpty()) {
+                okToRender = false;
+            }
+
+            if (okToRender) {
+                node->draw(p, states);
+                break;
+            }
         }
+        ++itr;
     }
     revertStyle(p, states);
 }

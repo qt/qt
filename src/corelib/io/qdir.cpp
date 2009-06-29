@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
 #endif
+#include "qdiriterator.h"
 #include "qfsfileengine.h"
 #include "qdatetime.h"
 #include "qstring.h"
@@ -92,7 +93,7 @@ protected:
     QString initFileEngine(const QString &file);
 
     void updateFileLists() const;
-    void sortFileList(QDir::SortFlags, QStringList &, QStringList *, QFileInfoList *) const;
+    void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *) const;
 
 private:
 #ifdef QT3_SUPPORT
@@ -262,45 +263,57 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
             ? f1->filename_cache.localeAwareCompare(f2->filename_cache)
             : f1->filename_cache.compare(f2->filename_cache);
     }
-
+    if (r == 0) // Enforce an order - the order the items appear in the array
+        r = (&n1) - (&n2);
     if (qt_cmp_si_sort_flags & QDir::Reversed)
         return r > 0;
     return r < 0;
 }
 
-inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
+inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                                       QStringList *names, QFileInfoList *infos) const
 {
     if(names)
         names->clear();
     if(infos)
         infos->clear();
-    if(!l.isEmpty()) {
-        QDirSortItem *si= new QDirSortItem[l.count()];
-        int i;
-        for (i = 0; i < l.size(); ++i) {
-            QString path = data->path;
-            if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
-                path += QLatin1Char('/');
-            si[i].item = QFileInfo(path + l.at(i));
-        }
-        if ((sort & QDir::SortByMask) != QDir::Unsorted)
-            qStableSort(si, si+i, QDirSortItemComparator(sort));
-        // put them back in the list(s)
-        for (int j = 0; j<i; j++) {
+    int n = l.size();
+    if(n > 0) {
+        if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
             if(infos)
-                infos->append(si[j].item);
-            if(names)
-                names->append(si[j].item.fileName());
+                *infos = l;
+            if(names) {
+                for (int i = 0; i < n; ++i)
+                    names->append(l.at(i).fileName());
+            }
+        } else {
+            QDirSortItem *si = new QDirSortItem[n];
+            for (int i = 0; i < n; ++i)
+                si[i].item = l.at(i);
+            qSort(si, si+n, QDirSortItemComparator(sort));
+            // put them back in the list(s)
+            if(infos) {
+                for (int i = 0; i < n; ++i)
+                    infos->append(si[i].item);
+            }
+            if(names) {
+                for (int i = 0; i < n; ++i)
+                    names->append(si[i].item.fileName());
+            }
+            delete [] si;
         }
-        delete [] si;
     }
 }
 
 inline void QDirPrivate::updateFileLists() const
 {
     if(data->listsDirty) {
-        QStringList l = data->fileEngine->entryList(data->filters, data->nameFilters);
+        QFileInfoList l;
+        QDirIterator it(data->path, data->nameFilters, data->filters);
+        while (it.hasNext()) {
+            it.next();
+            l.append(it.fileInfo());
+        }
         sortFileList(data->sort, l, &data->files, &data->fileInfos);
         data->listsDirty = 0;
     }
@@ -1304,7 +1317,6 @@ QStringList QDir::entryList(Filters filters, SortFlags sort) const
 
     \sa entryList(), setNameFilters(), setSorting(), setFilter(), isReadable(), exists()
 */
-
 QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
 {
     Q_D(const QDir);
@@ -1346,10 +1358,12 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         d->updateFileLists();
         return d->data->files;
     }
-    QStringList l = d->data->fileEngine->entryList(filters, nameFilters);
-    if ((sort & QDir::SortByMask) == QDir::Unsorted)
-        return l;
-
+    QFileInfoList l;
+    QDirIterator it(d->data->path, nameFilters, filters);
+    while (it.hasNext()) {
+        it.next();
+        l.append(it.fileInfo());
+    }
     QStringList ret;
     d->sortFileList(sort, l, &ret, 0);
     return ret;
@@ -1389,8 +1403,13 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
         d->updateFileLists();
         return d->data->fileInfos;
     }
+    QFileInfoList l;
+    QDirIterator it(d->data->path, nameFilters, filters);
+    while (it.hasNext()) {
+        it.next();
+        l.append(it.fileInfo());
+    }
     QFileInfoList ret;
-    QStringList l = d->data->fileEngine->entryList(filters, nameFilters);
     d->sortFileList(sort, l, 0, &ret);
     return ret;
 }

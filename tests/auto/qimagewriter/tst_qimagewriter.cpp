@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,6 +59,7 @@ Q_DECLARE_METATYPE(QStringMap)
 Q_DECLARE_METATYPE(QIntList)
 Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
 Q_DECLARE_METATYPE(QIODevice *)
+Q_DECLARE_METATYPE(QImage::Format)
 
 //TESTED_FILES=
 
@@ -81,6 +82,9 @@ private slots:
     void writeImage2_data();
     void writeImage2();
     void supportedFormats();
+
+    void readWriteNonDestructive_data();
+    void readWriteNonDestructive();
 
 #if defined QTEST_HAVE_TIFF
     void largeTiff();
@@ -374,6 +378,28 @@ void tst_QImageWriter::supportedFormats()
 
     // check that the list does not contain duplicates
     QCOMPARE(formatSet.size(), formats.size());
+}
+
+void tst_QImageWriter::readWriteNonDestructive_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<QImage::Format>("expectedFormat");
+    QTest::newRow("tiff mono") << QImage::Format_Mono << QImage::Format_Mono;
+    QTest::newRow("tiff indexed") << QImage::Format_Indexed8 << QImage::Format_Indexed8;
+    QTest::newRow("tiff rgb32") << QImage::Format_ARGB32 << QImage::Format_ARGB32;
+}
+
+void tst_QImageWriter::readWriteNonDestructive()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(QImage::Format, expectedFormat);
+    QImage image = QImage(prefix + "colorful.bmp").convertToFormat(format);
+    QVERIFY(image.save(prefix + "gen-readWriteNonDestructive.tiff"));
+
+    QImage image2 = QImage(prefix + "gen-readWriteNonDestructive.tiff");
+    QImage::Format readFormat = image2.format();
+    QCOMPARE(readFormat, expectedFormat);
+    QCOMPARE(image, image2);
 }
 
 void tst_QImageWriter::setDescription_data()

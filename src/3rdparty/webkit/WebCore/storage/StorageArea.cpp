@@ -26,9 +26,14 @@
 #include "config.h"
 #include "StorageArea.h"
 
+#if ENABLE(DOM_STORAGE)
+
 #include "CString.h"
 #include "ExceptionCode.h"
+#include "Frame.h"
+#include "Page.h"
 #include "SecurityOrigin.h"
+#include "Settings.h"
 #include "StorageMap.h"
 
 namespace WebCore {
@@ -49,13 +54,15 @@ StorageArea::~StorageArea()
 {
 }
 
-unsigned StorageArea::internalLength() const
+unsigned StorageArea::length() const
 {
     return m_storageMap->length();
 }
 
-String StorageArea::internalKey(unsigned index, ExceptionCode& ec) const
+String StorageArea::key(unsigned index, ExceptionCode& ec) const
 {
+    blockUntilImportComplete();
+    
     String key;
     
     if (!m_storageMap->key(index, key)) {
@@ -66,19 +73,27 @@ String StorageArea::internalKey(unsigned index, ExceptionCode& ec) const
     return key;
 }
 
-String StorageArea::internalGetItem(const String& key) const
+String StorageArea::getItem(const String& key) const
 {
+    blockUntilImportComplete();
+    
     return m_storageMap->getItem(key);
 }
 
-void StorageArea::internalSetItem(const String& key, const String& value, ExceptionCode&, Frame* frame)
+void StorageArea::setItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
 {
     ASSERT(!value.isNull());
+    blockUntilImportComplete();
     
+    if (frame->page()->settings()->privateBrowsingEnabled()) {
+        ec = QUOTA_EXCEEDED_ERR;
+        return;
+    }
+
     // FIXME: For LocalStorage where a disk quota will be enforced, here is where we need to do quota checking.
     //        If we decide to enforce a memory quota for SessionStorage, this is where we'd do that, also.
     // if (<over quota>) {
-    //     ec = INVALID_ACCESS_ERR;
+    //     ec = QUOTA_EXCEEDED_ERR;
     //     return;
     // }
     
@@ -93,8 +108,13 @@ void StorageArea::internalSetItem(const String& key, const String& value, Except
         itemChanged(key, oldValue, value, frame);
 }
 
-void StorageArea::internalRemoveItem(const String& key, Frame* frame)
-{   
+void StorageArea::removeItem(const String& key, Frame* frame)
+{
+    blockUntilImportComplete();
+    
+    if (frame->page()->settings()->privateBrowsingEnabled())
+        return;
+
     String oldValue;
     RefPtr<StorageMap> newMap = m_storageMap->removeItem(key, oldValue);
     if (newMap)
@@ -105,15 +125,22 @@ void StorageArea::internalRemoveItem(const String& key, Frame* frame)
         itemRemoved(key, oldValue, frame);
 }
 
-void StorageArea::internalClear(Frame* frame)
+void StorageArea::clear(Frame* frame)
 {
+    blockUntilImportComplete();
+    
+    if (frame->page()->settings()->privateBrowsingEnabled())
+        return;
+    
     m_storageMap = StorageMap::create();
     
     areaCleared(frame);
 }
 
-bool StorageArea::internalContains(const String& key) const
+bool StorageArea::contains(const String& key) const
 {
+    blockUntilImportComplete();
+    
     return m_storageMap->contains(key);
 }
 
@@ -123,3 +150,6 @@ void StorageArea::importItem(const String& key, const String& value)
 }
 
 }
+
+#endif // ENABLE(DOM_STORAGE)
+

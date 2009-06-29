@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPolygonElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -46,15 +42,15 @@
 #include "SVGPointList.h"
 #include "SVGPolygonElement.h"
 #include "SVGStringList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPolygonElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPolygonElement);
 
 /* Hash table */
 
@@ -105,9 +101,9 @@ static const HashTable JSSVGPolygonElementPrototypeTable =
 
 const ClassInfo JSSVGPolygonElementPrototype::s_info = { "SVGPolygonElementPrototype", 0, &JSSVGPolygonElementPrototypeTable, 0 };
 
-JSObject* JSSVGPolygonElementPrototype::self(ExecState* exec)
+JSObject* JSSVGPolygonElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPolygonElement>(exec);
+    return getDOMPrototype<JSSVGPolygonElement>(exec, globalObject);
 }
 
 bool JSSVGPolygonElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -122,9 +118,9 @@ JSSVGPolygonElement::JSSVGPolygonElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGPolygonElement::createPrototype(ExecState* exec)
+JSObject* JSSVGPolygonElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPolygonElementPrototype(JSSVGPolygonElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGPolygonElementPrototype(JSSVGPolygonElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPolygonElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -132,177 +128,196 @@ bool JSSVGPolygonElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSSVGPolygonElement, Base>(exec, &JSSVGPolygonElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPolygonElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
-JSValuePtr jsSVGPolygonElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
-JSValuePtr jsSVGPolygonElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
 }
 
-JSValuePtr jsSVGPolygonElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmllang());
 }
 
-JSValuePtr jsSVGPolygonElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGPolygonElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGPolygonElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGPolygonElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGPolygonElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGPolygonElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->nearestViewportElement()));
 }
 
-JSValuePtr jsSVGPolygonElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->farthestViewportElement()));
 }
 
-JSValuePtr jsSVGPolygonElementPoints(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementPoints(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->points()), imp);
 }
 
-JSValuePtr jsSVGPolygonElementAnimatedPoints(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPolygonElementAnimatedPoints(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->animatedPoints()), imp);
 }
 
-void JSSVGPolygonElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPolygonElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPolygonElement, Base>(exec, propertyName, value, &JSSVGPolygonElementTable, this, slot);
 }
 
-void setJSSVGPolygonElementXmllang(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPolygonElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(thisObject)->impl());
-    imp->setXmllang(value->toString(exec));
+    imp->setXmllang(value.toString(exec));
 }
 
-void setJSSVGPolygonElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPolygonElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(static_cast<JSSVGPolygonElement*>(thisObject)->impl());
-    imp->setXmlspace(value->toString(exec));
+    imp->setXmlspace(value.toString(exec));
 }
 
-JSValuePtr jsSVGPolygonElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGPolygonElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
-    const UString& extension = args.at(exec, 0)->toString(exec);
+    const UString& extension = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasExtension(extension));
+    JSC::JSValue result = jsBoolean(imp->hasExtension(extension));
     return result;
 }
 
-JSValuePtr jsSVGPolygonElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGPolygonElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
-JSValuePtr jsSVGPolygonElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGPolygonElement::s_info))
-        return throwError(exec, TypeError);
-    JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
-    SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
-
-
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
-    return result;
-}
-
-JSValuePtr jsSVGPolygonElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSSVGPolygonElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGPolygonElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGPolygonElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGPolygonElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGPolygonElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+        return throwError(exec, TypeError);
+    JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
+    SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGElement* element = toSVGElement(args.at(exec, 0));
+    SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }

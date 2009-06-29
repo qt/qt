@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -490,6 +490,10 @@ public:
         WA_SetWindowModality = 118,
         WA_WState_WindowOpacitySet = 119, // internal
         WA_TranslucentBackground = 120,
+
+        WA_AcceptTouchEvents = 121,
+        WA_WState_AcceptedTouchBeginEvent = 122,
+        WA_TouchPadAcceptSingleTouchEvents = 123,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -1542,6 +1546,59 @@ public:
         BottomLeftSection,
         TitleBarArea    // For move
     };
+
+    enum Initialization {
+        Uninitialized
+    };
+
+    enum TouchPointState {
+        TouchPointPressed    = 0x01,
+        TouchPointMoved      = 0x02,
+        TouchPointStationary = 0x04,
+        TouchPointReleased   = 0x08,
+        TouchPointStateMask  = 0x0f,
+
+        TouchPointPrimary    = 0x10
+    };
+    Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
+
+    enum GestureType
+    {
+        UnknownGesture,
+        TapGesture,
+        DoubleTapGesture,
+        TrippleTapGesture,
+        TapAndHoldGesture,
+        PanGesture,
+        PinchGesture
+    };
+
+
+    enum GestureState
+    {
+        NoGesture,
+        GestureStarted = 1,
+        GestureUpdated = 2,
+        GestureFinished = 3
+    };
+
+    enum DirectionType
+    {
+        NoDirection = 0,
+        LeftDownDirection = 1,
+        DownLeftDirection = LeftDownDirection,
+        DownDirection = 2,
+        RightDownDirection = 3,
+        DownRightDirection = RightDownDirection,
+        LeftDirection = 4,
+        RightDirection = 6,
+        LeftUpDirection = 7,
+        UpLeftDirection = LeftUpDirection,
+        UpDirection = 8,
+        RightUpDirection = 9,
+        UpRightDirection = RightUpDirection
+    };
+
 }
 #ifdef Q_MOC_RUN
  ;
@@ -1561,6 +1618,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
 
 typedef bool (*qInternalCallback)(void **);
 

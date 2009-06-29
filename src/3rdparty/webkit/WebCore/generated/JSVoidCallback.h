@@ -34,7 +34,7 @@ class JSVoidCallback : public DOMObject {
 public:
     JSVoidCallback(PassRefPtr<JSC::Structure>, PassRefPtr<VoidCallback>);
     virtual ~JSVoidCallback();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -44,16 +44,17 @@ private:
     RefPtr<VoidCallback> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, VoidCallback*);
-VoidCallback* toVoidCallback(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, VoidCallback*);
+VoidCallback* toVoidCallback(JSC::JSValue);
 
 class JSVoidCallbackPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -62,7 +63,7 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsVoidCallbackPrototypeFunctionHandleEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsVoidCallbackPrototypeFunctionHandleEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
 } // namespace WebCore
 

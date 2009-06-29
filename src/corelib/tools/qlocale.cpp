@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -185,8 +185,7 @@ static QString languageToCode(QLocale::Language language)
 
     const unsigned char *c = language_code_list + 3*(uint(language));
 
-    QString code;
-    code.resize(c[2] == 0 ? 2 : 3);
+    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -201,8 +200,7 @@ static QString countryToCode(QLocale::Country country)
     if (country == QLocale::AnyCountry)
         return QString();
 
-    QString code;
-    code.resize(2);
+    QString code(2, Qt::Uninitialized);
     const unsigned char *c = country_code_list + 2*(uint(country));
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -772,7 +770,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
    Instead it can return a "Windows code". This maps windows codes to ISO country names. */
 
 struct WindowsToISOListElt {
-    int windows_code;
+    ushort windows_code;
     char iso_name[6];
 };
 
@@ -1013,21 +1011,17 @@ static QString macMonthName(int month, bool short_format)
     if (month < 0 || month > 11)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values
-            = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                      short_format ? kCFDateFormatterShortMonthSymbols
-                                                   : kCFDateFormatterMonthSymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values
+        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                  short_format ? kCFDateFormatterShortMonthSymbols
+                                               : kCFDateFormatterMonthSymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -1037,20 +1031,16 @@ static QString macDayName(int day, bool short_format)
     if (day < 1 || day > 7)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                                short_format ? kCFDateFormatterShortWeekdaySymbols
-                                                             : kCFDateFormatterWeekdaySymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                            short_format ? kCFDateFormatterShortWeekdaySymbols
+                                                         : kCFDateFormatterWeekdaySymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -1533,7 +1523,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     l = QLocale(s);
     return ds;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!

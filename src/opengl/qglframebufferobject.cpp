@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,9 @@
 
 #include <qdebug.h>
 #include <private/qgl_p.h>
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpaintengineex_opengl2_p.h>
+#endif
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
@@ -933,8 +935,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferObjects()
 {
-    if (!QGLContext::currentContext())
-        QGLWidget dmy; // needed to detect and init the QGLExtensions object
+    QGLExtensions::init();
     return (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
 }
 
@@ -1096,8 +1097,7 @@ bool QGLFramebufferObject::isBound() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
 {
-    if (!QGLContext::currentContext())
-        QGLWidget dmy; // needed to detect and init the QGLExtensions object
+    QGLExtensions::init();
     return (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit);
 }
 

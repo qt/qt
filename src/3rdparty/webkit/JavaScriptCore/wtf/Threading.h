@@ -59,7 +59,7 @@
 #ifndef Threading_h
 #define Threading_h
 
-#if PLATFORM(WIN_CE)
+#if PLATFORM(WINCE)
 #include <windows.h>
 #endif
 
@@ -67,7 +67,7 @@
 #include <wtf/Locker.h>
 #include <wtf/Noncopyable.h>
 
-#if PLATFORM(WIN_OS) && !PLATFORM(WIN_CE)
+#if PLATFORM(WIN_OS) && !PLATFORM(WINCE)
 #include <windows.h>
 #elif PLATFORM(DARWIN)
 #include <libkern/OSAtomic.h>
@@ -108,9 +108,16 @@ namespace WTF {
 typedef uint32_t ThreadIdentifier;
 typedef void* (*ThreadFunction)(void* argument);
 
-// Returns 0 if thread creation failed
+// Returns 0 if thread creation failed.
+// The thread name must be a literal since on some platforms it's passed in to the thread.
 ThreadIdentifier createThread(ThreadFunction, void*, const char* threadName);
+
+// Internal platform-specific createThread implementation.
 ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char* threadName);
+
+// Called in the thread during initialization.
+// Helpful for platforms where the thread name must be set from within the thread.
+void setThreadNameInternal(const char* threadName);
 
 ThreadIdentifier currentThread();
 bool isMainThread();
@@ -119,28 +126,36 @@ void detachThread(ThreadIdentifier);
 
 #if USE(PTHREADS)
 typedef pthread_mutex_t PlatformMutex;
+typedef pthread_rwlock_t PlatformReadWriteLock;
 typedef pthread_cond_t PlatformCondition;
 #elif PLATFORM(GTK)
 typedef GOwnPtr<GMutex> PlatformMutex;
+typedef void* PlatformReadWriteLock; // FIXME: Implement.
 typedef GOwnPtr<GCond> PlatformCondition;
 #elif PLATFORM(QT)
 typedef QT_PREPEND_NAMESPACE(QMutex)* PlatformMutex;
+typedef void* PlatformReadWriteLock; // FIXME: Implement.
 typedef QT_PREPEND_NAMESPACE(QWaitCondition)* PlatformCondition;
 #elif PLATFORM(WIN_OS)
 struct PlatformMutex {
     CRITICAL_SECTION m_internalMutex;
     size_t m_recursionCount;
 };
+typedef void* PlatformReadWriteLock; // FIXME: Implement.
 struct PlatformCondition {
-    size_t m_timedOut;
-    size_t m_blocked;
-    size_t m_waitingForRemoval;
-    HANDLE m_gate;
-    HANDLE m_queue;
-    HANDLE m_mutex;
+    size_t m_waitersGone;
+    size_t m_waitersBlocked;
+    size_t m_waitersToUnblock; 
+    HANDLE m_blockLock;
+    HANDLE m_blockQueue;
+    HANDLE m_unblockLock;
+
+    bool timedWait(PlatformMutex&, DWORD durationMilliseconds);
+    void signal(bool unblockAll);
 };
 #else
 typedef void* PlatformMutex;
+typedef void* PlatformReadWriteLock;
 typedef void* PlatformCondition;
 #endif
     
@@ -161,14 +176,32 @@ private:
 
 typedef Locker<Mutex> MutexLocker;
 
+class ReadWriteLock : Noncopyable {
+public:
+    ReadWriteLock();
+    ~ReadWriteLock();
+
+    void readLock();
+    bool tryReadLock();
+
+    void writeLock();
+    bool tryWriteLock();
+    
+    void unlock();
+
+private:
+    PlatformReadWriteLock m_readWriteLock;
+};
+
 class ThreadCondition : Noncopyable {
 public:
     ThreadCondition();
     ~ThreadCondition();
     
     void wait(Mutex& mutex);
-    // Returns true if the condition was signaled before the timeout, false if the timeout was reached
-    bool timedWait(Mutex&, double interval);
+    // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
+    // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
+    bool timedWait(Mutex&, double absoluteTime);
     void signal();
     void broadcast();
     
@@ -179,7 +212,7 @@ private:
 #if PLATFORM(WIN_OS)
 #define WTF_USE_LOCKFREE_THREADSAFESHARED 1
 
-#if COMPILER(MINGW) || COMPILER(MSVC7) || PLATFORM(WIN_CE)
+#if COMPILER(MINGW) || COMPILER(MSVC7) || PLATFORM(WINCE)
 inline void atomicIncrement(int* addend) { InterlockedIncrement(reinterpret_cast<long*>(addend)); }
 inline int atomicDecrement(int* addend) { return InterlockedDecrement(reinterpret_cast<long*>(addend)); }
 #else
@@ -201,9 +234,9 @@ inline int atomicDecrement(int volatile* addend) { return __gnu_cxx::__exchange_
 
 #endif
 
-template<class T> class ThreadSafeShared : Noncopyable {
+class ThreadSafeSharedBase : Noncopyable {
 public:
-    ThreadSafeShared(int initialRefCount = 1)
+    ThreadSafeSharedBase(int initialRefCount = 1)
         : m_refCount(initialRefCount)
     {
     }
@@ -216,20 +249,6 @@ public:
         MutexLocker locker(m_mutex);
         ++m_refCount;
 #endif
-    }
-
-    void deref()
-    {
-#if USE(LOCKFREE_THREADSAFESHARED)
-        if (atomicDecrement(&m_refCount) <= 0)
-#else
-        {
-            MutexLocker locker(m_mutex);
-            --m_refCount;
-        }
-        if (m_refCount <= 0)
-#endif
-            delete static_cast<T*>(this);
     }
 
     bool hasOneRef()
@@ -245,11 +264,48 @@ public:
         return static_cast<int const volatile &>(m_refCount);
     }
 
+protected:
+    // Returns whether the pointer should be freed or not.
+    bool derefBase()
+    {
+#if USE(LOCKFREE_THREADSAFESHARED)
+        if (atomicDecrement(&m_refCount) <= 0)
+            return true;
+#else
+        int refCount;
+        {
+            MutexLocker locker(m_mutex);
+            --m_refCount;
+            refCount = m_refCount;
+        }
+        if (refCount <= 0)
+            return true;
+#endif
+        return false;
+    }
+
 private:
+    template<class T>
+    friend class CrossThreadRefCounted;
+
     int m_refCount;
 #if !USE(LOCKFREE_THREADSAFESHARED)
     mutable Mutex m_mutex;
 #endif
+};
+
+template<class T> class ThreadSafeShared : public ThreadSafeSharedBase {
+public:
+    ThreadSafeShared(int initialRefCount = 1)
+        : ThreadSafeSharedBase(initialRefCount)
+    {
+    }
+
+    void deref()
+    {
+        if (derefBase())
+            delete static_cast<T*>(this);
+    }
 };
 
 // This function must be called from the main thread. It is safe to call it repeatedly.

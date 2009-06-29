@@ -33,16 +33,12 @@
 #include "RenderTableCell.h"
 #include "RenderView.h"
 
-#if ENABLE(WML)
-#include "WMLNames.h"
-#endif
-
 namespace WebCore {
 
 using namespace HTMLNames;
 
 RenderTableRow::RenderTableRow(Node* node)
-    : RenderContainer(node)
+    : RenderBox(node)
 {
     // init RenderObject attributes
     setInline(false);   // our object is not Inline
@@ -52,20 +48,20 @@ void RenderTableRow::destroy()
 {
     RenderTableSection* recalcSection = section();
     
-    RenderContainer::destroy();
+    RenderBox::destroy();
     
     if (recalcSection)
         recalcSection->setNeedsCellRecalc();
 }
 
-void RenderTableRow::styleWillChange(RenderStyle::Diff diff, const RenderStyle* newStyle)
+void RenderTableRow::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
 {
     if (section() && style() && style()->height() != newStyle->height())
         section()->setNeedsCellRecalc();
 
     ASSERT(newStyle->display() == TABLE_ROW);
 
-    RenderContainer::styleWillChange(diff, newStyle);
+    RenderBox::styleWillChange(diff, newStyle);
 }
 
 void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
@@ -74,19 +70,7 @@ void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
     if (!beforeChild && isAfterContent(lastChild()))
         beforeChild = lastChild();
 
-    bool isTableRow = element() && element()->hasTagName(trTag);
-
-#if ENABLE(WML)
-    if (!isTableRow && element() && element()->isWMLElement())
-        isTableRow = element()->hasTagName(WMLNames::trTag);
-#endif
-
     if (!child->isTableCell()) {
-        if (isTableRow && child->element() && child->element()->hasTagName(formTag) && document()->isHTMLDocument()) {
-            RenderContainer::addChild(child, beforeChild);
-            return;
-        }
-
         RenderObject* last = beforeChild;
         if (!last)
             last = lastChild();
@@ -121,8 +105,8 @@ void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
     if (parent())
         section()->addCell(cell, this);
 
-    ASSERT(!beforeChild || beforeChild->isTableCell() || isTableRow && beforeChild->element() && beforeChild->element()->hasTagName(formTag) && document()->isHTMLDocument());
-    RenderContainer::addChild(cell, beforeChild);
+    ASSERT(!beforeChild || beforeChild->isTableCell());
+    RenderBox::addChild(cell, beforeChild);
 
     if (beforeChild || nextSibling())
         section()->setNeedsCellRecalc();
@@ -148,7 +132,7 @@ void RenderTableRow::layout()
     // We only ever need to repaint if our cells didn't, which menas that they didn't need
     // layout, so we know that our bounds didn't change. This code is just making up for
     // the fact that we did not repaint in setStyle() because we had a layout hint.
-    // We cannot call repaint() because our absoluteClippedOverflowRect() is taken from the
+    // We cannot call repaint() because our clippedOverflowRectForRepaint() is taken from the
     // parent table, and being mid-layout, that is invalid. Instead, we repaint our cells.
     if (selfNeedsLayout() && checkForRepaintDuringLayout()) {
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
@@ -161,13 +145,14 @@ void RenderTableRow::layout()
     setNeedsLayout(false);
 }
 
-IntRect RenderTableRow::absoluteClippedOverflowRect()
+IntRect RenderTableRow::clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer)
 {
     // For now, just repaint the whole table.
     // FIXME: Find a better way to do this, e.g., need to repaint all the cells that we
     // might have propagated a background color into.
+    // FIXME: do repaintContainer checks here
     if (RenderTable* parentTable = table())
-        return parentTable->absoluteClippedOverflowRect();
+        return parentTable->clippedOverflowRectForRepaint(repaintContainer);
 
     return IntRect();
 }
@@ -182,7 +167,7 @@ bool RenderTableRow::nodeAtPoint(const HitTestRequest& request, HitTestResult& r
         // at the moment (a demoted inline <form> for example). If we ever implement a
         // table-specific hit-test method (which we should do for performance reasons anyway),
         // then we can remove this check.
-        if (!child->hasLayer() && !child->isInlineFlow() && child->nodeAtPoint(request, result, x, y, tx, ty, action)) {
+        if (child->isTableCell() && !toRenderBox(child)->hasSelfPaintingLayer() && child->nodeAtPoint(request, result, x, y, tx, ty, action)) {
             updateHitTestResult(result, IntPoint(x - tx, y - ty));
             return true;
         }
@@ -193,10 +178,9 @@ bool RenderTableRow::nodeAtPoint(const HitTestRequest& request, HitTestResult& r
 
 void RenderTableRow::paint(PaintInfo& paintInfo, int tx, int ty)
 {
-    ASSERT(m_layer);
-    if (!m_layer)
+    ASSERT(hasSelfPaintingLayer());
+    if (!layer())
         return;
-
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isTableCell()) {
             // Paint the row background behind the cell.
@@ -204,7 +188,7 @@ void RenderTableRow::paint(PaintInfo& paintInfo, int tx, int ty)
                 RenderTableCell* cell = static_cast<RenderTableCell*>(child);
                 cell->paintBackgroundsBehindCell(paintInfo, tx, ty, this);
             }
-            if (!child->hasLayer())
+            if (!toRenderBox(child)->hasSelfPaintingLayer())
                 child->paint(paintInfo, tx, ty);
         }
     }

@@ -39,7 +39,7 @@
 #include "PageGroup.h"
 #include "PlatformString.h"
 
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
 #include <profiler/Profiler.h>
 #endif
 
@@ -51,6 +51,11 @@ namespace WebCore {
 Console::Console(Frame* frame)
     : m_frame(frame)
 {
+}
+
+Frame* Console::frame() const
+{
+    return m_frame;
 }
 
 void Console::disconnectFrame()
@@ -68,7 +73,7 @@ static void printSourceURLAndLine(const String& sourceURL, unsigned lineNumber)
     }
 }
 
-static bool getFirstArgumentAsString(const ScriptCallFrame& callFrame, String& result, bool checkForNullOrUndefined = false)
+static bool getFirstArgumentAsString(ScriptState* scriptState, const ScriptCallFrame& callFrame, String& result, bool checkForNullOrUndefined = false)
 {
     if (!callFrame.argumentCount())
         return false;
@@ -77,7 +82,8 @@ static bool getFirstArgumentAsString(const ScriptCallFrame& callFrame, String& r
     if (checkForNullOrUndefined && (value.isNull() || value.isUndefined()))
         return false;
 
-    return value.getString(result);
+    result = value.toString(scriptState);
+    return true;
 }
 
 static void printMessageSourceAndLevelPrefix(MessageSource source, MessageLevel level)
@@ -99,11 +105,12 @@ static void printMessageSourceAndLevelPrefix(MessageSource source, MessageLevel 
         case CSSMessageSource:
             sourceString = "CSS";
             break;
-        default:
-            ASSERT_NOT_REACHED();
-            // Fall thru.
         case OtherMessageSource:
             sourceString = "OTHER";
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            sourceString = "UNKNOWN";
             break;
     }
 
@@ -112,9 +119,6 @@ static void printMessageSourceAndLevelPrefix(MessageSource source, MessageLevel 
         case TipMessageLevel:
             levelString = "TIP";
             break;
-        default:
-            ASSERT_NOT_REACHED();
-            // Fall thru.
         case LogMessageLevel:
             levelString = "LOG";
             break;
@@ -123,6 +127,22 @@ static void printMessageSourceAndLevelPrefix(MessageSource source, MessageLevel 
             break;
         case ErrorMessageLevel:
             levelString = "ERROR";
+            break;
+        case ObjectMessageLevel:
+            levelString = "OBJECT";
+            break;
+        case TraceMessageLevel:
+            levelString = "TRACE";
+            break;
+        case StartGroupMessageLevel:
+            levelString = "START GROUP";
+            break;
+        case EndGroupMessageLevel:
+            levelString = "END GROUP";
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            levelString = "UNKNOWN";
             break;
     }
 
@@ -136,7 +156,7 @@ void Console::addMessage(MessageSource source, MessageLevel level, const String&
         return;
 
     if (source == JSMessageSource || source == WMLMessageSource)
-        page->chrome()->client()->addMessageToConsole(message, lineNumber, sourceURL);
+        page->chrome()->client()->addMessageToConsole(source, level, message, lineNumber, sourceURL);
 
     page->inspectorController()->addMessageToConsole(source, level, message, lineNumber, sourceURL);
 
@@ -160,8 +180,8 @@ void Console::addMessage(MessageLevel level, ScriptCallStack* callStack, bool ac
         return;
 
     String message;
-    if (getFirstArgumentAsString(lastCaller, message))
-        page->chrome()->client()->addMessageToConsole(message, lastCaller.lineNumber(), lastCaller.sourceURL().prettyURL());
+    if (getFirstArgumentAsString(callStack->state(), lastCaller, message))
+        page->chrome()->client()->addMessageToConsole(JSMessageSource, level, message, lastCaller.lineNumber(), lastCaller.sourceURL().prettyURL());
 
     page->inspectorController()->addMessageToConsole(JSMessageSource, level, callStack);
 
@@ -207,7 +227,8 @@ void Console::dir(ScriptCallStack* callStack)
 
 void Console::dirxml(ScriptCallStack* callStack)
 {
-    addMessage(NodeMessageLevel, callStack);
+    // The standard behavior of our console.log will print the DOM tree for nodes.
+    log(callStack);
 }
 
 void Console::trace(ScriptCallStack* callStack)
@@ -243,12 +264,12 @@ void Console::count(ScriptCallStack* callStack)
     // Follow Firebug's behavior of counting with null and undefined title in
     // the same bucket as no argument
     String title;
-    getFirstArgumentAsString(lastCaller, title);
+    getFirstArgumentAsString(callStack->state(), lastCaller, title);
 
     page->inspectorController()->count(title, lastCaller.lineNumber(), lastCaller.sourceURL().string());
 }
 
-#if USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 void Console::profile(const JSC::UString& title, ScriptCallStack* callStack)
 {
@@ -256,14 +277,19 @@ void Console::profile(const JSC::UString& title, ScriptCallStack* callStack)
     if (!page)
         return;
 
-    if (title.isNull())
-        return;
-
     // FIXME: log a console message when profiling is disabled.
     if (!page->inspectorController()->profilerEnabled())
         return;
 
+    if (title.isNull()) {   // no title so give it the next user initiated profile title.
+        page->inspectorController()->startUserInitiatedProfiling(0);
+        return;
+    }
+
     JSC::Profiler::profiler()->startProfiling(callStack->state(), title);
+
+    const ScriptCallFrame& lastCaller = callStack->at(0);
+    page->inspectorController()->addStartProfilingMessageToConsole(title, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
 void Console::profileEnd(const JSC::UString& title, ScriptCallStack* callStack)

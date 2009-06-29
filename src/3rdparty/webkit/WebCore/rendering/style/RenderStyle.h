@@ -106,20 +106,46 @@ class StyleImage;
 
 class RenderStyle: public RefCounted<RenderStyle> {
     friend class CSSStyleSelector;
-
-public:
-    // static pseudo styles. Dynamic ones are produced on the fly.
-    enum PseudoId { NOPSEUDO, FIRST_LINE, FIRST_LETTER, BEFORE, AFTER, SELECTION, FIRST_LINE_INHERITED, SCROLLBAR, FILE_UPLOAD_BUTTON, INPUT_PLACEHOLDER,
-                    SLIDER_THUMB, SEARCH_CANCEL_BUTTON, SEARCH_DECORATION, SEARCH_RESULTS_DECORATION, SEARCH_RESULTS_BUTTON, MEDIA_CONTROLS_PANEL,
-                    MEDIA_CONTROLS_PLAY_BUTTON, MEDIA_CONTROLS_MUTE_BUTTON, MEDIA_CONTROLS_TIMELINE, MEDIA_CONTROLS_TIME_DISPLAY,
-                    MEDIA_CONTROLS_SEEK_BACK_BUTTON, MEDIA_CONTROLS_SEEK_FORWARD_BUTTON , MEDIA_CONTROLS_FULLSCREEN_BUTTON,
-                    SCROLLBAR_THUMB, SCROLLBAR_BUTTON, SCROLLBAR_TRACK, SCROLLBAR_TRACK_PIECE, SCROLLBAR_CORNER, RESIZER };
-    static const int FIRST_INTERNAL_PSEUDOID = FILE_UPLOAD_BUTTON;
-
-private:
-    static TransformOperations s_initialTransform;
-
 protected:
+
+    // The following bitfield is 32-bits long, which optimizes padding with the
+    // int refCount in the base class. Beware when adding more bits.
+    unsigned m_pseudoState : 3; // PseudoState
+    bool m_affectedByAttributeSelectors : 1;
+    bool m_unique : 1;
+
+    // Bits for dynamic child matching.
+    bool m_affectedByEmpty : 1;
+    bool m_emptyState : 1;
+
+    // We optimize for :first-child and :last-child.  The other positional child selectors like nth-child or
+    // *-child-of-type, we will just give up and re-evaluate whenever children change at all.
+    bool m_childrenAffectedByFirstChildRules : 1;
+    bool m_childrenAffectedByLastChildRules : 1;
+    bool m_childrenAffectedByDirectAdjacentRules : 1;
+    bool m_childrenAffectedByForwardPositionalRules : 1;
+    bool m_childrenAffectedByBackwardPositionalRules : 1;
+    bool m_firstChildState : 1;
+    bool m_lastChildState : 1;
+    unsigned m_childIndex : 18; // Plenty of bits to cache an index.
+
+    // non-inherited attributes
+    DataRef<StyleBoxData> box;
+    DataRef<StyleVisualData> visual;
+    DataRef<StyleBackgroundData> background;
+    DataRef<StyleSurroundData> surround;
+    DataRef<StyleRareNonInheritedData> rareNonInheritedData;
+
+    // inherited attributes
+    DataRef<StyleRareInheritedData> rareInheritedData;
+    DataRef<StyleInheritedData> inherited;
+
+    // list of associated pseudo styles
+    RefPtr<RenderStyle> m_cachedPseudoStyle;
+
+#if ENABLE(SVG)
+    DataRef<SVGRenderStyle> m_svgStyle;
+#endif
 
 // !START SYNC!: Keep this in sync with the copy constructor in RenderStyle.cpp
 
@@ -162,12 +188,14 @@ protected:
         bool _border_collapse : 1 ;
         unsigned _white_space : 3; // EWhiteSpace
         unsigned _box_direction : 1; // EBoxDirection (CSS3 box_direction property, flexible box layout module)
-
+        // 32 bits
+        
         // non CSS2 inherited
         bool _visuallyOrdered : 1;
-        bool _htmlHacks :1;
+        bool _htmlHacks : 1;
         bool _force_backgrounds_to_white : 1;
         unsigned _pointerEvents : 4; // EPointerEvents
+        // 39 bits
     } inherited_flags;
 
 // don't inherit
@@ -214,44 +242,8 @@ protected:
         bool _affectedByDrag : 1;
         unsigned _pseudoBits : 7;
         unsigned _unicodeBidi : 2; // EUnicodeBidi
+        // 48 bits
     } noninherited_flags;
-
-    // non-inherited attributes
-    DataRef<StyleBoxData> box;
-    DataRef<StyleVisualData> visual;
-    DataRef<StyleBackgroundData> background;
-    DataRef<StyleSurroundData> surround;
-    DataRef<StyleRareNonInheritedData> rareNonInheritedData;
-
-    // inherited attributes
-    DataRef<StyleRareInheritedData> rareInheritedData;
-    DataRef<StyleInheritedData> inherited;
-
-    // list of associated pseudo styles
-    RefPtr<RenderStyle> m_cachedPseudoStyle;
-
-    unsigned m_pseudoState : 3; // PseudoState
-    bool m_affectedByAttributeSelectors : 1;
-    bool m_unique : 1;
-
-    // Bits for dynamic child matching.
-    bool m_affectedByEmpty : 1;
-    bool m_emptyState : 1;
-
-    // We optimize for :first-child and :last-child.  The other positional child selectors like nth-child or
-    // *-child-of-type, we will just give up and re-evaluate whenever children change at all.
-    bool m_childrenAffectedByFirstChildRules : 1;
-    bool m_childrenAffectedByLastChildRules : 1;
-    bool m_childrenAffectedByDirectAdjacentRules : 1;
-    bool m_childrenAffectedByForwardPositionalRules : 1;
-    bool m_childrenAffectedByBackwardPositionalRules : 1;
-    bool m_firstChildState : 1;
-    bool m_lastChildState : 1;
-    unsigned m_childIndex : 18; // Plenty of bits to cache an index.
-
-#if ENABLE(SVG)
-    DataRef<SVGRenderStyle> m_svgStyle;
-#endif
 
 // !END SYNC!
 
@@ -309,10 +301,10 @@ public:
 
     void inheritFrom(const RenderStyle* inheritParent);
 
-    PseudoId styleType() { return static_cast<PseudoId>(noninherited_flags._styleType); }
+    PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags._styleType); }
     void setStyleType(PseudoId styleType) { noninherited_flags._styleType = styleType; }
 
-    RenderStyle* getCachedPseudoStyle(PseudoId);
+    RenderStyle* getCachedPseudoStyle(PseudoId) const;
     RenderStyle* addCachedPseudoStyle(PassRefPtr<RenderStyle>);
 
     bool affectedByHoverRules() const { return noninherited_flags._affectedByHover; }
@@ -337,6 +329,7 @@ public:
             return true;
         return background->m_background.hasImage();
     }
+    bool hasBackgroundImage() const { return background->m_background.hasImage(); }
     bool hasFixedBackgroundImage() const { return background->m_background.hasFixedImage(); }
     bool hasAppearance() const { return appearance() != NoControlPart; }
 
@@ -357,6 +350,11 @@ public:
     Length right() const { return surround->offset.right(); }
     Length top() const { return surround->offset.top(); }
     Length bottom() const { return surround->offset.bottom(); }
+
+    // Whether or not a positioned element requires normal flow x/y to be computed
+    // to determine its position.
+    bool hasStaticX() const { return (left().isAuto() && right().isAuto()) || left().isStatic() || right().isStatic(); }
+    bool hasStaticY() const { return (top().isAuto() && bottom().isAuto()) || top().isStatic(); }
 
     EPosition position() const { return static_cast<EPosition>(noninherited_flags._position); }
     EFloat floating() const { return static_cast<EFloat>(noninherited_flags._floating); }
@@ -448,6 +446,19 @@ public:
 
     TextDirection direction() const { return static_cast<TextDirection>(inherited_flags._direction); }
     Length lineHeight() const { return inherited->line_height; }
+    int computedLineHeight() const
+    {
+        Length lh = lineHeight();
+
+        // Negative value means the line height is not set.  Use the font's built-in spacing.
+        if (lh.isNegative())
+            return font().lineSpacing();
+
+        if (lh.isPercent())
+            return lh.calcMinValue(fontSize());
+
+        return lh.value();
+    }
 
     EWhiteSpace whiteSpace() const { return static_cast<EWhiteSpace>(inherited_flags._white_space); }
     static bool autoWrap(EWhiteSpace ws)
@@ -630,8 +641,16 @@ public:
     const TransformOperations& transform() const { return rareNonInheritedData->m_transform->m_operations; }
     Length transformOriginX() const { return rareNonInheritedData->m_transform->m_x; }
     Length transformOriginY() const { return rareNonInheritedData->m_transform->m_y; }
+    float transformOriginZ() const { return rareNonInheritedData->m_transform->m_z; }
     bool hasTransform() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
-    void applyTransform(TransformationMatrix&, const IntSize& borderBoxSize, bool includeTransformOrigin = true) const;
+    
+    // Return true if any transform related property (currently transform, transformStyle3D or perspective) 
+    // indicates that we are transforming
+    bool hasTransformRelatedProperty() const { return hasTransform() || preserves3D() || hasPerspective(); }
+
+    enum ApplyTransformOrigin { IncludeTransformOrigin, ExcludeTransformOrigin };
+    void applyTransform(TransformationMatrix&, const IntSize& borderBoxSize, ApplyTransformOrigin = IncludeTransformOrigin) const;
+
     bool hasMask() const { return rareNonInheritedData->m_mask.hasImage() || rareNonInheritedData->m_maskBoxImage.hasImage(); }
     // End CSS3 Getters
 
@@ -647,7 +666,21 @@ public:
     bool hasTransitions() const { return rareNonInheritedData->m_transitions && rareNonInheritedData->m_transitions->size() > 0; }
 
     // return the first found Animation (including 'all' transitions)
-    const Animation* transitionForProperty(int property);
+    const Animation* transitionForProperty(int property) const;
+
+    ETransformStyle3D transformStyle3D() const { return rareNonInheritedData->m_transformStyle3D; }
+    bool preserves3D() const { return rareNonInheritedData->m_transformStyle3D == TransformStyle3DPreserve3D; }
+
+    EBackfaceVisibility backfaceVisibility() const { return rareNonInheritedData->m_backfaceVisibility; }
+    float perspective() const { return rareNonInheritedData->m_perspective; }
+    bool hasPerspective() const { return rareNonInheritedData->m_perspective > 0; }
+    Length perspectiveOriginX() const { return rareNonInheritedData->m_perspectiveOriginX; }
+    Length perspectiveOriginY() const { return rareNonInheritedData->m_perspectiveOriginY; }
+    
+#if USE(ACCELERATED_COMPOSITING)
+    // When set, this ensures that styles compare as different. Used during accelerated animations.
+    bool isRunningAcceleratedAnimation() const { return rareNonInheritedData->m_runningAcceleratedAnimation; }
+#endif
 
     int lineClamp() const { return rareNonInheritedData->lineClamp; }
     bool textSizeAdjust() const { return rareInheritedData->textSizeAdjust; }
@@ -708,6 +741,10 @@ public:
 
     void setBackgroundColor(const Color& v) { SET_VAR(background, m_color, v) }
 
+    void setBackgroundXPosition(Length l) { SET_VAR(background, m_background.m_xPosition, l) }
+    void setBackgroundYPosition(Length l) { SET_VAR(background, m_background.m_yPosition, l) }
+    void setBackgroundSize(LengthSize l) { SET_VAR(background, m_background.m_size, l) }
+    
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.image, b) }
 
     void setBorderTopLeftRadius(const IntSize& s) { SET_VAR(surround, border.topLeft, s) }
@@ -722,6 +759,8 @@ public:
         setBorderBottomLeftRadius(s);
         setBorderBottomRightRadius(s);
     }
+    
+    void getBorderRadiiForRect(const IntRect&, IntSize& topLeft, IntSize& topRight, IntSize& bottomLeft, IntSize& bottomRight) const;
 
     void setBorderLeftWidth(unsigned short v) { SET_VAR(surround, border.left.width, v) }
     void setBorderLeftStyle(EBorderStyle v) { SET_VAR(surround, border.left.m_style, v) }
@@ -815,6 +854,9 @@ public:
     }
 
     void setMaskBoxImage(const NinePieceImage& b) { SET_VAR(rareNonInheritedData, m_maskBoxImage, b) }
+    void setMaskXPosition(Length l) { SET_VAR(rareNonInheritedData, m_mask.m_xPosition, l) }
+    void setMaskYPosition(Length l) { SET_VAR(rareNonInheritedData, m_mask.m_yPosition, l) }
+    void setMaskSize(LengthSize l) { SET_VAR(rareNonInheritedData, m_mask.m_size, l) }
 
     void setBorderCollapse(bool collapse) { inherited_flags._border_collapse = collapse; }
     void setHorizontalBorderSpacing(short v) { SET_VAR(inherited, horizontal_border_spacing, v) }
@@ -924,6 +966,7 @@ public:
     void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
     void setTransformOriginX(Length l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_x, l); }
     void setTransformOriginY(Length l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_y, l); }
+    void setTransformOriginZ(float f) { SET_VAR(rareNonInheritedData.access()->m_transform, m_z, f); }
     // End CSS3 Setters
 
     // Apple-specific property setters
@@ -944,6 +987,16 @@ public:
     void adjustAnimations();
     void adjustTransitions();
 
+    void setTransformStyle3D(ETransformStyle3D b) { SET_VAR(rareNonInheritedData, m_transformStyle3D, b); }
+    void setBackfaceVisibility(EBackfaceVisibility b) { SET_VAR(rareNonInheritedData, m_backfaceVisibility, b); }
+    void setPerspective(float p) { SET_VAR(rareNonInheritedData, m_perspective, p); }
+    void setPerspectiveOriginX(Length l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginX, l); }
+    void setPerspectiveOriginY(Length l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginY, l); }
+
+#if USE(ACCELERATED_COMPOSITING)
+    void setIsRunningAcceleratedAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_runningAcceleratedAnimation, b); }
+#endif
+
     void setLineClamp(int c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
     void setTextSizeAdjust(bool b) { SET_VAR(rareInheritedData, textSizeAdjust, b); }
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
@@ -963,24 +1016,18 @@ public:
 #endif
 
     const ContentData* contentData() const { return rareNonInheritedData->m_content.get(); }
-    bool contentDataEquivalent(const RenderStyle* otherStyle) const;
+    bool contentDataEquivalent(const RenderStyle* otherStyle) const { return const_cast<RenderStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<RenderStyle*>(otherStyle)->rareNonInheritedData); }
     void clearContent();
-    void setContent(StringImpl*, bool add = false);
+    void setContent(PassRefPtr<StringImpl>, bool add = false);
     void setContent(PassRefPtr<StyleImage>, bool add = false);
     void setContent(CounterContent*, bool add = false);
 
     const CounterDirectiveMap* counterDirectives() const;
     CounterDirectiveMap& accessCounterDirectives();
 
-    bool inheritedNotEqual(RenderStyle*) const;
+    bool inheritedNotEqual(const RenderStyle*) const;
 
-    // The difference between two styles.  The following values are used:
-    // (1) Equal - The two styles are identical
-    // (2) Repaint - The object just needs to be repainted.
-    // (3) RepaintLayer - The layer and its descendant layers needs to be repainted.
-    // (4) Layout - A layout is required.
-    enum Diff { Equal, Repaint, RepaintLayer, LayoutPositionedMovementOnly, Layout };
-    Diff diff(const RenderStyle*) const;
+    StyleDifference diff(const RenderStyle*, unsigned& changedContextSensitiveProperties) const;
 
     bool isDisplayReplacedType() const
     {
@@ -1109,10 +1156,16 @@ public:
     static bool initialVisuallyOrdered() { return false; }
     static float initialTextStrokeWidth() { return 0; }
     static unsigned short initialColumnCount() { return 1; }
-    static const TransformOperations& initialTransform() { return s_initialTransform; }
+    static const TransformOperations& initialTransform() { DEFINE_STATIC_LOCAL(TransformOperations, ops, ()); return ops; }
     static Length initialTransformOriginX() { return Length(50.0, Percent); }
     static Length initialTransformOriginY() { return Length(50.0, Percent); }
     static EPointerEvents initialPointerEvents() { return PE_AUTO; }
+    static float initialTransformOriginZ() { return 0; }
+    static ETransformStyle3D initialTransformStyle3D() { return TransformStyle3DFlat; }
+    static EBackfaceVisibility initialBackfaceVisibility() { return BackfaceVisibilityVisible; }
+    static float initialPerspective() { return 0; }
+    static Length initialPerspectiveOriginX() { return Length(50.0, Percent); }
+    static Length initialPerspectiveOriginY() { return Length(50.0, Percent); }
 
     // Keep these at the end.
     static int initialLineClamp() { return -1; }

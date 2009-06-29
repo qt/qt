@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPathSegMovetoRel.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGPathSegMoveto.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegMovetoRel)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegMovetoRel);
 
 /* Hash table */
 
@@ -70,9 +66,9 @@ static const HashTable JSSVGPathSegMovetoRelPrototypeTable =
 
 const ClassInfo JSSVGPathSegMovetoRelPrototype::s_info = { "SVGPathSegMovetoRelPrototype", 0, &JSSVGPathSegMovetoRelPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegMovetoRelPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegMovetoRelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegMovetoRel>(exec);
+    return getDOMPrototype<JSSVGPathSegMovetoRel>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegMovetoRel::s_info = { "SVGPathSegMovetoRel", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoRelTable, 0 };
@@ -82,9 +78,9 @@ JSSVGPathSegMovetoRel::JSSVGPathSegMovetoRel(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGPathSegMovetoRel::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegMovetoRel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegMovetoRelPrototype(JSSVGPathSegMovetoRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegMovetoRelPrototype(JSSVGPathSegMovetoRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegMovetoRel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -92,35 +88,37 @@ bool JSSVGPathSegMovetoRel::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSSVGPathSegMovetoRel, Base>(exec, &JSSVGPathSegMovetoRelTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPathSegMovetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegMovetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->x());
 }
 
-JSValuePtr jsSVGPathSegMovetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegMovetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-void JSSVGPathSegMovetoRel::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPathSegMovetoRel::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegMovetoRel, Base>(exec, propertyName, value, &JSSVGPathSegMovetoRelTable, this, slot);
 }
 
-void setJSSVGPathSegMovetoRelX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegMovetoRelX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl());
-    imp->setX(value->toFloat(exec));
+    imp->setX(value.toFloat(exec));
     if (static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context())
         static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl()->associatedAttributeName());
 }
 
-void setJSSVGPathSegMovetoRelY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegMovetoRelY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl());
-    imp->setY(value->toFloat(exec));
+    imp->setY(value.toFloat(exec));
     if (static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context())
         static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl()->associatedAttributeName());
 }

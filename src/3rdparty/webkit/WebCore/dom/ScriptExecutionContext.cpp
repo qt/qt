@@ -88,7 +88,7 @@ void ScriptExecutionContext::dispatchMessagePortEvents()
         MessagePort* port = ports[i];
         // The port may be destroyed, and another one created at the same address, but this is safe, as the worst that can happen
         // as a result is that dispatchMessages() will be called needlessly.
-        if (m_messagePorts.contains(port) && port->queueIsOpen())
+        if (m_messagePorts.contains(port) && port->started())
             port->dispatchMessages();
     }
 }
@@ -173,6 +173,22 @@ void ScriptExecutionContext::destroyedActiveDOMObject(ActiveDOMObject* object)
 void ScriptExecutionContext::setSecurityOrigin(PassRefPtr<SecurityOrigin> securityOrigin)
 {
     m_securityOrigin = securityOrigin;
+}
+
+void ScriptExecutionContext::addTimeout(int timeoutId, DOMTimer* timer)
+{
+    ASSERT(!m_timeouts.contains(timeoutId));
+    m_timeouts.set(timeoutId, timer);
+}
+
+void ScriptExecutionContext::removeTimeout(int timeoutId)
+{
+    m_timeouts.remove(timeoutId);
+}
+
+DOMTimer* ScriptExecutionContext::findTimeout(int timeoutId)
+{
+    return m_timeouts.get(timeoutId);
 }
 
 ScriptExecutionContext::Task::~Task()

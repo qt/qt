@@ -21,6 +21,8 @@
 #ifndef JSSQLTransaction_h
 #define JSSQLTransaction_h
 
+#if ENABLE(DATABASE)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -34,29 +36,30 @@ class JSSQLTransaction : public DOMObject {
 public:
     JSSQLTransaction(PassRefPtr<JSC::Structure>, PassRefPtr<SQLTransaction>);
     virtual ~JSSQLTransaction();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
 
     // Custom functions
-    JSC::JSValuePtr executeSql(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue executeSql(JSC::ExecState*, const JSC::ArgList&);
     SQLTransaction* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<SQLTransaction> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SQLTransaction*);
-SQLTransaction* toSQLTransaction(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SQLTransaction*);
+SQLTransaction* toSQLTransaction(JSC::JSValue);
 
 class JSSQLTransactionPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -65,8 +68,10 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSQLTransactionPrototypeFunctionExecuteSql(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSQLTransactionPrototypeFunctionExecuteSql(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATABASE)
 
 #endif

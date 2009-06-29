@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -754,11 +754,14 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                       qBound(1, data.crect.width(), XCOORD_MAX),
                       qBound(1, data.crect.height(), XCOORD_MAX));
         XStoreName(dpy, id, appName.data());
-        Atom protocols[4];
+        Atom protocols[5];
         int n = 0;
         protocols[n++] = ATOM(WM_DELETE_WINDOW);        // support del window protocol
         protocols[n++] = ATOM(WM_TAKE_FOCUS);                // support take focus window protocol
         protocols[n++] = ATOM(_NET_WM_PING);                // support _NET_WM_PING protocol
+#ifndef QT_NO_XSYNC
+        protocols[n++] = ATOM(_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
+#endif // QT_NO_XSYNC
         if (flags & Qt::WindowContextHelpButtonHint)
             protocols[n++] = ATOM(_NET_WM_CONTEXT_HELP);
         XSetWMProtocols(dpy, id, protocols, n);
@@ -1877,6 +1880,23 @@ void QWidgetPrivate::show_sys()
         if (setUserTime)
             qt_net_update_user_time(q, userTime);
 
+#ifndef QT_NO_XSYNC
+        if (!topData()->syncUpdateCounter) {
+            XSyncValue value;
+            XSyncIntToValue(&value, 0);
+            topData()->syncUpdateCounter = XSyncCreateCounter(X11->display, value);
+
+            XChangeProperty(X11->display, q->internalWinId(),
+                            ATOM(_NET_WM_SYNC_REQUEST_COUNTER),
+                            XA_CARDINAL,
+                            32, PropModeReplace,
+                            (uchar *) &topData()->syncUpdateCounter, 1);
+
+            topData()->newCounterValueHi = 0;
+            topData()->newCounterValueLo = 0;
+        }
+#endif
+
         if (!topData()->embedded
             && (topData()->validWMState || topData()->waitingForMapNotify)
             && !q->isMinimized()) {
@@ -2687,6 +2707,12 @@ void QWidgetPrivate::createTLSysExtra()
     extra->topextra->waitingForMapNotify = 0;
     extra->topextra->parentWinId = 0;
     extra->topextra->userTimeWindow = 0;
+#ifndef QT_NO_XSYNC
+    extra->topextra->syncUpdateCounter = 0;
+    extra->topextra->syncRequestTimestamp = 0;
+    extra->topextra->newCounterValueHi = 0;
+    extra->topextra->newCounterValueLo = 0;
+#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

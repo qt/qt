@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -109,6 +109,7 @@
 #include "private/qabstractscrollarea_p.h"
 
 #include "private/qgraphicssystem_p.h"
+#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -126,6 +127,8 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
     qt_enable_backingstore = enable;
 }
 #endif
+
+QString qt_getStandardGestureTypeName(Qt::GestureType);
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
@@ -1052,7 +1055,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
-    if (qApp->type() == QApplication::Tty)
+    if (QApplication::type() == QApplication::Tty)
         qFatal("QWidget: Cannot create a QWidget when no GUI is being used");
 
     Q_ASSERT(uncreatedWidgets);
@@ -1067,7 +1070,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->data = &data;
 
 #ifndef QT_NO_THREAD
-    if (!q->parent()) {
+    if (!parent) {
         Q_ASSERT_X(q->thread() == qApp->thread(), "QWidget",
                    "Widgets must be created in the GUI thread.");
     }
@@ -1345,7 +1348,7 @@ QWidget::~QWidget()
 #ifdef QT3_SUPPORT
     if (QApplicationPrivate::main_widget == this) {        // reset main widget
         QApplicationPrivate::main_widget = 0;
-        qApp->quit();
+        QApplication::quit();
     }
 #endif
 
@@ -2034,8 +2037,8 @@ void QWidgetPrivate::deactivateWidgetCleanup()
 {
     Q_Q(QWidget);
     // If this was the active application window, reset it
-    if (qApp->activeWindow() == q)
-        qApp->setActiveWindow(0);
+    if (QApplication::activeWindow() == q)
+        QApplication::setActiveWindow(0);
     // If the is the active mouse press widget, reset it
     if (q == qt_button_down)
         qt_button_down = 0;
@@ -2236,7 +2239,7 @@ QStyle *QWidget::style() const
 
     if (d->extra && d->extra->style)
         return d->extra->style;
-    return qApp->style();
+    return QApplication::style();
 }
 
 /*!
@@ -4993,7 +4996,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     QPoint scrollAreaOffset;
 
 #ifndef QT_NO_SCROLLAREA
-                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(q->parent());
+                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
                     if (scrollArea && scrollArea->viewport() == q) {
                         QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
                         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
@@ -5372,7 +5375,7 @@ QIcon QWidget::windowIcon() const
             return *d->extra->topextra->icon;
         w = w->parentWidget();
     }
-    return qApp->windowIcon();
+    return QApplication::windowIcon();
 }
 
 void QWidgetPrivate::setWindowIcon_helper()
@@ -5636,7 +5639,7 @@ bool QWidget::hasFocus() const
     infinite recursion.
 
     \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
-    setFocusPolicy(), QApplication::focusWidget(), grabKeyboard(),
+    setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
     grabMouse(), {Keyboard Focus}
 */
 
@@ -5857,7 +5860,7 @@ QWidget *QWidget::focusWidget() const
 /*!
     Returns the next widget in this widget's focus chain.
 
-    \sa previousInFocusChain
+    \sa previousInFocusChain()
 */
 QWidget *QWidget::nextInFocusChain() const
 {
@@ -5867,7 +5870,7 @@ QWidget *QWidget::nextInFocusChain() const
 /*!
     Returns the previous widget in this widget's focus chain.
 
-    \sa nextInFocusChain
+    \sa nextInFocusChain()
 
     \since 4.6
 */
@@ -5894,7 +5897,7 @@ QWidget *QWidget::previousInFocusChain() const
 bool QWidget::isActiveWindow() const
 {
     QWidget *tlw = window();
-    if(tlw == qApp->activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
+    if(tlw == QApplication::activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
         return true;
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -5915,7 +5918,7 @@ bool QWidget::isActiveWindow() const
            !tlw->isModal() &&
            (!tlw->parentWidget() || tlw->parentWidget()->isActiveWindow()))
            return true;
-        QWidget *w = qApp->activeWindow();
+        QWidget *w = QApplication::activeWindow();
         while(w && tlw->windowType() == Qt::Tool &&
               !w->isModal() && w->parentWidget()) {
             w = w->parentWidget()->window();
@@ -7085,7 +7088,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
 
 #ifdef QT3_SUPPORT
     if (isMain)
-        qApp->quit();
+        QApplication::quit();
 #endif
     // Attempt to close the application only if this widget has the
     // WA_QuitOnClose flag set set and has a non-visible parent
@@ -7268,10 +7271,10 @@ QSize QWidgetPrivate::adjustedSize() const
 
     if (q->isWindow()) {
         Qt::Orientations exp;
-        if (QLayout *l = q->layout()) {
-            if (l->hasHeightForWidth())
-                s.setHeight(l->totalHeightForWidth(s.width()));
-            exp = l->expandingDirections();
+        if (layout) {
+            if (layout->hasHeightForWidth())
+                s.setHeight(layout->totalHeightForWidth(s.width()));
+            exp = layout->expandingDirections();
         } else
         {
             if (q->sizePolicy().hasHeightForWidth())
@@ -7474,10 +7477,14 @@ bool QWidget::event(QEvent *event)
         case QEvent::MouseButtonRelease:
         case QEvent::MouseButtonDblClick:
         case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
         case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
+        case QEvent::Gesture:
             return false;
         default:
             break;
@@ -7784,7 +7791,7 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                if (o != qApp->activeModalWidget()) {
+                if (o != QApplication::activeModalWidget()) {
                     if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
                         // do not forward the event to child windows,
                         // QApplication does this for us
@@ -7873,6 +7880,46 @@ bool QWidget::event(QEvent *event)
         d->needWindowChange = false;
         break;
 #endif
+    case QEvent::Gesture:
+        event->ignore();
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
+        if (touchPoint.isPrimary())
+            break;
+
+        // fake a mouse event!
+        QEvent::Type eventType = QEvent::None;
+        switch (touchEvent->type()) {
+        case QEvent::TouchBegin:
+            eventType = QEvent::MouseButtonPress;
+            break;
+        case QEvent::TouchUpdate:
+            eventType = QEvent::MouseMove;
+            break;
+        case QEvent::TouchEnd:
+            eventType = QEvent::MouseButtonRelease;
+            break;
+        default:
+            Q_ASSERT(!true);
+            break;
+        }
+        if (eventType == QEvent::None)
+            break;
+
+        QMouseEvent mouseEvent(eventType,
+                               touchPoint.pos().toPoint(),
+                               touchPoint.screenPos().toPoint(),
+                               Qt::LeftButton,
+                               Qt::LeftButton,
+                               touchEvent->modifiers());
+        (void) QApplication::sendEvent(this, &mouseEvent);
+        break;
+    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -8007,9 +8054,9 @@ void QWidget::mousePressEvent(QMouseEvent *event)
     if ((windowType() == Qt::Popup)) {
         event->accept();
         QWidget* w;
-        while ((w = qApp->activePopupWidget()) && w != this){
+        while ((w = QApplication::activePopupWidget()) && w != this){
             w->close();
-            if (qApp->activePopupWidget() == w) // widget does not want to dissappear
+            if (QApplication::activePopupWidget() == w) // widget does not want to dissappear
                 w->hide(); // hide at least
         }
         if (!rect().contains(event->pos())){
@@ -9881,6 +9928,12 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
 
         break;
+    case Qt::WA_AcceptTouchEvents:
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+        if (on)
+            d->registerTouchWindow();
+#endif
+        break;
     default:
         break;
     }
@@ -10961,6 +11014,103 @@ QWindowSurface *QWidget::windowSurface() const
 #endif // Q_BACKINGSTORE_SUBSURFACES
 
     return bs ? bs->windowSurface : 0;
+}
+
+/*!
+    \since 4.6
+
+    Subscribes the widget to the specified \a gesture type.
+
+    Returns the id of the gesture.
+
+    \sa releaseGesture(), setGestureEnabled()
+*/
+int QWidget::grabGesture(const QString &gesture)
+{
+    Q_D(QWidget);
+    int id = d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
+    if (d->extra && d->extra->proxyWidget)
+        d->extra->proxyWidget->QGraphicsItem::d_ptr->grabGesture(id);
+    return id;
+}
+
+int QWidgetPrivate::grabGesture(int gestureId)
+{
+    gestures << gestureId;
+    ++qApp->d_func()->grabbedGestures[QGestureManager::instance()->gestureNameFromId(gestureId)];
+    return gestureId;
+}
+
+bool QWidgetPrivate::releaseGesture(int gestureId)
+{
+    QApplicationPrivate *qAppPriv = qApp->d_func();
+    if (gestures.contains(gestureId)) {
+        QString name = QGestureManager::instance()->gestureNameFromId(gestureId);
+        Q_ASSERT(qAppPriv->grabbedGestures[name] > 0);
+        --qAppPriv->grabbedGestures[name];
+        gestures.remove(gestureId);
+        return true;
+    }
+    return false;
+}
+
+bool QWidgetPrivate::hasGesture(const QString &name) const
+{
+    QGestureManager *gm = QGestureManager::instance();
+    QSet<int>::const_iterator it = gestures.begin(),
+                               e = gestures.end();
+    for (; it != e; ++it) {
+        if (gm->gestureNameFromId(*it) == name)
+            return true;
+    }
+    return false;
+}
+
+/*!
+    \since 4.6
+
+    Subscribes the widget to the specified \a gesture type.
+
+    Returns the id of the gesture.
+
+    \sa releaseGesture(), setGestureEnabled()
+*/
+int QWidget::grabGesture(Qt::GestureType gesture)
+{
+    return grabGesture(qt_getStandardGestureTypeName(gesture));
+}
+
+/*!
+    \since 4.6
+
+    Unsubscribes the widget from a gesture, which is specified by the
+    \a gestureId.
+
+    \sa grabGesture(), setGestureEnabled()
+*/
+void QWidget::releaseGesture(int gestureId)
+{
+    Q_D(QWidget);
+    if (d->releaseGesture(gestureId)) {
+        if (d->extra && d->extra->proxyWidget)
+            d->extra->proxyWidget->QGraphicsItem::d_ptr->releaseGesture(gestureId);
+        QGestureManager::instance()->releaseGestureId(gestureId);
+    }
+}
+
+/*!
+    \since 4.6
+
+    If \a enable is true, the gesture with the given \a gestureId is
+    enabled; otherwise the gesture is disabled.
+
+    The id of the gesture is returned by the grabGesture().
+
+    \sa grabGesture(), releaseGesture()
+*/
+void QWidget::setGestureEnabled(int gestureId, bool enable)
+{
+    //###
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

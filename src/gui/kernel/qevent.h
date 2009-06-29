@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,8 @@
 #include <QtGui/qmime.h>
 #include <QtGui/qdrag.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_HEADER
 
@@ -60,6 +62,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QAction;
+class QGesture;
 
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
@@ -67,6 +70,7 @@ public:
     QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QInputEvent();
     inline Qt::KeyboardModifiers modifiers() const { return modState; }
+    inline void setModifiers(Qt::KeyboardModifiers modifiers) { modState = modifiers; }
 protected:
     Qt::KeyboardModifiers modState;
 };
@@ -710,6 +714,41 @@ private:
 };
 #endif
 
+class Q_GUI_EXPORT QGestureEvent : public QEvent
+{
+public:
+    QGestureEvent(const QSet<QGesture*> &gestures,
+                  const QSet<QString> &cancelledGestures = QSet<QString>());
+    ~QGestureEvent();
+
+    bool contains(Qt::GestureType type) const;
+    bool contains(const QString &type) const;
+
+    QList<QString> gestureTypes() const;
+
+    const QGesture* gesture(Qt::GestureType type) const;
+    const QGesture* gesture(const QString &type) const;
+    QList<QGesture*> gestures() const;
+
+    QSet<QString> cancelledGestures() const;
+
+    void acceptAll();
+#ifndef Q_NO_USING_KEYWORD
+    using QEvent::accept;
+#else
+    inline void accept() { QEvent::accept(); }
+#endif
+    void accept(Qt::GestureType type);
+    void accept(const QString &type);
+
+protected:
+    QHash<QString, QGesture*> m_gestures;
+    QSet<QString> m_cancelledGestures;
+
+    friend class QApplication;
+    friend class QGestureManager;
+};
+
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 #endif
@@ -718,6 +757,101 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? e->matches(key) : false);}
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
 #endif // QT_NO_SHORTCUT
+
+class QTouchEventTouchPointPrivate;
+class Q_GUI_EXPORT QTouchEvent : public QInputEvent
+{
+public:
+    class Q_GUI_EXPORT TouchPoint
+    {
+    public:
+        TouchPoint(int id = -1);
+        TouchPoint(const QTouchEvent::TouchPoint &other);
+        ~TouchPoint();
+
+        int id() const;
+
+        Qt::TouchPointState state() const;
+        bool isPrimary() const;
+
+        QPointF pos() const;
+        QPointF startPos() const;
+        QPointF lastPos() const;
+
+        QPointF scenePos() const;
+        QPointF startScenePos() const;
+        QPointF lastScenePos() const;
+
+        QPointF screenPos() const;
+        QPointF startScreenPos() const;
+        QPointF lastScreenPos() const;
+
+        QPointF normalizedPos() const;
+        QPointF startNormalizedPos() const;
+        QPointF lastNormalizedPos() const;
+
+        QRectF rect() const;
+        QRectF sceneRect() const;
+        QRectF screenRect() const;
+
+        qreal pressure() const;
+
+        // internal
+        void setId(int id);
+        void setState(Qt::TouchPointStates state);
+        void setPos(const QPointF &pos);
+        void setScenePos(const QPointF &scenePos);
+        void setScreenPos(const QPointF &screenPos);
+        void setNormalizedPos(const QPointF &normalizedPos);
+        void setStartPos(const QPointF &startPos);
+        void setStartScenePos(const QPointF &startScenePos);
+        void setStartScreenPos(const QPointF &startScreenPos);
+        void setStartNormalizedPos(const QPointF &startNormalizedPos);
+        void setLastPos(const QPointF &lastPos);
+        void setLastScenePos(const QPointF &lastScenePos);
+        void setLastScreenPos(const QPointF &lastScreenPos);
+        void setLastNormalizedPos(const QPointF &lastNormalizedPos);
+        void setRect(const QRectF &rect);
+        void setSceneRect(const QRectF &sceneRect);
+        void setScreenRect(const QRectF &screenRect);
+        void setPressure(qreal pressure);
+        QTouchEvent::TouchPoint &operator=(const QTouchEvent::TouchPoint &other);
+
+    private:
+        QTouchEventTouchPointPrivate *d;
+    };
+
+    enum DeviceType {
+        TouchScreen,
+        TouchPad
+    };
+
+    QTouchEvent(QEvent::Type eventType,
+                QTouchEvent::DeviceType deviceType = TouchScreen,
+                Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                Qt::TouchPointStates touchPointStates = 0,
+                const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
+    ~QTouchEvent();
+
+    inline QWidget *widget() const { return _widget; }
+    inline QTouchEvent::DeviceType deviceType() const { return _deviceType; }
+    inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
+    inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
+
+    // internal
+    inline void setWidget(QWidget *widget) { _widget = widget; }
+    inline void setDeviceType(DeviceType deviceType) { _deviceType = deviceType; }
+    inline void setTouchPointStates(Qt::TouchPointStates touchPointStates) { _touchPointStates = touchPointStates; }
+    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints) { _touchPoints = touchPoints; }
+
+protected:
+    QWidget *_widget;
+    QTouchEvent::DeviceType _deviceType;
+    Qt::TouchPointStates _touchPointStates;
+    QList<QTouchEvent::TouchPoint> _touchPoints;
+
+    friend class QApplicationPrivate;
+};
 
 QT_END_NAMESPACE
 

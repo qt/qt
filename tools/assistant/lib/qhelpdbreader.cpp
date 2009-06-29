@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -92,6 +92,9 @@ bool QHelpDBReader::init()
     QSqlDatabase db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), m_uniqueId);
     db.setDatabaseName(m_dbName);
     if (!db.open()) {
+        /*: The placeholders are: %1 - The name of the database which cannot be opened
+                                  %2 - The unique id for the connection
+                                  %3 - The actual error string */
         m_error = tr("Cannot open database '%1' '%2': %3").arg(m_dbName, m_uniqueId, db.lastError().text());
         QSqlDatabase::removeDatabase(m_uniqueId);
         return false;

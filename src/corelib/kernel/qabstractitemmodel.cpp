@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -465,6 +465,37 @@ Q_GLOBAL_STATIC(QEmptyItemModel, qEmptyModel)
 QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 {
     return qEmptyModel();
+}
+
+/*!
+    \internal
+    return true if \a value contains a numerical type
+
+    This function is used by our Q{Tree,Widget,Table}WidgetModel classes to sort.
+    We cannot rely on QVariant::canConvert because this would take strings as double
+    and then not sort strings correctly
+*/
+bool QAbstractItemModelPrivate::canConvertToDouble(const QVariant &value)
+{
+    switch (value.userType()) {
+        case QVariant::Bool:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong:
+        case QVariant::Double:
+        case QVariant::Char:
+        case QMetaType::Float:
+        case QMetaType::Short:
+        case QMetaType::UShort:
+        case QMetaType::UChar:
+        case QMetaType::ULong:
+        case QMetaType::Long:
+            return true;
+        default:
+            return false;
+    }
+    return false;
 }
 
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)

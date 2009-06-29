@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -94,6 +94,7 @@ public:
     QPoint mousePressScreenPoint;
     QPointF lastMouseMoveScenePoint;
     QPoint lastMouseMoveScreenPoint;
+    QPoint dirtyScrollOffset;
     Qt::MouseButton mousePressButton;
     QTransform matrix;
     bool identityMatrix;
@@ -159,21 +160,27 @@ public:
 
     QRect mapToViewRect(const QGraphicsItem *item, const QRectF &rect) const;
     QRegion mapToViewRegion(const QGraphicsItem *item, const QRectF &rect) const;
-    void itemUpdated(QGraphicsItem *item, const QRectF &rect);
     bool fullUpdatePending;
-    QList<QRect> dirtyRects;
-    QList<QRegion> dirtyRegions;
-    int dirtyRectCount;
+    QRegion dirtyRegion;
     QRect dirtyBoundingRect;
-    void updateLater();
-    bool updatingLater;
-    void _q_updateLaterSlot();
-    void updateAll();
-    void updateRect(const QRect &rect);
-    void updateRegion(const QRegion &region);
+    void processPendingUpdates();
+    inline void updateAll()
+    {
+        viewport->update();
+        fullUpdatePending = true;
+        dirtyBoundingRect = QRect();
+        dirtyRegion = QRegion();
+    }
+    bool updateRect(const QRect &rect);
+    bool updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;
+    QRegion exposedRegion;
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
+
+    QPointF mapToScene(const QPointF &point) const;
+    QRectF mapToScene(const QRectF &rect) const;
+    static void translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

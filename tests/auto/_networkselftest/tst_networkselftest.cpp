@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -190,12 +190,6 @@ static void netChat(int port, const QList<Chat> &chat)
     // now start the chat
     QList<Chat>::ConstIterator it = chat.constBegin();
     for (int i = 1; it != chat.constEnd(); ++it, ++i) {
-        if (it->type != Chat::Reconnect
-            && socket.state() != QAbstractSocket::ConnectedState
-            && socket.state() != QAbstractSocket::ClosingState)
-            QFAIL(QString("Internal error: socket is in invalid state %1 in step %2")
-                  .arg(socket.state()).arg(i).toLocal8Bit());
-
         switch (it->type) {
             case Chat::Expect: {
                     qDebug() << i << "Expecting" << prettyByteArray(it->data);

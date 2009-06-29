@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@
 #include <math.h>
 #include <QtGui/QScrollBar>
 #include <QtGui/QDialog>
+#include <QtGui/QStyledItemDelegate>
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #include <windows.h>
 #endif
@@ -107,6 +108,7 @@ private slots:
     void task248430_crashWith0SizedItem();
     void task250446_scrollChanged();
     void task196118_visualRegionForSelection();
+    void task254449_draggingItemToNegativeCoordinates();
     void keyboardSearch();
 };
 
@@ -1579,6 +1581,55 @@ void tst_QListView::task196118_visualRegionForSelection()
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
     QVERIFY(view.visualRegionForSelection().isEmpty());
 }
+
+void tst_QListView::task254449_draggingItemToNegativeCoordinates()
+{
+    //we'll check that the items are painted correctly
+    class MyListView : public QListView
+    {
+    public:
+        void setPositionForIndex(const QPoint &position, const QModelIndex &index)
+        { QListView::setPositionForIndex(position, index); }
+
+    } list;
+
+    QStandardItemModel model(1,1);
+    QModelIndex index = model.index(0,0);
+    model.setData(index, QLatin1String("foo"));
+    list.setModel(&model);
+    list.setViewMode(QListView::IconMode);
+    list.show();
+    QTest::qWait(200); //makes sure the layout is done
+
+    const QPoint topLeft(-6, 0);
+
+
+    list.setPositionForIndex(topLeft, index);
+
+    class MyItemDelegate : public QStyledItemDelegate
+    {
+    public:
+        MyItemDelegate() : numPaints(0) { }
+        void paint(QPainter *painter,
+               const QStyleOptionViewItem &option, const QModelIndex &index) const
+        {
+            numPaints++;
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+
+        mutable int numPaints;
+    } delegate;
+
+    list.setItemDelegate(&delegate);
+
+    //we'll make sure the item is repainted
+    delegate.numPaints = 0;
+    list.viewport()->repaint();
+
+    QCOMPARE(list.visualRect(index).topLeft(), topLeft); 
+    QCOMPARE(delegate.numPaints, 1); 
+}
+
 
 void tst_QListView::keyboardSearch()
 {

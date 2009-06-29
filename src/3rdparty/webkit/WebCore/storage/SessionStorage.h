@@ -26,11 +26,12 @@
 #ifndef SessionStorage_h
 #define SessionStorage_h
 
+#if ENABLE(DOM_STORAGE)
+
 #include "SecurityOriginHash.h"
 #include "SessionStorageArea.h"
 
 #include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -60,5 +61,7 @@ namespace WebCore {
     };
 
 } // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
 
 #endif // SessionStorage_h

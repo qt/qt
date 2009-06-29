@@ -141,9 +141,17 @@ SUBDIRS += _networkselftest \
            qglobal \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicslayout \
+           qgraphicslayoutitem \
+           qgraphicslinearlayout \
+           qgraphicsobject \
+           qgraphicspixmapitem \
+	   qgraphicspolygonitem \
+	   qgraphicsproxywidget \
            qgraphicsscene \
            qgraphicsview \
-           qgridlayout \
+           qgraphicswidget \
+	   qgridlayout \
            qgroupbox \
            qguivariant \
            qhash \
@@ -208,6 +216,7 @@ SUBDIRS += _networkselftest \
            qnetworkproxy \
 	   qnetworkrequest \
 	   qnetworkreply \
+           qnetworkaccessmanager_and_qprogressdialog \
            qnumeric \
            qobject \
            qobjectrace \
@@ -438,6 +447,8 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
 
 contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
-           qwebpage
+           qwebpage \
+           qwebhistoryinterface \
+           qwebelement
 
 SUBDIRS += math3d

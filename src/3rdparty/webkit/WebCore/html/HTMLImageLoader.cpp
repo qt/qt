@@ -42,10 +42,10 @@ HTMLImageLoader::~HTMLImageLoader()
 
 void HTMLImageLoader::dispatchLoadEvent()
 {
-    if (!haveFiredLoadEvent() && image()) {
-        setHaveFiredLoadEvent(true);
-        element()->dispatchEventForType(image()->errorOccurred() ? eventNames().errorEvent : eventNames().loadEvent, false, false);
-    }
+    bool errorOccurred = image()->errorOccurred();
+    if (!errorOccurred && image()->httpStatusCodeErrorOccurred())
+        errorOccurred = element()->hasTagName(HTMLNames::objectTag); // An <object> considers a 404 to be an error and should fire onerror.
+    element()->dispatchEvent(errorOccurred ? eventNames().errorEvent : eventNames().loadEvent, false, false);
 }
 
 String HTMLImageLoader::sourceURI(const AtomicString& attr) const
@@ -53,12 +53,14 @@ String HTMLImageLoader::sourceURI(const AtomicString& attr) const
     return parseURL(attr);
 }
 
-void HTMLImageLoader::notifyFinished(CachedResource* image)
-{
-    Element* elem = element();
-    ImageLoader::notifyFinished(image);
+void HTMLImageLoader::notifyFinished(CachedResource*)
+{    
+    CachedImage* cachedImage = image();
 
-    if (image->errorOccurred() && elem->hasTagName(HTMLNames::objectTag))
+    Element* elem = element();
+    ImageLoader::notifyFinished(cachedImage);
+
+    if ((cachedImage->errorOccurred() || cachedImage->httpStatusCodeErrorOccurred()) && elem->hasTagName(HTMLNames::objectTag))
         static_cast<HTMLObjectElement*>(elem)->renderFallbackContent();
 }
 

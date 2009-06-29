@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2434,6 +2434,10 @@ void tst_QTreeWidget::itemOperatorLessThan()
         item1.setText(0, "b");
         item2.setText(0, "a");
         QCOMPARE(item1 < item2, true);
+        tw.sortItems(0, Qt::AscendingOrder);
+        item1.setData(0, Qt::DisplayRole, 11);
+        item2.setData(0, Qt::DisplayRole, 2);
+        QCOMPARE(item1 < item2, false);
     }
 }
 

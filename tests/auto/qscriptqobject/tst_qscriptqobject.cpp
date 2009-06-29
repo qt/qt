@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -333,6 +333,10 @@ public:
         { emit mySignalWithDefaultArg(arg); }
     void emitMySignalWithDefaultArg()
         { emit mySignalWithDefaultArg(); }
+    void emitMySignalWithVariantArg(const QVariant &arg)
+        { emit mySignalWithVariantArg(arg); }
+    void emitMySignalWithScriptEngineArg(QScriptEngine *arg)
+        { emit mySignalWithScriptEngineArg(arg); }
 
 public Q_SLOTS:
     void mySlot()
@@ -395,6 +399,8 @@ Q_SIGNALS:
     void myOtherOverloadedSignal(const QString &arg);
     void myOtherOverloadedSignal(int arg);
     void mySignalWithDefaultArg(int arg = 123);
+    void mySignalWithVariantArg(const QVariant &arg);
+    void mySignalWithScriptEngineArg(QScriptEngine *arg);
 
 protected:
     void connectNotify(const char *signal) {
@@ -1553,6 +1559,29 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->emitMyOtherOverloadedSignal(123);
     QVERIFY(!m_engine->evaluate("gotSignal").toBoolean());
 
+    // signal with QVariant arg: argument conversion should work
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
+    m_engine->evaluate("gotSignal = false");
+    m_myObject->emitMySignalWithVariantArg(123);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
+
+    // signal with argument type that's unknown to the meta-type system
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithScriptEngineArg(QScriptEngine*)));
+    m_engine->evaluate("gotSignal = false");
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine: Unable to handle unregistered datatype 'QScriptEngine*' when invoking handler of signal MyQObject::mySignalWithScriptEngineArg(QScriptEngine*)");
+    m_myObject->emitMySignalWithScriptEngineArg(m_engine);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.disconnect(myHandler)").isUndefined());
+
     // connect(object, function)
     m_engine->evaluate("otherObject = { name:'foo' }");
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(otherObject, myHandler)").isUndefined());
@@ -1877,6 +1906,22 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
         QVERIFY(qScriptDisconnect(m_myObject, SIGNAL(mySignal()), QScriptValue(), fun));
         QCOMPARE(m_myObject->disconnectedSignal().constData(), SIGNAL(mySignal()));
     }
+
+    // bad args
+    QVERIFY(!qScriptConnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    QVERIFY(!qScriptDisconnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    {
+        QScriptEngine eng2;
+        QScriptValue receiverInDifferentEngine = eng2.newObject();
+        QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+    }
 }
 
 void tst_QScriptExtQObject::classEnums()
@@ -1909,7 +1954,7 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.AllAbility").toInt32()),
              MyQObject::AllAbility);
 
-    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly;
+    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly | QScriptValue::Undeletable;
     QCOMPARE(myClass.propertyFlags("FooPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BarPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BazPolicy"), expectedEnumFlags);
@@ -1960,6 +2005,15 @@ void tst_QScriptExtQObject::classEnums()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 0);
         QCOMPARE(ret.isNumber(), true);
     }
+
+    // enum properties are not deletable or writable
+    QVERIFY(!m_engine->evaluate("delete MyQObject.BazPolicy").toBool());
+    myClass.setProperty("BazPolicy", QScriptValue());
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
+    myClass.setProperty("BazPolicy", MyQObject::FooPolicy);
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
 }
 
 QT_BEGIN_NAMESPACE

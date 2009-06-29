@@ -60,14 +60,17 @@ public:
     IntSize imageSize(float multiplier) const;  // returns the size of the complete image.
     IntRect imageRect(float multiplier) const;  // The size of the currently decoded portion of the image.
 
-    virtual void addClient(CachedResourceClient*);
+    virtual void didAddClient(CachedResourceClient*);
     
     virtual void allClientsRemoved();
     virtual void destroyDecodedData();
 
     virtual void data(PassRefPtr<SharedBuffer> data, bool allDataReceived);
     virtual void error();
-
+    
+    virtual void httpStatusCodeError() { m_httpStatusCodeErrorOccurred = true; }
+    bool httpStatusCodeErrorOccurred() const { return m_httpStatusCodeErrorOccurred; }
+    
     virtual bool schedule() const { return true; }
 
     void checkNotify();
@@ -96,6 +99,7 @@ private:
 
     RefPtr<Image> m_image;
     Timer<CachedImage> m_decodedDataDeletionTimer;
+    bool m_httpStatusCodeErrorOccurred;
 };
 
 }

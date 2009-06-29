@@ -1,16 +1,16 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,11 +56,12 @@ QT_MODULE(Core)
 class QLatin1Literal
 {
 public:
-    template <int N>
-    QLatin1Literal(const char (&str)[N]) : m_size(N - 1), m_data(str) {}
+    int size() const { return m_size; }
+    const char *data() const { return m_data; }
 
-    inline int size() const { return m_size; }
-    inline const char *data() const { return m_data; }
+    template <int N>
+    QLatin1Literal(const char (&str)[N]) 
+        : m_size(N - 1), m_data(str) {}
 
 private:
     const int m_size;
@@ -79,7 +80,7 @@ public:
     operator QString() const
     {
         QString s(QConcatenable< QStringBuilder<A, B> >::size(*this),
-            QString::Uninitialized());
+            Qt::Uninitialized);
         
         QChar *d = s.data();
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
@@ -119,6 +120,16 @@ template <> struct QConcatenable<QChar>
     static inline void appendTo(const QChar c, QChar *&out)
     {
         *out++ = c;
+    }
+};
+
+template <> struct QConcatenable<QCharRef>
+{
+    typedef QCharRef type;
+    static int size(const QCharRef &) { return 1; }
+    static inline void appendTo(const QCharRef &c, QChar *&out)
+    {
+        *out++ = QChar(c);
     }
 };
 
@@ -173,8 +184,8 @@ template <> struct QConcatenable<QStringRef>
 template <int N> struct QConcatenable<char[N]>
 {
     typedef char type[N];
-    static int size(const char *) { return N - 1; }
-    static inline void appendTo(const char *a, QChar *&out)
+    static int size(const char[N]) { return N - 1; }
+    static inline void appendTo(const char a[N], QChar *&out)
     {
         for (int i = 0; i < N - 1; ++i)
             *out++ = QLatin1Char(a[i]);

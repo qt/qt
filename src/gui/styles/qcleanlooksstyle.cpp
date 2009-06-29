@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -763,7 +763,7 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             QStyleOptionButton button;
             button.QStyleOption::operator=(*option);
             button.state &= ~State_MouseOver;
-            drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
+            proxy()->drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
         }
         return;
     case PE_IndicatorHeaderArrow:
@@ -783,7 +783,7 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
         }
         break;
     case PE_IndicatorButtonDropDown:
-        drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
+        proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
         break;
     case PE_IndicatorToolBarSeparator:
         {
@@ -868,9 +868,9 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
 
             if (widget && widget->inherits("QDockWidgetTitleButton")) {
                    if (option->state & State_MouseOver)
-                       drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
+                       proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
             } else {
-                drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
+                proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
             }
         }
         painter->restore();
@@ -883,7 +883,7 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
                 dockWidgetHandle.state &= ~State_Horizontal;
             else
                 dockWidgetHandle.state |= State_Horizontal;
-            drawControl(CE_Splitter, &dockWidgetHandle, painter, widget);
+            proxy()->drawControl(CE_Splitter, &dockWidgetHandle, painter, widget);
         }
         break;
     case PE_FrameWindow:
@@ -909,7 +909,7 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
 #endif // QT_NO_LINEEDIT
 #ifdef QT3_SUPPORT
         if (widget && widget->inherits("Q3ToolBar")) {
-            drawPrimitive(PE_Q3Separator, option, painter, widget);
+            proxy()->drawPrimitive(PE_Q3Separator, option, painter, widget);
             break;
         }
 #endif
@@ -1238,7 +1238,7 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             QColor alphaCornerColor = mergedColors(borderColor, option->palette.background().color());
             QColor innerShadow = mergedColors(borderColor, option->palette.base().color());
 
-            int borderThickness = pixelMetric(PM_TabBarBaseOverlap, twf, widget);
+            int borderThickness = proxy()->pixelMetric(PM_TabBarBaseOverlap, twf, widget);
             bool reverse = (twf->direction == Qt::RightToLeft);
             QRect tabBarRect;
 
@@ -1351,9 +1351,9 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             if (d->tabBarcloseButtonIcon.isNull())
                 d->tabBarcloseButtonIcon = standardIcon(SP_DialogCloseButton, option, widget);
             if ((option->state & State_Enabled) && (option->state & State_MouseOver))
-                drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
+                proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
             QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(QSize(16, 16), QIcon::Normal, QIcon::On);
-            drawItemPixmap(painter, option->rect, Qt::AlignCenter, pixmap);
+            proxy()->drawItemPixmap(painter, option->rect, Qt::AlignCenter, pixmap);
         }
         break;
 
@@ -1630,7 +1630,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 QString titleText
                     = painter->fontMetrics().elidedText(dwOpt->title,
                                             Qt::ElideRight, titleRect.width());
-                drawItemText(painter,
+                proxy()->drawItemText(painter,
                              titleRect,
                              Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, dwOpt->palette,
                              dwOpt->state & State_Enabled, titleText,
@@ -1738,8 +1738,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             // same rendering code for both orientations.
             if (vertical) {
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height
-                QTransform m;
-                m.translate(rect.height()-1, -1.0);
+                QTransform m = QTransform::fromTranslate(rect.height()-1, -1.0);
                 m.rotate(90.0);
                 painter->setTransform(m, true);
             }
@@ -1844,7 +1843,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!styleHint(SH_UnderlineShortcut, mbi, widget))
                     alignment |= Qt::TextHideMnemonic;
-                drawItemText(painter, item.rect, alignment, mbi->palette, mbi->state & State_Enabled, mbi->text, textRole);
+                proxy()->drawItemText(painter, item.rect, alignment, mbi->palette, mbi->state & State_Enabled, mbi->text, textRole);
             }
 
         }
@@ -1871,7 +1870,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 int w = 0;
                 if (!menuItem->text.isEmpty()) {
                     painter->setFont(menuItem->font);
-                    drawItemText(painter, menuItem->rect.adjusted(5, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter,
+                    proxy()->drawItemText(painter, menuItem->rect.adjusted(5, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter,
                                  menuItem->palette, menuItem->state & State_Enabled, menuItem->text,
                                  QPalette::Text);
                     w = menuItem->fontMetrics.width(menuItem->text) + 5;
@@ -1975,7 +1974,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                     mode = QIcon::Active;
                 QPixmap pixmap;
 
-                int smallIconSize = pixelMetric(PM_SmallIconSize, option, widget);
+                int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QSize iconSize(smallIconSize, smallIconSize);
 #ifndef QT_NO_COMBOBOX
                 if (const QComboBox *combo = qobject_cast<const QComboBox*>(widget))
@@ -2001,7 +2000,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                     }
                     opt.state |= State_Sunken;
                     opt.rect = vCheckRect;
-                    drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
                 }
                 painter->drawPixmap(pmr.topLeft(), pixmap);
             }
@@ -2034,7 +2033,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 if (t >= 0) {
                     QRect vShortcutRect = visualRect(opt->direction, menuitem->rect,
                                                      QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
-                    if (dis && !act && styleHint(SH_EtchDisabledText, option, widget)) {
+                    if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                         p->setPen(menuitem->palette.light().color());
                         p->drawText(vShortcutRect.adjusted(1, 1, 1, 1), text_flags, s.mid(t + 1));
                         p->setPen(discol);
@@ -2048,7 +2047,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                     font.setBold(true);
 
                 p->setFont(font);
-                if (dis && !act && styleHint(SH_EtchDisabledText, option, widget)) {
+                if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                     p->setPen(menuitem->palette.light().color());
                     p->drawText(vTextRect.adjusted(1, 1, 1, 1), text_flags, s.left(t));
                     p->setPen(discol);
@@ -2071,7 +2070,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 if (selected)
                     newMI.palette.setColor(QPalette::ButtonText,
                                            newMI.palette.highlightedText().color());
-                drawPrimitive(arrow, &newMI, painter, widget);
+                proxy()->drawPrimitive(arrow, &newMI, painter, widget);
             }
         }
         painter->restore();
@@ -2132,7 +2131,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
 
             if (button->features & QStyleOptionButton::HasMenu)
                 ir = ir.adjusted(0, 0, -pixelMetric(PM_MenuButtonIndicator, button, widget), 0);
-            drawItemText(painter, ir, tf, button->palette, (button->state & State_Enabled),
+            proxy()->drawItemText(painter, ir, tf, button->palette, (button->state & State_Enabled),
                          button->text, QPalette::ButtonText);
         }
         break;
@@ -2187,7 +2186,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                  || (rtlHorTabs
                      && tab->selectedPosition
                      == QStyleOptionTab::PreviousIsSelected));
-            int tabBarAlignment = styleHint(SH_TabBar_Alignment, tab, widget);
+            int tabBarAlignment = proxy()->styleHint(SH_TabBar_Alignment, tab, widget);
             bool leftAligned = (!rtlHorTabs && tabBarAlignment == Qt::AlignLeft)
                                || (rtlHorTabs
                                    && tabBarAlignment == Qt::AlignRight);
@@ -2200,7 +2199,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             QColor midlight = tab->palette.midlight().color();
 
             QColor background = tab->palette.background().color();
-            int borderThinkness = pixelMetric(PM_TabBarBaseOverlap, tab, widget);
+            int borderThinkness = proxy()->pixelMetric(PM_TabBarBaseOverlap, tab, widget);
             if (selected)
                 borderThinkness /= 2;
             QRect r2(option->rect);
@@ -2453,10 +2452,10 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                 QRect rect = pixmapRect;
                 QStyleOptionSpinBox spinBoxCopy = *spinBox;
                 spinBoxCopy.rect = pixmapRect;
-                QRect upRect = subControlRect(CC_SpinBox, &spinBoxCopy, SC_SpinBoxUp, widget);
-                QRect downRect = subControlRect(CC_SpinBox, &spinBoxCopy, SC_SpinBoxDown, widget);
+                QRect upRect = proxy()->subControlRect(CC_SpinBox, &spinBoxCopy, SC_SpinBoxUp, widget);
+                QRect downRect = proxy()->subControlRect(CC_SpinBox, &spinBoxCopy, SC_SpinBoxDown, widget);
 
-                int fw = spinBoxCopy.frame ? pixelMetric(PM_SpinBoxFrameWidth, &spinBoxCopy, widget) : 0;
+                int fw = spinBoxCopy.frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, &spinBoxCopy, widget) : 0;
                 cachePainter.fillRect(rect.adjusted(1, qMax(fw - 1, 0), -1, -fw),
                                       option->palette.base());
 
@@ -2678,7 +2677,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             if (widget && widget->inherits("Q3DockWindowTitleBar")) {
                 QStyleOptionDockWidgetV2 dockwidget;
                 dockwidget.QStyleOption::operator=(*option);
-                drawControl(CE_DockWidgetTitle, &dockwidget, painter, widget);
+                proxy()->drawControl(CE_DockWidgetTitle, &dockwidget, painter, widget);
             } else
 #endif // QT3_SUPPORT
             {
@@ -2721,7 +2720,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                 painter->drawLine(fullRect.left() + 6, fullRect.top() + 1, fullRect.right() - 6, fullRect.top() + 1);
             }
             // draw title
-            QRect textRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarLabel, widget);
+            QRect textRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarLabel, widget);
             QFont font = painter->font();
             font.setBold(true);
             painter->setFont(font);
@@ -2736,7 +2735,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             // min button
             if ((titleBar->subControls & SC_TitleBarMinButton) && (titleBar->titleBarFlags & Qt::WindowMinimizeButtonHint) &&
                 !(titleBar->titleBarState& Qt::WindowMinimized)) {
-                QRect minButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarMinButton, widget);
+                QRect minButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarMinButton, widget);
                 if (minButtonRect.isValid()) {
                     bool hover = (titleBar->activeSubControls & SC_TitleBarMinButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarMinButton) && (titleBar->state & State_Sunken);
@@ -2757,7 +2756,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             // max button
             if ((titleBar->subControls & SC_TitleBarMaxButton) && (titleBar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                 !(titleBar->titleBarState & Qt::WindowMaximized)) {
-                QRect maxButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarMaxButton, widget);
+                QRect maxButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarMaxButton, widget);
                 if (maxButtonRect.isValid()) {
                     bool hover = (titleBar->activeSubControls & SC_TitleBarMaxButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarMaxButton) && (titleBar->state & State_Sunken);
@@ -2779,7 +2778,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
             // close button
             if ((titleBar->subControls & SC_TitleBarCloseButton) && (titleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
-                QRect closeButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarCloseButton, widget);
+                QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarCloseButton, widget);
                 if (closeButtonRect.isValid()) {
                     bool hover = (titleBar->activeSubControls & SC_TitleBarCloseButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarCloseButton) && (titleBar->state & State_Sunken);
@@ -2813,7 +2812,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                (titleBar->titleBarState & Qt::WindowMinimized)) ||
                ((titleBar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                (titleBar->titleBarState & Qt::WindowMaximized)))) {
-                QRect normalButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarNormalButton, widget);
+                QRect normalButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarNormalButton, widget);
                 if (normalButtonRect.isValid()) {
 
                     bool hover = (titleBar->activeSubControls & SC_TitleBarNormalButton) && (titleBar->state & State_MouseOver);
@@ -2853,7 +2852,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             // context help button
             if (titleBar->subControls & SC_TitleBarContextHelpButton
                 && (titleBar->titleBarFlags & Qt::WindowContextHelpButtonHint)) {
-                QRect contextHelpButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarContextHelpButton, widget);
+                QRect contextHelpButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarContextHelpButton, widget);
                 if (contextHelpButtonRect.isValid()) {
                     bool hover = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_Sunken);
@@ -2872,7 +2871,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
             // shade button
             if (titleBar->subControls & SC_TitleBarShadeButton && (titleBar->titleBarFlags & Qt::WindowShadeButtonHint)) {
-                QRect shadeButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarShadeButton, widget);
+                QRect shadeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarShadeButton, widget);
                 if (shadeButtonRect.isValid()) {
                     bool hover = (titleBar->activeSubControls & SC_TitleBarShadeButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarShadeButton) && (titleBar->state & State_Sunken);
@@ -2885,7 +2884,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
             // unshade button
             if (titleBar->subControls & SC_TitleBarUnshadeButton && (titleBar->titleBarFlags & Qt::WindowShadeButtonHint)) {
-                QRect unshadeButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarUnshadeButton, widget);
+                QRect unshadeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarUnshadeButton, widget);
                 if (unshadeButtonRect.isValid()) {
                     bool hover = (titleBar->activeSubControls & SC_TitleBarUnshadeButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarUnshadeButton) && (titleBar->state & State_Sunken);
@@ -2897,7 +2896,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             }
 
             if ((titleBar->subControls & SC_TitleBarSysMenu) && (titleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
-                QRect iconRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarSysMenu, widget);
+                QRect iconRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarSysMenu, widget);
                 if (iconRect.isValid()) {
                     if (!titleBar->icon.isNull()) {
                         titleBar->icon.paint(painter, iconRect);
@@ -2907,7 +2906,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                         QPixmap pm = standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(16, 16);
                         tool.rect = iconRect;
                         painter->save();
-                        drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
+                        proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
                         painter->restore();
                     }
                 }
@@ -2927,10 +2926,10 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             painter->fillRect(option->rect, option->palette.background());
 
             QRect rect = scrollBar->rect;
-            QRect scrollBarSubLine = subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
-            QRect scrollBarAddLine = subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
-            QRect scrollBarSlider = subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
-            QRect grooveRect = subControlRect(control, scrollBar, SC_ScrollBarGroove, widget);
+            QRect scrollBarSubLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
+            QRect scrollBarAddLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
+            QRect scrollBarSlider = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
+            QRect grooveRect = proxy()->subControlRect(control, scrollBar, SC_ScrollBarGroove, widget);
 
             // paint groove
             if (scrollBar->subControls & SC_ScrollBarGroove) {
@@ -3065,7 +3064,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
             // The SubLine (up/left) buttons
             if (scrollBar->subControls & SC_ScrollBarSubLine) {
-                //int scrollBarExtent = pixelMetric(PM_ScrollBarExtent, option, widget);
+                //int scrollBarExtent = proxy()->pixelMetric(PM_ScrollBarExtent, option, widget);
                 QRect pixmapRect = scrollBarSubLine;
                 if (isEnabled ) {
                     QRect fillRect = pixmapRect.adjusted(1, 1, -1, -1);
@@ -3111,7 +3110,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     arrow = PE_IndicatorArrowUp;
                 QStyleOption arrowOpt = *option;
                 arrowOpt.rect = scrollBarSubLine.adjusted(3, 3, -2, -2);
-                drawPrimitive(arrow, &arrowOpt, painter, widget);
+                proxy()->drawPrimitive(arrow, &arrowOpt, painter, widget);
 
 
                 // The AddLine (down/right) button
@@ -3162,7 +3161,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
                     QStyleOption arrowOpt = *option;
                     arrowOpt.rect = scrollBarAddLine.adjusted(3, 3, -2, -2);
-                    drawPrimitive(arrow, &arrowOpt, painter, widget);
+                    proxy()->drawPrimitive(arrow, &arrowOpt, painter, widget);
                 }
             }
         }
@@ -3194,9 +3193,9 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                 comboBoxCopy.rect = pixmapRect;
 
                 QRect rect = pixmapRect;
-                QRect downArrowRect = subControlRect(CC_ComboBox, &comboBoxCopy,
+                QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
                                                      SC_ComboBoxArrow, widget);
-                QRect editRect = subControlRect(CC_ComboBox, &comboBoxCopy,
+                QRect editRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
                                                      SC_ComboBoxEditField, widget);
                 // Draw a push button
                 if (comboBox->editable) {
@@ -3210,7 +3209,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                         buttonOption.state &= ~State_MouseOver;
                     }
 
-                    drawPrimitive(PE_PanelButtonCommand, &buttonOption, &cachePainter, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, &cachePainter, widget);
 
                     //remove shadow from left side of edit field when pressed:
                     if (comboBox->direction != Qt::RightToLeft)
@@ -3252,7 +3251,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                         buttonOption.state |= State_Sunken;
                         buttonOption.state &= ~State_MouseOver;
                     }
-                    drawPrimitive(PE_PanelButtonCommand, &buttonOption, &cachePainter, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, &cachePainter, widget);
 
                     cachePainter.setPen(buttonShadow.darker(102));
                     int borderSize = 4;
@@ -3305,11 +3304,12 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     }
                 }
                 // Draw the focus rect
-                if ((focus && (option->state & State_KeyboardFocusChange)) && !comboBox->editable) {
+                if (focus && !comboBox->editable
+                    && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                     QStyleOptionFocusRect focus;
-                    focus.rect = subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxEditField, widget)
+                    focus.rect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxEditField, widget)
                                  .adjusted(0, 2, option->direction == Qt::RightToLeft ? 1 : -1, -2);
-                    drawPrimitive(PE_FrameFocusRect, &focus, &cachePainter, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &focus, &cachePainter, widget);
                 }
                 cachePainter.end();
                 QPixmapCache::insert(pixmapName, cache);
@@ -3323,8 +3323,8 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
     case CC_GroupBox:
         painter->save();
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
-            QRect textRect = subControlRect(CC_GroupBox, groupBox, SC_GroupBoxLabel, widget);
-            QRect checkBoxRect = subControlRect(CC_GroupBox, groupBox, SC_GroupBoxCheckBox, widget);
+            QRect textRect = proxy()->subControlRect(CC_GroupBox, groupBox, SC_GroupBoxLabel, widget);
+            QRect checkBoxRect = proxy()->subControlRect(CC_GroupBox, groupBox, SC_GroupBoxCheckBox, widget);
             bool flat = groupBox->features & QStyleOptionFrameV2::Flat;
 
             if(!flat) {
@@ -3334,7 +3334,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     frame.features = groupBox->features;
                     frame.lineWidth = groupBox->lineWidth;
                     frame.midLineWidth = groupBox->midLineWidth;
-                    frame.rect = subControlRect(CC_GroupBox, option, SC_GroupBoxFrame, widget);
+                    frame.rect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxFrame, widget);
 
                     painter->save();
                     QRegion region(groupBox->rect);
@@ -3343,7 +3343,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     if (!groupBox->text.isEmpty() ||  groupBox->subControls & SC_GroupBoxCheckBox)
                         painter->setClipRegion(region);
                     frame.palette.setBrush(QPalette::Dark, option->palette.mid().color().lighter(110));
-                    drawPrimitive(PE_FrameGroupBox, &frame, painter);
+                    proxy()->drawPrimitive(PE_FrameGroupBox, &frame, painter);
                     painter->restore();
                 }
             }
@@ -3371,7 +3371,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                 QStyleOptionButton box;
                 box.QStyleOption::operator=(*groupBox);
                 box.rect = checkBoxRect;
-                drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
             }
         }
         painter->restore();
@@ -3380,9 +3380,9 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            QRect groove = subControlRect(CC_Slider, option, SC_SliderGroove, widget);
-            QRect handle = subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
+            QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
+            QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
 
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
@@ -3568,13 +3568,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     QStyleOptionFocusRect fropt;
                     fropt.QStyleOption::operator=(*slider);
                     fropt.rect = slider->rect;
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
             }
             if (option->subControls & SC_SliderTickmarks) {
                 painter->setPen(darkOutline);
-                int tickSize = pixelMetric(PM_SliderTickmarkOffset, option, widget);
-                int available = pixelMetric(PM_SliderSpaceAvailable, slider, widget);
+                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
                 int interval = slider->tickInterval;
                 if (interval <= 0) {
                     interval = slider->singleStep;
@@ -3588,7 +3588,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     interval = 1;
 
                 int v = slider->minimum;
-                int len = pixelMetric(PM_SliderLength, slider, widget);
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
                         break;
@@ -3769,8 +3769,8 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
             QFontMetrics metrics(font);
             int baseWidth = metrics.width(gb->title()) + metrics.width(QLatin1Char(' '));
             if (gb->isCheckable()) {
-                baseWidth += pixelMetric(QStyle::PM_IndicatorWidth, option, widget);
-                baseWidth += pixelMetric(QStyle::PM_CheckBoxLabelSpacing, option, widget);
+                baseWidth += proxy()->pixelMetric(QStyle::PM_IndicatorWidth, option, widget);
+                baseWidth += proxy()->pixelMetric(QStyle::PM_CheckBoxLabelSpacing, option, widget);
             }
             newSize.setWidth(qMax(baseWidth, newSize.width()));
         }
@@ -3954,7 +3954,7 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int tickSize = pixelMetric(PM_SliderTickmarkOffset, option, widget);
+            int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
             switch (subControl) {
             case SC_SliderHandle: {
                 if (slider->orientation == Qt::Horizontal) {
@@ -4009,7 +4009,7 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QSize bs;
             int center = spinbox->rect.height() / 2;
-            int fw = spinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
+            int fw = spinbox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
             int y = fw;
             bs.setHeight(qMax(8, spinbox->rect.height()/2 - y));
             bs.setWidth(15);
@@ -4050,7 +4050,7 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             int topMargin = 0;
             int topHeight = 0;
-            int verticalAlignment = styleHint(SH_GroupBox_TextLabelVerticalAlignment, groupBox, widget);
+            int verticalAlignment = proxy()->styleHint(SH_GroupBox_TextLabelVerticalAlignment, groupBox, widget);
             bool flat = groupBox->features & QStyleOptionFrameV2::Flat;
             if (!groupBox->text.isEmpty()) {
                 topHeight = groupBox->fontMetrics.height();
@@ -4081,8 +4081,8 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
 
                     QSize textRect = fontMetrics.boundingRect(groupBoxWidget->title()).size() + QSize(2, 2);
                     if (subControl == SC_GroupBoxCheckBox) {
-                        int indicatorWidth = pixelMetric(PM_IndicatorWidth, option, widget);
-                        int indicatorHeight = pixelMetric(PM_IndicatorHeight, option, widget);
+                        int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
+                        int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
                         rect.setWidth(indicatorWidth);
                         rect.setHeight(indicatorHeight);
                         rect.moveTop((fontMetrics.height() - indicatorHeight) / 2 + 2);
@@ -4103,7 +4103,7 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
             rect = visualRect(option->direction, option->rect, rect);
             break;
         case SC_ComboBoxEditField: {
-            int frameWidth = pixelMetric(PM_DefaultFrameWidth);
+            int frameWidth = proxy()->pixelMetric(PM_DefaultFrameWidth);
             rect = visualRect(option->direction, option->rect, rect);
             rect.setRect(option->rect.left() + frameWidth, option->rect.top() + frameWidth,
                          option->rect.width() - 19 - 2 * frameWidth,
@@ -4418,7 +4418,7 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
 {
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
     QIcon icon;
     QPixmap pixmap;
@@ -4426,8 +4426,8 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
     d->lookupIconTheme();
     switch (standardIcon) {
     case SP_DirIcon: {
-        icon = QIcon(standardPixmap(standardIcon, option, widget));
-        icon.addPixmap(standardPixmap(SP_DirClosedIcon, option, widget),
+        icon = QIcon(proxy()->standardPixmap(standardIcon, option, widget));
+        icon.addPixmap(proxy()->standardPixmap(SP_DirClosedIcon, option, widget),
                        QIcon::Normal, QIcon::Off);
         pixmap = d->findIcon(16, QLatin1String("gnome-fs-directory.png"));
         if (!pixmap.isNull())
@@ -4445,10 +4445,10 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
     break;
     case SP_DirLinkIcon:
         {
-            icon = QIcon(standardPixmap(standardIcon, option, widget));
+            icon = QIcon(proxy()->standardPixmap(standardIcon, option, widget));
             QPixmap link = d->findIcon(12, QLatin1String("emblem-symbolic-link.png"));
             if (!link.isNull()) {
-                icon.addPixmap(standardPixmap(SP_DirLinkIcon, option, widget));
+                icon.addPixmap(proxy()->standardPixmap(SP_DirLinkIcon, option, widget));
                 pixmap = d->findIcon(16, QLatin1String("gnome-fs-directory.png"));
                 if (!pixmap.isNull()) {
                     QPainter painter(&pixmap);
@@ -4545,10 +4545,10 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
         }
     case SP_FileLinkIcon:
         {
-            icon = QIcon(standardPixmap(standardIcon, option, widget));
+            icon = QIcon(proxy()->standardPixmap(standardIcon, option, widget));
             QPixmap link = d->findIcon(12, QLatin1String("emblem-symbolic-link.png"));
             if (!link.isNull()) {
-                icon.addPixmap(standardPixmap(SP_FileLinkIcon,option, widget));
+                icon.addPixmap(proxy()->standardPixmap(SP_FileLinkIcon,option, widget));
                 pixmap = d->findIcon(16, QLatin1String("unknown.png"));
                 if (pixmap.isNull())
                     pixmap = d->findIcon(16, QLatin1String("stock_new.png"));
@@ -4570,7 +4570,7 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
             return standardIconImplementation(SP_ArrowRight, option, widget);
         return standardIconImplementation(SP_ArrowLeft, option, widget);
     default:
-        icon = QIcon(standardPixmap(standardIcon, option, widget));
+        icon = QIcon(proxy()->standardPixmap(standardIcon, option, widget));
     }
     if (!icon.isNull())
         return icon;
@@ -4587,7 +4587,7 @@ QPixmap QCleanlooksStyle::standardPixmap(StandardPixmap standardPixmap, const QS
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
     QPixmap pixmap;
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardPixmap(standardPixmap, opt, widget);
     d->lookupIconTheme();
 #ifndef QT_NO_IMAGEFORMAT_XPM

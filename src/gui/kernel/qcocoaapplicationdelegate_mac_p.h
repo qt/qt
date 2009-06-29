@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -97,7 +97,14 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
 
-@protocol NSApplicationDelegate <NSObject> @end
+@protocol NSApplicationDelegate <NSObject>
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
+- (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames;
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender;
+- (void)applicationDidBecomeActive:(NSNotification *)notification;
+- (void)applicationDidResignActive:(NSNotification *)notification;
+@end
 
 #endif
 
@@ -106,7 +113,7 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
     QApplicationPrivate *qtPrivate;
     NSMenu *dockMenu;
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader;
-    id <NSApplicationDelegate> reflectionDelegate;
+    NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
 }
 + (QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)*)sharedDelegate;
@@ -115,6 +122,6 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 - (QApplicationPrivate *)qAppPrivate;
 - (void)setMenuLoader:(QT_MANGLE_NAMESPACE(QCocoaMenuLoader)*)menuLoader;
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
-- (void)setReflectionDelegate:(NSObject *)oldDelegate;
+- (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;
 @end
 #endif

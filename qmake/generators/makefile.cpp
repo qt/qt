@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -289,7 +289,6 @@ MakefileGenerator::initOutPaths()
         if(Option::fixPathToLocalOS(d.absolutePath()) == Option::fixPathToLocalOS(Option::output_dir))
             v.remove("DESTDIR");
     }
-    QDir::current().cd(currentDir);
 }
 
 QMakeProject
@@ -1910,6 +1909,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                    deps += replaceExtraCompilerVariables(pre_deps.at(i), (*input), out);
             }
             QString cmd = replaceExtraCompilerVariables(tmp_cmd, (*input), out);
+            // NOTE: The var -> QMAKE_COMP_var replace feature is unsupported, do not use!
             for(QStringList::ConstIterator it3 = vars.constBegin(); it3 != vars.constEnd(); ++it3)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {

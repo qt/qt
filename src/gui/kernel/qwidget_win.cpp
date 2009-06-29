@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -499,6 +499,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     q->setAttribute(Qt::WA_WState_Created);                // accept move/resize events
     hd = 0;                                        // no display context
+
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
 
     if (window) {                                // got window from outside
         if (IsWindowVisible(window))
@@ -1036,7 +1039,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 if (isVisible())
                     style |= WS_VISIBLE;
                 SetWindowLongA(internalWinId(), GWL_STYLE, style);
-                QRect r = qApp->desktop()->screenGeometry(this);
+                QRect r = QApplication::desktop()->screenGeometry(this);
                 UINT swpf = SWP_FRAMECHANGED;
                 if (newstate & Qt::WindowActive)
                     swpf |= SWP_NOACTIVATE;
@@ -1845,7 +1848,8 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
     OffsetRgn(wr, offset.x(), offset.y());
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    SetWindowRgn(data.winid, wr, true);
+    if (!SetWindowRgn(data.winid, wr, true))
+        DeleteObject(wr);
 }
 
 void QWidgetPrivate::updateFrameStrut()
@@ -1976,8 +1980,8 @@ public:
     // in
     QOnScreenRasterPaintEngine()
         : QRasterPaintEngine(new QImage(qt_primary_surface_bits,
-                                        qApp->desktop()->width(),
-                                        qApp->desktop()->height(),
+                                        QApplication::desktop()->width(),
+                                        QApplication::desktop()->height(),
                                         qt_primary_surface_stride,
                                         qt_primary_surface_format))
     {
@@ -2068,8 +2072,16 @@ void QWidgetPrivate::setModal_sys()
 {
 }
 
+void QWidgetPrivate::registerTouchWindow()
+{
+    Q_Q(QWidget);
 
-
+    // enable WM_TOUCH* messages on our window
+    if (q->testAttribute(Qt::WA_WState_Created)
+        && QApplicationPrivate::RegisterTouchWindow
+        && q->windowType() != Qt::Desktop)
+        QApplicationPrivate::RegisterTouchWindow(q->effectiveWinId(), 0);
+}
 
 QT_END_NAMESPACE
 

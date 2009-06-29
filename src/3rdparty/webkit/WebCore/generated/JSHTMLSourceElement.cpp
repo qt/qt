@@ -20,24 +20,20 @@
 
 #include "config.h"
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLSourceElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLSourceElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLSourceElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLSourceElement);
 
 /* Hash table */
 
@@ -76,13 +72,13 @@ public:
     JSHTMLSourceElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLSourceElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLSourceElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLSourceElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -111,9 +107,9 @@ static const HashTable JSHTMLSourceElementPrototypeTable =
 
 const ClassInfo JSHTMLSourceElementPrototype::s_info = { "HTMLSourceElementPrototype", 0, &JSHTMLSourceElementPrototypeTable, 0 };
 
-JSObject* JSHTMLSourceElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLSourceElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLSourceElement>(exec);
+    return getDOMPrototype<JSHTMLSourceElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLSourceElement::s_info = { "HTMLSourceElement", &JSHTMLElement::s_info, &JSHTMLSourceElementTable, 0 };
@@ -123,9 +119,9 @@ JSHTMLSourceElement::JSHTMLSourceElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLSourceElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLSourceElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLSourceElementPrototype(JSHTMLSourceElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLSourceElementPrototype(JSHTMLSourceElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLSourceElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -133,52 +129,55 @@ bool JSHTMLSourceElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSHTMLSourceElement, Base>(exec, &JSHTMLSourceElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLSourceElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->src());
 }
 
-JSValuePtr jsHTMLSourceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsHTMLSourceElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->media());
 }
 
-JSValuePtr jsHTMLSourceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLSourceElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLSourceElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLSourceElement, Base>(exec, propertyName, value, &JSHTMLSourceElementTable, this, slot);
 }
 
-void setJSHTMLSourceElementSrc(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLSourceElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
-    imp->setSrc(value->toString(exec));
+    imp->setSrc(value.toString(exec));
 }
 
-void setJSHTMLSourceElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLSourceElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
-    imp->setType(value->toString(exec));
+    imp->setType(value.toString(exec));
 }
 
-void setJSHTMLSourceElementMedia(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLSourceElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
-    imp->setMedia(value->toString(exec));
+    imp->setMedia(value.toString(exec));
 }
 
-JSValuePtr JSHTMLSourceElement::getConstructor(ExecState* exec)
+JSValue JSHTMLSourceElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLSourceElementConstructor>(exec);
 }

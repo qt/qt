@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -129,9 +129,11 @@
 
     Brushes & image drawing are implementations of "qcolorp vec4 srcPixel()":
         qglslImageSrcFragShader
+        qglslImageSrcWithPatternFragShader
         qglslNonPremultipliedImageSrcFragShader
         qglslSolidBrushSrcFragShader
         qglslTextureBrushSrcFragShader
+        qglslTextureBrushWithPatternFragShader
         qglslPatternBrushSrcFragShader
         qglslLinearGradientBrushSrcFragShader
         qglslRadialGradientBrushSrcFragShader
@@ -235,6 +237,8 @@ struct QGLEngineShaderProg
     QGLShader*          maskFragShader;        // Can be null for no mask
     QGLShader*          compositionFragShader; // Can be null for GL-handled mode
     QGLShaderProgram*   program;
+
+    QVector<uint> uniformLocations;
 };
 
 /*
@@ -265,7 +269,9 @@ public:
     enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
     enum PixelSrcType {
         ImageSrc = Qt::TexturePattern+1,
-        NonPremultipliedImageSrc = Qt::TexturePattern+2
+        NonPremultipliedImageSrc = Qt::TexturePattern+2,
+        PatternSrc = Qt::TexturePattern+3,
+        TextureSrcWithPattern = Qt::TexturePattern+4
     };
 
     // There are optimisations we can do, depending on the brush transform:
@@ -278,6 +284,9 @@ public:
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+
+    uint getUniformIdentifier(const char *uniformName);
+    uint getUniformLocation(uint id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
@@ -313,9 +322,11 @@ public:
         MainFragmentShader,
 
         ImageSrcFragmentShader,
+        ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
         TextureBrushSrcFragmentShader,
+        TextureBrushSrcWithPatternFragmentShader,
         PatternBrushSrcFragmentShader,
         LinearGradientBrushSrcFragmentShader,
         RadialGradientBrushSrcFragmentShader,
@@ -368,9 +379,9 @@ private:
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
 
-    QGLShaderProgram*   blitShaderProg;
-    QGLShaderProgram*   simpleShaderProg;
-    QGLShaderProgram*   currentShaderProg;
+    QGLShaderProgram*     blitShaderProg;
+    QGLShaderProgram*     simpleShaderProg;
+    QGLEngineShaderProg*  currentShaderProg;
 
     // TODO: Possibly convert to a LUT
     QList<QGLEngineShaderProg> cachedPrograms;
@@ -380,6 +391,8 @@ private:
     void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
 
     static const char* qglEngineShaderSourceCode[TotalShaderCount];
+
+    QVector<const char *> uniformIdentifiers;
 };
 
 QT_END_NAMESPACE

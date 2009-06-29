@@ -19,22 +19,19 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLTableColElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLTableColElement.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLTableColElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLTableColElement);
 
 /* Hash table */
 
@@ -76,13 +73,13 @@ public:
     JSHTMLTableColElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLTableColElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTableColElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTableColElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -111,9 +108,9 @@ static const HashTable JSHTMLTableColElementPrototypeTable =
 
 const ClassInfo JSHTMLTableColElementPrototype::s_info = { "HTMLTableColElementPrototype", 0, &JSHTMLTableColElementPrototypeTable, 0 };
 
-JSObject* JSHTMLTableColElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLTableColElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLTableColElement>(exec);
+    return getDOMPrototype<JSHTMLTableColElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLTableColElement::s_info = { "HTMLTableColElement", &JSHTMLElement::s_info, &JSHTMLTableColElementTable, 0 };
@@ -123,9 +120,9 @@ JSHTMLTableColElement::JSHTMLTableColElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLTableColElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLTableColElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLTableColElementPrototype(JSHTMLTableColElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLTableColElementPrototype(JSHTMLTableColElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLTableColElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -133,88 +130,94 @@ bool JSHTMLTableColElement::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSHTMLTableColElement, Base>(exec, &JSHTMLTableColElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLTableColElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLTableColElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->ch());
 }
 
-JSValuePtr jsHTMLTableColElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->chOff());
 }
 
-JSValuePtr jsHTMLTableColElementSpan(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementSpan(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->span());
 }
 
-JSValuePtr jsHTMLTableColElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->vAlign());
 }
 
-JSValuePtr jsHTMLTableColElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->width());
 }
 
-JSValuePtr jsHTMLTableColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLTableColElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLTableColElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLTableColElement, Base>(exec, propertyName, value, &JSHTMLTableColElementTable, this, slot);
 }
 
-void setJSHTMLTableColElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableColElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableColElementCh(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableColElementCh(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
     imp->setCh(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableColElementChOff(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableColElementChOff(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
     imp->setChOff(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableColElementSpan(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableColElementSpan(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
-    imp->setSpan(value->toInt32(exec));
+    imp->setSpan(value.toInt32(exec));
 }
 
-void setJSHTMLTableColElementVAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableColElementVAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
     imp->setVAlign(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLTableColElementWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLTableColElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLTableColElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTableColElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLTableColElementConstructor>(exec);
 }

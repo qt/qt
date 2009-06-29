@@ -27,6 +27,7 @@
 namespace WebCore {
 
 class CSSMutableStyleDeclaration;
+class CSSProperty;
 class CSSRule;
 class CSSValue;
 
@@ -42,6 +43,7 @@ public:
     virtual void setCssText(const String&, ExceptionCode&) = 0;
 
     virtual unsigned length() const = 0;
+    bool isEmpty() const { return !length(); }
     virtual String item(unsigned index) const = 0;
 
     PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName);
@@ -71,6 +73,9 @@ public:
 
 protected:
     CSSStyleDeclaration(CSSRule* parentRule = 0);
+
+    virtual bool cssPropertyMatches(const CSSProperty*) const;
+
 };
 
 } // namespace WebCore

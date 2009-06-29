@@ -21,10 +21,10 @@
 #ifndef JSSVGRenderingIntent_h
 #define JSSVGRenderingIntent_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -37,17 +37,17 @@ class JSSVGRenderingIntent : public DOMObject {
 public:
     JSSVGRenderingIntent(PassRefPtr<JSC::Structure>, PassRefPtr<SVGRenderingIntent>, SVGElement* context);
     virtual ~JSSVGRenderingIntent();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     SVGRenderingIntent* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -56,16 +56,17 @@ private:
     RefPtr<SVGRenderingIntent > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGRenderingIntent*, SVGElement* context);
-SVGRenderingIntent* toSVGRenderingIntent(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGRenderingIntent*, SVGElement* context);
+SVGRenderingIntent* toSVGRenderingIntent(JSC::JSValue);
 
 class JSSVGRenderingIntentPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -74,15 +75,15 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGRenderingIntentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_AUTO(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_PERCEPTUAL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_RELATIVE_COLORIMETRIC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_SATURATION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGRenderingIntentRENDERING_INTENT_ABSOLUTE_COLORIMETRIC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentRENDERING_INTENT_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentRENDERING_INTENT_AUTO(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentRENDERING_INTENT_PERCEPTUAL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentRENDERING_INTENT_RELATIVE_COLORIMETRIC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentRENDERING_INTENT_SATURATION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRenderingIntentRENDERING_INTENT_ABSOLUTE_COLORIMETRIC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

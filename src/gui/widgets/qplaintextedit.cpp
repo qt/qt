@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -761,7 +761,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
     // viewport dimensions later.
-    doc->setTextWidth(0);
+    doc->setTextWidth(-1);
     doc->documentLayout()->setPaintDevice(viewport);
     doc->setDefaultFont(q->font());
 
@@ -1029,15 +1029,14 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
     \section1 Using QPlainTextEdit as a Display Widget
 
-    The text is set or replaced using setPlainText() which deletes any
-    existing text and replaces it with the text passed in the
-    setPlainText() call.
+    The text is set or replaced using setPlainText() which deletes the
+    existing text and replaces it with the text passed to setPlainText().
 
-    Text itself can be inserted using the QTextCursor class or using
-    the convenience functins insertPlainText(), appendPlainText() or
+    Text can be inserted using the QTextCursor class or using the
+    convenience functions insertPlainText(), appendPlainText() or
     paste().
 
-    By default the text edit wraps words at whitespace to fit within
+    By default, the text edit wraps words at whitespace to fit within
     the text edit widget. The setLineWrapMode() function is used to
     specify the kind of line wrap you want, \l WidgetWidth or \l
     NoWrap if you don't want any wrapping.  If you use word wrap to
@@ -1725,8 +1724,7 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, QRectF
     p->save();
     if (brush.style() >= Qt::LinearGradientPattern && brush.style() <= Qt::ConicalGradientPattern) {
         if (!gradientRect.isNull()) {
-            QTransform m;
-            m.translate(gradientRect.left(), gradientRect.top());
+            QTransform m = QTransform::fromTranslate(gradientRect.left(), gradientRect.top());
             m.scale(gradientRect.width(), gradientRect.height());
             brush.setTransform(m);
             const_cast<QGradient *>(brush.gradient())->setCoordinateMode(QGradient::LogicalMode);
@@ -2020,6 +2018,7 @@ void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
     d->sendControlEvent(e);
+    ensureCursorVisible();
 }
 
 /*!\reimp

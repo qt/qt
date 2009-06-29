@@ -34,7 +34,7 @@
 #include "SVGAnimationElement.h"
 #include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
-#include "SystemTime.h"
+#include <wtf/CurrentTime.h>
 
 using namespace std;
 
@@ -276,7 +276,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed)
 
     startTimer(earliersFireTime, animationFrameDelay);
     
-    Document::updateDocumentsRendering();
+    Document::updateStyleForAllDocuments();
 }
 
 #endif

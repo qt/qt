@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,11 +67,6 @@
 #include "qurl.h"
 #include "qmap.h"
 #include <private/qt_mac_p.h>
-
-#ifdef Q_WS_MAC32
-#include <QuickTime/QuickTime.h>
-#include "qlibrary.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -507,6 +502,11 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
 
 #ifdef Q_WS_MAC32
 
+// This can be removed once 10.6 is the minimum (or we have to require 64-bit) whichever comes first.
+
+#include <QuickTime/QuickTime.h>
+#include <qlibrary.h>
+
 typedef ComponentResult (*PtrGraphicsImportSetDataHandle)(GraphicsImportComponent, Handle);
 typedef ComponentResult (*PtrGraphicsImportCreateCGImage)(GraphicsImportComponent, CGImageRef*, UInt32);
 typedef ComponentResult (*PtrGraphicsExportSetInputCGImage)(GraphicsExportComponent, CGImageRef);
@@ -684,33 +684,11 @@ QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteA
         return ret;
     const QByteArray &a = data.first();
     QCFType<CGImageRef> image;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDataRef> data = CFDataCreateWithBytesNoCopy(0,
-                                                    reinterpret_cast<const UInt8 *>(a.constData()),
-                                                    a.size(), kCFAllocatorNull);
-        QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(data, 0);
-        image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-    } else
-#endif
-    {
-#ifdef Q_WS_MAC32
-        if (resolveMimeQuickTimeSymbols()) {
-            Handle tiff = NewHandle(a.size());
-            memcpy(*tiff, a.constData(), a.size());
-            GraphicsImportComponent graphicsImporter;
-            ComponentResult result = OpenADefaultComponent(GraphicsImporterComponentType,
-                                                           kQTFileTypeTIFF, &graphicsImporter);
-            if (!result)
-                result = ptrGraphicsImportSetDataHandle(graphicsImporter, tiff);
-            if (!result)
-                result = ptrGraphicsImportCreateCGImage(graphicsImporter, &image,
-                                                     kGraphicsImportCreateCGImageUsingCurrentSettings);
-            CloseComponent(graphicsImporter);
-            DisposeHandle(tiff);
-        }
-#endif
-    }
+    QCFType<CFDataRef> tiffData = CFDataCreateWithBytesNoCopy(0,
+                                                reinterpret_cast<const UInt8 *>(a.constData()),
+                                                a.size(), kCFAllocatorNull);
+    QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(tiffData, 0);
+    image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
 
     if (image != 0)
         ret = QVariant(QPixmap::fromMacCGImageRef(image).toImage());
@@ -1123,7 +1101,10 @@ void QMacPasteboardMime::initialize()
         //standard types that we wrap
         new QMacPasteboardMimeTiff;
 #ifdef Q_WS_MAC32
-        new QMacPasteboardMimePict;
+        // 10.6 does automatic synthesis to and from PICT to standard image types (like TIFF),
+        // so don't bother doing it ourselves, especially since it's not available in 64-bit.
+        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+            new QMacPasteboardMimePict;
 #endif
         new QMacPasteboardMimeUnicodeText;
         new QMacPasteboardMimePlainText;

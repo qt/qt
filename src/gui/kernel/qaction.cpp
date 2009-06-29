@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -136,25 +136,31 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
 void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 {
     Q_Q(QAction);
-    foreach (int id, alternateShortcutIds)
-        if (id)
+    for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+        if (const int id = alternateShortcutIds.at(i))
             map.removeShortcut(id, q);
+    }
     alternateShortcutIds.clear();
     if (alternateShortcuts.isEmpty())
         return;
-    foreach (const QKeySequence& alternate, alternateShortcuts) {
+    for(int i = 0; i < alternateShortcuts.count(); ++i) {
+        const QKeySequence& alternate = alternateShortcuts.at(i);
         if (!alternate.isEmpty())
             alternateShortcutIds.append(map.addShortcut(q, alternate, shortcutContext));
         else
             alternateShortcutIds.append(0);
     }
     if (!enabled) {
-        foreach (int id, alternateShortcutIds)
+        for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+            const int id = alternateShortcutIds.at(i);
             map.setShortcutEnabled(false, id, q);
+        }
     }
     if (!autorepeat) {
-        foreach (int id, alternateShortcutIds)
+        for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+            const int id = alternateShortcutIds.at(i);
             map.setShortcutAutoRepeat(false, id, q);
+        }
     }
 }
 
@@ -163,9 +169,10 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     Q_Q(QAction);
     if (shortcutId)
         map.setShortcutEnabled(enable, shortcutId, q);
-    foreach (int id, alternateShortcutIds)
-        if (id)
+    for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+        if (const int id = alternateShortcutIds.at(i))
             map.setShortcutEnabled(enable, id, q);
+    }
 }
 #endif // QT_NO_SHORTCUT
 
@@ -615,8 +622,10 @@ QAction::~QAction()
 #ifndef QT_NO_SHORTCUT
     if (d->shortcutId && qApp) {
         qApp->d_func()->shortcutMap.removeShortcut(d->shortcutId, this);
-        foreach (int id, d->alternateShortcutIds)
+        for(int i = 0; i < d->alternateShortcutIds.count(); ++i) {
+            const int id = d->alternateShortcutIds.at(i);
             qApp->d_func()->shortcutMap.removeShortcut(id, this);
+        }
     }
 #endif
 }

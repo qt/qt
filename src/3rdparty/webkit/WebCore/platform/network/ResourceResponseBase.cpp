@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,12 +27,97 @@
 #include "config.h"
 #include "ResourceResponseBase.h"
 
+#include "HTTPParsers.h"
 #include "ResourceResponse.h"
+#include <wtf/CurrentTime.h>
+#include <wtf/MathExtras.h>
+#include <wtf/StdLibExtras.h>
+
+using namespace std;
 
 namespace WebCore {
 
 static void parseCacheHeader(const String& header, Vector<pair<String, String> >& result);
-static void parseCacheControlDirectiveValues(const String& directives, Vector<String>& result);
+
+ResourceResponseBase::ResourceResponseBase()  
+    : m_expectedContentLength(0)
+    , m_httpStatusCode(0)
+    , m_lastModifiedDate(0)
+    , m_isNull(true)
+    , m_haveParsedCacheControlHeader(false)
+    , m_haveParsedAgeHeader(false)
+    , m_haveParsedDateHeader(false)
+    , m_haveParsedExpiresHeader(false)
+    , m_haveParsedLastModifiedHeader(false)
+    , m_cacheControlContainsNoCache(false)
+    , m_cacheControlContainsNoStore(false)
+    , m_cacheControlContainsMustRevalidate(false)
+    , m_cacheControlMaxAge(0.0)
+    , m_age(0.0)
+    , m_date(0.0)
+    , m_expires(0.0)
+    , m_lastModified(0.0)
+{
+}
+
+ResourceResponseBase::ResourceResponseBase(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename)
+    : m_url(url)
+    , m_mimeType(mimeType)
+    , m_expectedContentLength(expectedLength)
+    , m_textEncodingName(textEncodingName)
+    , m_suggestedFilename(filename)
+    , m_httpStatusCode(0)
+    , m_lastModifiedDate(0)
+    , m_isNull(false)
+    , m_haveParsedCacheControlHeader(false)
+    , m_haveParsedAgeHeader(false)
+    , m_haveParsedDateHeader(false)
+    , m_haveParsedExpiresHeader(false)
+    , m_haveParsedLastModifiedHeader(false)
+    , m_cacheControlContainsNoCache(false)
+    , m_cacheControlContainsNoStore(false)
+    , m_cacheControlContainsMustRevalidate(false)
+    , m_cacheControlMaxAge(0.0)
+    , m_age(0.0)
+    , m_date(0.0)
+    , m_expires(0.0)
+    , m_lastModified(0.0)
+{
+}
+
+auto_ptr<ResourceResponse> ResourceResponseBase::adopt(auto_ptr<CrossThreadResourceResponseData> data)
+{
+    auto_ptr<ResourceResponse> response(new ResourceResponse());
+    response->setURL(data->m_url);
+    response->setMimeType(data->m_mimeType);
+    response->setExpectedContentLength(data->m_expectedContentLength);
+    response->setTextEncodingName(data->m_textEncodingName);
+    response->setSuggestedFilename(data->m_suggestedFilename);
+
+    response->setHTTPStatusCode(data->m_httpStatusCode);
+    response->setHTTPStatusText(data->m_httpStatusText);
+
+    response->lazyInit();
+    response->m_httpHeaderFields.adopt(std::auto_ptr<CrossThreadHTTPHeaderMapData>(data->m_httpHeaders.release()));
+    response->setLastModifiedDate(data->m_lastModifiedDate);
+
+    return response;
+}
+
+auto_ptr<CrossThreadResourceResponseData> ResourceResponseBase::copyData() const
+{
+    auto_ptr<CrossThreadResourceResponseData> data(new CrossThreadResourceResponseData());
+    data->m_url = url().copy();
+    data->m_mimeType = mimeType().copy();
+    data->m_expectedContentLength = expectedContentLength();
+    data->m_textEncodingName = textEncodingName().copy();
+    data->m_suggestedFilename = suggestedFilename().copy();
+    data->m_httpStatusCode = httpStatusCode();
+    data->m_httpStatusText = httpStatusText().copy();
+    data->m_httpHeaders.adopt(httpHeaderFields().copyData());
+    data->m_lastModifiedDate = lastModifiedDate();
+    return data;
+}
 
 bool ResourceResponseBase::isHTTP() const
 {
@@ -49,7 +135,7 @@ const KURL& ResourceResponseBase::url() const
     return m_url; 
 }
 
-void ResourceResponseBase::setUrl(const KURL& url)
+void ResourceResponseBase::setURL(const KURL& url)
 {
     lazyInit();
     m_isNull = false;
@@ -156,9 +242,24 @@ String ResourceResponseBase::httpHeaderField(const AtomicString& name) const
 void ResourceResponseBase::setHTTPHeaderField(const AtomicString& name, const String& value)
 {
     lazyInit();
+    
+    DEFINE_STATIC_LOCAL(const AtomicString, ageHeader, ("age"));
+    DEFINE_STATIC_LOCAL(const AtomicString, cacheControlHeader, ("cache-control"));
+    DEFINE_STATIC_LOCAL(const AtomicString, dateHeader, ("date"));
+    DEFINE_STATIC_LOCAL(const AtomicString, expiresHeader, ("expires"));
+    DEFINE_STATIC_LOCAL(const AtomicString, lastModifiedHeader, ("last-modified"));
+    DEFINE_STATIC_LOCAL(const AtomicString, pragmaHeader, ("pragma"));
+    if (equalIgnoringCase(name, ageHeader))
+        m_haveParsedAgeHeader = false;
+    else if (equalIgnoringCase(name, cacheControlHeader) || equalIgnoringCase(name, pragmaHeader))
+        m_haveParsedCacheControlHeader = false;
+    else if (equalIgnoringCase(name, dateHeader))
+        m_haveParsedDateHeader = false;
+    else if (equalIgnoringCase(name, expiresHeader))
+        m_haveParsedExpiresHeader = false;
+    else if (equalIgnoringCase(name, lastModifiedHeader))
+        m_haveParsedLastModifiedHeader = false;
 
-    if (equalIgnoringCase(name, "cache-control"))
-        m_haveParsedCacheControl = false;
     m_httpHeaderFields.set(name, value);
 }
 
@@ -171,66 +272,166 @@ const HTTPHeaderMap& ResourceResponseBase::httpHeaderFields() const
 
 void ResourceResponseBase::parseCacheControlDirectives() const
 {
-    ASSERT(!m_haveParsedCacheControl);
+    ASSERT(!m_haveParsedCacheControlHeader);
 
     lazyInit();
 
-    m_haveParsedCacheControl = true;
+    m_haveParsedCacheControlHeader = true;
+
     m_cacheControlContainsMustRevalidate = false;
     m_cacheControlContainsNoCache = false;
+    m_cacheControlMaxAge = numeric_limits<double>::quiet_NaN();
 
-    String cacheControlValue = httpHeaderField("cache-control");
-    if (cacheControlValue.isEmpty())
-        return;
+    DEFINE_STATIC_LOCAL(const AtomicString, cacheControlString, ("cache-control"));
+    DEFINE_STATIC_LOCAL(const AtomicString, noCacheDirective, ("no-cache"));
+    DEFINE_STATIC_LOCAL(const AtomicString, noStoreDirective, ("no-store"));
+    DEFINE_STATIC_LOCAL(const AtomicString, mustRevalidateDirective, ("must-revalidate"));
+    DEFINE_STATIC_LOCAL(const AtomicString, maxAgeDirective, ("max-age"));
 
-    // FIXME: It would probably be much more efficient to parse this without creating all these data structures.
+    String cacheControlValue = m_httpHeaderFields.get(cacheControlString);
+    if (!cacheControlValue.isEmpty()) {
+        Vector<pair<String, String> > directives;
+        parseCacheHeader(cacheControlValue, directives);
 
-    Vector<pair<String, String> > directives;
-    parseCacheHeader(cacheControlValue, directives);
-
-    size_t directivesSize = directives.size();
-    for (size_t i = 0; i < directivesSize; ++i) {
-        Vector<String> directiveValues;
-        if ((equalIgnoringCase(directives[i].first, "private") || equalIgnoringCase(directives[i].first, "no-cache")) && !directives[i].second.isEmpty())
-            parseCacheControlDirectiveValues(directives[i].second, directiveValues);
-        else
-            directiveValues.append(directives[i].second);
-        for (size_t i = 0; i < directiveValues.size(); ++i) {
-            if (equalIgnoringCase(directiveValues[i], "no-cache"))
+        size_t directivesSize = directives.size();
+        for (size_t i = 0; i < directivesSize; ++i) {
+            // RFC2616 14.9.1: A no-cache directive with a value is only meaningful for proxy caches.
+            // It should be ignored by a browser level cache.
+            if (equalIgnoringCase(directives[i].first, noCacheDirective) && directives[i].second.isEmpty())
                 m_cacheControlContainsNoCache = true;
-            else if (equalIgnoringCase(directiveValues[i], "must-revalidate"))
+            else if (equalIgnoringCase(directives[i].first, noStoreDirective))
+                m_cacheControlContainsNoStore = true;
+            else if (equalIgnoringCase(directives[i].first, mustRevalidateDirective))
                 m_cacheControlContainsMustRevalidate = true;
+            else if (equalIgnoringCase(directives[i].first, maxAgeDirective)) {
+                bool ok;
+                double maxAge = directives[i].second.toDouble(&ok);
+                if (ok)
+                    m_cacheControlMaxAge = maxAge;
+            }
         }
     }
+        
+    if (!m_cacheControlContainsNoCache) {
+        // Handle Pragma: no-cache
+        // This is deprecated and equivalent to Cache-control: no-cache
+        // Don't bother tokenizing the value, it is not important
+        DEFINE_STATIC_LOCAL(const AtomicString, pragmaHeader, ("pragma"));
+        String pragmaValue = m_httpHeaderFields.get(pragmaHeader);
+        m_cacheControlContainsNoCache = pragmaValue.lower().contains(noCacheDirective);
+    }
+}
+    
+bool ResourceResponseBase::cacheControlContainsNoCache() const
+{
+    if (!m_haveParsedCacheControlHeader)
+        parseCacheControlDirectives();
+    return m_cacheControlContainsNoCache;
+}
+
+bool ResourceResponseBase::cacheControlContainsNoStore() const
+{
+    if (!m_haveParsedCacheControlHeader)
+        parseCacheControlDirectives();
+    return m_cacheControlContainsNoStore;
+}
+
+bool ResourceResponseBase::cacheControlContainsMustRevalidate() const
+{
+    if (!m_haveParsedCacheControlHeader)
+        parseCacheControlDirectives();
+    return m_cacheControlContainsMustRevalidate;
+}
+
+double ResourceResponseBase::cacheControlMaxAge() const
+{
+    if (!m_haveParsedCacheControlHeader)
+        parseCacheControlDirectives();
+    return m_cacheControlMaxAge;
+}
+
+static double parseDateValueInHeader(const HTTPHeaderMap& headers, const AtomicString& headerName)
+{
+    String headerValue = headers.get(headerName);
+    if (headerValue.isEmpty())
+        return std::numeric_limits<double>::quiet_NaN(); 
+    // This handles all date formats required by RFC2616:
+    // Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
+    // Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
+    // Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
+    double dateInMilliseconds = parseDate(headerValue);
+    if (!isfinite(dateInMilliseconds))
+        return std::numeric_limits<double>::quiet_NaN();
+    return dateInMilliseconds / 1000;
+}
+
+double ResourceResponseBase::date() const
+{
+    lazyInit();
+
+    if (!m_haveParsedDateHeader) {
+        DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("date"));
+        m_date = parseDateValueInHeader(m_httpHeaderFields, headerName);
+        m_haveParsedDateHeader = true;
+    }
+    return m_date;
+}
+
+double ResourceResponseBase::age() const
+{
+    lazyInit();
+    
+    if (!m_haveParsedAgeHeader) {
+        DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("age"));
+        String headerValue = m_httpHeaderFields.get(headerName);
+        bool ok;
+        m_age = headerValue.toDouble(&ok);
+        if (!ok)
+            m_age = std::numeric_limits<double>::quiet_NaN();
+        m_haveParsedAgeHeader = true;
+    }
+    return m_age;
+}
+
+double ResourceResponseBase::expires() const
+{
+    lazyInit();
+
+    if (!m_haveParsedExpiresHeader) {
+        DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("expires"));
+        m_expires = parseDateValueInHeader(m_httpHeaderFields, headerName);
+        m_haveParsedExpiresHeader = true;
+    }
+    return m_expires;
+}
+
+double ResourceResponseBase::lastModified() const
+{
+    lazyInit();
+    
+    if (!m_haveParsedLastModifiedHeader) {
+        DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("last-modified"));
+        m_lastModified = parseDateValueInHeader(m_httpHeaderFields, headerName);
+        m_haveParsedLastModifiedHeader = true;
+    }
+    return m_lastModified;
 }
 
 bool ResourceResponseBase::isAttachment() const
 {
     lazyInit();
 
-    String value = m_httpHeaderFields.get("Content-Disposition");
+    DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("content-disposition"));
+    String value = m_httpHeaderFields.get(headerName);
     int loc = value.find(';');
     if (loc != -1)
         value = value.left(loc);
     value = value.stripWhiteSpace();
-    return equalIgnoringCase(value, "attachment");
+    DEFINE_STATIC_LOCAL(const AtomicString, attachmentString, ("attachment"));
+    return equalIgnoringCase(value, attachmentString);
 }
-
-void ResourceResponseBase::setExpirationDate(time_t expirationDate)
-{
-    lazyInit();
-
-    m_expirationDate = expirationDate;
-}
-
-time_t ResourceResponseBase::expirationDate() const
-{
-    lazyInit();
-
-    return m_expirationDate; 
-}
-
-void ResourceResponseBase::setLastModifiedDate(time_t lastModifiedDate) 
+  
+void ResourceResponseBase::setLastModifiedDate(time_t lastModifiedDate)
 {
     lazyInit();
 
@@ -268,8 +469,6 @@ bool ResourceResponseBase::compare(const ResourceResponse& a, const ResourceResp
     if (a.httpStatusText() != b.httpStatusText())
         return false;
     if (a.httpHeaderFields() != b.httpHeaderFields())
-        return false;
-    if (a.expirationDate() != b.expirationDate())
         return false;
     return ResourceResponse::platformCompare(a, b);
 }
@@ -367,14 +566,6 @@ static void parseCacheHeader(const String& header, Vector<pair<String, String> >
             return;
         }
     }
-}
-
-static void parseCacheControlDirectiveValues(const String& directives, Vector<String>& result)
-{
-    directives.split(',', false, result);
-    unsigned max = result.size();
-    for (unsigned i = 0; i < max; ++i)
-        result[i] = result[i].stripWhiteSpace();
 }
 
 }

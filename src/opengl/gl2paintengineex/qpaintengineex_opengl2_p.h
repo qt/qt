@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,8 +77,15 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
-    QRegion clipRegion;
-    bool hasClipping;
+    bool needsDepthBufferClear;
+    qreal depthBufferClearValue;
+
+    bool depthTestEnabled;
+    bool scissorTestEnabled;
+    qreal currentDepth;
+    qreal maxDepth;
+
+    bool canRestoreClip;
 };
 
 
@@ -116,7 +123,6 @@ public:
 
     Type type() const { return OpenGL; }
 
-    // State stuff is just for clipping and ripped off from QGLPaintEngine
     void setState(QPainterState *s);
     QPainterState *createState(QPainterState *orig) const;
     inline QOpenGL2PaintEngineState *state() {
@@ -125,7 +131,6 @@ public:
     inline const QOpenGL2PaintEngineState *state() const {
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    void updateClipRegion(const QRegion &clipRegion, Qt::ClipOperation op);
     virtual void sync();
 
 private:
@@ -151,7 +156,7 @@ public:
     void updateBrushUniforms();
     void updateMatrix();
     void updateCompositionMode();
-    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform);
+    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = -1);
 
     void setBrush(const QBrush* brush);
 
@@ -160,7 +165,7 @@ public:
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
-    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque);
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
@@ -169,9 +174,9 @@ public:
         // ^ Composites the bounding rect onto dest buffer
     void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
         // ^ Calls drawVertexArrays to render into stencil buffer
-    void cleanStencilBuffer(const QGLRect& area);
 
-    void prepareForDraw(bool srcPixelsAreOpaque);
+    bool prepareForDraw(bool srcPixelsAreOpaque);
+        // ^ returns whether the current program changed or not
 
     inline void useSimpleShader();
     inline QColor premultiplyColor(QColor c, GLfloat opacity);
@@ -180,8 +185,9 @@ public:
     QGLDrawable drawable;
     int width, height;
     QGLContext *ctx;
-
     EngineMode mode;
+
+    mutable QOpenGL2PaintEngineState *last_created_state;
 
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
@@ -190,7 +196,10 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool stencilBuferDirty;
+    bool stencilBufferDirty;
+    bool depthUniformDirty;
+    bool simpleShaderDepthUniformDirty;
+    bool opacityUniformDirty;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -206,10 +215,41 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
-    // Clipping & state stuff stolen from QOpenGLPaintEngine:
-    void updateDepthClip();
+    void writeClip(const QVectorPath &path, float depth);
+    void updateDepthScissorTest();
+    void regenerateDepthClip();
     void systemStateChanged();
     uint use_system_clip : 1;
+
+    enum Uniform {
+        ImageTexture,
+        PatternColor,
+        GlobalOpacity,
+        Depth,
+        PmvMatrix,
+        MaskTexture,
+        FragmentColor,
+        LinearData,
+        Angle,
+        HalfViewportSize,
+        Fmp,
+        Fmp2MRadius2,
+        Inverse2Fmp2MRadius2,
+        InvertedTextureSize,
+        BrushTransform,
+        BrushTexture,
+        NumUniforms
+    };
+
+    uint location(Uniform uniform)
+    {
+        return shaderManager->getUniformLocation(uniformIdentifiers[uniform]);
+    }
+
+    uint uniformIdentifiers[NumUniforms];
+    GLuint lastTexture;
+
+    bool needsSync;
 };
 
 QT_END_NAMESPACE

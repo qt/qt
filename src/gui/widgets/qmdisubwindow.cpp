@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1006,7 +1006,7 @@ void QMdiSubWindowPrivate::removeBaseWidget()
 
     Q_Q(QMdiSubWindow);
     baseWidget->removeEventFilter(q);
-    if (QLayout *layout = q->layout())
+    if (layout)
         layout->removeWidget(baseWidget);
     if (baseWidget->windowTitle() == q->windowTitle()) {
         ignoreWindowTitleChange = true;
@@ -1102,7 +1102,7 @@ void QMdiSubWindowPrivate::updateCursor()
 void QMdiSubWindowPrivate::updateDirtyRegions()
 {
     // No update necessary
-    if (!q_func()->parent())
+    if (!parent)
         return;
 
     foreach (Operation operation, operationMap.keys())
@@ -1115,7 +1115,7 @@ void QMdiSubWindowPrivate::updateDirtyRegions()
 void QMdiSubWindowPrivate::updateGeometryConstraints()
 {
     Q_Q(QMdiSubWindow);
-    if (!q->parent())
+    if (!parent)
         return;
 
     internalMinimumSize = (!q->isMinimized() && !q->minimumSize().isNull())
@@ -1145,7 +1145,7 @@ void QMdiSubWindowPrivate::updateMask()
     if (!q->mask().isEmpty())
         q->clearMask();
 
-    if (!q->parent())
+    if (!parent)
         return;
 
     if ((q->isMaximized() && !drawTitleBarWhenMaximized())
@@ -1168,7 +1168,7 @@ void QMdiSubWindowPrivate::setNewGeometry(const QPoint &pos)
 {
     Q_Q(QMdiSubWindow);
     Q_ASSERT(currentOperation != None);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     uint cflags = operationMap.find(currentOperation).value().changeFlags;
     int posX = pos.x();
@@ -1235,7 +1235,7 @@ void QMdiSubWindowPrivate::setNewGeometry(const QPoint &pos)
 void QMdiSubWindowPrivate::setMinimizeMode()
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     ensureWindowState(Qt::WindowMinimized);
     isShadeRequestFromMinimizeMode = true;
@@ -1263,7 +1263,7 @@ void QMdiSubWindowPrivate::setMinimizeMode()
 void QMdiSubWindowPrivate::setNormalMode()
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     isShadeMode = false;
     isMaximizeMode = false;
@@ -1334,7 +1334,7 @@ void QMdiSubWindowPrivate::setNormalMode()
 void QMdiSubWindowPrivate::setMaximizeMode()
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     ensureWindowState(Qt::WindowMaximized);
     isShadeMode = false;
@@ -1423,7 +1423,7 @@ void QMdiSubWindowPrivate::setMaximizeMode()
 void QMdiSubWindowPrivate::setActive(bool activate, bool changeFocus)
 {
     Q_Q(QMdiSubWindow);
-    if (!q->parent() || !activationEnabled)
+    if (!parent || !activationEnabled)
         return;
 
     if (activate && !isActive && q->isEnabled()) {
@@ -1711,7 +1711,7 @@ void QMdiSubWindowPrivate::ensureWindowState(Qt::WindowState state)
 int QMdiSubWindowPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const
 {
     Q_Q(const QMdiSubWindow);
-    if (!q->parent() || q->windowFlags() & Qt::FramelessWindowHint
+    if (!parent || q->windowFlags() & Qt::FramelessWindowHint
         || (q->isMaximized() && !drawTitleBarWhenMaximized())) {
         return 0;
     }
@@ -1734,7 +1734,7 @@ void QMdiSubWindowPrivate::sizeParameters(int *margin, int *minWidth) const
 {
     Q_Q(const QMdiSubWindow);
     Qt::WindowFlags flags = q->windowFlags();
-    if (!q->parent() || flags & Qt::FramelessWindowHint) {
+    if (!parent || flags & Qt::FramelessWindowHint) {
         *margin = 0;
         *minWidth = 0;
         return;
@@ -1893,7 +1893,7 @@ void QMdiSubWindowPrivate::enterRubberBandMode()
     if (q->isMaximized())
         return;
     Q_ASSERT(oldGeometry.isValid());
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
     if (!rubberBand) {
         rubberBand = new QRubberBand(QRubberBand::Rectangle, q->parentWidget());
         // For accessibility to identify this special widget.
@@ -2079,7 +2079,7 @@ void QMdiSubWindowPrivate::restoreFocus()
 void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
 {
     Q_Q(QMdiSubWindow);
-    if (!q->parent()) {
+    if (!parent) {
         q->setWindowFlags(windowFlags);
         return;
     }
@@ -2164,7 +2164,7 @@ void QMdiSubWindowPrivate::addToSystemMenu(WindowStateAction action, const QStri
 QSize QMdiSubWindowPrivate::iconSize() const
 {
     Q_Q(const QMdiSubWindow);
-    if (!q->parent() || q->windowFlags() & Qt::FramelessWindowHint)
+    if (!parent || q->windowFlags() & Qt::FramelessWindowHint)
         return QSize(-1, -1);
     return QSize(q->style()->pixelMetric(QStyle::PM_MdiSubWindowMinimizedWidth, 0, q), titleBarHeight());
 }
@@ -2180,17 +2180,17 @@ void QMdiSubWindowPrivate::setSizeGrip(QSizeGrip *newSizeGrip)
     if (!newSizeGrip || sizeGrip || q->windowFlags() & Qt::FramelessWindowHint)
         return;
 
-    if (q->layout() && q->layout()->indexOf(newSizeGrip) != -1)
+    if (layout && layout->indexOf(newSizeGrip) != -1)
         return;
     newSizeGrip->setFixedSize(newSizeGrip->sizeHint());
-    bool putSizeGripInLayout = q->layout() ? true : false;
+    bool putSizeGripInLayout = layout ? true : false;
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
     if (qobject_cast<QMacStyle *>(q->style()))
         putSizeGripInLayout = false;
 #endif
     if (putSizeGripInLayout) {
-        q->layout()->addWidget(newSizeGrip);
-        q->layout()->setAlignment(newSizeGrip, Qt::AlignBottom | Qt::AlignRight);
+        layout->addWidget(newSizeGrip);
+        layout->setAlignment(newSizeGrip, Qt::AlignBottom | Qt::AlignRight);
     } else {
         newSizeGrip->setParent(q);
         newSizeGrip->move(q->isLeftToRight() ? q->width() - newSizeGrip->width() : 0,

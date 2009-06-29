@@ -41,10 +41,5 @@ static const struct HashTableValue stringTableValues[33] = {
 };
 
 extern const struct HashTable stringTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 2047, stringTableValues, 0 };
-#else
     { 71, 63, stringTableValues, 0 };
-#endif
-
 } // namespace

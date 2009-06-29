@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -140,7 +140,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_readyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_disconnected())
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
-    Q_PRIVATE_SLOT(d_func(), void _q_restartPendingRequest())
+    Q_PRIVATE_SLOT(d_func(), void _q_restartAuthPendingRequests())
     Q_PRIVATE_SLOT(d_func(), void _q_connected())
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))
 #ifndef QT_NO_NETWORKPROXY
@@ -189,7 +189,7 @@ public:
     bool isSocketReading(QAbstractSocket *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
-    void unqueueRequest(QAbstractSocket *socket);
+    void unqueueAndSendRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
     bool sendRequest(QAbstractSocket *socket);
     void receiveReply(QAbstractSocket *socket, QHttpNetworkReply *reply);
@@ -202,7 +202,7 @@ public:
     void _q_readyRead(); // pending data to read
     void _q_disconnected(); // disconnected from host
     void _q_startNextRequest(); // send the next request from the queue
-    void _q_restartPendingRequest(); // send the currently blocked request
+    void _q_restartAuthPendingRequests(); // send the currently blocked request
     void _q_connected(); // start sending request
     void _q_error(QAbstractSocket::SocketError); // error from socket
 #ifndef QT_NO_NETWORKPROXY
@@ -250,18 +250,24 @@ public:
         {}
     };
     static const int channelCount;
-    Channel channels[2]; // maximum of 2 socket connections to the server
+    Channel *channels; // parallel connections to the server
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
-    void appendData(QHttpNetworkReply &reply, const QByteArray &fragment, bool compressed);
-    qint64 bytesAvailable(const QHttpNetworkReply &reply, bool compressed = false) const;
-    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize, bool compressed);
+    void appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
+    void appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
+
+    qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
+    qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
+    qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
+
+    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize);
+
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
     void allDone(QAbstractSocket *socket, QHttpNetworkReply *reply);
     void handleStatus(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    inline bool emitSignals(QHttpNetworkReply *reply);
+    inline bool shouldEmitSignals(QHttpNetworkReply *reply);
     inline bool expectContent(QHttpNetworkReply *reply);
 
 #ifndef QT_NO_OPENSSL
@@ -282,9 +288,6 @@ public:
 
 
 QT_END_NAMESPACE
-
-//Q_DECLARE_METATYPE(QHttpNetworkRequest)
-//Q_DECLARE_METATYPE(QHttpNetworkReply)
 
 #endif // QT_NO_HTTP
 

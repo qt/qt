@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -92,7 +92,8 @@ private slots:
     void activeSubMenuPosition();
     void task242454_sizeHint();
     void task176201_clear();
-    void task250673_activeMutliColumnSubMenuPosition();
+    void task250673_activeMultiColumnSubMenuPosition();
+    void task256918_setFont();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -679,7 +680,7 @@ void tst_QMenu::task176201_clear()
     QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center());
 }
 
-void tst_QMenu::task250673_activeMutliColumnSubMenuPosition()
+void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
 {
     class MyMenu : public QMenu
     {
@@ -713,5 +714,19 @@ void tst_QMenu::task250673_activeMutliColumnSubMenuPosition()
     const int subMenuOffset = main.style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, &main);
     QVERIFY((sub.geometry().left() - subMenuOffset + 5) < main.geometry().right());
 }
+
+
+void tst_QMenu::task256918_setFont()
+{
+    QMenu menu;
+    QAction *action = menu.addAction("foo");
+    QFont f;
+    f.setPointSize(30);
+    action->setFont(f);
+    menu.show(); //ensures that the actiongeometry are calculated
+    QVERIFY(menu.actionGeometry(action).height() > f.pointSize());
+}
+
+
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

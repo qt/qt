@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1922,6 +1922,14 @@
     typically handled by \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
 
+    \target QMAKE_INCDIR_EGL
+    \section1 QMAKE_INCDIR_EGL
+
+    This variable contains the location of EGL header files to be added
+    to INCLUDEPATH when building an application with OpenGL/ES or
+    OpenVG support. The value of this variable is typically handled by
+    \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \target QMAKE_INCDIR_OPENGL
     \section1 QMAKE_INCDIR_OPENGL
 
@@ -1929,6 +1937,20 @@
     to INCLUDEPATH when building an application with OpenGL support. The
     value of this variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    If the OpenGL implementation uses EGL (most OpenGL/ES systems),
+    then QMAKE_INCDIR_EGL may also need to be set.
+
+    \target QMAKE_INCDIR_OPENVG
+    \section1 QMAKE_INCDIR_OPENVG
+
+    This variable contains the location of OpenVG header files to be added
+    to INCLUDEPATH when building an application with OpenVG support. The
+    value of this variable is typically handled by \c qmake or
+     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    If the OpenVG implementation uses EGL then QMAKE_INCDIR_EGL may also
+    need to be set.
 
     \target QMAKE_INCDIR_QT
     \section1 QMAKE_INCDIR_QT
@@ -2078,12 +2100,32 @@
     \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \section1 QMAKE_LIBDIR_EGL
+
+    This variable contains the location of the EGL library
+    directory, when EGL is used with OpenGL/ES or OpenVG. The value
+    of this variable is typically handled by \c qmake or
+     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \section1 QMAKE_LIBDIR_OPENGL
 
     This variable contains the location of the OpenGL library
     directory.The value of this variable is typically handled by
     \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    If the OpenGL implementation uses EGL (most OpenGL/ES systems),
+    then QMAKE_LIBDIR_EGL may also need to be set.
+
+    \section1 QMAKE_LIBDIR_OPENVG
+
+    This variable contains the location of the OpenVG library
+    directory. The value of this variable is typically handled by
+    \c qmake or
+     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    If the OpenVG implementation uses EGL, then QMAKE_LIBDIR_EGL
+    may also need to be set.
 
     \section1 QMAKE_LIBDIR_QT
 
@@ -2116,17 +2158,40 @@
     project on Windows. \l{#QMAKE_LIBS_WINDOW}{QMAKE_LIBS_WINDOW}
     should now be used instead.
 
+    \section1 QMAKE_LIBS_EGL
+
+    This variable contains all EGL libraries when building Qt with
+    OpenGL/ES or OpenVG.  The value of this variable is typically
+    handled by \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
+    needs to be modified.  The usual value is \c{-lEGL}.
+
     \section1 QMAKE_LIBS_OPENGL
 
     This variable contains all OpenGL libraries.  The value of this
     variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    If the OpenGL implementation uses EGL (most OpenGL/ES systems),
+    then QMAKE_LIBS_EGL may also need to be set.
+
     \section1 QMAKE_LIBS_OPENGL_QT
 
     This variable contains all OpenGL Qt libraries.The value of this
     variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_LIBS_OPENVG
+
+    This variable contains all OpenVG libraries.  The value of this
+    variable is typically handled by \c qmake or \l{#QMAKESPEC}{qmake.conf}
+    and rarely needs to be modified.  The usual value is \c{-lOpenVG}.
+
+    Some OpenVG engines are implemented on top of OpenGL.  This will
+    be detected at configure time and QMAKE_LIBS_OPENGL will be implicitly
+    added to QMAKE_LIBS_OPENVG wherever the OpenVG libraries are linked.
+
+    If the OpenVG implementation uses EGL, then QMAKE_LIBS_EGL may also
+    need to be set.
 
     \section1 QMAKE_LIBS_QT
 
@@ -3302,10 +3367,6 @@
     \row
         \o output_function
         \o Specifies a custom qmake function that is used to specify the filename to be created.
-    \row
-        \o variables
-        \o Indicates that the variables specified here are replaced with $(QMAKE_COMP_VARNAME) when refered to
-           in the pro file as $(VARNAME).
     \row
         \o variable_out
         \o The variable that the files created from the output should be added to.

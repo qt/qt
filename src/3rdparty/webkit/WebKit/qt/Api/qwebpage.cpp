@@ -34,6 +34,7 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClientQt.h"
 #include "FrameView.h"
+#include "FormState.h"
 #include "ChromeClientQt.h"
 #include "ContextMenu.h"
 #include "ContextMenuClientQt.h"
@@ -42,6 +43,7 @@
 #include "DragController.h"
 #include "DragData.h"
 #include "EditorClientQt.h"
+#include "SecurityOrigin.h"
 #include "Settings.h"
 #include "Page.h"
 #include "Pasteboard.h"
@@ -60,9 +62,11 @@
 #include "ProgressTracker.h"
 #include "RefPtr.h"
 #include "HashMap.h"
+#include "HTMLFormElement.h"
 #include "HitTestResult.h"
 #include "WindowFeatures.h"
 #include "LocalizedStrings.h"
+#include "Cache.h"
 #include "runtime/InitializeThreading.h"
 
 #include <QApplication>
@@ -179,6 +183,21 @@ static const char* editorCommandWebActions[] =
 
     "SelectAll", // SelectAll
 
+    "PasteAndMatchStyle", // PasteAndMatchStyle
+    "RemoveFormat", // RemoveFormat
+    "Strikethrough", // ToggleStrikethrough,
+    "Subscript", // ToggleSubscript
+    "Superscript", // ToggleSuperscript
+    "InsertUnorderedList", // InsertUnorderedList
+    "InsertOrderedList", // InsertOrderedList
+    "Indent", // Indent
+    "Outdent", // Outdent,
+
+    "AlignCenter", // AlignCenter,
+    "AlignJustified", // AlignJustified,
+    "AlignLeft", // AlignLeft,
+    "AlignRight", // AlignRight,
+
     0 // WebActionCount
 };
 
@@ -263,6 +282,7 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     insideOpenCall = false;
     forwardUnsupportedContent = false;
     editable = false;
+    useFixedLayout = false;
     linkPolicy = QWebPage::DontDelegateLinks;
 #ifndef QT_NO_CONTEXTMENU
     currentContextMenu = 0;
@@ -426,6 +446,14 @@ void QWebPagePrivate::_q_webActionTriggered(bool checked)
     q->triggerAction(action, checked);
 }
 
+#ifndef NDEBUG
+void QWebPagePrivate::_q_cleanupLeakMessages()
+{
+    // Need this to make leak messages accurate.
+    cache()->setCapacities(0, 0, 0);
+}
+#endif
+
 void QWebPagePrivate::updateAction(QWebPage::WebAction action)
 {
     QAction *a = actions[action];
@@ -535,6 +563,19 @@ void QWebPagePrivate::updateEditorActions()
     updateAction(QWebPage::ToggleUnderline);
     updateAction(QWebPage::InsertParagraphSeparator);
     updateAction(QWebPage::InsertLineSeparator);
+    updateAction(QWebPage::PasteAndMatchStyle);
+    updateAction(QWebPage::RemoveFormat);
+    updateAction(QWebPage::ToggleStrikethrough);
+    updateAction(QWebPage::ToggleSubscript);
+    updateAction(QWebPage::ToggleSuperscript);
+    updateAction(QWebPage::InsertUnorderedList);
+    updateAction(QWebPage::InsertOrderedList);
+    updateAction(QWebPage::Indent);
+    updateAction(QWebPage::Outdent);
+    updateAction(QWebPage::AlignCenter);
+    updateAction(QWebPage::AlignJustified);
+    updateAction(QWebPage::AlignLeft);
+    updateAction(QWebPage::AlignRight);
 }
 
 void QWebPagePrivate::timerEvent(QTimerEvent *ev)
@@ -757,11 +798,24 @@ void QWebPagePrivate::keyPressEvent(QKeyEvent *ev)
         int fontHeight = fm.height();
         if (!handleScrolling(ev)) {
             switch (ev->key()) {
+            case Qt::Key_Back:
+                q->triggerAction(QWebPage::Back);
+                break;
+            case Qt::Key_Forward:
+                q->triggerAction(QWebPage::Forward);
+                break;
+            case Qt::Key_Stop:
+                q->triggerAction(QWebPage::Stop);
+                break;
+            case Qt::Key_Refresh:
+                q->triggerAction(QWebPage::Reload);
+                break;
             case Qt::Key_Backspace:
                 if (ev->modifiers() == Qt::ShiftModifier)
                     q->triggerAction(QWebPage::Forward);
                 else
                     q->triggerAction(QWebPage::Back);
+                break;
             default:
                 handled = false;
                 break;
@@ -1026,9 +1080,9 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImCursorPosition: {
         Frame *frame = d->page->focusController()->focusedFrame();
         if (frame) {
-            Selection selection = frame->selection()->selection();
+            VisibleSelection selection = frame->selection()->selection();
             if (selection.isCaret()) {
-                return QVariant(selection.start().offset());
+                return QVariant(selection.start().deprecatedEditingOffset());
             }
         }
         return QVariant();
@@ -1155,6 +1209,21 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     \value InsertParagraphSeparator Insert a new paragraph.
     \value InsertLineSeparator Insert a new line.
     \value SelectAll Selects all content.
+    \value PasteAndMatchStyle Paste content from the clipboard with current style.
+    \value RemoveFormat Removes formatting and style.
+    \value ToggleStrikethrough Toggle the formatting between strikethrough and normal style.
+    \value ToggleSubscript Toggle the formatting between subscript and baseline.
+    \value ToggleSuperscript Toggle the formatting between supercript and baseline.
+    \value InsertUnorderedList Toggles the selection between an ordered list and a normal block.
+    \value InsertOrderedList Toggles the selection between an ordered list and a normal block.
+    \value Indent Increases the indentation of the currently selected format block by one increment.
+    \value Outdent Decreases the indentation of the currently selected format block by one increment.
+    \value AlignCenter Applies center alignment to content.
+    \value AlignJustified Applies full justification to content.
+    \value AlignLeft Applies left justification to content.
+    \value AlignRight Applies right justification to content.
+
+
     \omitvalue WebActionCount
 
 */
@@ -1230,6 +1299,9 @@ QWebPage::QWebPage(QObject *parent)
     setView(qobject_cast<QWidget *>(parent));
 
     connect(this, SIGNAL(loadProgress(int)), this, SLOT(_q_onLoadProgressChanged(int)));
+#ifndef NDEBUG
+    connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(_q_cleanupLeakMessages()));
+#endif
 }
 
 /*!
@@ -1433,10 +1505,9 @@ void QWebPage::triggerAction(WebAction action, bool checked)
         case OpenLink:
             if (QWebFrame *targetFrame = d->hitTestResult.linkTargetFrame()) {
                 WTF::RefPtr<WebCore::Frame> wcFrame = targetFrame->d->frame;
-                targetFrame->d->frame->loader()->loadFrameRequestWithFormAndValues(frameLoadRequest(d->hitTestResult.linkUrl(), wcFrame.get()),
-                                                                                   /*lockHistory*/ false, /*event*/ 0,
-                                                                                   /*HTMLFormElement*/ 0, /*formValues*/
-                                                                                   WTF::HashMap<String, String>());
+                targetFrame->d->frame->loader()->loadFrameRequest(frameLoadRequest(d->hitTestResult.linkUrl(), wcFrame.get()),
+                                                                  /*lockHistory*/ false, /*lockBackForwardList*/ false, /*event*/ 0,
+                                                                  /*FormState*/ 0);
                 break;
             }
             // fall through
@@ -1536,11 +1607,51 @@ void QWebPage::setViewportSize(const QSize &size) const
     if (frame->d->frame && frame->d->frame->view()) {
         WebCore::FrameView* view = frame->d->frame->view();
         view->setFrameRect(QRect(QPoint(0, 0), size));
-        frame->d->frame->forceLayout();
+        view->forceLayout();
         view->adjustViewSize();
     }
 }
 
+QSize QWebPage::fixedContentsSize() const
+{
+    QWebFrame* frame = d->mainFrame;
+    if (frame) {
+        WebCore::FrameView* view = frame->d->frame->view();
+        if (view && view->useFixedLayout()) {
+            return d->mainFrame->d->frame->view()->fixedLayoutSize();
+        }
+    }
+
+    return d->fixedLayoutSize;
+}
+
+/*!
+    \property QWebPage::fixedContentsSize
+    \since 4.6
+    \brief the size of the fixed layout
+
+    The size affects the layout of the page in the viewport.  If set to a fixed size of
+    1024x768 for example then webkit will layout the page as if the viewport were that size
+    rather than something different.
+*/
+void QWebPage::setFixedContentsSize(const QSize &size) const
+{
+    d->fixedLayoutSize = size;
+
+    QWebFrame *frame = mainFrame();
+    if (frame->d->frame && frame->d->frame->view()) {
+        WebCore::FrameView* view = frame->d->frame->view();
+
+        if (size.isValid()) {
+            view->setUseFixedLayout(true);
+            view->setFixedLayoutSize(size);
+            view->forceLayout();
+        } else if (view->useFixedLayout()) {
+            view->setUseFixedLayout(false);
+            view->forceLayout();
+        }
+    }
+}
 
 /*!
     \fn bool QWebPage::acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, QWebPage::NavigationType type)
@@ -1568,7 +1679,7 @@ bool QWebPage::acceptNavigationRequest(QWebFrame *frame, const QWebNetworkReques
                 return true;
 
             case DelegateExternalLinks:
-                if (WebCore::FrameLoader::shouldTreatSchemeAsLocal(request.url().scheme()))
+                if (WebCore::SecurityOrigin::shouldTreatURLSchemeAsLocal(request.url().scheme()))
                     return true;
                 emit linkClicked(request.url());
                 return false;
@@ -1808,6 +1919,52 @@ QAction *QWebPage::action(WebAction action) const
             text = tr("Insert a new line");
             break;
 
+        case PasteAndMatchStyle:
+            text = tr("Paste and Match Style");
+            break;
+        case RemoveFormat:
+            text = tr("Remove formatting");
+            break;
+
+        case ToggleStrikethrough:
+            text = tr("Strikethrough");
+            checkable = true;
+            break;
+        case ToggleSubscript:
+            text = tr("Subscript");
+            checkable = true;
+            break;
+        case ToggleSuperscript:
+            text = tr("Superscript");
+            checkable = true;
+            break;
+        case InsertUnorderedList:
+            text = tr("Insert Bulleted List");
+            checkable = true;
+            break;
+        case InsertOrderedList:
+            text = tr("Insert Numbered List");
+            checkable = true;
+            break;
+        case Indent:
+            text = tr("Indent");
+            break;
+        case Outdent:
+            text = tr("Outdent");
+            break;
+        case AlignCenter:
+            text = tr("Center");
+            break;
+        case AlignJustified:
+            text = tr("Justify");
+            break;
+        case AlignLeft:
+            text = tr("Align Left");
+            break;
+        case AlignRight:
+            text = tr("Align Right");
+            break;
+
         case NoWebAction:
             return 0;
     }
@@ -1986,10 +2143,12 @@ bool QWebPage::isContentEditable() const
 
 /*!
     \property QWebPage::forwardUnsupportedContent
-    \brief whether QWebPage should forward unsupported content through the
-    unsupportedContent signal
+    \brief whether QWebPage should forward unsupported content
 
-    If disabled the download of such content is aborted immediately.
+    If enabled, the unsupportedContent() signal is emitted with a network reply that
+    can be used to read the content.
+
+    If disabled, the download of such content is aborted immediately.
 
     By default unsupported content is not forwarded.
 */
@@ -2073,7 +2232,10 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     WebCore::Frame* focusedFrame = d->page->focusController()->focusedOrMainFrame();
     HitTestResult result = focusedFrame->eventHandler()->hitTestResultAtPoint(focusedFrame->view()->windowToContents(pos), /*allowShadowContent*/ false);
 
-    d->hitTestResult = QWebHitTestResult(new QWebHitTestResultPrivate(result));
+    if (result.scrollbar())
+        d->hitTestResult = QWebHitTestResult();
+    else
+        d->hitTestResult = QWebHitTestResult(new QWebHitTestResultPrivate(result));
     WebCore::ContextMenu menu(result);
     menu.populate();
     if (d->page->inspectorController()->enabled())
@@ -2430,8 +2592,12 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 
     QChar securityStrength(QLatin1Char('N'));
 #if !defined(QT_NO_OPENSSL)
-    if (QSslSocket::supportsSsl())
-        securityStrength = QLatin1Char('U');
+    // we could check QSslSocket::supportsSsl() here, but this makes
+    // OpenSSL, certificates etc being loaded in all cases were QWebPage
+    // is used. This loading is not needed for non-https.
+    securityStrength = QLatin1Char('U');
+    // this may lead to a false positive: We indicate SSL since it is
+    // compiled in even though supportsSsl() might return false
 #endif
     ua = ua.arg(securityStrength);
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -229,6 +229,38 @@ public:
     {
         return m_fill;
     }
+
+    void setGradientId(const QString &Id)
+    {
+        m_gradientId = Id;
+    }
+
+    QString getGradientId() const
+    {
+        return m_gradientId;
+    }
+
+
+    void setGradientResolved(bool resolved)
+    {
+        m_gradientResolved = resolved;
+    }
+
+    bool isGradientResolved() const
+    {
+        return m_gradientResolved;
+    }
+
+    void setFillStyle(QSvgStyleProperty* style)
+    {
+        m_style = style;
+    }
+
+    void setBrush(QBrush brush)
+    {
+        m_fill = brush;
+    }
+
 private:
     // fill            v 	v 	'inherit' | <Paint.datatype>
     // fill-opacity    v 	v 	'inherit' | <OpacityValue.datatype>
@@ -241,6 +273,8 @@ private:
     bool m_fillOpacitySet;
     qreal m_fillOpacity;
     qreal m_oldOpacity;
+    QString m_gradientId;
+    bool m_gradientResolved;
 };
 
 class QSvgViewportFillStyle : public QSvgStyleProperty

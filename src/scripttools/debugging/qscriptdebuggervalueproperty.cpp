@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,13 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qscriptdebuggervalueproperty_p.h"
 #include "qscriptdebuggervalue_p.h"
+#include "qscriptdebuggerobjectsnapshotdelta_p.h"
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qdatastream.h>
@@ -222,6 +223,22 @@ QDataStream &operator>>(QDataStream &in, QScriptDebuggerValueProperty &property)
     in >> flags;
     property = QScriptDebuggerValueProperty(
         name, value, valueAsString, QScriptValue::PropertyFlags(flags));
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const QScriptDebuggerObjectSnapshotDelta &delta)
+{
+    out << delta.removedProperties;
+    out << delta.changedProperties;
+    out << delta.addedProperties;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, QScriptDebuggerObjectSnapshotDelta &delta)
+{
+    in >> delta.removedProperties;
+    in >> delta.changedProperties;
+    in >> delta.addedProperties;
     return in;
 }
 

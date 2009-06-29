@@ -27,6 +27,7 @@
 
 namespace WebCore {
 
+class InputElement;
 class SearchFieldCancelButtonElement;
 class SearchFieldResultsButtonElement;
 class SearchPopupMenu;
@@ -58,9 +59,20 @@ public:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
     void forwardEvent(Event*);
 
-private:
-    virtual void capsLockStateMayHaveChanged();
+    void capsLockStateMayHaveChanged();
 
+    virtual void autoscroll();
+
+    // Subclassed to forward to our inner div.
+    virtual int scrollLeft() const;
+    virtual int scrollTop() const;
+    virtual int scrollWidth() const;
+    virtual int scrollHeight() const;
+    virtual void setScrollLeft(int);
+    virtual void setScrollTop(int);
+    virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1.0f);
+
+private:
     int textBlockWidth() const;
     virtual int preferredContentWidth(float charWidth) const;
     virtual void adjustControlHeightBasedOnLineHeight(int lineHeight);
@@ -68,14 +80,15 @@ private:
     void createSubtreeIfNeeded();
     virtual void updateFromElement();
     virtual void cacheSelection(int start, int end);
-    virtual void styleDidChange(RenderStyle::Diff, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
     virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const;
     PassRefPtr<RenderStyle> createInnerBlockStyle(const RenderStyle* startStyle) const;
     PassRefPtr<RenderStyle> createResultsButtonStyle(const RenderStyle* startStyle) const;
     PassRefPtr<RenderStyle> createCancelButtonStyle(const RenderStyle* startStyle) const;
 
-    void updateCancelButtonVisibility(RenderStyle*) const;
+    void updateCancelButtonVisibility() const;
+    EVisibility visibilityForCancelButton() const;
     const AtomicString& autosaveName() const;
 
     void startSearchEventTimer();
@@ -103,6 +116,8 @@ private:
     virtual FontSelector* fontSelector() const;
     virtual HostWindow* hostWindow() const;
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarClient*, ScrollbarOrientation, ScrollbarControlSize);
+
+    InputElement* inputElement() const;
 
 private:
     bool m_placeholderVisible;

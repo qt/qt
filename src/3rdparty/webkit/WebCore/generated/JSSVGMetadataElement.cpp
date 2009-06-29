@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGMetadataElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGMetadataElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGMetadataElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGMetadataElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +49,9 @@ static const HashTable JSSVGMetadataElementPrototypeTable =
 
 const ClassInfo JSSVGMetadataElementPrototype::s_info = { "SVGMetadataElementPrototype", 0, &JSSVGMetadataElementPrototypeTable, 0 };
 
-JSObject* JSSVGMetadataElementPrototype::self(ExecState* exec)
+JSObject* JSSVGMetadataElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGMetadataElement>(exec);
+    return getDOMPrototype<JSSVGMetadataElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGMetadataElement::s_info = { "SVGMetadataElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +61,9 @@ JSSVGMetadataElement::JSSVGMetadataElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGMetadataElement::createPrototype(ExecState* exec)
+JSObject* JSSVGMetadataElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGMetadataElementPrototype(JSSVGMetadataElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGMetadataElementPrototype(JSSVGMetadataElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

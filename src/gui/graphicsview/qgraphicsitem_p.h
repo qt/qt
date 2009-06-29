@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,9 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qset.h"
 #include "qpixmapcache.h"
+#include "qgraphicsview_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -91,31 +93,25 @@ public:
     void purge();
 };
 
+class QGestureExtraData
+{
+public:
+    QSet<int> gestures;
+};
+
 class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
-    struct TransformData
-    {
-        TransformData() : rotationX(0),rotationY(0),rotationZ(0),scaleX(1),scaleY(1), dirty(true)  {}
-        QTransform baseTransform;
-        QTransform transform;
-        QPointF transformCenter;
-        qreal rotationX,rotationY,rotationZ,scaleX,scaleY;
-        bool dirty;
-    };
     enum Extra {
-        ExtraTransform,
         ExtraToolTip,
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
         ExtraBoundingRegionGranularity,
-        ExtraOpacity,
-        ExtraEffectiveOpacity,
-        ExtraDecomposedTransform,
         ExtraEffect,
         ExtraEffectPixmap,
+        ExtraGestures
     };
 
     enum AncestorFlag {
@@ -127,9 +123,10 @@ public:
 
     inline QGraphicsItemPrivate()
         : z(0),
+        opacity(1.),
         scene(0),
         parent(0),
-        siblingIndex(-1),
+        transformData(0),
         index(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
@@ -143,13 +140,10 @@ public:
         isMemberOfGroup(0),
         handlesChildEvents(0),
         itemDiscovered(0),
-        hasTransform(0),
         hasCursor(0),
         ancestorFlags(0),
         cacheMode(0),
         hasBoundingRegionGranularity(0),
-        hasOpacity(0),
-        hasEffectiveOpacity(0),
         isWidget(0),
         dirty(0),
         dirtyChildren(0),
@@ -158,13 +152,21 @@ public:
         emptyClipPath(0),
         inSetPosHelper(0),
         hasEffect(0),
+        needSortChildren(1),
+        allChildrenDirty(0),
+        fullUpdatePending(0),
         flags(0),
-        allChildrenCombineOpacity(1),
-        hasDecomposedTransform(0),
-        dirtyTransform(0),
-        dirtyTransformComponents(0),
+        dirtyChildrenBoundingRect(1),
+        paintedViewBoundingRectsNeedRepaint(0),
+        dirtySceneTransform(1),
+        geometryChanged(0),
+        inDestructor(0),
+        isObject(0),
+        ignoreVisible(0),
+        ignoreOpacity(0),
+        acceptTouchEvents(0),
+        acceptedTouchBeginEvent(0),
         globalStackingOrder(-1),
-        sceneTransformIndex(-1),
         q_ptr(0)
     {
     }
@@ -177,26 +179,29 @@ public:
     void setIsMemberOfGroup(bool enabled);
     void remapItemPos(QEvent *event, QGraphicsItem *item);
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
-    bool itemIsUntransformable() const;
+    inline bool itemIsUntransformable() const
+    {
+        return (flags & QGraphicsItem::ItemIgnoresTransformations)
+            || (ancestorFlags & AncestorIgnoresTransformations);
+    }
+
+    void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
 
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
     void setPosHelper(const QPointF &pos);
+    void setTransformHelper(const QTransform &transform);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
-    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false, bool ignoreOpacity = false);
-    void updateEffectiveOpacity();
-    void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
-    void invalidateSceneTransformCache();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
-    void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void setParentItemHelper(QGraphicsItem *parent);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
@@ -251,7 +256,7 @@ public:
             }
         }
     }
-    
+
     struct ExtraStruct {
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
@@ -263,7 +268,7 @@ public:
         bool operator<(Extra extra) const
         { return type < extra; }
     };
-    
+
     QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
@@ -290,12 +295,76 @@ public:
 
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
+    void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+
+    inline void invalidateChildrenSceneTransform()
+    {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->dirtySceneTransform = 1;
+    }
+
+    inline qreal calcEffectiveOpacity() const
+    {
+        qreal o = opacity;
+        QGraphicsItem *p = parent;
+        int myFlags = flags;
+        while (p) {
+            int parentFlags = p->d_ptr->flags;
+
+            // If I have a parent, and I don't ignore my parent's opacity, and my
+            // parent propagates to me, then combine my local opacity with my parent's
+            // effective opacity into my effective opacity.
+            if ((myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
+                || (parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+                break;
+            }
+
+            o *= p->d_ptr->opacity;
+            p = p->d_ptr->parent;
+            myFlags = parentFlags;
+        }
+        return o;
+    }
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qFuzzyIsNull(q_func()->effectiveOpacity()); }
+    {
+        if (opacity < 0.001)
+            return true;
+        if (!parent)
+            return false;
+
+        return calcEffectiveOpacity() < 0.001;
+    }
+
+    inline qreal effectiveOpacity() const {
+        if (!parent || !opacity)
+            return opacity;
+
+        return calcEffectiveOpacity();
+    }
+
+    inline qreal combineOpacityFromParent(qreal parentOpacity) const
+    {
+        if (parent && !(flags & QGraphicsItem::ItemIgnoresParentOpacity)
+            && !(parent->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+            return parentOpacity * opacity;
+        }
+        return opacity;
+    }
 
     inline bool childrenCombineOpacity() const
-    { return allChildrenCombineOpacity || children.isEmpty(); }
+    {
+        if (!children.size())
+            return true;
+        if (flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
+            return false;
+
+        for (int i = 0; i < children.size(); ++i) {
+            if (children.at(i)->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity)
+                return false;
+        }
+        return true;
+    }
 
     inline bool isClippedAway() const
     { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
@@ -310,17 +379,49 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    inline QTransform transformToParent() const;
+
     QPainterPath cachedClipPath;
+    QRectF childrenBoundingRect;
+    QRectF needsRepaint;
+    QMap<QWidget *, QRect> paintedViewBoundingRects;
     QPointF pos;
     qreal z;
+    qreal opacity;
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
-    int siblingIndex;
+    struct TransformData;
+    TransformData *transformData;
+    QTransform sceneTransform;
     int index;
     int depth;
 
-    // Packed 32 bits
+    inline QGestureExtraData* extraGestures() const
+    {
+        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
+        if (!c) {
+            QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
+            c = new QGestureExtraData;
+            that->setExtra(ExtraGestures, qVariantFromValue<void *>(c));
+        }
+        return c;
+    }
+    QGestureExtraData* maybeExtraGestures() const
+    {
+        return (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
+    }
+    inline void removeExtraGestures()
+    {
+        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
+        delete c;
+        unsetExtra(ExtraGestures);
+    }
+    bool hasGesture(const QString &gesture) const;
+    void grabGesture(int id);
+    bool releaseGesture(int id);
+
+    // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -332,104 +433,96 @@ public:
     quint32 isMemberOfGroup : 1;
     quint32 handlesChildEvents : 1;
     quint32 itemDiscovered : 1;
-    quint32 hasTransform : 1;
     quint32 hasCursor : 1;
     quint32 ancestorFlags : 3;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
-    quint32 hasOpacity : 1;
-    quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
-    quint32 dirty : 1;    
-    quint32 dirtyChildren : 1;    
+    quint32 dirty : 1;
+    quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
+    quint32 needSortChildren : 1;
+    quint32 allChildrenDirty : 1;
+    quint32 fullUpdatePending : 1;
 
     // New 32 bits
+    quint32 flags : 12;
     quint32 hasEffect : 1;
-    quint32 flags : 10;
-    quint32 allChildrenCombineOpacity : 1;
-    quint32 hasDecomposedTransform : 1;
-    quint32 dirtyTransform : 1;
-    quint32 dirtyTransformComponents : 1;
-    quint32 padding : 17; // feel free to use
+    quint32 dirtyChildrenBoundingRect : 1;
+    quint32 paintedViewBoundingRectsNeedRepaint : 1;
+    quint32 dirtySceneTransform  : 1;
+    quint32 geometryChanged : 1;
+    quint32 inDestructor : 1;
+    quint32 isObject : 1;
+    quint32 ignoreVisible : 1;
+    quint32 ignoreOpacity : 1;
+    quint32 acceptTouchEvents : 1;
+    quint32 acceptedTouchBeginEvent : 1;
+    quint32 unused : 9; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
-    int sceneTransformIndex;
-
-    struct DecomposedTransform;
-    DecomposedTransform *decomposedTransform() const
-    {
-        QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
-        DecomposedTransform *decomposed;
-        if (hasDecomposedTransform) {
-            decomposed = qVariantValue<DecomposedTransform *>(extra(ExtraDecomposedTransform));
-        } else {
-            decomposed = new DecomposedTransform;
-            that->setExtra(ExtraDecomposedTransform, qVariantFromValue<DecomposedTransform *>(decomposed));
-            that->hasDecomposedTransform = 1;
-            if (!dirtyTransformComponents)
-                decomposed->reset();
-        }
-        if (dirtyTransformComponents) {
-            decomposed->initFrom(q_ptr->transform());
-            that->dirtyTransformComponents = 0;
-        }
-        return decomposed;
-    }
-
-    struct DecomposedTransform {
-        qreal xScale;
-        qreal yScale;
-        qreal xRotation;
-        qreal yRotation;
-        qreal zRotation;
-        qreal horizontalShear;
-        qreal verticalShear;
-        qreal xOrigin;
-        qreal yOrigin;
-
-        inline void reset()
-        {
-            xScale = 1.0;
-            yScale = 1.0;
-            xRotation = 0.0;
-            yRotation = 0.0;
-            zRotation = 0.0;
-            horizontalShear = 0.0;
-            verticalShear = 0.0;
-            xOrigin = 0.0;
-            yOrigin = 0.0;
-        }
-
-        inline void initFrom(const QTransform &x)
-        {
-            reset();
-            // ### decompose transform
-            Q_UNUSED(x);
-        }
-
-        inline void generateTransform(QTransform *x) const
-        {
-            x->translate(xOrigin, yOrigin);
-            x->rotate(xRotation, Qt::XAxis);
-            x->rotate(yRotation, Qt::YAxis);
-            x->rotate(zRotation, Qt::ZAxis);
-            x->shear(horizontalShear, verticalShear);
-            x->scale(xScale, yScale);
-            x->translate(-xOrigin, -yOrigin);
-        }
-    };
-
     QGraphicsItem *q_ptr;
 };
 
-QT_END_NAMESPACE
+struct QGraphicsItemPrivate::TransformData {
+    QTransform transform;
+    qreal xScale;
+    qreal yScale;
+    qreal xRotation;
+    qreal yRotation;
+    qreal zRotation;
+    qreal horizontalShear;
+    qreal verticalShear;
+    qreal xOrigin;
+    qreal yOrigin;
+    bool onlyTransform;
 
-Q_DECLARE_METATYPE(QGraphicsItemPrivate::DecomposedTransform *)
+    TransformData() :
+        xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
+        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0),
+        onlyTransform(true)
+    {}
+
+    QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
+    {
+        if (onlyTransform) {
+            if (!postmultiplyTransform)
+                return transform;
+            QTransform x(transform);
+            x *= *postmultiplyTransform;
+            return x;
+        }
+
+        QTransform x(transform);
+        if (xOrigin != 0 || yOrigin != 0)
+            x *= QTransform::fromTranslate(xOrigin, yOrigin);
+        x.rotate(xRotation, Qt::XAxis);
+        x.rotate(yRotation, Qt::YAxis);
+        x.rotate(zRotation, Qt::ZAxis);
+        x.shear(horizontalShear, verticalShear);
+        x.scale(xScale, yScale);
+        x.translate(-xOrigin, -yOrigin);
+        if (postmultiplyTransform)
+            x *= *postmultiplyTransform;
+        return x;
+    }
+};
+
+/*
+   return the full transform of the item to the parent.  This include the position and all the transform data
+*/
+inline QTransform QGraphicsItemPrivate::transformToParent() const
+{
+    QTransform matrix;
+    combineTransformToParent(&matrix);
+    return matrix;
+}
+
+QT_END_NAMESPACE
 
 #endif // QT_NO_GRAPHICSVIEW
 

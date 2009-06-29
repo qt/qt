@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -202,6 +202,7 @@ public:
     inline void beginEditBlock() { editBlock++; }
     void joinPreviousEditBlock();
     void endEditBlock();
+    inline void beginEdit() { inEdit = true; }
     void finishEdit();
     inline bool isInEditBlock() const { return editBlock; }
     void enableUndoRedo(bool enable);
@@ -335,8 +336,9 @@ public:
     QCss::StyleSheet parsedDefaultStyleSheet;
 #endif
     int maximumBlockCount;
-    bool needsEnsureMaximumBlockCount;
-    bool inContentsChange;
+    uint needsEnsureMaximumBlockCount : 1;
+    uint inContentsChange : 1;
+    uint inEdit : 1; // between beginEdit() and finishEdit()
     QSizeF pageSize;
     QString title;
     QString url;

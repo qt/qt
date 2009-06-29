@@ -19,24 +19,21 @@
 */
 
 #include "config.h"
-
 #include "JSCSSRuleList.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "CSSRule.h"
 #include "CSSRuleList.h"
 #include "JSCSSRule.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSRuleList)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSRuleList);
 
 /* Hash table */
 
@@ -73,13 +70,13 @@ public:
     JSCSSRuleListConstructor(ExecState* exec)
         : DOMObject(JSCSSRuleListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSRuleListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSRuleListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -109,9 +106,9 @@ static const HashTable JSCSSRuleListPrototypeTable =
 
 const ClassInfo JSCSSRuleListPrototype::s_info = { "CSSRuleListPrototype", 0, &JSCSSRuleListPrototypeTable, 0 };
 
-JSObject* JSCSSRuleListPrototype::self(ExecState* exec)
+JSObject* JSCSSRuleListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSRuleList>(exec);
+    return getDOMPrototype<JSCSSRuleList>(exec, globalObject);
 }
 
 bool JSCSSRuleListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -130,12 +127,11 @@ JSCSSRuleList::JSCSSRuleList(PassRefPtr<Structure> structure, PassRefPtr<CSSRule
 JSCSSRuleList::~JSCSSRuleList()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSCSSRuleList::createPrototype(ExecState* exec)
+JSObject* JSCSSRuleList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSRuleListPrototype(JSCSSRuleListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCSSRuleListPrototype(JSCSSRuleListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCSSRuleList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -163,13 +159,14 @@ bool JSCSSRuleList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, P
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValuePtr jsCSSRuleListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSRuleList* imp = static_cast<CSSRuleList*>(static_cast<JSCSSRuleList*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsCSSRuleListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSRuleList*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
@@ -180,37 +177,38 @@ void JSCSSRuleList::getPropertyNames(ExecState* exec, PropertyNameArray& propert
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSCSSRuleList::getConstructor(ExecState* exec)
+JSValue JSCSSRuleList::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSRuleListConstructor>(exec);
 }
 
-JSValuePtr jsCSSRuleListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSRuleListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSRuleList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSRuleList::s_info))
         return throwError(exec, TypeError);
     JSCSSRuleList* castedThisObj = static_cast<JSCSSRuleList*>(asObject(thisValue));
     CSSRuleList* imp = static_cast<CSSRuleList*>(castedThisObj->impl());
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
     return result;
 }
 
 
-JSValuePtr JSCSSRuleList::indexGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSCSSRuleList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSCSSRuleList* thisObj = static_cast<JSCSSRuleList*>(asObject(slot.slotBase()));
     return toJS(exec, static_cast<CSSRuleList*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValuePtr toJS(JSC::ExecState* exec, CSSRuleList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, CSSRuleList* object)
 {
     return getDOMObjectWrapper<JSCSSRuleList>(exec, object);
 }
-CSSRuleList* toCSSRuleList(JSC::JSValuePtr value)
+CSSRuleList* toCSSRuleList(JSC::JSValue value)
 {
-    return value->isObject(&JSCSSRuleList::s_info) ? static_cast<JSCSSRuleList*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSCSSRuleList::s_info) ? static_cast<JSCSSRuleList*>(asObject(value))->impl() : 0;
 }
 
 }

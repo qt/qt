@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -193,6 +193,8 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     undoEnabled = true;
     inContentsChange = false;
+    inEdit = false;
+
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
 
@@ -439,6 +441,7 @@ void QTextDocumentPrivate::insert(int pos, int strPos, int strLength, int format
     Q_ASSERT(pos >= 0 && pos < fragments.length());
     Q_ASSERT(formats.format(format).isCharFormat());
 
+    beginEdit();
     insert_string(pos, strPos, strLength, format, QTextUndoCommand::MoveCursor);
     if (undoEnabled) {
         int b = blocks.findNode(pos);
@@ -564,6 +567,7 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
     if (pos == to)
         return;
 
+    beginEdit();
     const bool needsInsert = to != -1;
 
 #if !defined(QT_NO_DEBUG)
@@ -1106,6 +1110,8 @@ void QTextDocumentPrivate::finishEdit()
     if (editBlock)
         return;
 
+    inEdit = false;
+
     if (framesDirty)
         scan_frames(docChangeFrom, docChangeOldLength, docChangeLength);
 
@@ -1175,7 +1181,7 @@ void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOr
     for (int i = 0; i < cursors.size(); ++i) {
         QTextCursorPrivate *curs = cursors.at(i);
         if (curs->adjustPosition(from, addedOrRemoved, op) == QTextCursorPrivate::CursorMoved) {
-            if (editBlock) {
+            if (editBlock || inEdit) {
                 if (!changedCursors.contains(curs))
                     changedCursors.append(curs);
             } else {

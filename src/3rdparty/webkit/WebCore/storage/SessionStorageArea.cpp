@@ -26,12 +26,17 @@
 #include "config.h"
 #include "SessionStorageArea.h"
 
+#if ENABLE(DOM_STORAGE)
+
+#include "DOMWindow.h"
 #include "EventNames.h"
 #include "Frame.h"
 #include "FrameTree.h"
+#include "HTMLElement.h"
 #include "Page.h"
 #include "PlatformString.h"
 #include "SecurityOrigin.h"
+#include "StorageEvent.h"
 #include "StorageMap.h"
 
 namespace WebCore {
@@ -75,15 +80,15 @@ void SessionStorageArea::dispatchStorageEvent(const String& key, const String& o
     // For SessionStorage events, each frame in the page's frametree with the same origin as this StorageArea needs to be notified of the change
     Vector<RefPtr<Frame> > frames;
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (Document* document = frame->document())
-            if (document->securityOrigin()->equal(securityOrigin()))
-                frames.append(frame);
+        if (frame->document()->securityOrigin()->equal(securityOrigin()))
+            frames.append(frame);
     }
-        
-    for (unsigned i = 0; i < frames.size(); ++i) {
-        if (HTMLElement* body = frames[i]->document()->body())
-            body->dispatchStorageEvent(eventNames().storageEvent, key, oldValue, newValue, sourceFrame);        
-    }
+
+    for (unsigned i = 0; i < frames.size(); ++i)
+        frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key, oldValue, newValue, sourceFrame->document()->documentURI(), sourceFrame->domWindow(), frames[i]->domWindow()->sessionStorage()));
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
+

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,9 +62,11 @@
 
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &out, const QHeaderViewPrivate::SectionSpan &span)
 {
     span.write(out);
@@ -76,7 +78,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     span.read(in);
     return in;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!
@@ -1151,7 +1153,8 @@ void QHeaderView::setResizeMode(ResizeMode mode)
     \overload
 
     Sets the constraints on how the section specified by \a logicalIndex in
-    the header can be resized to those described by the given \a mode.
+    the header can be resized to those described by the given \a mode. The logical
+    index should exist at the time this function is called.
 
     \note This setting will be ignored for the last section if the stretchLastSection
     property is set to true. This is the default for the horizontal headers provided
@@ -1535,7 +1538,7 @@ bool QHeaderView::restoreState(const QByteArray &state)
     }
     return false;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
   \reimp
@@ -3471,11 +3474,10 @@ void QHeaderViewPrivate::setGlobalHeaderResizeMode(QHeaderView::ResizeMode mode)
 
 int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
 {
-    Q_Q(const QHeaderView);
-    if (QAbstractItemView *parent = qobject_cast<QAbstractItemView*>(q->parent())) {
+    if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(parent)) {
         return (orientation == Qt::Horizontal
-                ? parent->sizeHintForColumn(logical)
-                : parent->sizeHintForRow(logical));
+                ? view->sizeHintForColumn(logical)
+                : view->sizeHintForRow(logical));
     }
     return 0;
 }
@@ -3571,9 +3573,9 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     return true;
 }
 
-QT_END_NAMESPACE
+#endif // QT_NO_DATASTREAM
 
-#endif // QT_NO_DATASTREAEM
+QT_END_NAMESPACE
 
 #endif // QT_NO_ITEMVIEWS
 

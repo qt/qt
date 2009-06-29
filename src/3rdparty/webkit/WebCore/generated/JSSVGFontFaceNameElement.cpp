@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGFontFaceNameElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGFontFaceNameElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFontFaceNameElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFontFaceNameElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +49,9 @@ static const HashTable JSSVGFontFaceNameElementPrototypeTable =
 
 const ClassInfo JSSVGFontFaceNameElementPrototype::s_info = { "SVGFontFaceNameElementPrototype", 0, &JSSVGFontFaceNameElementPrototypeTable, 0 };
 
-JSObject* JSSVGFontFaceNameElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFontFaceNameElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFontFaceNameElement>(exec);
+    return getDOMPrototype<JSSVGFontFaceNameElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFontFaceNameElement::s_info = { "SVGFontFaceNameElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +61,9 @@ JSSVGFontFaceNameElement::JSSVGFontFaceNameElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGFontFaceNameElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFontFaceNameElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFontFaceNameElementPrototype(JSSVGFontFaceNameElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFontFaceNameElementPrototype(JSSVGFontFaceNameElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

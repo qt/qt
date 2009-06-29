@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLQuoteElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLQuoteElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLQuoteElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLQuoteElement);
 
 /* Hash table */
 
@@ -71,13 +67,13 @@ public:
     JSHTMLQuoteElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLQuoteElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLQuoteElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLQuoteElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -106,9 +102,9 @@ static const HashTable JSHTMLQuoteElementPrototypeTable =
 
 const ClassInfo JSHTMLQuoteElementPrototype::s_info = { "HTMLQuoteElementPrototype", 0, &JSHTMLQuoteElementPrototypeTable, 0 };
 
-JSObject* JSHTMLQuoteElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLQuoteElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLQuoteElement>(exec);
+    return getDOMPrototype<JSHTMLQuoteElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLQuoteElement::s_info = { "HTMLQuoteElement", &JSHTMLElement::s_info, &JSHTMLQuoteElementTable, 0 };
@@ -118,9 +114,9 @@ JSHTMLQuoteElement::JSHTMLQuoteElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLQuoteElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLQuoteElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLQuoteElementPrototype(JSHTMLQuoteElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLQuoteElementPrototype(JSHTMLQuoteElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLQuoteElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,28 +124,29 @@ bool JSHTMLQuoteElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLQuoteElement, Base>(exec, &JSHTMLQuoteElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLQuoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLQuoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(static_cast<JSHTMLQuoteElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->cite());
 }
 
-JSValuePtr jsHTMLQuoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLQuoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLQuoteElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLQuoteElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLQuoteElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLQuoteElement, Base>(exec, propertyName, value, &JSHTMLQuoteElementTable, this, slot);
 }
 
-void setJSHTMLQuoteElementCite(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLQuoteElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(static_cast<JSHTMLQuoteElement*>(thisObject)->impl());
     imp->setCite(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLQuoteElement::getConstructor(ExecState* exec)
+JSValue JSHTMLQuoteElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLQuoteElementConstructor>(exec);
 }

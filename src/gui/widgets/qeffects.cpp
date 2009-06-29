@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -588,8 +588,8 @@ void qScrollEffect(QWidget* w, QEffects::DirFlags orient, int time)
     if (!w)
         return;
 
-    qApp->sendPostedEvents(w, QEvent::Move);
-    qApp->sendPostedEvents(w, QEvent::Resize);
+    QApplication::sendPostedEvents(w, QEvent::Move);
+    QApplication::sendPostedEvents(w, QEvent::Resize);
     Qt::WindowFlags flags = Qt::ToolTip;
 
     // those can be popups - they would steal the focus, but are disabled
@@ -610,8 +610,8 @@ void qFadeEffect(QWidget* w, int time)
     if (!w)
         return;
 
-    qApp->sendPostedEvents(w, QEvent::Move);
-    qApp->sendPostedEvents(w, QEvent::Resize);
+    QApplication::sendPostedEvents(w, QEvent::Move);
+    QApplication::sendPostedEvents(w, QEvent::Resize);
 
     Qt::WindowFlags flags = Qt::ToolTip;
 

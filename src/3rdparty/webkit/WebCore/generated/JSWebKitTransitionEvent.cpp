@@ -19,23 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSWebKitTransitionEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "WebKitTransitionEvent.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSWebKitTransitionEvent)
+ASSERT_CLASS_FITS_IN_CELL(JSWebKitTransitionEvent);
 
 /* Hash table */
 
@@ -73,13 +70,13 @@ public:
     JSWebKitTransitionEventConstructor(ExecState* exec)
         : DOMObject(JSWebKitTransitionEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitTransitionEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitTransitionEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -109,9 +106,9 @@ static const HashTable JSWebKitTransitionEventPrototypeTable =
 
 const ClassInfo JSWebKitTransitionEventPrototype::s_info = { "WebKitTransitionEventPrototype", 0, &JSWebKitTransitionEventPrototypeTable, 0 };
 
-JSObject* JSWebKitTransitionEventPrototype::self(ExecState* exec)
+JSObject* JSWebKitTransitionEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWebKitTransitionEvent>(exec);
+    return getDOMPrototype<JSWebKitTransitionEvent>(exec, globalObject);
 }
 
 bool JSWebKitTransitionEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,9 +123,9 @@ JSWebKitTransitionEvent::JSWebKitTransitionEvent(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSWebKitTransitionEvent::createPrototype(ExecState* exec)
+JSObject* JSWebKitTransitionEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWebKitTransitionEventPrototype(JSWebKitTransitionEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSWebKitTransitionEventPrototype(JSWebKitTransitionEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSWebKitTransitionEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -136,38 +133,41 @@ bool JSWebKitTransitionEvent::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSWebKitTransitionEvent, Base>(exec, &JSWebKitTransitionEventTable, this, propertyName, slot);
 }
 
-JSValuePtr jsWebKitTransitionEventPropertyName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitTransitionEventPropertyName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->propertyName());
 }
 
-JSValuePtr jsWebKitTransitionEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitTransitionEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->elapsedTime());
 }
 
-JSValuePtr jsWebKitTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSWebKitTransitionEvent::getConstructor(ExecState* exec)
+JSValue JSWebKitTransitionEvent::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSWebKitTransitionEventConstructor>(exec);
 }
 
-JSValuePtr jsWebKitTransitionEventPrototypeFunctionInitWebKitTransitionEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWebKitTransitionEventPrototypeFunctionInitWebKitTransitionEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWebKitTransitionEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWebKitTransitionEvent::s_info))
         return throwError(exec, TypeError);
     JSWebKitTransitionEvent* castedThisObj = static_cast<JSWebKitTransitionEvent*>(asObject(thisValue));
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(castedThisObj->impl());
-    const UString& typeArg = args.at(exec, 0)->toString(exec);
-    bool canBubbleArg = args.at(exec, 1)->toBoolean(exec);
-    bool cancelableArg = args.at(exec, 2)->toBoolean(exec);
-    const UString& propertyNameArg = args.at(exec, 3)->toString(exec);
-    double elapsedTimeArg = args.at(exec, 4)->toNumber(exec);
+    const UString& typeArg = args.at(0).toString(exec);
+    bool canBubbleArg = args.at(1).toBoolean(exec);
+    bool cancelableArg = args.at(2).toBoolean(exec);
+    const UString& propertyNameArg = args.at(3).toString(exec);
+    double elapsedTimeArg = args.at(4).toNumber(exec);
 
     imp->initWebKitTransitionEvent(typeArg, canBubbleArg, cancelableArg, propertyNameArg, elapsedTimeArg);
     return jsUndefined();

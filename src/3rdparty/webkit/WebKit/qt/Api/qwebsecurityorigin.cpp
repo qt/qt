@@ -101,7 +101,11 @@ int QWebSecurityOrigin::port() const
 */
 qint64 QWebSecurityOrigin::databaseUsage() const
 {
+#if ENABLE(DATABASE)
     return DatabaseTracker::tracker().usageForOrigin(d->origin.get());
+#else
+    return 0;
+#endif
 }
 
 /*!
@@ -109,7 +113,11 @@ qint64 QWebSecurityOrigin::databaseUsage() const
 */
 qint64 QWebSecurityOrigin::databaseQuota() const
 {
+#if ENABLE(DATABASE)
     return DatabaseTracker::tracker().quotaForOrigin(d->origin.get());
+#else
+    return 0;
+#endif
 }
 
 /*!
@@ -121,7 +129,9 @@ qint64 QWebSecurityOrigin::databaseQuota() const
 */
 void QWebSecurityOrigin::setDatabaseQuota(qint64 quota)
 {
+#if ENABLE(DATABASE)
     DatabaseTracker::tracker().setQuota(d->origin.get(), quota);
+#endif
 }
 
 /*!
@@ -144,14 +154,18 @@ QWebSecurityOrigin::QWebSecurityOrigin(QWebSecurityOriginPrivate* priv)
 */
 QList<QWebSecurityOrigin> QWebSecurityOrigin::allOrigins()
 {
+    QList<QWebSecurityOrigin> webOrigins;
+
+#if ENABLE(DATABASE)
     Vector<RefPtr<SecurityOrigin> > coreOrigins;
     DatabaseTracker::tracker().origins(coreOrigins);
-    QList<QWebSecurityOrigin> webOrigins;
 
     for (unsigned i = 0; i < coreOrigins.size(); ++i) {
         QWebSecurityOriginPrivate* priv = new QWebSecurityOriginPrivate(coreOrigins[i].get());
         webOrigins.append(priv);
     }
+#endif
+
     return webOrigins;
 }
 
@@ -160,8 +174,11 @@ QList<QWebSecurityOrigin> QWebSecurityOrigin::allOrigins()
 */
 QList<QWebDatabase> QWebSecurityOrigin::databases() const
 {
-    Vector<String> nameVector;
     QList<QWebDatabase> databases;
+
+#if ENABLE(DATABASE)
+    Vector<String> nameVector;
+
     if (!DatabaseTracker::tracker().databaseNamesForOrigin(d->origin.get(), nameVector))
         return databases;
     for (unsigned i = 0; i < nameVector.size(); ++i) {
@@ -171,6 +188,8 @@ QList<QWebDatabase> QWebSecurityOrigin::databases() const
         QWebDatabase webDatabase(priv);
         databases.append(webDatabase);
     }
+#endif
+
     return databases;
 }
 

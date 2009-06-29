@@ -2,6 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,12 +33,15 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "HTMLBRElement.h"
+#include "HTMLCollection.h"
 #include "HTMLDocument.h"
 #include "HTMLElementFactory.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
-#include "HTMLTokenizer.h" // parseHTMLDocumentFragment
+#include "HTMLTokenizer.h"
+#include "MappedAttribute.h"
 #include "RenderWordBreak.h"
+#include "ScriptEventListener.h"
 #include "Settings.h"
 #include "Text.h"
 #include "TextIterator.h"
@@ -65,7 +69,8 @@ String HTMLElement::nodeName() const
 {
     // FIXME: Would be nice to have an atomicstring lookup based off uppercase chars that does not have to copy
     // the string on a hit in the hash.
-    if (document()->isHTMLDocument())
+    // FIXME: We should have a way to detect XHTML elements and replace the hasPrefix() check with it.
+    if (document()->isHTMLDocument() && !tagQName().hasPrefix())
         return tagQName().localName().string().upper();
     return Element::nodeName();
 }
@@ -94,23 +99,6 @@ int HTMLElement::tagPriority() const
 
     // Same values as <span>.  This way custom tag name elements will behave like inline spans.
     return 1;
-}
-
-PassRefPtr<Node> HTMLElement::cloneNode(bool deep)
-{
-    RefPtr<HTMLElement> clone = HTMLElementFactory::createHTMLElement(tagQName(), document(), 0, false);
-    if (!clone)
-        return 0;
-
-    if (namedAttrMap)
-        clone->attributes()->setAttributes(*namedAttrMap);
-
-    clone->copyNonAttributeProperties(this);
-
-    if (deep)
-        cloneChildNodes(clone.get());
-
-    return clone.release();
 }
 
 bool HTMLElement::mapToEntry(const QualifiedName& attrName, MappedAttributeEntry& result) const
@@ -158,75 +146,77 @@ void HTMLElement::parseMappedAttribute(MappedAttribute *attr)
     }
 // standard events
     else if (attr->name() == onclickAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().clickEvent, attr);
+        setAttributeEventListener(eventNames().clickEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == oncontextmenuAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().contextmenuEvent, attr);
+        setAttributeEventListener(eventNames().contextmenuEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondblclickAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dblclickEvent, attr);
+        setAttributeEventListener(eventNames().dblclickEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onmousedownAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().mousedownEvent, attr);
+        setAttributeEventListener(eventNames().mousedownEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onmousemoveAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().mousemoveEvent, attr);
+        setAttributeEventListener(eventNames().mousemoveEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onmouseoutAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().mouseoutEvent, attr);
+        setAttributeEventListener(eventNames().mouseoutEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onmouseoverAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().mouseoverEvent, attr);
+        setAttributeEventListener(eventNames().mouseoverEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onmouseupAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().mouseupEvent, attr);
+        setAttributeEventListener(eventNames().mouseupEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onmousewheelAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().mousewheelEvent, attr);
+        setAttributeEventListener(eventNames().mousewheelEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onfocusAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().focusEvent, attr);
+        setAttributeEventListener(eventNames().focusEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onblurAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().blurEvent, attr);
+        setAttributeEventListener(eventNames().blurEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onkeydownAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().keydownEvent, attr);
+        setAttributeEventListener(eventNames().keydownEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onkeypressAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().keypressEvent, attr);
+        setAttributeEventListener(eventNames().keypressEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onkeyupAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().keyupEvent, attr);
+        setAttributeEventListener(eventNames().keyupEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onscrollAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().scrollEvent, attr);
+        setAttributeEventListener(eventNames().scrollEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onbeforecutAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().beforecutEvent, attr);
+        setAttributeEventListener(eventNames().beforecutEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == oncutAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().cutEvent, attr);
+        setAttributeEventListener(eventNames().cutEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onbeforecopyAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().beforecopyEvent, attr);
+        setAttributeEventListener(eventNames().beforecopyEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == oncopyAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().copyEvent, attr);
+        setAttributeEventListener(eventNames().copyEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onbeforepasteAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().beforepasteEvent, attr);
+        setAttributeEventListener(eventNames().beforepasteEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onpasteAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().pasteEvent, attr);
+        setAttributeEventListener(eventNames().pasteEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondragenterAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dragenterEvent, attr);
+        setAttributeEventListener(eventNames().dragenterEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondragoverAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dragoverEvent, attr);
+        setAttributeEventListener(eventNames().dragoverEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondragleaveAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dragleaveEvent, attr);
+        setAttributeEventListener(eventNames().dragleaveEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondropAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dropEvent, attr);
+        setAttributeEventListener(eventNames().dropEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondragstartAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dragstartEvent, attr);
+        setAttributeEventListener(eventNames().dragstartEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondragAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dragEvent, attr);
+        setAttributeEventListener(eventNames().dragEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == ondragendAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().dragendEvent, attr);
+        setAttributeEventListener(eventNames().dragendEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onselectstartAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().selectstartEvent, attr);
+        setAttributeEventListener(eventNames().selectstartEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onsubmitAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().submitEvent, attr);
+        setAttributeEventListener(eventNames().submitEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onerrorAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().errorEvent, attr);
+        setAttributeEventListener(eventNames().errorEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onwebkitanimationstartAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().webkitAnimationStartEvent, attr);
+        setAttributeEventListener(eventNames().webkitAnimationStartEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onwebkitanimationiterationAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().webkitAnimationIterationEvent, attr);
+        setAttributeEventListener(eventNames().webkitAnimationIterationEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onwebkitanimationendAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().webkitAnimationEndEvent, attr);
+        setAttributeEventListener(eventNames().webkitAnimationEndEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onwebkittransitionendAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().webkitTransitionEndEvent, attr);
+        setAttributeEventListener(eventNames().webkitTransitionEndEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == oninputAttr) {
+        setAttributeEventListener(eventNames().inputEvent, createAttributeEventListener(this, attr));
     }
 }
 
@@ -401,7 +391,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
     }
 
     // FIXME: Do we need to be able to detect preserveNewline style even when there's no renderer?
-    // FIXME: Can the renderer be out of date here? Do we need to call updateRendering?
+    // FIXME: Can the renderer be out of date here? Do we need to call updateStyleIfNeeded?
     // For example, for the contents of textarea elements that are display:none?
     RenderObject* r = renderer();
     if (r && r->style()->preserveNewline()) {
@@ -618,7 +608,7 @@ bool HTMLElement::isContentEditable() const
 
     // FIXME: this is a terrible thing to do here:
     // https://bugs.webkit.org/show_bug.cgi?id=21834
-    document()->updateRendering();
+    document()->updateStyleIfNeeded();
 
     if (!renderer()) {
         if (parentNode())
@@ -635,7 +625,7 @@ bool HTMLElement::isContentRichlyEditable() const
     if (document()->frame() && document()->frame()->isContentEditable())
         return true;
 
-    document()->updateRendering();
+    document()->updateStyleIfNeeded();
 
     if (!renderer()) {
         if (parentNode())
@@ -649,7 +639,7 @@ bool HTMLElement::isContentRichlyEditable() const
 
 String HTMLElement::contentEditable() const 
 {
-    document()->updateRendering();
+    document()->updateStyleIfNeeded();
 
     if (!renderer())
         return "false";
@@ -784,7 +774,7 @@ void HTMLElement::setTabIndex(int value)
 
 PassRefPtr<HTMLCollection> HTMLElement::children()
 {
-    return HTMLCollection::create(this, HTMLCollection::NodeChildren);
+    return HTMLCollection::create(this, NodeChildren);
 }
 
 // DOM Section 1.1.1
@@ -829,7 +819,7 @@ bool HTMLElement::isRecognizedTagName(const QualifiedName& tagName)
 
 // The terms inline and block are used here loosely.  Don't make the mistake of assuming all inlines or all blocks
 // need to be in these two lists.
-HashSet<AtomicStringImpl*>* inlineTagList()
+static HashSet<AtomicStringImpl*>* inlineTagList()
 {
     DEFINE_STATIC_LOCAL(HashSet<AtomicStringImpl*>, tagList, ());
     if (tagList.isEmpty()) {
@@ -873,6 +863,7 @@ HashSet<AtomicStringImpl*>* inlineTagList()
         tagList.add(inputTag.localName().impl());
         tagList.add(keygenTag.localName().impl());
         tagList.add(selectTag.localName().impl());
+        tagList.add(datagridTag.localName().impl());
         tagList.add(textareaTag.localName().impl());
         tagList.add(labelTag.localName().impl());
         tagList.add(buttonTag.localName().impl());
@@ -888,7 +879,7 @@ HashSet<AtomicStringImpl*>* inlineTagList()
     return &tagList;
 }
 
-HashSet<AtomicStringImpl*>* blockTagList()
+static HashSet<AtomicStringImpl*>* blockTagList()
 {
     DEFINE_STATIC_LOCAL(HashSet<AtomicStringImpl*>, tagList, ());
     if (tagList.isEmpty()) {
@@ -937,8 +928,18 @@ bool HTMLElement::inEitherTagList(const Node* newChild)
         
     if (newChild->isHTMLElement()) {
         const HTMLElement* child = static_cast<const HTMLElement*>(newChild);
-        if (inlineTagList()->contains(child->tagQName().localName().impl()))
+        if (inlineTagList()->contains(child->tagQName().localName().impl())) {
+#if PLATFORM(MAC)
+            if (child->tagQName().localName() == styleTag) {
+                // Leopard Mail doesn't expect <style> to be in the body of the document, so don't allow it in that case.
+                // See <rdar://problem/6621310>
+                Settings* settings = newChild->document() ? newChild->document()->settings() : 0;
+                if (settings && settings->needsLeopardMailQuirks())
+                    return false;
+            }
+#endif
             return true;
+        }
         if (blockTagList()->contains(child->tagQName().localName().impl()))
             return true;
         return !isRecognizedTagName(child->tagQName()); // Accept custom html tags
@@ -984,12 +985,14 @@ bool HTMLElement::checkDTD(const Node* newChild)
     
 bool HTMLElement::rendererIsNeeded(RenderStyle *style)
 {
+#if !ENABLE(XHTMLMP)
     if (hasLocalName(noscriptTag)) {
         Settings* settings = document()->settings();
         if (settings && settings->isJavaScriptEnabled())
             return false;
     }
-    return (document()->documentElement() == this) || (style->display() != NONE);
+#endif
+    return StyledElement::rendererIsNeeded(style);
 }
     
 RenderObject* HTMLElement::createRenderer(RenderArena* arena, RenderStyle* style)
@@ -1015,6 +1018,10 @@ HTMLFormElement* HTMLElement::virtualForm() const
 } // namespace WebCore
 
 #ifndef NDEBUG
+
+// For use in the debugger
+void dumpInnerHTML(WebCore::HTMLElement*);
+
 void dumpInnerHTML(WebCore::HTMLElement* element)
 {
     printf("%s\n", element->innerHTML().ascii().data());

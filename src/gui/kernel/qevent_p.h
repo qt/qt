@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,7 @@
 #define QEVENT_P_H
 
 #include <QtCore/qglobal.h>
+#include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -87,6 +88,35 @@ public:
 protected:
     QPointF posF;
     friend class QMouseEvent;
+};
+
+class QTouchEventTouchPointPrivate
+{
+public:
+    inline QTouchEventTouchPointPrivate(int id)
+        : ref(1),
+          id(id),
+          state(Qt::TouchPointReleased),
+          pressure(qreal(-1.))
+    { }
+
+    inline QTouchEventTouchPointPrivate *detach()
+    {
+        QTouchEventTouchPointPrivate *d = new QTouchEventTouchPointPrivate(*this);
+        d->ref = 1;
+        if (!this->ref.deref())
+            delete this;
+        return d;
+    }
+
+    QAtomicInt ref;
+    int id;
+    Qt::TouchPointStates state;
+    QRectF rect, sceneRect, screenRect;
+    QPointF normalizedPos,
+            startPos, startScenePos, startScreenPos, startNormalizedPos,
+            lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
+    qreal pressure;
 };
 
 QT_END_NAMESPACE

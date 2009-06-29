@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -731,7 +731,6 @@ class Q_AUTOTEST_EXPORT Scanner
 public:
     static QString preprocess(const QString &input, bool *hasEscapeSequences = 0);
     static void scan(const QString &preprocessedInput, QVector<Symbol> *symbols);
-    static const char *tokenName(TokenType t);
 };
 
 class Q_GUI_EXPORT Parser

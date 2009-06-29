@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -188,9 +188,13 @@ private slots:
     void embeddedViews();
     void scrollAfterResize_data();
     void scrollAfterResize();
+    void moveItemWhileScrolling_data();
+    void moveItemWhileScrolling();
     void centerOnDirtyItem();
     void mouseTracking();
     void mouseTracking2();
+    void render();
+    void exposeRegion();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -2525,6 +2529,8 @@ void tst_QGraphicsView::acceptMousePressEvent()
 
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
 
+    qApp->processEvents(); // ensure scene rect is updated
+
     QApplication::sendEvent(view.viewport(), &event);
     QVERIFY(view.accepted);
 }
@@ -3042,6 +3048,67 @@ void tst_QGraphicsView::scrollAfterResize()
     QCOMPARE(view.viewportTransform(), x3);
 }
 
+void tst_QGraphicsView::moveItemWhileScrolling_data()
+{
+    QTest::addColumn<bool>("adjustForAntialiasing");
+
+    QTest::newRow("no adjust") << false;
+    QTest::newRow("adjust") << true;
+}
+
+void tst_QGraphicsView::moveItemWhileScrolling()
+{
+    QFETCH(bool, adjustForAntialiasing);
+
+    class MoveItemScrollView : public QGraphicsView
+    {
+    public:
+        MoveItemScrollView()
+        {
+            setScene(new QGraphicsScene(0, 0, 1000, 1000));
+            rect = scene()->addRect(0, 0, 10, 10);
+            rect->setPos(50, 50);
+        }
+        QRegion lastPaintedRegion;
+        QGraphicsItem *rect;
+    protected:
+        void paintEvent(QPaintEvent *event)
+        {
+            lastPaintedRegion = event->region();
+            QGraphicsView::paintEvent(event);
+        }
+    };
+
+    MoveItemScrollView view;
+    view.setFrameStyle(0);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setResizeAnchor(QGraphicsView::NoAnchor);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    if (!adjustForAntialiasing)
+        view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
+    view.show();
+    view.resize(200, 200);
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    view.lastPaintedRegion = QRegion();
+    view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
+    view.rect->moveBy(0, 10);
+    QTest::qWait(100);
+
+    QRegion expectedRegion;
+    expectedRegion += QRect(0, 0, 200, 200);
+    expectedRegion -= QRect(0, 0, 190, 200);
+    int a = adjustForAntialiasing ? 2 : 1;
+    expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
+    expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+
+    QCOMPARE(view.lastPaintedRegion, expectedRegion);
+}
+
 void tst_QGraphicsView::centerOnDirtyItem()
 {
     QGraphicsView view;
@@ -3199,6 +3266,95 @@ void tst_QGraphicsView::mouseTracking2()
     QCOMPARE(spy.count(), 0);
     sendMouseMove(view.viewport(), view.viewport()->rect().center());
     QCOMPARE(spy.count(), 1);
+}
+
+class RenderTester : public QGraphicsRectItem
+{
+public:
+    RenderTester(const QRectF &rect)
+        : QGraphicsRectItem(rect), paints(0)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget)
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        ++paints;
+    }
+    
+    int paints;
+};
+
+void tst_QGraphicsView::render()
+{
+    // ### This test can be much more thorough - see QGraphicsScene::render.
+    QGraphicsScene scene;
+    RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
+    RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
+    RenderTester *r3 = new RenderTester(QRectF(0, 50, 50, 50));
+    RenderTester *r4 = new RenderTester(QRectF(50, 0, 50, 50));
+    scene.addItem(r1);
+    scene.addItem(r2);
+    scene.addItem(r3);
+    scene.addItem(r4);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
+    QCOMPARE(r1->paints, 1);
+    QCOMPARE(r2->paints, 1);
+    QCOMPARE(r3->paints, 1);
+    QCOMPARE(r4->paints, 1);
+
+    QPixmap pix(200, 200);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    view.render(&painter);
+    painter.end();
+
+    QCOMPARE(r1->paints, 2);
+    QCOMPARE(r2->paints, 2);
+    QCOMPARE(r3->paints, 2);
+    QCOMPARE(r4->paints, 2);
+}
+
+void tst_QGraphicsView::exposeRegion()
+{
+    RenderTester *item = new RenderTester(QRectF(0, 0, 20, 20));
+    QGraphicsScene scene;
+    scene.addItem(item);
+
+    CustomView view;
+    view.setScene(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    item->paints = 0;
+    view.lastUpdateRegions.clear();
+
+    // Update a small area in the viewport's topLeft() and bottomRight().
+    // (the boundingRect() of this area covers the entire viewport).
+    QWidget *viewport = view.viewport();
+    QRegion expectedExposeRegion = QRect(0, 0, 5, 5);
+    expectedExposeRegion += QRect(viewport->rect().bottomRight() - QPoint(5, 5), QSize(5, 5));
+    viewport->update(expectedExposeRegion);
+    qApp->processEvents();
+
+    // Make sure it triggers correct repaint on the view.
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+
+    // Make sure the item didn't get any repaints.
+    QCOMPARE(item->paints, 0);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

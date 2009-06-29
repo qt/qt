@@ -23,12 +23,16 @@
 #ifndef RenderTheme_h
 #define RenderTheme_h
 
-#include "RenderObject.h"
 #if USE(NEW_THEME)
 #include "Theme.h"
 #else
 #include "ThemeTypes.h"
 #endif
+#include "RenderObject.h"
+#include "RenderTheme.h"
+#include "ScrollTypes.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
@@ -37,10 +41,23 @@ class PopupMenu;
 class RenderMenuList;
 class CSSStyleSheet;
 
-class RenderTheme {
-public:
+class RenderTheme : public RefCounted<RenderTheme> {
+protected:
     RenderTheme();
+
+public:
     virtual ~RenderTheme() { }
+
+    // This function is to be implemented in your platform-specific theme implementation to hand back the
+    // appropriate platform theme. When the theme is needed in non-page dependent code, a default theme is
+    // used as fallback, which is returned for a nulled page, so the platform code needs to account for this.
+    static PassRefPtr<RenderTheme> themeForPage(Page* page);
+
+    // When the theme is needed in non-page dependent code, the defaultTheme() is used as fallback.
+    static inline PassRefPtr<RenderTheme> defaultTheme()
+    {
+        return themeForPage(0);
+    };
 
     // This method is called whenever style has been computed for an element and the appearance
     // property has been set to a value other than "none".  The theme should map in all of the appropriate
@@ -104,23 +121,21 @@ public:
     // A method asking if the theme's controls actually care about redrawing when hovered.
     virtual bool supportsHover(const RenderStyle*) const { return false; }
 
-    // The selection color.
+    // Text selection colors.
     Color activeSelectionBackgroundColor() const;
     Color inactiveSelectionBackgroundColor() const;
+    Color activeSelectionForegroundColor() const;
+    Color inactiveSelectionForegroundColor() const;
 
-    virtual Color platformTextSearchHighlightColor() const;
+    // List box selection colors
+    Color activeListBoxSelectionBackgroundColor() const;
+    Color activeListBoxSelectionForegroundColor() const;
+    Color inactiveListBoxSelectionBackgroundColor() const;
+    Color inactiveListBoxSelectionForegroundColor() const;
 
-    // The platform selection color.
-    virtual Color platformActiveSelectionBackgroundColor() const;
-    virtual Color platformInactiveSelectionBackgroundColor() const;
-    virtual Color platformActiveSelectionForegroundColor() const;
-    virtual Color platformInactiveSelectionForegroundColor() const;
-
-    // List Box selection color
-    virtual Color activeListBoxSelectionBackgroundColor() const;
-    virtual Color activeListBoxSelectionForegroundColor() const;
-    virtual Color inactiveListBoxSelectionBackgroundColor() const;
-    virtual Color inactiveListBoxSelectionForegroundColor() const;
+    // Highlighting colors for TextMatches.
+    virtual Color platformActiveTextSearchHighlightColor() const;
+    virtual Color platformInactiveTextSearchHighlightColor() const;
 
     virtual void platformColorsDidChange();
 
@@ -132,22 +147,44 @@ public:
 
     virtual int minimumMenuListSize(RenderStyle*) const { return 0; }
 
-    virtual void adjustButtonInnerStyle(RenderStyle*) const;
     virtual void adjustSliderThumbSize(RenderObject*) const;
 
     virtual int popupInternalPaddingLeft(RenderStyle*) const { return 0; }
     virtual int popupInternalPaddingRight(RenderStyle*) const { return 0; }
     virtual int popupInternalPaddingTop(RenderStyle*) const { return 0; }
     virtual int popupInternalPaddingBottom(RenderStyle*) const { return 0; }
-    
+    virtual bool popupOptionSupportsTextIndent() const { return false; }
+
+    virtual int buttonInternalPaddingLeft() const { return 0; }
+    virtual int buttonInternalPaddingRight() const { return 0; }
+    virtual int buttonInternalPaddingTop() const { return 0; }
+    virtual int buttonInternalPaddingBottom() const { return 0; }
+
+    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return RegularScrollbar; }
+
     // Method for painting the caps lock indicator
     virtual bool paintCapsLockIndicator(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return 0; };
 
 #if ENABLE(VIDEO)
+    // Media controls
     virtual bool hitTestMediaControlPart(RenderObject*, const IntPoint& absPoint);
 #endif
 
 protected:
+    // The platform selection color.
+    virtual Color platformActiveSelectionBackgroundColor() const;
+    virtual Color platformInactiveSelectionBackgroundColor() const;
+    virtual Color platformActiveSelectionForegroundColor() const;
+    virtual Color platformInactiveSelectionForegroundColor() const;
+
+    virtual Color platformActiveListBoxSelectionBackgroundColor() const;
+    virtual Color platformInactiveListBoxSelectionBackgroundColor() const;
+    virtual Color platformActiveListBoxSelectionForegroundColor() const;
+    virtual Color platformInactiveListBoxSelectionForegroundColor() const;
+
+    virtual bool supportsSelectionForegroundColors() const { return true; }
+    virtual bool supportsListBoxSelectionForegroundColors() const { return true; }
+
 #if !USE(NEW_THEME)
     // Methods for each appearance value.
     virtual void adjustCheckboxStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
@@ -203,6 +240,9 @@ protected:
     virtual bool paintMediaSeekForwardButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaTimelineContainer(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaCurrentTime(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaTimeRemaining(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
 
 public:
     // Methods for state querying
@@ -218,16 +258,20 @@ public:
     bool isDefault(const RenderObject*) const;
 
 private:
-    mutable Color m_activeSelectionColor;
-    mutable Color m_inactiveSelectionColor;
+    mutable Color m_activeSelectionBackgroundColor;
+    mutable Color m_inactiveSelectionBackgroundColor;
+    mutable Color m_activeSelectionForegroundColor;
+    mutable Color m_inactiveSelectionForegroundColor;
+
+    mutable Color m_activeListBoxSelectionBackgroundColor;
+    mutable Color m_inactiveListBoxSelectionBackgroundColor;
+    mutable Color m_activeListBoxSelectionForegroundColor;
+    mutable Color m_inactiveListBoxSelectionForegroundColor;
+
 #if USE(NEW_THEME)
     Theme* m_theme; // The platform-specific theme.
 #endif
 };
-
-// Function to obtain the theme.  This is implemented in your platform-specific theme implementation to hand
-// back the appropriate platform theme.
-RenderTheme* theme();
 
 } // namespace WebCore
 

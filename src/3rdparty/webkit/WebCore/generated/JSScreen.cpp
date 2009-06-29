@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSScreen.h"
 
-#include <wtf/GetPtr.h>
-
 #include "Screen.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSScreen)
+ASSERT_CLASS_FITS_IN_CELL(JSScreen);
 
 /* Hash table */
 
@@ -72,9 +69,9 @@ static const HashTable JSScreenPrototypeTable =
 
 const ClassInfo JSScreenPrototype::s_info = { "ScreenPrototype", 0, &JSScreenPrototypeTable, 0 };
 
-JSObject* JSScreenPrototype::self(ExecState* exec)
+JSObject* JSScreenPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSScreen>(exec);
+    return getDOMPrototype<JSScreen>(exec, globalObject);
 }
 
 const ClassInfo JSScreen::s_info = { "Screen", 0, &JSScreenTable, 0 };
@@ -88,12 +85,11 @@ JSScreen::JSScreen(PassRefPtr<Structure> structure, PassRefPtr<Screen> impl)
 JSScreen::~JSScreen()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSScreen::createPrototype(ExecState* exec)
+JSObject* JSScreen::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSScreenPrototype(JSScreenPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSScreenPrototype(JSScreenPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSScreen::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -101,61 +97,69 @@ bool JSScreen::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNam
     return getStaticValueSlot<JSScreen, Base>(exec, &JSScreenTable, this, propertyName, slot);
 }
 
-JSValuePtr jsScreenHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->height());
 }
 
-JSValuePtr jsScreenWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->width());
 }
 
-JSValuePtr jsScreenColorDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenColorDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->colorDepth());
 }
 
-JSValuePtr jsScreenPixelDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenPixelDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->pixelDepth());
 }
 
-JSValuePtr jsScreenAvailLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenAvailLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->availLeft());
 }
 
-JSValuePtr jsScreenAvailTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenAvailTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->availTop());
 }
 
-JSValuePtr jsScreenAvailHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenAvailHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->availHeight());
 }
 
-JSValuePtr jsScreenAvailWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsScreenAvailWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(static_cast<JSScreen*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->availWidth());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Screen* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Screen* object)
 {
     return getDOMObjectWrapper<JSScreen>(exec, object);
 }
-Screen* toScreen(JSC::JSValuePtr value)
+Screen* toScreen(JSC::JSValue value)
 {
-    return value->isObject(&JSScreen::s_info) ? static_cast<JSScreen*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSScreen::s_info) ? static_cast<JSScreen*>(asObject(value))->impl() : 0;
 }
 
 }

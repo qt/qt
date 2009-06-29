@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -629,7 +629,7 @@ while (<STDIN>) {
     $sizes[$i++] = $counter;
     $counter += length 1 + $_;
 }
-print "    \"\\0\";\n\nstatic const int QXmlStreamReader_tokenTypeString_indices[] = {\n    ";
+print "    \"\\0\";\n\nstatic const short QXmlStreamReader_tokenTypeString_indices[] = {\n    ";
 for ($j = 0; $j < $i; ++$j) {
     printf "$sizes[$j], ";
 }
@@ -660,10 +660,9 @@ static const char QXmlStreamReader_tokenTypeString_string[] =
     "Comment\0"
     "DTD\0"
     "EntityReference\0"
-    "ProcessingInstruction\0"
-    "\0";
+    "ProcessingInstruction\0";
 
-static const int QXmlStreamReader_tokenTypeString_indices[] = {
+static const short QXmlStreamReader_tokenTypeString_indices[] = {
     0, 8, 16, 30, 42, 55, 66, 77, 85, 89, 105, 0
 };
 
@@ -3411,11 +3410,12 @@ void QXmlStreamWriter::writeComment(const QString &text)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!text.contains(QLatin1String("--")) && !text.endsWith(QLatin1Char('-')));
-    if (!d->finishStartElement() && d->autoFormatting)
+    if (!d->finishStartElement(false) && d->autoFormatting)
         d->indent(d->tagStack.size());
     d->write("<!--");
     d->write(text);
     d->write("-->");
+    d->inStartElement = d->lastWasStartElement = false;
 }
 
 

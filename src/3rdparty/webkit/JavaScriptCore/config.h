@@ -25,6 +25,16 @@
 
 #include <wtf/Platform.h>
 
+#if PLATFORM(WIN_OS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
+#if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
+#define JS_EXPORTDATA __declspec(dllexport)
+#else
+#define JS_EXPORTDATA __declspec(dllimport)
+#endif
+#else
+#define JS_EXPORTDATA
+#endif
+
 #if PLATFORM(WIN_OS)
 
 // If we don't define these, they get defined in windef.h. 
@@ -32,7 +42,7 @@
 #define max max
 #define min min
 
-#if !COMPILER(MSVC7) && !PLATFORM(WIN_CE)
+#if !COMPILER(MSVC7) && !PLATFORM(WINCE)
 // We need to define this before the first #include of stdlib.h or it won't contain rand_s.
 #ifndef _CRT_RAND_S
 #define _CRT_RAND_S

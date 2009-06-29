@@ -81,6 +81,8 @@ public:
         // This unit is in CSS 3, but that isn't a finished standard yet
         CSS_TURN = 108
     };
+    
+    static bool isUnitTypeLength(int type) { return type > CSSPrimitiveValue::CSS_PERCENTAGE && type < CSSPrimitiveValue::CSS_DEG; }
 
     static PassRefPtr<CSSPrimitiveValue> createIdentifier(int ident);
     static PassRefPtr<CSSPrimitiveValue> createColor(unsigned rgbValue);
@@ -155,7 +157,7 @@ public:
     DashboardRegion* getDashboardRegionValue() const { return m_type != CSS_DASHBOARD_REGION ? 0 : m_value.region; }
 
     int getIdent();
-    template<typename T> operator T() const; // Defined in CSSPrimitiveValueMappings.h
+    template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
 
     virtual bool parseString(const String&, bool = false);
     virtual String cssText() const;

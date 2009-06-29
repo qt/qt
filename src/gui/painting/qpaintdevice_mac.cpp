@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -142,14 +142,9 @@ Q_GUI_EXPORT CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
     if (pdev->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap*>(pdev);
         CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
         uint flags = kCGImageAlphaPremultipliedFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-        if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-            flags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-        CGImageAlphaInfo flags = kCGImageAlphaPremultipliedFirst;
+        flags |= kCGBitmapByteOrder32Host;
 #endif
         CGContextRef ret = 0;
 

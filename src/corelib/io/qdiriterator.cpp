@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -110,7 +110,7 @@ public:
                           QDir::Filters filters);
     void advance();
     bool shouldFollowDirectory(const QFileInfo &);
-    bool matchesFilters(const QAbstractFileEngineIterator *it) const;
+    bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
     QSet<QString> visitedLinks;
     QAbstractFileEngine *engine;
@@ -135,14 +135,13 @@ public:
 */
 QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
-    : engine(0), path(path), iteratorFlags(flags), followNextDir(false), first(true), done(false)
+    : engine(0), path(path), nextFileInfo(path), iteratorFlags(flags), followNextDir(false), first(true), done(false)
 {
     if (filters == QDir::NoFilter)
         filters = QDir::AllEntries;
     this->filters = filters;
     this->nameFilters = nameFilters;
 
-    nextFileInfo.setFile(path);
     pushSubDirectory(nextFileInfo.isSymLink() ? nextFileInfo.canonicalFilePath() : path,
                      nameFilters, filters);
 }
@@ -214,23 +213,23 @@ void QDirIteratorPrivate::advance()
         bool foundDirectory = false;
         while (it->hasNext()) {
             it->next();
-            if (matchesFilters(it)) {
+            const QFileInfo info = it->currentFileInfo();
+            if (matchesFilters(it->currentFileName(), info)) {
                 currentFileInfo = nextFileInfo;
-                nextFileInfo = it->currentFileInfo();
+                nextFileInfo = info;
                 // Signal that we want to follow this entry.
                 followNextDir = shouldFollowDirectory(nextFileInfo);
                 //We found a matching entry.
                 return;
 
             } else if (iteratorFlags & QDirIterator::Subdirectories) {
-                QFileInfo fileInfo = it->currentFileInfo();
 
-                if (!shouldFollowDirectory(fileInfo))
+                if (!shouldFollowDirectory(info))
                     continue;
                 QString subDir = it->currentFilePath();
 #ifdef Q_OS_WIN
-                if (fileInfo.isSymLink())
-                    subDir = fileInfo.canonicalFilePath();
+                if (info.isSymLink())
+                    subDir = info.canonicalFilePath();
 #endif
                 pushSubDirectory(subDir, it->nameFilters(), it->filters());
                 
@@ -288,48 +287,32 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
     current entry will be returned as part of the directory iteration);
     otherwise, false is returned.
 */
-bool QDirIteratorPrivate::matchesFilters(const QAbstractFileEngineIterator *it) const
+bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInfo &fi) const
 {
-    const bool filterPermissions = ((filters & QDir::PermissionMask)
-                                    && (filters & QDir::PermissionMask) != QDir::PermissionMask);
-    const bool skipDirs     = !(filters & (QDir::Dirs | QDir::AllDirs));
-    const bool skipFiles    = !(filters & QDir::Files);
-    const bool skipSymlinks = (filters & QDir::NoSymLinks);
-    const bool doReadable   = !filterPermissions || (filters & QDir::Readable);
-    const bool doWritable   = !filterPermissions || (filters & QDir::Writable);
-    const bool doExecutable = !filterPermissions || (filters & QDir::Executable);
-    const bool includeHidden = (filters & QDir::Hidden);
-    const bool includeSystem = (filters & QDir::System);
-
-#ifndef QT_NO_REGEXP
-    // Prepare name filters
-    QList<QRegExp> regexps;
-    bool hasNameFilters = !nameFilters.isEmpty() && !(nameFilters.contains(QLatin1String("*")));
-    if (hasNameFilters) {
-        for (int i = 0; i < nameFilters.size(); ++i) {
-            regexps << QRegExp(nameFilters.at(i),
-                               (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
-                               QRegExp::Wildcard);
-        }
-    }
-#endif
-
-    QString fileName = it->currentFileName();
     if (fileName.isEmpty()) {
         // invalid entry
         return false;
     }
 
-    QFileInfo fi = it->currentFileInfo();
-    QString filePath = it->currentFilePath();
+    // filter . and ..?
+    const int fileNameSize = fileName.size();
+    const bool dotOrDotDot = fileName[0] == QLatin1Char('.')
+                             && ((fileNameSize == 1)
+                                 ||(fileNameSize == 2 && fileName[1] == QLatin1Char('.')));
+    if ((filters & QDir::NoDotAndDotDot) && dotOrDotDot)
+        return false;
 
-#ifndef QT_NO_REGEXP
+    // name filter
+#ifndef QT_NO_REGEXP 
+    const bool hasNameFilters = !nameFilters.isEmpty() && !(nameFilters.contains(QLatin1String("*")));
     // Pass all entries through name filters, except dirs if the AllDirs
-    // filter is passed.
     if (hasNameFilters && !((filters & QDir::AllDirs) && fi.isDir())) {
         bool matched = false;
-        for (int i = 0; i < regexps.size(); ++i) {
-            if (regexps.at(i).exactMatch(fileName)) {
+        for (int i = 0; i < nameFilters.size(); ++i) {
+            QRegExp regexp(nameFilters.at(i),
+                            (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
+                            QRegExp::Wildcard);
+            if (regexp.exactMatch(fileName)) {
                 matched = true;
                 break;
             }
@@ -338,45 +321,51 @@ bool QDirIteratorPrivate::matchesFilters(const QAbstractFileEngineIterator *it) 
             return false;
     }
 #endif
-    
-    bool dotOrDotDot = (fileName == QLatin1String(".") || fileName == QLatin1String(".."));
-    if ((filters & QDir::NoDotAndDotDot) && dotOrDotDot)
+
+    // filter hidden
+    const bool includeHidden = (filters & QDir::Hidden);
+    if (!includeHidden && !dotOrDotDot && fi.isHidden())
         return false;
 
-    bool isHidden = !dotOrDotDot && fi.isHidden();
-    if (!includeHidden && isHidden)
+    // filter system files
+    const bool includeSystem = (filters & QDir::System);
+    if (!includeSystem && ((!fi.isFile() && !fi.isDir() && !fi.isSymLink())
+                    || (!fi.exists() && fi.isSymLink())))
         return false;
 
-    bool isSystem = (!fi.isFile() && !fi.isDir() && !fi.isSymLink())
-                    || (!fi.exists() && fi.isSymLink());
-    if (!includeSystem && isSystem)
+
+    if (!includeSystem && !dotOrDotDot && ((fi.exists() && !fi.isFile() && !fi.isDir() && !fi.isSymLink())
+                                           || (!fi.exists() && fi.isSymLink()))) {
         return false;
+    }
 
-    bool alwaysShow = (filters & QDir::TypeMask) == 0
-        && ((isHidden && includeHidden)
-            || (includeSystem && isSystem));
-
-    // Skip files and directories
-    if ((filters & QDir::AllDirs) == 0 && skipDirs && fi.isDir()) {
-        if (!alwaysShow)
+    // skip directories
+    const bool skipDirs = !(filters & (QDir::Dirs | QDir::AllDirs));
+    if (skipDirs && fi.isDir()) {
+        if (!(includeHidden && !dotOrDotDot && fi.isHidden())
+              || (includeSystem && !fi.exists() && fi.isSymLink()))
             return false;
     }
 
-    if ((skipFiles && (fi.isFile() || !fi.exists()))
-        || (skipSymlinks && fi.isSymLink())) {
-        if (!alwaysShow)
+    // skip files
+    const bool skipFiles    = !(filters & QDir::Files);
+    const bool skipSymlinks = (filters & QDir::NoSymLinks);
+    if ((skipFiles && (fi.isFile() || !fi.exists())) || (skipSymlinks && fi.isSymLink())) {
+        if (!((includeHidden && !dotOrDotDot && fi.isHidden())
+            || (includeSystem && !fi.exists() && fi.isSymLink())))
             return false;
     }
 
+    // filter permissions
+    const bool filterPermissions = ((filters & QDir::PermissionMask)
+                                    && (filters & QDir::PermissionMask) != QDir::PermissionMask);
+    const bool doWritable = !filterPermissions || (filters & QDir::Writable);
+    const bool doExecutable = !filterPermissions || (filters & QDir::Executable);
+    const bool doReadable = !filterPermissions || (filters & QDir::Readable);
     if (filterPermissions
         && ((doReadable && !fi.isReadable())
             || (doWritable && !fi.isWritable())
             || (doExecutable && !fi.isExecutable()))) {
-        return false;
-    }
-
-    if (!includeSystem && !dotOrDotDot && ((fi.exists() && !fi.isFile() && !fi.isDir() && !fi.isSymLink())
-                                           || (!fi.exists() && fi.isSymLink()))) {
         return false;
     }
     

@@ -28,6 +28,7 @@
 #include "Document.h"
 #include "FloatPoint.h"
 #include "LinearGradientAttributes.h"
+#include "MappedAttribute.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
 #include "SVGPaintServerLinearGradient.h"
@@ -87,6 +88,7 @@ void SVGLinearGradientElement::buildGradient() const
     FloatPoint endPoint = FloatPoint::narrowPrecision(attributes.x2(), attributes.y2());
 
     RefPtr<Gradient> gradient = Gradient::create(startPoint, endPoint);
+    gradient->setSpreadMethod(attributes.spreadMethod());
 
     Vector<SVGGradientStop> m_stops = attributes.stops();
     float previousOffset = 0.0f;
@@ -107,7 +109,6 @@ void SVGLinearGradientElement::buildGradient() const
     linearGradient->setGradientStops(attributes.stops());
 
     // These should possibly be supported on Gradient
-    linearGradient->setGradientSpreadMethod(attributes.spreadMethod());
     linearGradient->setGradientTransform(attributes.gradientTransform());
     linearGradient->setGradientStart(startPoint);
     linearGradient->setGradientEnd(endPoint);

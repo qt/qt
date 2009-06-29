@@ -26,6 +26,8 @@
 #include "config.h"
 #include "JavaScriptProfile.h"
 
+#if ENABLE(JAVASCRIPT_DEBUGGER)
+
 #include "JavaScriptProfileNode.h"
 #include <profiler/Profile.h>
 #include <JavaScriptCore/APICast.h>
@@ -68,26 +70,9 @@ static JSValueRef getHeadCallback(JSContextRef ctx, JSObjectRef thisObject, JSSt
     if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
         return JSValueMakeUndefined(ctx);
 
+    ExecState* exec = toJS(ctx);
     Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    return toRef(toJS(toJS(ctx), profile->head()));
-}
-
-static JSValueRef getHeavyProfileCallback(JSContextRef ctx, JSObjectRef thisObject, JSStringRef, JSValueRef*)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    return toRef(toJS(toJS(ctx), profile->heavyProfile()));
-}
-
-static JSValueRef getTreeProfileCallback(JSContextRef ctx, JSObjectRef thisObject, JSStringRef, JSValueRef*)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    return toRef(toJS(toJS(ctx), profile->treeProfile()));
+    return toRef(exec, toJS(exec, profile->head()));
 }
 
 static JSValueRef getUniqueIdCallback(JSContextRef ctx, JSObjectRef thisObject, JSStringRef, JSValueRef*)
@@ -146,94 +131,6 @@ static JSValueRef restoreAll(JSContextRef ctx, JSObjectRef /*function*/, JSObjec
     return JSValueMakeUndefined(ctx);
 }
 
-static JSValueRef sortTotalTimeDescending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortTotalTimeDescending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortTotalTimeAscending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortTotalTimeAscending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortSelfTimeDescending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortSelfTimeDescending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortSelfTimeAscending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortSelfTimeAscending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortCallsDescending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortCallsDescending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortCallsAscending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortCallsAscending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortFunctionNameDescending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortFunctionNameDescending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
-static JSValueRef sortFunctionNameAscending(JSContextRef ctx, JSObjectRef /*function*/, JSObjectRef thisObject, size_t /*argumentCount*/, const JSValueRef[] /*arguments*/, JSValueRef* /*exception*/)
-{
-    if (!JSValueIsObjectOfClass(ctx, thisObject, ProfileClass()))
-        return JSValueMakeUndefined(ctx);
-
-    Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(thisObject));
-    profile->sortFunctionNameAscending();
-
-    return JSValueMakeUndefined(ctx);
-}
-
 static void finalize(JSObjectRef object)
 {
     Profile* profile = static_cast<Profile*>(JSObjectGetPrivate(object));
@@ -246,8 +143,6 @@ JSClassRef ProfileClass()
     static JSStaticValue staticValues[] = {
         { "title", getTitleCallback, 0, kJSPropertyAttributeNone },
         { "head", getHeadCallback, 0, kJSPropertyAttributeNone },
-        { "heavyProfile", getHeavyProfileCallback, 0, kJSPropertyAttributeNone },
-        { "treeProfile", getTreeProfileCallback, 0, kJSPropertyAttributeNone },
         { "uid", getUniqueIdCallback, 0, kJSPropertyAttributeNone },
         { 0, 0, 0, 0 }
     };
@@ -256,14 +151,6 @@ JSClassRef ProfileClass()
         { "focus", focus, kJSPropertyAttributeNone },
         { "exclude", exclude, kJSPropertyAttributeNone },
         { "restoreAll", restoreAll, kJSPropertyAttributeNone },
-        { "sortTotalTimeDescending", sortTotalTimeDescending, kJSPropertyAttributeNone },
-        { "sortTotalTimeAscending", sortTotalTimeAscending, kJSPropertyAttributeNone },
-        { "sortSelfTimeDescending", sortSelfTimeDescending, kJSPropertyAttributeNone },
-        { "sortSelfTimeAscending", sortSelfTimeAscending, kJSPropertyAttributeNone },
-        { "sortCallsDescending", sortCallsDescending, kJSPropertyAttributeNone },
-        { "sortCallsAscending", sortCallsAscending, kJSPropertyAttributeNone },
-        { "sortFunctionNameDescending", sortFunctionNameDescending, kJSPropertyAttributeNone },
-        { "sortFunctionNameAscending", sortFunctionNameAscending, kJSPropertyAttributeNone },
         { 0, 0, 0 }
     };
 
@@ -276,7 +163,7 @@ JSClassRef ProfileClass()
     return profileClass;
 }
 
-JSValuePtr toJS(ExecState* exec, Profile* profile)
+JSValue toJS(ExecState* exec, Profile* profile)
 {
     if (!profile)
         return jsNull();
@@ -292,3 +179,5 @@ JSValuePtr toJS(ExecState* exec, Profile* profile)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(JAVASCRIPT_DEBUGGER)

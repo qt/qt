@@ -4,15 +4,16 @@
 
 namespace JSC {
 
-static const struct HashTableValue dateTableValues[45] = {
+static const struct HashTableValue dateTableValues[47] = {
    { "toString", DontEnum|Function, (intptr_t)dateProtoFuncToString, (intptr_t)0 },
+   { "toISOString", DontEnum|Function, (intptr_t)dateProtoFuncToISOString, (intptr_t)0 },
    { "toUTCString", DontEnum|Function, (intptr_t)dateProtoFuncToUTCString, (intptr_t)0 },
    { "toDateString", DontEnum|Function, (intptr_t)dateProtoFuncToDateString, (intptr_t)0 },
    { "toTimeString", DontEnum|Function, (intptr_t)dateProtoFuncToTimeString, (intptr_t)0 },
    { "toLocaleString", DontEnum|Function, (intptr_t)dateProtoFuncToLocaleString, (intptr_t)0 },
    { "toLocaleDateString", DontEnum|Function, (intptr_t)dateProtoFuncToLocaleDateString, (intptr_t)0 },
    { "toLocaleTimeString", DontEnum|Function, (intptr_t)dateProtoFuncToLocaleTimeString, (intptr_t)0 },
-   { "valueOf", DontEnum|Function, (intptr_t)dateProtoFuncValueOf, (intptr_t)0 },
+   { "valueOf", DontEnum|Function, (intptr_t)dateProtoFuncGetTime, (intptr_t)0 },
    { "getTime", DontEnum|Function, (intptr_t)dateProtoFuncGetTime, (intptr_t)0 },
    { "getFullYear", DontEnum|Function, (intptr_t)dateProtoFuncGetFullYear, (intptr_t)0 },
    { "getUTCFullYear", DontEnum|Function, (intptr_t)dateProtoFuncGetUTCFullYear, (intptr_t)0 },
@@ -49,14 +50,10 @@ static const struct HashTableValue dateTableValues[45] = {
    { "setUTCFullYear", DontEnum|Function, (intptr_t)dateProtoFuncSetUTCFullYear, (intptr_t)3 },
    { "setYear", DontEnum|Function, (intptr_t)dateProtoFuncSetYear, (intptr_t)1 },
    { "getYear", DontEnum|Function, (intptr_t)dateProtoFuncGetYear, (intptr_t)0 },
+   { "toJSON", DontEnum|Function, (intptr_t)dateProtoFuncToJSON, (intptr_t)0 },
    { 0, 0, 0, 0 }
 };
 
 extern const struct HashTable dateTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 2047, dateTableValues, 0 };
-#else
     { 134, 127, dateTableValues, 0 };
-#endif
-
 } // namespace

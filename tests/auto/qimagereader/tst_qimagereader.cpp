@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -156,6 +156,9 @@ private slots:
 
     void pixelCompareWithBaseline_data();
     void pixelCompareWithBaseline();
+
+    void task255627_setNullScaledSize_data();
+    void task255627_setNullScaledSize();
 };
 
 static const QLatin1String prefix(SRCDIR "/images/");
@@ -331,6 +334,29 @@ void tst_QImageReader::setScaledSize()
     QVERIFY(!image.isNull());
 
     QCOMPARE(image.size(), newSize);
+}
+
+void tst_QImageReader::task255627_setNullScaledSize_data()
+{
+    setScaledSize_data();
+}
+
+void tst_QImageReader::task255627_setNullScaledSize()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QByteArray, format);
+
+    if (!format.isEmpty() && !QImageReader::supportedImageFormats().contains(format))
+        QSKIP("Qt does not support reading the \"" + format + "\" format", SkipSingle);
+
+    QImageReader reader(prefix + fileName);
+
+    // set a null size
+    reader.setScaledSize(QSize(0, 0));
+    reader.setQuality(0);
+    QImage image = reader.read();
+    QVERIFY(image.isNull());
+    QCOMPARE(image.size(), QSize(0, 0));
 }
 
 void tst_QImageReader::setClipRect_data()

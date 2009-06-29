@@ -43,39 +43,16 @@ RenderTextControlMultiLine::~RenderTextControlMultiLine()
 void RenderTextControlMultiLine::subtreeHasChanged()
 {
     RenderTextControl::subtreeHasChanged();
-    formControlElement()->setValueMatchesRenderer(false);
+    static_cast<Element*>(node())->setFormControlValueMatchesRenderer(false);
 
     if (!node()->focused())
         return;
 
+    // Fire the "input" DOM event
+    node()->dispatchEvent(eventNames().inputEvent, true, false);
+
     if (Frame* frame = document()->frame())
         frame->textDidChangeInTextArea(static_cast<Element*>(node()));
-}
-
-void RenderTextControlMultiLine::layout()
-{
-    int oldHeight = m_height;
-    calcHeight();
-
-    int oldWidth = m_width;
-    calcWidth();
-
-    bool relayoutChildren = oldHeight != m_height || oldWidth != m_width;
-    RenderObject* innerTextRenderer = innerTextElement()->renderer();
-
-    // Set the text block height
-    int desiredHeight = textBlockHeight();
-    if (desiredHeight != innerTextRenderer->height())
-        relayoutChildren = true;
-    innerTextRenderer->style()->setHeight(Length(desiredHeight, Fixed));
-
-    // Set the text block width
-    int desiredWidth = textBlockWidth();
-    if (desiredWidth != innerTextRenderer->width())
-        relayoutChildren = true;
-    innerTextRenderer->style()->setWidth(Length(desiredWidth, Fixed));
-
-    RenderBlock::layoutBlock(relayoutChildren);
 }
 
 bool RenderTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int x, int y, int tx, int ty, HitTestAction hitTestAction)
@@ -83,12 +60,10 @@ bool RenderTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitT
     if (!RenderTextControl::nodeAtPoint(request, result, x, y, tx, ty, hitTestAction))
         return false;
 
-    if (result.innerNode() == element()) {
-        hitInnerTextBlock(result, x, y, tx, ty);
-        return true;
-    }
+    if (result.innerNode() == node() || result.innerNode() == innerTextElement())
+        hitInnerTextElement(result, x, y, tx, ty);
 
-    return false;
+    return true;
 }
 
 void RenderTextControlMultiLine::forwardEvent(Event* event)
@@ -104,7 +79,7 @@ int RenderTextControlMultiLine::preferredContentWidth(float charWidth) const
 
 void RenderTextControlMultiLine::adjustControlHeightBasedOnLineHeight(int lineHeight)
 {
-    m_height += lineHeight * static_cast<HTMLTextAreaElement*>(node())->rows();
+    setHeight(height() + lineHeight * static_cast<HTMLTextAreaElement*>(node())->rows());
 }
 
 int RenderTextControlMultiLine::baselinePosition(bool, bool) const
@@ -132,10 +107,9 @@ PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerTextStyle(const R
 
     adjustInnerTextStyle(startStyle, textBlockStyle.get());
 
-    // Forward overflow properties.
-    textBlockStyle->setOverflowX(startStyle->overflowX() == OVISIBLE ? OAUTO : startStyle->overflowX());
-    textBlockStyle->setOverflowY(startStyle->overflowY() == OVISIBLE ? OAUTO : startStyle->overflowY());
-
+    // FIXME: This code should just map wrap into CSS in the DOM code.
+    // Then here we should set the textBlockStyle appropriately based off this
+    // object's style()->whiteSpace() and style->wordWrap().
     // Set word wrap property based on wrap attribute.
     if (static_cast<HTMLTextAreaElement*>(node())->shouldWrapText()) {
         textBlockStyle->setWhiteSpace(PRE_WRAP);
@@ -146,10 +120,6 @@ PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerTextStyle(const R
     }
 
     textBlockStyle->setDisplay(BLOCK);
-
-    // We're adding three extra pixels of padding to line textareas up with text fields.
-    textBlockStyle->setPaddingLeft(Length(3, Fixed));
-    textBlockStyle->setPaddingRight(Length(3, Fixed));
 
     return textBlockStyle.release();
 }

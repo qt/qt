@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1308,6 +1308,9 @@ void QPrinter::setNumCopies(int numCopies)
 
     Returns true if collation is turned on when multiple copies is selected.
     Returns false if it is turned off when multiple copies is selected.
+    When collating is turned off the printing of each individual page will be repeated
+    the numCopies() amount before the next page is started. With collating turned on
+    all pages are printed before the next copy of those pages is started.
 
     \sa setCollateCopies()
 */

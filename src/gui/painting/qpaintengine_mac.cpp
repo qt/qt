@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -102,14 +102,9 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
         extern CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
         CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
         uint flags = kCGImageAlphaPremultipliedFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-        if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-            flags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-        CGImageAlphaInfo flags = kCGImageAlphaPremultipliedFirst;
+        flags |= kCGBitmapByteOrder32Host;
 #endif
         const QImage *image = (const QImage *) pe->paintDevice();
 
@@ -131,8 +126,8 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
             QPainterState *state = static_cast<QPainterState *>(pe->state);
             Q_ASSERT(state);
-            if (!state->redirection_offset.isNull())
-                CGContextTranslateCTM(context, -state->redirection_offset.x(), -state->redirection_offset.y());
+            if (!state->redirectionMatrix.isIdentity())
+                CGContextTranslateCTM(context, state->redirectionMatrix.dx(), state->redirectionMatrix.dy());
         }
     }
     CGContextRetain(context);
@@ -528,23 +523,12 @@ static void qt_mac_dispose_pattern(void *info)
 
 inline static QPaintEngine::PaintEngineFeatures qt_mac_cg_features()
 {
-    QPaintEngine::PaintEngineFeatures ret(QPaintEngine::AllFeatures
-                                          & ~QPaintEngine::PaintOutsidePaintEvent
-                                          & ~QPaintEngine::PerspectiveTransform
-                                          & ~QPaintEngine::ConicalGradientFill
-                                          & ~QPaintEngine::LinearGradientFill
-                                          & ~QPaintEngine::RadialGradientFill
-                                          & ~QPaintEngine::BrushStroke);
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        ;
-    } else
-#endif
-    {
-        ret &= ~QPaintEngine::BlendModes;
-    }
-    return ret;
+    return QPaintEngine::PaintEngineFeatures(QPaintEngine::AllFeatures & ~QPaintEngine::PaintOutsidePaintEvent
+                                              & ~QPaintEngine::PerspectiveTransform
+                                              & ~QPaintEngine::ConicalGradientFill
+                                              & ~QPaintEngine::LinearGradientFill
+                                              & ~QPaintEngine::RadialGradientFill
+                                              & ~QPaintEngine::BrushStroke);
 }
 
 QCoreGraphicsPaintEngine::QCoreGraphicsPaintEngine()
@@ -994,22 +978,8 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
         CGContextSetFillColorWithColor(d->hd, cgColorForQColor(col, d->pdev));
         image = qt_mac_create_imagemask(pm, sr);
     } else if (differentSize) {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            QCFType<CGImageRef> img = pm.toMacCGImageRef();
-            image = CGImageCreateWithImageInRect(img, CGRectMake(qRound(sr.x()), qRound(sr.y()), qRound(sr.width()), qRound(sr.height())));
-        } else
-#endif
-        {
-            const int sx = qRound(sr.x()), sy = qRound(sr.y()), sw = qRound(sr.width()), sh = qRound(sr.height());
-            const QMacPixmapData *pmData = static_cast<const QMacPixmapData*>(pm.data);
-            quint32 *pantherData = pmData->pixels + sy * (pmData->bytesPerRow / 4) + sx;
-            QCFType<CGDataProviderRef> provider = CGDataProviderCreateWithData(0, pantherData, sw*sh*pmData->bytesPerRow, 0);
-            image = CGImageCreate(sw, sh, 8, 32, pmData->bytesPerRow,
-                                  macGenericColorSpace(),
-                                  kCGImageAlphaPremultipliedFirst, provider, 0, 0,
-                                  kCGRenderingIntentDefault);
-        }
+        QCFType<CGImageRef> img = pm.toMacCGImageRef();
+        image = CGImageCreateWithImageInRect(img, CGRectMake(qRound(sr.x()), qRound(sr.y()), qRound(sr.width()), qRound(sr.height())));
     } else {
         image = (CGImageRef)pm.macCGHandle();
     }
@@ -1031,11 +1001,7 @@ CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imag
     else
         image = new QImage(img);
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     uint cgflags = kCGImageAlphaNone;
-#else
-    CGImageAlphaInfo cgflags = kCGImageAlphaNone;
-#endif
     switch (image->format()) {
     case QImage::Format_ARGB32_Premultiplied:
         cgflags = kCGImageAlphaPremultipliedFirst;
@@ -1048,9 +1014,8 @@ CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imag
     default:
         break;
     }
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4) && defined(kCGBitmapByteOrder32Host) //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
+#if defined(kCGBitmapByteOrder32Host) //only needed because CGImage.h added symbols in the minor version
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
     QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(image,
                                                           static_cast<const QImage *>(image)->bits(),
@@ -1078,27 +1043,9 @@ void QCoreGraphicsPaintEngine::drawImage(const QRectF &r, const QImage &img, con
     const QImage *image;
     QCFType<CGImageRef> cgimage = qt_mac_createCGImageFromQImage(img, &image);
     CGRect rect = CGRectMake(r.x(), r.y(), r.width(), r.height());
-    if (QRectF(0, 0, img.width(), img.height()) != sr) {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            cgimage = CGImageCreateWithImageInRect(cgimage, CGRectMake(sr.x(), sr.y(),
-                        sr.width(), sr.height()));
-        } else
-#endif
-        {
-            int sx = qRound(sr.x());
-            int sy = qRound(sr.y());
-            int sw = qRound(sr.width());
-            int sh = qRound(sr.height());
-            // Make another CGImage based on the part that we need.
-            const uchar *pantherData = image->scanLine(sy) + sx * sizeof(uint);
-            QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(0, pantherData,
-                                                                                   sw * sh * image->bytesPerLine(), 0);
-            cgimage = CGImageCreate(sw, sh, 8, 32, image->bytesPerLine(),
-                                    macGenericColorSpace(),
-                    CGImageGetAlphaInfo(cgimage), dataProvider, 0, false, kCGRenderingIntentDefault);
-        }
-    }
+    if (QRectF(0, 0, img.width(), img.height()) != sr)
+        cgimage = CGImageCreateWithImageInRect(cgimage, CGRectMake(sr.x(), sr.y(),
+                                               sr.width(), sr.height()));
     qt_mac_drawCGImage(d->hd, &rect, cgimage);
 }
 
@@ -1434,8 +1381,13 @@ QCoreGraphicsPaintEngine::updateRenderHints(QPainter::RenderHints hints)
 {
     Q_D(QCoreGraphicsPaintEngine);
     CGContextSetShouldAntialias(d->hd, hints & QPainter::Antialiasing);
-    CGContextSetInterpolationQuality(d->hd, (hints & QPainter::SmoothPixmapTransform) ?
-                                     kCGInterpolationHigh : kCGInterpolationNone);
+    static const CGFloat ScaleFactor = qt_mac_get_scalefactor();
+    if (ScaleFactor > 1.) {
+        CGContextSetInterpolationQuality(d->hd, kCGInterpolationHigh);
+    } else {
+        CGContextSetInterpolationQuality(d->hd, (hints & QPainter::SmoothPixmapTransform) ?
+                                         kCGInterpolationHigh : kCGInterpolationNone);
+    }
     CGContextSetShouldSmoothFonts(d->hd, hints & QPainter::TextAntialiasing);
 }
 
@@ -1496,23 +1448,23 @@ QCoreGraphicsPaintEnginePrivate::setStrokePen(const QPen &pen)
         for(int i = 0; i < customs.size(); ++i)
             linedashes.append(customs.at(i));
     } else if(pen.style() == Qt::DashLine) {
-        linedashes.append(3);
-        linedashes.append(1);
+        linedashes.append(4);
+        linedashes.append(2);
     } else if(pen.style() == Qt::DotLine) {
         linedashes.append(1);
-        linedashes.append(1);
+        linedashes.append(2);
     } else if(pen.style() == Qt::DashDotLine) {
-        linedashes.append(3);
+        linedashes.append(4);
+        linedashes.append(2);
         linedashes.append(1);
-        linedashes.append(1);
-        linedashes.append(1);
+        linedashes.append(2);
     } else if(pen.style() == Qt::DashDotDotLine) {
-        linedashes.append(3);
+        linedashes.append(4);
+        linedashes.append(2);
         linedashes.append(1);
+        linedashes.append(2);
         linedashes.append(1);
-        linedashes.append(1);
-        linedashes.append(1);
-        linedashes.append(1);
+        linedashes.append(2);
     }
     const CGFloat cglinewidth = pen.widthF() <= 0.0f ? 1.0f : float(pen.widthF());
     for(int i = 0; i < linedashes.size(); ++i) {

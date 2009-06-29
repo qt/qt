@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -198,9 +198,8 @@ QRectF QSvgPath::bounds() const
 }
 
 QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
-    : QSvgNode(parent), m_poly(poly)
+    : QSvgNode(parent), m_poly(poly), m_fillRule(Qt::WindingFill)
 {
-
 }
 
 QRectF QSvgPolygon::bounds() const
@@ -217,7 +216,7 @@ QRectF QSvgPolygon::bounds() const
 
 void QSvgPolygon::draw(QPainter *p, QSvgExtraStates &states)
 {
-    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly));
+    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, m_fillRule));
 }
 
 

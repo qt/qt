@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAnimatedRect.h"
-
-#include <wtf/GetPtr.h>
 
 #include "FloatRect.h"
 #include "JSSVGRect.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedRect)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedRect);
 
 /* Hash table */
 
@@ -70,9 +66,9 @@ static const HashTable JSSVGAnimatedRectPrototypeTable =
 
 const ClassInfo JSSVGAnimatedRectPrototype::s_info = { "SVGAnimatedRectPrototype", 0, &JSSVGAnimatedRectPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedRectPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedRect>(exec);
+    return getDOMPrototype<JSSVGAnimatedRect>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedRect::s_info = { "SVGAnimatedRect", 0, &JSSVGAnimatedRectTable, 0 };
@@ -87,12 +83,11 @@ JSSVGAnimatedRect::JSSVGAnimatedRect(PassRefPtr<Structure> structure, PassRefPtr
 JSSVGAnimatedRect::~JSSVGAnimatedRect()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGAnimatedRect::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedRectPrototype(JSSVGAnimatedRectPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedRectPrototype(JSSVGAnimatedRectPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -100,25 +95,27 @@ bool JSSVGAnimatedRect::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSSVGAnimatedRect, Base>(exec, &JSSVGAnimatedRectTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAnimatedRectBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedRectBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedRect* imp = static_cast<SVGAnimatedRect*>(static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::lookupOrCreateWrapper(imp, &SVGAnimatedRect::baseVal, &SVGAnimatedRect::setBaseVal).get(), static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->context());
 }
 
-JSValuePtr jsSVGAnimatedRectAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedRectAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedRect* imp = static_cast<SVGAnimatedRect*>(static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::lookupOrCreateWrapper(imp, &SVGAnimatedRect::animVal, &SVGAnimatedRect::setAnimVal).get(), static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()))->context());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGAnimatedRect* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedRect* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGAnimatedRect>(exec, object, context);
 }
-SVGAnimatedRect* toSVGAnimatedRect(JSC::JSValuePtr value)
+SVGAnimatedRect* toSVGAnimatedRect(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGAnimatedRect::s_info) ? static_cast<JSSVGAnimatedRect*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGAnimatedRect::s_info) ? static_cast<JSSVGAnimatedRect*>(asObject(value))->impl() : 0;
 }
 
 }

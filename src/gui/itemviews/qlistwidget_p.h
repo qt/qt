@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -143,7 +143,7 @@ class QListWidgetPrivate : public QListViewPrivate
     Q_DECLARE_PUBLIC(QListWidget)
 public:
     QListWidgetPrivate() : QListViewPrivate(), sortOrder(Qt::AscendingOrder), sortingEnabled(false) {}
-    inline QListModel *model() const { return qobject_cast<QListModel*>(q_func()->model()); }
+    inline QListModel *listModel() const { return qobject_cast<QListModel*>(model); }
     void setup();
     void _q_emitItemPressed(const QModelIndex &index);
     void _q_emitItemClicked(const QModelIndex &index);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -653,6 +653,7 @@ QBitArray operator^(const QBitArray &a1, const QBitArray &a2)
   QBitArray stream functions
  *****************************************************************************/
 
+#ifndef QT_NO_DATASTREAM
 /*!
     \relates QBitArray
 
@@ -660,7 +661,7 @@ QBitArray operator^(const QBitArray &a1, const QBitArray &a2)
 
     \sa \link datastreamformat.html Format of the QDataStream operators \endlink
 */
-#ifndef QT_NO_DATASTREAM
+
 QDataStream &operator<<(QDataStream &out, const QBitArray &ba)
 {
     quint32 len = ba.size();
@@ -713,7 +714,7 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     *ba.d.data() = ba.d.size() * 8 - len;
     return in;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     \fn DataPtr &QBitArray::data_ptr()

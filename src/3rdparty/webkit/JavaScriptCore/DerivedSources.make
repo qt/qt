@@ -1,4 +1,4 @@
-# Copyright (C) 2006, 2007, 2008 2009 Apple Inc. All rights reserved.
+# Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -40,13 +40,14 @@ all : \
     chartables.c \
     DatePrototype.lut.h \
     Grammar.cpp \
+    JSONObject.lut.h \
     Lexer.lut.h \
     MathObject.lut.h \
     NumberConstructor.lut.h \
     RegExpConstructor.lut.h \
     RegExpObject.lut.h \
     StringPrototype.lut.h \
-    $(JavaScriptCore)/docs/bytecode.html \
+    docs/bytecode.html \
 #
 
 # lookup tables for classes
@@ -71,5 +72,5 @@ Grammar.cpp: Grammar.y
 chartables.c : dftables
 	$^ $@
 
-$(JavaScriptCore)/docs/bytecode.html: make-bytecode-docs.pl Interpreter.cpp 
+docs/bytecode.html: make-bytecode-docs.pl Interpreter.cpp 
 	perl $^ $@

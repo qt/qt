@@ -21,14 +21,14 @@
 #ifndef JSSVGTransform_h
 #define JSSVGTransform_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
+#include "SVGTransform.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "SVGTransform.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 
@@ -37,17 +37,17 @@ class JSSVGTransform : public DOMObject {
 public:
     JSSVGTransform(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> >, SVGElement* context);
     virtual ~JSSVGTransform();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     JSSVGPODTypeWrapper<SVGTransform>* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -56,16 +56,17 @@ private:
     RefPtr<JSSVGPODTypeWrapper<SVGTransform> > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, JSSVGPODTypeWrapper<SVGTransform>*, SVGElement* context);
-SVGTransform toSVGTransform(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<SVGTransform>*, SVGElement* context);
+SVGTransform toSVGTransform(JSC::JSValue);
 
 class JSSVGTransformPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -74,27 +75,27 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGTransformPrototypeFunctionSetMatrix(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformPrototypeFunctionSetTranslate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformPrototypeFunctionSetScale(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformPrototypeFunctionSetRotate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformPrototypeFunctionSetSkewX(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformPrototypeFunctionSetSkewY(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetMatrix(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetTranslate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetScale(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetRotate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetSkewX(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetSkewY(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGTransformType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformMatrix(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformAngle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformMatrix(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformAngle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_MATRIX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_TRANSLATE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_SCALE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_ROTATE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_SKEWX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGTransformSVG_TRANSFORM_SKEWY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_MATRIX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_TRANSLATE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_SCALE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_ROTATE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_SKEWX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformSVG_TRANSFORM_SKEWY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

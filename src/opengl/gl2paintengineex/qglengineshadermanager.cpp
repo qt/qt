@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,9 +107,11 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
         code[MainFragmentShader] = qglslMainFragmentShader;
 
         code[ImageSrcFragmentShader] = qglslImageSrcFragmentShader;
+        code[ImageSrcWithPatternFragmentShader] = qglslImageSrcWithPatternFragmentShader;
         code[NonPremultipliedImageSrcFragmentShader] = qglslNonPremultipliedImageSrcFragmentShader;
         code[SolidBrushSrcFragmentShader] = qglslSolidBrushSrcFragmentShader;
         code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader;
+        code[TextureBrushSrcWithPatternFragmentShader] = qglslTextureBrushSrcWithPatternFragmentShader;
         code[PatternBrushSrcFragmentShader] = qglslPatternBrushSrcFragmentShader;
         code[LinearGradientBrushSrcFragmentShader] = qglslLinearGradientBrushSrcFragmentShader;
         code[RadialGradientBrushSrcFragmentShader] = qglslRadialGradientBrushSrcFragmentShader;
@@ -157,6 +159,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     simpleShaderProg->addShader(compiledShaders[PositionOnlyVertexShader]);
     simpleShaderProg->addShader(compiledShaders[MainFragmentShader]);
     simpleShaderProg->addShader(compiledShaders[ShockingPinkSrcFragmentShader]);
+    simpleShaderProg->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
     simpleShaderProg->link();
     if (!simpleShaderProg->isLinked()) {
         qCritical() << "Errors linking simple shader:"
@@ -188,7 +191,29 @@ QGLEngineShaderManager::~QGLEngineShaderManager()
 }
 
 
+uint QGLEngineShaderManager::getUniformIdentifier(const char *uniformName)
+{
+    uniformIdentifiers << uniformName;
+    return uniformIdentifiers.size() - 1;
+}
 
+uint QGLEngineShaderManager::getUniformLocation(uint id)
+{
+    QVector<uint> &uniformLocations = currentShaderProg->uniformLocations;
+    uint oldSize = uniformLocations.size();
+    if (oldSize <= id) {
+        uint newSize = id + 1;
+        uniformLocations.resize(newSize);
+
+        for (uint i = oldSize; i < newSize; ++i)
+            uniformLocations[i] = GLuint(-1);
+    }
+
+    if (uniformLocations.at(id) == GLuint(-1))
+        uniformLocations[id] = currentShaderProg->program->uniformLocation(uniformIdentifiers.at(id));
+
+    return uniformLocations.at(id);
+}
 
 
 void QGLEngineShaderManager::optimiseForBrushTransform(const QTransform &transform)
@@ -203,43 +228,61 @@ void QGLEngineShaderManager::setDirty()
 
 void QGLEngineShaderManager::setSrcPixelType(Qt::BrushStyle style)
 {
+    if (srcPixelType == PixelSrcType(style))
+        return;
+
     srcPixelType = style;
     shaderProgNeedsChanging = true; //###
 }
 
 void QGLEngineShaderManager::setSrcPixelType(PixelSrcType type)
 {
+    if (srcPixelType == type)
+        return;
+
     srcPixelType = type;
     shaderProgNeedsChanging = true; //###
 }
 
 void QGLEngineShaderManager::setTextureCoordsEnabled(bool enabled)
 {
+    if (useTextureCoords == enabled)
+        return;
+
     useTextureCoords = enabled;
     shaderProgNeedsChanging = true; //###
 }
 
 void QGLEngineShaderManager::setUseGlobalOpacity(bool useOpacity)
 {
+    if (useGlobalOpacity == useOpacity)
+        return;
+
     useGlobalOpacity = useOpacity;
     shaderProgNeedsChanging = true; //###
 }
 
 void QGLEngineShaderManager::setMaskType(MaskType type)
 {
+    if (maskType == type)
+        return;
+
     maskType = type;
     shaderProgNeedsChanging = true; //###
 }
 
 void QGLEngineShaderManager::setCompositionMode(QPainter::CompositionMode mode)
 {
+    if (compositionMode == mode)
+        return;
+
     compositionMode = mode;
     shaderProgNeedsChanging = true; //###
 }
 
 QGLShaderProgram* QGLEngineShaderManager::currentProgram()
 {
-    return currentShaderProg;
+    return currentShaderProg->program;
 }
 
 QGLShaderProgram* QGLEngineShaderManager::simpleProgram()
@@ -294,6 +337,15 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         case QGLEngineShaderManager::ImageSrc:
             srcPixelFragShaderName = ImageSrcFragmentShader;
             positionVertexShaderName = PositionOnlyVertexShader;
+            break;
+        case QGLEngineShaderManager::PatternSrc:
+            srcPixelFragShaderName = ImageSrcWithPatternFragmentShader;
+            positionVertexShaderName = PositionOnlyVertexShader;
+            break;
+        case QGLEngineShaderManager::TextureSrcWithPattern:
+            srcPixelFragShaderName = TextureBrushSrcWithPatternFragmentShader;
+            positionVertexShaderName = isAffine ? AffinePositionWithTextureBrushVertexShader
+                                                : PositionWithTextureBrushVertexShader;
             break;
         case QGLEngineShaderManager::NonPremultipliedImageSrc:
             srcPixelFragShaderName = NonPremultipliedImageSrcFragmentShader;
@@ -420,15 +472,16 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
-    foreach (const QGLEngineShaderProg &prog, cachedPrograms) {
+    for (int i = 0; i < cachedPrograms.size(); ++i) {
+        QGLEngineShaderProg &prog = cachedPrograms[i];
         if (    (prog.mainVertexShader == requiredProgram.mainVertexShader)
              && (prog.positionVertexShader == requiredProgram.positionVertexShader)
              && (prog.mainFragShader == requiredProgram.mainFragShader)
              && (prog.srcPixelFragShader == requiredProgram.srcPixelFragShader)
              && (prog.compositionFragShader == requiredProgram.compositionFragShader) )
         {
-            currentShaderProg = prog.program;
-            currentShaderProg->enable();
+            currentShaderProg = &prog;
+            currentShaderProg->program->enable();
             shaderProgNeedsChanging = false;
             return true;
         }
@@ -444,7 +497,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     requiredProgram.program->addShader(requiredProgram.compositionFragShader);
 
     // We have to bind the vertex attribute names before the program is linked:
-    requiredProgram.program->bindAttributeLocation("inputVertex", QT_VERTEX_COORDS_ATTR);
+    requiredProgram.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
     if (useTextureCoords)
         requiredProgram.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
@@ -468,8 +521,10 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     }
     else {
         cachedPrograms.append(requiredProgram);
-        currentShaderProg = requiredProgram.program;
-        currentShaderProg->enable();
+        // taking the address here is safe since
+        // cachePrograms isn't resized anywhere else
+        currentShaderProg = &cachedPrograms.last();
+        currentShaderProg->program->enable();
     }
     shaderProgNeedsChanging = false;
     return true;

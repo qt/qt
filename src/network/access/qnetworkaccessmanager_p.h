@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -98,10 +98,12 @@ public:
 
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
 
+    // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
+
     QNetworkCookieJar *cookieJar;
 
-    QNetworkAccessCache cache;
+
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy;
     QNetworkProxyFactory *proxyFactory;
@@ -109,8 +111,12 @@ public:
 
     bool cookieJarCreated;
 
-    static inline QNetworkAccessCache *getCache(QNetworkAccessBackend *backend)
-    { return &backend->manager->cache; }
+
+    // this cache can be used by individual backends to cache e.g. their TCP connections to a server
+    // and use the connections for multiple requests.
+    QNetworkAccessCache objectCache;
+    static inline QNetworkAccessCache *getObjectCache(QNetworkAccessBackend *backend)
+    { return &backend->manager->objectCache; }
     Q_AUTOTEST_EXPORT static void clearCache(QNetworkAccessManager *manager);
 
     Q_DECLARE_PUBLIC(QNetworkAccessManager)

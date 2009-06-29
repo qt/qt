@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -162,7 +162,16 @@ qint64 QHttpNetworkReply::bytesAvailable() const
 {
     Q_D(const QHttpNetworkReply);
     if (d->connection)
-        return d->connection->d_func()->bytesAvailable(*this);
+        return d->connection->d_func()->uncompressedBytesAvailable(*this);
+    else
+        return -1;
+}
+
+qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
+{
+    Q_D(const QHttpNetworkReply);
+    if (d->connection)
+        return d->connection->d_func()->uncompressedBytesAvailableNextBlock(*this);
     else
         return -1;
 }
@@ -172,7 +181,7 @@ QByteArray QHttpNetworkReply::read(qint64 maxSize)
     Q_D(QHttpNetworkReply);
     QByteArray data;
     if (d->connection)
-        d->connection->d_func()->read(*this, data, maxSize, false);
+        d->connection->d_func()->read(*this, data, maxSize);
     return data;
 }
 
@@ -187,7 +196,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
-      autoDecompress(false), requestIsBuffering(false), requestIsPrepared(false)
+      autoDecompress(false), requestIsPrepared(false)
 {
 }
 
@@ -540,6 +549,30 @@ bool QHttpNetworkReplyPrivate::connectionCloseEnabled()
             headerField("proxy-connection").toLower().contains("close"));
 }
 
+// note this function can only be used for non-chunked, non-compressed with
+// known content length
+qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QRingBuffer *rb)
+{   
+    quint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
+    char* dst = rb->reserve(toBeRead);
+    qint64 haveRead = socket->read(dst, toBeRead);
+    if (haveRead == -1) {
+        rb->chop(toBeRead);
+        return 0; // ### error checking here;
+    }
+
+    rb->chop(toBeRead - haveRead);
+
+    if (contentRead + haveRead == bodyLength) {
+        state = AllDoneState;
+        socket->readAll(); // Read the rest to clean (CRLF) ### will break pipelining
+    }
+
+    contentRead += haveRead;
+    return haveRead;
+}
+
+
 qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *out)
 {
     qint64 bytes = 0;
@@ -553,7 +586,7 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QIODevice *ou
         bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
     }
     if (state == AllDoneState)
-        socket->readAll(); // Read the rest to clean (CRLF)
+        socket->readAll(); // Read the rest to clean (CRLF) ### will break pipelining
     contentRead += bytes;
     return bytes;
 }

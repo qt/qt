@@ -21,8 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FEBlend.h"
+
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -59,7 +61,7 @@ void FEBlend::setBlendMode(BlendModeType mode)
     m_mode = mode;
 }
 
-void FEBlend::apply()
+void FEBlend::apply(Filter*)
 {
 }
 
@@ -69,4 +71,4 @@ void FEBlend::dump()
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)

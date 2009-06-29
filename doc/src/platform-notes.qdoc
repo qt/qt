@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -157,7 +157,7 @@
     \target IRIX
     \section1 IRIX - 6.5.x
 
-    \bold{IRIX is an unsupported platform - please see Qt Software's online
+    \bold{IRIX is an unsupported platform - please see Qt's online
     \l{Platform Support Policy} for details.}
 
     Unpackaging and IRIX tar:
@@ -382,7 +382,7 @@
     Qt is supported on a variety of 32-bit and 64-bit platforms, and can
     usually be built on each platform with GCC, a vendor-supplied compiler, or
     a third party compiler. Although Qt may be built on a range of platform-compiler
-    combinations, only a subset of these are actively supported by Qt Software.
+    combinations, only a subset of these are actively supported by Qt.
 
     A more general overview of the platforms Qt runs on can be found on the
     \l{Platform Notes} page. Information about the compilers used on each platform
@@ -472,7 +472,7 @@
     \row    \o Windows XP/Vista  \o Intel 32/64-bit \o win32-msvc.net      \o Visual Studio 2002
     \endtable
 
-    Qt Software's online \l{Platform Support Policy} for Qt describes the level of
+    Qt's online \l{Platform Support Policy} for Qt describes the level of
     support you should expect for these platforms.
 
     \section1 Supported Features
@@ -601,7 +601,7 @@
 
     \section2 Intel C++ Compiler for Linux
 
-    Qt Software currently tests the following compilers:
+    Nokia currently tests the following compilers:
 
     \list
 

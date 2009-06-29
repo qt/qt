@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -272,7 +272,14 @@ public:
         Signal = 192,
         Wrapped = 193,
 
-	// 512 reserved for Qt Jambi's MetaCall event
+        TouchBegin = 194,
+        TouchUpdate = 195,
+        TouchEnd = 196,
+
+        Gesture = 197,
+        GraphicsSceneGesture = 198,
+
+        // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
         User = 1000,                            // first user event id
@@ -310,6 +317,9 @@ private:
     friend class Q3AccelManager;
     friend class QShortcutMap;
     friend class QETWidget;
+    friend class QGraphicsView;
+    friend class QGraphicsViewPrivate;
+    friend class QGraphicsScenePrivate;
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

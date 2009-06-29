@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -488,8 +488,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
             opt.state |= QStyle::State_HasFocus;
     }
 
-    if (opt.features & QStyleOptionViewItemV2::Alternate)
-        painter->fillRect(opt.rect, opt.palette.brush(QPalette::AlternateBase));
+    q->style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, q);
 
     if (const QWidget *widget = editorForIndex(index).editor) {
         painter->save();
@@ -1844,14 +1843,14 @@ void QTableView::setSortingEnabled(bool enable)
         disconnect(horizontalHeader(), SIGNAL(sectionPressed(int)),
                    this, SLOT(selectColumn(int)));
         connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(sortByColumn(int)));
+                this, SLOT(sortByColumn(int)), Qt::UniqueConnection);
         sortByColumn(horizontalHeader()->sortIndicatorSection(),
                      horizontalHeader()->sortIndicatorOrder());
     } else {
         connect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
-                this, SLOT(_q_selectColumn(int)));
+                this, SLOT(_q_selectColumn(int)), Qt::UniqueConnection);
         connect(horizontalHeader(), SIGNAL(sectionPressed(int)),
-                this, SLOT(selectColumn(int)));
+                this, SLOT(selectColumn(int)), Qt::UniqueConnection);
         disconnect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
                    this, SLOT(sortByColumn(int)));
     }

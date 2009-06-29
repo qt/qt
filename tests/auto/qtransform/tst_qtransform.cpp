@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -603,6 +603,13 @@ void tst_QTransform::types()
                  1.0f, 0.0f, 0.0f,
                  0.0f, 0.0f, 2.0f);
     QCOMPARE(m3.type(), QTransform::TxProject);
+
+    QTransform m4;
+    m4.scale(5, 5);
+    m4.translate(4, 2);
+    m4.rotate(45);
+
+    QCOMPARE(m4.type(), QTransform::TxRotate);
 }
 
 
@@ -647,7 +654,7 @@ void tst_QTransform::transform()
     d.rotate(30);
     e.shear(0.5, 0.5);
 
-    QCOMPARE(t, e * d * c * b * a);
+    QVERIFY(qFuzzyCompare(t, e * d * c * b * a));
 }
 
 void tst_QTransform::mapEmptyPath()

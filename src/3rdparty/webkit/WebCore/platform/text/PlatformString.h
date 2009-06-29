@@ -27,15 +27,18 @@
 
 #include "StringImpl.h"
 
-#include <wtf/PassRefPtr.h>
+#ifdef __OBJC__
+#include <objc/objc.h>
+#endif
 
 #if USE(JSC)
 #include <runtime/Identifier.h>
 #else
-// runtime/Identifier.h includes HashMap.h and HashSet.h. We explicitly include 
-// them in the case of non-JSC builds to keep things consistent.
+// runtime/Identifier.h brings in a variety of wtf headers.  We explicitly
+// include them in the case of non-JSC builds to keep things consistent.
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
+#include <wtf/OwnPtr.h>
 #endif
 
 #if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
@@ -147,6 +150,8 @@ public:
     // Return the string with case folded for case insensitive comparison.
     String foldCase() const;
 
+    static String number(short);
+    static String number(unsigned short);
     static String number(int);
     static String number(unsigned);
     static String number(long);
@@ -157,6 +162,11 @@ public:
     
     static String format(const char *, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
 
+    // Returns an uninitialized string. The characters needs to be written
+    // into the buffer returned in data before the returned string is used.
+    // Failure to do this will have unpredictable results.
+    static String createUninitialized(unsigned length, UChar*& data) { return StringImpl::createUninitialized(length, data); }
+
     void split(const String& separator, Vector<String>& result) const;
     void split(const String& separator, bool allowEmptyEntries, Vector<String>& result) const;
     void split(UChar separator, Vector<String>& result) const;
@@ -166,11 +176,13 @@ public:
     unsigned toUIntStrict(bool* ok = 0, int base = 10) const;
     int64_t toInt64Strict(bool* ok = 0, int base = 10) const;
     uint64_t toUInt64Strict(bool* ok = 0, int base = 10) const;
+    intptr_t toIntPtrStrict(bool* ok = 0, int base = 10) const;
 
     int toInt(bool* ok = 0) const;
     unsigned toUInt(bool* ok = 0) const;
     int64_t toInt64(bool* ok = 0) const;
     uint64_t toUInt64(bool* ok = 0) const;
+    intptr_t toIntPtr(bool* ok = 0) const;
     double toDouble(bool* ok = 0) const;
     float toFloat(bool* ok = 0) const;
 
@@ -226,6 +238,9 @@ public:
     static String fromUTF8(const char*, size_t);
     static String fromUTF8(const char*);
 
+    // Tries to convert the passed in string to UTF-8, but will fall back to Latin-1 if the string is not valid UTF-8.
+    static String fromUTF8WithLatin1Fallback(const char*, size_t);
+    
     // Determines the writing direction using the Unicode Bidi Algorithm rules P2 and P3.
     WTF::Unicode::Direction defaultWritingDirection() const { return m_impl ? m_impl->defaultWritingDirection() : WTF::Unicode::LeftToRight; }
 
@@ -263,11 +278,13 @@ int charactersToIntStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
 unsigned charactersToUIntStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
 int64_t charactersToInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
 uint64_t charactersToUInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
+intptr_t charactersToIntPtrStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
 
 int charactersToInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 unsigned charactersToUInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 int64_t charactersToInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+intptr_t charactersToIntPtr(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 
 double charactersToDouble(const UChar*, size_t, bool* ok = 0);
 float charactersToFloat(const UChar*, size_t, bool* ok = 0);

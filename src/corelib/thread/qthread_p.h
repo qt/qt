@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -105,32 +105,6 @@ public:
     inline QPostEventList()
         : QList<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0)
     { }
-};
-
-class Q_CORE_EXPORT QThreadData
-{
-    QAtomicInt _ref;
-
-public:
-    QThreadData(int initialRefCount = 1);
-    ~QThreadData();
-
-    static QThreadData *current();
-    static QThreadData *get2(QThread *thread);
-
-    void ref();
-    void deref();
-
-    QThread *thread;
-    bool quitNow;
-    int loopLevel;
-    QAbstractEventDispatcher *eventDispatcher;
-    QStack<QEventLoop *> eventLoops;
-    QPostEventList postEventList;
-    bool canWait;
-    QMap<int, void *> tls;
-
-    QMutex mutex;
 };
 
 #ifndef QT_NO_THREAD
@@ -209,6 +183,34 @@ public:
 };
 
 #endif // QT_NO_THREAD
+
+class QThreadData
+{
+    QAtomicInt _ref;
+
+public:
+    QThreadData(int initialRefCount = 1);
+    ~QThreadData();
+
+    static QThreadData *current();
+    static QThreadData *get2(QThread *thread)
+    { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
+
+
+    void ref();
+    void deref();
+
+    QThread *thread;
+    bool quitNow;
+    int loopLevel;
+    QAbstractEventDispatcher *eventDispatcher;
+    QStack<QEventLoop *> eventLoops;
+    QPostEventList postEventList;
+    bool canWait;
+    QMap<int, void *> tls;
+
+    QMutex mutex;
+};
 
 QT_END_NAMESPACE
 

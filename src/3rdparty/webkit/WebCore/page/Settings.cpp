@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,8 @@
 #include "PageCache.h"
 #include <limits>
 
+using namespace std;
+
 namespace WebCore {
 
 static void setNeedsReapplyStylesInAllFrames(Page* page)
@@ -42,7 +44,7 @@ static void setNeedsReapplyStylesInAllFrames(Page* page)
 }
 
 #if USE(SAFARI_THEME)
-bool Settings::gShouldPaintNativeControls = false;
+bool Settings::gShouldPaintNativeControls = true;
 #endif
 
 Settings::Settings(Page* page)
@@ -53,13 +55,17 @@ Settings::Settings(Page* page)
     , m_minimumLogicalFontSize(0)
     , m_defaultFontSize(0)
     , m_defaultFixedFontSize(0)
+    , m_maximumDecodedImageSize(numeric_limits<size_t>::max())
     , m_isJavaEnabled(false)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
+    , m_caretBrowsingEnabled(false)
     , m_arePluginsEnabled(false)
     , m_databasesEnabled(false)
     , m_localStorageEnabled(false)
     , m_isJavaScriptEnabled(false)
+    , m_isWebSecurityEnabled(true)
+    , m_allowUniversalAccessFromFileURLs(true)
     , m_javaScriptCanOpenWindowsAutomatically(false)
     , m_shouldPrintBackgrounds(false)
     , m_textAreasAreResizable(false)
@@ -68,6 +74,8 @@ Settings::Settings(Page* page)
 #endif
     , m_needsAdobeFrameReloadingQuirk(false)
     , m_needsKeyboardEventDisambiguationQuirks(false)
+    , m_needsLeopardMailQuirks(false)
+    , m_needsTigerMailQuirks(false)
     , m_isDOMPasteAllowed(false)
     , m_shrinksStandaloneImagesToFit(true)
     , m_usesPageCache(false)
@@ -80,11 +88,22 @@ Settings::Settings(Page* page)
     , m_webArchiveDebugModeEnabled(false)
     , m_inApplicationChromeMode(false)
     , m_offlineWebApplicationCacheEnabled(false)
-    , m_rangeMutationDisabledForOldAppleMail(false)
     , m_shouldPaintCustomScrollbars(false)
     , m_zoomsTextOnly(false)
     , m_enforceCSSMIMETypeInStrictMode(true)
-    , m_maximumDecodedImageSize(std::numeric_limits<size_t>::max())
+    , m_usesEncodingDetector(false)
+    , m_allowScriptsToCloseWindows(false)
+    , m_editingBehavior(
+#if PLATFORM(MAC)
+        EditingMacBehavior
+#else
+        EditingWindowsBehavior
+#endif
+        )
+    // FIXME: This should really be disabled by default as it makes platforms that don't support the feature download files
+    // they can't use by. Leaving enabled for now to not change existing behavior.
+    , m_downloadableBinaryFontsEnabled(true)
+    , m_xssAuditorEnabled(false)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -191,6 +210,16 @@ void Settings::setJavaScriptEnabled(bool isJavaScriptEnabled)
     m_isJavaScriptEnabled = isJavaScriptEnabled;
 }
 
+void Settings::setWebSecurityEnabled(bool isWebSecurityEnabled)
+{
+    m_isWebSecurityEnabled = isWebSecurityEnabled;
+}
+
+void Settings::setAllowUniversalAccessFromFileURLs(bool allowUniversalAccessFromFileURLs)
+{
+    m_allowUniversalAccessFromFileURLs = allowUniversalAccessFromFileURLs;
+}
+
 void Settings::setJavaEnabled(bool isJavaEnabled)
 {
     m_isJavaEnabled = isJavaEnabled;
@@ -283,6 +312,16 @@ void Settings::setNeedsKeyboardEventDisambiguationQuirks(bool needsQuirks)
     m_needsKeyboardEventDisambiguationQuirks = needsQuirks;
 }
 
+void Settings::setNeedsLeopardMailQuirks(bool needsQuirks)
+{
+    m_needsLeopardMailQuirks = needsQuirks;
+}
+
+void Settings::setNeedsTigerMailQuirks(bool needsQuirks)
+{
+    m_needsTigerMailQuirks = needsQuirks;
+}
+    
 void Settings::setDOMPasteAllowed(bool DOMPasteAllowed)
 {
     m_isDOMPasteAllowed = DOMPasteAllowed;
@@ -364,11 +403,6 @@ void Settings::setLocalStorageDatabasePath(const String& path)
     m_localStorageDatabasePath = path;
 }
 
-void Settings::disableRangeMutationForOldAppleMail(bool disable)
-{
-    m_rangeMutationDisabledForOldAppleMail = disable;
-}
-
 void Settings::setApplicationChromeMode(bool mode)
 {
     m_inApplicationChromeMode = mode;
@@ -404,5 +438,30 @@ void Settings::setShouldPaintNativeControls(bool shouldPaintNativeControls)
     gShouldPaintNativeControls = shouldPaintNativeControls;
 }
 #endif
+
+void Settings::setUsesEncodingDetector(bool usesEncodingDetector)
+{
+    m_usesEncodingDetector = usesEncodingDetector;
+}
+
+void Settings::setAllowScriptsToCloseWindows(bool allowScriptsToCloseWindows)
+{
+    m_allowScriptsToCloseWindows = allowScriptsToCloseWindows;
+}
+
+void Settings::setCaretBrowsingEnabled(bool caretBrowsingEnabled)
+{
+    m_caretBrowsingEnabled = caretBrowsingEnabled;
+}
+
+void Settings::setDownloadableBinaryFontsEnabled(bool downloadableBinaryFontsEnabled)
+{
+    m_downloadableBinaryFontsEnabled = downloadableBinaryFontsEnabled;
+}
+
+void Settings::setXSSAuditorEnabled(bool xssAuditorEnabled)
+{
+    m_xssAuditorEnabled = xssAuditorEnabled;
+}
 
 } // namespace WebCore

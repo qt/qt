@@ -487,7 +487,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
 
         if (this.treeOutline.panel) {
-            this.treeOutline.rootDOMNode = this.parent.representedObject;
+            this.treeOutline.rootDOMNode = this.representedObject.parentNode;
             this.treeOutline.focusedDOMNode = this.representedObject;
         }
 
@@ -571,7 +571,7 @@ WebInspector.ElementsTreeElement.prototype = {
         parseContainerElement.innerHTML = "<span " + newText + "></span>";
         var parseElement = parseContainerElement.firstChild;
         if (!parseElement || !parseElement.hasAttributes()) {
-            editingCancelled(element, context);
+            this._editingCancelled(element, context);
             return;
         }
 

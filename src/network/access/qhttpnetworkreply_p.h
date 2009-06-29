@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,6 +79,7 @@ static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qauthenticator_p.h>
+#include <private/qringbuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,6 +121,7 @@ public:
     QString reasonPhrase() const;
 
     qint64 bytesAvailable() const;
+    qint64 bytesAvailableNextBlock() const;
     QByteArray read(qint64 maxSize = -1);
 
     bool isFinished() const;
@@ -158,6 +160,7 @@ public:
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
     qint64 readBody(QAbstractSocket *socket, QIODevice *out);
+    qint64 readBodyFast(QAbstractSocket *socket, QRingBuffer *rb);
     bool findChallenge(bool forProxy, QByteArray &challenge) const;
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
@@ -193,7 +196,7 @@ public:
     qint64 bodyLength;
     qint64 contentRead;
     qint64 totalProgress;
-    QByteArray fragment;
+    QByteArray fragment; // used for header, status, chunk header etc, not for reply data
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;
@@ -204,9 +207,8 @@ public:
 #endif
     bool autoDecompress;
 
-    QByteArray responseData; // uncompressed body
+    QRingBuffer responseData; // uncompressed body
     QByteArray compressedData; // compressed body (temporary)
-    bool requestIsBuffering;
     bool requestIsPrepared;
 };
 

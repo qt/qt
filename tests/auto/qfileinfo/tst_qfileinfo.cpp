@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,6 +61,7 @@
 #include <qdebug.h>
 
 #include "../network-settings.h"
+#include <private/qfileinfo_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -75,6 +76,9 @@ public:
 
 private slots:
     void getSetCheck();
+
+    void copy();
+
     void isFile_data();
     void isFile();
 
@@ -176,6 +180,58 @@ void tst_QFileInfo::getSetCheck()
     QCOMPARE(false, obj1.caching());
     obj1.setCaching(true);
     QCOMPARE(true, obj1.caching());
+}
+
+static QFileInfoPrivate* getPrivate(QFileInfo &info)
+{
+    return (*reinterpret_cast<QFileInfoPrivate**>(&info));
+}
+
+void tst_QFileInfo::copy()
+{
+    QTemporaryFile *t;
+    t = new QTemporaryFile;
+    t->open();
+    QFileInfo info(t->fileName());
+    QVERIFY(info.exists());
+
+    //copy constructor
+    QFileInfo info2(info);
+    QFileInfoPrivate *privateInfo = getPrivate(info);
+    QFileInfoPrivate *privateInfo2 = getPrivate(info2);
+    QCOMPARE(privateInfo->data, privateInfo2->data);
+
+    //operator =
+    QFileInfo info3 = info;
+    QFileInfoPrivate *privateInfo3 = getPrivate(info3);
+    QCOMPARE(privateInfo->data, privateInfo3->data);
+    QCOMPARE(privateInfo2->data, privateInfo3->data);
+
+    //refreshing info3 will detach it
+    QFile file(info.absoluteFilePath());
+    QVERIFY(file.open(QFile::WriteOnly));
+    QCOMPARE(file.write("JAJAJAA"), qint64(7));
+    file.flush();
+
+    QTest::qWait(250);
+#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+    if (QSysInfo::windowsVersion() & QSysInfo::WV_VISTA ||
+                QSysInfo::windowsVersion() & QSysInfo::WV_CE_based)
+        file.close();
+#endif
+#if defined(Q_OS_WINCE)
+    // On Windows CE we need to close the file.
+    // Otherwise the content will be cached and not
+    // flushed to the storage, although we flushed it
+    // manually!!! CE has interim cache, we cannot influence.
+    QTest::qWait(5000);
+#endif
+    info3.refresh();
+    QVERIFY(privateInfo->data != privateInfo3->data);
+    QVERIFY(privateInfo2->data != privateInfo3->data);
+    QCOMPARE(privateInfo->data, privateInfo2->data);
+
+
 }
 
 tst_QFileInfo::tst_QFileInfo()

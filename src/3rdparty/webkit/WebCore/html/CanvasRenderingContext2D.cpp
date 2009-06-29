@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2007 Alp Toker <alp@atoker.com>
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
@@ -36,6 +36,7 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasStyle.h"
+#include "CSSMutableStyleDeclaration.h"
 #include "CSSPropertyNames.h"
 #include "CSSStyleSelector.h"
 #include "Document.h"
@@ -49,17 +50,18 @@
 #include "ImageBuffer.h"
 #include "ImageData.h"
 #include "KURL.h"
-#include "NotImplemented.h"
 #include "Page.h"
 #include "RenderHTMLCanvas.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "StrokeStyleApplier.h"
 #include "TextMetrics.h"
+#include "HTMLVideoElement.h"
 #include <stdio.h>
 
-#include <runtime/ByteArray.h>
+#include <wtf/ByteArray.h>
 #include <wtf/MathExtras.h>
+#include <wtf/OwnPtr.h>
 
 using namespace std;
 
@@ -95,6 +97,9 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas)
     : m_canvas(canvas)
     , m_stateStack(1)
 {
+    // Make sure that even if the drawingContext() has a different default
+    // thickness, it is in sync with the canvas thickness.
+    setLineWidth(lineWidth());
 }
 
 void CanvasRenderingContext2D::ref()
@@ -357,7 +362,7 @@ void CanvasRenderingContext2D::scale(float sx, float sy)
         return;
 
     TransformationMatrix newTransform = state().m_transform;
-    newTransform.scale(sx, sy);
+    newTransform.scaleNonUniform(sx, sy);
     if (!newTransform.isInvertible()) {
         state().m_invertibleCTM = false;
         return;
@@ -365,7 +370,7 @@ void CanvasRenderingContext2D::scale(float sx, float sy)
 
     state().m_transform = newTransform;
     c->scale(FloatSize(sx, sy));
-    m_path.transform(TransformationMatrix().scale(1.0/sx, 1.0/sy));
+    m_path.transform(TransformationMatrix().scaleNonUniform(1.0/sx, 1.0/sy));
 }
 
 void CanvasRenderingContext2D::rotate(float angleInRadians)
@@ -422,9 +427,7 @@ void CanvasRenderingContext2D::transform(float m11, float m12, float m21, float 
         return;
 
     TransformationMatrix transform(m11, m12, m21, m22, dx, dy);
-
-    TransformationMatrix newTransform = state().m_transform;
-    newTransform.multiply(transform);
+    TransformationMatrix newTransform = transform * state().m_transform;
     if (!newTransform.isInvertible()) {
         state().m_invertibleCTM = false;
         return;
@@ -869,7 +872,6 @@ void CanvasRenderingContext2D::setShadow(float width, float height, float blur, 
     GraphicsContext* dc = drawingContext();
     if (!dc)
         return;
-    // FIXME: Do this through platform-independent GraphicsContext API.
 #if PLATFORM(CG)
     const CGFloat components[5] = { c, m, y, k, a };
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceCMYK();
@@ -877,6 +879,8 @@ void CanvasRenderingContext2D::setShadow(float width, float height, float blur, 
     CGColorSpaceRelease(colorSpace);
     CGContextSetShadowWithColor(dc->platformContext(), adjustedShadowSize(width, -height), blur, shadowColor);
     CGColorRelease(shadowColor);
+#else
+    dc->setShadow(IntSize(width, -height), blur, Color(c, m, y, k, a));
 #endif
 }
 
@@ -909,12 +913,28 @@ static IntSize size(HTMLImageElement* image)
     return IntSize();
 }
 
+#if ENABLE(VIDEO)
+static IntSize size(HTMLVideoElement* video)
+{
+    if (MediaPlayer* player = video->player())
+        return player->naturalSize();
+    return IntSize();
+}
+#endif
+
 static inline FloatRect normalizeRect(const FloatRect& rect)
 {
     return FloatRect(min(rect.x(), rect.right()),
         min(rect.y(), rect.bottom()),
         max(rect.width(), -rect.width()),
         max(rect.height(), -rect.height()));
+}
+
+void CanvasRenderingContext2D::checkOrigin(const KURL& url)
+{
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
+    if (!m_canvas->document()->securityOrigin()->canAccess(origin.get()))
+        m_canvas->setOriginTainted();
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float y)
@@ -931,13 +951,6 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
     ASSERT(image);
     IntSize s = size(image);
     drawImage(image, FloatRect(0, 0, s.width(), s.height()), FloatRect(x, y, width, height), ec);
-}
-
-void CanvasRenderingContext2D::checkOrigin(const KURL& url)
-{
-    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
-    if (!m_canvas->document()->securityOrigin()->canAccess(origin.get()))
-        m_canvas->setOriginTainted();
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect,
@@ -1030,6 +1043,64 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* canvas, const FloatR
                         // FIXME: Arguably willDraw should become didDraw and occur after drawing calls and not before them to avoid problems like this.
 }
 
+#if ENABLE(VIDEO)
+void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y)
+{
+    ASSERT(video);
+    IntSize s = size(video);
+    ExceptionCode ec;
+    drawImage(video, x, y, s.width(), s.height(), ec);
+}
+
+void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
+                                         float x, float y, float width, float height, ExceptionCode& ec)
+{
+    ASSERT(video);
+    IntSize s = size(video);
+    drawImage(video, FloatRect(0, 0, s.width(), s.height()), FloatRect(x, y, width, height), ec);
+}
+
+void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRect& srcRect, const FloatRect& dstRect,
+                                         ExceptionCode& ec)
+{
+    ASSERT(video);
+    
+    ec = 0;
+    FloatRect videoRect = FloatRect(FloatPoint(), size(video));
+    if (!videoRect.contains(normalizeRect(srcRect)) || srcRect.width() == 0 || srcRect.height() == 0) {
+        ec = INDEX_SIZE_ERR;
+        return;
+    }
+    
+    if (!dstRect.width() || !dstRect.height())
+        return;
+    
+    GraphicsContext* c = drawingContext();
+    if (!c)
+        return;
+    if (!state().m_invertibleCTM)
+        return;
+
+    if (m_canvas->originClean())
+        checkOrigin(video->src());
+
+    if (m_canvas->originClean() && !video->hasSingleSecurityOrigin())
+        m_canvas->setOriginTainted();
+
+    FloatRect sourceRect = c->roundToDevicePixels(srcRect);
+    FloatRect destRect = c->roundToDevicePixels(dstRect);
+    willDraw(destRect);
+
+    c->save();
+    c->clip(destRect);
+    c->translate(destRect.x(), destRect.y());
+    c->scale(FloatSize(destRect.width()/sourceRect.width(), destRect.height()/sourceRect.height()));
+    c->translate(-sourceRect.x(), -sourceRect.y());
+    video->paint(c, IntRect(IntPoint(), size(video)));
+    c->restore();
+}
+#endif
+
 // FIXME: Why isn't this just another overload of drawImage? Why have a different name?
 void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
     float sx, float sy, float sw, float sh,
@@ -1074,6 +1145,15 @@ void CanvasRenderingContext2D::setCompositeOperation(const String& operation)
     setGlobalCompositeOperation(operation);
 }
 
+void CanvasRenderingContext2D::prepareGradientForDashboard(CanvasGradient* gradient) const
+{
+#if ENABLE(DASHBOARD_SUPPORT)
+    if (Settings* settings = m_canvas->document()->settings())
+        if (settings->usesDashboardBackwardCompatibilityMode())
+            gradient->setDashboardCompatibilityMode();
+#endif
+}
+
 PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1, ExceptionCode& ec)
 {
     if (!isfinite(x0) || !isfinite(y0) || !isfinite(x1) || !isfinite(y1)) {
@@ -1081,7 +1161,9 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float 
         return 0;
     }
 
-    return CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
+    PassRefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
+    prepareGradientForDashboard(gradient.get());
+    return gradient;
 }
 
 PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionCode& ec)
@@ -1091,7 +1173,9 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float 
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    return CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
+    PassRefPtr<CanvasGradient> gradient =  CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
+    prepareGradientForDashboard(gradient.get());
+    return gradient;
 }
 
 PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageElement* image,
@@ -1112,8 +1196,7 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
     if (!cachedImage || !image->cachedImage()->image())
         return CanvasPattern::create(Image::nullImage(), repeatX, repeatY, true);
 
-    KURL url(cachedImage->url());
-    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(cachedImage->url());
     bool originClean = m_canvas->document()->securityOrigin()->canAccess(origin.get());
     return CanvasPattern::create(cachedImage->image(), repeatX, repeatY, originClean);
 }
@@ -1172,9 +1255,9 @@ GraphicsContext* CanvasRenderingContext2D::drawingContext() const
 
 static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
 {
-    PassRefPtr<ImageData> data = ImageData::create(size.width(), size.height());
-    memset(data->data()->data(), 0, data->data()->length());
-    return data;
+    RefPtr<ImageData> data = ImageData::create(size.width(), size.height());
+    memset(data->data()->data()->data(), 0, data->data()->data()->length());
+    return data.get();
 }
 
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh) const
@@ -1291,12 +1374,6 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     state().m_font = newStyle->font();
     state().m_font.update(styleSelector->fontSelector());
     state().m_realizedFont = true;
-    
-    // Set the font in the graphics context.
-    GraphicsContext* c = drawingContext();
-    if (!c)
-        return;
-    c->setFont(state().m_font);
 }
         
 String CanvasRenderingContext2D::textAlign() const
@@ -1425,13 +1502,14 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         m_canvas->willDraw(FloatRect(0, 0, m_canvas->width(), m_canvas->height()));
     }
     
+#if PLATFORM(CG)
     CanvasStyle* drawStyle = fill ? state().m_fillStyle.get() : state().m_strokeStyle.get();
     if (drawStyle->canvasGradient() || drawStyle->canvasPattern()) {
         // FIXME: The rect is not big enough for miters on stroked text.
         IntRect maskRect = enclosingIntRect(textRect);
 
-        auto_ptr<ImageBuffer> maskImage = ImageBuffer::create(maskRect.size(), false);
-        
+        OwnPtr<ImageBuffer> maskImage = ImageBuffer::create(maskRect.size(), false);
+
         GraphicsContext* maskImageContext = maskImage->context();
 
         if (fill)
@@ -1444,8 +1522,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         maskImageContext->setTextDrawingMode(fill ? cTextFill : cTextStroke);
         maskImageContext->translate(-maskRect.x(), -maskRect.y());
         
-        maskImageContext->setFont(font);
-        maskImageContext->drawBidiText(textRun, location);
+        maskImageContext->drawBidiText(font, textRun, location);
         
         c->save();
         c->clipToImageBuffer(maskRect, maskImage.get());
@@ -1455,9 +1532,10 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 
         return;
     }
+#endif
 
     c->setTextDrawingMode(fill ? cTextFill : cTextStroke);
-    c->drawBidiText(textRun, location);
+    c->drawBidiText(font, textRun, location);
 }
 
 const Font& CanvasRenderingContext2D::accessFont()

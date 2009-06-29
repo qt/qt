@@ -21,10 +21,10 @@
 #ifndef JSSVGTSpanElement_h
 #define JSSVGTSpanElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGTextPositioningElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -34,7 +34,7 @@ class JSSVGTSpanElement : public JSSVGTextPositioningElement {
     typedef JSSVGTextPositioningElement Base;
 public:
     JSSVGTSpanElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGTSpanElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -42,8 +42,9 @@ public:
 
 
 class JSSVGTSpanElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGTSpanElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

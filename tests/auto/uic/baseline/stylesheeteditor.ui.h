@@ -52,7 +52,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         spacerItem = new QSpacerItem(32, 20, QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -96,7 +96,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         spacerItem3 = new QSpacerItem(321, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

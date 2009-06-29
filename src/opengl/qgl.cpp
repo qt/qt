@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,10 +65,17 @@
 #include "qimage.h"
 #include "qgl_p.h"
 
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
+#endif
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
+#endif
+
+#ifdef Q_WS_QWS
+#include <private/qglpaintdevice_qws_p.h>
+#include <private/qglwindowsurface_qws_p.h>
 #endif
 
 #include <qglpixelbuffer.h>
@@ -4428,7 +4435,11 @@ void QGLDrawable::swapBuffers()
 void QGLDrawable::makeCurrent()
 {
     previous_fbo = 0;
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     if (!pixmapData && !fbo) {
+#else
+    if (!fbo) {
+#endif
         QGLContext *ctx = context();
         previous_fbo = ctx->d_ptr->current_fbo;
         ctx->d_ptr->current_fbo = 0;
@@ -4561,8 +4572,10 @@ QColor QGLDrawable::backgroundColor() const
 {
     if (widget)
         return widget->palette().brush(widget->backgroundRole()).color();
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     else if (pixmapData)
         return pixmapData->fillColor();
+#endif
     return QApplication::palette().brush(QPalette::Background).color();
 }
 
@@ -4590,8 +4603,10 @@ bool QGLDrawable::autoFillBackground() const
 {
     if (widget)
         return widget->autoFillBackground();
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     else if (pixmapData)
         return pixmapData->needsFill();
+#endif
     else
         return false;
 }

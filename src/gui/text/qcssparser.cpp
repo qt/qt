@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,46 +56,6 @@ QT_BEGIN_NAMESPACE
 #include "qcssscanner.cpp"
 
 using namespace QCss;
-
-const char *Scanner::tokenName(QCss::TokenType t)
-{
-    switch (t) {
-        case NONE: return "NONE";
-        case S: return "S";
-        case CDO: return "CDO";
-        case CDC: return "CDC";
-        case INCLUDES: return "INCLUDES";
-        case DASHMATCH: return "DASHMATCH";
-        case LBRACE: return "LBRACE";
-        case PLUS: return "PLUS";
-        case GREATER: return "GREATER";
-        case COMMA: return "COMMA";
-        case STRING: return "STRING";
-        case INVALID: return "INVALID";
-        case IDENT: return "IDENT";
-        case HASH: return "HASH";
-        case ATKEYWORD_SYM: return "ATKEYWORD_SYM";
-        case EXCLAMATION_SYM: return "EXCLAMATION_SYM";
-        case LENGTH: return "LENGTH";
-        case PERCENTAGE: return "PERCENTAGE";
-        case NUMBER: return "NUMBER";
-        case FUNCTION: return "FUNCTION";
-        case COLON: return "COLON";
-        case SEMICOLON: return "SEMICOLON";
-        case RBRACE: return "RBRACE";
-        case SLASH: return "SLASH";
-        case MINUS: return "MINUS";
-        case DOT: return "DOT";
-        case STAR: return "STAR";
-        case LBRACKET: return "LBRACKET";
-        case RBRACKET: return "RBRACKET";
-        case EQUAL: return "EQUAL";
-        case LPAREN: return "LPAREN";
-        case RPAREN: return "RPAREN";
-        case OR: return "OR";
-    }
-    return "";
-}
 
 struct QCssKnownValue
 {
@@ -279,7 +239,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
 };
 
 //Map id to strings as they appears in the 'values' array above
-static const int indexOfId[NumKnownValues] = { 0, 40, 47, 41, 48, 53, 34, 26, 68, 69, 25, 42, 5, 62, 46,
+static const short indexOfId[NumKnownValues] = { 0, 40, 47, 41, 48, 53, 34, 26, 68, 69, 25, 42, 5, 62, 46,
     29, 57, 58, 27, 50, 60, 6, 10, 38, 55, 19, 13, 17, 18, 20, 21, 49, 24, 45, 65, 36, 3, 2, 39, 61, 16,
     11, 56, 14, 32, 63, 54, 64, 33, 67, 8, 28, 37, 12, 35, 59, 7, 9, 4, 66, 52, 22, 23, 30, 31, 1, 15, 0,
     51, 44, 43 };

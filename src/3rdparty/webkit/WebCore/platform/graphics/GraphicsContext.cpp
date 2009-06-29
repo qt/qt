@@ -30,7 +30,6 @@
 #include "Generator.h"
 #include "GraphicsContextPrivate.h"
 #include "Font.h"
-#include "NotImplemented.h"
 
 using namespace std;
 
@@ -109,17 +108,6 @@ void GraphicsContext::restore()
     restorePlatformState();
 }
 
-const Font& GraphicsContext::font() const
-{
-    return m_common->state.font;
-}
-
-void GraphicsContext::setFont(const Font& aFont)
-{
-    m_common->state.font = aFont;
-    setPlatformFont(aFont);
-}
-
 void GraphicsContext::setStrokeThickness(float thickness)
 {
     m_common->state.strokeThickness = thickness;
@@ -137,6 +125,11 @@ void GraphicsContext::setStrokeColor(const Color& color)
     m_common->state.strokeColorSpace = SolidColorSpace;
     m_common->state.strokeColor = color;
     setPlatformStrokeColor(color);
+}
+
+ColorSpace GraphicsContext::strokeColorSpace() const
+{
+    return m_common->state.strokeColorSpace;
 }
 
 void GraphicsContext::setShadow(const IntSize& size, int blur, const Color& color)
@@ -189,16 +182,6 @@ void GraphicsContext::setFillRule(WindRule fillRule)
     m_common->state.fillRule = fillRule;
 }
 
-GradientSpreadMethod GraphicsContext::spreadMethod() const
-{
-    return m_common->state.spreadMethod;
-}
-
-void GraphicsContext::setSpreadMethod(GradientSpreadMethod spreadMethod)
-{
-    m_common->state.spreadMethod = spreadMethod;
-}
-
 void GraphicsContext::setFillColor(const Color& color)
 {
     m_common->state.fillColorSpace = SolidColorSpace;
@@ -209,6 +192,17 @@ void GraphicsContext::setFillColor(const Color& color)
 Color GraphicsContext::fillColor() const
 {
     return m_common->state.fillColor;
+}
+
+void GraphicsContext::setShouldAntialias(bool b)
+{
+    m_common->state.shouldAntialias = b;
+    setPlatformShouldAntialias(b);
+}
+
+bool GraphicsContext::shouldAntialias() const
+{
+    return m_common->state.shouldAntialias;
 }
 
 void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
@@ -253,6 +247,31 @@ void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient)
     }
     m_common->state.fillColorSpace = GradientColorSpace;
     m_common->state.fillGradient = gradient;
+}
+
+Gradient* GraphicsContext::fillGradient() const
+{
+    return m_common->state.fillGradient.get();
+}
+
+ColorSpace GraphicsContext::fillColorSpace() const
+{
+    return m_common->state.fillColorSpace;
+}
+
+Gradient* GraphicsContext::strokeGradient() const
+{
+    return m_common->state.strokeGradient.get();
+}
+
+Pattern* GraphicsContext::fillPattern() const
+{
+    return m_common->state.fillPattern.get();
+}
+
+Pattern* GraphicsContext::strokePattern() const
+{
+    return m_common->state.strokePattern.get();
 }
 
 void GraphicsContext::setShadowsIgnoreTransforms(bool ignoreTransforms)
@@ -301,15 +320,15 @@ void GraphicsContext::drawImage(Image* image, const IntRect& dest, const IntRect
     drawImage(image, FloatRect(dest), srcRect, op, useLowQualityScale);
 }
 
-void GraphicsContext::drawText(const TextRun& run, const IntPoint& point, int from, int to)
+void GraphicsContext::drawText(const Font& font, const TextRun& run, const IntPoint& point, int from, int to)
 {
     if (paintingDisabled())
         return;
     
-    font().drawText(this, run, point, from, to);
+    font.drawText(this, run, point, from, to);
 }
 
-void GraphicsContext::drawBidiText(const TextRun& run, const FloatPoint& point)
+void GraphicsContext::drawBidiText(const Font& font, const TextRun& run, const FloatPoint& point)
 {
     if (paintingDisabled())
         return;
@@ -317,7 +336,7 @@ void GraphicsContext::drawBidiText(const TextRun& run, const FloatPoint& point)
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     WTF::Unicode::Direction paragraphDirection = run.ltr() ? WTF::Unicode::LeftToRight : WTF::Unicode::RightToLeft;
 
-    bidiResolver.setStatus(BidiStatus(paragraphDirection, paragraphDirection, paragraphDirection, new BidiContext(run.ltr() ? 0 : 1, paragraphDirection, run.directionalOverride())));
+    bidiResolver.setStatus(BidiStatus(paragraphDirection, paragraphDirection, paragraphDirection, BidiContext::create(run.ltr() ? 0 : 1, paragraphDirection, run.directionalOverride())));
 
     bidiResolver.setPosition(TextRunIterator(&run, 0));
     bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()));
@@ -334,23 +353,23 @@ void GraphicsContext::drawBidiText(const TextRun& run, const FloatPoint& point)
         subrun.setRTL(bidiRun->level() % 2);
         subrun.setDirectionalOverride(bidiRun->dirOverride(false));
 
-        font().drawText(this, subrun, currPoint);
+        font.drawText(this, subrun, currPoint);
 
         bidiRun = bidiRun->next();
         // FIXME: Have Font::drawText return the width of what it drew so that we don't have to re-measure here.
         if (bidiRun)
-            currPoint.move(font().floatWidth(subrun), 0.f);
+            currPoint.move(font.floatWidth(subrun), 0.f);
     }
 
     bidiResolver.deleteRuns();
 }
 
-void GraphicsContext::drawHighlightForText(const TextRun& run, const IntPoint& point, int h, const Color& backgroundColor, int from, int to)
+void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run, const IntPoint& point, int h, const Color& backgroundColor, int from, int to)
 {
     if (paintingDisabled())
         return;
 
-    fillRect(font().selectionRectForText(run, point, h, from, to), backgroundColor);
+    fillRect(font.selectionRectForText(run, point, h, from, to), backgroundColor);
 }
 
 void GraphicsContext::initFocusRing(int width, int offset)
@@ -499,12 +518,6 @@ void GraphicsContext::setPlatformTextDrawingMode(int mode)
 
 #if !PLATFORM(QT) && !PLATFORM(CAIRO) && !PLATFORM(SKIA)
 void GraphicsContext::setPlatformStrokeStyle(const StrokeStyle&)
-{
-}
-#endif
-
-#if !PLATFORM(QT)
-void GraphicsContext::setPlatformFont(const Font&)
 {
 }
 #endif

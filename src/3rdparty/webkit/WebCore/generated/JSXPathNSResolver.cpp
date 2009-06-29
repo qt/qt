@@ -20,25 +20,22 @@
 
 #include "config.h"
 
-
 #if ENABLE(XPATH)
 
 #include "JSXPathNSResolver.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSCustomXPathNSResolver.h"
 #include "JSXPathNSResolver.h"
 #include "KURL.h"
 #include "PlatformString.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSXPathNSResolver)
+ASSERT_CLASS_FITS_IN_CELL(JSXPathNSResolver);
 
 /* Hash table for prototype */
 
@@ -57,9 +54,9 @@ static const HashTable JSXPathNSResolverPrototypeTable =
 
 const ClassInfo JSXPathNSResolverPrototype::s_info = { "XPathNSResolverPrototype", 0, &JSXPathNSResolverPrototypeTable, 0 };
 
-JSObject* JSXPathNSResolverPrototype::self(ExecState* exec)
+JSObject* JSXPathNSResolverPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathNSResolver>(exec);
+    return getDOMPrototype<JSXPathNSResolver>(exec, globalObject);
 }
 
 bool JSXPathNSResolverPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -78,34 +75,34 @@ JSXPathNSResolver::JSXPathNSResolver(PassRefPtr<Structure> structure, PassRefPtr
 JSXPathNSResolver::~JSXPathNSResolver()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSXPathNSResolver::createPrototype(ExecState* exec)
+JSObject* JSXPathNSResolver::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathNSResolverPrototype(JSXPathNSResolverPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathNSResolverPrototype(JSXPathNSResolverPrototype::createStructure(globalObject->objectPrototype()));
 }
 
-JSValuePtr jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSXPathNSResolver::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSXPathNSResolver::s_info))
         return throwError(exec, TypeError);
     JSXPathNSResolver* castedThisObj = static_cast<JSXPathNSResolver*>(asObject(thisValue));
     XPathNSResolver* imp = static_cast<XPathNSResolver*>(castedThisObj->impl());
-    const UString& prefix = args.at(exec, 0)->toString(exec);
+    const UString& prefix = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsStringOrNull(exec, imp->lookupNamespaceURI(prefix));
+    JSC::JSValue result = jsStringOrNull(exec, imp->lookupNamespaceURI(prefix));
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, XPathNSResolver* object)
+JSC::JSValue toJS(JSC::ExecState* exec, XPathNSResolver* object)
 {
     return getDOMObjectWrapper<JSXPathNSResolver>(exec, object);
 }
-XPathNSResolver* toXPathNSResolver(JSC::JSValuePtr value)
+XPathNSResolver* toXPathNSResolver(JSC::JSValue value)
 {
-    return value->isObject(&JSXPathNSResolver::s_info) ? static_cast<JSXPathNSResolver*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSXPathNSResolver::s_info) ? static_cast<JSXPathNSResolver*>(asObject(value))->impl() : 0;
 }
 
 }

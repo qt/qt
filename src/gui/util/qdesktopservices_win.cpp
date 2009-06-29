@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -98,32 +98,35 @@ static bool launchWebBrowser(const QUrl &url)
 {
     if (url.scheme() == QLatin1String("mailto")) {
         //Retrieve the commandline for the default mail client
-        //the key used below is the command line for the mailto: shell command
+        //the default key used below is the command line for the mailto: shell command
         DWORD  bufferSize = 2 * MAX_PATH;
         long  returnValue =  -1;
         QString command;
 
         HKEY handle;
         LONG res;
-        QT_WA ({
-            res = RegOpenKeyExW(HKEY_CLASSES_ROOT, L"mailto\\Shell\\Open\\Command", 0, KEY_READ, &handle);
-            if (res != ERROR_SUCCESS)
-                return false;
+        wchar_t keyValue[2 * MAX_PATH] = {0};
+        QString keyName(QLatin1String("mailto"));
 
-            wchar_t keyValue[2 * MAX_PATH] = {0};
-            returnValue = RegQueryValueExW(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
+        //Check if user has set preference, otherwise use default.
+        res = RegOpenKeyExW(HKEY_CURRENT_USER,
+                            L"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\mailto\\UserChoice",
+                            0, KEY_READ, &handle);
+        if (res == ERROR_SUCCESS) {
+            returnValue = RegQueryValueEx(handle, L"Progid", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
             if (!returnValue)
-                command = QString::fromRawData((QChar*)keyValue, bufferSize);
-        }, {
-            res = RegOpenKeyExA(HKEY_CLASSES_ROOT, "mailto\\Shell\\Open\\Command", 0, KEY_READ, &handle);
-            if (res != ERROR_SUCCESS)
-                return false;
+                keyName = QString::fromUtf16((const ushort*)keyValue);
+            RegCloseKey(handle);
+        }
+        keyName += QLatin1String("\\Shell\\Open\\Command");
+        res = RegOpenKeyExW(HKEY_CLASSES_ROOT, (const wchar_t*)keyName.utf16(), 0, KEY_READ, &handle);
+        if (res != ERROR_SUCCESS)
+            return false;
 
-            char keyValue[2 * MAX_PATH] = {0};
-            returnValue = RegQueryValueExA(handle, "", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
-            if (!returnValue)
-                command = QString::fromLocal8Bit(keyValue);
-        });
+        bufferSize = 2 * MAX_PATH;
+        returnValue = RegQueryValueExW(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
+        if (!returnValue)
+            command = QString::fromRawData((QChar*)keyValue, bufferSize);
         RegCloseKey(handle);
 
         if(returnValue)
@@ -145,19 +148,11 @@ static bool launchWebBrowser(const QUrl &url)
         //start the process
         PROCESS_INFORMATION pi;
         ZeroMemory(&pi, sizeof(pi));
-        QT_WA ({
-            STARTUPINFO si;
-            ZeroMemory(&si, sizeof(si));
-            si.cb = sizeof(si);
+        STARTUPINFO si;
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
 
-            returnValue = CreateProcess(NULL, (TCHAR*)command.utf16(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-        }, {
-            STARTUPINFOA si;
-            ZeroMemory(&si, sizeof(si));
-            si.cb = sizeof(si);
-
-            returnValue = CreateProcessA(NULL, command.toLocal8Bit().data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-        });
+        returnValue = CreateProcess(NULL, (TCHAR*)command.utf16(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 
         if (!returnValue)
             return false;
@@ -170,12 +165,12 @@ static bool launchWebBrowser(const QUrl &url)
     if (!url.isValid())
         return false;
 
+    if (url.scheme().isEmpty())
+        return openDocument(url);
+
     quintptr returnValue;
-     QT_WA ({
-         returnValue = (quintptr)ShellExecute(0, 0, (TCHAR *) QString::fromUtf8(url.toEncoded().constData()).utf16(), 0, 0, SW_SHOWNORMAL);
-            } , {
-                returnValue = (quintptr)ShellExecuteA(0, 0, url.toEncoded().constData(), 0, 0, SW_SHOWNORMAL);
-            });
+    returnValue = (quintptr)ShellExecute(0, 0, (TCHAR *) QString::fromUtf8(url.toEncoded().constData()).utf16(),
+                                         0, 0, SW_SHOWNORMAL);
     return (returnValue > 32);
 }
 

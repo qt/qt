@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +51,8 @@
 #include <qtimer.h>
 #include <QDialog>
 #include <QGridLayout>
+#include <QStyleFactory>
+#include <QTabWidget>
 
 Q_DECLARE_METATYPE(QPushButton*)
 
@@ -90,6 +92,8 @@ private slots:
     void toggled();
     void isEnabled();
     void defaultAndAutoDefault();
+    void sizeHint_data();
+    void sizeHint();
 /*
     void state();
     void group();
@@ -587,6 +591,78 @@ void tst_QPushButton::defaultAndAutoDefault()
     button1.setAutoDefault(true);
     button1.setParent(0);
     QVERIFY(button1.autoDefault());
+    }
+}
+
+void tst_QPushButton::sizeHint_data()
+{
+    QTest::addColumn<QString>("stylename");
+    QTest::newRow("motif") << QString::fromAscii("motif");
+    QTest::newRow("cde") << QString::fromAscii("cde");
+    QTest::newRow("windows") << QString::fromAscii("windows");
+    QTest::newRow("cleanlooks") << QString::fromAscii("cleanlooks");
+    QTest::newRow("gtk") << QString::fromAscii("gtk");
+    QTest::newRow("mac") << QString::fromAscii("mac");
+    QTest::newRow("plastique") << QString::fromAscii("plastique");
+    QTest::newRow("windowsxp") << QString::fromAscii("windowsxp");
+    QTest::newRow("windowsvista") << QString::fromAscii("windowsvista");
+}
+
+void tst_QPushButton::sizeHint()
+{
+    QFETCH(QString, stylename);
+
+    QStyle *style = QStyleFactory::create(stylename);
+    if (!style)
+        QSKIP(qPrintable(QString::fromLatin1("Qt has been compiled without style: %1")
+                         .arg(stylename)), SkipSingle);
+    QApplication::setStyle(style);
+
+// Test 1
+    {
+        QPushButton *button = new QPushButton("123");
+        QSize initSizeHint = button->sizeHint();
+
+        QDialog *dialog = new QDialog;
+        QWidget *widget = new QWidget(dialog);
+        button->setParent(widget);
+        button->sizeHint();
+
+        widget->setParent(0);
+        delete dialog;
+        button->setDefault(false);
+        QCOMPARE(button->sizeHint(), initSizeHint);
+        delete button;
+    }
+
+// Test 2
+    {
+        QWidget *tab1 = new QWidget;
+        QHBoxLayout *layout1 = new QHBoxLayout(tab1);
+        QPushButton *button1_1 = new QPushButton("123");
+        QPushButton *button1_2 = new QPushButton("123");
+        layout1->addWidget(button1_1);
+        layout1->addWidget(button1_2);
+
+        QWidget *tab2 = new QWidget;
+        QHBoxLayout *layout2 = new QHBoxLayout(tab2);
+        QPushButton *button2_1 = new QPushButton("123");
+        QPushButton *button2_2 = new QPushButton("123");
+        layout2->addWidget(button2_1);
+        layout2->addWidget(button2_2);
+
+        QDialog *dialog = new QDialog;
+        QTabWidget *tabWidget = new QTabWidget;
+        tabWidget->addTab(tab1, "1");
+        tabWidget->addTab(tab2, "2");
+        QVBoxLayout *mainLayout = new QVBoxLayout(dialog);
+        mainLayout->addWidget(tabWidget);
+        dialog->show();
+        tabWidget->setCurrentWidget(tab2);
+        tabWidget->setCurrentWidget(tab1);
+        QTest::qWait(100);
+
+        QCOMPARE(button1_2->size(), button2_2->size());
     }
 }
 

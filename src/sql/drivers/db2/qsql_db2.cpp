@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -84,7 +84,7 @@ public:
 class QDB2ResultPrivate
 {
 public:
-    QDB2ResultPrivate(const QDB2DriverPrivate* d): dp(d), hStmt(0), precisionPolicy(QSql::HighPrecision)
+    QDB2ResultPrivate(const QDB2DriverPrivate* d): dp(d), hStmt(0)
     {}
     ~QDB2ResultPrivate()
     {
@@ -107,7 +107,6 @@ public:
     SQLHANDLE hStmt;
     QSqlRecord recInf;
     QVector<QVariant*> valueCache;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 static QString qFromTChar(SQLTCHAR* str)
@@ -1044,26 +1043,22 @@ QVariant QDB2Result::data(int field)
         case QVariant::Double:
             {
             QString value=qGetStringData(d->hStmt, field, info.length() + 1, isNull);
-            bool ok=false;
-            switch(d->precisionPolicy) {
+            switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
-                    v = new QVariant(value.toInt(&ok));
+                    v = new QVariant(qGetIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionInt64:
-                    v = new QVariant(value.toLongLong(&ok));
+                    v = new QVariant(qGetBigIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionDouble:
-                    v = new QVariant(value.toDouble(&ok));
+                    v = new QVariant(qGetDoubleData(d->hStmt, field, isNull));
                     break;
                 case QSql::HighPrecision:
                 default:
                     // length + 1 for the comma
-                    v = new QVariant(value);
-                    ok = true;
+                    v = new QVariant(qGetStringData(d->hStmt, field, info.length() + 1, isNull));
                     break;
             }
-            if(!ok)
-                v = new QVariant();
             break;
             }
         case QVariant::String:
@@ -1147,9 +1142,9 @@ void QDB2Result::virtual_hook(int id, void *data)
         Q_ASSERT(data);
         *static_cast<bool*>(data) = nextResult();
         break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
+    case QSqlResult::DetachFromResultSet:
+        if (d->hStmt)
+            SQLCloseCursor(d->hStmt);
         break;
     default:
         QSqlResult::virtual_hook(id, data);
@@ -1536,7 +1531,6 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case BatchOperations:
         case LastInsertId:
         case SimpleLocking:
-        case LowPrecisionNumbers:
         case EventNotifications:
             return false;
         case BLOB:
@@ -1544,6 +1538,8 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case MultipleResultSets:
         case PreparedQueries:
         case PositionalPlaceholders:
+        case LowPrecisionNumbers:
+        case FinishQuery:
             return true;
         case Unicode:
         // this is the query that shows the codepage for the types:

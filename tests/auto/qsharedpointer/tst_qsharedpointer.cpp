@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,12 +34,12 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-
+#define QT_SHAREDPOINTER_TRACK_POINTERS
 #include "qsharedpointer.h"
 #include "externaltests.h"
 #include <QtTest/QtTest>
@@ -908,7 +908,7 @@ void tst_QSharedPointer::invalidConstructs_data()
     QTest::newRow("implicit-initialization3")
         << &QTest::QExternalTest::tryCompileFail
         << "QWeakPointer<Data> ptr = new Data;";
-    QTest::newRow("implicit-initialization1")
+    QTest::newRow("implicit-initialization4")
         << &QTest::QExternalTest::tryCompileFail
         << "QWeakPointer<Data> ptr;"
            "ptr = new Data;";
@@ -972,11 +972,13 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
            "QSharedPointer<int> ptr2 = qSharedPointerCast<int>(ptr1);";
+#ifndef QTEST_NO_RTTI
     QTest::newRow("invalid-cast2")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
            "QSharedPointer<int> ptr2 = qSharedPointerDynamicCast<int>(ptr1);";
-    QTest::newRow("implicit-initialization1")
+#endif
+    QTest::newRow("invalid-cast3")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
            "QSharedPointer<int> ptr2 = qSharedPointerConstCast<int>(ptr1);";
@@ -995,6 +997,7 @@ void tst_QSharedPointer::invalidConstructs()
     test.setDebugMode(true);
     test.setQtModules(QTest::QExternalTest::QtCore);
     test.setProgramHeader(
+        "#define QT_SHAREDPOINTER_TRACK_POINTERS\n"
         "#include <QtCore/qsharedpointer.h>\n"
         "\n"
         "struct Data { int i; };\n"
@@ -1023,7 +1026,12 @@ void tst_QSharedPointer::invalidConstructs()
 
     QByteArray body = code.toLatin1();
 
-    if (!(test.*testFunction)(body)) {
+    bool result = (test.*testFunction)(body);
+    if (qgetenv("QTEST_EXTERNAL_DEBUG").toInt() > 0) {
+        qDebug("External test output:");
+        printf("%s\n", test.standardError().constData());
+    }
+    if (!result) {
         qWarning("External code testing failed\nCode:\n%s\n", body.constData());
         QFAIL("Fail");
     }

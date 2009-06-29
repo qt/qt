@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -114,11 +114,52 @@ void tst_CssParser::scanner_data()
     }
 }
 
+
+static char *tokenName(QCss::TokenType t)
+{
+    switch (t) {
+        case QCss::NONE: return "NONE";
+        case QCss::S: return "S";
+        case QCss::CDO: return "CDO";
+        case QCss::CDC: return "CDC";
+        case QCss::INCLUDES: return "INCLUDES";
+        case QCss::DASHMATCH: return "DASHMATCH";
+        case QCss::LBRACE: return "LBRACE";
+        case QCss::PLUS: return "PLUS";
+        case QCss::GREATER: return "GREATER";
+        case QCss::COMMA: return "COMMA";
+        case QCss::STRING: return "STRING";
+        case QCss::INVALID: return "INVALID";
+        case QCss::IDENT: return "IDENT";
+        case QCss::HASH: return "HASH";
+        case QCss::ATKEYWORD_SYM: return "ATKEYWORD_SYM";
+        case QCss::EXCLAMATION_SYM: return "EXCLAMATION_SYM";
+        case QCss::LENGTH: return "LENGTH";
+        case QCss::PERCENTAGE: return "PERCENTAGE";
+        case QCss::NUMBER: return "NUMBER";
+        case QCss::FUNCTION: return "FUNCTION";
+        case QCss::COLON: return "COLON";
+        case QCss::SEMICOLON: return "SEMICOLON";
+        case QCss::RBRACE: return "RBRACE";
+        case QCss::SLASH: return "SLASH";
+        case QCss::MINUS: return "MINUS";
+        case QCss::DOT: return "DOT";
+        case QCss::STAR: return "STAR";
+        case QCss::LBRACKET: return "LBRACKET";
+        case QCss::RBRACKET: return "RBRACKET";
+        case QCss::EQUAL: return "EQUAL";
+        case QCss::LPAREN: return "LPAREN";
+        case QCss::RPAREN: return "RPAREN";
+        case QCss::OR: return "OR";
+    }
+    return "";
+}
+
 static void debug(const QVector<QCss::Symbol> &symbols, int index = -1)
 {
     qDebug() << "all symbols:";
     for (int i = 0; i < symbols.count(); ++i)
-        qDebug() << "(" << i << "); Token:" << QCss::Scanner::tokenName(symbols.at(i).token) << "; Lexem:" << symbols.at(i).lexem();
+        qDebug() << "(" << i << "); Token:" << tokenName(symbols.at(i).token) << "; Lexem:" << symbols.at(i).lexem();
     if (index != -1)
         qDebug() << "failure at index" << index;
 }
@@ -160,7 +201,7 @@ void tst_CssParser::scanner()
         QCOMPARE(l.count(), 2);
         const QString expectedToken = l.at(0);
         const QString expectedLexem = l.at(1);
-        QString actualToken = QString::fromLatin1(QCss::Scanner::tokenName(symbols.at(i).token));
+        QString actualToken = QString::fromLatin1(tokenName(symbols.at(i).token));
         if (actualToken != expectedToken) {
             debug(symbols, i);
             QCOMPARE(actualToken, expectedToken);

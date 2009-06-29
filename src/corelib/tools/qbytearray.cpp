@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1301,6 +1301,21 @@ QByteArray::QByteArray(int size, char ch)
         }
     }
     d->ref.ref();
+}
+
+/*!
+    \internal 
+
+    Constructs a byte array of size \a size with uninitialized contents.
+*/
+
+QByteArray::QByteArray(int size, Qt::Initialization)
+{
+    d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
+    d->ref = 1;
+    d->alloc = d->size = size;
+    d->data = d->array;
+    d->array[size] = '\0';
 }
 
 /*!
@@ -2591,6 +2606,8 @@ void QByteArray::clear()
     d->ref.ref();
 }
 
+#ifndef QT_NO_DATASTREAM
+
 /*! \relates QByteArray
 
     Writes byte array \a ba to the stream \a out and returns a reference
@@ -2598,7 +2615,6 @@ void QByteArray::clear()
 
     \sa {Format of the QDataStream operators}
 */
-#ifndef QT_NO_DATASTREAM
 
 QDataStream &operator<<(QDataStream &out, const QByteArray &ba)
 {
@@ -2641,7 +2657,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     return in;
 }
-#endif //QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 /*! \fn bool QByteArray::operator==(const QString &str) const
 
@@ -2976,8 +2992,7 @@ QByteArray QByteArray::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QByteArray result;
-    result.resize(d->size);
+    QByteArray result(d->size, Qt::Uninitialized);
     const char *from = d->data;
     const char *fromend = from + d->size;
     int outc=0;
@@ -3428,8 +3443,7 @@ QByteArray QByteArray::toBase64() const
     const char padchar = '=';
     int padlen = 0;
 
-    QByteArray tmp;
-    tmp.resize(((d->size * 4) / 3) + 3);
+    QByteArray tmp((d->size * 4) / 3 + 3, Qt::Uninitialized);
 
     int i = 0;
     char *out = tmp.data();
@@ -3767,8 +3781,7 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 {
     unsigned int buf = 0;
     int nbits = 0;
-    QByteArray tmp;
-    tmp.resize((base64.size() * 3) / 4);
+    QByteArray tmp((base64.size() * 3) / 4, Qt::Uninitialized);
 
     int offset = 0;
     for (int i = 0; i < base64.size(); ++i) {
@@ -3816,8 +3829,7 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 */
 QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 {
-    QByteArray res;
-    res.resize((hexEncoded.size() + 1)/ 2);
+    QByteArray res((hexEncoded.size() + 1)/ 2, Qt::Uninitialized);
     uchar *result = (uchar *)res.data() + res.size();
 
     bool odd_digit = true;
@@ -3854,8 +3866,7 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 */
 QByteArray QByteArray::toHex() const
 {
-    QByteArray hex;
-    hex.resize(d->size*2);
+    QByteArray hex(d->size * 2, Qt::Uninitialized);
     char *hexData = hex.data();
     const uchar *data = (const uchar *)d->data;
     for (int i = 0; i < d->size; ++i) {

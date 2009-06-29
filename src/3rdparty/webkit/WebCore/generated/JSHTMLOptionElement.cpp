@@ -19,24 +19,21 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLOptionElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFormElement.h"
 #include "HTMLOptionElement.h"
 #include "JSHTMLFormElement.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLOptionElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLOptionElement);
 
 /* Hash table */
 
@@ -80,13 +77,13 @@ public:
     JSHTMLOptionElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLOptionElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLOptionElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLOptionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -115,9 +112,9 @@ static const HashTable JSHTMLOptionElementPrototypeTable =
 
 const ClassInfo JSHTMLOptionElementPrototype::s_info = { "HTMLOptionElementPrototype", 0, &JSHTMLOptionElementPrototypeTable, 0 };
 
-JSObject* JSHTMLOptionElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLOptionElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLOptionElement>(exec);
+    return getDOMPrototype<JSHTMLOptionElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLOptionElement::s_info = { "HTMLOptionElement", &JSHTMLElement::s_info, &JSHTMLOptionElementTable, 0 };
@@ -127,9 +124,9 @@ JSHTMLOptionElement::JSHTMLOptionElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLOptionElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLOptionElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLOptionElementPrototype(JSHTMLOptionElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLOptionElementPrototype(JSHTMLOptionElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLOptionElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -137,70 +134,78 @@ bool JSHTMLOptionElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSHTMLOptionElement, Base>(exec, &JSHTMLOptionElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLOptionElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
 }
 
-JSValuePtr jsHTMLOptionElementDefaultSelected(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementDefaultSelected(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->defaultSelected());
 }
 
-JSValuePtr jsHTMLOptionElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->text());
 }
 
-JSValuePtr jsHTMLOptionElementIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->index());
 }
 
-JSValuePtr jsHTMLOptionElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->disabled());
 }
 
-JSValuePtr jsHTMLOptionElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->label());
 }
 
-JSValuePtr jsHTMLOptionElementSelected(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementSelected(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->selected());
 }
 
-JSValuePtr jsHTMLOptionElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->value());
 }
 
-JSValuePtr jsHTMLOptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLOptionElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLOptionElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLOptionElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLOptionElement, Base>(exec, propertyName, value, &JSHTMLOptionElementTable, this, slot);
 }
 
-void setJSHTMLOptionElementDefaultSelected(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptionElementDefaultSelected(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(thisObject)->impl());
-    imp->setDefaultSelected(value->toBoolean(exec));
+    imp->setDefaultSelected(value.toBoolean(exec));
 }
 
-void setJSHTMLOptionElementText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptionElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -208,38 +213,38 @@ void setJSHTMLOptionElementText(ExecState* exec, JSObject* thisObject, JSValuePt
     setDOMException(exec, ec);
 }
 
-void setJSHTMLOptionElementDisabled(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptionElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(thisObject)->impl());
-    imp->setDisabled(value->toBoolean(exec));
+    imp->setDisabled(value.toBoolean(exec));
 }
 
-void setJSHTMLOptionElementLabel(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptionElementLabel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(thisObject)->impl());
     imp->setLabel(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLOptionElementSelected(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptionElementSelected(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(thisObject)->impl());
-    imp->setSelected(value->toBoolean(exec));
+    imp->setSelected(value.toBoolean(exec));
 }
 
-void setJSHTMLOptionElementValue(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptionElementValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptionElement* imp = static_cast<HTMLOptionElement*>(static_cast<JSHTMLOptionElement*>(thisObject)->impl());
     imp->setValue(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLOptionElement::getConstructor(ExecState* exec)
+JSValue JSHTMLOptionElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLOptionElementConstructor>(exec);
 }
 
-HTMLOptionElement* toHTMLOptionElement(JSC::JSValuePtr value)
+HTMLOptionElement* toHTMLOptionElement(JSC::JSValue value)
 {
-    return value->isObject(&JSHTMLOptionElement::s_info) ? static_cast<JSHTMLOptionElement*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSHTMLOptionElement::s_info) ? static_cast<JSHTMLOptionElement*>(asObject(value))->impl() : 0;
 }
 
 }

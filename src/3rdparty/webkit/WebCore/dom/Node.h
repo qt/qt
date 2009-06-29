@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -25,9 +26,12 @@
 #define Node_h
 
 #include "DocPtr.h"
+#include "EventTarget.h"
 #include "KURLHash.h"
 #include "PlatformString.h"
+#include "RegisteredEventListener.h"
 #include "TreeShared.h"
+#include "FloatPoint.h"
 #include <wtf/Assertions.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
@@ -36,26 +40,31 @@
 namespace WebCore {
 
 class AtomicString;
+class Attribute;
 class ContainerNode;
 class Document;
 class DynamicNodeList;
 class Element;
 class Event;
 class EventListener;
+class Frame;
 class IntRect;
 class KeyboardEvent;
 class NSResolver;
-class NamedAttrMap;
+class NamedNodeMap;
 class NodeList;
+class NodeRareData;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformWheelEvent;
 class QualifiedName;
+class RegisteredEventListener;
 class RenderArena;
+class RenderBox;
+class RenderBoxModelObject;
 class RenderObject;
 class RenderStyle;
 class StringBuilder;
-class NodeRareData;
 
 typedef int ExceptionCode;
 
@@ -70,7 +79,7 @@ const unsigned short DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 const unsigned short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
 // this class implements nodes, which can have a parent but no children:
-class Node : public TreeShared<Node> {
+class Node : public EventTarget, public TreeShared<Node> {
     friend class Document;
 public:
     enum NodeType {
@@ -97,9 +106,9 @@ public:
     static void dumpStatistics();
 
     enum StyleChange { NoChange, NoInherit, Inherit, Detach, Force };    
-    static StyleChange diff(RenderStyle*, RenderStyle*);
+    static StyleChange diff(const RenderStyle*, const RenderStyle*);
 
-    Node(Document*, bool isElement = false, bool isContainer = false);
+    Node(Document*, bool isElement = false, bool isContainer = false, bool isText = false);
     virtual ~Node();
 
     // DOM methods & attributes for Node
@@ -117,7 +126,7 @@ public:
     Node* firstChild() const { return isContainerNode() ? containerFirstChild() : 0; }
     Node* lastChild() const { return isContainerNode() ? containerLastChild() : 0; }
     bool hasAttributes() const;
-    NamedAttrMap* attributes() const;
+    NamedNodeMap* attributes() const;
 
     virtual KURL baseURI() const;
     
@@ -157,6 +166,8 @@ public:
 
     bool isElementNode() const { return m_isElement; }
     bool isContainerNode() const { return m_isContainer; }
+    bool isTextNode() const { return m_isText; }
+
     virtual bool isHTMLElement() const { return false; }
 
 #if ENABLE(SVG)
@@ -174,11 +185,9 @@ public:
     virtual bool isStyledElement() const { return false; }
     virtual bool isFrameOwnerElement() const { return false; }
     virtual bool isAttributeNode() const { return false; }
-    virtual bool isTextNode() const { return false; }
     virtual bool isCommentNode() const { return false; }
     virtual bool isCharacterDataNode() const { return false; }
     bool isDocumentNode() const;
-    virtual bool isEventTargetNode() const { return false; }
     virtual bool isShadowNode() const { return false; }
     virtual Node* shadowParentNode() { return 0; }
     Node* shadowAncestorNode();
@@ -256,16 +265,16 @@ public:
     bool focused() const { return hasRareData() ? rareDataFocused() : false; }
     bool attached() const { return m_attached; }
     void setAttached(bool b = true) { m_attached = b; }
-    bool changed() const { return m_styleChange != NoStyleChange; }
+    bool needsStyleRecalc() const { return m_styleChange != NoStyleChange; }
     StyleChangeType styleChangeType() const { return static_cast<StyleChangeType>(m_styleChange); }
-    bool hasChangedChild() const { return m_hasChangedChild; }
+    bool childNeedsStyleRecalc() const { return m_childNeedsStyleRecalc; }
     bool isLink() const { return m_isLink; }
     void setHasID(bool b = true) { m_hasId = b; }
     void setHasClass(bool b = true) { m_hasClass = b; }
-    void setHasChangedChild( bool b = true ) { m_hasChangedChild = b; }
+    void setChildNeedsStyleRecalc(bool b = true) { m_childNeedsStyleRecalc = b; }
     void setInDocument(bool b = true) { m_inDocument = b; }
     void setInActiveChain(bool b = true) { m_inActiveChain = b; }
-    void setChanged(StyleChangeType changeType = FullStyleChange);
+    void setNeedsStyleRecalc(StyleChangeType changeType = FullStyleChange);
     void setIsLink(bool b = true) { m_isLink = b; }
 
     bool inSubtreeMark() const { return m_inSubtreeMark; }
@@ -288,14 +297,6 @@ public:
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isMouseFocusable() const;
 
-    virtual bool isAutofilled() const { return false; }
-    virtual bool isControl() const { return false; } // Eventually the notion of what is a control will be extensible.
-    virtual bool isEnabled() const { return true; }
-    virtual bool isChecked() const { return false; }
-    virtual bool isIndeterminate() const { return false; }
-    virtual bool isReadOnlyControl() const { return false; }
-    virtual bool isTextControl() const { return false; }
-
     virtual bool isContentEditable() const;
     virtual bool isContentRichlyEditable() const;
     virtual bool shouldUseInputMethod() const;
@@ -314,7 +315,7 @@ public:
     Document* document() const
     {
         ASSERT(this);
-        ASSERT(m_document || nodeType() == DOCUMENT_TYPE_NODE && !inDocument());
+        ASSERT(m_document || (nodeType() == DOCUMENT_TYPE_NODE && !inDocument()));
         return m_document.get();
     }
     void setDocument(Document*);
@@ -373,6 +374,10 @@ public:
     RenderObject* previousRenderer();
     void setRenderer(RenderObject* renderer) { m_renderer = renderer; }
     
+    // Use these two methods with caution.
+    RenderBox* renderBox() const;
+    RenderBoxModelObject* renderBoxModelObject() const;
+
     void checkSetPrefix(const AtomicString& prefix, ExceptionCode&);
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;
@@ -399,6 +404,10 @@ public:
     // Whether or not a selection can be started in this object
     virtual bool canStartSelection() const;
 
+    // Getting points into and out of screen space
+    FloatPoint convertToPage(const FloatPoint& p) const;
+    FloatPoint convertFromPage(const FloatPoint& p) const;
+
     // -----------------------------------------------------------------------------
     // Integration with rendering tree
 
@@ -419,7 +428,7 @@ public:
     void createRendererIfNeeded();
     PassRefPtr<RenderStyle> styleForRenderer();
     virtual bool rendererIsNeeded(RenderStyle*);
-#if ENABLE(SVG)
+#if ENABLE(SVG) || ENABLE(XHTMLMP)
     virtual bool childShouldCreateRenderer(Node*) const { return true; }
 #endif
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
@@ -491,8 +500,8 @@ public:
     unsigned short compareDocumentPosition(Node*);
 
 protected:
-    virtual void willMoveToNewOwnerDocument() { }
-    virtual void didMoveToNewOwnerDocument() { }
+    virtual void willMoveToNewOwnerDocument();
+    virtual void didMoveToNewOwnerDocument();
     
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
     void setTabIndexExplicitly(short);
@@ -501,6 +510,153 @@ protected:
     
     NodeRareData* rareData() const;
     NodeRareData* ensureRareData();
+
+public:
+    virtual Node* toNode() { return this; }
+
+    virtual ScriptExecutionContext* scriptExecutionContext() const;
+
+    // Used for standard DOM addEventListener / removeEventListener APIs.
+    virtual void addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
+    virtual void removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
+
+    // Used for legacy "onEvent" property APIs.
+    void setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
+    void clearAttributeEventListener(const AtomicString& eventType);
+    EventListener* getAttributeEventListener(const AtomicString& eventType) const;
+
+    virtual bool dispatchEvent(PassRefPtr<Event>, ExceptionCode&);
+    bool dispatchEvent(const AtomicString& eventType, bool canBubble, bool cancelable);
+
+    void removeAllEventListeners() { if (hasRareData()) removeAllEventListenersSlowCase(); }
+
+    void dispatchSubtreeModifiedEvent();
+    void dispatchUIEvent(const AtomicString& eventType, int detail = 0, PassRefPtr<Event> underlyingEvent = 0);
+    bool dispatchKeyEvent(const PlatformKeyboardEvent&);
+    void dispatchWheelEvent(PlatformWheelEvent&);
+    bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType,
+        int clickCount = 0, Node* relatedTarget = 0);
+    bool dispatchMouseEvent(const AtomicString& eventType, int button, int clickCount,
+        int pageX, int pageY, int screenX, int screenY,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
+        bool isSimulated = false, Node* relatedTarget = 0, PassRefPtr<Event> underlyingEvent = 0);
+    void dispatchSimulatedMouseEvent(const AtomicString& eventType, PassRefPtr<Event> underlyingEvent = 0);
+    void dispatchSimulatedClick(PassRefPtr<Event> underlyingEvent, bool sendMouseEvents = false, bool showPressedLook = true);
+    void dispatchProgressEvent(const AtomicString& eventType, bool lengthComputableArg, unsigned loadedArg, unsigned totalArg);
+    void dispatchWebKitAnimationEvent(const AtomicString& eventType, const String& animationName, double elapsedTime);
+    void dispatchWebKitTransitionEvent(const AtomicString& eventType, const String& propertyName, double elapsedTime);
+    void dispatchMutationEvent(const AtomicString& type, bool canBubble, PassRefPtr<Node> relatedNode, const String& prevValue, const String& newValue, ExceptionCode&);
+
+    bool dispatchGenericEvent(PassRefPtr<Event>);
+
+    virtual void handleLocalEvents(Event*, bool useCapture);
+
+    virtual void dispatchFocusEvent();
+    virtual void dispatchBlurEvent();
+
+    /**
+     * Perform the default action for an event e.g. submitting a form
+     */
+    virtual void defaultEventHandler(Event*);
+
+    /**
+     * Used for disabled form elements; if true, prevents mouse events from being dispatched
+     * to event listeners, and prevents DOMActivate events from being sent at all.
+     */
+    virtual bool disabled() const;
+
+    const RegisteredEventListenerVector& eventListeners() const;
+
+    // These 4 attribute event handler attributes are overrided by HTMLBodyElement
+    // and HTMLFrameSetElement to forward to the DOMWindow.
+    virtual EventListener* onblur() const;
+    virtual void setOnblur(PassRefPtr<EventListener>);
+    virtual EventListener* onerror() const;
+    virtual void setOnerror(PassRefPtr<EventListener>);
+    virtual EventListener* onfocus() const;
+    virtual void setOnfocus(PassRefPtr<EventListener>);
+    virtual EventListener* onload() const;
+    virtual void setOnload(PassRefPtr<EventListener>);
+
+    EventListener* onabort() const;
+    void setOnabort(PassRefPtr<EventListener>);
+    EventListener* onchange() const;
+    void setOnchange(PassRefPtr<EventListener>);
+    EventListener* onclick() const;
+    void setOnclick(PassRefPtr<EventListener>);
+    EventListener* oncontextmenu() const;
+    void setOncontextmenu(PassRefPtr<EventListener>);
+    EventListener* ondblclick() const;
+    void setOndblclick(PassRefPtr<EventListener>);
+    EventListener* oninput() const;
+    void setOninput(PassRefPtr<EventListener>);
+    EventListener* onkeydown() const;
+    void setOnkeydown(PassRefPtr<EventListener>);
+    EventListener* onkeypress() const;
+    void setOnkeypress(PassRefPtr<EventListener>);
+    EventListener* onkeyup() const;
+    void setOnkeyup(PassRefPtr<EventListener>);
+    EventListener* onmousedown() const;
+    void setOnmousedown(PassRefPtr<EventListener>);
+    EventListener* onmousemove() const;
+    void setOnmousemove(PassRefPtr<EventListener>);
+    EventListener* onmouseout() const;
+    void setOnmouseout(PassRefPtr<EventListener>);
+    EventListener* onmouseover() const;
+    void setOnmouseover(PassRefPtr<EventListener>);
+    EventListener* onmouseup() const;
+    void setOnmouseup(PassRefPtr<EventListener>);
+    EventListener* onmousewheel() const;
+    void setOnmousewheel(PassRefPtr<EventListener>);
+    EventListener* ondragenter() const;
+    void setOndragenter(PassRefPtr<EventListener>);
+    EventListener* ondragover() const;
+    void setOndragover(PassRefPtr<EventListener>);
+    EventListener* ondragleave() const;
+    void setOndragleave(PassRefPtr<EventListener>);
+    EventListener* ondrop() const;
+    void setOndrop(PassRefPtr<EventListener>);
+    EventListener* ondragstart() const;
+    void setOndragstart(PassRefPtr<EventListener>);
+    EventListener* ondrag() const;
+    void setOndrag(PassRefPtr<EventListener>);
+    EventListener* ondragend() const;
+    void setOndragend(PassRefPtr<EventListener>);
+    EventListener* onscroll() const;
+    void setOnscroll(PassRefPtr<EventListener>);
+    EventListener* onselect() const;
+    void setOnselect(PassRefPtr<EventListener>);
+    EventListener* onsubmit() const;
+    void setOnsubmit(PassRefPtr<EventListener>);
+
+    // WebKit extensions
+    EventListener* onbeforecut() const;
+    void setOnbeforecut(PassRefPtr<EventListener>);
+    EventListener* oncut() const;
+    void setOncut(PassRefPtr<EventListener>);
+    EventListener* onbeforecopy() const;
+    void setOnbeforecopy(PassRefPtr<EventListener>);
+    EventListener* oncopy() const;
+    void setOncopy(PassRefPtr<EventListener>);
+    EventListener* onbeforepaste() const;
+    void setOnbeforepaste(PassRefPtr<EventListener>);
+    EventListener* onpaste() const;
+    void setOnpaste(PassRefPtr<EventListener>);
+    EventListener* onreset() const;
+    void setOnreset(PassRefPtr<EventListener>);
+    EventListener* onsearch() const;
+    void setOnsearch(PassRefPtr<EventListener>);
+    EventListener* onselectstart() const;
+    void setOnselectstart(PassRefPtr<EventListener>);
+
+    using TreeShared<Node>::ref;
+    using TreeShared<Node>::deref;
+ 
+private:
+    virtual void refEventTarget() { ref(); }
+    virtual void derefEventTarget() { deref(); }
+
+    void removeAllEventListenersSlowCase();
 
 private:
     virtual NodeRareData* createRareData();
@@ -529,7 +685,7 @@ private:
     bool m_hasId : 1;
     bool m_hasClass : 1;
     bool m_attached : 1;
-    bool m_hasChangedChild : 1;
+    bool m_childNeedsStyleRecalc : 1;
     bool m_inDocument : 1;
     bool m_isLink : 1;
     bool m_active : 1;
@@ -540,6 +696,7 @@ private:
     bool m_hasRareData : 1;
     const bool m_isElement : 1;
     const bool m_isContainer : 1;
+    const bool m_isText : 1;
 
 protected:
     // These bits are used by the Element derived class, pulled up here so they can

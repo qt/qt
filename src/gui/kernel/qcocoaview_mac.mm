@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qdnd_p.h>
 #include <private/qmacinputcontext_p.h>
+#include <private/qmultitouch_mac_p.h>
 
 #include <qscrollarea.h>
 #include <qhash.h>
@@ -258,7 +259,7 @@ extern "C" {
     }
 
     QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
-    NSCursor *nscursor = static_cast<NSCursor *>(nsCursorForQCursor(cursorWidget->cursor()));
+    NSCursor *nscursor = static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursorWidget->cursor()));
     if (mask.isEmpty()) {
         [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
     } else {
@@ -709,7 +710,7 @@ extern "C" {
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
-{        
+{
     bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, Qt::RightButton);
 
     if (!mouseOK)
@@ -867,6 +868,62 @@ extern "C" {
     if (!qt_mac_handleTabletEvent(self, tabletEvent))
         [super tabletPoint:tabletEvent];
 }
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+- (void)touchesBeganWithEvent:(NSEvent *)event; 
+{
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event;
+{
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event;
+{
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event;
+{
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)magnifyWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "magnifyWithEvent";
+}
+
+- (void)rotateWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "rotateWithEvent";
+}
+
+- (void)swipeWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "swipeWithEvent";
+}
+
+- (void)beginGestureWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "beginGestureWithEvent";
+}
+
+- (void)endGestureWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "endGestureWithEvent";
+}
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
 - (void)frameDidChange:(NSNotification *)note
 {

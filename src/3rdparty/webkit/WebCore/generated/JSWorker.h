@@ -21,7 +21,6 @@
 #ifndef JSWorker_h
 #define JSWorker_h
 
-
 #if ENABLE(WORKERS)
 
 #include "JSDOMBinding.h"
@@ -37,13 +36,13 @@ class JSWorker : public DOMObject {
 public:
     JSWorker(PassRefPtr<JSC::Structure>, PassRefPtr<Worker>);
     virtual ~JSWorker();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -52,24 +51,25 @@ public:
 
 
     // Custom functions
-    JSC::JSValuePtr addEventListener(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
     Worker* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<Worker> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, Worker*);
-Worker* toWorker(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, Worker*);
+Worker* toWorker(JSC::JSValue);
 
 class JSWorkerPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -78,17 +78,17 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsWorkerPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerPrototypeFunctionTerminate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionTerminate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsWorkerOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsWorkerOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsWorkerOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -531,7 +531,7 @@
     \value UniqueConnection  Same as AutoConnection, but there will be a check that the signal is
                              not already connected to the same slot before connecting, otherwise,
                              the connection will fail.
-                             \since 4.6
+                             This value was introduced in Qt 4.6.
 
     With queued connections, the parameters must be of types that are known to
     Qt's meta-object system, because Qt needs to copy the arguments to store them
@@ -1203,6 +1203,11 @@
     on Mac when using Carbon. This attribute has no effect on Cocoa.
     The attribute is off by default and can be enabled on a per-window basis.
 
+    \value WA_AcceptTouchEvents Allows touch events (see QTouchEvent)
+    to be sent to the widget. Must be set on all widgets that can
+    handle touch events. Without this attribute set, events from a
+    touch device will be sent as mouse events.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1232,6 +1237,7 @@
     \omitvalue WA_X11BypassTransientForHint
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
+    \omitvalue WA_WState_AcceptedTouchBeginEvent
 */
 
 /*! \typedef Qt::HANDLE
@@ -2061,9 +2067,9 @@
                             should be taken over by the target application,
                             i.e., the source application should not delete
                             the data.
-
-                            On X11 this value is used to do a move.
-
+			    \br
+			    On X11 this value is used to do a move.
+			    \br
                             TargetMoveAction is not used on the Mac.
 */
 
@@ -2674,11 +2680,69 @@
   \enum Qt::TileRule
   \since 4.6
 
-  This enum describes how to repeat or stretch the parts of an image when drawing.
+  This enum describes how to repeat or stretch the parts of an image
+  when drawing.
 
   \value Stretch   Scale the image to fit to the available area.
-  \value Repeat    Tile the image until there is no more space. May crop the last image.
-  \value Round     Like Repeat, but scales the images down to ensure that the last image is not cropped.
 
-  \sa QPixmapBorders, qDrawBorderPixmap()
+  \value Repeat    Tile the image until there is no more space. May crop
+  the last image.
+
+  \value Round 	   Like Repeat, but scales the images down to ensure that
+  the last image is not cropped.
+*/
+
+/*!
+    \enum Qt::Initialization
+    \internal
+*/
+
+/*! \enum Qt::GestureType
+    \since 4.6
+
+    This enum lists standard gestures.
+
+    \value UnknownGesture An unknown gesture. This enum value shouldn't be used.
+    \value TapGesture A single tap gesture.
+    \value DoubleTapGesture A double tap gesture.
+    \value TrippleTapGesture A tripple tap gesture.
+    \value TapAndHoldGesture A tap-and-hold (long tap) gesture.
+    \value PanGesture A pan gesture.
+    \value PinchGesture A pinch gesture.
+*/
+
+/*!
+    \enum Qt::GestureState
+    \since 4.6
+
+    This enum type describes the state of a gesture.
+
+    \omitvalue NoGesture
+    \value GestureStarted   A continuous gesture has started.
+    \value GestureUpdated   A gesture continiues.
+    \value GestureFinished  A gesture has finished.
+
+    \sa QGesture
+*/
+
+/*!
+    \enum Qt::DirectionType
+    \since 4.6
+
+    This enum type describes directions. This could be used by the
+    gesture recognizers.
+
+    \value NoDirection Non-specific direction.
+    \value LeftDownDirection
+    \value DownLeftDirection
+    \value DownDirection
+    \value RightDownDirection
+    \value DownRightDirection
+    \value LeftDirection
+    \value RightDirection
+    \value LeftUpDirection
+    \value UpLeftDirection
+    \value UpDirection
+    \value RightUpDirection
+    \value UpRightDirection
 */

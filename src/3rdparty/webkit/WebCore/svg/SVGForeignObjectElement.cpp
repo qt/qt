@@ -26,10 +26,10 @@
 #include "SVGForeignObjectElement.h"
 
 #include "CSSPropertyNames.h"
+#include "MappedAttribute.h"
 #include "RenderForeignObject.h"
-#include "SVGNames.h"
 #include "SVGLength.h"
-
+#include "SVGNames.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {
@@ -113,7 +113,7 @@ static inline void addCSSPropertyAndNotifyAttributeMap(StyledElement* element, c
         attrs->declRemoved();
     }
 
-    element->setChanged();
+    element->setNeedsStyleRecalc();
     element->addCSSProperty(mappedAttr, cssProperty, value);
 
     if (CSSMappedAttributeDeclaration* decl = mappedAttr->decl()) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -144,7 +144,6 @@ public:
                              const QPair<QTableWidgetItem*,int> &right);
     static bool itemGreaterThan(const QPair<QTableWidgetItem*,int> &left,
                                 const QPair<QTableWidgetItem*,int> &right);
-    static bool canConvertToDouble(const QVariant &value);
 
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
     QVector<QTableWidgetItem*> columnItems(int column) const;
@@ -190,7 +189,7 @@ class QTableWidgetPrivate : public QTableViewPrivate
     Q_DECLARE_PUBLIC(QTableWidget)
 public:
     QTableWidgetPrivate() : QTableViewPrivate() {}
-    inline QTableModel *model() const { return qobject_cast<QTableModel*>(q_func()->model()); }
+    inline QTableModel *tableModel() const { return qobject_cast<QTableModel*>(model); }
     void setup();
 
     // view signals

@@ -21,9 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEImage.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -31,6 +32,7 @@ FEImage::FEImage(CachedImage* cachedImage)
     : FilterEffect()
     , m_cachedImage(cachedImage)
 {
+    m_cachedImage->addClient(this);
 }
 
 PassRefPtr<FEImage> FEImage::create(CachedImage* cachedImage)
@@ -63,7 +65,7 @@ void FEImage::setCachedImage(CachedImage* image)
         m_cachedImage->addClient(this);
 }
 
-void FEImage::apply()
+void FEImage::apply(Filter*)
 {
 }
 
@@ -81,4 +83,4 @@ TextStream& FEImage::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

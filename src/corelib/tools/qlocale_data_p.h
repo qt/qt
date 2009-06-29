@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
  */
 struct CountryLanguage
 {
-    quint32 languageId;
-    quint32 countryId;
+    quint16 languageId;
+    quint16 countryId;
 };
 static const CountryLanguage ImperialMeasurementSystems[] = {
     { 31, 225 },
@@ -83,7 +83,7 @@ static const int ImperialMeasurementSystemsCount =
 */
 
 
-static const uint locale_index[] = {
+static const quint16 locale_index[] = {
      0, // unused
      0, // C
      0, // Abkhazian
@@ -2313,7 +2313,7 @@ static const char language_name_list[] =
 "Chewa\0"
 ;
 
-static const uint language_name_index[] = {
+static const quint16 language_name_index[] = {
      0, // Unused
      8, // C
     10, // Abkhazian
@@ -2727,7 +2727,7 @@ static const char country_name_list[] =
 "SerbiaAndMontenegro\0"
 ;
 
-static const uint country_name_index[] = {
+static const quint16 country_name_index[] = {
      0, // AnyCountry
      8, // Afghanistan
     20, // Albania

@@ -26,6 +26,8 @@
 #include "config.h"
 #include "LocalStorageThread.h"
 
+#if ENABLE(DOM_STORAGE)
+
 #include "LocalStorage.h"
 #include "LocalStorageArea.h"
 #include "LocalStorageTask.h"
@@ -50,7 +52,7 @@ bool LocalStorageThread::start()
     if (m_threadID)
         return true;
 
-    m_threadID = createThread(LocalStorageThread::localStorageThreadStart, this, "WebCore::LocalStorage");
+    m_threadID = createThread(LocalStorageThread::localStorageThreadStart, this, "WebCore: LocalStorage");
 
     return m_threadID;
 }
@@ -83,18 +85,6 @@ void* LocalStorageThread::localStorageThread()
     m_selfRef = 0;
 
     return 0;
-}
-
-void LocalStorageThread::scheduleImport(PassRefPtr<LocalStorage> storage)
-{
-    ASSERT(!m_queue.killed() && m_threadID);
-    m_queue.append(LocalStorageTask::createImport(storage));
-}
-
-void LocalStorageThread::scheduleSync(PassRefPtr<LocalStorage> storage)
-{
-    ASSERT(!m_queue.killed() && m_threadID);
-    m_queue.append(LocalStorageTask::createSync(storage));
 }
 
 void LocalStorageThread::scheduleImport(PassRefPtr<LocalStorageArea> area)
@@ -137,3 +127,6 @@ void LocalStorageThread::performTerminate()
 }
 
 }
+
+#endif // ENABLE(DOM_STORAGE)
+

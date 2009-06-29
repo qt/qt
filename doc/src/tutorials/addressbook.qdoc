@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -457,7 +457,7 @@
     \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
 
     The image below is our expected graphical user interface. Notice that it
-    is getting closer to our expected final output.
+    is getting closer to our final application.
 
     \image addressbook-tutorial-part3-screenshot.png
 
@@ -513,7 +513,7 @@
     \list
         \o If the iterator is at the end of \c contacts, we clear the
         display and return.
-        \o If the iterator is the beginning of \c contacts, we move it to
+        \o If the iterator is at the beginning of \c contacts, we move it to
         the end.
         \o We then decrement the iterator by one.
     \endlist
@@ -532,7 +532,7 @@
     \example tutorials/addressbook/part4
     \title Address Book 4 - Editing and Removing Addresses
 
-    In this chapter, we look at ways to modify the contents of contact stored
+    In this chapter, we look at ways to modify the contents of contacts stored
     in the address book application.
 
     \image addressbook-tutorial-screenshot.png
@@ -542,7 +542,7 @@
     edit and remove functions so that a contact's details can be changed
     when needed. However, this requires a little improvement, in the form of
     enums. In our previous chapters, we had two modes: \c{AddingMode} and
-    \c{NavigationMode} - but they weren't defined as enums. Instead, we
+    \c{NavigationMode} - but they were not defined as enums. Instead, we
     enabled and disabled the corresponding buttons manually, resulting in
     multiple lines of repeated code.
 
@@ -576,8 +576,7 @@
     \dots
     \snippet tutorials/addressbook/part4/addressbook.h mode declaration
 
-    Lastly, we declare \c currentMode to keep track of the current mode of the
-    enum.
+    Lastly, we declare \c currentMode to keep track of the enum's current mode.
 
     \section1 Implementing the AddressBook Class
 
@@ -647,11 +646,11 @@
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 1
 
-    For \c NavigationMode, however, we include conditions within the
-    parameters of the QPushButton::setEnabled(). This is to ensure that
-    the \c editButton and \c removeButton push buttons are enabled when there
-    is at least one contact in the address book; \c nextButton and \c previousButton
-    are only enabled when there is more than one contact in the address book.
+    For \c NavigationMode, however, we include conditions within the parameters
+    of the QPushButton::setEnabled() function. This is to ensure that
+    \c editButton and \c removeButton are enabled when there is at least one
+    contact in the address book; \c nextButton and \c previousButton are only
+    enabled when there is more than one contact in the address book.
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 2
 

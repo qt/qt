@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,6 +57,7 @@
 #include "private/qobject_p.h"
 #include "QtCore/qrect.h"
 #include "QtCore/qlocale.h"
+#include "QtCore/qset.h"
 #include "QtGui/qregion.h"
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
@@ -139,6 +140,12 @@ struct QTLWExtra {
     WId parentWinId; // parent window Id (valid after reparenting)
     WId userTimeWindow; // window id that contains user-time timestamp when WM supports a _NET_WM_USER_TIME_WINDOW atom
     QPoint fullScreenOffset;
+#ifndef QT_NO_XSYNC
+    WId syncUpdateCounter;
+    ulong syncRequestTimestamp;
+    qint32 newCounterValueHi;
+    quint32 newCounterValueLo;
+#endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
@@ -516,6 +523,11 @@ public:
     QList<QAction*> actions;
 #endif
 
+    QSet<int> gestures;
+    int grabGesture(int gestureId);
+    bool releaseGesture(int gestureId);
+    bool hasGesture(const QString &type) const;
+
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
     QPalette::ColorRole fg_role : 8;
@@ -550,6 +562,7 @@ public:
     void unregisterOleDnd(QWidget *widget, QOleDropTarget *target);
 #endif
     void grabMouseWhileInWindow();
+    void registerTouchWindow();
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
@@ -615,6 +628,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
+    void registerTouchWindow();
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -252,6 +252,7 @@ private slots:
 
     void moveChild_data();
     void moveChild();
+    void showAndMoveChild();
 
     void subtractOpaqueSiblings();
 
@@ -288,6 +289,7 @@ private slots:
     void render_systemClip3_data();
     void render_systemClip3();
     void render_task252837();
+    void render_worldTransform();
 
     void setContentsMargins();
 
@@ -3977,6 +3979,7 @@ public:
     :QWidget(parent)
     {
         setAttribute(Qt::WA_StaticContents);
+        setAttribute(Qt::WA_OpaquePaintEvent);
         setPalette(Qt::red); // Make sure we have an opaque palette.
         setAutoFillBackground(true);
         gotPaintEvent = false;
@@ -5315,6 +5318,33 @@ void tst_QWidget::moveChild()
                  child.color);
     VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
                  parent.color);
+}
+
+void tst_QWidget::showAndMoveChild()
+{
+    QWidget parent(0, Qt::FramelessWindowHint);
+    parent.resize(300, 300);
+    parent.setPalette(Qt::red);
+    parent.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parent);
+#endif
+    QTest::qWait(200);
+
+    const QPoint tlwOffset = parent.geometry().topLeft();
+    QWidget child(&parent);
+    child.resize(100, 100);
+    child.setPalette(Qt::blue);
+    child.setAutoFillBackground(true);
+
+    // Ensure that the child is repainted correctly when moved right after show.
+    // NB! Do NOT processEvents() (or qWait()) in between show() and move().
+    child.show();
+    child.move(150, 150);
+    qApp->processEvents();
+
+    VERIFY_COLOR(child.geometry().translated(tlwOffset), Qt::blue);
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
 }
 
 void tst_QWidget::subtractOpaqueSiblings()
@@ -7151,6 +7181,99 @@ void tst_QWidget::render_task252837()
     // Please do not crash.
     widget.render(&painter);
 }
+
+void tst_QWidget::render_worldTransform()
+{
+    class MyWidget : public QWidget
+    { public:
+        void paintEvent(QPaintEvent *)
+        {
+            QPainter painter(this);
+            // Make sure world transform is identity.
+            QCOMPARE(painter.worldTransform(), QTransform());
+
+            // Make sure device transform is correct.
+            const QPoint widgetOffset = geometry().topLeft();
+            QTransform expectedDeviceTransform = QTransform::fromTranslate(105, 5);
+            expectedDeviceTransform.rotate(90);
+            expectedDeviceTransform.translate(widgetOffset.x(), widgetOffset.y());
+            QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
+
+            // Set new world transform.
+            QTransform newWorldTransform = QTransform::fromTranslate(10, 10);
+            newWorldTransform.rotate(90);
+            painter.setWorldTransform(newWorldTransform);
+            QCOMPARE(painter.worldTransform(), newWorldTransform);
+
+            // Again, check device transform.
+            expectedDeviceTransform.translate(10, 10);
+            expectedDeviceTransform.rotate(90);
+            QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
+
+            painter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+        }
+    };
+
+    MyWidget widget;
+    widget.setFixedSize(100, 100);
+    widget.setPalette(Qt::red);
+    widget.setAutoFillBackground(true);
+
+    MyWidget child;
+    child.setParent(&widget);
+    child.move(50, 50);
+    child.setFixedSize(50, 50);
+    child.setPalette(Qt::blue);
+    child.setAutoFillBackground(true);
+
+    QImage image(QSize(110, 110), QImage::Format_RGB32);
+    image.fill(QColor(Qt::black).rgb());
+
+    QPainter painter(&image);
+    painter.translate(105, 5);
+    painter.rotate(90);
+
+    const QTransform worldTransform = painter.worldTransform();
+    const QTransform deviceTransform = painter.deviceTransform();
+
+    // Render widgets onto image.
+    widget.render(&painter);
+#ifdef RENDER_DEBUG
+    image.save("render_worldTransform_image.png");
+#endif
+
+    // Ensure the transforms are unchanged after render.
+    QCOMPARE(painter.worldTransform(), painter.worldTransform());
+    QCOMPARE(painter.deviceTransform(), painter.deviceTransform());
+    painter.end();
+
+    // Paint expected image.
+    QImage expected(QSize(110, 110), QImage::Format_RGB32);
+    expected.fill(QColor(Qt::black).rgb());
+
+    QPainter expectedPainter(&expected);
+    expectedPainter.translate(105, 5);
+    expectedPainter.rotate(90);
+    expectedPainter.save();
+    expectedPainter.fillRect(widget.rect(),Qt::red);
+    expectedPainter.translate(10, 10);
+    expectedPainter.rotate(90);
+    expectedPainter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+    expectedPainter.restore();
+    expectedPainter.translate(50, 50);
+    expectedPainter.fillRect(child.rect(),Qt::blue);
+    expectedPainter.translate(10, 10);
+    expectedPainter.rotate(90);
+    expectedPainter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+    expectedPainter.end();
+
+#ifdef RENDER_DEBUG
+    expected.save("render_worldTransform_expected.png");
+#endif
+
+    QCOMPARE(image, expected);
+}
+
 void tst_QWidget::setContentsMargins()
 {
     QLabel label("why does it always rain on me?");
