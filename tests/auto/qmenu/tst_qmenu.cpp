@@ -94,6 +94,7 @@ private slots:
     void task176201_clear();
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
+    void menuSizeHint();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -727,6 +728,40 @@ void tst_QMenu::task256918_setFont()
     QVERIFY(menu.actionGeometry(action).height() > f.pointSize());
 }
 
+void tst_QMenu::menuSizeHint()
+{
+    QMenu menu;
+    //this is a list of arbitrary strings so that we check the geometry
+    QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
+    foreach(QString str, list)
+        menu.addAction(str);
+
+    int left, top, right, bottom;
+    menu.getContentsMargins(&left, &top, &right, &bottom);
+    const int panelWidth = menu.style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, &menu);
+    const int hmargin = menu.style()->pixelMetric(QStyle::PM_MenuHMargin, 0, &menu),
+        vmargin = menu.style()->pixelMetric(QStyle::PM_MenuVMargin, 0, &menu);
+
+    int maxWidth =0;
+    QRect result;
+    foreach(QAction *action, menu.actions()) {
+        maxWidth = qMax(maxWidth, menu.actionGeometry(action).width());
+        result |= menu.actionGeometry(action);
+        QCOMPARE(result.x(), left + hmargin + panelWidth);
+        QCOMPARE(result.y(), top + vmargin + panelWidth);
+    }
+
+    QStyleOption opt(0);
+    opt.rect = menu.rect();
+    opt.state = QStyle::State_None;
+
+    QSize resSize = QSize(result.x(), result.y()) + result.size() + QSize(hmargin + right + panelWidth, vmargin + top + panelWidth);
+
+    resSize = menu.style()->sizeFromContents(QStyle::CT_Menu, &opt,
+                                    resSize.expandedTo(QApplication::globalStrut()), &menu);
+
+    QCOMPARE(resSize, menu.sizeHint());
+}
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

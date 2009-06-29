@@ -1704,10 +1704,10 @@ QSize QMenu::sizeHint() const
         const QRect &rect = d->actionRects.at(i);
         if (rect.isNull())
             continue;
-        if (rect.bottom() > s.height())
-            s.setHeight(rect.y()+rect.height());
-        if (rect.right() > s.width())
-            s.setWidth(rect.right());
+        if (rect.bottom() >= s.height())
+            s.setHeight(rect.y() + rect.height());
+        if (rect.right() >= s.width())
+            s.setWidth(rect.x() + rect.width());
     }
     if (d->tearoff)
         s.rheight() += style()->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, this);
