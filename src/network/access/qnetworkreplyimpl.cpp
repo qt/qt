@@ -52,10 +52,12 @@
 QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
-    : copyDevice(0), networkCache(0),
+    : backend(0), outgoingData(0),
+      copyDevice(0), networkCache(0),
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      httpStatusCode(0),
       state(Idle)
 {
 }
@@ -129,7 +131,7 @@ void QNetworkReplyImplPrivate::_q_sourceReadChannelFinished()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
-    if (!copyDevice && !q->isOpen())
+    if (!copyDevice || !q->isOpen())
         return;
 
     forever {
