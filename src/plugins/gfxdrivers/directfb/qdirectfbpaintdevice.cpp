@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -129,18 +129,14 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (!dfbSurface)
         return 0;
 
-    int w, h;
-    dfbSurface->GetSize(dfbSurface, &w, &h);
-
     switch (metric) {
     case QPaintDevice::PdmWidth:
-        return w;
     case QPaintDevice::PdmHeight:
-        return h;
+        return (metric == PdmWidth ? size().width() : size().height());
     case QPaintDevice::PdmWidthMM:
-        return (w * 1000) / dotsPerMeterX();
+        return (size().width() * 1000) / dotsPerMeterX();
     case QPaintDevice::PdmHeightMM:
-        return (h * 1000) / dotsPerMeterY();
+        return (size().height() * 1000) / dotsPerMeterY();
     case QPaintDevice::PdmPhysicalDpiX:
     case QPaintDevice::PdmDpiX:
         return (dotsPerMeterX() * 254) / 10000; // 0.0254 meters-per-inch

@@ -729,6 +729,8 @@ void InspectorController::didCommitLoad(DocumentLoader* loader)
         m_counts.clear();
 #if ENABLE(JAVASCRIPT_DEBUGGER)
         m_profiles.clear();
+        m_currentUserInitiatedProfileNumber = 1;
+        m_nextUserInitiatedProfileNumber = 1;
 #endif
 #if ENABLE(DATABASE)
         m_databaseResources.clear();
@@ -804,6 +806,21 @@ void InspectorController::removeResource(InspectorResource* resource)
     }
 }
 
+InspectorResource* InspectorController::getTrackedResource(long long identifier)
+{
+    if (!enabled())
+        return 0;
+
+    if (m_resourceTrackingEnabled)
+        return m_resources.get(identifier).get();
+
+    bool isMainResource = m_mainResource && m_mainResource->identifier() == identifier;
+    if (isMainResource)
+        return m_mainResource.get();
+
+    return 0;
+}
+
 void InspectorController::didLoadResourceFromMemoryCache(DocumentLoader* loader, const CachedResource* cachedResource)
 {
     if (!enabled())
@@ -814,7 +831,7 @@ void InspectorController::didLoadResourceFromMemoryCache(DocumentLoader* loader,
         return;
 
     ASSERT(m_inspectedPage);
-    bool isMainResource = loader->frame() == m_inspectedPage->mainFrame() && cachedResource->url() == loader->requestURL();
+    bool isMainResource = isMainResourceLoader(loader, KURL(cachedResource->url()));
     ensureResourceTrackingSettingsLoaded();
     if (!isMainResource && !m_resourceTrackingEnabled)
         return;
@@ -838,7 +855,7 @@ void InspectorController::identifierForInitialRequest(unsigned long identifier, 
         return;
     ASSERT(m_inspectedPage);
 
-    bool isMainResource = m_inspectedPage->mainFrame() && request.url() == loader->requestURL();
+    bool isMainResource = isMainResourceLoader(loader, request.url());
     ensureResourceTrackingSettingsLoaded();
     if (!isMainResource && !m_resourceTrackingEnabled)
         return;
@@ -858,12 +875,14 @@ void InspectorController::identifierForInitialRequest(unsigned long identifier, 
         resource->createScriptObject(m_frontend.get());
 }
 
+bool InspectorController::isMainResourceLoader(DocumentLoader* loader, const KURL& requestUrl)
+{
+    return loader->frame() == m_inspectedPage->mainFrame() && requestUrl == loader->requestURL();
+}
+
 void InspectorController::willSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
-    if (!enabled() || !m_resourceTrackingEnabled)
-        return;
-
-    InspectorResource* resource = m_resources.get(identifier).get();
+    RefPtr<InspectorResource> resource = getTrackedResource(identifier);
     if (!resource)
         return;
 
@@ -880,10 +899,7 @@ void InspectorController::willSendRequest(DocumentLoader*, unsigned long identif
 
 void InspectorController::didReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse& response)
 {
-    if (!enabled() || !m_resourceTrackingEnabled)
-        return;
-
-    InspectorResource* resource = m_resources.get(identifier).get();
+    RefPtr<InspectorResource> resource = getTrackedResource(identifier);
     if (!resource)
         return;
 
@@ -896,10 +912,7 @@ void InspectorController::didReceiveResponse(DocumentLoader*, unsigned long iden
 
 void InspectorController::didReceiveContentLength(DocumentLoader*, unsigned long identifier, int lengthReceived)
 {
-    if (!enabled() || !m_resourceTrackingEnabled)
-        return;
-
-    InspectorResource* resource = m_resources.get(identifier).get();
+    RefPtr<InspectorResource> resource = getTrackedResource(identifier);
     if (!resource)
         return;
 
@@ -911,10 +924,7 @@ void InspectorController::didReceiveContentLength(DocumentLoader*, unsigned long
 
 void InspectorController::didFinishLoading(DocumentLoader*, unsigned long identifier)
 {
-    if (!enabled() || !m_resourceTrackingEnabled)
-        return;
-
-    RefPtr<InspectorResource> resource = m_resources.get(identifier);
+    RefPtr<InspectorResource> resource = getTrackedResource(identifier);
     if (!resource)
         return;
 
@@ -930,10 +940,7 @@ void InspectorController::didFinishLoading(DocumentLoader*, unsigned long identi
 
 void InspectorController::didFailLoading(DocumentLoader*, unsigned long identifier, const ResourceError& /*error*/)
 {
-    if (!enabled() || !m_resourceTrackingEnabled)
-        return;
-
-    RefPtr<InspectorResource> resource = m_resources.get(identifier);
+    RefPtr<InspectorResource> resource = getTrackedResource(identifier);
     if (!resource)
         return;
 
@@ -1079,10 +1086,10 @@ void InspectorController::addProfile(PassRefPtr<Profile> prpProfile, unsigned li
     if (windowVisible())
         addScriptProfile(profile.get());
 
-    addProfileMessageToConsole(profile, lineNumber, sourceURL);
+    addProfileFinishedMessageToConsole(profile, lineNumber, sourceURL);
 }
 
-void InspectorController::addProfileMessageToConsole(PassRefPtr<Profile> prpProfile, unsigned lineNumber, const UString& sourceURL)
+void InspectorController::addProfileFinishedMessageToConsole(PassRefPtr<Profile> prpProfile, unsigned lineNumber, const UString& sourceURL)
 {
     RefPtr<Profile> profile = prpProfile;
 
@@ -1094,6 +1101,14 @@ void InspectorController::addProfileMessageToConsole(PassRefPtr<Profile> prpProf
     addMessageToConsole(JSMessageSource, LogMessageLevel, message, lineNumber, sourceURL);
 }
 
+void InspectorController::addStartProfilingMessageToConsole(const UString& title, unsigned lineNumber, const UString& sourceURL)
+{
+    UString message = "Profile \"webkit-profile://";
+    message += encodeWithURLEscapeSequences(title);
+    message += "/0\" started.";
+    addMessageToConsole(JSMessageSource, LogMessageLevel, message, lineNumber, sourceURL);
+}
+
 void InspectorController::addScriptProfile(Profile* profile)
 {
     if (!m_frontend)
@@ -1101,6 +1116,18 @@ void InspectorController::addScriptProfile(Profile* profile)
 
     JSLock lock(false);
     m_frontend->addProfile(toJS(m_scriptState, profile));
+}
+
+UString InspectorController::getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false)
+{
+    if (incrementProfileNumber)
+        m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;        
+
+    UString title = UserInitiatedProfileName;
+    title += ".";
+    title += UString::from(m_currentUserInitiatedProfileNumber);
+    
+    return title;
 }
 
 void InspectorController::startUserInitiatedProfilingSoon()
@@ -1119,14 +1146,13 @@ void InspectorController::startUserInitiatedProfiling(Timer<InspectorController>
     }
 
     m_recordingUserInitiatedProfile = true;
-    m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;
 
-    UString title = UserInitiatedProfileName;
-    title += ".";
-    title += UString::from(m_currentUserInitiatedProfileNumber);
+    UString title = getCurrentUserInitiatedProfileName(true);
 
     ExecState* scriptState = toJSDOMWindow(m_inspectedPage->mainFrame())->globalExec();
     Profiler::profiler()->startProfiling(scriptState, title);
+
+    addStartProfilingMessageToConsole(title, 0, UString());
 
     toggleRecordButton(true);
 }
@@ -1138,9 +1164,7 @@ void InspectorController::stopUserInitiatedProfiling()
 
     m_recordingUserInitiatedProfile = false;
 
-    UString title =  UserInitiatedProfileName;
-    title += ".";
-    title += UString::from(m_currentUserInitiatedProfileNumber);
+    UString title = getCurrentUserInitiatedProfileName();
 
     ExecState* scriptState = toJSDOMWindow(m_inspectedPage->mainFrame())->globalExec();
     RefPtr<Profile> profile = Profiler::profiler()->stopProfiling(scriptState, title);
@@ -1289,14 +1313,16 @@ void InspectorController::stepOutOfFunctionInDebugger()
     JavaScriptDebugServer::shared().stepOutOfFunction();
 }
 
-void InspectorController::addBreakpoint(intptr_t sourceID, unsigned lineNumber)
+void InspectorController::addBreakpoint(const String& sourceID, unsigned lineNumber)
 {
-    JavaScriptDebugServer::shared().addBreakpoint(sourceID, lineNumber);
+    intptr_t sourceIDValue = sourceID.toIntPtr();
+    JavaScriptDebugServer::shared().addBreakpoint(sourceIDValue, lineNumber);
 }
 
-void InspectorController::removeBreakpoint(intptr_t sourceID, unsigned lineNumber)
+void InspectorController::removeBreakpoint(const String& sourceID, unsigned lineNumber)
 {
-    JavaScriptDebugServer::shared().removeBreakpoint(sourceID, lineNumber);
+    intptr_t sourceIDValue = sourceID.toIntPtr();
+    JavaScriptDebugServer::shared().removeBreakpoint(sourceIDValue, lineNumber);
 }
 
 // JavaScriptDebugListener functions

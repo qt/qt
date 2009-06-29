@@ -21,10 +21,10 @@
 #ifndef JSSVGTextPositioningElement_h
 #define JSSVGTextPositioningElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGTextContentElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

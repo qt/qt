@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLIsIndexElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFormElement.h"
 #include "HTMLIsIndexElement.h"
 #include "JSHTMLFormElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -238,6 +238,12 @@ namespace WebCore {
         void setDownloadableBinaryFontsEnabled(bool);
         bool downloadableBinaryFontsEnabled() const { return m_downloadableBinaryFontsEnabled; }
 
+        void setXSSAuditorEnabled(bool);
+        bool xssAuditorEnabled() const { return m_xssAuditorEnabled; }
+
+        void setAcceleratedCompositingEnabled(bool);
+        bool acceleratedCompositingEnabled() const { return m_acceleratedCompositingEnabled; }
+
     private:
         Page* m_page;
         
@@ -297,6 +303,8 @@ namespace WebCore {
         bool m_allowScriptsToCloseWindows : 1;
         unsigned m_editingBehavior : 1;
         bool m_downloadableBinaryFontsEnabled : 1;
+        bool m_xssAuditorEnabled : 1;
+        bool m_acceleratedCompositingEnabled : 1;
 
 #if USE(SAFARI_THEME)
         static bool gShouldPaintNativeControls;

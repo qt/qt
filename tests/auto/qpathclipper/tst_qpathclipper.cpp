@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,6 +93,7 @@ private slots:
     void task204301();
 
     void task209056();
+    void task251909();
 };
 
 Q_DECLARE_METATYPE(QPainterPath)
@@ -1395,6 +1396,25 @@ void tst_QPathClipper::task209056()
     QPainterPath p3 = p1.intersected(p2);
 
     QVERIFY(p3 != QPainterPath());
+}
+
+void tst_QPathClipper::task251909()
+{
+    QPainterPath p1;
+    p1.moveTo(0, -10);
+    p1.lineTo(10, -10);
+    p1.lineTo(10, 0);
+    p1.lineTo(0, 0);
+
+    QPainterPath p2;
+    p2.moveTo(0, 8e-14);
+    p2.lineTo(10, -8e-14);
+    p2.lineTo(10, 10);
+    p2.lineTo(0, 10);
+
+    QPainterPath result = p1.united(p2);
+
+    QVERIFY(result.elementCount() <= 5);
 }
 
 QTEST_APPLESS_MAIN(tst_QPathClipper)

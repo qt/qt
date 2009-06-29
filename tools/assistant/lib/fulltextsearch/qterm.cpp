@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QCLucene library and is distributable under
 ** the terms of the LGPL license as specified in the license.txt file.
@@ -27,6 +27,7 @@ QCLuceneTermPrivate::QCLuceneTermPrivate(const QCLuceneTermPrivate &other)
     : QSharedData()
 {
     term = _CL_POINTER(other.term);
+    deleteCLuceneTerm = other.deleteCLuceneTerm;
 }
 
 QCLuceneTermPrivate::~QCLuceneTermPrivate()

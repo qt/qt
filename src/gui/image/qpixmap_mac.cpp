@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -168,7 +168,7 @@ static inline QRgb qt_conv16ToRgb(ushort c) {
 QSet<QMacPixmapData*> QMacPixmapData::validDataPointers;
 
 QMacPixmapData::QMacPixmapData(PixelType type)
-    : QPixmapData(type, MacClass), w(0), h(0), d(0), has_alpha(0), has_mask(0),
+    : QPixmapData(type, MacClass), has_alpha(0), has_mask(0),
       uninit(true), pixels(0), pixelsToFree(0), bytesPerRow(0),
       cg_data(0), cg_dataBeingReleased(0), cg_mask(0),
 #ifndef QT_MAC_NO_QUICKDRAW
@@ -188,11 +188,13 @@ void QMacPixmapData::resize(int width, int height)
 
     w = width;
     h = height;
+    is_null = (w <= 0 || h <= 0);
     d = (pixelType() == BitmapType ? 1 : 32);
     bool make_null = w <= 0 || h <= 0;                // create null pixmap
     if (make_null || d == 0) {
         w = 0;
         h = 0;
+        is_null = true;
         d = 0;
         if (!make_null)
             qWarning("Qt: QPixmap: Invalid pixmap parameters");
@@ -231,6 +233,7 @@ void QMacPixmapData::fromImage(const QImage &img,
 
     w = img.width();
     h = img.height();
+    is_null = (w <= 0 || h <= 0);
     d = (pixelType() == BitmapType ? 1 : img.depth());
 
     QImage image = img;

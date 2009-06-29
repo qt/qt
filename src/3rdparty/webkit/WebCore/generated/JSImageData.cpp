@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSImageData.h"
 
-#include <wtf/GetPtr.h>
-
 #include "ImageData.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

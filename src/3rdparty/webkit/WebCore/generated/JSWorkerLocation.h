@@ -21,7 +21,6 @@
 #ifndef JSWorkerLocation_h
 #define JSWorkerLocation_h
 
-
 #if ENABLE(WORKERS)
 
 #include "JSDOMBinding.h"

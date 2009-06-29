@@ -19,18 +19,15 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLOptionElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFormElement.h"
 #include "HTMLOptionElement.h"
 #include "JSHTMLFormElement.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

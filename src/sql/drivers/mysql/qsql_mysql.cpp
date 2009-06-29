@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -254,6 +254,9 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
     case FIELD_TYPE_FLOAT :
     case FIELD_TYPE_DOUBLE :
     case FIELD_TYPE_DECIMAL :
+#if defined(FIELD_TYPE_NEWDECIMAL)
+    case FIELD_TYPE_NEWDECIMAL:
+#endif
         type = QVariant::Double;
         break;
     case FIELD_TYPE_DATE :

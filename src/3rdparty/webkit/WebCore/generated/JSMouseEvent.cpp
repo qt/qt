@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSMouseEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Clipboard.h"
 #include "EventTarget.h"
@@ -32,9 +29,9 @@
 #include "JSNode.h"
 #include "MouseEvent.h"
 #include "Node.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

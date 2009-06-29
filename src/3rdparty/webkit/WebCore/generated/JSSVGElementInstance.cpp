@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGElementInstance.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -42,8 +38,8 @@
 #include "SVGElementInstance.h"
 #include "SVGElementInstanceList.h"
 #include "SVGUseElement.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

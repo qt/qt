@@ -36,9 +36,9 @@ public:
     virtual ~JSLocation();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    bool customGetOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
-    bool customPut(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
+    bool putDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -49,7 +49,6 @@ public:
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    bool customGetPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
 
     // Custom attributes
@@ -88,7 +87,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
-    bool customPut(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
+    bool putDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
     JSLocationPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };

@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSNodeList.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "ExceptionCode.h"
 #include "JSNode.h"
 #include "Node.h"
 #include "NodeList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

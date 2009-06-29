@@ -656,6 +656,25 @@ String AccessibilityRenderObject::helpText() const
     
     return String();
 }
+    
+String AccessibilityRenderObject::language() const
+{
+    if (!m_renderer)
+        return String();
+    
+    // Defer to parent if this element doesn't have a language set
+    Node* node = m_renderer->node();
+    if (!node)
+        return AccessibilityObject::language();
+    
+    if (!node->isElementNode())
+        return AccessibilityObject::language();
+    
+    String language = static_cast<Element*>(node)->getAttribute(langAttr);
+    if (language.isEmpty())
+        return AccessibilityObject::language();
+    return language;
+}
 
 String AccessibilityRenderObject::textUnderElement() const
 {
@@ -1008,7 +1027,7 @@ IntRect AccessibilityRenderObject::boundingBoxRect() const
         IntRect r = quads[i].enclosingBoundingBox();
         if (!r.isEmpty()) {
             if (obj->style()->hasAppearance())
-                theme()->adjustRepaintRect(obj, r);
+                obj->theme()->adjustRepaintRect(obj, r);
             result.unite(r);
         }
     }
@@ -1167,12 +1186,31 @@ AccessibilityObject* AccessibilityRenderObject::titleUIElement() const
     return 0;   
 }
     
+bool AccessibilityRenderObject::ariaIsHidden() const
+{
+    if (equalIgnoringCase(getAttribute(aria_hiddenAttr).string(), "true"))
+        return true;
+    
+    // aria-hidden hides this object and any children
+    AccessibilityObject* object = parentObject();
+    while (object) {
+        if (object->isAccessibilityRenderObject() && equalIgnoringCase(static_cast<AccessibilityRenderObject*>(object)->getAttribute(aria_hiddenAttr).string(), "true"))
+            return true;
+        object = object->parentObject();
+    }
+
+    return false;
+}
+
 bool AccessibilityRenderObject::accessibilityIsIgnored() const
 {
     // ignore invisible element
     if (!m_renderer || m_renderer->style()->visibility() != VISIBLE)
         return true;
 
+    if (ariaIsHidden())
+        return true;
+    
     if (isPresentationalChildOfAriaRole())
         return true;
         
@@ -1512,6 +1550,10 @@ void AccessibilityRenderObject::setValue(const String& string)
 bool AccessibilityRenderObject::isEnabled() const
 {
     ASSERT(m_renderer);
+    
+    if (equalIgnoringCase(getAttribute(aria_disabledAttr).string(), "true"))
+        return false;
+    
     Node* node = m_renderer->node();
     if (!node || !node->isElementNode())
         return true;
@@ -1993,7 +2035,7 @@ AccessibilityObject* AccessibilityRenderObject::doAccessibilityHitTest(const Int
     if (!obj)
         return 0;
     
-    AccessibilityObject *result = obj->document()->axObjectCache()->getOrCreate(obj);
+    AccessibilityObject* result = obj->document()->axObjectCache()->getOrCreate(obj);
 
     if (obj->isListBox())
         return static_cast<AccessibilityListBox*>(result)->doAccessibilityHitTest(point);
@@ -2323,6 +2365,9 @@ bool AccessibilityRenderObject::canSetFocusAttribute() const
 
 bool AccessibilityRenderObject::canSetValueAttribute() const
 {
+    if (equalIgnoringCase(getAttribute(aria_readonlyAttr).string(), "true"))
+        return false;
+
     if (isWebArea()) 
         return !isReadOnly();
 

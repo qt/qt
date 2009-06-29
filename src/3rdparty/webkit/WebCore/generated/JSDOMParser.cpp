@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSDOMParser.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMParser.h"
 #include "Document.h"
 #include "JSDocument.h"
 #include "NodeFilter.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

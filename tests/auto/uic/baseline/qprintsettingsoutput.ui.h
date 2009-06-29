@@ -77,7 +77,7 @@ public:
             QPrintSettingsOutput->setObjectName(QString::fromUtf8("QPrintSettingsOutput"));
         QPrintSettingsOutput->resize(416, 166);
         horizontalLayout_2 = new QHBoxLayout(QPrintSettingsOutput);
-        horizontalLayout_2->setMargin(0);
+        horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         tabs = new QTabWidget(QPrintSettingsOutput);
         tabs->setObjectName(QString::fromUtf8("tabs"));
@@ -95,7 +95,7 @@ public:
         gbPrintRange->setSizePolicy(sizePolicy);
         _3 = new QVBoxLayout(gbPrintRange);
         _3->setSpacing(4);
-        _3->setMargin(6);
+        _3->setContentsMargins(6, 6, 6, 6);
         _3->setObjectName(QString::fromUtf8("_3"));
         printAll = new QRadioButton(gbPrintRange);
         printAll->setObjectName(QString::fromUtf8("printAll"));
@@ -107,7 +107,7 @@ public:
 #ifndef Q_OS_MAC
         _4->setSpacing(6);
 #endif
-        _4->setMargin(0);
+        _4->setContentsMargins(0, 0, 0, 0);
         _4->setObjectName(QString::fromUtf8("_4"));
         printRange = new QRadioButton(gbPrintRange);
         printRange->setObjectName(QString::fromUtf8("printRange"));

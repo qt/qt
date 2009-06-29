@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1826,7 +1826,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 if (d->scroll && d->scroll->scrollFlags != QMenuPrivate::QMenuScroller::ScrollNone
                     && !style()->styleHint(QStyle::SH_Menu_FillScreenWithScroll, 0, this)) {
                     int below_height = above_height + d->scroll->scrollOffset;
-                    for(int i2 = i; i2 < (int)d->actionList.count(); i2++)
+                    for(int i2 = i; i2 < d->actionList.count(); i2++)
                         below_height += d->actionRects.value(d->actionList.at(i2)).height();
                     size.setHeight(below_height);
                 }
@@ -2263,7 +2263,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
                     break;
                 }
             }
-            if (e->button() == Qt::LeftButton || (e->button() == Qt::RightButton && isContextMenu))
+            if (e->button() || isContextMenu)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }
@@ -2746,7 +2746,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         if (d->hasHadMouse && !rect().contains(e->pos()))
             d->setCurrentAction(0);
         return;
-    } else if(e->buttons() & (Qt::LeftButton | Qt::RightButton)) {
+    } else if(e->buttons()) {
         d->mouseDown = this;
     }
     if (d->sloppyRegion.contains(e->pos())) {

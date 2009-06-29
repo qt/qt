@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1850,8 +1850,10 @@ HtmlGenerator::generateAnnotatedList(const Node *relative,
     out() << "</table></p>\n";
 }
 
-void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker,
-                                        const QMap<QString, const Node *> &classMap)
+void
+HtmlGenerator::generateCompactList(const Node *relative,
+                                   CodeMarker *marker,
+                                   const QMap<QString,const Node*> &classMap)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
     const int NumColumns = 4; // number of columns in the result
@@ -1994,28 +1996,29 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
                           << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
+                    
+                if (!paragraphName[currentParagraphNo[i]].isEmpty()) {
+                    QMap<QString, const Node *>::Iterator it;
+                    it = paragraph[currentParagraphNo[i]].begin();
+                    for (j = 0; j < currentOffsetInParagraph[i]; j++)
+                        ++it;
 
-                // bad loop
-                QMap<QString, const Node *>::Iterator it;
-                it = paragraph[currentParagraphNo[i]].begin();
-                for (j = 0; j < currentOffsetInParagraph[i]; j++)
-                    ++it;
-
-                out() << "<td>";
-                // Previously, we used generateFullName() for this, but we
-                // require some special formatting.
-                out() << "<a href=\""
-                      << linkForNode(it.value(), relative)
-                      << "\">";
-                QStringList pieces = fullName(it.value(), relative, marker).split("::");
-                out() << protect(pieces.last());
-                out() << "</a>";
-                if (pieces.size() > 1) {
-                    out() << " (";
-                    generateFullName(it.value()->parent(), relative, marker);
-                    out() << ")";
-                }
-                out() << "</td>\n";
+                    out() << "<td>";
+                    // Previously, we used generateFullName() for this, but we
+                    // require some special formatting.
+                    out() << "<a href=\""
+                        << linkForNode(it.value(), relative)
+                        << "\">";
+                    QStringList pieces = fullName(it.value(), relative, marker).split("::");
+                    out() << protect(pieces.last());
+                    out() << "</a>";
+                    if (pieces.size() > 1) {
+                        out() << " (";
+                        generateFullName(it.value()->parent(), relative, marker);
+                        out() << ")";
+                    }
+                    out() << "</td>\n";
+                 }
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
@@ -2287,7 +2290,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         if (nameAlignment)
-            out() << "<li><div bar=2 class=\"fn\"></div>";
+            out() << "<li><div bar=\"2\" class=\"fn\"></div>";
         else
             out() << "<li><div class=\"fn\"></div>";
         out() << (*p).second << " ";
@@ -2574,7 +2577,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div bar=2 class=\"fn\"></div>";
+        out() << "<li><div bar=\"2\" class=\"fn\"></div>";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;

@@ -60,12 +60,13 @@ namespace WebCore {
     class PageGroup;
     class PluginData;
     class ProgressTracker;
+    class RenderTheme;
     class VisibleSelection;
     class SelectionController;
-#if ENABLE(DOM_STORAGE)
-    class SessionStorage;
-#endif
     class Settings;
+#if ENABLE(DOM_STORAGE)
+    class StorageNamespace;
+#endif
 #if ENABLE(WML)
     class WMLPageState;
 #endif
@@ -78,7 +79,9 @@ namespace WebCore {
 
         Page(ChromeClient*, ContextMenuClient*, EditorClient*, DragClient*, InspectorClient*);
         ~Page();
-        
+
+        RenderTheme* theme() const { return m_theme.get(); };
+
         static void refreshPlugins(bool reload);
         PluginData* pluginData() const;
 
@@ -176,8 +179,8 @@ namespace WebCore {
         static void visitedStateChanged(PageGroup*, LinkHash visitedHash);
 
 #if ENABLE(DOM_STORAGE)
-        SessionStorage* sessionStorage(bool optionalCreate = true);
-        void setSessionStorage(PassRefPtr<SessionStorage>);
+        StorageNamespace* sessionStorage(bool optionalCreate = true);
+        void setSessionStorage(PassRefPtr<StorageNamespace>);
 #endif
 
 #if ENABLE(WML)
@@ -217,6 +220,8 @@ namespace WebCore {
 
         mutable RefPtr<PluginData> m_pluginData;
 
+        RefPtr<RenderTheme> m_theme;
+
         EditorClient* m_editorClient;
 
         int m_frameCount;
@@ -248,7 +253,7 @@ namespace WebCore {
         int m_customHTMLTokenizerChunkSize;
 
 #if ENABLE(DOM_STORAGE)
-        RefPtr<SessionStorage> m_sessionStorage;
+        RefPtr<StorageNamespace> m_sessionStorage;
 #endif
 
 #if PLATFORM(WIN) || (PLATFORM(WX) && defined(__WXMSW__)) || (PLATFORM(QT) && defined(Q_WS_WIN))

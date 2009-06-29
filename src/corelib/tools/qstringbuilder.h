@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,11 +56,12 @@ QT_MODULE(Core)
 class QLatin1Literal
 {
 public:
-    template <int N>
-    QLatin1Literal(const char (&str)[N]) : m_size(N - 1), m_data(str) {}
+    int size() const { return m_size; }
+    const char *data() const { return m_data; }
 
-    inline int size() const { return m_size; }
-    inline const char *data() const { return m_data; }
+    template <int N>
+    QLatin1Literal(const char (&str)[N]) 
+        : m_size(N - 1), m_data(str) {}
 
 private:
     const int m_size;
@@ -79,7 +80,7 @@ public:
     operator QString() const
     {
         QString s(QConcatenable< QStringBuilder<A, B> >::size(*this),
-            QString::Uninitialized());
+            Qt::Uninitialized);
         
         QChar *d = s.data();
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);

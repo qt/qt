@@ -23,8 +23,8 @@
 
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
-#include <runtime/ObjectPrototype.h>
 #include <runtime/Lookup.h>
+#include <runtime/ObjectPrototype.h>
 #include <wtf/AlwaysInline.h>
 
 namespace WebCore {
@@ -131,86 +131,6 @@ JSC::JSValue jsNodeBaseURI(JSC::ExecState*, const JSC::Identifier&, const JSC::P
 JSC::JSValue jsNodeTextContent(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSNodeTextContent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsNodeParentElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnblur(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOncontextmenu(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOncontextmenu(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndblclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndblclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnkeypress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnkeyup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnkeyup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnmousedown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnmousedown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnmousemove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnmousemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnmouseout(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnmouseout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnmouseover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnmouseover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnmouseup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnmouseup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnmousewheel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnmousewheel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnbeforecut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnbeforecut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOncut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOncut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnbeforecopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnbeforecopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOncopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOncopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnbeforepaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnbeforepaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnpaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnpaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndragenter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndragenter(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndragover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndragover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndragleave(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndragleave(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndrop(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndrop(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndragstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndragstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndrag(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndrag(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOndragend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOndragend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnreset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnreset(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnresize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnresize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnscroll(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnscroll(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnsearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnselect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnselect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnsubmit(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnsubmit(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsNodeOnunload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSNodeOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsNodeConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 

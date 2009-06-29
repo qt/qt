@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -567,7 +567,7 @@ bool QToolBarAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *item)
 void QToolBarAreaLayoutInfo::clear()
 {
     lines.clear();
-    rect = QRect(0, 0, -1, -1);
+    rect = QRect();
 }
 
 QRect QToolBarAreaLayoutInfo::itemRect(QList<int> path) const
@@ -1101,7 +1101,7 @@ void QToolBarAreaLayout::clear()
 {
     for (int i = 0; i < QInternal::DockCount; ++i)
         docks[i].clear();
-    rect = QRect(0, 0, -1, -1);
+    rect = QRect();
 }
 
 QToolBarAreaLayoutItem &QToolBarAreaLayout::item(QList<int> path)

@@ -76,7 +76,7 @@ public:
             QPageSetupWidget->setObjectName(QString::fromUtf8("QPageSetupWidget"));
         QPageSetupWidget->resize(416, 488);
         gridLayout_3 = new QGridLayout(QPageSetupWidget);
-        gridLayout_3->setMargin(0);
+        gridLayout_3->setContentsMargins(0, 0, 0, 0);
         gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));

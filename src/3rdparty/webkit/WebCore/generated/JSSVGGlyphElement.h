@@ -21,10 +21,10 @@
 #ifndef JSSVGGlyphElement_h
 #define JSSVGGlyphElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

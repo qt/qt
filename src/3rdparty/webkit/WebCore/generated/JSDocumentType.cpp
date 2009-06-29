@@ -19,18 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSDocumentType.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DocumentType.h"
 #include "JSNamedNodeMap.h"
 #include "KURL.h"
 #include "NamedNodeMap.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

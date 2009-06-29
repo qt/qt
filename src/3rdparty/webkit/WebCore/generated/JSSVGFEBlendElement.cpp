@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
-#include "SVGElement.h"
 #include "JSSVGFEBlendElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -37,9 +33,8 @@
 #include "JSSVGAnimatedLength.h"
 #include "JSSVGAnimatedString.h"
 #include "SVGFEBlendElement.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

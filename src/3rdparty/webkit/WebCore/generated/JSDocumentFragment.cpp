@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSDocumentFragment.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DocumentFragment.h"
 #include "Element.h"
@@ -30,9 +27,8 @@
 #include "JSNodeList.h"
 #include "NameNodeList.h"
 #include "NodeList.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

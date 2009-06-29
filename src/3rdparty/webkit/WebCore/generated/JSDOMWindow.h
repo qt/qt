@@ -21,8 +21,9 @@
 #ifndef JSDOMWindow_h
 #define JSDOMWindow_h
 
-#include "JSDOMWindowBase.h"
 #include "DOMWindow.h"
+#include "JSDOMWindowBase.h"
+
 namespace WebCore {
 
 class DOMWindow;
@@ -35,9 +36,7 @@ public:
     JSDOMWindow(PassRefPtr<JSC::Structure>, PassRefPtr<DOMWindow>, JSDOMWindowShell*);
     virtual ~JSDOMWindow();
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    bool customGetOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
-    bool customPut(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -50,7 +49,6 @@ public:
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    bool customGetPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&, unsigned& attributes) const;
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
     virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);
@@ -389,8 +387,6 @@ JSC::JSValue jsDOMWindowStyleSheetListConstructor(JSC::ExecState*, const JSC::Id
 void setJSDOMWindowStyleSheetListConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDOMExceptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowDOMExceptionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMWindowDOMStringListConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDOMWindowDOMStringListConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDOMImplementationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowDOMImplementationConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDocumentFragmentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -449,6 +445,10 @@ JSC::JSValue jsDOMWindowHTMLButtonElementConstructor(JSC::ExecState*, const JSC:
 void setJSDOMWindowHTMLButtonElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLCanvasElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowHTMLCanvasElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowHTMLDataGridElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowHTMLDataGridElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowHTMLDataGridColElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowHTMLDataGridColElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLDListElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowHTMLDListElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLDirectoryElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

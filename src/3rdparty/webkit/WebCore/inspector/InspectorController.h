@@ -60,6 +60,7 @@ class InspectorClient;
 class InspectorFrontend;
 class JavaScriptCallFrame;
 class StorageArea;
+class KURL;
 class Node;
 class Page;
 struct ResourceRequest;
@@ -241,12 +242,14 @@ public:
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     void addProfile(PassRefPtr<JSC::Profile>, unsigned lineNumber, const JSC::UString& sourceURL);
-    void addProfileMessageToConsole(PassRefPtr<JSC::Profile> prpProfile, unsigned lineNumber, const JSC::UString& sourceURL);
-    void addScriptProfile(JSC::Profile* profile);
+    void addProfileFinishedMessageToConsole(PassRefPtr<JSC::Profile>, unsigned lineNumber, const JSC::UString& sourceURL);
+    void addStartProfilingMessageToConsole(const JSC::UString& title, unsigned lineNumber, const JSC::UString& sourceURL);
+    void addScriptProfile(JSC::Profile*);
     const ProfilesArray& profiles() const { return m_profiles; }
 
     bool isRecordingUserInitiatedProfile() const { return m_recordingUserInitiatedProfile; }
 
+    JSC::UString getCurrentUserInitiatedProfileName(bool incrementProfileNumber);
     void startUserInitiatedProfilingSoon();
     void startUserInitiatedProfiling(Timer<InspectorController>* = 0);
     void stopUserInitiatedProfiling();
@@ -263,8 +266,8 @@ public:
 
     JavaScriptCallFrame* currentCallFrame() const;
 
-    void addBreakpoint(intptr_t sourceID, unsigned lineNumber);
-    void removeBreakpoint(intptr_t sourceID, unsigned lineNumber);
+    void addBreakpoint(const String& sourceID, unsigned lineNumber);
+    void removeBreakpoint(const String& sourceID, unsigned lineNumber);
 
     bool pauseOnExceptions();
     void setPauseOnExceptions(bool pause);
@@ -291,12 +294,14 @@ private:
 
     void addResource(InspectorResource*);
     void removeResource(InspectorResource*);
+    InspectorResource* getTrackedResource(long long identifier);
 
     void pruneResources(ResourcesMap*, DocumentLoader* loaderToKeep = 0);
     void removeAllResources(ResourcesMap* map) { pruneResources(map); }
 
     void showWindow();
 
+    bool isMainResourceLoader(DocumentLoader* loader, const KURL& requestUrl);
 
     Page* m_inspectedPage;
     InspectorClient* m_client;

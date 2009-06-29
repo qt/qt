@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSDOMSelection.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMSelection.h"
 #include "JSNode.h"
@@ -30,10 +27,10 @@
 #include "KURL.h"
 #include "Node.h"
 #include "Range.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

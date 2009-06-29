@@ -22,8 +22,8 @@
 #include "config.h"
 #include "DateConstructor.h"
 
+#include "DateConversion.h"
 #include "DateInstance.h"
-#include "DateMath.h"
 #include "DatePrototype.h"
 #include "JSFunction.h"
 #include "JSGlobalObject.h"
@@ -32,7 +32,12 @@
 #include "PrototypeFunction.h"
 #include <math.h>
 #include <time.h>
+#include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
+
+#if PLATFORM(WINCE) && !PLATFORM(QT)
+extern "C" time_t time(time_t* timer); //provided by libce
+#endif
 
 #if HAVE(SYS_TIME_H)
 #include <sys/time.h>
@@ -41,6 +46,8 @@
 #if HAVE(SYS_TIMEB_H)
 #include <sys/timeb.h>
 #endif
+
+using namespace WTF;
 
 namespace JSC {
 

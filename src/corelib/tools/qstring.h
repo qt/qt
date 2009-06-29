@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -579,8 +579,7 @@ public:
     bool isSimpleText() const { if (!d->clean) updateProperties(); return d->simpletext; }
     bool isRightToLeft() const { if (!d->clean) updateProperties(); return d->righttoleft; }
 
-    struct Uninitialized {};
-    QString(int size, Uninitialized);
+    QString(int size, Qt::Initialization);
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
