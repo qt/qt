@@ -51,7 +51,8 @@
 QT_BEGIN_NAMESPACE
 
 #define WAKE_UP_PRIORITY CActive::EPriorityStandard
-#define TIMER_PRIORITY CActive::EPriorityLow
+#define TIMER_PRIORITY CActive::EPriorityHigh
+#define NULLTIMER_PRIORITY CActive::EPriorityLow
 #define COMPLETE_DEFERRED_ACTIVE_OBJECTS_PRIORITY CActive::EPriorityIdle
 
 static inline int qt_pipe_write(int socket, const char *data, qint64 len)
@@ -197,7 +198,7 @@ void QWakeUpActiveObject::RunL()
 }
 
 QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo)
-    : QActiveObject(TIMER_PRIORITY, dispatcher),
+    : QActiveObject((timerInfo->interval) ? TIMER_PRIORITY : NULLTIMER_PRIORITY , dispatcher),
       m_timerInfo(timerInfo)
 {
 }
