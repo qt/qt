@@ -91,6 +91,17 @@ public:
     QmlParser::Property *property;
 };
 
+class QmlDomDynamicPropertyPrivate : public QSharedData
+{
+public:
+    QmlDomDynamicPropertyPrivate();
+    QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &);
+    ~QmlDomDynamicPropertyPrivate();
+
+    bool valid;
+    QmlParser::Object::DynamicProperty property;
+};
+
 class QmlDomValuePrivate : public QSharedData
 {
 public:
