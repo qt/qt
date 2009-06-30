@@ -115,9 +115,10 @@ public:
 
 
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
+    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
+
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
     Type type() const { return OpenGL; }
