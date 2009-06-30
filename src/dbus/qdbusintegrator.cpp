@@ -1359,12 +1359,8 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
     // try the object itself:
     if (node.flags & (QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportNonScriptableSlots)) {
         bool interfaceFound = true;
-        if (!msg.interface().isEmpty()) {
-            // check if the interface name matches anything in the class hierarchy
-            const QMetaObject *mo = node.obj->metaObject();
-            for ( ; !interfaceFound && mo != &QObject::staticMetaObject; mo = mo->superClass())
-                interfaceFound = msg.interface() == qDBusInterfaceFromMetaObject(mo);
-        }
+        if (!msg.interface().isEmpty())
+            interfaceFound = qDBusInterfaceInObject(node.obj, msg.interface());
 
         if (interfaceFound) {
             if (!activateCall(node.obj, node.flags, msg))
