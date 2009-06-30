@@ -71,6 +71,9 @@ public:
     QmlBindableValue *toBinding;
     ActionEvent *event;
 
+    QObject *specifiedObject;
+    QString specifiedProperty;
+
     void deleteFromBinding();
 };
 

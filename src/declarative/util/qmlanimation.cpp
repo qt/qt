@@ -45,6 +45,7 @@
 #include "qfile.h"
 #include "qmlpropertyvaluesource.h"
 #include "qml.h"
+#include "qmlinfo.h"
 #include "qmlanimation_p.h"
 #include "qmlbehaviour.h"
 #include <QParallelAnimationGroup>
@@ -223,6 +224,21 @@ void QmlAbstractAnimationPrivate::commence()
         running = false;
         emit q->completed();
     }
+}
+
+//### make static?
+QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str)
+{
+    Q_Q(QmlAbstractAnimation);
+    QmlMetaProperty prop = QmlMetaProperty::createProperty(obj, str);
+    if (!prop.isValid()) {
+        qmlInfo(q) << "Cannot animate non-existant property" << str;
+        return QmlMetaProperty();
+    } else if (!prop.isWritable()) {
+        qmlInfo(q) << "Cannot animate read-only property" << str;
+        return QmlMetaProperty();
+    }
+    return prop;
 }
 
 void QmlAbstractAnimation::setRunning(bool r)
@@ -434,7 +450,7 @@ void QmlAbstractAnimation::setTarget(QObject *o)
 
     d->target = o;
     if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = QmlMetaProperty(d->target, d->propertyName);
+        d->userProperty = d->createProperty(d->target, d->propertyName);
     } else {
         d->userProperty.invalidate();
     }
@@ -463,7 +479,7 @@ void QmlAbstractAnimation::setProperty(const QString &n)
 
     d->propertyName = n;
     if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = QmlMetaProperty(d->target, d->propertyName);
+        d->userProperty = d->createProperty(d->target, d->propertyName);
     } else {
         d->userProperty.invalidate();
     }
@@ -1031,10 +1047,14 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
+        QObject *sObj = action.specifiedObject;
+        QString sPropertyName = action.specifiedProperty;
+        bool same = (obj == sObj);
 
-        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
-           (!d->exclude.contains(obj)) && props.contains(propertyName) &&
-           (!target() || target() == obj)) {
+        if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
+           (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
+           (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
+           (!target() || target() == obj || (!same && target() == sObj))) {
             objs.insert(obj);
             Action myAction = action;
 
@@ -1051,7 +1071,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         QObject *obj = target();
         for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
-            myAction.property = QmlMetaProperty(obj, props.at(jj));
+            myAction.property = d->createProperty(obj, props.at(jj));
             myAction.toValue = d->value;
             data->actions << myAction;
         }
@@ -1841,10 +1861,14 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
+        QObject *sObj = action.specifiedObject;
+        QString sPropertyName = action.specifiedProperty;
+        bool same = (obj == sObj);
 
-        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
-           (!d->exclude.contains(obj)) && props.contains(propertyName) &&
-           (!target() || target() == obj)) {
+        if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
+           (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
+           (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
+           (!target() || target() == obj || (!same && target() == sObj))) {
             objs.insert(obj);
             Action myAction = action;
 
@@ -1870,7 +1894,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         QObject *obj = target();
         for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
-            myAction.property = QmlMetaProperty(obj, props.at(jj));
+            myAction.property = d->createProperty(obj, props.at(jj));
 
             if (d->fromIsDefined) {
                 d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));

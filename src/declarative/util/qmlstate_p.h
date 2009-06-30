@@ -55,6 +55,8 @@ public:
     SimpleAction(const Action &a, State state = StartState) 
     {
         property = a.property;
+        specifiedObject = a.specifiedObject;
+        specifiedProperty = a.specifiedProperty;
         if (state == StartState) {
             value = a.fromValue;
             binding = property.binding();
@@ -67,6 +69,8 @@ public:
     QmlMetaProperty property;
     QVariant value;
     QmlBindableValue *binding;
+    QObject *specifiedObject;
+    QString specifiedProperty;
 };
 
 class QmlStatePrivate : public QObjectPrivate

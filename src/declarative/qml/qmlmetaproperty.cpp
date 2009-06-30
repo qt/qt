@@ -1035,4 +1035,34 @@ QMetaMethod QmlMetaProperty::method() const
     return d->signal;
 }
 
+/*!
+    \internal
+
+    Creates a QmlMetaProperty for the property \a name of \a obj. Unlike
+    the QmlMetaProperty(QObject*, QString) constructor, this static function
+    will correctly handle dot properties.
+*/
+QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj, const QString &name)
+{
+    QStringList path = name.split('.');
+
+    QObject *object = obj;
+
+    for (int jj = 0; jj < path.count() - 1; ++jj) {
+        const QString &pathName = path.at(jj);
+        QmlMetaProperty prop(object, pathName);
+        QObject *objVal = QmlMetaType::toQObject(prop.read());
+        if (!objVal)
+            return QmlMetaProperty();
+        object = objVal;
+    }
+
+    const QString &propName = path.last();
+    QmlMetaProperty prop(object, propName);
+    if (!prop.isValid())
+        return QmlMetaProperty();
+    else
+        return prop;
+}
+
 QT_END_NAMESPACE

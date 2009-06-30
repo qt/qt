@@ -282,39 +282,19 @@ void QmlSetProperties::setRestoreEntryValues(bool v)
     d->restore = v;
 }
 
-QmlMetaProperty 
-QmlSetPropertiesPrivate::property(const QByteArray &property) 
+QmlMetaProperty
+QmlSetPropertiesPrivate::property(const QByteArray &property)
 {
     Q_Q(QmlSetProperties);
-    QList<QByteArray> path = property.split('.');
-
-    QObject *obj = this->object;
-
-    for (int jj = 0; jj < path.count() - 1; ++jj) {
-        const QByteArray &pathName = path.at(jj);
-        QmlMetaProperty prop(obj, QLatin1String(pathName));
-        QObject *objVal = QmlMetaType::toQObject(prop.read());
-        if (!objVal) {
-            qmlInfo(q) << obj->metaObject()->className()
-                       << "has no object property named" << pathName;
-            return QmlMetaProperty();
-        }
-        obj = objVal;
-    }
-
-    const QByteArray &name = path.last();
-    QmlMetaProperty prop(obj, QLatin1String(name));
+    QmlMetaProperty prop = QmlMetaProperty::createProperty(object, QString::fromLatin1(property));
     if (!prop.isValid()) {
-        qmlInfo(q) << obj->metaObject()->className()
-                   << "has no property named" << name;
+        qmlInfo(q) << "Cannot assign to non-existant property" << property;
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
-        qmlInfo(q) << obj->metaObject()->className()
-                   << name << "is not writable, and cannot be set.";
+        qmlInfo(q) << "Cannot assign to read-only property" << property;
         return QmlMetaProperty();
-    } else {
-        return prop;
     }
+    return prop;
 }
 
 QmlSetProperties::ActionList QmlSetProperties::actions()
@@ -336,6 +316,8 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
             a.property = prop;
             a.fromValue = a.property.read();
             a.toValue = d->properties.at(ii).second;
+            a.specifiedObject = d->object;
+            a.specifiedProperty = QString::fromLatin1(property);
 
             list << a;
         }
@@ -351,6 +333,8 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
             a.restore = restoreEntryValues();
             a.property = prop;
             a.fromValue = a.property.read();
+            a.specifiedObject = d->object;
+            a.specifiedProperty = QString::fromLatin1(property);
 
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->value();
@@ -361,7 +345,6 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
 
             list << a;
         }
-
     }
 
     return list;
