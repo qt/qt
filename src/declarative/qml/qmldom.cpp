@@ -278,6 +278,23 @@ QmlDomPropertyPrivate::~QmlDomPropertyPrivate()
     if (property) property->release();
 }
 
+QmlDomDynamicPropertyPrivate::QmlDomDynamicPropertyPrivate():
+        valid(false)
+{
+}
+
+QmlDomDynamicPropertyPrivate::QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &other)
+: QSharedData(other), valid(other.valid)
+{
+    property = other.property;
+    if (valid && property.defaultValue) property.defaultValue->addref();
+}
+
+QmlDomDynamicPropertyPrivate::~QmlDomDynamicPropertyPrivate()
+{
+    if (valid && property.defaultValue) property.defaultValue->release();
+}
+
 /*!
     \class QmlDomProperty
     \internal
@@ -322,8 +339,8 @@ QmlDomProperty &QmlDomProperty::operator=(const QmlDomProperty &other)
 }
 
 /*!
-    Return the name of this property.  
-    
+    Return the name of this property.
+
     \qml
 Text {
     x: 10
@@ -331,7 +348,7 @@ Text {
     font.bold: true
 }
     \endqml
-    
+
     As illustrated above, a property name can be a simple string, such as "x" or
     "y", or a more complex "dot property", such as "font.bold".  In both cases
     the full name is returned ("x", "y" and "font.bold") by this method.
@@ -358,7 +375,7 @@ Text {
 }
     \endqml
 
-    For each of the properties shown above, this method would return ("x"), 
+    For each of the properties shown above, this method would return ("x"),
     ("y") and ("font", "bold").
 
     \sa QmlDomProperty::propertyName()
@@ -370,7 +387,7 @@ QList<QByteArray> QmlDomProperty::propertyNameParts() const
 }
 
 /*!
-    Return true if this property is used as a default property in the QML 
+    Return true if this property is used as a default property in the QML
     document.
 
     \qml
@@ -380,8 +397,8 @@ QList<QByteArray> QmlDomProperty::propertyNameParts() const
 
     The above two examples return the same DOM tree, except that the second has
     the default property flag set on the text property.  Observe that whether
-    or not a property has isDefaultProperty set is determined by how the 
-    property is used, and not only by whether the property is the types default 
+    or not a property has isDefaultProperty set is determined by how the
+    property is used, and not only by whether the property is the types default
     property.
 */
 bool QmlDomProperty::isDefaultProperty() const
@@ -415,7 +432,7 @@ void QmlDomProperty::setValue(const QmlDomValue &value)
 }
 
 /*!
-    Returns the position in the input data where the property ID startd, or 0 if
+    Returns the position in the input data where the property ID startd, or -1 if
  the property is invalid.
 */
 int QmlDomProperty::position() const
@@ -423,19 +440,174 @@ int QmlDomProperty::position() const
     if (d && d->property) {
         return d->property->location.range.offset;
     } else
-        return 0;
+        return -1;
 }
 
 /*!
     Returns the length in the input data from where the property ID started upto
- the end of it, or 0 if the property is invalid.
+ the end of it, or -1 if the property is invalid.
 */
 int QmlDomProperty::length() const
 {
     if (d && d->property)
         return d->property->location.range.length;
     else
-        return 0;
+        return -1;
+}
+
+/*!
+    Construct an invalid QmlDomDynamicProperty.
+*/
+QmlDomDynamicProperty::QmlDomDynamicProperty():
+        d(new QmlDomDynamicPropertyPrivate)
+{
+}
+
+/*!
+    Create a copy of \a other QmlDomDynamicProperty.
+*/
+QmlDomDynamicProperty::QmlDomDynamicProperty(const QmlDomDynamicProperty &other):
+        d(other.d)
+{
+}
+
+/*!
+    Destroy the QmlDomDynamicProperty.
+*/
+QmlDomDynamicProperty::~QmlDomDynamicProperty()
+{
+}
+
+/*!
+    Assign \a other to this QmlDomDynamicProperty.
+*/
+QmlDomDynamicProperty &QmlDomDynamicProperty::operator=(const QmlDomDynamicProperty &other)
+{
+    d = other.d;
+    return *this;
+}
+
+bool QmlDomDynamicProperty::isValid() const
+{
+    return d && d->valid;
+}
+
+/*!
+    Return the name of this dynamic property.
+
+    \qml
+Item {
+    property int count: 10;
+}
+    \endqml
+
+    As illustrated above, a dynamic property name can have a name and a
+    default value ("10").
+*/
+QByteArray QmlDomDynamicProperty::propertyName() const
+{
+    if (isValid())
+        return d->property.name;
+    else
+        return QByteArray();
+}
+
+int QmlDomDynamicProperty::propertyType() const
+{
+    if (isValid()) {
+        switch (d->property.type) {
+            case QmlParser::Object::DynamicProperty::Bool:
+                return QMetaType::type("bool");
+
+            case QmlParser::Object::DynamicProperty::Color:
+                return QMetaType::type("QColor");
+
+            case QmlParser::Object::DynamicProperty::Date:
+                return QMetaType::type("QDateTime");
+
+            case QmlParser::Object::DynamicProperty::Int:
+                return QMetaType::type("int");
+
+            case QmlParser::Object::DynamicProperty::Real:
+                return QMetaType::type("double");
+
+            case QmlParser::Object::DynamicProperty::String:
+                return QMetaType::type("QString");
+
+            case QmlParser::Object::DynamicProperty::Url:
+                return QMetaType::type("QUrl");
+
+            case QmlParser::Object::DynamicProperty::Variant:
+                return QMetaType::type("QVariant");
+
+            default:
+                break;
+        }
+    }
+
+    return -1;
+}
+
+/*!
+    Return true if this property is used as a default property in the QML
+    document.
+
+    \qml
+<Text text="hello"/>
+<Text>hello</Text>
+    \endqml
+
+    The above two examples return the same DOM tree, except that the second has
+    the default property flag set on the text property.  Observe that whether
+    or not a property has isDefaultProperty set is determined by how the
+    property is used, and not only by whether the property is the types default
+    property.
+*/
+bool QmlDomDynamicProperty::isDefaultProperty() const
+{
+    if (isValid())
+        return d->property.isDefaultProperty;
+    else
+        return false;
+}
+
+/*!
+    Returns the default value as a QmlDomProperty.
+*/
+QmlDomProperty QmlDomDynamicProperty::defaultValue() const
+{
+    QmlDomProperty rp;
+
+    if (isValid() && d->property.defaultValue) {
+        rp.d->property = d->property.defaultValue;
+        rp.d->property->addref();
+    }
+
+    return rp;
+}
+
+/*!
+    Returns the position in the input data where the property ID startd, or 0 if
+ the property is invalid.
+*/
+int QmlDomDynamicProperty::position() const
+{
+    if (isValid()) {
+        return d->property.range.offset;
+    } else
+        return -1;
+}
+
+/*!
+    Returns the length in the input data from where the property ID started upto
+ the end of it, or 0 if the property is invalid.
+*/
+int QmlDomDynamicProperty::length() const
+{
+    if (isValid())
+        return d->property.range.length;
+    else
+        return -1;
 }
 
 QmlDomObjectPrivate::QmlDomObjectPrivate()
@@ -701,6 +873,41 @@ void QmlDomObject::addProperty(const QByteArray &name, const QmlDomValue &value)
     qWarning("QmlDomObject::addProperty(const QByteArray &, const QmlDomValue &): Not implemented");
 }
 
+QList<QmlDomDynamicProperty> QmlDomObject::dynamicProperties() const
+{
+    QList<QmlDomDynamicProperty> properties;
+
+    for (int i = 0; i < d->object->dynamicProperties.size(); ++i) {
+        QmlDomDynamicProperty p;
+        p.d = new QmlDomDynamicPropertyPrivate;
+        p.d->property = d->object->dynamicProperties.at(i);
+        p.d->valid = true;
+
+        if (p.d->property.defaultValue)
+            p.d->property.defaultValue->addref();
+
+        properties.append(p);
+    }
+
+    return properties;
+}
+
+QmlDomDynamicProperty QmlDomObject::dynamicProperty(const QByteArray &name) const
+{
+    QmlDomDynamicProperty p;
+
+    for (int i = 0; i < d->object->dynamicProperties.size(); ++i) {
+        if (d->object->dynamicProperties.at(i).name == name) {
+            p.d = new QmlDomDynamicPropertyPrivate;
+            p.d->property = d->object->dynamicProperties.at(i);
+            if (p.d->property.defaultValue) p.d->property.defaultValue->addref();
+            p.d->valid = true;
+        }
+    }
+
+    return p;
+}
+
 /*!
     Returns true if this object is a custom type.  Custom types are special 
     types that allow embeddeding non-QML data, such as SVG or HTML data, 
@@ -769,26 +976,26 @@ QmlDomComponent QmlDomObject::toComponent() const
 
 /*!
     Returns the position in the input data where the property assignment started
-, or 0 if the property is invalid.
+, or -1 if the property is invalid.
 */
 int QmlDomObject::position() const
 {
     if (d && d->object)
         return d->object->location.range.offset;
     else
-        return 0;
+        return -1;
 }
 
 /*!
     Returns the length in the input data from where the property assignment star
-ted upto the end of it, or 0 if the property is invalid.
+ted upto the end of it, or -1 if the property is invalid.
 */
 int QmlDomObject::length() const
 {
     if (d && d->object)
         return d->object->location.range.length;
     else
-        return 0;
+        return -1;
 }
 
 // Returns the URL of the type, if it is an external type, or an empty URL if
@@ -1323,25 +1530,25 @@ QmlDomList QmlDomValue::toList() const
 }
 
 /*!
-    Returns the position in the input data where the property value startd, or 0
+    Returns the position in the input data where the property value startd, or -1
  if the value is invalid.
 */
 int QmlDomValue::position() const
 {
     if (type() == Invalid)
-        return 0;
+        return -1;
     else
         return d->value->location.range.offset;
 }
 
 /*!
     Returns the length in the input data from where the property value started u
-pto the end of it, or 0 if the value is invalid.
+pto the end of it, or -1 if the value is invalid.
 */
 int QmlDomValue::length() const
 {
     if (type() == Invalid)
-        return 0;
+        return -1;
     else
         return d->value->location.range.length;
 }
@@ -1436,7 +1643,7 @@ void QmlDomList::setValues(const QList<QmlDomValue> &values)
 }
 
 /*!
-    Returns the position in the input data where the list started, or 0 if
+    Returns the position in the input data where the list started, or -1 if
  the property is invalid.
 */
 int QmlDomList::position() const
@@ -1444,7 +1651,7 @@ int QmlDomList::position() const
     if (d && d->property) {
         return d->property->listValueRange.offset;
     } else
-        return 0;
+        return -1;
 }
 
 /*!
@@ -1456,7 +1663,7 @@ int QmlDomList::length() const
     if (d && d->property)
         return d->property->listValueRange.length;
     else
-        return 0;
+        return -1;
 }
 
 /*!

@@ -150,6 +150,7 @@ namespace QmlParser
             Type type;
             QByteArray name;
             QmlParser::Property *defaultValue;
+            LocationRange range;
         };
         struct DynamicSignal {
             DynamicSignal();
