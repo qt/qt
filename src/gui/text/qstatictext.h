@@ -44,6 +44,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtGui/qfont.h>
+#include <QtCore/qsize.h>
 
 QT_BEGIN_HEADER
 
