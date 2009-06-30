@@ -53,11 +53,13 @@
 // We mean it.
 //
 
+#include "qgraphicsscene_p.h"
+#include "qgraphicsscene.h"
+#include <private/qobject_p.h>
+
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qgraphicsitem.h>
-#include <private/qobject_p.h>
 
 QT_BEGIN_HEADER
 
@@ -67,7 +69,6 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class QGraphicsScene;
 class QGraphicsSceneIndexIntersector;
 class QGraphicsSceneIndexPointIntersector;
 class QGraphicsSceneIndexRectIntersector;
@@ -138,11 +139,30 @@ public:
                                 QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
                                 const QTransform &parentTransform, const QTransform &viewTransform,
                                 Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
-   QGraphicsScene *scene;
-   QGraphicsSceneIndexPointIntersector *pointIntersector;
-   QGraphicsSceneIndexRectIntersector *rectIntersector;
-   QGraphicsSceneIndexPathIntersector *pathIntersector;
+    inline void items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
+                             QList<QGraphicsItem *> *items, const QTransform &viewTransform,
+                             Qt::ItemSelectionMode mode, Qt::SortOrder order) const;
+
+    QGraphicsScene *scene;
+    QGraphicsSceneIndexPointIntersector *pointIntersector;
+    QGraphicsSceneIndexRectIntersector *rectIntersector;
+    QGraphicsSceneIndexPathIntersector *pathIntersector;
 };
+
+inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
+                                                     QList<QGraphicsItem *> *items, const QTransform &viewTransform,
+                                                     Qt::ItemSelectionMode mode, Qt::SortOrder order) const
+{
+    const QList<QGraphicsItem *> tli = scene->d_func()->topLevelItemsInStackingOrder(&viewTransform, rect);
+    const QTransform identity;
+    for (int i = 0; i < tli.size(); ++i)
+        recursive_items_helper(tli.at(i), rect, intersector, items, identity, viewTransform, mode, order);
+    if (order == Qt::AscendingOrder) {
+        const int n = items->size();
+        for (int i = 0; i < n / 2; ++i)
+            items->swap(i, n - i - 1);
+    }
+}
 
 class QGraphicsSceneIndexIntersector
 {

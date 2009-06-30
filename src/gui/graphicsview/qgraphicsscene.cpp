@@ -217,8 +217,9 @@
 #include "qgraphicsview_p.h"
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
-#include <private/qgraphicsscenebsptreeindex_p.h>
-#include <private/qgraphicsscenelinearindex_p.h>
+#include "qgraphicssceneindex_p.h"
+#include "qgraphicsscenebsptreeindex_p.h"
+#include "qgraphicsscenelinearindex_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
@@ -243,7 +244,6 @@
 #include <QtGui/qtooltip.h>
 #include <QtGui/qtransform.h>
 #include <private/qapplication_p.h>
-#include <private/qgraphicssceneindex_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -1075,24 +1075,14 @@ QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item)
 }
 
 QList<QGraphicsItem *> QGraphicsScenePrivate::topLevelItemsInStackingOrder(const QTransform *const viewTransform,
-                                                                           QRegion *exposedRegion)
+                                                                           const QRectF &sceneRect)
 {
-    if (indexMethod == QGraphicsScene::NoIndex || !exposedRegion) {
+    if (indexMethod == QGraphicsScene::NoIndex || sceneRect.isNull()) {
         if (needSortTopLevelItems) {
             needSortTopLevelItems = false;
             qStableSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
         }
         return topLevelItems;
-    }
-
-    const QRectF exposedRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
-    QRectF sceneRect;
-    QTransform invertedViewTransform(Qt::Uninitialized);
-    if (!viewTransform) {
-        sceneRect = exposedRect;
-    } else {
-        invertedViewTransform = viewTransform->inverted();
-        sceneRect = invertedViewTransform.mapRect(exposedRect);
     }
 
     QList<QGraphicsItem *> tmp = index->estimateItems(sceneRect, Qt::SortOrder(-1),

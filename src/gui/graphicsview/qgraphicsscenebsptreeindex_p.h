@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
-
 //
 //  W A R N I N G
 //  -------------
@@ -63,13 +61,13 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicssceneindex_p.h"
+#include "qgraphicsitem_p.h"
+#include "qgraphicsscene_bsp_p.h"
+
+#include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicsscene.h>
-#include <private/qgraphicsitem_p.h>
-#include <private/qgraphicssceneindex_p.h>
-#include <private/qgraphicsscene_bsp_p.h>
 
 static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
