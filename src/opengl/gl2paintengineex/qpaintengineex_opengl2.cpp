@@ -1622,4 +1622,12 @@ QGLEngineShaderManager *QGL2PaintEngineEx::shaderManager() const
     return d->shaderManager;
 }
 
+QPixmapFilter *QGL2PaintEngineEx::createPixmapFilter(int type) const
+{
+    const QGLContext *ctx = QGLContext::currentContext();
+    if (ctx)
+        return ctx->d_func()->createPixmapFilter(type);
+    return 0;
+}
+
 QT_END_NAMESPACE

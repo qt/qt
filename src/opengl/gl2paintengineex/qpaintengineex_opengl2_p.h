@@ -135,6 +135,8 @@ public:
 
     QGLEngineShaderManager *shaderManager() const;
 
+    QPixmapFilter *createPixmapFilter(int type) const;
+
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
