@@ -438,7 +438,7 @@
     \code
     Button {
         id: MyButton
-        onClicked: NumericAnimation {
+        onClicked: NumberAnimation {
             target: MyButton
             property: "x"
             to: 100
@@ -555,12 +555,12 @@
 
     \code
     Rect {
-        x: NumericAnimation { running: true; repeat; true; from: 0; to: 100; }
+        x: NumberAnimation { running: true; repeat; true; from: 0; to: 100; }
     }
     \endcode
 
     Here the \c x property of the rectangle will be animated from 0 to 100.
-    To support this, the NumericAnimation class inherits the 
+    To support this, the NumberAnimation class inherits the 
     QmlPropertyValueSource class.  If a type inherits this class and is assigned
     to a property for which type assignment would otherwise fail (ie. the
     property itself doesn't have a type of QmlPropertyValueSource *), the QML

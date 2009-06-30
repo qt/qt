@@ -28,16 +28,8 @@ Rect {
             State {
                 name: "down"
                 when: MouseRegion.pressed == true
-                SetProperty {
-                    target: HelloText
-                    property: "y"
-                    value: 160
-                }
-                SetProperty {
-                    target: HelloText
-                    property: "color"
-                    value: "red"
-                }
+                SetProperties { target: HelloText; y: 160 }
+                SetProperties { target: HelloText color: "red" }
             }
         ]
         transitions: [
@@ -46,12 +38,12 @@ Rect {
                 toState: "down"
                 reversible: true
                 ParallelAnimation {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "y"
                         duration: 500
                         easing: "easeOutBounce"
                     }
-                    ColorAnimation { duration: 500 }
+                    ColorAnimation { property: "color"; duration: 500 }
                 }
             }
         ]
@@ -80,16 +72,8 @@ states: [
     State {
         name: "down"
         when: MouseRegion.pressed == true
-        SetProperty {
-            target: HelloText
-            property: "y"
-            value: 160
-        }
-        SetProperty {
-            target: HelloText
-            property: "color"
-            value: "red"
-        }
+        SetProperties { target: HelloText; y: 160 }
+        SetProperties { target: HelloText; color: "red" }
     }
 ]
 \endcode
@@ -114,12 +98,12 @@ Because we want the same transition to be run in reverse when changing back from
 
 \code
 ParallelAnimation {
-    NumericAnimation {
+    NumberAnimation {
         properties: "y"
         duration: 500
         easing: "easeOutBounce"
     }
-    ColorAnimation { duration: 500 }
+    ColorAnimation { property: "color"; duration: 500 }
 }
 \endcode
 

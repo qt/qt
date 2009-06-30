@@ -94,7 +94,7 @@ Flipable {
     ]
     transitions: [
         Transition {
-            NumericAnimation {
+            NumberAnimation {
                 easing: "easeInOutQuad"
                 properties: "rotation"
             }

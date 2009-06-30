@@ -50,6 +50,8 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlcomponent_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QmlCompositeTypeData::QmlCompositeTypeData()
 : status(Invalid), errorType(NoError), component(0), compiledComponent(0)
 {
@@ -365,3 +367,5 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         doComplete(unit);
     }
 }
+
+QT_END_NAMESPACE

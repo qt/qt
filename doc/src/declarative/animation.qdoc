@@ -25,7 +25,7 @@ Other Features:
 \o Animation synchronization
 \endlist
 
-The simplest form of animation is using \l NumericAnimation
+The simplest form of animation is using \l NumberAnimation
 
 The following example creates a bouncing effect:
 \code
@@ -40,9 +40,9 @@ Rect {
         y: SequentialAnimation {
             running: true
             repeat: true
-            NumericAnimation { to: 200-img.height; easing: "easeOutBounce"; duration: 2000 }
+            NumberAnimation { to: 200-img.height; easing: "easeOutBounce"; duration: 2000 }
             PauseAnimation { duration: 1000 }
-            NumericAnimation { to: 0; easing: "easeOutQuad"; duration: 1000 }
+            NumberAnimation { to: 0; easing: "easeOutQuad"; duration: 1000 }
         }
     }
 }
@@ -89,15 +89,13 @@ Item {
     states: [
         State {
             name: "moved"
-            SetProperty {
+            SetProperties {
                 target: myrect
-                property: "x"
-                value: 50
+                x: 50
             }
-            SetProperty {
+            SetProperties {
                 target: myrect
-                property: "y"
-                value: 50
+                y: 50
             }
         }
     ]
@@ -113,7 +111,7 @@ For the previous example, a transition could describe how \c myrect moved from i
 \code
 transitions: [
     Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "x,y"
             easing: "easeOutBounce"
             duration: 200
@@ -132,7 +130,7 @@ Transition {
 }
 \endcode
 
-Transitions can happen in parallel, in sequence, or in any combination of the two:;
+Transitions can happen in parallel, in sequence, or in any combination of the two:
 
 \code
 Transition {
@@ -141,19 +139,20 @@ Transition {
     reversible: true
     SequentialAnimation {
         ColorAnimation {
+            property: "color"
             duration: 1000
         }
         PauseAnimation {
             duration: 1000
         }
         ParallelAnimation {
-            NumericAnimation {
+            NumberAnimation {
                 duration: 1000
                 easing: "easeOutBounce"
                 target: box1
                 properties: "x,y"
             }
-            NumericAnimation {
+            NumberAnimation {
                 duration: 1000
                 target: box2
                 properties: "x,y"

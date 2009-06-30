@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qfximage_p.h"
+#include <private/qfximage_p.h>
 
 QT_BEGIN_NAMESPACE
 

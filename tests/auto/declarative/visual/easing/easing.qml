@@ -148,19 +148,17 @@ Rect {
                         State {
                             name: "from"
                             when: !mouse.pressed
-                            SetProperty {
+                            SetProperties {
                                 target: text
-                                property: "x"
-                                value: 0
+                                x: 0
                             }
                         },
                         State {
                             name: "to"
                             when: mouse.pressed
-                            SetProperty {
+                            SetProperties {
                                 target: text
-                                property: "x"
-                                value: item.width-100
+                                x: item.width-100
                             }
                         }
                     ]
@@ -169,7 +167,7 @@ Rect {
                             fromState: "*"
                             toState: "to"
                             reversible: true
-                            NumericAnimation {
+                            NumberAnimation {
                                 properties: "x"
                                 easing: type
                             }

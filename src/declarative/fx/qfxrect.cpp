@@ -55,9 +55,9 @@ QML_DEFINE_TYPE(QFxGradient,Gradient)
     \brief The QFxPen class provides a pen used for drawing rect borders on a QFxView.
 
     By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
-    width is 0) or a width (then the default color is black).
+    width is 1) or a width (then the default color is black).
 
-    A width of 0 indicates a cosmetic pen, a single-pixel line on the border of the item being painted.
+    A width of 1 indicates is a single-pixel line on the border of the item being painted.
 
     Example:
     \qml
@@ -68,9 +68,9 @@ QML_DEFINE_TYPE(QFxGradient,Gradient)
 /*! \property QFxPen::width
     \brief the width of the pen.
 
-    A width of 0 is a single-pixel line on the border of the item being painted.
+    A width of 1 is a single-pixel line on the border of the item being painted.
 
-    If the width is less than 0 the pen is considered invalid and won't be used.
+    If the width is less than 1 the pen is considered invalid and won't be used.
 */
 
 /*!
@@ -103,18 +103,18 @@ void QFxPen::setColor(const QColor &c)
     \brief the width of the pen.
 
     \qml
-    // rect with green border using hexidecimal notation
     Rect { pen.width: 4 }
     \endqml
 
-    A width of 0 creates a thin line. For no line, use a negative width or a transparent color.
+    A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
 
-    Odd pen widths generally lead to half-pixel painting.
+    To keep the border smooth (rather than blurry), odd pen widths cause the rect to be painted at
+    a half-pixel offset;
 */
 void QFxPen::setWidth(int w)
 {
     _width = w;
-    _valid = (_width < 0) ? false : true;
+    _valid = (_width < 1) ? false : true;
     emit updated();
 }
 
@@ -505,7 +505,10 @@ void QFxRect::generateRoundedRect()
             p.setPen(Qt::NoPen);
         }
         p.setBrush(d->color);
-        p.drawRoundedRect((pw+1)/2, (pw+1)/2, d->rectImage.width()-(pw+1)/2*2, d->rectImage.height()-(pw+1)/2*2, d->radius, d->radius);
+        if (pw%2)
+            p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
+        else
+            p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
     }
 }
 
@@ -520,12 +523,16 @@ void QFxRect::generateBorderedRect()
         p.setRenderHint(QPainter::Antialiasing);
         if (d->pen && d->pen->isValid()) {
             QPen pn(QColor(d->pen->color()), d->pen->width());
+            pn.setJoinStyle(Qt::MiterJoin);
             p.setPen(pn);
         } else {
             p.setPen(Qt::NoPen);
         }
         p.setBrush(d->color);
-        p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, d->rectImage.width()-(pw+1)/2*2, d->rectImage.height()-(pw+1)/2*2);
+        if (pw%2)
+            p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
+        else
+            p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
     }
 }
 #elif defined(QFX_RENDER_OPENGL)
@@ -550,7 +557,10 @@ void QFxRect::generateRoundedRect()
                 p.setPen(Qt::NoPen);
             }
             p.setBrush(d->color);
-            p.drawRoundedRect((pw+1)/2, (pw+1)/2, roundRect.width()-(pw+1)/2*2, roundRect.height()-(pw+1)/2*2, d->radius, d->radius);
+            if (pw%2)
+            p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, roundRect.width()-(pw+1), roundRect.height()-(pw+1)), d->radius, d->radius);
+        else
+            p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, roundRect.width()-pw, roundRect.height()-pw), d->radius, d->radius);
 
             d->rectTexture = cachedTexture(key, roundRect);
         }
@@ -573,12 +583,16 @@ void QFxRect::generateBorderedRect()
             p.setRenderHint(QPainter::Antialiasing);
             if (d->pen && d->pen->isValid()) {
                 QPen pn(QColor(pen()->color()), pen()->width());
+                pn.setJoinStyle(Qt::MiterJoin);
                 p.setPen(pn);
             } else {
                 p.setPen(Qt::NoPen);
             }
             p.setBrush(d->color);
-            p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, borderedRect.width()-(pw+1)/2*2, borderedRect.height()-(pw+1)/2*2);
+            if (pw%2)
+                p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, borderedRect.width()-(pw+1), borderedRect.height()-(pw+1)));
+            else
+                p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, borderedRect.width()-pw, borderedRect.height()-pw));
             d->rectTexture = cachedTexture(key, borderedRect);
         }
     }

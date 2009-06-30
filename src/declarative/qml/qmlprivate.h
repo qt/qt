@@ -394,10 +394,8 @@ int QmlPrivate::list_interface_op(QmlPrivate::ListOp op, int val,
     return 0; 
 } 
 
-
-#endif // QMLPRIVATE_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLPRIVATE_H

@@ -9,16 +9,16 @@ Rect {
         XmlListModel {
             id: feedModel
             source: "http://rss.news.yahoo.com/rss/oceania"
-            query: "doc($src)/rss/channel/item"
-            Role {
+            query: "/rss/channel/item"
+            XmlRole {
                 name: "title"
                 query: "title/string()"
             }
-            Role {
+            XmlRole {
                 name: "link"
                 query: "link/string()"
             }
-            Role {
+            XmlRole {
                 name: "description"
                 query: "description/string()"
             }
@@ -64,16 +64,8 @@ Rect {
                     states: [
                         State {
                             name: "Details"
-                            SetProperty {
-                                target: Wrapper
-                                property: "height"
-                                binding: "contents.height + 10"
-                            }
-                            SetProperty {
-                                target: Description
-                                property: "opacity"
-                                value: 1
-                            }
+                            SetProperties { target: Wrapper; height: contents.height + 10 }
+                            SetProperties { target: Description; opacity: 1 } 
                         }
                     ]
                     transitions: [
@@ -82,12 +74,12 @@ Rect {
                             toState: "Details"
                             reversible: true
                             SequentialAnimation {
-                                NumericAnimation {
+                                NumberAnimation {
                                     duration: 200
                                     properties: "height"
                                     easing: "easeOutQuad"
                                 }
-                                NumericAnimation {
+                                NumberAnimation {
                                     duration: 200
                                     properties: "opacity"
                                 }

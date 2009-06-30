@@ -62,6 +62,8 @@
 #include <private/qmlpropertyview_p.h>
 #include <private/qmlwatches_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QmlDebugger::QmlDebugger(QWidget *parent)
 : QWidget(parent), m_tree(0), m_warnings(0), m_watchTable(0), m_watches(0), 
   m_properties(0), m_text(0), m_highlightedItem(0)
@@ -353,3 +355,4 @@ void QmlDebugger::setDebugObject(QObject *obj)
     item->setExpanded(true);
 }
 
+QT_END_NAMESPACE

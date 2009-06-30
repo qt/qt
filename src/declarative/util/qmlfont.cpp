@@ -43,8 +43,8 @@
 #include "qfont.h"
 #include "qmlfont.h"
 
-
 QT_BEGIN_NAMESPACE
+
 class QmlFontPrivate : public QObjectPrivate
 {
 public:
@@ -144,4 +144,5 @@ QFont QmlFont::font() const
     Q_D(const QmlFont);
     return d->font;
 }
+
 QT_END_NAMESPACE

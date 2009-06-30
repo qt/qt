@@ -41,8 +41,8 @@
 
 #include "qmlproxymetaobject_p.h"
 
-
 QT_BEGIN_NAMESPACE
+
 QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
 : metaObjects(mList), proxies(0), parent(0), object(obj)
 {

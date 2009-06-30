@@ -570,7 +570,10 @@ void QmlCompiler::compileTree(Object *tree)
 bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
 {    
     Q_ASSERT (obj->type != -1);
-    obj->metatype = output->types.at(obj->type).metaObject();
+    const QmlCompiledData::TypeReference &tr = output->types.at(obj->type);
+    obj->metatype = tr.metaObject();
+    if (tr.component) 
+        obj->url = tr.component->url();
 
     if (output->types.at(obj->type).className == "Component") {
         COMPILE_CHECK(compileComponent(obj, ctxt));

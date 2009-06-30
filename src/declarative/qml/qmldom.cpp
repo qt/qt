@@ -791,6 +791,16 @@ int QmlDomObject::length() const
         return 0;
 }
 
+// Returns the URL of the type, if it is an external type, or an empty URL if
+// not
+QUrl QmlDomObject::url() const
+{
+    if (d && d->object)
+        return d->object->url;
+    else
+        return QUrl();
+}
+
 QmlDomBasicValuePrivate::QmlDomBasicValuePrivate()
 : value(0)
 {
@@ -959,11 +969,11 @@ void QmlDomValueBinding::setBinding(const QString &expression)
     In QML, value sources are special value generating types that may be 
     assigned to properties.  Value sources inherit the QmlPropertyValueSource
     class.  In the example below, the "x" property is being assigned the 
-    NumericAnimation value source.
+    NumberAnimation value source.
 
     \qml
 Rect {
-    x: NumericAnimation {
+    x: NumberAnimation {
         from: 0
         to: 100
         repeat: true
@@ -1008,11 +1018,11 @@ QmlDomValueValueSource &QmlDomValueValueSource::operator=(const QmlDomValueValue
 /*!
     Return the value source object.
 
-    In the example below, an object representing the NumericAnimation will be
+    In the example below, an object representing the NumberAnimation will be
     returned.
     \qml
 Rect {
-    x: NumericAnimation {
+    x: NumberAnimation {
         from: 0
         to: 100
         repeat: true
@@ -1357,7 +1367,7 @@ Item {
     \qml
 Item {
     x: 10
-    x: NumericAnimation {
+    x: NumberAnimation {
         running: false
         from: 0
         to: 100
@@ -1561,4 +1571,3 @@ void QmlDomComponent::setComponentRoot(const QmlDomObject &root)
 }
 
 QT_END_NAMESPACE
-

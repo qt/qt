@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxAnchors,Anchors)
 
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
-//TODO: baseline support
 //TODO: support non-parent, non-sibling (need to find lowest common ancestor)
 
 //### const item?
@@ -402,8 +401,8 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
     if (fill || centeredIn || !isItemComplete())
         return;
 
-    if (!updatingVerticalAnchor) {
-        updatingVerticalAnchor = true;
+    if (updatingVerticalAnchor < 2) {
+        ++updatingVerticalAnchor;
         if (usedAnchors & QFxAnchors::HasTopAnchor) {
             //Handle stretching
             bool invalid = true;
@@ -455,7 +454,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
                 setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
             }
         }
-        updatingVerticalAnchor = false;
+        --updatingVerticalAnchor;
     } else {
         // ### Make this certain :)
         qmlInfo(item) << "Possible anchor loop detected on vertical anchor.";
@@ -467,8 +466,8 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
     if (fill || centeredIn || !isItemComplete())
         return;
 
-    if (!updatingHorizontalAnchor) {
-        updatingHorizontalAnchor = true;
+    if (updatingHorizontalAnchor < 2) {
+        ++updatingHorizontalAnchor;
 
         if (usedAnchors & QFxAnchors::HasLeftAnchor) {
             //Handle stretching
@@ -514,7 +513,7 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
             }
         }
 
-        updatingHorizontalAnchor = false;
+        --updatingHorizontalAnchor;
     } else {
         // ### Make this certain :)
         qmlInfo(item) << "Possible anchor loop detected on horizontal anchor.";
@@ -760,93 +759,99 @@ void QFxAnchors::resetHorizontalCenter()
     d->updateHorizontalAnchors();
 }
 
-int QFxAnchors::leftMargin() const
+qreal QFxAnchors::leftMargin() const
 {
     Q_D(const QFxAnchors);
     return d->leftMargin;
 }
 
-void QFxAnchors::setLeftMargin(int offset)
+void QFxAnchors::setLeftMargin(qreal offset)
 {
     Q_D(QFxAnchors);
     if (d->leftMargin == offset)
         return;
     d->leftMargin = offset;
+    d->updateHorizontalAnchors();
     emit leftMarginChanged();
 }
 
-int QFxAnchors::rightMargin() const
+qreal QFxAnchors::rightMargin() const
 {
     Q_D(const QFxAnchors);
     return d->rightMargin;
 }
 
-void QFxAnchors::setRightMargin(int offset)
+void QFxAnchors::setRightMargin(qreal offset)
 {
     Q_D(QFxAnchors);
     if (d->rightMargin == offset)
         return;
     d->rightMargin = offset;
+    d->updateHorizontalAnchors();
     emit rightMarginChanged();
 }
 
-int QFxAnchors::horizontalCenterOffset() const
+qreal QFxAnchors::horizontalCenterOffset() const
 {
     Q_D(const QFxAnchors);
     return d->hCenterOffset;
 }
 
-void QFxAnchors::setHorizontalCenterOffset(int offset)
+void QFxAnchors::setHorizontalCenterOffset(qreal offset)
 {
     Q_D(QFxAnchors);
     if (d->hCenterOffset == offset)
         return;
     d->hCenterOffset = offset;
+    d->updateHorizontalAnchors();
     emit horizontalCenterOffsetChanged();
 }
 
-int QFxAnchors::topMargin() const
+qreal QFxAnchors::topMargin() const
 {
     Q_D(const QFxAnchors);
     return d->topMargin;
 }
 
-void QFxAnchors::setTopMargin(int offset)
+void QFxAnchors::setTopMargin(qreal offset)
 {
     Q_D(QFxAnchors);
     if (d->topMargin == offset)
         return;
     d->topMargin = offset;
+    d->updateVerticalAnchors();
     emit topMarginChanged();
 }
 
-int QFxAnchors::bottomMargin() const
+qreal QFxAnchors::bottomMargin() const
 {
     Q_D(const QFxAnchors);
     return d->bottomMargin;
 }
 
-void QFxAnchors::setBottomMargin(int offset)
+void QFxAnchors::setBottomMargin(qreal offset)
 {
     Q_D(QFxAnchors);
     if (d->bottomMargin == offset)
         return;
     d->bottomMargin = offset;
+    d->updateVerticalAnchors();
     emit bottomMarginChanged();
 }
 
-int QFxAnchors::verticalCenterOffset() const
+qreal QFxAnchors::verticalCenterOffset() const
 {
     Q_D(const QFxAnchors);
     return d->vCenterOffset;
 }
 
-void QFxAnchors::setVerticalCenterOffset(int offset)
+void QFxAnchors::setVerticalCenterOffset(qreal offset)
 {
     Q_D(QFxAnchors);
     if (d->vCenterOffset == offset)
         return;
     d->vCenterOffset = offset;
+    d->updateVerticalAnchors();
     emit verticalCenterOffsetChanged();
 }
 

@@ -42,8 +42,8 @@
 #include "private/qobject_p.h"
 #include "qmlpackage.h"
 
-
 QT_BEGIN_NAMESPACE
+
 class QmlPackagePrivate : public QObjectPrivate
 {
 public:
@@ -150,4 +150,5 @@ QmlPackageAttached *QmlPackage::qmlAttachedProperties(QObject *o)
 QML_DEFINE_TYPE(QmlPackage, Package)
 
 QT_END_NAMESPACE
+
 #include "qmlpackage.moc"

@@ -41,7 +41,10 @@
 
 #include "qmlclassfactory_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QmlClassFactory::~QmlClassFactory()
 {
 }
 
+QT_END_NAMESPACE

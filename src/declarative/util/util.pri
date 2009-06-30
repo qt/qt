@@ -6,7 +6,6 @@ SOURCES += \
            util/qmlpackage.cpp \
            util/qmlscript.cpp \
            util/qmlanimation.cpp \
-           util/qmlbehaviour.cpp \
            util/qmlfont.cpp \
            util/qmlfollow.cpp \
            util/qmlstate.cpp\
@@ -14,8 +13,6 @@ SOURCES += \
            util/qmlsetproperties.cpp \
            util/qmlstategroup.cpp \
            util/qmltransition.cpp \
-           util/qbindablemap.cpp \
-           util/qmldatetimeformatter.cpp \
            util/qmllistmodel.cpp\
            util/qmllistaccessor.cpp \
            util/qmlopenmetaobject.cpp \
@@ -31,7 +28,6 @@ HEADERS += \
            util/qmlscript.h \
            util/qmlanimation.h \
            util/qmlanimation_p.h \
-           util/qmlbehaviour.h \
            util/qmlfont.h \
            util/qmlfollow.h \
            util/qmlstate.h\
@@ -40,8 +36,6 @@ HEADERS += \
            util/qmlstate_p.h\
            util/qmlstategroup.h \
            util/qmltransition.h \
-           util/qbindablemap.h \
-           util/qmldatetimeformatter.h \
            util/qmllistmodel.h\
            util/qmllistaccessor.h \
            util/qmlopenmetaobject.h \

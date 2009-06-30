@@ -16,9 +16,9 @@ Rect {
         // Move the ball to the right and back to the left repeatedly
         x: SequentialAnimation {
             running: true; repeat: true
-            NumericAnimation { to: Page.width-40; duration: 2000 }
+            NumberAnimation { to: Page.width-40; duration: 2000 }
             SetPropertyAction { target: Ball; property: "direction"; value: "left" }
-            NumericAnimation { to: 20; duration: 2000 }
+            NumberAnimation { to: 20; duration: 2000 }
             SetPropertyAction { target: Ball; property: "direction"; value: "right" }
         }
 
@@ -26,7 +26,7 @@ Rect {
         y: Follow { source: Ball.targetY; velocity: 200 }
 
         // Detect the ball hitting the top or bottom of the view and bounce it
-        onTopChanged: {
+        onYChanged: {
             if (y <= 0)
                 targetY = Page.height-20;
             else if (y >= Page.height-20)

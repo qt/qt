@@ -44,6 +44,7 @@
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
+
 void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
 {
     QByteArray lineNumber = QByteArray::number(instr->line);

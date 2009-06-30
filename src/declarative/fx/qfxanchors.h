@@ -46,15 +46,13 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxItem;
-class QFxAnchorsPrivate;
 
+class QFxItem;
 class QFxAnchorLine
 {
 public:
@@ -93,12 +91,12 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
     Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
     Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
-    Q_PROPERTY(int leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
-    Q_PROPERTY(int rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
-    Q_PROPERTY(int horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
-    Q_PROPERTY(int topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged)
-    Q_PROPERTY(int bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
-    Q_PROPERTY(int verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
+    Q_PROPERTY(qreal leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
+    Q_PROPERTY(qreal rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
+    Q_PROPERTY(qreal horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
+    Q_PROPERTY(qreal topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged)
+    Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
+    Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
     Q_PROPERTY(QFxItem *fill READ fill WRITE setFill)
     Q_PROPERTY(QFxItem *centeredIn READ centeredIn WRITE setCenteredIn)
 
@@ -121,7 +119,7 @@ public:
 
     QFxAnchorLine left() const;
     void setLeft(const QFxAnchorLine &edge);
-    Q_INVOKABLE void resetLeft();   //### temporarily invokable for testing
+    void resetLeft();
 
     QFxAnchorLine right() const;
     void setRight(const QFxAnchorLine &edge);
@@ -147,23 +145,23 @@ public:
     void setBaseline(const QFxAnchorLine &edge);
     void resetBaseline();
 
-    int leftMargin() const;
-    void setLeftMargin(int);
+    qreal leftMargin() const;
+    void setLeftMargin(qreal);
 
-    int rightMargin() const;
-    void setRightMargin(int);
+    qreal rightMargin() const;
+    void setRightMargin(qreal);
 
-    int horizontalCenterOffset() const;
-    void setHorizontalCenterOffset(int);
+    qreal horizontalCenterOffset() const;
+    void setHorizontalCenterOffset(qreal);
 
-    int topMargin() const;
-    void setTopMargin(int);
+    qreal topMargin() const;
+    void setTopMargin(qreal);
 
-    int bottomMargin() const;
-    void setBottomMargin(int);
+    qreal bottomMargin() const;
+    void setBottomMargin(qreal);
 
-    int verticalCenterOffset() const;
-    void setVerticalCenterOffset(int);
+    qreal verticalCenterOffset() const;
+    void setVerticalCenterOffset(qreal);
 
     QFxItem *fill() const;
     void setFill(QFxItem *);
@@ -188,11 +186,10 @@ private:
     Q_DISABLE_COPY(QFxAnchors)
     Q_DECLARE_PRIVATE(QFxAnchors)
 };
-
 QML_DECLARE_TYPE(QFxAnchors)
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif

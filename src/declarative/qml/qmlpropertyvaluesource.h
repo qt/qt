@@ -46,12 +46,12 @@
 #include <QtDeclarative/qml.h>
 #include <QtCore/QObject>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QObjectPrivate;
 class QmlMetaProperty;
 class Q_DECLARATIVE_EXPORT QmlPropertyValueSource : public QObject
@@ -71,9 +71,8 @@ private:
 };
 QML_DECLARE_TYPE(QmlPropertyValueSource)
 
-#endif // QMLPROPERTYVALUESOURCE_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLPROPERTYVALUESOURCE_H

@@ -42,6 +42,17 @@
 #ifndef QMLPARSER_P_H
 #define QMLPARSER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
 #include <QtCore/qstring.h>
@@ -102,6 +113,8 @@ namespace QmlParser
         // QmlCompiledData::types array, or -1 if the object is a fetched
         // object.
         int type;
+        // The url of this object if it is an external type.  Used by the DOM
+        QUrl url;
         // The name of this type
         QByteArray typeName;
         // The id assigned to the object (if any).

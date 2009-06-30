@@ -5,18 +5,16 @@ Rect {
     states: [
         State {
             name: "first"
-            SetProperty {
+            SetProperties {
                 target: mainrect
-                property: "color"
-                value: "red"
+                color: "red"
             }
         },
         State {
             name: "second"
-            SetProperty {
+            SetProperties {
                 target: mainrect
-                property: "color"
-                value: "blue"
+                color: "blue"
             }
         }
     ]

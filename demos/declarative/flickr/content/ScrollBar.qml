@@ -28,7 +28,7 @@ Item {
         Transition {
             fromState: "*"
             toState: "*"
-            NumericAnimation {
+            NumberAnimation {
                 target: Container
                 properties: "opacity"
                 duration: 400

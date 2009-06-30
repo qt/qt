@@ -14,15 +14,10 @@ Rect {
             State {
                 name: "down"
                 when: MouseRegion.pressed == true
-                SetProperty {
+                SetProperties {
                     target: HelloText
-                    property: "y"
-                    value: 160
-                }
-                SetProperty {
-                    target: HelloText
-                    property: "color"
-                    value: "red"
+                    y: 160
+                    color: "red"
                 }
             }
         ]
@@ -32,12 +27,12 @@ Rect {
                 toState: "down"
                 reversible: true
                 ParallelAnimation {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "y"
                         duration: 500
                         easing: "easeOutBounce"
                     }
-                    ColorAnimation { duration: 500 }
+                    ColorAnimation { property: "color"; duration: 500 }
                 }
             }
         ]

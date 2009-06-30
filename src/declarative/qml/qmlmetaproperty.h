@@ -123,8 +123,11 @@ public:
 
     QMetaProperty property() const;
 
-    QmlBindableValue *binding();
+    QmlBindableValue *binding() const;
+    QmlBindableValue *setBinding(QmlBindableValue *) const;
+
     static int findSignal(const QObject *, const char *);
+    static QmlMetaProperty createProperty(QObject *, const QString &);
 
     int coreIndex() const;
 private:

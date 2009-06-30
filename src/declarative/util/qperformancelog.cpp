@@ -43,6 +43,7 @@
 #include <QHash>
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
 
@@ -175,3 +176,5 @@ void QPerformanceLog::clear()
 }
 
 #endif // Q_ENABLE_PERFORMANCE_LOG
+
+QT_END_NAMESPACE

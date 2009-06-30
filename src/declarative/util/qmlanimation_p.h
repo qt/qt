@@ -42,6 +42,17 @@
 #ifndef QMLANIMATION_P_H
 #define QMLANIMATION_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qobject_p.h>
 #include <private/qmlnullablevalue_p.h>
 #include <private/qvariantanimation_p.h>
@@ -193,6 +204,8 @@ public:
 
     QmlMetaProperty property;
     QmlAnimationGroup *group;
+
+    QmlMetaProperty createProperty(QObject *obj, const QString &str);
 };
 
 class QmlPauseAnimationPrivate : public QmlAbstractAnimationPrivate
@@ -205,40 +218,6 @@ public:
     void init();
 
     QPauseAnimation *pa;
-};
-
-class QmlColorAnimationPrivate : public QmlAbstractAnimationPrivate
-{
-    Q_DECLARE_PUBLIC(QmlColorAnimation)
-public:
-    QmlColorAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      ca(0), value(this, &QmlColorAnimationPrivate::valueChanged)
-    {
-        if (!colorInterpolator)
-            colorInterpolator = QVariantAnimationPrivate::getInterpolator(QVariant::Color);
-    }
-
-    void init();
-
-    QString easing;
-
-    QColor fromValue;
-    QColor toValue;
-
-    QList<QObject *> filter;
-    QList<QObject *> exclude;
-
-    bool fromSourced;
-    bool fromIsDefined;
-    bool toIsDefined;
-
-    QmlTimeLineValueAnimator *ca;
-    virtual void valueChanged(qreal);
-
-    QmlTimeLineValueProxy<QmlColorAnimationPrivate> value;
-
-    static QVariantAnimation::Interpolator colorInterpolator;
 };
 
 class QmlRunScriptActionPrivate : public QmlAbstractAnimationPrivate
@@ -295,32 +274,6 @@ public:
     QActionAnimation *cpa;
 };
 
-class QmlNumericAnimationPrivate : public QmlAbstractAnimationPrivate
-{
-    Q_DECLARE_PUBLIC(QmlNumericAnimation)
-public:
-    QmlNumericAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), na(0), value(this, &QmlNumericAnimationPrivate::valueChanged) {}
-
-    void init();
-
-    QmlNullableValue<qreal> from;
-    QmlNullableValue<qreal> to;
-
-    QString easing;
-
-    QString properties;
-    QList<QObject *> filter;
-    QList<QObject *> exclude;
-
-    bool fromSourced;
-    qreal fromValue;
-    QmlTimeLineValueAnimator *na;
-    virtual void valueChanged(qreal);
-
-    QmlTimeLineValueProxy<QmlNumericAnimationPrivate> value;
-};
-
 class QmlAnimationGroupPrivate : public QmlAbstractAnimationPrivate
 {
     Q_DECLARE_PUBLIC(QmlAnimationGroup)
@@ -360,13 +313,13 @@ public:
     QAnimationGroup *ag;
 };
 
-class QmlVariantAnimationPrivate : public QmlAbstractAnimationPrivate
+class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlVariantAnimation)
+    Q_DECLARE_PUBLIC(QmlPropertyAnimation)
 public:
-    QmlVariantAnimationPrivate()
+    QmlPropertyAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      va(0), value(this, &QmlVariantAnimationPrivate::valueChanged) {}
+      interpolatorType(0), interpolator(0), va(0), value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
 
     void init();
 
@@ -382,16 +335,18 @@ public:
     bool fromSourced;
     bool fromIsDefined;
     bool toIsDefined;
+    int interpolatorType;
+    QVariantAnimation::Interpolator interpolator;
 
     QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);
 
-    QmlTimeLineValueProxy<QmlVariantAnimationPrivate> value;
+    QmlTimeLineValueProxy<QmlPropertyAnimationPrivate> value;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, QVariant::Type type);
 };
 
-#endif // QMLANIMATION_P_H
-
 QT_END_NAMESPACE
+
+#endif // QMLANIMATION_P_H

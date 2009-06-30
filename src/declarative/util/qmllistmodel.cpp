@@ -567,4 +567,5 @@ ModelNode::~ModelNode()
 }
 
 QT_END_NAMESPACE
+
 #include "qmllistmodel.moc"

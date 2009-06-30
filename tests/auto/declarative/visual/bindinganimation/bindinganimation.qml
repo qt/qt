@@ -13,21 +13,19 @@ Rect {
     states: [
         State {
             name: "hello"
-            SetProperty {
+            SetProperties {
                 target: MyRect
-                property: "x"
-                binding: 100
+                x: 100
             }
-            SetProperty {
+            SetProperties {
                 target: MyMouseRegion
-                property: "onClicked"
-                value: "Page.currentState = ''"
+                onClicked: "Page.currentState = ''"
             }
         }
     ]
     transitions: [
         Transition {
-            NumericAnimation {
+            NumberAnimation {
                 properties: "x"
             }
         }
