@@ -88,8 +88,7 @@ public:
     bool canRestoreClip;
 };
 
-
-class QGL2PaintEngineEx : public QPaintEngineEx
+class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QGL2PaintEngineEx)
 public:
@@ -132,6 +131,8 @@ public:
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
     virtual void sync();
+
+    QGLEngineShaderManager *shaderManager() const;
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)

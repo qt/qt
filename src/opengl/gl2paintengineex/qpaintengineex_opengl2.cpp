@@ -130,10 +130,6 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
-    glDeleteFramebuffers(1, &m_fbo);
-
-    if (m_width || m_height)
-        glDeleteTextures(1, &m_texture);
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
@@ -251,7 +247,7 @@ QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
 {
 //    glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
-    if (id != -1 && id == lastTexture)
+    if (id != GLuint(-1) && id == lastTexture)
         return;
 
     lastTexture = id;
@@ -1603,6 +1599,12 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 
 QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
+}
+
+QGLEngineShaderManager *QGL2PaintEngineEx::shaderManager() const
+{
+    Q_D(const QGL2PaintEngineEx);
+    return d->shaderManager;
 }
 
 QT_END_NAMESPACE

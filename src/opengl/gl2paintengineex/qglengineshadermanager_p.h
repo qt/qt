@@ -199,18 +199,19 @@
         O = Global Opacity
 
 
-    CUSTOM SHADER CODE (idea, depricated)
+    CUSTOM SHADER CODE
     ==================
 
     The use of custom shader code is supported by the engine for drawImage and
     drawPixmap calls. This is implemented via hooks in the fragment pipeline.
-    The custom shader is passed to the engine as a partial fragment shader
-    (QGLCustomizedShader). The shader will implement a pre-defined method name
-    which Qt's fragment pipeline will call. There are two different hooks which
-    can be implemented as custom shader code:
+    The custom shader is passed to the shader manager as a partial fragment shader
+    by calling setCustomShader(). Qt's fragment pipeline will call the following
+    method name in the custom shader:
 
         mediump vec4 customShader(sampler2d src, vec2 srcCoords)
-        mediump vec4 customShaderWithDest(sampler2d dest, sampler2d src, vec2 srcCoords)
+
+    Transformations, clipping, opacity, and composition modes set using QPainter
+    will be respected when using the custom shader hook.
 
 */
 
@@ -227,6 +228,22 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
+class Q_OPENGL_EXPORT QGLCustomShader
+{
+public:
+    QGLCustomShader(QGLShader *shader = 0);
+    virtual ~QGLCustomShader();
+
+    virtual void updateUniforms(QGLShaderProgram *program);
+
+    void setShader(QGLShader *shader);
+    QGLShader *shader() const;
+
+private:
+    Q_DISABLE_COPY(QGLCustomShader)
+
+    QGLShader *m_shader;
+};
 
 struct QGLEngineShaderProg
 {
@@ -259,7 +276,7 @@ struct QGLEngineCachedShaderProg
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
-class QGLEngineShaderManager : public QObject
+class Q_OPENGL_EXPORT QGLEngineShaderManager : public QObject
 {
     Q_OBJECT
 public:
@@ -271,7 +288,8 @@ public:
         ImageSrc = Qt::TexturePattern+1,
         NonPremultipliedImageSrc = Qt::TexturePattern+2,
         PatternSrc = Qt::TexturePattern+3,
-        TextureSrcWithPattern = Qt::TexturePattern+4
+        TextureSrcWithPattern = Qt::TexturePattern+4,
+        CustomSrc = Qt::TexturePattern + 5
     };
 
     // There are optimisations we can do, depending on the brush transform:
@@ -284,6 +302,8 @@ public:
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+
+    void setCustomShader(QGLCustomShader *shader);
 
     uint getUniformIdentifier(const char *uniformName);
     uint getUniformLocation(uint id);
@@ -322,6 +342,7 @@ public:
         MainFragmentShader,
 
         ImageSrcFragmentShader,
+        CustomSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
@@ -366,7 +387,6 @@ public:
     Q_ENUMS(ShaderName)
 #endif
 
-
 private:
     QGLContext*     ctx;
     bool            shaderProgNeedsChanging;
@@ -382,6 +402,9 @@ private:
     QGLShaderProgram*     blitShaderProg;
     QGLShaderProgram*     simpleShaderProg;
     QGLEngineShaderProg*  currentShaderProg;
+
+    QGLEngineShaderProg customShaderProg;
+    QGLCustomShader* customShader;
 
     // TODO: Possibly convert to a LUT
     QList<QGLEngineShaderProg> cachedPrograms;
