@@ -687,7 +687,9 @@ bool SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symb
         }
         t << endl;
 
-        writeMmpFileLibraryPart(t);
+        if (!project->values("CONFIG").contains("static") && !project->values("CONFIG").contains("staticlib")) {
+            writeMmpFileLibraryPart(t);
+        }
 
         writeMmpFileCapabilityPart(t);
 

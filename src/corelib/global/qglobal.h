@@ -1512,7 +1512,7 @@ inline void qUnused(T &x) { (void)x; }
    Debugging and error handling
 */
 
-#if defined(Q_OS_SYMBIAN) && defined(NDEBUG)
+#if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
 #  define QT_NO_DEBUG
 #endif
 
