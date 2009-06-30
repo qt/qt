@@ -135,6 +135,7 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
 
     if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
 
     // please never ever change this table; otherwise fix all tests ;)
