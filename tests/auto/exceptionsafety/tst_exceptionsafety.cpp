@@ -57,8 +57,8 @@ private slots:
     void exceptionMap();
     void exceptionList();
     void exceptionLinkedList();
-    void exceptionEventLoop();
-    void exceptionSignalSlot();
+//    void exceptionEventLoop();
+//    void exceptionSignalSlot();
 };
 
 class Emitter : public QObject
@@ -594,6 +594,8 @@ void tst_ExceptionSafety::exceptionHash() {
     QCOMPARE(objCounter, 0 ); // check that every object has been freed
 }
 
+// Disable these tests until the level of exception safety in event loops is clear
+#if 0
 enum
 {
     ThrowEventId = QEvent::User + 42,
@@ -718,6 +720,7 @@ void tst_ExceptionSafety::exceptionSignalSlot()
     QCOMPARE(r1.received, 1);
     QCOMPARE(r2.received, 0);
 }
+#endif
 
 QTEST_MAIN(tst_ExceptionSafety)
 #include "tst_exceptionsafety.moc"
