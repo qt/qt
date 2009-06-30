@@ -1775,4 +1775,3 @@ void QmlDomComponent::setComponentRoot(const QmlDomObject &root)
 }
 
 QT_END_NAMESPACE
-

@@ -42,8 +42,8 @@
 #include "qmlpropertyvaluesource.h"
 #include "qml.h"
 
-
 QT_BEGIN_NAMESPACE
+
 /*!
     \class QmlPropertyValueSource
     \brief The QmlPropertyValueSource class is inherited by property value sources such as animations and bindings.

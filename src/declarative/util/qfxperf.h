@@ -38,17 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef _QFXPERF_H_
-#define _QFXPERF_H_
+#ifndef QFXPERF_H
+#define QFXPERF_H
 
 #include "qperformancelog.h"
-
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 Q_DECLARE_PERFORMANCE_LOG(QFxPerf) {
     Q_DECLARE_PERFORMANCE_METRIC(QmlParsing)
 
@@ -73,9 +73,8 @@ Q_DECLARE_PERFORMANCE_LOG(QFxPerf) {
     Q_DECLARE_PERFORMANCE_METRIC(AddScript)
 }
 
-#endif // _QFXPERF_H_
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QFXPERF_H

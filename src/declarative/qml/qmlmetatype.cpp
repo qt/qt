@@ -60,6 +60,7 @@
 #include <private/qmlcustomparser_p.h>
 
 QT_BEGIN_NAMESPACE
+
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT
 #  define QT_NO_GEOM_VARIANT

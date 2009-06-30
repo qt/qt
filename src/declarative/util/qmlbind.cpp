@@ -52,6 +52,7 @@
 #include "qmlbind.h"
 
 QT_BEGIN_NAMESPACE
+
 class QmlBindPrivate : public QObjectPrivate
 {
 public:

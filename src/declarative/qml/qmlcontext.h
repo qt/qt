@@ -99,7 +99,6 @@ private:
     QmlContext(QmlEngine *);
 };
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

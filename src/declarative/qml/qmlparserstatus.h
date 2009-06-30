@@ -68,7 +68,6 @@ private:
 };
 Q_DECLARE_INTERFACE(QmlParserStatus, "com.trolltech.qml.QmlParserStatus")
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

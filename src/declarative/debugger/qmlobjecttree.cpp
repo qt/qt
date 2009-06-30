@@ -48,6 +48,8 @@
 #include <QtGui/qinputdialog.h>
 #include <QtGui/qboxlayout.h>
 
+QT_BEGIN_NAMESPACE
+
 QmlObjectTree::QmlObjectTree(QWidget *parent)
 : QTreeWidget(parent)
 {
@@ -73,3 +75,4 @@ void QmlObjectTree::mousePressEvent(QMouseEvent *me)
     } 
 }
 
+QT_END_NAMESPACE

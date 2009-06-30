@@ -42,6 +42,17 @@
 #ifndef QMLCONTEXT_P_H
 #define QMLCONTEXT_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtDeclarative/qmlcontext.h>
 #include <private/qobject_p.h>
 #include <private/qmldeclarativedata_p.h>
@@ -50,6 +61,7 @@
 #include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
+
 class QmlContext;
 class QmlExpression;
 class QmlEngine;
@@ -99,6 +111,7 @@ public:
     QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;
 };
+
 QT_END_NAMESPACE
 
 #endif // QMLCONTEXT_P_H

@@ -39,52 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCUSTOMPARSER_P_H
-#define QMLCUSTOMPARSER_P_H
+#ifndef QMLFOLDERLISTMODEL_H
+#define QMLFOLDERLISTMODEL_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/QListModelInterface>
 
-#include <QtCore/qglobal.h>
-#include "qmlcustomparser_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-namespace QmlParser
-{
-    class Object;
-    class Property;
-};
+QT_MODULE(Declarative)
 
-class QmlCustomParserNodePrivate
+class QmlContext;
+class QModelIndex;
+
+class QmlFolderListModelPrivate;
+class Q_DECLARATIVE_EXPORT QmlFolderListModel : public QListModelInterface, public QmlParserStatus
 {
+    Q_OBJECT
+    Q_INTERFACES(QmlParserStatus)
+
+    Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
+    Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
+
 public:
-    QByteArray name;
-    QList<QmlCustomParserProperty> properties;
+    QmlFolderListModel(QObject *parent = 0);
+    ~QmlFolderListModel();
 
-    static QmlCustomParserNode fromObject(QmlParser::Object *);
-    static QmlCustomParserProperty fromProperty(QmlParser::Property *);
+    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
+    virtual int count() const;
+    virtual QList<int> roles() const;
+    virtual QString toString(int role) const;
+
+    QString folder() const;
+    void setFolder(const QString &folder);
+
+    QStringList nameFilters() const;
+    void setNameFilters(const QStringList &filters);
+
+    virtual void classComplete();
+
+    Q_INVOKABLE bool isFolder(int index) const;
+
+Q_SIGNALS:
+    void folderChanged();
+
+private Q_SLOTS:
+    void refresh();
+    void inserted(const QModelIndex &index, int start, int end);
+
+private:
+    Q_DECLARE_PRIVATE(QmlFolderListModel)
+    Q_DISABLE_COPY(QmlFolderListModel)
 };
 
-class QmlCustomParserPropertyPrivate
-{
-public:
-    QmlCustomParserPropertyPrivate()
-        : isList(false) {}
-
-    QByteArray name;
-    bool isList;
-    QList<QVariant> values;
-};
+QML_DECLARE_TYPE(QmlFolderListModel)
 
 QT_END_NAMESPACE
 
-#endif // QMLCUSTOMPARSER_P_H
+QT_END_HEADER
+
+#endif // QMLFOLDERLISTMODEL_H

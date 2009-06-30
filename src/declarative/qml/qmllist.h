@@ -119,7 +119,6 @@ class Qml_ProxyList_ ##ListName : public QmlList<ListType> \
 friend class Qml_ProxyList_ ##ListName ; \
 Qml_ProxyList_##ListName ListName;
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

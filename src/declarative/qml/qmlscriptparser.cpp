@@ -888,5 +888,4 @@ void QmlScriptParser::addNamespacePath(const QString &path)
     _nameSpacePaths.insertMulti(QString(), path);
 }
 
-
 QT_END_NAMESPACE
