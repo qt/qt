@@ -40,15 +40,19 @@
 ****************************************************************************/
 
 #include "private/qpixmapfilter_p.h"
+#include "private/qpaintengineex_opengl2_p.h"
+#include "private/qglengineshadermanager_p.h"
 #include "qglpixmapfilter_p.h"
 #include "qgraphicssystem_gl_p.h"
 #include "qpaintengine_opengl_p.h"
+#include "qcache.h"
 
-#include "qglpixelbuffer.h"
+#include "qglframebufferobject.h"
 #include "qglshaderprogram.h"
 #include "qgl_p.h"
 
 #include "private/qapplication_p.h"
+#include "private/qmath_p.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -97,6 +101,28 @@ private:
     mutable int m_kernelHeight;
 };
 
+class QGLPixmapBlurFilter : public QGLCustomShader, public QGLPixmapFilter<QPixmapBlurFilter>
+{
+public:
+    QGLPixmapBlurFilter();
+    ~QGLPixmapBlurFilter();
+
+    void updateUniforms(QGLShaderProgram *program);
+
+protected:
+    bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
+
+private:
+    static QByteArray generateBlurShader(int radius, bool gaussianBlur);
+
+    mutable QGLShader *m_shader;
+    mutable QGLFramebufferObject *m_fbo;
+
+    mutable QSize m_textureSize;
+
+    QGLShaderProgram *m_program;
+};
+
 extern QGLWidget *qt_gl_share_widget();
 
 QPixmapFilter *QGLContextPrivate::createPixmapFilter(int type) const
@@ -105,6 +131,8 @@ QPixmapFilter *QGLContextPrivate::createPixmapFilter(int type) const
     case QPixmapFilter::ColorizeFilter:
         return new QGLPixmapColorizeFilter;
 
+    case QPixmapFilter::BlurFilter:
+        return new QGLPixmapBlurFilter;
 
     case QPixmapFilter::ConvolutionFilter:
         return new QGLPixmapConvolutionFilter;
@@ -279,6 +307,232 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
     qgl_drawTexture(target, src.width(), src.height(), boundingRectFor(srcRect));
     m_program->disable();
     return true;
+}
+
+QGLPixmapBlurFilter::QGLPixmapBlurFilter()
+    : m_fbo(0)
+{
+}
+
+QGLPixmapBlurFilter::~QGLPixmapBlurFilter()
+{
+    delete m_fbo;
+}
+
+bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
+{
+    QGLCustomShader *customShader = const_cast<QGLPixmapBlurFilter *>(this);
+
+    if (!shader()) {
+        QGLShader *blurShader = new QGLShader(QGLShader::FragmentShader);
+        blurShader->compile(generateBlurShader(radius(), quality() == Qt::SmoothTransformation));
+
+        customShader->setShader(blurShader);
+
+        m_fbo = new QGLFramebufferObject(src.size());
+
+        glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+    QGLEngineShaderManager *manager = engine->shaderManager();
+
+    engine->syncState();
+    painter->save();
+
+    // ensure GL_LINEAR filtering is used
+    painter->setRenderHint(QPainter::SmoothPixmapTransform);
+
+    // prepare for updateUniforms
+    m_textureSize = src.size();
+
+    // first pass, to fbo
+    m_fbo->bind();
+    manager->setCustomShader(customShader);
+    engine->drawPixmap(src.rect(), src, src.rect());
+    m_fbo->release();
+
+    // second pass, to widget
+    m_program->setUniformValue("delta", 0.0, 1.0);
+    engine->drawTexture(src.rect().translated(pos.x(), pos.y()), m_fbo->texture(), src.size(), src.rect());
+    manager->setCustomShader(0);
+
+    painter->restore();
+
+    return true;
+}
+
+void QGLPixmapBlurFilter::updateUniforms(QGLShaderProgram *program)
+{
+    program->setUniformValue("invTextureSize", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
+    program->setUniformValue("delta", 1.0, 0.0);
+
+    m_program = program;
+}
+
+static inline qreal gaussian(qreal dx, qreal sigma)
+{
+    return exp(-dx * dx / (2 * sigma * sigma)) / (Q_2PI * sigma * sigma);
+}
+
+QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur)
+{
+    Q_ASSERT(radius >= 1);
+
+    QByteArray source;
+
+    source.append("uniform highp vec2      invTextureSize;\n");
+
+    bool separateXY = true;
+    bool clip = false;
+
+    if (separateXY) {
+        source.append("uniform highp vec2      delta;\n");
+
+        if (clip)
+            source.append("uniform highp vec2      clip;\n");
+    } else if (clip) {
+        source.append("uniform highp vec4      clip;\n");
+    }
+
+    source.append("mediump vec4 customShader(sampler2D src, vec2 srcCoords) {\n");
+
+    QVector<qreal> sampleOffsets;
+    QVector<qreal> weights;
+
+    if (gaussianBlur) {
+        QVector<qreal> gaussianComponents;
+
+        qreal sigma = radius / 1.65;
+
+        qreal sum = 0;
+        for (int i = -radius; i <= radius; ++i) {
+            float value = gaussian(i, sigma);
+            gaussianComponents << value;
+            sum += value;
+        }
+
+        // normalize
+        for (int i = 0; i < gaussianComponents.size(); ++i)
+            gaussianComponents[i] /= sum;
+
+        for (int i = 0; i < gaussianComponents.size() - 1; i += 2) {
+            qreal weight = gaussianComponents.at(i) + gaussianComponents.at(i + 1);
+            qreal offset = i - radius + gaussianComponents.at(i + 1) / weight;
+
+            sampleOffsets << offset;
+            weights << weight;
+        }
+
+        // odd size ?
+        if (gaussianComponents.size() & 1) {
+            sampleOffsets << radius;
+            weights << gaussianComponents.last();
+        }
+    } else {
+        for (int i = 0; i < radius; ++i) {
+            sampleOffsets << 2 * i - radius + 0.5;
+            weights << qreal(1);
+        }
+        sampleOffsets << radius;
+        weights << qreal(0.5);
+    }
+
+    int currentVariable = 1;
+    source.append("    mediump vec4 sample = vec4(0.0);\n");
+    source.append("    mediump vec2 coord;\n");
+
+    qreal weightSum = 0;
+    if (separateXY) {
+        source.append("    mediump float c;\n");
+        for (int i = 0; i < sampleOffsets.size(); ++i) {
+            qreal delta = sampleOffsets.at(i);
+
+            ++currentVariable;
+
+            QByteArray coordinate = "srcCoords";
+            if (delta != qreal(0)) {
+                coordinate.append(" + invTextureSize * delta * float(");
+                coordinate.append(QByteArray::number(delta));
+                coordinate.append(")");
+            }
+
+            source.append("    coord = ");
+            source.append(coordinate);
+            source.append(";\n");
+
+            if (clip) {
+                source.append("    c = dot(coord, delta);\n");
+                source.append("    if (c > clip.x && c < clip.y)\n    ");
+            }
+
+            source.append("    sample += texture2D(src, coord)");
+
+            weightSum += weights.at(i);
+            if (weights.at(i) != qreal(1)) {
+                source.append(" * float(");
+                source.append(QByteArray::number(weights.at(i)));
+                source.append(");\n");
+            } else {
+                source.append(";\n");
+            }
+        }
+    } else {
+        for (int y = 0; y < sampleOffsets.size(); ++y) {
+            for (int x = 0; x < sampleOffsets.size(); ++x) {
+                QByteArray coordinate = "srcCoords";
+
+                qreal dx = sampleOffsets.at(x);
+                qreal dy = sampleOffsets.at(y);
+
+                if (dx != qreal(0) || dy != qreal(0)) {
+                    coordinate.append(" + invTextureSize * vec2(float(");
+                    coordinate.append(QByteArray::number(dx));
+                    coordinate.append("), float(");
+                    coordinate.append(QByteArray::number(dy));
+                    coordinate.append("))");
+                }
+
+                source.append("    coord = ");
+                source.append(coordinate);
+                source.append(";\n");
+
+                if (clip)
+                    source.append("    if (coord.x > clip.x && coord.x < clip.y && coord.y > clip.z && coord.y < clip.w)\n    ");
+
+                source.append("    sample += texture2D(src, coord)");
+
+                ++currentVariable;
+
+                weightSum += weights.at(x) * weights.at(y);
+                if ((weights.at(x) != qreal(1) || weights.at(y) != qreal(1))) {
+                    source.append(" * float(");
+                    source.append(QByteArray::number(weights.at(x) * weights.at(y)));
+                    source.append(");\n");
+                } else {
+                    source.append(";\n");
+                }
+            }
+        }
+    }
+
+    source.append("    return ");
+    if (!gaussianBlur) {
+        source.append("float(");
+        if (separateXY)
+            source.append(QByteArray::number(1 / weightSum));
+        else
+            source.append(QByteArray::number(1 / weightSum));
+        source.append(") * ");
+    }
+    source.append("sample;\n");
+    source.append("}\n");
+
+    return source;
 }
 
 QT_END_NAMESPACE

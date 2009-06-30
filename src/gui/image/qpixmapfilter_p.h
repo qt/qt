@@ -78,6 +78,7 @@ public:
         ConvolutionFilter,
         ColorizeFilter,
         DropShadowFilter,
+        BlurFilter,
 
         UserFilter = 1024
     };
@@ -115,6 +116,30 @@ private:
     const qreal *convolutionKernel() const;
     int rows() const;
     int columns() const;
+};
+
+class QPixmapBlurFilterPrivate;
+
+class Q_GUI_EXPORT QPixmapBlurFilter : public QPixmapFilter
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPixmapBlurFilter)
+
+public:
+    QPixmapBlurFilter(QObject *parent = 0);
+    ~QPixmapBlurFilter();
+
+    void setRadius(int radius);
+    void setQuality(Qt::TransformationMode mode);
+
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
+
+private:
+    friend class QGLPixmapBlurFilter;
+
+    int radius() const;
+    Qt::TransformationMode quality() const;
 };
 
 class QPixmapColorizeFilterPrivate;

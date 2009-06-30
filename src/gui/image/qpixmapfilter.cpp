@@ -87,6 +87,8 @@ public:
     \value ConvolutionFilter  A filter that is used to calculate the convolution
                               of the image with a kernel. See
                               QPixmapConvolutionFilter for more information.
+    \value BlurFilter         A filter that is used to blur an image. See
+                              QPixmapConvolutionFilter for more information.
     \value ColorizeFilter     A filter that is used to change the overall color
                               of an image. See QPixmapColorizeFilter for more
                               information.
@@ -477,6 +479,187 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
                   d->kernelHeight);
         painter->drawImage(p - offset, result);
     }
+}
+
+/*!
+    \class QPixmapBlurFilter
+    \since 4.6
+    \ingroup multimedia
+
+    \brief The QPixmapBlurFilter class provides blur filtering
+    for pixmaps.
+
+    QPixmapBlurFilter implements a blur pixmap filter,
+    which is applied when \l{QPixmapFilter::}{draw()} is called.
+
+    The filter lets you specialize the radius of the blur as well
+    as the quality.
+
+    \sa {Pixmap Filters Example}, QPixmapConvolutionFilter, QPixmapDropShadowFilter
+
+    \internal
+*/
+
+class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
+{
+public:
+    QPixmapBlurFilterPrivate() : radius(5), quality(Qt::FastTransformation) {}
+
+    int radius;
+    Qt::TransformationMode quality;
+};
+
+
+/*!
+    Constructs a pixmap blur filter.
+
+    \internal
+*/
+QPixmapBlurFilter::QPixmapBlurFilter(QObject *parent)
+    : QPixmapFilter(*new QPixmapBlurFilterPrivate, BlurFilter, parent)
+{
+}
+
+/*!
+    Destructor of pixmap blur filter.
+
+    \internal
+*/
+QPixmapBlurFilter::~QPixmapBlurFilter()
+{
+}
+
+/*!
+    Sets the radius of the blur filter. Higher radius produces increased blurriness.
+
+    \internal
+*/
+void QPixmapBlurFilter::setRadius(int radius)
+{
+    Q_D(QPixmapBlurFilter);
+    d->radius = radius;
+}
+
+/*!
+    Gets the radius of the blur filter.
+
+    \internal
+*/
+int QPixmapBlurFilter::radius() const
+{
+    Q_D(const QPixmapBlurFilter);
+    return d->radius;
+}
+
+/*!
+    Sets the quality of the blur filter. Lower quality yields better performance.
+
+    \internal
+*/
+void QPixmapBlurFilter::setQuality(Qt::TransformationMode quality)
+{
+    Q_D(QPixmapBlurFilter);
+    d->quality = quality;
+}
+
+/*!
+    Gets the quality of the blur filter.
+
+    \internal
+*/
+Qt::TransformationMode QPixmapBlurFilter::quality() const
+{
+    Q_D(const QPixmapBlurFilter);
+    return d->quality;
+}
+
+/*!
+    \reimp
+
+    \internal
+*/
+QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
+{
+    return rect;
+}
+
+/*!
+    \reimp
+
+    \internal
+*/
+void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap &src, const QRectF &srcRect) const
+{
+    Q_D(const QPixmapBlurFilter);
+    if (!painter->isActive())
+        return;
+
+    if (d->radius == 0) {
+        painter->drawPixmap(srcRect.translated(p), src, srcRect);
+        return;
+    }
+
+    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+    QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
+    if (blurFilter) {
+        blurFilter->setRadius(d->radius);
+        blurFilter->setQuality(d->quality);
+        blurFilter->draw(painter, p, src, srcRect);
+        delete blurFilter;
+        return;
+    }
+
+#if 0
+    // falling back to raster implementation
+
+    QImage *target = 0;
+    if (painter->paintEngine()->paintDevice()->devType() == QInternal::Image) {
+        target = static_cast<QImage *>(painter->paintEngine()->paintDevice());
+
+        QTransform mat = painter->combinedTransform();
+
+        if (mat.type() > QTransform::TxTranslate) {
+            // Disabled because of transformation...
+            target = 0;
+        } else {
+            QRasterPaintEngine *pe = static_cast<QRasterPaintEngine *>(painter->paintEngine());
+            if (pe->clipType() == QRasterPaintEngine::ComplexClip)
+                // disabled because of complex clipping...
+                target = 0;
+            else {
+                QRectF clip = pe->clipBoundingRect();
+                QRectF rect = boundingRectFor(srcRect.isEmpty() ? src.rect() : srcRect);
+                QTransform x = painter->deviceTransform();
+                if (!clip.contains(rect.translated(x.dx() + p.x(), x.dy() + p.y()))) {
+                    target = 0;
+                }
+
+            }
+        }
+    }
+
+    if (target) {
+        QTransform x = painter->deviceTransform();
+        QPointF offset(x.dx(), x.dy());
+
+        convolute(target, p+offset, src.toImage(), srcRect, QPainter::CompositionMode_SourceOver, d->convolutionKernel, d->kernelWidth, d->kernelHeight);
+    } else {
+        QRect srect = srcRect.isNull() ? src.rect() : srcRect.toRect();
+        QRect rect = boundingRectFor(srect).toRect();
+        QImage result = QImage(rect.size(), QImage::Format_ARGB32_Premultiplied);
+        QPoint offset = srect.topLeft() - rect.topLeft();
+        convolute(&result,
+                  offset,
+                  src.toImage(),
+                  srect,
+                  QPainter::CompositionMode_Source,
+                  d->convolutionKernel,
+                  d->kernelWidth,
+                  d->kernelHeight);
+        painter->drawImage(p - offset, result);
+    }
+#endif
 }
 
 // grayscales the image to dest (could be same). If rect isn't defined
