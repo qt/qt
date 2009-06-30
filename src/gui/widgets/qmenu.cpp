@@ -483,9 +483,9 @@ void QMenuPrivate::setSyncAction()
 void QMenuPrivate::setFirstActionActive()
 {
     Q_Q(QMenu);
+    updateActionRects();
     const int scrollerHeight = q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q);
     for(int i = 0, saccum = 0; i < actions.count(); i++) {
-        QAction *act = actions.at(i);
         const QRect &rect = actionRects.at(i);
         if (rect.isNull())
             continue;
@@ -494,6 +494,7 @@ void QMenuPrivate::setFirstActionActive()
             if (saccum > scroll->scrollOffset-scrollerHeight)
                 continue;
         }
+        QAction *act = actions.at(i);
         if (!act->isSeparator() &&
            (q->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled, 0, q)
             || act->isEnabled())) {
