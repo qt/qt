@@ -736,6 +736,8 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     // test that we do value conversion if necessary when setting properties
     {
         QScriptValue br = m_engine->evaluate("myObject.brushProperty");
+        QVERIFY(br.isVariant());
+        QVERIFY(!br.strictlyEquals(m_engine->evaluate("myObject.brushProperty")));
         QCOMPARE(qscriptvalue_cast<QBrush>(br), m_myObject->brushProperty());
         QCOMPARE(qscriptvalue_cast<QColor>(br), m_myObject->brushProperty().color());
 
@@ -837,6 +839,14 @@ void tst_QScriptExtQObject::getSetStaticProperty()
                              "`intProperty'");
         mobj.setProperty("intProperty", m_engine->newFunction(getSetProperty),
                          QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    }
+
+    // method properties are persistent
+    {
+        QScriptValue slot = m_engine->evaluate("myObject.mySlot");
+        QVERIFY(slot.isFunction());
+        QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
+        QVERIFY(sameSlot.strictlyEquals(slot));
     }
 }
 
