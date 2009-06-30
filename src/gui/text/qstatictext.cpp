@@ -133,7 +133,7 @@ QStaticText::QStaticText(const QStaticText &other)
     Destroys the QStaticText.
 */
 QStaticText::~QStaticText()
-{
+{    
     if (!d_ptr->ref.deref())
         delete d_ptr;        
 }
@@ -261,10 +261,12 @@ QString QStaticText::toString() const
 QStaticTextPrivate::QStaticTextPrivate()
     : textLayout(new QTextLayout())
 {
+    ref = 1;
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)    
 {
+    ref = 1;
     textLayout = new QTextLayout(other.textLayout->text(), other.textLayout->font());
     size = other.size;    
 }
