@@ -42,10 +42,22 @@
 #ifndef QMLBOUNDSIGNAL_P_H
 #define QMLBOUNDSIGNAL_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtDeclarative/qmlexpression.h>
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
+
 class QmlBoundSignal : public QmlExpressionObject
 {
 Q_OBJECT
@@ -98,7 +110,6 @@ private:
     QmlBoundSignalParameters *params;
 };
 
+QT_END_NAMESPACE
 
 #endif // QMLBOUNDSIGNAL_P_H
-
-QT_END_NAMESPACE

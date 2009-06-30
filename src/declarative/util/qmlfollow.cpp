@@ -45,8 +45,8 @@
 #include "qmlfollow.h"
 #include "private/qmlanimation_p.h"
 
-
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QmlFollow,Follow)
 
 class QmlFollowPrivate : public QObjectPrivate

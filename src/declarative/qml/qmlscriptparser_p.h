@@ -41,13 +41,24 @@
 #ifndef QMLSCRIPTPARSER_P_H
 #define QMLSCRIPTPARSER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/QList>
 #include <QtCore/QUrl>
 #include <QtDeclarative/qmlerror.h>
 #include "qmlparser_p.h"
 
-
 QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
@@ -107,6 +118,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
 QT_END_HEADER
 
 #endif // QMLSCRIPTPARSER_P_H

@@ -46,6 +46,8 @@
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlexpression.h>
 
+QT_BEGIN_NAMESPACE
+
 QString QmlWatches::objectToString(QObject *obj)
 {
     if(!obj)
@@ -300,5 +302,7 @@ QVariant QmlWatches::data(const QModelIndex &idx, int role) const
         return QVariant();
     }
 }
+
+QT_END_NAMESPACE
 
 #include "qmlwatches.moc"

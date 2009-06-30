@@ -51,7 +51,6 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qlistmodelinterface.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

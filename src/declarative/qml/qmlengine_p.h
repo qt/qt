@@ -42,6 +42,17 @@
 #ifndef QMLENGINE_P_H
 #define QMLENGINE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptValue>
 #include <QtScript/QScriptString>
@@ -61,6 +72,7 @@
 #include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
+
 class QmlContext;
 class QmlEngine;
 class QmlContextPrivate;
@@ -288,7 +300,7 @@ public:
     void addLog(const QmlExpressionLog &);
     QList<QmlExpressionLog> *log;
 };
+
 QT_END_NAMESPACE
 
 #endif // QMLENGINE_P_H
-

@@ -49,8 +49,8 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlbindablevalue.h>
 
-
 QT_BEGIN_NAMESPACE
+
 /*!
     \qmlclass SetProperties QmlSetProperties
     \brief The SetProperties element describes new property values for a state.

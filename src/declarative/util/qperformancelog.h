@@ -43,6 +43,9 @@
 #define QPERFORMANCELOG_H
 
 #include <QtCore/qdatetime.h>
+
+QT_BEGIN_NAMESPACE
+
 namespace QPerformanceLog
 {
     Q_DECLARATIVE_EXPORT void displayData();
@@ -132,5 +135,7 @@ namespace QPerformanceLog
 #define Q_DEFINE_PERFORMANCE_METRIC(name, desc) 
 
 #endif // Q_ENABLE_PERFORMANCE_LOG
+
+QT_END_NAMESPACE
 
 #endif // QPERFORMANCELOG_H

@@ -48,12 +48,12 @@
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlexpression.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlExpression;
 class QmlContext;
 class QmlBindableValuePrivate;
@@ -90,8 +90,8 @@ private:
 };
 QML_DECLARE_TYPE(QmlBindableValue)
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif // QMLBINDABLEVALUE_H

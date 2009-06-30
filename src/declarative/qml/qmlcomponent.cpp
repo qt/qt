@@ -58,6 +58,7 @@
 #include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
+
 class QByteArray;
 int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
 
@@ -564,4 +565,5 @@ void QmlComponent::completeCreate()
         d->completePending = false;
     }
 }
+
 QT_END_NAMESPACE

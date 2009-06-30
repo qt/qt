@@ -41,6 +41,8 @@
 
 #include "qmlrefcount_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QmlRefCount::QmlRefCount()
 : refCount(1)
 {
@@ -63,4 +65,6 @@ void QmlRefCount::release()
     if (refCount == 0)
         delete this;
 }
+
+QT_END_NAMESPACE
 

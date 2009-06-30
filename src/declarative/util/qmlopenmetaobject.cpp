@@ -43,7 +43,6 @@
 #include "private/qmetaobjectbuilder_p.h"
 #include <QDebug>
 
-
 QT_BEGIN_NAMESPACE
 
 class QmlOpenMetaObjectPrivate

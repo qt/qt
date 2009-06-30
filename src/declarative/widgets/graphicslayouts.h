@@ -183,8 +183,8 @@ private:
 };
 QML_DECLARE_TYPE(QGraphicsGridLayoutObject)
 
-#endif // GRAPHICSLAYOUTS_H
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // GRAPHICSLAYOUTS_H

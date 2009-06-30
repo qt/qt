@@ -50,7 +50,6 @@
 #include <math.h>
 #include <QtCore/qdebug.h>
 
-
 QT_BEGIN_NAMESPACE
 
 class QMetaPropertyEx : public QMetaProperty
