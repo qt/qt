@@ -334,9 +334,6 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
     }
 }
 
-
-Q_GLOBAL_STATIC(QGL2GradientCache, qt_opengl_gradient_cache)
-
 void QGL2PaintEngineExPrivate::updateBrushTexture()
 {
 //     qDebug("QGL2PaintEngineExPrivate::updateBrushTexture()");
@@ -357,7 +354,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
 
         // We apply global opacity in the fragment shaders, so we always pass 1.0
         // for opacity to the cache.
-        GLuint texId = qt_opengl_gradient_cache()->getBuffer(*g, 1.0, ctx);
+        GLuint texId = QGL2GradientCache::cacheForContext(ctx)->getBuffer(*g, 1.0);
 
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
