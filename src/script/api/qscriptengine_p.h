@@ -98,6 +98,9 @@ public:
     QScriptValue objectFromVariantMap(const QVariantMap &vmap);
     static QVariantMap variantMapFromObject(const QScriptValue &obj);
 
+    JSC::JSValue defaultPrototype(int metaTypeId) const;
+    void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,

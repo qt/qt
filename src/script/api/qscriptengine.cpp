@@ -276,7 +276,7 @@ public:
     QByteArray signature;
     QScriptEngine::MarshalFunction marshal;
     QScriptEngine::DemarshalFunction demarshal;
-    QScriptValue prototype;
+    JSC::JSValue prototype;
 };
 
 namespace QScript
@@ -488,6 +488,12 @@ void GlobalObject::mark()
         }
     }
 #endif
+
+    {
+        QHash<int, QScriptTypeInfo*>::const_iterator it;
+        for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it)
+            (*it)->prototype.mark();
+    }
 }
 
 static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -837,6 +843,24 @@ QVariantMap QScriptEnginePrivate::variantMapFromObject(const QScriptValue &obj)
     return vmap;
 }
 
+JSC::JSValue QScriptEnginePrivate::defaultPrototype(int metaTypeId) const
+{
+    QScriptTypeInfo *info = m_typeInfos.value(metaTypeId);
+    if (!info)
+        return JSC::JSValue();
+    return info->prototype;
+}
+
+void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prototype)
+{
+    QScriptTypeInfo *info = m_typeInfos.value(metaTypeId);
+    if (!info) {
+        info = new QScriptTypeInfo();
+        m_typeInfos.insert(metaTypeId, info);
+    }
+    info->prototype = prototype;
+}
+
 #ifndef QT_NO_QOBJECT
 
 JSC::JSValue QScriptEnginePrivate::newQObject(
@@ -847,6 +871,24 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
         return JSC::jsNull();
     JSC::ExecState* exec = globalObject->globalExec();
     QScript::QObjectWrapperObject *result = new (exec) QScript::QObjectWrapperObject(object, ownership, options, qobjectWrapperObjectStructure);
+
+    /*if (setDefaultPrototype)*/ {
+        const QMetaObject *meta = object->metaObject();
+        while (meta) {
+            QByteArray typeString = meta->className();
+            typeString.append('*');
+            int typeId = QMetaType::type(typeString);
+            if (typeId != 0) {
+                JSC::JSValue proto = defaultPrototype(typeId);
+                if (proto) {
+                    result->setPrototype(proto);
+                    break;
+                }
+            }
+            meta = meta->superClass();
+        }
+    }
+
     return result;
 }
 
@@ -1821,10 +1863,7 @@ void QScriptEngine::clearExceptions()
 QScriptValue QScriptEngine::defaultPrototype(int metaTypeId) const
 {
     Q_D(const QScriptEngine);
-    QScriptTypeInfo *info = d->m_typeInfos.value(metaTypeId);
-    if (!info)
-        return QScriptValue();
-    return info->prototype;
+    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(d->defaultPrototype(metaTypeId));
 }
 
 /*!
@@ -1850,12 +1889,7 @@ QScriptValue QScriptEngine::defaultPrototype(int metaTypeId) const
 void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prototype)
 {
     Q_D(QScriptEngine);
-    QScriptTypeInfo *info = d->m_typeInfos.value(metaTypeId);
-    if (!info) {
-        info = new QScriptTypeInfo();
-        d->m_typeInfos.insert(metaTypeId, info);
-    }
-    info->prototype = prototype;
+    d->setDefaultPrototype(metaTypeId, d->scriptValueToJSCValue(prototype));
 }
 
 /*!
@@ -2012,8 +2046,8 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
             }
         }
     }
-    if (result.isObject() && info && info->prototype.isValid())
-        result.setPrototype(info->prototype);
+    if (result.isObject() && info && info->prototype)
+        result.setPrototype(scriptValueFromJSCValue(info->prototype));
     return result;
 }
 
@@ -2239,7 +2273,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
     }
     info->marshal = mf;
     info->demarshal = df;
-    info->prototype = prototype;
+    info->prototype = d->scriptValueToJSCValue(prototype);
 }
 
 /*!
