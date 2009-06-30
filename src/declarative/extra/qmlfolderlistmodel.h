@@ -60,7 +60,7 @@ class Q_DECLARATIVE_EXPORT QmlFolderListModel : public QListModelInterface, publ
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QString folder READ folder WRITE setFolder)
+    Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
     Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
 
 public:
@@ -81,6 +81,9 @@ public:
     virtual void classComplete();
 
     Q_INVOKABLE bool isFolder(int index) const;
+
+Q_SIGNALS:
+    void folderChanged();
 
 private Q_SLOTS:
     void refresh();

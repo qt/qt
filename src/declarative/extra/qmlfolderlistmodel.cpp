@@ -52,7 +52,8 @@ class QmlFolderListModelPrivate : public QObjectPrivate
 {
 public:
     QmlFolderListModelPrivate() {
-        folderIndex = model.index(0,0);
+        folder = QDir::currentPath();
+        nameFilters << "*";
     }
 
     QDirModel model;
@@ -124,10 +125,13 @@ QString QmlFolderListModel::folder() const
 void QmlFolderListModel::setFolder(const QString &folder)
 {
     Q_D(QmlFolderListModel);
+    if (folder == d->folder)
+        return;
     QModelIndex index = d->model.index(folder);
     if (index.isValid() && d->model.isDir(index)) {
         d->folder = folder;
         QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
+        emit folderChanged();
     }
 }
 
@@ -141,11 +145,14 @@ void QmlFolderListModel::setNameFilters(const QStringList &filters)
 {
     Q_D(QmlFolderListModel);
     d->nameFilters = filters;
-    QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
+    d->model.setNameFilters(d->nameFilters);
 }
 
 void QmlFolderListModel::classComplete()
 {
+    Q_D(QmlFolderListModel);
+    if (!d->folderIndex.isValid())
+        QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
 }
 
 bool QmlFolderListModel::isFolder(int index) const
@@ -159,9 +166,12 @@ void QmlFolderListModel::refresh()
     Q_D(QmlFolderListModel);
     int prevCount = count();
     d->folderIndex = QModelIndex();
-    emit itemsRemoved(0, prevCount);
+    if (prevCount)
+        emit itemsRemoved(0, prevCount);
     d->folderIndex = d->model.index(d->folder);
-    emit itemsInserted(0, count());
+    qDebug() << "count" << count();
+    if (count())
+        emit itemsInserted(0, count());
 }
 
 void QmlFolderListModel::inserted(const QModelIndex &index, int start, int end)
