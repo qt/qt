@@ -369,6 +369,14 @@ void tst_QEventLoop::processEvents()
     killTimer(timerId);
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+// Symbian needs bit longer timeout for emulator, as emulator startup causes additional delay
+#  define EXEC_TIMEOUT 1000
+#else
+#  define EXEC_TIMEOUT 100
+#endif
+
+
 void tst_QEventLoop::exec()
 {
     {
@@ -376,15 +384,15 @@ void tst_QEventLoop::exec()
         EventLoopExiter exiter(&eventLoop);
         int returnCode;
 
-        QTimer::singleShot(100, &exiter, SLOT(exit()));
+        QTimer::singleShot(EXEC_TIMEOUT, &exiter, SLOT(exit()));
         returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 0);
 
-        QTimer::singleShot(100, &exiter, SLOT(exit1()));
+        QTimer::singleShot(EXEC_TIMEOUT, &exiter, SLOT(exit1()));
         returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 1);
 
-        QTimer::singleShot(100, &exiter, SLOT(exit2()));
+        QTimer::singleShot(EXEC_TIMEOUT, &exiter, SLOT(exit2()));
         returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 2);
     }
@@ -417,16 +425,19 @@ void tst_QEventLoop::exec()
         QEventLoop eventLoop;
         EventLoopExecutor executor(&eventLoop);
 
-        QTimer::singleShot(100, &executor, SLOT(exec()));
+        QTimer::singleShot(EXEC_TIMEOUT, &executor, SLOT(exec()));
         int returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 0);
         QCOMPARE(executor.returnCode, -1);
     }
 
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM)
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM) && !defined(Q_OS_SYMBIAN)
     // Windows Mobile cannot handle cross library exceptions
     // qobject.cpp will try to rethrow the exception after handling
     // which causes gwes.exe to crash
+
+    // Symbian doesn't propagate exceptions from eventloop, but converts them to
+    // CActiveScheduler errors instead -> this test will hang.
     {
         // QEventLoop::exec() is exception safe
         QEventLoop eventLoop;
@@ -434,14 +445,14 @@ void tst_QEventLoop::exec()
 
         try {
             ExceptionThrower exceptionThrower;
-            QTimer::singleShot(100, &exceptionThrower, SLOT(throwException()));
+            QTimer::singleShot(EXEC_TIMEOUT, &exceptionThrower, SLOT(throwException()));
             (void) eventLoop.exec();
         } catch (...) {
             ++caughtExceptions;
         }
         try {
             ExceptionThrower exceptionThrower;
-            QTimer::singleShot(100, &exceptionThrower, SLOT(throwException()));
+            QTimer::singleShot(EXEC_TIMEOUT, &exceptionThrower, SLOT(throwException()));
             (void) eventLoop.exec();
         } catch (...) {
             ++caughtExceptions;
