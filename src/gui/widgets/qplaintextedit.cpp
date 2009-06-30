@@ -999,14 +999,13 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     QPlainText uses very much the same technology and concepts as
     QTextEdit, but is optimized for plain text handling.
 
-    QPlainTextEdit works on paragraphs and characters. A paragraph is a
-    formatted string which is word-wrapped to fit into the width of
+    QPlainTextEdit works on paragraphs and characters. A paragraph is
+    a formatted string which is word-wrapped to fit into the width of
     the widget. By default when reading plain text, one newline
     signifies a paragraph. A document consists of zero or more
-    paragraphs. The words in the paragraph are aligned in accordance
-    with the paragraph's alignment. Paragraphs are separated by hard
-    line breaks. Each character within a paragraph has its own
-    attributes, for example, font and color.
+    paragraphs. Paragraphs are separated by hard line breaks. Each
+    character within a paragraph has its own attributes, for example,
+    font and color.
 
     The shape of the mouse cursor on a QPlainTextEdit is
     Qt::IBeamCursor by default.  It can be changed through the
@@ -1148,7 +1147,8 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
 
     \sa QTextDocument, QTextCursor, {Application Example},
-	{Syntax Highlighter Example}, {Rich Text Processing}
+        {Code Editor Example}, {Syntax Highlighter Example},
+        {Rich Text Processing}
 
 */
 
