@@ -84,11 +84,16 @@ private slots:
     void sendArgument_data();
     void sendArgument();
 
-    void sendErrors();
+    void sendSignalErrors();
+    void sendCallErrors_data();
+    void sendCallErrors();
 
 private:
     QProcess proc;
 };
+
+struct UnregisteredType { };
+Q_DECLARE_METATYPE(UnregisteredType)
 
 class WaitForQPong: public QObject
 {
@@ -784,7 +789,7 @@ void tst_QDBusMarshall::sendArgument()
         QCOMPARE(extracted, value);
 }
 
-void tst_QDBusMarshall::sendErrors()
+void tst_QDBusMarshall::sendSignalErrors()
 {
     QDBusConnection con = QDBusConnection::sessionBus();
 
@@ -817,6 +822,102 @@ void tst_QDBusMarshall::sendErrors()
     msg << qVariantFromValue(sig);
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
     QVERIFY(!con.send(msg));
+}
+
+void tst_QDBusMarshall::sendCallErrors_data()
+{
+    QTest::addColumn<QString>("service");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("interface");
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<QVariantList>("arguments");
+    QTest::addColumn<QString>("errorName");
+    QTest::addColumn<QString>("errorMsg");
+    QTest::addColumn<QString>("ignoreMsg");
+
+    // this error comes from the bus server
+    QTest::newRow("empty-service") << "" << objectPath << interfaceName << "ping" << QVariantList()
+            << "org.freedesktop.DBus.Error.UnknownMethod"
+            << "Method \"ping\" with signature \"\" on interface \"com.trolltech.autotests.qpong\" doesn't exist\n" << (const char*)0;
+
+    QTest::newRow("invalid-service") << "this isn't valid" << objectPath << interfaceName << "ping" << QVariantList()
+            << "com.trolltech.QtDBus.Error.InvalidService"
+            << "Invalid service name: this isn't valid" << "";
+
+    QTest::newRow("empty-path") << serviceName << "" << interfaceName << "ping" << QVariantList()
+            << "com.trolltech.QtDBus.Error.InvalidObjectPath"
+            << "Object path cannot be empty" << "";
+    QTest::newRow("invalid-path") << serviceName << "//" << interfaceName << "ping" << QVariantList()
+            << "com.trolltech.QtDBus.Error.InvalidObjectPath"
+            << "Invalid object path: //" << "";
+
+    // empty interfaces are valid
+    QTest::newRow("invalid-interface") << serviceName << objectPath << "this isn't valid" << "ping" << QVariantList()
+            << "com.trolltech.QtDBus.Error.InvalidInterface"
+            << "Invalid interface class: this isn't valid" << "";
+
+    QTest::newRow("empty-method") << serviceName << objectPath << interfaceName << "" << QVariantList()
+            << "com.trolltech.QtDBus.Error.InvalidMember"
+            << "method name cannot be empty" << "";
+    QTest::newRow("invalid-method") << serviceName << objectPath << interfaceName << "this isn't valid" << QVariantList()
+            << "com.trolltech.QtDBus.Error.InvalidMember"
+            << "Invalid method name: this isn't valid" << "";
+
+    QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << QVariant())
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Variant containing QVariant::Invalid passed in arguments"
+            << "QDBusMarshaller: cannot add an invalid QVariant";
+    QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << qVariantFromValue(QDBusVariant()))
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Variant containing QVariant::Invalid passed in arguments"
+            << "QDBusMarshaller: cannot add a null QDBusVariant";
+
+    QTest::newRow("builtin-unregistered") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << QLocale::c())
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Unregistered type QLocale passed in arguments"
+            << "QDBusMarshaller: type `QLocale' (18) is not registered with D-BUS. Use qDBusRegisterMetaType to register it";
+
+    // this type is known to the meta type system, but not registered with D-Bus
+    qRegisterMetaType<UnregisteredType>();
+    QTest::newRow("extra-unregistered") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << qVariantFromValue(UnregisteredType()))
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Unregistered type UnregisteredType passed in arguments"
+            << QString("QDBusMarshaller: type `UnregisteredType' (%1) is not registered with D-BUS. Use qDBusRegisterMetaType to register it")
+            .arg(qMetaTypeId<UnregisteredType>());
+}
+
+void tst_QDBusMarshall::sendCallErrors()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QFETCH(QString, service);
+    QFETCH(QString, path);
+    QFETCH(QString, interface);
+    QFETCH(QString, method);
+    QFETCH(QVariantList, arguments);
+    QFETCH(QString, errorMsg);
+
+    QFETCH(QString, ignoreMsg);
+    if (!ignoreMsg.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, ignoreMsg.toLatin1());
+    if (!ignoreMsg.isNull())
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QDBusConnection: error: could not send message to service \"%1\" path \"%2\" interface \"%3\" member \"%4\": %5")
+                             .arg(service, path, interface, method, errorMsg)
+                             .toLatin1());
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(service, path, interface, method);
+    msg.setArguments(arguments);
+
+    QDBusMessage reply = con.call(msg, QDBus::Block);
+    QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
+    QTEST(reply.errorName(), "errorName");
+    QCOMPARE(reply.errorMessage(), errorMsg);
 }
 
 QTEST_MAIN(tst_QDBusMarshall)
