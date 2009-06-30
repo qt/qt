@@ -1419,9 +1419,10 @@ bool QMainWindow::event(QEvent *event)
     \i Toolbar breaks are not respected or preserved
     \i Any custom widgets in the toolbar will not be shown if the toolbar
         becomes too small (only actions will be shown)
-    \i If you call showFullScreen() on the main window, the QToolbar will
-        disappear since it is considered to be part of the title bar. You can
-        work around this by turning off the unified toolbar before you call
+    \i Before Qt 4.5, if you called showFullScreen() on the main window, the QToolbar would
+        disappear since it is considered to be part of the title bar. Qt 4.5 and up will now work around this by pulling
+        the toolbars out and back into the regular toolbar and vice versa when you swap out.
+        However, a good practice would be that turning off the unified toolbar before you call
         showFullScreen() and restoring it after you call showNormal().
     \endlist
 
