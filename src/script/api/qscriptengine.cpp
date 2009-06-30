@@ -46,7 +46,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QScriptValue)
-Q_DECLARE_METATYPE(QVariant)
 #ifndef QT_NO_QOBJECT
 Q_DECLARE_METATYPE(QObjectList)
 #endif
@@ -1982,8 +1981,6 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
                 result = *reinterpret_cast<const QScriptValue*>(ptr);
                 if (!result.isValid())
                     result = QScriptValue(QScriptValue::UndefinedValue);
-            } else if (type == qMetaTypeId<QVariant>()) {
-                result = scriptValueFromVariant(*reinterpret_cast<const QVariant*>(ptr));
             }
 
 #ifndef QT_NO_QOBJECT
@@ -2000,6 +1997,8 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
 
             else {
                 QByteArray typeName = QMetaType::typeName(type);
+                if (typeName == "QVariant")
+                    result = scriptValueFromVariant(*reinterpret_cast<const QVariant*>(ptr));
                 if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(ptr))
                     result = QScriptValue(QScriptValue::NullValue);
                 else
@@ -2172,7 +2171,7 @@ bool QScriptEnginePrivate::convert(const QScriptValue &value,
             return false;
         *reinterpret_cast<QScriptValue*>(ptr) = value;
         return true;
-    } else if (type == qMetaTypeId<QVariant>()) {
+    } else if (name == "QVariant") {
         *reinterpret_cast<QVariant*>(ptr) = value.toVariant();
         return true;
     }

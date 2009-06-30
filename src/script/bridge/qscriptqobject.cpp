@@ -1419,10 +1419,24 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     QVector<JSC::JSValue> argsVector;
     argsVector.resize(argc);
     for (int i = 0; i < argc; ++i) {
-        int argType = QMetaType::type(parameterTypes.at(i));
         // ### optimize -- no need to convert via QScriptValue
-        QScriptValue arg = engine->create(argType, argv[i + 1]);
-        argsVector[i] = engine->scriptValueToJSCValue(arg);
+        QScriptValue actual;
+        void *arg = argv[i + 1];
+        QByteArray typeName = parameterTypes.at(i);
+        int argType = QMetaType::type(parameterTypes.at(i));
+        if (!argType) {
+            if (typeName == "QVariant") {
+                actual = engine->scriptValueFromVariant(*reinterpret_cast<QVariant*>(arg));
+            } else {
+                qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
+                         "when invoking handler of signal %s::%s",
+                         typeName.constData(), meta->className(), method.signature());
+                actual = QScriptValue(QScriptValue::UndefinedValue);
+            }
+        } else {
+            actual = engine->create(argType, arg);
+        }
+        argsVector[i] = engine->scriptValueToJSCValue(actual);
     }
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
