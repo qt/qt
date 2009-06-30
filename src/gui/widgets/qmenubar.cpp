@@ -279,6 +279,7 @@ QRect QMenuBarPrivate::actionRect(QAction *act) const
 void QMenuBarPrivate::focusFirstAction()
 {
     if(!currentAction) {
+        updateGeometries();
         int index = 0;
         while (index < actions.count() && actionRects.at(index).isNull()) ++index;
         if (index < actions.count())
@@ -757,6 +758,7 @@ void QMenuBarPrivate::init()
 QAction *QMenuBarPrivate::getNextAction(const int _start, const int increment) const
 {
     Q_Q(const QMenuBar);
+    const_cast<QMenuBarPrivate*>(this)->updateGeometries();
     bool allowActiveAndDisabled = q->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled, 0, q);
     const int start = (_start == -1 && increment == -1) ? actions.count() : _start;
     const int end =  increment == -1 ? 0 : actions.count() - 1;
@@ -1123,6 +1125,7 @@ void QMenuBar::mouseReleaseEvent(QMouseEvent *e)
 void QMenuBar::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QMenuBar);
+    d->updateGeometries();
     int key = e->key();
     if(isRightToLeft()) {  // in reverse mode open/close key for submenues are reversed
         if(key == Qt::Key_Left)
@@ -1597,6 +1600,7 @@ QSize QMenuBar::minimumSizeHint() const
 
     ensurePolished();
     QSize ret(0, 0);
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     const int hmargin = style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, this);
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
