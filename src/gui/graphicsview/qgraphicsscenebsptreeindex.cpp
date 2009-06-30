@@ -468,6 +468,18 @@ QGraphicsSceneBspTreeIndex::QGraphicsSceneBspTreeIndex(QGraphicsScene *scene)
 
 }
 
+QGraphicsSceneBspTreeIndex::~QGraphicsSceneBspTreeIndex()
+{
+    Q_D(QGraphicsSceneBspTreeIndex);
+    for (int i = 0; i < d->indexedItems.size(); ++i) {
+        // Ensure item bits are reset properly.
+        if (QGraphicsItem *item = d->indexedItems.at(i)) {
+            Q_ASSERT(!item->d_ptr->itemDiscovered);
+            item->d_ptr->index = -1;
+        }
+    }
+}
+
 /*!
     \reimp
     Clear the all the BSP index.

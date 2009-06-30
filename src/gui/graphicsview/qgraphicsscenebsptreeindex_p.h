@@ -80,6 +80,7 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
     Q_PROPERTY(int bspTreeDepth READ bspTreeDepth WRITE setBspTreeDepth)
 public:
     QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
+    ~QGraphicsSceneBspTreeIndex();
 
     QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
 
