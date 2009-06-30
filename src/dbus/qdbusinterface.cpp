@@ -205,26 +205,6 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
             // done
             return -1;
         }
-    } else if (c == QMetaObject::ReadProperty) {
-        // Qt doesn't support non-readable properties
-        // we have to re-check
-        QMetaProperty mp = metaObject->property(id + metaObject->propertyOffset());
-        if (!mp.isReadable())
-            return -1;          // don't read
-
-        QVariant *value = reinterpret_cast<QVariant*>(argv[1]);
-        argv[1] = 0;
-        *value = property(mp);
-
-        return -1;              // handled, error or not
-    } else if (c == QMetaObject::WriteProperty) {
-        // QMetaProperty::write has already checked that we're writable
-        // it has also checked that the type is right
-        QVariant *value = reinterpret_cast<QVariant *>(argv[1]);
-        QMetaProperty mp = metaObject->property(id + metaObject->propertyOffset());
-
-        setProperty(mp, *value);
-        return -1;
     }
     return id;
 }

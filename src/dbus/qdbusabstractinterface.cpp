@@ -195,10 +195,10 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
     return QVariant();
 }
 
-void QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const QVariant &value)
+bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const QVariant &value)
 {
     if (!isValid || !canMakeCalls())    // can't make calls
-        return;
+        return false;
 
     // send the value
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
@@ -208,8 +208,11 @@ void QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
     msg << interface << QString::fromUtf8(mp.name()) << qVariantFromValue(QDBusVariant(value));
     QDBusMessage reply = connection.call(msg, QDBus::Block);
 
-    if (reply.type() != QDBusMessage::ReplyMessage)
+    if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = reply;
+        return false;
+    }
+    return true;
 }
 
 void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
@@ -223,6 +226,33 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
     }
 }
 
+QDBusAbstractInterfaceBase::QDBusAbstractInterfaceBase(QDBusAbstractInterfacePrivate &d, QObject *parent)
+    : QObject(d, parent)
+{
+}
+
+int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    int saved_id = _id;
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+
+    if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty) {
+        QMetaProperty mp = metaObject()->property(saved_id);
+        int &status = *reinterpret_cast<int *>(_a[2]);
+        QVariant &variant = *reinterpret_cast<QVariant *>(_a[1]);
+
+        if (_c == QMetaObject::WriteProperty) {
+            status = d_func()->setProperty(mp, variant) ? 1 : 0;
+        } else {
+            variant = d_func()->property(mp);
+            status = variant.isValid() ? 1 : 0;
+        }
+        _id = -1;
+    }
+    return _id;
+}
 
 /*!
     \class QDBusAbstractInterface
@@ -247,7 +277,7 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
     This is the constructor called from QDBusInterface::QDBusInterface.
 */
 QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d, QObject *parent)
-    : QObject(d, parent)
+    : QDBusAbstractInterfaceBase(d, parent)
 {
     // keep track of the service owner
     if (!d_func()->currentOwner.isEmpty())
@@ -263,7 +293,7 @@ QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d,
 QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QString &path,
                                                const char *interface, const QDBusConnection &con,
                                                QObject *parent)
-    : QObject(*new QDBusAbstractInterfacePrivate(service, path, QString::fromLatin1(interface),
+    : QDBusAbstractInterfaceBase(*new QDBusAbstractInterfacePrivate(service, path, QString::fromLatin1(interface),
                                                  con, false), parent)
 {
     // keep track of the service owner

@@ -87,7 +87,7 @@ public:
 
     // these functions do not check if the property is valid
     QVariant property(const QMetaProperty &mp) const;
-    void setProperty(const QMetaProperty &mp, const QVariant &value);
+    bool setProperty(const QMetaProperty &mp, const QVariant &value);
 
     // return conn's d pointer
     inline QDBusConnectionPrivate *connectionPrivate() const
