@@ -2730,10 +2730,15 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
-            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
-                mwl->updateHIToolBarStatus();
+            // We do this down below for wasCreated, so avoid doing this twice
+            // (only for performance, it gets called a lot anyway).
+            if (!wasCreated) {
+                if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                    mwl->updateHIToolBarStatus();
+                }
             }
 #else
+            // Simply transfer our toolbar over. Everything should stay put, unlike in Carbon.
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
@@ -2748,6 +2753,16 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 
     if (wasCreated) {
         transferChildren();
+#ifndef QT_MAC_USE_COCOA
+        // If we were a unified window, We just transfered our toolbars out of the unified toolbar.
+        // So redo the status one more time. It apparently is not an issue with Cocoa.
+        if (q->isWindow()) {
+            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                mwl->updateHIToolBarStatus();
+            }
+        }
+#endif
+
         if (topData &&
                 (!topData->caption.isEmpty() || !topData->filePath.isEmpty()))
             setWindowTitle_helper(q->windowTitle());
