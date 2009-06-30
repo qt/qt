@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qharfbuzz_p.h"
-
 #include "qunicodetables_p.h"
 #include "qlibrary.h"
 #include "qtextcodec.h"
+
+#include "qharfbuzz_p.h"
 
 QT_USE_NAMESPACE
 
