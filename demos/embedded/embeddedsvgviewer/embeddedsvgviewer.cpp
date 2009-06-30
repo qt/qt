@@ -143,7 +143,7 @@ void EmbeddedSvgViewer::updateImageScale()
 }
 
 
-void EmbeddedSvgViewer::resizeEvent ( QResizeEvent * event )
+void EmbeddedSvgViewer::resizeEvent ( QResizeEvent * /* event */ )
 {
     qreal origZoom = m_zoomLevel;
 
