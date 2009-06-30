@@ -44,6 +44,7 @@
 #include <QtCore/qlocale.h>
 
 QT_BEGIN_NAMESPACE
+
 //TODO: may need optimisation as the QDateTime member may not be needed?
 //      be able to set a locale?
 
@@ -365,4 +366,5 @@ void QmlDateTimeFormatter::classComplete()
 }
 
 QML_DEFINE_TYPE(QmlDateTimeFormatter, DateTimeFormatter)
+
 QT_END_NAMESPACE

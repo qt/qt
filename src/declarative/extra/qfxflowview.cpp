@@ -376,6 +376,6 @@ void QFxFlowView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 QML_DEFINE_TYPE(QFxFlowView,FlowView);
 
-#include "qfxflowview.moc"
-
 QT_END_NAMESPACE
+
+#include "qfxflowview.moc"

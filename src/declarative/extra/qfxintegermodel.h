@@ -46,12 +46,12 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qlistmodelinterface.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxIntegerModelPrivate;
 class Q_DECLARATIVE_EXPORT QFxIntegerModel : public QListModelInterface
 {
@@ -79,8 +79,8 @@ private:
 
 QML_DECLARE_TYPE(QFxIntegerModel)
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif

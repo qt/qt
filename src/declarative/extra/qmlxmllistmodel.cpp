@@ -61,7 +61,6 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(XmlListModelRole, XmlRole)
 QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel)
 
-
 class QmlXmlListModelPrivate;
 struct QmlXmlRoleList : public QmlConcreteList<XmlListModelRole *>
 {
@@ -643,6 +642,6 @@ void QmlXmlListModel::queryCompleted(int id, int size)
     }
 }
 
-#include "qmlxmllistmodel.moc"
-
 QT_END_NAMESPACE
+
+#include "qmlxmllistmodel.moc"

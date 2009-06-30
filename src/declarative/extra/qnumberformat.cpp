@@ -41,8 +41,8 @@
 
 #include "qnumberformat.h"
 
-
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QNumberFormat,NumberFormat)
 
 QNumberFormat::QNumberFormat(QObject *parent) : QObject(parent), _number(0), _type(Decimal),
@@ -221,4 +221,5 @@ QString QNumberFormat::formatDecimal(const QString &formatDec, const QString &de
     }
     return outputDecimal;
 }
+
 QT_END_NAMESPACE
