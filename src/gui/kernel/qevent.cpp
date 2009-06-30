@@ -3647,12 +3647,13 @@ void QGestureEvent::acceptAll()
 }
 
 /*!
-    Sets the accept flag of the specified gesture inside the event
-    object, the equivalent of calling
-    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
+    Sets the accept flag of the gesture specified by \a type.
+    This is equivalent to calling
+    \l{QGestureEvent::gesture()}{gesture(type)}->
+    \l{QGesture::accept()}{accept()}
 
-    Setting the accept parameter indicates that the event receiver
-    wants the gesture. Unwanted gestures might be propagated to the parent
+    Setting the accept flag indicates that the event receiver wants
+    the gesture. Unwanted gestures might be propagated to the parent
     widget.
 */
 void QGestureEvent::accept(Qt::GestureType type)
@@ -3662,12 +3663,13 @@ void QGestureEvent::accept(Qt::GestureType type)
 }
 
 /*!
-    Sets the accept flag of the specified gesture inside the event
-    object, the equivalent of calling
-    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
+    Sets the accept flag of the gesture specified by \a type.
+    This is equivalent to calling
+    \l{QGestureEvent::gesture()}{gesture(type)}->
+    \l{QGesture::accept()}{accept()}
 
-    Setting the accept parameter indicates that the event receiver
-    wants the gesture. Unwanted gestures might be propagated to the parent
+    Setting the accept flag indicates that the event receiver wants
+    the gesture. Unwanted gestures might be propagated to the parent
     widget.
 */
 void QGestureEvent::accept(const QString &type)
@@ -4164,5 +4166,16 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     d = other.d;
     return *this;
 }
+
+/*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
+  Returns the touch device Type, which is of type
+  \l {QTouchEvent::DeviceType} {DeviceType}.
+ */
+
+/*! \fn void QTouchEvent::setDeviceType(DeviceType deviceType)
+  Sets the device type to \a deviceType, which is of type
+  \l {QTouchEvent::DeviceType} {DeviceType}. 
+ */
+
 
 QT_END_NAMESPACE
