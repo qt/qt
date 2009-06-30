@@ -1,0 +1,42 @@
+msgid ""
+msgstr ""
+
+msgid "untranslated one"
+msgstr "translated"
+
+#, fuzzy
+#| msgid "old untranslated"
+msgid "untranslated two"
+msgstr "translated"
+
+#, fuzzy
+#| msgid "old untranslated"
+msgid "untranslated two b"
+msgstr ""
+
+#, fuzzy
+#| msgid "old untranslated"
+#| msgid_plural "old untranslated plural"
+msgid "untranslated three"
+msgstr "translated"
+
+#, fuzzy
+#| msgid "old untranslated"
+#| msgid_plural "old untranslated plural"
+msgid "untranslated three b"
+msgstr ""
+
+#, fuzzy
+#| msgid_plural "old untranslated only plural"
+msgid "untranslated four"
+msgstr "translated"
+
+#, fuzzy
+#| msgid_plural "old untranslated only plural"
+msgid "untranslated four b"
+msgstr ""
+
+#, fuzzy
+#| msgctxt "old context"
+msgid "untranslated five"
+msgstr "translated"

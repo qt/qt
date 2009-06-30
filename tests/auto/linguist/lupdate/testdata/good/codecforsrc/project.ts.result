@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<defaultcodec>UTF-8</defaultcodec>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="10"/>
+        <source>abc</source>
+        <comment>ascii</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="11"/>
+        <source>æøå</source>
+        <comment>utf-8</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>
