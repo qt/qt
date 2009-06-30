@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1555,10 +1555,7 @@ void QLineEditPrivate::copy(bool clipboard) const
     Q_Q(const QLineEdit);
     QString t = q->selectedText();
     if (!t.isEmpty() && echoMode == QLineEdit::Normal) {
-        q->disconnect(QApplication::clipboard(), SIGNAL(selectionChanged()), q, 0);
         QApplication::clipboard()->setText(t, clipboard ? QClipboard::Clipboard : QClipboard::Selection);
-        q->connect(QApplication::clipboard(), SIGNAL(selectionChanged()),
-                   q, SLOT(_q_clipboardChanged()));
     }
 }
 
@@ -2742,11 +2739,11 @@ QMenu *QLineEdit::createStandardContextMenu()
 
 #ifndef QT_NO_CLIPBOARD
     action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->readOnly && d->hasSelectedText());
+    action->setEnabled(!d->readOnly && d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(cut()));
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
-    action->setEnabled(d->hasSelectedText());
+    action->setEnabled(d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
     action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
@@ -2800,10 +2797,6 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->updateTextLayout();
     }
     QWidget::changeEvent(ev);
-}
-
-void QLineEditPrivate::_q_clipboardChanged()
-{
 }
 
 void QLineEditPrivate::_q_handleWindowActivate()

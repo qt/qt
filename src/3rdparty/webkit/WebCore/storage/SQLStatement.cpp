@@ -28,6 +28,8 @@
 #include "config.h"
 #include "SQLStatement.h"
 
+#if ENABLE(DATABASE)
+
 #include "Database.h"
 #include "DatabaseAuthorizer.h"
 #include "Logging.h"
@@ -42,16 +44,17 @@
 
 namespace WebCore {
 
-PassRefPtr<SQLStatement> SQLStatement::create(const String& statement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> errorCallback)
+PassRefPtr<SQLStatement> SQLStatement::create(const String& statement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> errorCallback, bool readOnly)
 {
-    return adoptRef(new SQLStatement(statement, arguments, callback, errorCallback));
+    return adoptRef(new SQLStatement(statement, arguments, callback, errorCallback, readOnly));
 }
 
-SQLStatement::SQLStatement(const String& statement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> errorCallback)
+SQLStatement::SQLStatement(const String& statement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> errorCallback, bool readOnly)
     : m_statement(statement.copy())
     , m_arguments(arguments)
     , m_statementCallback(callback)
     , m_statementErrorCallback(errorCallback)
+    , m_readOnly(readOnly)
 {
 }
    
@@ -67,6 +70,9 @@ bool SQLStatement::execute(Database* db)
     if (m_error)
         return false;
         
+    if (m_readOnly)
+        db->setAuthorizerReadOnly();
+    
     SQLiteDatabase* database = &db->m_sqliteDatabase;
     
     SQLiteStatement statement(*database, m_statement);
@@ -195,3 +201,5 @@ bool SQLStatement::lastExecutionFailedDueToQuota() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(DATABASE)

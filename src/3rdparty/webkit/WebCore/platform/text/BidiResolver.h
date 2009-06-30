@@ -29,6 +29,28 @@
 
 namespace WebCore {
 
+template <class Iterator> struct MidpointState {
+    MidpointState()
+    {
+        reset();
+    }
+    
+    void reset()
+    {
+        numMidpoints = 0;
+        currentMidpoint = 0;
+        betweenMidpoints = false;
+    }
+    
+    // The goal is to reuse the line state across multiple
+    // lines so we just keep an array around for midpoints and never clear it across multiple
+    // lines.  We track the number of items and position using the two other variables.
+    Vector<Iterator> midpoints;
+    unsigned numMidpoints;
+    unsigned currentMidpoint;
+    bool betweenMidpoints;
+};
+
 // The BidiStatus at a given position (typically the end of a line) can
 // be cached and then used to restart bidi resolution at that position.
 struct BidiStatus {
@@ -135,6 +157,8 @@ public :
     const BidiStatus& status() const { return m_status; }
     void setStatus(const BidiStatus s) { m_status = s; }
 
+    MidpointState<Iterator>& midpointState() { return m_midpointState; }
+
     void embed(WTF::Unicode::Direction);
     void commitExplicitEmbedding();
 
@@ -172,6 +196,7 @@ protected:
     Run* m_lastRun;
     Run* m_logicallyLastRun;
     unsigned m_runCount;
+    MidpointState<Iterator> m_midpointState;
 
 private:
     void raiseExplicitEmbeddingLevel(WTF::Unicode::Direction from, WTF::Unicode::Direction to);
@@ -254,7 +279,16 @@ template <class Iterator, class Run>
 void BidiResolver<Iterator, Run>::appendRun()
 {
     if (!emptyRun && !eor.atEnd()) {
-        addRun(new Run(sor.offset(), eor.offset() + 1, context(), m_direction));
+        unsigned startOffset = sor.offset();
+        unsigned endOffset = eor.offset();
+
+        if (!endOfLine.atEnd() && endOffset >= endOfLine.offset()) {
+            reachedEndOfLine = true;
+            endOffset = endOfLine.offset();
+        }
+
+        if (endOffset >= startOffset)
+            addRun(new Run(startOffset, endOffset + 1, context(), m_direction));
 
         eor.increment();
         sor = eor;
@@ -352,8 +386,8 @@ void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(WTF::Unicode::Dire
                 m_direction = LeftToRight;
             }
         } else if (m_status.eor == ArabicNumber
-            || m_status.eor == EuropeanNumber && (m_status.lastStrong != LeftToRight || from == RightToLeft)
-            || m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && from == RightToLeft) {
+            || (m_status.eor == EuropeanNumber && (m_status.lastStrong != LeftToRight || from == RightToLeft))
+            || (m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && from == RightToLeft)) {
             appendRun();
             m_direction = RightToLeft;
         }
@@ -393,7 +427,7 @@ void BidiResolver<Iterator, Run>::commitExplicitEmbedding()
                 level &= ~1;
             }
             if (level < 61)
-                toContext = new BidiContext(level, direction, override, toContext.get());
+                toContext = BidiContext::create(level, direction, override, toContext.get());
         }
     }
 
@@ -722,8 +756,8 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, boo
                 case WhiteSpaceNeutral:
                 case OtherNeutral:
                     if (m_status.eor == ArabicNumber
-                        || m_status.eor == EuropeanNumber && (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft)
-                        || m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && context()->dir() == RightToLeft) {
+                        || (m_status.eor == EuropeanNumber && (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft))
+                        || (m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && context()->dir() == RightToLeft)) {
                         // Terminate the run before the neutrals.
                         appendRun();
                         // Begin an R run for the neutrals.

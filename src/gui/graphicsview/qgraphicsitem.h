@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -213,6 +213,8 @@ public:
     void setAcceptsHoverEvents(bool enabled); // obsolete
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
+    bool acceptTouchEvents() const;
+    void setAcceptTouchEvents(bool enabled);
 
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);
@@ -377,6 +379,11 @@ public:
     // Custom data
     QVariant data(int key) const;
     void setData(int key, const QVariant &value);
+
+    int grabGesture(Qt::GestureType gesture);
+    int grabGesture(const QString &gesture);
+    void releaseGesture(int gestureId);
+    void setGestureEnabled(int gestureId, bool enable = true);
 
     enum {
         Type = 1,

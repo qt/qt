@@ -38,7 +38,7 @@
 #include <unistd.h>
 #endif
 
-#if PLATFORM(WIN_CE)
+#if PLATFORM(WINCE)
 #include <ce_time.h>
 #endif
 
@@ -61,6 +61,15 @@ inline void initializeRandomNumberGenerator()
 #endif
 }
 
+inline void initializeWeakRandomNumberGenerator()
+{
+#if COMPILER(MSVC) && defined(_CRT_RAND_S)
+    // We need to initialise windows rand() explicitly for Math.random
+    unsigned seed = 0;
+    rand_s(&seed);
+    srand(seed);
+#endif
+}
 }
 
 #endif

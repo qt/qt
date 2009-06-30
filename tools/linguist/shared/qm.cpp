@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -238,12 +238,8 @@ Prefix Releaser::commonPrefix(const ByteTranslatorMessage &m1, const ByteTransla
 void Releaser::writeMessage(const ByteTranslatorMessage &msg, QDataStream &stream,
     TranslatorSaveMode mode, Prefix prefix) const
 {
-    for (int i = 0; i < msg.translations().count(); ++i) {
-        QString str = msg.translations().at(i);
-        str.replace(QChar(Translator::DefaultVariantSeparator),
-                    QChar(Translator::InternalVariantSeparator));
-        stream << quint8(Tag_Translation) << str;
-    }
+    for (int i = 0; i < msg.translations().count(); ++i)
+        stream << quint8(Tag_Translation) << msg.translations().at(i);
 
     if (mode == SaveEverything)
         prefix = HashContextSourceTextComment;
@@ -545,11 +541,19 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     size_t numItems = offsetLength / (2 * sizeof(quint32));
     //qDebug() << "NUMITEMS: " << numItems;
 
-    // FIXME: that's just a guess, the original locale data is lost...
-    QTextCodec *codec = QTextCodec::codecForLocale();
+    QTextCodec *codec = QTextCodec::codecForName(cd.m_codecForSource);
     QTextCodec *utf8Codec = 0;
     if (codec->name() != "UTF-8")
         utf8Codec = QTextCodec::codecForName("UTF-8");
+
+    QString strProN = QLatin1String("%n");
+    QLocale::Language l;
+    QLocale::Country c;
+    Translator::languageAndCountry(translator.languageCode(), &l, &c);
+    QStringList numerusForms;
+    bool guessPlurals = true;
+    if (getNumerusInfo(l, c, 0, &numerusForms))
+        guessPlurals = (numerusForms.count() == 1);
 
     QString context, contextUtf8;
     bool contextIsSystem, contextIsUtf8, contextNeeds8Bit;
@@ -584,8 +588,6 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                         str[i] = QChar((str.at(i).unicode() >> 8) +
                             ((str.at(i).unicode() << 8) & 0xff00));
                 }
-                str.replace(QChar(Translator::InternalVariantSeparator),
-                            QChar(Translator::DefaultVariantSeparator));
                 translations << str;
                 m += len;
                 break;
@@ -635,6 +637,15 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     end:;
         TranslatorMessage msg;
         msg.setType(TranslatorMessage::Finished);
+        if (translations.count() > 1) {
+            // If guessPlurals is not false here, plural form discard messages
+            // will be spewn out later.
+            msg.setPlural(true);
+        } else if (guessPlurals) {
+            // This might cause false positives, so it is a fallback only.
+            if (sourcetext.contains(strProN))
+                msg.setPlural(true);
+        }
         msg.setTranslations(translations);
         translations.clear();
         if (contextNeeds8Bit || sourcetextNeeds8Bit || commentNeeds8Bit) {
@@ -649,7 +660,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
             }
             if (!(contextIsSystem && sourcetextIsSystem && commentIsSystem)) {
                 cd.appendError(QLatin1String(
-                        "Cannot read file with current system character codec"));
+                        "Cannot read file with specified input codec"));
                 return false;
             }
             // The message is 8-bit in the file's encoding (utf-8 or not).

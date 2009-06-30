@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,11 +42,15 @@ public:
     
     virtual int tagPriority() const { return 5; }
     virtual bool rendererIsNeeded(RenderStyle*);
+#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+#endif
     virtual void attach();
     virtual void detach();
     virtual void parseMappedAttribute(MappedAttribute* attr);
     virtual bool isVideo() const { return true; }
+    virtual bool hasVideo() const { return player() && player()->hasVideo(); }
+    virtual bool supportsFullscreen() const { return player() && player()->supportsFullscreen(); }
     virtual bool isURLAttribute(Attribute*) const;
     virtual const QualifiedName& imageSourceAttributeName() const;
 
@@ -62,6 +66,9 @@ public:
     void setPoster(const String&);
 
     void updatePosterImage();
+
+    // Used by canvas to gain raw pixel access
+    void paint(GraphicsContext*, const IntRect&);
 
 private:
     OwnPtr<HTMLImageLoader> m_imageLoader;

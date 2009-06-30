@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,19 +26,26 @@
 #include "config.h"
 #include "Geolocation.h"
 
+#include "Chrome.h"
 #include "Document.h"
 #include "Frame.h"
+#include "Page.h"
 #include "PositionError.h"
 
 namespace WebCore {
 
-Geolocation::GeoNotifier::GeoNotifier(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
+Geolocation::GeoNotifier::GeoNotifier(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
     : m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
+    , m_options(options)
     , m_timer(this, &Geolocation::GeoNotifier::timerFired)
 {
-    if (m_errorCallback && options)
-        m_timer.startOneShot(options->timeout() / 1000.0);
+}
+
+void Geolocation::GeoNotifier::startTimer()
+{
+    if (m_errorCallback && m_options)
+        m_timer.startOneShot(m_options->timeout() / 1000.0);
 }
 
 void Geolocation::GeoNotifier::timerFired(Timer<GeoNotifier>*)
@@ -54,7 +61,11 @@ void Geolocation::GeoNotifier::timerFired(Timer<GeoNotifier>*)
 Geolocation::Geolocation(Frame* frame)
     : m_frame(frame)
     , m_service(GeolocationService::create(this))
+    , m_allowGeolocation(Unknown)
+    , m_shouldClearCache(false)
 {
+    if (!m_frame)
+        return;
     ASSERT(m_frame->document());
     m_frame->document()->setUsingGeolocation(true);
 }
@@ -62,16 +73,14 @@ Geolocation::Geolocation(Frame* frame)
 void Geolocation::disconnectFrame()
 {
     m_service->stopUpdating();
-    if (m_frame->document())
-        m_frame->document()->setUsingGeolocation(false);
     m_frame = 0;
 }
 
-void Geolocation::getCurrentPosition(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
+void Geolocation::getCurrentPosition(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
 {
     RefPtr<GeoNotifier> notifier = GeoNotifier::create(successCallback, errorCallback, options);
 
-    if (!m_service->startUpdating(options)) {
+    if (!m_service->startUpdating(notifier->m_options.get())) {
         if (notifier->m_errorCallback) {
             RefPtr<PositionError> error = PositionError::create(PositionError::PERMISSION_DENIED, "Unable to Start");
             notifier->m_errorCallback->handleEvent(error.get());
@@ -82,11 +91,11 @@ void Geolocation::getCurrentPosition(PassRefPtr<PositionCallback> successCallbac
     m_oneShots.add(notifier);
 }
 
-int Geolocation::watchPosition(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
+int Geolocation::watchPosition(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
 {
     RefPtr<GeoNotifier> notifier = GeoNotifier::create(successCallback, errorCallback, options);
 
-    if (!m_service->startUpdating(options)) {
+    if (!m_service->startUpdating(notifier->m_options.get())) {
         if (notifier->m_errorCallback) {
             RefPtr<PositionError> error = PositionError::create(PositionError::PERMISSION_DENIED, "Unable to Start");
             notifier->m_errorCallback->handleEvent(error.get());
@@ -119,6 +128,19 @@ void Geolocation::resume()
 {
     if (hasListeners())
         m_service->resume();
+}
+
+void Geolocation::setIsAllowed(bool allowed)
+{
+    m_allowGeolocation = allowed ? Yes : No;
+    
+    if (isAllowed()) {
+        startTimers();
+        geolocationServicePositionChanged(m_service.get());
+    } else {
+        WTF::RefPtr<WebCore::PositionError> error = WebCore::PositionError::create(PositionError::PERMISSION_DENIED, "User disallowed GeoLocation");
+        handleError(error.get());
+    }
 }
 
 void Geolocation::sendErrorToOneShots(PositionError* error)
@@ -189,6 +211,37 @@ void Geolocation::sendPositionToWatchers(Geoposition* position)
     }
 }
 
+void Geolocation::startTimer(Vector<RefPtr<GeoNotifier> >& notifiers)
+{
+    Vector<RefPtr<GeoNotifier> >::const_iterator end = notifiers.end();
+    for (Vector<RefPtr<GeoNotifier> >::const_iterator it = notifiers.begin(); it != end; ++it) {
+        RefPtr<GeoNotifier> notifier = *it;
+        notifier->startTimer();
+    }
+}
+
+void Geolocation::startTimersForOneShots()
+{
+    Vector<RefPtr<GeoNotifier> > copy;
+    copyToVector(m_oneShots, copy);
+    
+    startTimer(copy);
+}
+
+void Geolocation::startTimersForWatchers()
+{
+    Vector<RefPtr<GeoNotifier> > copy;
+    copyValuesToVector(m_watchers, copy);
+    
+    startTimer(copy);
+}
+
+void Geolocation::startTimers()
+{
+    startTimersForOneShots();
+    startTimersForWatchers();
+}
+
 void Geolocation::handleError(PositionError* error)
 {
     ASSERT(error);
@@ -199,9 +252,31 @@ void Geolocation::handleError(PositionError* error)
     m_oneShots.clear();
 }
 
+void Geolocation::requestPermission()
+{
+    if (m_allowGeolocation > Unknown)
+        return;
+
+    if (!m_frame)
+        return;
+    
+    Page* page = m_frame->page();
+    if (!page)
+        return;
+    
+    // Ask the chrome: it maintains the geolocation challenge policy itself.
+    page->chrome()->requestGeolocationPermissionForFrame(m_frame, this);
+    
+    m_allowGeolocation = InProgress;
+}
+
 void Geolocation::geolocationServicePositionChanged(GeolocationService* service)
 {
     ASSERT(service->lastPosition());
+    
+    requestPermission();
+    if (!isAllowed())
+        return;
     
     sendPositionToOneShots(service->lastPosition());
     sendPositionToWatchers(service->lastPosition());

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -237,6 +237,8 @@ struct QGLEngineShaderProg
     QGLShader*          maskFragShader;        // Can be null for no mask
     QGLShader*          compositionFragShader; // Can be null for GL-handled mode
     QGLShaderProgram*   program;
+
+    QVector<uint> uniformLocations;
 };
 
 /*
@@ -282,6 +284,9 @@ public:
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+
+    uint getUniformIdentifier(const char *uniformName);
+    uint getUniformLocation(uint id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
@@ -374,9 +379,9 @@ private:
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
 
-    QGLShaderProgram*   blitShaderProg;
-    QGLShaderProgram*   simpleShaderProg;
-    QGLShaderProgram*   currentShaderProg;
+    QGLShaderProgram*     blitShaderProg;
+    QGLShaderProgram*     simpleShaderProg;
+    QGLEngineShaderProg*  currentShaderProg;
 
     // TODO: Possibly convert to a LUT
     QList<QGLEngineShaderProg> cachedPrograms;
@@ -386,6 +391,8 @@ private:
     void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
 
     static const char* qglEngineShaderSourceCode[TotalShaderCount];
+
+    QVector<const char *> uniformIdentifiers;
 };
 
 QT_END_NAMESPACE

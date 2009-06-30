@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -112,6 +112,7 @@ private slots:
     void task161658_alignments();
     void task177022_setFixedSize();
     void task248107_backButton();
+    void task255350_fieldObjectDestroyed();
 
     /*
         Things that could be added:
@@ -2515,6 +2516,27 @@ void tst_QWizard::task248107_backButton()
 
     QTest::mouseClick(wizard.button(QWizard::BackButton), Qt::LeftButton);
     QCOMPARE(wizard.currentPage(), &page1);
+}
+
+class WizardPage_task255350 : public QWizardPage
+{
+public:
+    QLineEdit *lineEdit;
+    WizardPage_task255350()
+        : lineEdit(new QLineEdit)
+    {
+        registerField("dummy*", lineEdit);
+    }
+};
+
+void tst_QWizard::task255350_fieldObjectDestroyed()
+{
+    QWizard wizard;
+    WizardPage_task255350 *page = new WizardPage_task255350;
+    int id = wizard.addPage(page);
+    delete page->lineEdit;
+    wizard.removePage(id); // don't crash!
+    delete page;
 }
 
 QTEST_MAIN(tst_QWizard)

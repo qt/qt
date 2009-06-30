@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,10 +75,6 @@
 #include "qscriptdebuggerjob_p_p.h"
 #include "qscriptxmlparser_p.h"
 
-#include "qscriptenginedebuggerfrontend_p.h"
-#include "qscriptdebuggerbackend_p.h"
-#include <QtScript/qscriptengine.h>
-
 #include "private/qobject_p.h"
 
 #include <QtScript/qscriptcontext.h>
@@ -94,6 +90,8 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qinputdialog.h>
+#include <QtGui/qmenu.h>
+#include <QtGui/qtoolbar.h>
 #include <QtGui/qtooltip.h>
 
 QT_BEGIN_NAMESPACE
@@ -1903,6 +1901,51 @@ QAction *QScriptDebugger::goToLineAction(QObject *parent) const
                          that, SLOT(_q_goToLine()));
     }
     return d->goToLineAction;
+}
+
+QMenu *QScriptDebugger::createStandardMenu(QWidget *widgetParent, QObject *actionParent)
+{
+    QMenu *menu = new QMenu(widgetParent);
+    menu->setTitle(QObject::tr("Debug"));
+    menu->addAction(action(ContinueAction, actionParent));
+    menu->addAction(action(InterruptAction, actionParent));
+    menu->addAction(action(StepIntoAction, actionParent));
+    menu->addAction(action(StepOverAction, actionParent));
+    menu->addAction(action(StepOutAction, actionParent));
+    menu->addAction(action(RunToCursorAction, actionParent));
+    menu->addAction(action(RunToNewScriptAction, actionParent));
+
+    menu->addSeparator();
+    menu->addAction(action(ToggleBreakpointAction, actionParent));
+
+    menu->addSeparator();
+    menu->addAction(action(ClearDebugOutputAction, actionParent));
+    menu->addAction(action(ClearErrorLogAction, actionParent));
+    menu->addAction(action(ClearConsoleAction, actionParent));
+
+    return menu;
+}
+
+QToolBar *QScriptDebugger::createStandardToolBar(QWidget *widgetParent, QObject *actionParent)
+{
+    QToolBar *tb = new QToolBar(widgetParent);
+    tb->setObjectName(QLatin1String("qtscriptdebugger_standardToolBar"));
+    tb->addAction(action(ContinueAction, actionParent));
+    tb->addAction(action(InterruptAction, actionParent));
+    tb->addAction(action(StepIntoAction, actionParent));
+    tb->addAction(action(StepOverAction, actionParent));
+    tb->addAction(action(StepOutAction, actionParent));
+    tb->addAction(action(RunToCursorAction, actionParent));
+    tb->addAction(action(RunToNewScriptAction, actionParent));
+    tb->addSeparator();
+    tb->addAction(action(FindInScriptAction, actionParent));
+    return tb;
+}
+
+bool QScriptDebugger::isInteractive() const
+{
+    Q_D(const QScriptDebugger);
+    return d->interactive;
 }
 
 /*!

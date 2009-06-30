@@ -85,7 +85,7 @@ VolumeSlider::~VolumeSlider()
 
 bool VolumeSlider::isMuteVisible() const
 {
-    return k_ptr->muteButton.isVisible();
+    return !k_ptr->muteButton.isHidden();
 }
 
 void VolumeSlider::setMuteVisible(bool visible)

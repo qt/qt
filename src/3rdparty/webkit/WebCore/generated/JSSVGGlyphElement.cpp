@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGGlyphElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGGlyphElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGGlyphElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGGlyphElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +49,9 @@ static const HashTable JSSVGGlyphElementPrototypeTable =
 
 const ClassInfo JSSVGGlyphElementPrototype::s_info = { "SVGGlyphElementPrototype", 0, &JSSVGGlyphElementPrototypeTable, 0 };
 
-JSObject* JSSVGGlyphElementPrototype::self(ExecState* exec)
+JSObject* JSSVGGlyphElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGGlyphElement>(exec);
+    return getDOMPrototype<JSSVGGlyphElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGGlyphElement::s_info = { "SVGGlyphElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +61,9 @@ JSSVGGlyphElement::JSSVGGlyphElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSSVGGlyphElement::createPrototype(ExecState* exec)
+JSObject* JSSVGGlyphElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGGlyphElementPrototype(JSSVGGlyphElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGGlyphElementPrototype(JSSVGGlyphElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

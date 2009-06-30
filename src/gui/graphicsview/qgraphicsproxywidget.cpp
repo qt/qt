@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,6 +48,7 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
+#include "private/qgesturemanager_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qevent.h>
@@ -275,7 +276,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
 
     QWidget *embeddedMouseGrabberPtr = (QWidget *)embeddedMouseGrabber;
     QApplicationPrivate::sendMouseEvent(receiver, mouseEvent, alienWidget, widget,
-                                        &embeddedMouseGrabberPtr, lastWidgetUnderMouse);
+                                        &embeddedMouseGrabberPtr, lastWidgetUnderMouse, event->spontaneous());
     embeddedMouseGrabber = embeddedMouseGrabberPtr;
 
     // Handle enter/leave events when last button is released from mouse
@@ -648,6 +649,9 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         q->setAttribute(Qt::WA_OpaquePaintEvent);
 
     widget = newWidget;
+    foreach(int gestureId, widget->d_func()->gestures) {
+        grabGesture(gestureId);
+    }
 
     // Changes only go from the widget to the proxy.
     enabledChangeMode = QGraphicsProxyWidgetPrivate::WidgetToProxyMode;
@@ -839,7 +843,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         // ### Qt 4.5: this code must also go into a reimplementation
         // of inputMethodEvent().
         QWidget *focusWidget = d->widget->focusWidget();
-        if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+        if (focusWidget && focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
             QApplication::sendEvent(focusWidget, event);
         break;
     }
@@ -868,6 +872,16 @@ bool QGraphicsProxyWidget::event(QEvent *event)
                 }
                 return true;
             }
+        }
+        break;
+    }
+    case QEvent::GraphicsSceneGesture: {
+        qDebug() << "QGraphicsProxyWidget: graphicsscenegesture";
+        if (d->widget && d->widget->isVisible()) {
+            QGraphicsSceneGestureEvent *ge = static_cast<QGraphicsSceneGestureEvent*>(event);
+            //### TODO: widget->childAt(): decompose gesture event and find widget under hotspots.
+            //QGestureManager::instance()->sendGestureEvent(d->widget, ge->gestures().toSet(), ge->cancelledGestures());
+            return true;
         }
         break;
     }

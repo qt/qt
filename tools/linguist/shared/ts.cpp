@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -197,7 +197,7 @@ QString TSReader::readTransContents()
                 // ignore these, just whitespace
             } else if (elementStarts(strlengthvariant)) {
                 if (!result.isEmpty())
-                    result += QChar(Translator::DefaultVariantSeparator);
+                    result += QChar(Translator::BinaryVariantSeparator);
                 result += readContents();
             } else {
                 handleError();
@@ -514,7 +514,7 @@ static void writeExtras(QTextStream &t, const char *indent,
 static void writeVariants(QTextStream &t, const char *indent, const QString &input)
 {
     int offset;
-    if ((offset = input.indexOf(QChar(Translator::DefaultVariantSeparator))) >= 0) {
+    if ((offset = input.indexOf(QChar(Translator::BinaryVariantSeparator))) >= 0) {
         t << " variants=\"yes\">";
         int start = 0;
         forever {
@@ -524,7 +524,7 @@ static void writeVariants(QTextStream &t, const char *indent, const QString &inp
             if (offset == input.length())
                 break;
             start = offset + 1;
-            offset = input.indexOf(QChar(Translator::DefaultVariantSeparator), start);
+            offset = input.indexOf(QChar(Translator::BinaryVariantSeparator), start);
             if (offset < 0)
                 offset = input.length();
         }

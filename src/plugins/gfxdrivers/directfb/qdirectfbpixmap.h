@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,22 +60,23 @@ public:
     ~QDirectFBPixmapData();
 
     // Re-implemented from QPixmapData:
-    void resize(int width, int height);
-    void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
-    void copy(const QPixmapData *data, const QRect &rect);
-    void fill(const QColor &color);
-    inline bool hasAlphaChannel() const { return alpha; }
-    QPixmap transformed(const QTransform &matrix,
-                        Qt::TransformationMode mode) const;
-    QImage toImage() const;
-    QPaintEngine* paintEngine() const;
+    virtual void resize(int width, int height);
+    virtual void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    virtual void copy(const QPixmapData *data, const QRect &rect);
+    virtual void fill(const QColor &color);
+    virtual QPixmap transformed(const QTransform &matrix,
+                                Qt::TransformationMode mode) const;
+    virtual QImage toImage() const;
+    virtual QPaintEngine *paintEngine() const;
     virtual QImage *buffer();
+    virtual int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
+
     QImage *buffer(uint lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
-    int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
     inline QImage::Format pixelFormat() const { return format; }
     static bool hasAlphaChannel(const QImage &img);
+    inline bool hasAlphaChannel() const { return alpha; }
 private:
     void invalidate();
     QDirectFBPaintEngine *engine;

@@ -43,7 +43,7 @@ public:
         DownloadDialog->resize(332, 252);
         gridLayout = new QGridLayout(DownloadDialog);
         gridLayout->setSpacing(0);
-        gridLayout->setMargin(0);
+        gridLayout->setContentsMargins(0, 0, 0, 0);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         downloadsView = new EditTableView(DownloadDialog);
         downloadsView->setObjectName(QString::fromUtf8("downloadsView"));

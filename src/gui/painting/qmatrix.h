@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,6 +61,7 @@ class QVariant;
 class Q_GUI_EXPORT QMatrix // 2D transform matrix
 {
 public:
+    inline explicit QMatrix(Qt::Initialization) {}
     QMatrix();
     QMatrix(qreal m11, qreal m12, qreal m21, qreal m22,
             qreal dx, qreal dy);
@@ -164,6 +165,17 @@ inline bool QMatrix::isIdentity() const
     return qFuzzyIsNull(_m11 - 1) && qFuzzyIsNull(_m22 - 1) && qFuzzyIsNull(_m12)
            && qFuzzyIsNull(_m21) && qFuzzyIsNull(_dx) && qFuzzyIsNull(_dy);
 }
+
+inline bool qFuzzyCompare(const QMatrix& m1, const QMatrix& m2)
+{
+    return qFuzzyCompare(m1.m11(), m2.m11())
+        && qFuzzyCompare(m1.m12(), m2.m12())
+        && qFuzzyCompare(m1.m21(), m2.m21())
+        && qFuzzyCompare(m1.m22(), m2.m22())
+        && qFuzzyCompare(m1.dx(), m2.dx())
+        && qFuzzyCompare(m1.dy(), m2.dy());
+}
+
 
 /*****************************************************************************
  QMatrix stream functions

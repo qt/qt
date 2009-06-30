@@ -20,26 +20,22 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGLengthList.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGLength.h"
 #include "SVGLength.h"
 #include "SVGLengthList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGLengthList)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGLengthList);
 
 /* Hash table */
 
@@ -79,9 +75,9 @@ static const HashTable JSSVGLengthListPrototypeTable =
 
 const ClassInfo JSSVGLengthListPrototype::s_info = { "SVGLengthListPrototype", 0, &JSSVGLengthListPrototypeTable, 0 };
 
-JSObject* JSSVGLengthListPrototype::self(ExecState* exec)
+JSObject* JSSVGLengthListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGLengthList>(exec);
+    return getDOMPrototype<JSSVGLengthList>(exec, globalObject);
 }
 
 bool JSSVGLengthListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -101,12 +97,11 @@ JSSVGLengthList::JSSVGLengthList(PassRefPtr<Structure> structure, PassRefPtr<SVG
 JSSVGLengthList::~JSSVGLengthList()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGLengthList::createPrototype(ExecState* exec)
+JSObject* JSSVGLengthList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGLengthListPrototype(JSSVGLengthListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGLengthListPrototype(JSSVGLengthListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGLengthList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -114,15 +109,17 @@ bool JSSVGLengthList::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSSVGLengthList, Base>(exec, &JSSVGLengthListTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGLengthListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLengthListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGLengthList* imp = static_cast<SVGLengthList*>(static_cast<JSSVGLengthList*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->numberOfItems());
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -133,105 +130,111 @@ JSValuePtr jsSVGLengthListPrototypeFunctionClear(ExecState* exec, JSObject*, JSV
     return jsUndefined();
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGLength item = toSVGLength(args.at(exec, 0));
+    SVGLength item = toSVGLength(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->initialize(item, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->initialize(item, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->getItem(index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->getItem(index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGLength item = toSVGLength(args.at(exec, 0));
-    unsigned index = args.at(exec, 1)->toInt32(exec);
+    SVGLength item = toSVGLength(args.at(0));
+    unsigned index = args.at(1).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->insertItemBefore(item, index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->insertItemBefore(item, index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGLength item = toSVGLength(args.at(exec, 0));
-    unsigned index = args.at(exec, 1)->toInt32(exec);
+    SVGLength item = toSVGLength(args.at(0));
+    unsigned index = args.at(1).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->replaceItem(item, index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->replaceItem(item, index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->removeItem(index, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->removeItem(index, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsSVGLengthListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGLengthList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGLength item = toSVGLength(args.at(exec, 0));
+    SVGLength item = toSVGLength(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->appendItem(item, ec)).get(), castedThisObj->context());
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<SVGLength>::create(imp->appendItem(item, ec)).get(), castedThisObj->context());
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGLengthList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGLengthList* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGLengthList>(exec, object, context);
 }
-SVGLengthList* toSVGLengthList(JSC::JSValuePtr value)
+SVGLengthList* toSVGLengthList(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGLengthList::s_info) ? static_cast<JSSVGLengthList*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGLengthList::s_info) ? static_cast<JSSVGLengthList*>(asObject(value))->impl() : 0;
 }
 
 }

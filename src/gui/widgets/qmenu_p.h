@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -138,9 +138,9 @@ class QMenuPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMenu)
 public:
     QMenuPrivate() : itemsDirty(0), maxIconWidth(0), tabWidth(0), ncols(0),
-                      collapsibleSeparators(true), hasHadMouse(0), aboutToHide(0), motions(0),
+                      collapsibleSeparators(true), activationRecursionGuard(false), hasHadMouse(0), aboutToHide(0), motions(0),
                       currentAction(0), scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
-                      hasCheckableItems(0), sloppyAction(0)
+                      hasCheckableItems(0), sloppyAction(0), doChildEffects(false)
 #ifdef Q_WS_MAC
                       ,mac_menu(0)
 #endif
@@ -174,14 +174,12 @@ public:
     mutable uint itemsDirty : 1;
     mutable uint maxIconWidth, tabWidth;
     QRect actionRect(QAction *) const;
-    mutable QMap<QAction*, QRect> actionRects;
-    mutable QList<QAction*> actionList;
-    mutable QHash<QAction *, QWidget *> widgetItems;
-    void calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
-    void updateActions();
+
+    mutable QVector<QRect> actionRects;
+    mutable QWidgetList widgetItems;
+    void updateActionRects() const;
     QRect popupGeometry(int screen=-1) const;
-    QList<QAction *> filteredActions() const;
-    uint ncols : 4; //4 bits is probably plenty
+    mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
     uint activationRecursionGuard : 1;
@@ -253,7 +251,7 @@ public:
 
     //sloppy selection
     static QBasicTimer sloppyDelayTimer;
-    QAction *sloppyAction;
+    mutable QAction *sloppyAction;
     QRegion sloppyRegion;
 
     //default action
@@ -282,8 +280,9 @@ public:
     struct QMacMenuPrivate {
         QList<QMacMenuAction*> actionItems;
         OSMenuRef menu;
-        QMacMenuPrivate();
-        ~QMacMenuPrivate();
+        QMenuPrivate *qmenu;
+        QMacMenuPrivate(QMenuPrivate *menu);
+        ~QMacMenuPrivate();    
 
         bool merged(const QAction *action) const;
         void addAction(QAction *, QMacMenuAction* =0, QMenuPrivate *qmenu = 0);

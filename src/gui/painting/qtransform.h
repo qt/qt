@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,6 +71,7 @@ public:
         TxProject   = 0x10
     };
 
+    inline explicit QTransform(Qt::Initialization) : affine(Qt::Uninitialized) {}
     QTransform();
     QTransform(qreal h11, qreal h12, qreal h13,
                qreal h21, qreal h22, qreal h23,
@@ -330,6 +331,20 @@ inline QTransform &QTransform::operator-=(qreal num)
     m_dirty     |= TxProject;
     return *this;
 }
+
+inline bool qFuzzyCompare(const QTransform& t1, const QTransform& t2)
+{
+    return qFuzzyCompare(t1.m11(), t2.m11())
+        && qFuzzyCompare(t1.m12(), t2.m12())
+        && qFuzzyCompare(t1.m13(), t2.m13())
+        && qFuzzyCompare(t1.m21(), t2.m21())
+        && qFuzzyCompare(t1.m22(), t2.m22())
+        && qFuzzyCompare(t1.m23(), t2.m23())
+        && qFuzzyCompare(t1.m31(), t2.m31())
+        && qFuzzyCompare(t1.m32(), t2.m32())
+        && qFuzzyCompare(t1.m33(), t2.m33());
+}
+
 
 /****** stream functions *******************/
 #ifndef QT_NO_DATASTREAM

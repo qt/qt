@@ -42,7 +42,7 @@ RenderSVGGradientStop::~RenderSVGGradientStop()
 {
 }
 
-void RenderSVGGradientStop::styleDidChange(RenderStyle::Diff diff, const RenderStyle* oldStyle)
+void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderObject::styleDidChange(diff, oldStyle);
 
@@ -61,7 +61,7 @@ void RenderSVGGradientStop::layout()
 
 SVGGradientElement* RenderSVGGradientStop::gradientElement() const
 {
-    Node* parentNode = element()->parent();
+    Node* parentNode = node()->parent();
     if (parentNode->hasTagName(linearGradientTag) || parentNode->hasTagName(radialGradientTag))
         return static_cast<SVGGradientElement*>(parentNode);
     return 0;

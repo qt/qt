@@ -23,6 +23,7 @@
 #include "HitTestResult.h"
 #include "InlineFlowBox.h"
 #include "RenderArena.h"
+#include "RenderBox.h"
 #include "RootInlineBox.h"
 
 using namespace std;
@@ -79,19 +80,47 @@ void InlineBox::operator delete(void* ptr, size_t sz)
 #ifndef NDEBUG
 void InlineBox::showTreeForThis() const
 {
-    if (m_object)
-        m_object->showTreeForThis();
+    if (m_renderer)
+        m_renderer->showTreeForThis();
 }
 #endif
 
+int InlineBox::height() const
+{
+#if ENABLE(SVG)
+    if (isSVG())
+        return svgBoxHeight();
+#endif
+
+    if (renderer()->isText())
+        return m_isText ? renderer()->style(m_firstLine)->font().height() : 0;
+    if (renderer()->isBox() && parent())
+        return toRenderBox(m_renderer)->height();
+
+    ASSERT(isInlineFlowBox());
+    const InlineFlowBox* flowBox = static_cast<const InlineFlowBox*>(this);
+    RenderBoxModelObject* flowObject = boxModelObject();
+    const Font& font = renderer()->style(m_firstLine)->font();
+    int result = font.height();
+    bool strictMode = renderer()->document()->inStrictMode();
+    if (parent())
+        result += flowObject->borderTop() + flowObject->paddingTop() + flowObject->borderBottom() + flowObject->paddingBottom();
+    if (strictMode || flowBox->hasTextChildren() || flowObject->hasHorizontalBordersOrPadding())
+        return result;
+    int bottom = root()->bottomOverflow();
+    if (y() + result > bottom)
+        result = bottom - y();
+    return result;
+}
+
 int InlineBox::caretMinOffset() const 
 { 
-    return m_object->caretMinOffset(); 
+    return m_renderer->caretMinOffset(); 
 }
 
 int InlineBox::caretMaxOffset() const 
 { 
-    return m_object->caretMaxOffset(); 
+    return m_renderer->caretMaxOffset(); 
 }
 
 unsigned InlineBox::caretMaxRenderedOffset() const 
@@ -108,34 +137,38 @@ void InlineBox::dirtyLineBoxes()
 
 void InlineBox::deleteLine(RenderArena* arena)
 {
-    if (!m_extracted)
-        m_object->setInlineBoxWrapper(0);
+    if (!m_extracted && m_renderer->isBox())
+        toRenderBox(m_renderer)->setInlineBoxWrapper(0);
     destroy(arena);
 }
 
 void InlineBox::extractLine()
 {
     m_extracted = true;
-    m_object->setInlineBoxWrapper(0);
+    if (m_renderer->isBox())
+        toRenderBox(m_renderer)->setInlineBoxWrapper(0);
 }
 
 void InlineBox::attachLine()
 {
     m_extracted = false;
-    m_object->setInlineBoxWrapper(this);
+    if (m_renderer->isBox())
+        toRenderBox(m_renderer)->setInlineBoxWrapper(this);
 }
 
 void InlineBox::adjustPosition(int dx, int dy)
 {
     m_x += dx;
     m_y += dy;
-    if (m_object->isReplaced() || m_object->isBR())
-        m_object->setPos(m_object->xPos() + dx, m_object->yPos() + dy);
+    if (m_renderer->isReplaced()) {
+        RenderBox* box = toRenderBox(m_renderer);
+        box->move(dx, dy);
+    }
 }
 
 void InlineBox::paint(RenderObject::PaintInfo& paintInfo, int tx, int ty)
 {
-    if (!object()->shouldPaintWithinRoot(paintInfo) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
+    if (!renderer()->shouldPaintWithinRoot(paintInfo) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
         return;
 
     // Paint all phases of replaced elements atomically, as though the replaced element established its
@@ -144,16 +177,16 @@ void InlineBox::paint(RenderObject::PaintInfo& paintInfo, int tx, int ty)
     bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
     RenderObject::PaintInfo info(paintInfo);
     info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
-    object()->paint(info, tx, ty);
+    renderer()->paint(info, tx, ty);
     if (!preservePhase) {
         info.phase = PaintPhaseChildBlockBackgrounds;
-        object()->paint(info, tx, ty);
+        renderer()->paint(info, tx, ty);
         info.phase = PaintPhaseFloat;
-        object()->paint(info, tx, ty);
+        renderer()->paint(info, tx, ty);
         info.phase = PaintPhaseForeground;
-        object()->paint(info, tx, ty);
+        renderer()->paint(info, tx, ty);
         info.phase = PaintPhaseOutline;
-        object()->paint(info, tx, ty);
+        renderer()->paint(info, tx, ty);
     }
 }
 
@@ -162,7 +195,15 @@ bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     // Hit test all phases of replaced elements atomically, as though the replaced element established its
     // own stacking context.  (See Appendix E.2, section 6.4 on inline block/table elements in the CSS2.1
     // specification.)
-    return object()->hitTest(request, result, IntPoint(x, y), tx, ty);
+    return renderer()->hitTest(request, result, IntPoint(x, y), tx, ty);
+}
+
+const RootInlineBox* InlineBox::root() const
+{ 
+    if (m_parent)
+        return m_parent->root(); 
+    ASSERT(isRootInlineBox());
+    return static_cast<const RootInlineBox*>(this);
 }
 
 RootInlineBox* InlineBox::root()
@@ -225,13 +266,13 @@ InlineBox* InlineBox::prevLeafChild()
 
 RenderObject::SelectionState InlineBox::selectionState()
 {
-    return object()->selectionState();
+    return renderer()->selectionState();
 }
 
 bool InlineBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth)
 {
     // Non-replaced elements can always accommodate an ellipsis.
-    if (!m_object || !m_object->isReplaced())
+    if (!m_renderer || !m_renderer->isReplaced())
         return true;
     
     IntRect boxRect(m_x, 0, m_width, 10);
@@ -239,7 +280,7 @@ bool InlineBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidt
     return !(boxRect.intersects(ellipsisRect));
 }
 
-int InlineBox::placeEllipsisBox(bool, int, int, bool&)
+int InlineBox::placeEllipsisBox(bool, int, int, int, bool&)
 {
     // Use -1 to mean "we didn't set the position."
     return -1;

@@ -22,8 +22,9 @@
 #ifndef SVGFEMorphology_h
 #define SVGFEMorphology_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FilterEffect.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -45,8 +46,9 @@ namespace WebCore {
         float radiusY() const;
         void setRadiusY(float);
 
-        virtual void apply();
-        virtual void dump();
+        virtual FloatRect uniteChildEffectSubregions(Filter* filter) { return calculateUnionOfChildEffectSubregions(filter, m_in.get()); }
+        void apply(Filter*);
+        void dump();
         TextStream& externalRepresentation(TextStream& ts) const;
 
     private:
@@ -60,6 +62,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif // SVGFEMorphology_h

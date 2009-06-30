@@ -1,7 +1,6 @@
 /*
- * This file is part of the WebKit project.
- *
  * Copyright (C) 2006 Apple Computer, Inc.
+ * Copyright (C) 2009 Google, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -29,6 +28,7 @@
 #include "RenderView.h"
 #include "SVGForeignObjectElement.h"
 #include "SVGLength.h"
+#include "SVGRenderSupport.h"
 #include "SVGTransformList.h"
 
 namespace WebCore {
@@ -38,93 +38,84 @@ RenderForeignObject::RenderForeignObject(SVGForeignObjectElement* node)
 {
 }
 
-TransformationMatrix RenderForeignObject::translationForAttributes()
+TransformationMatrix RenderForeignObject::translationForAttributes() const
 {
-    SVGForeignObjectElement* foreign = static_cast<SVGForeignObjectElement*>(element());
+    SVGForeignObjectElement* foreign = static_cast<SVGForeignObjectElement*>(node());
     return TransformationMatrix().translate(foreign->x().value(foreign), foreign->y().value(foreign));
 }
 
-void RenderForeignObject::paint(PaintInfo& paintInfo, int parentX, int parentY)
+void RenderForeignObject::paint(PaintInfo& paintInfo, int, int)
 {
     if (paintInfo.context->paintingDisabled())
         return;
 
-    paintInfo.context->save();
-    paintInfo.context->concatCTM(TransformationMatrix().translate(parentX, parentY));
-    paintInfo.context->concatCTM(localTransform());
-    paintInfo.context->concatCTM(translationForAttributes());
-    paintInfo.context->clip(getClipRect(parentX, parentY));
+    // Copy the paint info so that modifications to the damage rect do not affect callers
+    PaintInfo childPaintInfo = paintInfo;
+    childPaintInfo.context->save();
+    applyTransformToPaintInfo(childPaintInfo, localToParentTransform());
+    childPaintInfo.context->clip(clipRect(0, 0));
 
     float opacity = style()->opacity();
     if (opacity < 1.0f)
-        // FIXME: Possible optimization by clipping to bbox here, once relativeBBox is implemented & clip, mask and filter support added.
-        paintInfo.context->beginTransparencyLayer(opacity);
+        childPaintInfo.context->beginTransparencyLayer(opacity);
 
-    PaintInfo pi(paintInfo);
-    pi.rect = absoluteTransform().inverse().mapRect(paintInfo.rect);
-    RenderBlock::paint(pi, 0, 0);
+    RenderBlock::paint(childPaintInfo, 0, 0);
 
     if (opacity < 1.0f)
-        paintInfo.context->endTransparencyLayer();
+        childPaintInfo.context->endTransparencyLayer();
 
-    paintInfo.context->restore();
+    childPaintInfo.context->restore();
 }
 
-void RenderForeignObject::computeAbsoluteRepaintRect(IntRect& r, bool f)
+FloatRect RenderForeignObject::objectBoundingBox() const
 {
-    TransformationMatrix transform = translationForAttributes() * localTransform();
-    r = transform.mapRect(r);
-
-    RenderBlock::computeAbsoluteRepaintRect(r, f);
+    return borderBoxRect();
 }
 
-bool RenderForeignObject::requiresLayer()
+FloatRect RenderForeignObject::repaintRectInLocalCoordinates() const
 {
-    return false;
+    // HACK: to maintain historical LayoutTest results for now.
+    // RenderForeignObject is a RenderBlock (not a RenderSVGModelObject) so this
+    // should not affect repaint correctness.  But it should really be:
+    // return borderBoxRect();
+    return FloatRect();
 }
 
-bool RenderForeignObject::calculateLocalTransform()
+void RenderForeignObject::computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect& rect, bool fixed)
 {
-    TransformationMatrix oldTransform = m_localTransform;
-    m_localTransform = static_cast<SVGForeignObjectElement*>(element())->animatedLocalTransform();
-    return (oldTransform != m_localTransform);
+    rect = localToParentTransform().mapRect(rect);
+    RenderBlock::computeRectForRepaint(repaintContainer, rect, fixed);
+}
+
+TransformationMatrix RenderForeignObject::localToParentTransform() const
+{
+    return localTransform() * translationForAttributes();
 }
 
 void RenderForeignObject::layout()
 {
     ASSERT(needsLayout());
+    ASSERT(!view()->layoutStateEnabled()); // RenderSVGRoot disables layoutState for the SVG rendering tree.
 
-    // Arbitrary affine transforms are incompatible with LayoutState.
-    view()->disableLayoutState();
+    LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
+    m_localTransform = static_cast<SVGForeignObjectElement*>(node())->animatedLocalTransform();
 
-    IntRect oldBounds;
-    IntRect oldOutlineBox;
-    bool checkForRepaint = checkForRepaintDuringLayout();
-    if (checkForRepaint) {
-        oldBounds = m_absoluteBounds;
-        oldOutlineBox = absoluteOutlineBounds();
-    }
-    
-    calculateLocalTransform();
-    
     RenderBlock::layout();
+    repainter.repaintAfterLayout();
 
-    m_absoluteBounds = absoluteClippedOverflowRect();
-
-    if (checkForRepaint)
-        repaintAfterLayoutIfNeeded(oldBounds, oldOutlineBox);
-
-    view()->enableLayoutState();
     setNeedsLayout(false);
 }
 
-bool RenderForeignObject::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int x, int y, int tx, int ty, HitTestAction hitTestAction)
+bool RenderForeignObject::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
-    TransformationMatrix totalTransform = absoluteTransform();
-    totalTransform *= translationForAttributes();
-    double localX, localY;
-    totalTransform.inverse().map(x, y, &localX, &localY);
-    return RenderBlock::nodeAtPoint(request, result, static_cast<int>(localX), static_cast<int>(localY), tx, ty, hitTestAction);
+    FloatPoint localPoint = localToParentTransform().inverse().mapPoint(pointInParent);
+    return RenderBlock::nodeAtPoint(request, result, static_cast<int>(localPoint.x()), static_cast<int>(localPoint.y()), 0, 0, hitTestAction);
+}
+
+bool RenderForeignObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, int, int, int, int, HitTestAction)
+{
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 } // namespace WebCore

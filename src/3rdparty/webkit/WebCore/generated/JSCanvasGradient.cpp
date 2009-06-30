@@ -19,21 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSCanvasGradient.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CanvasGradient.h"
 #include "PlatformString.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCanvasGradient)
+ASSERT_CLASS_FITS_IN_CELL(JSCanvasGradient);
 
 /* Hash table for prototype */
 
@@ -52,9 +49,9 @@ static const HashTable JSCanvasGradientPrototypeTable =
 
 const ClassInfo JSCanvasGradientPrototype::s_info = { "CanvasGradientPrototype", 0, &JSCanvasGradientPrototypeTable, 0 };
 
-JSObject* JSCanvasGradientPrototype::self(ExecState* exec)
+JSObject* JSCanvasGradientPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCanvasGradient>(exec);
+    return getDOMPrototype<JSCanvasGradient>(exec, globalObject);
 }
 
 bool JSCanvasGradientPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -73,36 +70,36 @@ JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, PassRefPtr<C
 JSCanvasGradient::~JSCanvasGradient()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSCanvasGradient::createPrototype(ExecState* exec)
+JSObject* JSCanvasGradient::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCanvasGradientPrototype(JSCanvasGradientPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCanvasGradientPrototype(JSCanvasGradientPrototype::createStructure(globalObject->objectPrototype()));
 }
 
-JSValuePtr jsCanvasGradientPrototypeFunctionAddColorStop(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCanvasGradientPrototypeFunctionAddColorStop(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCanvasGradient::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCanvasGradient::s_info))
         return throwError(exec, TypeError);
     JSCanvasGradient* castedThisObj = static_cast<JSCanvasGradient*>(asObject(thisValue));
     CanvasGradient* imp = static_cast<CanvasGradient*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    float offset = args.at(exec, 0)->toFloat(exec);
-    const UString& color = args.at(exec, 1)->toString(exec);
+    float offset = args.at(0).toFloat(exec);
+    const UString& color = args.at(1).toString(exec);
 
     imp->addColorStop(offset, color, ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, CanvasGradient* object)
+JSC::JSValue toJS(JSC::ExecState* exec, CanvasGradient* object)
 {
     return getDOMObjectWrapper<JSCanvasGradient>(exec, object);
 }
-CanvasGradient* toCanvasGradient(JSC::JSValuePtr value)
+CanvasGradient* toCanvasGradient(JSC::JSValue value)
 {
-    return value->isObject(&JSCanvasGradient::s_info) ? static_cast<JSCanvasGradient*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSCanvasGradient::s_info) ? static_cast<JSCanvasGradient*>(asObject(value))->impl() : 0;
 }
 
 }

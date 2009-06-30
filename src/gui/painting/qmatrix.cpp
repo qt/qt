@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -197,6 +197,10 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
   QMatrix member functions
  *****************************************************************************/
+/*!
+    \fn QMatrix::QMatrix(Qt::Initialization)
+    \internal
+*/
 
 /*!
     Constructs an identity matrix.
@@ -1192,6 +1196,17 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
     matrix.
 
     Use the mapRect() function instead.
+*/
+
+
+/*!
+    \fn bool qFuzzyCompare(const QMatrix& m1, const QMatrix& m2)
+
+    \relates QMatrix
+    \since 4.6
+
+    Returns true if \a m1 and \a m2 are equal, allowing for a small
+    fuzziness factor for floating-point comparisons; false otherwise.
 */
 
 QT_END_NAMESPACE

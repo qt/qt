@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -377,8 +377,8 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
-    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().y2)));
-    if (bottom.y() >= d->lastLockedHeight)
+    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().bottom())));
+    if (bottom.y() > d->lastLockedHeight)
         d->lock();
     QRasterPaintEngine::clip(path, op);
 }
@@ -389,7 +389,7 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     d->dirtyClip = true;
     if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
         const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
-        if (bottom.y() >= d->lastLockedHeight)
+        if (bottom.y() > d->lastLockedHeight)
             d->lock();
     }
 
@@ -567,6 +567,7 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QPixmapData *data = pixmap.pixmapData();
         Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
         QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        dfbData->unlockDirectFB();
         IDirectFBSurface *s = dfbData->directFBSurface();
         d->blit(r, s, sr);
     }
@@ -598,6 +599,10 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pix, sp);
     } else {
         d->unlock();
+        QPixmapData *data = pixmap.pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
+        QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        dfbData->unlockDirectFB();
         d->drawTiledPixmap(r, pixmap);
     }
 }
@@ -686,8 +691,11 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (!d->unsupportedCompositionMode && d->dfbCanHandleClip(rect) && !d->matrixRotShear) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
+            const QColor color = brush.color();
+            if (!color.isValid())
+                return;
             d->unlock();
-            d->setDFBColor(brush.color());
+            d->setDFBColor(color);
             const QRect r = d->transform.mapRect(rect).toRect();
             d->surface->FillRectangle(d->surface, r.x(), r.y(),
                                       r.width(), r.height());
@@ -711,6 +719,8 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 
 void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 {
+    if (!color.isValid())
+        return;
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (d->unsupportedCompositionMode || !d->dfbCanHandleClip() || d->matrixRotShear) {
@@ -806,13 +816,13 @@ QDirectFBPaintEnginePrivate::~QDirectFBPaintEnginePrivate()
     delete surfaceCache;
 }
 
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &rect) const
+bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &) const
 {
     // TODO: Check to see if DirectFB can handle the clip for the given rect
     return dfbHandledClip;
 }
 
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &rect) const
+bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &) const
 {
     // TODO: Check to see if DirectFB can handle the clip for the given rect
     return dfbHandledClip;
@@ -892,7 +902,6 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
     setCompositionMode(q->state()->compositionMode());
     dirtyClip = true;
     setPen(q->state()->pen);
-    setDFBColor(pen.color());
 }
 
 void QDirectFBPaintEnginePrivate::end()
@@ -909,11 +918,17 @@ void QDirectFBPaintEnginePrivate::end()
 void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
 {
     pen = p;
-    simplePen = (pen.style() == Qt::NoPen) ||
-                (pen.style() == Qt::SolidLine
-                 && !antialiased
-                 && (pen.brush().style() == Qt::SolidPattern)
-                 && (pen.widthF() <= 1 && scale != NoScale));
+    if (pen.style() == Qt::NoPen) {
+        simplePen = true;
+    } else if (pen.style() == Qt::SolidLine
+               && !antialiased
+               && pen.brush().style() == Qt::SolidPattern
+               && pen.widthF() <= 1.0
+               && (scale == NoScale || pen.isCosmetic())) {
+        simplePen = true;
+    } else {
+        simplePen = false;
+    }
 }
 
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)

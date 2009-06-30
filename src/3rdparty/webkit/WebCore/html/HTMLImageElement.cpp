@@ -30,7 +30,9 @@
 #include "HTMLDocument.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "RenderImage.h"
+#include "ScriptEventListener.h"
 
 using namespace std;
 
@@ -80,7 +82,7 @@ void HTMLImageElement::parseMappedAttribute(MappedAttribute* attr)
     const QualifiedName& attrName = attr->name();
     if (attrName == altAttr) {
         if (renderer() && renderer()->isImage())
-            static_cast<RenderImage*>(renderer())->updateAltText();
+            toRenderImage(renderer())->updateAltText();
     } else if (attrName == srcAttr)
         m_imageLoader.updateFromElementIgnoringPreviousError();
     else if (attrName == widthAttr)
@@ -113,9 +115,9 @@ void HTMLImageElement::parseMappedAttribute(MappedAttribute* attr)
     } else if (attrName == ismapAttr)
         ismap = true;
     else if (attrName == onabortAttr)
-        setInlineEventListenerForTypeAndAttribute(eventNames().abortEvent, attr);
+        setAttributeEventListener(eventNames().abortEvent, createAttributeEventListener(this, attr));
     else if (attrName == onloadAttr)
-        setInlineEventListenerForTypeAndAttribute(eventNames().loadEvent, attr);
+        setAttributeEventListener(eventNames().loadEvent, createAttributeEventListener(this, attr));
     else if (attrName == compositeAttr) {
         if (!parseCompositeOperator(attr->value(), m_compositeOperator))
             m_compositeOperator = CompositeSourceOver;
@@ -166,7 +168,7 @@ void HTMLImageElement::attach()
     HTMLElement::attach();
 
     if (renderer() && renderer()->isImage()) {
-        RenderImage* imageObj = static_cast<RenderImage*>(renderer());
+        RenderImage* imageObj = toRenderImage(renderer());
         if (imageObj->hasImage())
             return;
         imageObj->setCachedImage(m_imageLoader.image());
@@ -226,7 +228,7 @@ int HTMLImageElement::width(bool ignorePendingStylesheets) const
     else
         document()->updateLayout();
 
-    return renderer() ? renderer()->contentWidth() : 0;
+    return renderBox() ? renderBox()->contentWidth() : 0;
 }
 
 int HTMLImageElement::height(bool ignorePendingStylesheets) const
@@ -250,7 +252,7 @@ int HTMLImageElement::height(bool ignorePendingStylesheets) const
     else
         document()->updateLayout();
 
-    return renderer() ? renderer()->contentHeight() : 0;
+    return renderBox() ? renderBox()->contentHeight() : 0;
 }
 
 int HTMLImageElement::naturalWidth() const

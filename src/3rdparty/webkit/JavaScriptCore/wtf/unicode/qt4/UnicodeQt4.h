@@ -92,6 +92,17 @@ typedef uint32_t UChar32;
     } \
 }
 
+#define U16_PREV(s, start, i, c) { \
+    (c)=(s)[--(i)]; \
+    if(U16_IS_TRAIL(c)) { \
+        uint16_t __c2; \
+        if((i)>(start) && U16_IS_LEAD(__c2=(s)[(i)-1])) { \
+            --(i); \
+            (c)=U16_GET_SUPPLEMENTARY(__c2, (c)); \
+        } \
+    } \
+}
+
 #define U_MASK(x) ((uint32_t)1<<(x))
 
 namespace WTF {
@@ -350,6 +361,12 @@ inline bool isPunct(UChar32 c)
 inline bool isLower(UChar32 c)
 {
     return QChar::category(c) == QChar::Letter_Lowercase;
+}
+
+inline bool hasLineBreakingPropertyComplexContext(UChar32)
+{
+    // FIXME: Implement this to return whether the character has line breaking property SA (Complex Context).
+    return false;
 }
 
 inline UChar32 mirroredChar(UChar32 c)

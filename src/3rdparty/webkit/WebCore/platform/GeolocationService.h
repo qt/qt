@@ -38,21 +38,21 @@ class PositionOptions;
 class GeolocationServiceClient {
 public:
     virtual ~GeolocationServiceClient() { }
-    virtual void geolocationServicePositionChanged(GeolocationService*) { }
-    virtual void geolocationServiceErrorOccurred(GeolocationService*) { }
+    virtual void geolocationServicePositionChanged(GeolocationService*) = 0;
+    virtual void geolocationServiceErrorOccurred(GeolocationService*) = 0;
 };
 
 class GeolocationService : public Noncopyable {
 public:
     static GeolocationService* create(GeolocationServiceClient*);
-    virtual ~GeolocationService() {}
+    virtual ~GeolocationService() { }
     
     virtual bool startUpdating(PositionOptions*) { return false; }
-    virtual void stopUpdating() {}
+    virtual void stopUpdating() { }
     
     virtual void suspend() { }
     virtual void resume() { }
-    
+
     virtual Geoposition* lastPosition() const { return 0; }
     virtual PositionError* lastError() const { return 0; }
 
@@ -65,7 +65,7 @@ protected:
 private:
     GeolocationServiceClient* m_geolocationServiceClient;
 };
-    
+
 } // namespace WebCore
 
 #endif // GeolocationService_h

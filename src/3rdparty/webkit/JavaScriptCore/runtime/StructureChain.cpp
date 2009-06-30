@@ -32,42 +32,29 @@
 
 namespace JSC {
 
-StructureChain::StructureChain(Structure* structure)
+StructureChain::StructureChain(Structure* head)
 {
-    size_t size = 1;
-
-    Structure* tmp = structure;
-    while (!tmp->storedPrototype()->isNull()) {
+    size_t size = 0;
+    for (Structure* current = head; current; current = current->storedPrototype().isNull() ? 0 : asObject(current->storedPrototype())->structure())
         ++size;
-        tmp = asCell(tmp->storedPrototype())->structure();
-    }
     
     m_vector.set(new RefPtr<Structure>[size + 1]);
 
-    size_t i;
-    for (i = 0; i < size - 1; ++i) {
-        m_vector[i] = structure;
-        structure = asObject(structure->storedPrototype())->structure();
-    }
-    m_vector[i] = structure;
-    m_vector[i + 1] = 0;
+    size_t i = 0;
+    for (Structure* current = head; current; current = current->storedPrototype().isNull() ? 0 : asObject(current->storedPrototype())->structure())
+        m_vector[i++] = current;
+    m_vector[i] = 0;
 }
 
-bool structureChainsAreEqual(StructureChain* chainA, StructureChain* chainB)
+bool StructureChain::isCacheable() const
 {
-    if (!chainA || !chainB)
-        return false;
-
-    RefPtr<Structure>* a = chainA->head();
-    RefPtr<Structure>* b = chainB->head();
-    while (1) {
-        if (*a != *b)
+    uint32_t i = 0;
+    
+    while (m_vector[i]) {
+        if (m_vector[i++]->isDictionary())
             return false;
-        if (!*a)
-            return true;
-        a++;
-        b++;
     }
+    return true;
 }
 
 } // namespace JSC

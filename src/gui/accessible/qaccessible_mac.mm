@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1232,10 +1232,8 @@ static int textForRoleAndAttribute(QAccessible::Role role, CFStringRef attribute
         return QAccessible::Value;
     else if (CFStringCompare(attribute, CFStringRef(QAXHelpAttribute), 0) == kCFCompareEqualTo)
         return QAccessible::Help;
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     else if (CFStringCompare(attribute, CFStringRef(QAXDescriptionAttribute), 0) == kCFCompareEqualTo)
         return QAccessible::Description;
-#endif
     else
         return -1;
 }
@@ -1442,17 +1440,13 @@ static OSStatus getAllAttributeNames(EventRef event, const QAInterface &interfac
     qt_mac_append_cf_uniq(attrs, CFStringRef(QAXRoleAttribute));
     qt_mac_append_cf_uniq(attrs, CFStringRef(QAXEnabledAttribute));
     qt_mac_append_cf_uniq(attrs, CFStringRef(QAXWindowAttribute));
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     qt_mac_append_cf_uniq(attrs, CFStringRef(QAXTopLevelUIElementAttribute));
-#endif
 
     // Append these names if the QInterafceItem returns any data for them.
     appendIfSupported(attrs, CFStringRef(QAXTitleAttribute), interface);
     appendIfSupported(attrs, CFStringRef(QAXValueAttribute), interface);
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     appendIfSupported(attrs, CFStringRef(QAXDescriptionAttribute), interface);
     appendIfSupported(attrs, CFStringRef(QAXLinkedUIElementsAttribute), interface);
-#endif
     appendIfSupported(attrs, CFStringRef(QAXHelpAttribute), interface);
     appendIfSupported(attrs, CFStringRef(QAXTitleUIElementAttribute), interface);
     appendIfSupported(attrs, CFStringRef(QAXChildrenAttribute), interface);
@@ -1705,12 +1699,10 @@ static OSStatus handleWindowAttribute(EventHandlerCallRef next_ref, EventRef eve
     Returns the top-level window for an interface, which is the closest ancestor interface that
     has the Window role. (Can also be a sheet or a drawer)
 */
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
 static OSStatus handleTopLevelUIElementAttribute(EventHandlerCallRef next_ref, EventRef event, const QAInterface &interface)
 {
     return navigateAncestors<IsWindowTest>(next_ref, event, interface, CFStringRef(QAXTopLevelUIElementAttribute));
 }
-#endif
 
 /*
     Returns the tab buttons for an interface.
@@ -1888,10 +1880,8 @@ static OSStatus getNamedAttribute(EventHandlerCallRef next_ref, EventRef event, 
 
     if (CFStringCompare(var, CFStringRef(QAXChildrenAttribute), 0) == kCFCompareEqualTo) {
         return handleChildrenAttribute(next_ref, event, interface);
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     } else if(CFStringCompare(var, CFStringRef(QAXTopLevelUIElementAttribute), 0) == kCFCompareEqualTo) {
         return handleTopLevelUIElementAttribute(next_ref, event, interface);
-#endif
     } else if(CFStringCompare(var, CFStringRef(QAXWindowAttribute), 0) == kCFCompareEqualTo) {
         return handleWindowAttribute(next_ref, event, interface);
     } else if(CFStringCompare(var, CFStringRef(QAXParentAttribute), 0) == kCFCompareEqualTo) {
@@ -1981,7 +1971,7 @@ static OSStatus getNamedAttribute(EventHandlerCallRef next_ref, EventRef event, 
     } else if (CFStringCompare(var, CFStringRef(QAXSubroleAttribute), 0) == kCFCompareEqualTo) {
         return handleSubroleAttribute(next_ref, event, interface);
     } else if (CFStringCompare(var, CFStringRef(QAXRoleDescriptionAttribute), 0) == kCFCompareEqualTo) {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4) && !defined(QT_MAC_USE_COCOA)
+#if !defined(QT_MAC_USE_COCOA)
         if (HICopyAccessibilityRoleDescription) {
             const CFStringRef roleDescription = HICopyAccessibilityRoleDescription(macRole(interface), 0);
             SetEventParameter(event, kEventParamAccessibleAttributeValue, typeCFStringRef,
@@ -2005,14 +1995,12 @@ static OSStatus getNamedAttribute(EventHandlerCallRef next_ref, EventRef event, 
         } else {
             handleStringAttribute(event, text, interface);
         }
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     } else if (CFStringCompare(var, CFStringRef(QAXDescriptionAttribute), 0) == kCFCompareEqualTo) {
         const QAccessible::Role role = interface.role();
         const QAccessible::Text text = (QAccessible::Text)textForRoleAndAttribute(role, var);
         handleStringAttribute(event, text, interface);
     } else if (CFStringCompare(var, CFStringRef(QAXLinkedUIElementsAttribute), 0) == kCFCompareEqualTo) {
         return CallNextEventHandler(next_ref, event);
-#endif
     } else if (CFStringCompare(var, CFStringRef(QAXHelpAttribute), 0) == kCFCompareEqualTo) {
         const QAccessible::Role role = interface.role();
         const QAccessible::Text text = (QAccessible::Text)textForRoleAndAttribute(role, var);

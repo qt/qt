@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGDefinitionSrcElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGDefinitionSrcElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGDefinitionSrcElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGDefinitionSrcElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +49,9 @@ static const HashTable JSSVGDefinitionSrcElementPrototypeTable =
 
 const ClassInfo JSSVGDefinitionSrcElementPrototype::s_info = { "SVGDefinitionSrcElementPrototype", 0, &JSSVGDefinitionSrcElementPrototypeTable, 0 };
 
-JSObject* JSSVGDefinitionSrcElementPrototype::self(ExecState* exec)
+JSObject* JSSVGDefinitionSrcElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGDefinitionSrcElement>(exec);
+    return getDOMPrototype<JSSVGDefinitionSrcElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGDefinitionSrcElement::s_info = { "SVGDefinitionSrcElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +61,9 @@ JSSVGDefinitionSrcElement::JSSVGDefinitionSrcElement(PassRefPtr<Structure> struc
 {
 }
 
-JSObject* JSSVGDefinitionSrcElement::createPrototype(ExecState* exec)
+JSObject* JSSVGDefinitionSrcElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGDefinitionSrcElementPrototype(JSSVGDefinitionSrcElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGDefinitionSrcElementPrototype(JSSVGDefinitionSrcElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

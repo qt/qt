@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,17 +60,15 @@
 
     \section1 What Versions of Mac OS X are Supported?
 
-    As of Qt 4.5, Qt supports Mac OS X versions 10.3 (for \bold{deployment
-    only}, not for development), 10.4 and 10.5. It is usually in the best
-    interest of the developer and user to be running the latest updates to any
-    version. We test internally against Mac OS X 10.3.9 and Mac OS X 10.4.11 as
-    well as the updated release of Mac OS X 10.5.
-
+    As of Qt 4.6, Qt supports Mac OS X versions 10.4 and up. It is usually in
+    the best interest of the developer and user to be running the latest
+    updates to any version. We test internally against Mac OS X 10.4.11 as well
+    as the updated release of Mac OS X 10.5 and Mac OS X 10.6.
 
     \section2 Carbon or Cocoa?
     
     Historically, Qt has used the Carbon toolkit, which supports 32-bit
-    applications on Mac OS X 10.3 and up. Qt 4.5 adds support for the Cocoa
+    applications on Mac OS X 10.4 and up. Qt 4.5 and up has support for the Cocoa
     toolkit, which requires 10.5 and provides 64-bit support.
 
     This detail is typically not important to Qt application developers.  Qt is
@@ -79,17 +77,21 @@
     version will be discontinued. This is something to keep in mind when you
     consider writing code directly against native APIs.
 
-    The current binary for Qt is built for Carbon. If you want to choose which
-    framework Qt will use, you must build from scratch. Carbon or Cocoa is
-    chosen when configuring the package for building. The configure process
-    selects Carbon by default, to specify Cocoa use the \c{-cocoa} flag.
-    configure for a 64-bit architecture using one of the \c{-arch} flags (see
-    \l{universal binaries}{Universal Binaries}).
+    The current binary for Qt is built in two flavors, 32-bit Carbon and full
+    universal Cocoa (32-bit and 64-bit). If you want a different setup for
+    Qt will use, you must build from scratch. Carbon or Cocoa is chosen when
+    configuring the package for building. The configure process selects Carbon
+    by default, to specify Cocoa use the \c{-cocoa} flag.  configure for a
+    64-bit architecture using one of the \c{-arch} flags (see \l{universal
+    binaries}{Universal Binaries}).
 
-    Currently, Apple's GCC 4.0.1 is used by default. When building on 10.5,
-    Apple's GCC 4.2 is also available and selectable with the configure flag:
-    \c{-platform macx-g++42}. GCC 3.x will \e not work. Experimental LLVM-GCC
-    support is available by passing in the \c{-platform macx-llvm} flag.
+    Currently, Apple's default GCC compiler is used by default (GCC 4.0.1 on
+    10.4 and 10.5, GCC 4.2 on 10.6). You can specify alternate compilers
+    though. For example, on Mac OS X 10.5, Apple's GCC 4.2 is also available
+    and selectable with the configure flag: \c{-platform macx-g++42}.  LLVM-GCC
+    support is available by passing in the \c{-platform macx-llvm} flag. GCC
+    3.x will \e not work. Though they may work, We do not support custom-built
+    GCC's.
 
     The following table summarizes the different versions of Mac OS X and what
     capabilities are used by Qt.
@@ -102,13 +104,6 @@
             \o Bits available to address memory
             \o CPU Architecture Supported
             \o Development Platform
-        \row
-            \o 10.3
-            \o Panther
-            \o Carbon
-            \o 32
-            \o PPC
-            \o No
         \row
             \o 10.4
             \o Tiger
@@ -130,6 +125,20 @@
             \o 32/64
             \o PPC/Intel
             \o Yes
+        \row
+            \o 10.6
+            \o Snow Leopard
+            \o Carbon
+            \o 32
+            \o PPC/Intel
+            \o Yes
+        \row
+            \o 10.6
+            \o Snow Leopard
+            \o Cocoa
+            \o 32/64
+            \o PPC/Intel
+            \o Yes
     \endtable
 
     \section2 Which One Should I Use?
@@ -144,15 +153,21 @@
     Carbon universal application with the appropriate checks in your code to
     choose the right path based on where you are running the application.
 
+    For Mac OS X 10.6, Apple has started recommending developers to build their
+    applications 64-bit. The main reason is that there is a small speed
+    increase due to the extra registers on Intel CPU's, all their machine
+    offerings have been 64-bit since 2007, and there is a cost for reading all
+    the 32-bit libraries into memory if everything else is 64-bit.  If you want
+    to follow this advice, there is only one choice, 64-bit Cocoa.
+
     \target universal binaries
     \section1 Universal Binaries
 
     In 2006, Apple begin transitioning from PowerPC (PPC) to Intel (x86)
     systems.  Both architectures are supported by Qt. The release of Mac OS X
     10.5 in October 2007 added the possibility of writing and deploying 64-bit
-    GUI applications. Qt 4.5 supports both the 32-bit (PPC and x86) and 64-bit
-    (PPC64 and x86-64) versions of PowerPC and Intel-based systems are
-    supported.
+    GUI applications. Qt 4.5 and up supports both the 32-bit (PPC and x86) and
+    64-bit (PPC64 and x86-64) versions of PowerPC and Intel-based systems.
 
     Universal binaries are used to bundle binaries for more than one
     architecture into a single package, simplifying deployment and
@@ -221,7 +236,7 @@
 
     In general, Qt supports building on one Mac OS X version and deploying on
     all others, both forward and backwards. You can build on 10.4 Tiger and run
-    the same binary on 10.3 and 10.5.
+    the same binary on 10.5 and up.
 
     Some restrictions apply:
 

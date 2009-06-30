@@ -26,6 +26,7 @@ SOURCES += \
     errorsview.cpp \
     finddialog.cpp \
     formpreviewview.cpp \
+    globals.cpp \
     main.cpp \
     mainwindow.cpp \
     messageeditor.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     errorsview.h \
     finddialog.h \
     formpreviewview.h \
+    globals.h \
     mainwindow.h \
     messageeditor.h \
     messageeditorwidgets.h \
@@ -99,6 +101,7 @@ RESOURCES += linguist.qrc
 
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/linguist_ja.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/linguist_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_zh_TW.ts \

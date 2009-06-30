@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGGElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -44,15 +40,15 @@
 #include "SVGElement.h"
 #include "SVGGElement.h"
 #include "SVGStringList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGGElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGGElement);
 
 /* Hash table */
 
@@ -101,9 +97,9 @@ static const HashTable JSSVGGElementPrototypeTable =
 
 const ClassInfo JSSVGGElementPrototype::s_info = { "SVGGElementPrototype", 0, &JSSVGGElementPrototypeTable, 0 };
 
-JSObject* JSSVGGElementPrototype::self(ExecState* exec)
+JSObject* JSSVGGElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGGElement>(exec);
+    return getDOMPrototype<JSSVGGElement>(exec, globalObject);
 }
 
 bool JSSVGGElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -118,9 +114,9 @@ JSSVGGElement::JSSVGGElement(PassRefPtr<Structure> structure, PassRefPtr<SVGGEle
 {
 }
 
-JSObject* JSSVGGElement::createPrototype(ExecState* exec)
+JSObject* JSSVGGElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGGElementPrototype(JSSVGGElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGGElementPrototype(JSSVGGElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGGElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,165 +124,182 @@ bool JSSVGGElement::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSSVGGElement, Base>(exec, &JSSVGGElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGGElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
-JSValuePtr jsSVGGElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
-JSValuePtr jsSVGGElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
 }
 
-JSValuePtr jsSVGGElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmllang());
 }
 
-JSValuePtr jsSVGGElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGGElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGGElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGGElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGGElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGGElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->nearestViewportElement()));
 }
 
-JSValuePtr jsSVGGElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGGElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->farthestViewportElement()));
 }
 
-void JSSVGGElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGGElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGGElement, Base>(exec, propertyName, value, &JSSVGGElementTable, this, slot);
 }
 
-void setJSSVGGElementXmllang(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGGElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(thisObject)->impl());
-    imp->setXmllang(value->toString(exec));
+    imp->setXmllang(value.toString(exec));
 }
 
-void setJSSVGGElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGGElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGGElement* imp = static_cast<SVGGElement*>(static_cast<JSSVGGElement*>(thisObject)->impl());
-    imp->setXmlspace(value->toString(exec));
+    imp->setXmlspace(value.toString(exec));
 }
 
-JSValuePtr jsSVGGElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGGElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
     SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
-    const UString& extension = args.at(exec, 0)->toString(exec);
+    const UString& extension = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasExtension(extension));
+    JSC::JSValue result = jsBoolean(imp->hasExtension(extension));
     return result;
 }
 
-JSValuePtr jsSVGGElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGGElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
     SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
-JSValuePtr jsSVGGElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGGElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGGElement::s_info))
-        return throwError(exec, TypeError);
-    JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
-    SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
-
-
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
-    return result;
-}
-
-JSValuePtr jsSVGGElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSSVGGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
     SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGGElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGGElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
     SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGGElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGGElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGGElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGGElement::s_info))
+        return throwError(exec, TypeError);
+    JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
+    SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsSVGGElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGGElement::s_info))
         return throwError(exec, TypeError);
     JSSVGGElement* castedThisObj = static_cast<JSSVGGElement*>(asObject(thisValue));
     SVGGElement* imp = static_cast<SVGGElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGElement* element = toSVGElement(args.at(exec, 0));
+    SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }

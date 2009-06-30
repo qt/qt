@@ -1,6 +1,6 @@
 /*
- * Copyright 2005 Frerich Raabe <raabe@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.
+ * Copyright (C) 2005 Frerich Raabe <raabe@kde.org>
+ * Copyright (C) 2006, 2009 Apple Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -52,8 +52,7 @@ namespace WebCore {
             class NodeTest {
             public:
                 enum Kind {
-                    TextNodeTest, CommentNodeTest, ProcessingInstructionNodeTest, AnyNodeTest, NameTest,
-                    ElementNodeTest // XPath 2.0
+                    TextNodeTest, CommentNodeTest, ProcessingInstructionNodeTest, AnyNodeTest, NameTest
                 };
                 
                 NodeTest(Kind kind) : m_kind(kind) {}
@@ -61,44 +60,48 @@ namespace WebCore {
                 NodeTest(Kind kind, const String& data, const String& namespaceURI) : m_kind(kind), m_data(data), m_namespaceURI(namespaceURI) {}
                 
                 Kind kind() const { return m_kind; }
-                const String data() const { return m_data; }
-                const String namespaceURI() const { return m_namespaceURI; }
+                const AtomicString& data() const { return m_data; }
+                const AtomicString& namespaceURI() const { return m_namespaceURI; }
+                Vector<Predicate*>& mergedPredicates() { return m_mergedPredicates; }
+                const Vector<Predicate*>& mergedPredicates() const { return m_mergedPredicates; }
                 
             private:
                 Kind m_kind;
-                String m_data;
-                String m_namespaceURI;
+                AtomicString m_data;
+                AtomicString m_namespaceURI;
+
+                // When possible, we merge some or all predicates with node test for better performance.
+                Vector<Predicate*> m_mergedPredicates;
             };
 
             Step(Axis, const NodeTest& nodeTest, const Vector<Predicate*>& predicates = Vector<Predicate*>());
             ~Step();
 
+            void optimize();
+
             void evaluate(Node* context, NodeSet&) const;
-            
+
             Axis axis() const { return m_axis; }
-            NodeTest nodeTest() const { return m_nodeTest; }
-            const Vector<Predicate*>& predicates() const { return m_predicates; }
-            
-            void setAxis(Axis axis) { m_axis = axis; }
-            void setNodeTest(NodeTest nodeTest) { m_nodeTest = nodeTest; }
-            void setPredicates(const Vector<Predicate*>& predicates) { m_predicates = predicates; }
-            
+            const NodeTest& nodeTest() const { return m_nodeTest; }
+
         private:
+            friend void optimizeStepPair(Step*, Step*, bool&);
+            bool predicatesAreContextListInsensitive() const;
+
             void parseNodeTest(const String&);
             void nodesInAxis(Node* context, NodeSet&) const;
-            bool nodeMatches(Node*) const;
             String namespaceFromNodetest(const String& nodeTest) const;
-            Node::NodeType primaryNodeType(Axis) const;
 
             Axis m_axis;
             NodeTest m_nodeTest;
             Vector<Predicate*> m_predicates;
         };
 
+        void optimizeStepPair(Step*, Step*, bool& dropSecondStep);
     }
 
 }
 
 #endif // ENABLE(XPATH)
 
-#endif // XPath_Step_H
+#endif // XPathStep_h

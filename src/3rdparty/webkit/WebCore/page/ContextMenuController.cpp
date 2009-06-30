@@ -37,11 +37,13 @@
 #include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
+#include "FormState.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
+#include "HTMLFormElement.h"
 #include "InspectorController.h"
 #include "MouseEvent.h"
 #include "Node.h"
@@ -83,15 +85,10 @@ void ContextMenuController::handleContextMenuEvent(Event* event)
     if (!event->isMouseEvent())
         return;
     MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
-    IntPoint point = IntPoint(mouseEvent->pageX(), mouseEvent->pageY());
-    HitTestResult result(point);
+    HitTestResult result(mouseEvent->absoluteLocation());
 
-    if (Frame* frame = event->target()->toNode()->document()->frame()) {
-        float zoomFactor = frame->pageZoomFactor();
-        point.setX(static_cast<int>(point.x() * zoomFactor));
-        point.setY(static_cast<int>(point.y() * zoomFactor));
-        result = frame->eventHandler()->hitTestResultAtPoint(point, false);
-    }
+    if (Frame* frame = event->target()->toNode()->document()->frame())
+        result = frame->eventHandler()->hitTestResultAtPoint(mouseEvent->absoluteLocation(), false);
 
     if (!result.innerNonSharedNode())
         return;
@@ -193,14 +190,14 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
 #endif
         case ContextMenuItemTagSpellingGuess:
             ASSERT(frame->selectedText().length());
-            if (frame->editor()->shouldInsertText(item->title(), frame->selection()->toRange().get(),
+            if (frame->editor()->shouldInsertText(item->title(), frame->selection()->toNormalizedRange().get(),
                 EditorInsertActionPasted)) {
                 Document* document = frame->document();
                 RefPtr<ReplaceSelectionCommand> command =
                     ReplaceSelectionCommand::create(document, createFragmentFromMarkup(document, item->title(), ""),
                                                                                    true, false, true);
                 applyCommand(command);
-                frame->revealSelection(RenderLayer::gAlignToEdgeIfNeeded);
+                frame->revealSelection(ScrollAlignment::alignToEdgeIfNeeded);
             }
             break;
         case ContextMenuItemTagIgnoreSpelling:
@@ -217,10 +214,10 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
             m_client->lookUpInDictionary(frame);
             break;
         case ContextMenuItemTagOpenLink:
-            if (Frame* targetFrame = result.targetFrame())
-                targetFrame->loader()->loadFrameRequestWithFormAndValues(FrameLoadRequest(ResourceRequest(result.absoluteLinkURL(), 
-                    frame->loader()->outgoingReferrer())), false, 0, 0, HashMap<String, String>());
-            else
+            if (Frame* targetFrame = result.targetFrame()) {
+                targetFrame->loader()->loadFrameRequest(FrameLoadRequest(ResourceRequest(result.absoluteLinkURL(), 
+                    frame->loader()->outgoingReferrer())), false, false, 0, 0);
+            } else
                 openNewWindow(result.absoluteLinkURL(), frame);
             break;
         case ContextMenuItemTagBold:
@@ -238,7 +235,7 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
             break;
         case ContextMenuItemTagStartSpeaking: {
             ExceptionCode ec;
-            RefPtr<Range> selectedRange = frame->selection()->toRange();
+            RefPtr<Range> selectedRange = frame->selection()->toNormalizedRange();
             if (!selectedRange || selectedRange->collapsed(ec)) {
                 Document* document = result.innerNonSharedNode()->document();
                 selectedRange = document->createRange();
@@ -296,6 +293,41 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
             break;
         case ContextMenuItemTagShowColors:
             frame->editor()->showColorPanel();
+            break;
+#endif
+#if PLATFORM(MAC) && !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+        case ContextMenuItemTagMakeUpperCase:
+            frame->editor()->uppercaseWord();
+            break;
+        case ContextMenuItemTagMakeLowerCase:
+            frame->editor()->lowercaseWord();
+            break;
+        case ContextMenuItemTagCapitalize:
+            frame->editor()->capitalizeWord();
+            break;
+        case ContextMenuItemTagShowSubstitutions:
+            frame->editor()->showSubstitutionsPanel();
+            break;
+        case ContextMenuItemTagSmartCopyPaste:
+            frame->editor()->toggleSmartInsertDelete();
+            break;
+        case ContextMenuItemTagSmartQuotes:
+            frame->editor()->toggleAutomaticQuoteSubstitution();
+            break;
+        case ContextMenuItemTagSmartDashes:
+            frame->editor()->toggleAutomaticDashSubstitution();
+            break;
+        case ContextMenuItemTagSmartLinks:
+            frame->editor()->toggleAutomaticLinkDetection();
+            break;
+        case ContextMenuItemTagTextReplacement:
+            frame->editor()->toggleAutomaticTextReplacement();
+            break;
+        case ContextMenuItemTagCorrectSpellingAutomatically:
+            frame->editor()->toggleAutomaticSpellingCorrection();
+            break;
+        case ContextMenuItemTagChangeBack:
+            frame->editor()->changeBackToReplacedString(result.replacedString());
             break;
 #endif
         case ContextMenuItemTagInspectElement:

@@ -26,18 +26,19 @@
 #include "HTMLViewSourceDocument.h"
 
 #include "DOMImplementation.h"
-#include "HTMLTokenizer.h"
-#include "HTMLHtmlElement.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLBodyElement.h"
 #include "HTMLDivElement.h"
-#include "HTMLTableElement.h"
+#include "HTMLHtmlElement.h"
+#include "HTMLNames.h"
 #include "HTMLTableCellElement.h"
+#include "HTMLTableElement.h"
 #include "HTMLTableRowElement.h"
 #include "HTMLTableSectionElement.h"
+#include "HTMLTokenizer.h"
+#include "MappedAttribute.h"
 #include "Text.h"
 #include "TextDocument.h"
-#include "HTMLNames.h"
 
 namespace WebCore {
 
@@ -50,13 +51,21 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(Frame* frame, const String& mimeT
     , m_tbody(0)
     , m_td(0)
 {
+    setUsesBeforeAfterRules(true);
 }
 
 Tokenizer* HTMLViewSourceDocument::createTokenizer()
 {
-    if (implementation()->isTextMIMEType(m_type))
-        return createTextTokenizer(this);
-    return new HTMLTokenizer(this);
+    // Use HTMLTokenizer if applicable, otherwise use TextTokenizer.
+    if (m_type == "text/html" || m_type == "application/xhtml+xml" || m_type == "image/svg+xml" || implementation()->isXMLMIMEType(m_type)
+#if ENABLE(XHTMLMP)
+        || m_type == "application/vnd.wap.xhtml+xml"
+#endif
+        ) {
+        return new HTMLTokenizer(this);
+    }
+
+    return createTextTokenizer(this);
 }
 
 void HTMLViewSourceDocument::createContainingTable()
@@ -72,7 +81,7 @@ void HTMLViewSourceDocument::createContainingTable()
     // document.
     RefPtr<Element> div = new HTMLDivElement(divTag, this);
     RefPtr<NamedMappedAttrMap> attrs = NamedMappedAttrMap::create();
-    attrs->insertAttribute(MappedAttribute::create(classAttr, "webkit-line-gutter-backdrop"), true);
+    attrs->addAttribute(MappedAttribute::create(classAttr, "webkit-line-gutter-backdrop"));
     div->setAttributeMap(attrs.release());
     body->addChild(div);
     div->attach();
@@ -149,6 +158,17 @@ void HTMLViewSourceDocument::addViewSourceToken(Token* token)
                                 m_current = static_cast<Element*>(m_current->parent());
                         } else {
                             const String& value = attr->value().string();
+
+                            // Compare ignoring case since HTMLTokenizer doesn't
+                            // lower names when passing in tokens to
+                            // HTMLViewSourceDocument.
+                            if (equalIgnoringCase(token->tagName, "base") && equalIgnoringCase(attr->name().localName(), "href")) {
+                                // Catch the href attribute in the base element.
+                                // It will be used for rendering anchors created
+                                // by addLink() below.
+                                setBaseElementURL(KURL(url(), value));
+                            }
+
                             // FIXME: XML could use namespace prefixes and confuse us.
                             if (equalIgnoringCase(attr->name().localName(), "src") || equalIgnoringCase(attr->name().localName(), "href"))
                                 m_current = addLink(value, equalIgnoringCase(token->tagName, "a"));
@@ -194,7 +214,7 @@ Element* HTMLViewSourceDocument::addSpanWithClassName(const String& className)
 
     Element* span = new HTMLElement(spanTag, this);
     RefPtr<NamedMappedAttrMap> attrs = NamedMappedAttrMap::create();
-    attrs->insertAttribute(MappedAttribute::create(classAttr, className), true);
+    attrs->addAttribute(MappedAttribute::create(classAttr, className));
     span->setAttributeMap(attrs.release());
     m_current->addChild(span);
     span->attach();
@@ -211,7 +231,7 @@ void HTMLViewSourceDocument::addLine(const String& className)
     // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
     Element* td = new HTMLTableCellElement(tdTag, this);
     RefPtr<NamedMappedAttrMap> attrs = NamedMappedAttrMap::create();
-    attrs->insertAttribute(MappedAttribute::create(classAttr, "webkit-line-number"), true);
+    attrs->addAttribute(MappedAttribute::create(classAttr, "webkit-line-number"));
     td->setAttributeMap(attrs.release());
     trow->addChild(td);
     td->attach();
@@ -219,7 +239,7 @@ void HTMLViewSourceDocument::addLine(const String& className)
     // Create a second cell for the line contents
     td = new HTMLTableCellElement(tdTag, this);
     attrs = NamedMappedAttrMap::create();
-    attrs->insertAttribute(MappedAttribute::create(classAttr, "webkit-line-content"), true);
+    attrs->addAttribute(MappedAttribute::create(classAttr, "webkit-line-content"));
     td->setAttributeMap(attrs.release());
     trow->addChild(td);
     td->attach();
@@ -282,9 +302,9 @@ Element* HTMLViewSourceDocument::addLink(const String& url, bool isAnchor)
         classValue = "webkit-html-attribute-value webkit-html-external-link";
     else
         classValue = "webkit-html-attribute-value webkit-html-resource-link";
-    attrs->insertAttribute(MappedAttribute::create(classAttr, classValue), true);
-    attrs->insertAttribute(MappedAttribute::create(targetAttr, "_blank"), true);
-    attrs->insertAttribute(MappedAttribute::create(hrefAttr, url), true);
+    attrs->addAttribute(MappedAttribute::create(classAttr, classValue));
+    attrs->addAttribute(MappedAttribute::create(targetAttr, "_blank"));
+    attrs->addAttribute(MappedAttribute::create(hrefAttr, url));
     anchor->setAttributeMap(attrs.release());
     m_current->addChild(anchor);
     anchor->attach();

@@ -230,6 +230,38 @@ static bool monochromeMediaFeatureEval(CSSValue* value, RenderStyle* style, Fram
     return colorMediaFeatureEval(value, style, frame, op);
 }
 
+static bool orientationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix)
+{
+    // A missing parameter should fail
+    if (!value)
+        return false;
+
+    FrameView* view = frame->view();
+    int width = view->layoutWidth();
+    int height = view->layoutHeight();
+    if (width > height) // Square viewport is portrait
+        return "landscape" == static_cast<CSSPrimitiveValue*>(value)->getStringValue();
+    return "portrait" == static_cast<CSSPrimitiveValue*>(value)->getStringValue();
+}
+
+static bool aspect_ratioMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
+{
+    if (value) {
+        FrameView* view = frame->view();
+        int width = view->layoutWidth();
+        int height = view->layoutHeight();
+        int h = 0;
+        int v = 0;
+        if (parseAspectRatio(value, h, v))
+            return v != 0 && compareValue(width * v, height * h, op);
+        return false;
+    }
+
+    // ({,min-,max-}aspect-ratio)
+    // assume if we have a device, its aspect ratio is non-zero
+    return true;
+}
+
 static bool device_aspect_ratioMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
     if (value) {
@@ -328,6 +360,16 @@ static bool max_monochromeMediaFeatureEval(CSSValue* value, RenderStyle* style, 
     return monochromeMediaFeatureEval(value, style, frame, MaxPrefix);
 }
 
+static bool min_aspect_ratioMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix)
+{
+    return aspect_ratioMediaFeatureEval(value, style, frame, MinPrefix);
+}
+
+static bool max_aspect_ratioMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix)
+{
+    return aspect_ratioMediaFeatureEval(value, style, frame, MaxPrefix);
+}
+
 static bool min_device_aspect_ratioMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix)
 {
     return device_aspect_ratioMediaFeatureEval(value, style, frame, MinPrefix);
@@ -388,7 +430,7 @@ static bool max_device_widthMediaFeatureEval(CSSValue* value, RenderStyle* style
     return device_widthMediaFeatureEval(value, style, frame, MaxPrefix);
 }
 
-static bool animationMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame,  MediaFeaturePrefix op)
+static bool animationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
 {
     if (value) {
         float number;
@@ -397,7 +439,7 @@ static bool animationMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame
     return true;
 }
 
-static bool transitionMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame,  MediaFeaturePrefix op)
+static bool transitionMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
 {
     if (value) {
         float number;
@@ -406,7 +448,7 @@ static bool transitionMediaFeatureEval(CSSValue* value, RenderStyle* style, Fram
     return true;
 }
 
-static bool transform_2dMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame,  MediaFeaturePrefix op)
+static bool transform_2dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
 {
     if (value) {
         float number;
@@ -415,13 +457,24 @@ static bool transform_2dMediaFeatureEval(CSSValue* value, RenderStyle* style, Fr
     return true;
 }
 
-static bool transform_3dMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame,  MediaFeaturePrefix op)
+static bool transform_3dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
 {
+    bool returnValueIfNoParameter;
+    int have3dRendering;
+
+#if ENABLE(3D_RENDERING)
+    returnValueIfNoParameter = true;
+    have3dRendering = 1;
+#else
+    returnValueIfNoParameter = false;
+    have3dRendering = 0;
+#endif
+
     if (value) {
         float number;
-        return numberValue(value, number) && compareValue(0, static_cast<int>(number), op);
+        return numberValue(value, number) && compareValue(have3dRendering, static_cast<int>(number), op);
     }
-    return false;
+    return returnValueIfNoParameter;
 }
 
 static void createFunctionMap()

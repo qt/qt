@@ -24,6 +24,22 @@
 
 #include <wtf/Platform.h>
 
+#if PLATFORM(WIN_OS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
+#if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
+#define JS_EXPORTDATA __declspec(dllexport)
+#else
+#define JS_EXPORTDATA __declspec(dllimport)
+#endif
+#if defined(BUILDING_WebCore) || defined(BUILDING_WebKit)
+#define WEBKIT_EXPORTDATA __declspec(dllexport)
+#else
+#define WEBKIT_EXPORTDATA __declspec(dllimport)
+#endif
+#else
+#define JS_EXPORTDATA
+#define WEBKIT_EXPORTDATA
+#endif
+
 #define MOBILE 0
 
 #ifdef __APPLE__
@@ -100,6 +116,7 @@
 #endif
 
 #if PLATFORM(MAC)
+// ATSUI vs. CoreText
 #if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
 #define WTF_USE_ATSUI 0
 #define WTF_USE_CORE_TEXT 1
@@ -107,8 +124,10 @@
 #define WTF_USE_ATSUI 1
 #define WTF_USE_CORE_TEXT 0
 #endif
+
+// New theme
 #define WTF_USE_NEW_THEME 1
-#endif
+#endif // PLATFORM(MAC)
 
 #if PLATFORM(SYMBIAN)
 #undef WIN32

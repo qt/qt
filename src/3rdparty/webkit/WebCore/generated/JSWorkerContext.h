@@ -21,7 +21,6 @@
 #ifndef JSWorkerContext_h
 #define JSWorkerContext_h
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorkerContextBase.h"
@@ -35,12 +34,12 @@ class JSWorkerContext : public JSWorkerContextBase {
 public:
     JSWorkerContext(PassRefPtr<JSC::Structure>, PassRefPtr<WorkerContext>);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    bool customGetOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -49,22 +48,25 @@ public:
 
 
     // Custom attributes
-    JSC::JSValuePtr self(JSC::ExecState*) const;
-    void setSelf(JSC::ExecState*, JSC::JSValuePtr);
+    JSC::JSValue xmlHttpRequest(JSC::ExecState*) const;
 
     // Custom functions
-    JSC::JSValuePtr addEventListener(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue importScripts(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue setTimeout(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue setInterval(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
 };
 
 
 class JSWorkerContextPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
     void* operator new(size_t, JSC::JSGlobalData*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -73,24 +75,32 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsWorkerContextPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerContextPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerContextPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsWorkerContextPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClose(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionImportScripts(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionSetTimeout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearTimeout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionSetInterval(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionClearInterval(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsWorkerContextSelf(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextSelf(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsWorkerContextOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsWorkerContextLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsWorkerContextNavigator(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextNavigator(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsWorkerContextMessageEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextMessageEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsWorkerContextWorkerLocationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSWorkerContextWorkerLocationConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsWorkerContextSelf(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextSelf(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextNavigator(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextNavigator(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextMessageEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextMessageEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextWorkerLocationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextWorkerLocationConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

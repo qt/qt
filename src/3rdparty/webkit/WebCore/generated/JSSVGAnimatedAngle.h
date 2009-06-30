@@ -21,10 +21,10 @@
 #ifndef JSSVGAnimatedAngle_h
 #define JSSVGAnimatedAngle_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -35,12 +35,12 @@ class JSSVGAnimatedAngle : public DOMObject {
 public:
     JSSVGAnimatedAngle(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedAngle>, SVGElement* context);
     virtual ~JSSVGAnimatedAngle();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -53,12 +53,13 @@ private:
     RefPtr<SVGAnimatedAngle > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGAnimatedAngle*, SVGElement* context);
-SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedAngle*, SVGElement* context);
+SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValue);
 
 class JSSVGAnimatedAnglePrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimatedAnglePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -66,8 +67,8 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGAnimatedAngleBaseVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAnimatedAngleAnimVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAnimatedAngleBaseVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAnimatedAngleAnimVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

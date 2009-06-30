@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,13 +56,6 @@ extern bool qt_sendSpontaneousEvent(QObject*, QEvent*);
 #  define typeByteCount typeSInt32
 #endif
 
-static QTextFormat qt_mac_compose_format()
-{
-    QTextCharFormat ret;
-    ret.setFontUnderline(true);
-    return ret;
-}
-
 QMacInputContext::QMacInputContext(QObject *parent)
     : QInputContext(parent), composing(false), recursionGuard(false), textDocument(0),
       keydownEvent(0)
@@ -72,7 +65,7 @@ QMacInputContext::QMacInputContext(QObject *parent)
 
 QMacInputContext::~QMacInputContext()
 {
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     if(textDocument)
         DeleteTSMDocument(textDocument);
 #endif
@@ -81,7 +74,7 @@ QMacInputContext::~QMacInputContext()
 void
 QMacInputContext::createTextDocument()
 {
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     if(!textDocument) {
         InterfaceTypeList itl = { kUnicodeDocument };
         NewTSMDocument(1, itl, &textDocument, SRefCon(this));
@@ -98,7 +91,7 @@ QString QMacInputContext::language()
 
 void QMacInputContext::mouseHandler(int pos, QMouseEvent *e)
 {
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     if(e->type() != QEvent::MouseButtonPress)
         return;
 
@@ -107,10 +100,20 @@ void QMacInputContext::mouseHandler(int pos, QMouseEvent *e)
     if (pos < 0 || pos > currentText.length())
         reset();
     // ##### handle mouse position
+#else
+    Q_UNUSED(pos);
+    Q_UNUSED(e);
 #endif
 }
 
 #if !defined QT_MAC_USE_COCOA
+
+static QTextFormat qt_mac_compose_format()
+{
+    QTextCharFormat ret;
+    ret.setFontUnderline(true);
+    return ret;
+}
 
 void QMacInputContext::reset()
 {
@@ -134,12 +137,12 @@ bool QMacInputContext::isComposing() const
 {
     return composing;
 }
-#endif 
+#endif
 
 void QMacInputContext::setFocusWidget(QWidget *w)
 {
     createTextDocument();
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     if(w)
         ActivateTSMDocument(textDocument);
     else
@@ -149,6 +152,7 @@ void QMacInputContext::setFocusWidget(QWidget *w)
 }
 
 
+#ifndef QT_MAC_USE_COCOA
 static EventTypeSpec input_events[] = {
     { kEventClassTextInput, kEventTextInputUnicodeForKeyEvent },
     { kEventClassTextInput, kEventTextInputOffsetToPos },
@@ -156,11 +160,12 @@ static EventTypeSpec input_events[] = {
 };
 static EventHandlerUPP input_proc_handlerUPP = 0;
 static EventHandlerRef input_proc_handler = 0;
+#endif
 
 void
 QMacInputContext::initialize()
 {
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     if(!input_proc_handler) {
         input_proc_handlerUPP = NewEventHandlerUPP(QMacInputContext::globalEventProcessor);
         InstallEventHandler(GetApplicationEventTarget(), input_proc_handlerUPP,
@@ -173,7 +178,7 @@ QMacInputContext::initialize()
 void
 QMacInputContext::cleanup()
 {
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     if(input_proc_handler) {
         RemoveEventHandler(input_proc_handler);
         input_proc_handler = 0;
@@ -198,7 +203,7 @@ void QMacInputContext::setLastKeydownEvent(EventRef event)
 OSStatus
 QMacInputContext::globalEventProcessor(EventHandlerCallRef, EventRef event, void *)
 {
-#ifdef Q_WS_MAC32
+#ifndef QT_MAC_USE_COCOA
     QScopedLoopLevelCounter loopLevelCounter(QApplicationPrivate::instance()->threadData);
 
     SRefCon refcon = 0;
@@ -360,6 +365,8 @@ QMacInputContext::globalEventProcessor(EventHandlerCallRef, EventRef event, void
     }
     if(!handled_event) //let the event go through
         return eventNotHandledErr;
+#else
+    Q_UNUSED(event);
 #endif
     return noErr; //we eat the event
 }

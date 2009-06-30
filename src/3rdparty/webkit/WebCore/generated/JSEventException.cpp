@@ -19,23 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSEventException.h"
-
-#include <wtf/GetPtr.h>
 
 #include "EventException.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSEventException)
+ASSERT_CLASS_FITS_IN_CELL(JSEventException);
 
 /* Hash table */
 
@@ -75,13 +72,13 @@ public:
     JSEventExceptionConstructor(ExecState* exec)
         : DOMObject(JSEventExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSEventExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSEventExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -110,19 +107,27 @@ static const HashTable JSEventExceptionPrototypeTable =
     { 5, 3, JSEventExceptionPrototypeTableValues, 0 };
 #endif
 
-const ClassInfo JSEventExceptionPrototype::s_info = { "EventExceptionPrototype", 0, &JSEventExceptionPrototypeTable, 0 };
-
-JSObject* JSEventExceptionPrototype::self(ExecState* exec)
+static const HashTable* getJSEventExceptionPrototypeTable(ExecState* exec)
 {
-    return getDOMPrototype<JSEventException>(exec);
+    return getHashTableForGlobalData(exec->globalData(), &JSEventExceptionPrototypeTable);
+}
+const ClassInfo JSEventExceptionPrototype::s_info = { "EventExceptionPrototype", 0, 0, getJSEventExceptionPrototypeTable };
+
+JSObject* JSEventExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMPrototype<JSEventException>(exec, globalObject);
 }
 
 bool JSEventExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    return getStaticPropertySlot<JSEventExceptionPrototype, JSObject>(exec, &JSEventExceptionPrototypeTable, this, propertyName, slot);
+    return getStaticPropertySlot<JSEventExceptionPrototype, JSObject>(exec, getJSEventExceptionPrototypeTable(exec), this, propertyName, slot);
 }
 
-const ClassInfo JSEventException::s_info = { "EventException", 0, &JSEventExceptionTable, 0 };
+static const HashTable* getJSEventExceptionTable(ExecState* exec)
+{
+    return getHashTableForGlobalData(exec->globalData(), &JSEventExceptionTable);
+}
+const ClassInfo JSEventException::s_info = { "EventException", 0, 0, getJSEventExceptionTable };
 
 JSEventException::JSEventException(PassRefPtr<Structure> structure, PassRefPtr<EventException> impl)
     : DOMObject(structure)
@@ -133,72 +138,75 @@ JSEventException::JSEventException(PassRefPtr<Structure> structure, PassRefPtr<E
 JSEventException::~JSEventException()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSEventException::createPrototype(ExecState* exec)
+JSObject* JSEventException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSEventExceptionPrototype(JSEventExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSEventExceptionPrototype(JSEventExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSEventException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    return getStaticValueSlot<JSEventException, Base>(exec, &JSEventExceptionTable, this, propertyName, slot);
+    return getStaticValueSlot<JSEventException, Base>(exec, getJSEventExceptionTable(exec), this, propertyName, slot);
 }
 
-JSValuePtr jsEventExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(static_cast<JSEventException*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsEventExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(static_cast<JSEventException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsEventExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(static_cast<JSEventException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSValuePtr jsEventExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSEventException*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSEventException::getConstructor(ExecState* exec)
+JSValue JSEventException::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSEventExceptionConstructor>(exec);
 }
 
-JSValuePtr jsEventExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsEventExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSEventException::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSEventException::s_info))
         return throwError(exec, TypeError);
     JSEventException* castedThisObj = static_cast<JSEventException*>(asObject(thisValue));
     EventException* imp = static_cast<EventException*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->toString());
+    JSC::JSValue result = jsString(exec, imp->toString());
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, EventException* object)
+JSC::JSValue toJS(JSC::ExecState* exec, EventException* object)
 {
     return getDOMObjectWrapper<JSEventException>(exec, object);
 }
-EventException* toEventException(JSC::JSValuePtr value)
+EventException* toEventException(JSC::JSValue value)
 {
-    return value->isObject(&JSEventException::s_info) ? static_cast<JSEventException*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSEventException::s_info) ? static_cast<JSEventException*>(asObject(value))->impl() : 0;
 }
 
 }

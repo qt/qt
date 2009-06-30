@@ -95,6 +95,7 @@ tests/auto/qresourceengine/runtime_resource.rcc
 tools/qdoc3/qdoc3*
 tools/qtestlib/updater/updater*
 tools/activeqt/testcon/testcon.tlb
+translations/*.qm
 qrc_*.cpp
 
 # xemacs temporary files
@@ -197,6 +198,7 @@ plugin_commonU.def
 .project
 .cproject
 
+qtc-debugging-helper
 src/corelib/lib
 src/network/lib
 src/xml/lib/

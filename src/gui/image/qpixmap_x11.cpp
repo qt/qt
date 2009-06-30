@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -312,7 +312,7 @@ static int qt_pixmap_serial = 0;
 int Q_GUI_EXPORT qt_x11_preferred_pixmap_depth = 0;
 
 QX11PixmapData::QX11PixmapData(PixelType type)
-    : QPixmapData(type, X11Class), hd(0), w(0), h(0), d(0),
+    : QPixmapData(type, X11Class), hd(0),
       uninit(true), read_only(false), x11_mask(0), picture(0), mask_picture(0), hd2(0),
       share_mode(QPixmap::ImplicitlyShared), pengine(0)
 {
@@ -324,6 +324,7 @@ void QX11PixmapData::resize(int width, int height)
 
     w = width;
     h = height;
+    is_null = (w <= 0 || h <= 0);
 
     if (defaultScreen >= 0 && defaultScreen != xinfo.screen()) {
         QX11InfoData* xd = xinfo.getX11Data(true);
@@ -347,6 +348,7 @@ void QX11PixmapData::resize(int width, int height)
     if (make_null || d == 0) {
         w = 0;
         h = 0;
+        is_null = true;
         hd = 0;
         picture = 0;
         d = 0;
@@ -375,6 +377,7 @@ void QX11PixmapData::fromImage(const QImage &img,
     w = img.width();
     h = img.height();
     d = img.depth();
+    is_null = (w <= 0 || h <= 0);
 
     if (defaultScreen >= 0 && defaultScreen != xinfo.screen()) {
         QX11InfoData* xd = xinfo.getX11Data(true);
@@ -395,6 +398,7 @@ void QX11PixmapData::fromImage(const QImage &img,
 
     if (uint(w) >= 32768 || uint(h) >= 32768) {
         w = h = 0;
+        is_null = true;
         return;
     }
 
@@ -1109,6 +1113,7 @@ void QX11PixmapData::bitmapFromImage(const QImage &image)
     w = img.width();
     h = img.height();
     d = 1;
+    is_null = (w <= 0 || h <= 0);
     int bpl = (w + 7) / 8;
     int ibpl = img.bytesPerLine();
     if (bpl != ibpl) {
@@ -1876,6 +1881,7 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         x11Data->d = d;
         x11Data->w = w;
         x11Data->h = h;
+        x11Data->is_null = (w <= 0 || h <= 0);
         x11Data->hd = (Qt::HANDLE)XCreatePixmap(X11->display,
                                                 RootWindow(X11->display, xinfo.screen()),
                                                 w, h, d);
@@ -2132,6 +2138,7 @@ void QX11PixmapData::copy(const QPixmapData *data, const QRect &rect)
     d = x11Data->d;
     w = rect.width();
     h = rect.height();
+    is_null = (w <= 0 || h <= 0);
     hd = (Qt::HANDLE)XCreatePixmap(X11->display,
                                    RootWindow(X11->display, x11Data->xinfo.screen()),
                                    w, h, d);
@@ -2250,6 +2257,7 @@ QPixmap QPixmap::fromX11Pixmap(Qt::HANDLE pixmap, QPixmap::ShareMode mode)
     data->uninit = false;
     data->w = width;
     data->h = height;
+    data->is_null = (width <= 0 || height <= 0);
     data->d = depth;
     data->hd = pixmap;
 

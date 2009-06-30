@@ -178,7 +178,7 @@ typedef union YYSTYPE
     LocationPath* locationPath;
 }
 /* Line 187 of yacc.c.  */
-#line 182 "XPathGrammar.tab.c"
+#line 182 "WebCore/tmp/../generated/XPathGrammar.tab.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -191,13 +191,13 @@ typedef union YYSTYPE
 #line 69 "../xml/XPathGrammar.y"
 
 
-int xpathyylex(YYSTYPE* yylval) { return Parser::current()->lex(yylval); }
-void xpathyyerror(const char*) { }
+static int xpathyylex(YYSTYPE* yylval) { return Parser::current()->lex(yylval); }
+static void xpathyyerror(const char*) { }
     
 
 
 /* Line 216 of yacc.c.  */
-#line 201 "XPathGrammar.tab.c"
+#line 201 "WebCore/tmp/../generated/XPathGrammar.tab.c"
 
 #ifdef short
 # undef short
@@ -1929,7 +1929,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 1933 "XPathGrammar.tab.c"
+#line 1933 "WebCore/tmp/../generated/XPathGrammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);

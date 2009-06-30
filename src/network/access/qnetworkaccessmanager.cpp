@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -112,8 +112,6 @@ static void ensureInitialized()
     are supplied that take a request and optional data, and each return a
     QNetworkReply object. The returned object is used to obtain any data
     returned in response to the corresponding request.
-    the reply to is where most of the signals as well
-    as the downloaded data are posted.
 
     A simple download off the network could be accomplished with:
     \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 0
@@ -122,7 +120,8 @@ static void ensureInitialized()
     takes is the QNetworkReply object containing the downloaded data
     as well as meta-data (headers, etc.).
 
-    \note The slot is responsible for deleting the object at that point.
+    \note After the request has finished, it is the responsibility of the user
+    to delete the QNetworkReply object at an appropriate time.
 
     A more involved example, assuming the manager is already existent,
     can be:
@@ -836,7 +835,7 @@ void QNetworkAccessManagerPrivate::addCredentials(const QNetworkProxy &p,
 
             QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
             auth->insert(QString(), authenticator->user(), authenticator->password());
-            cache.addEntry(cacheKey, auth); // replace the existing one, if there's any
+            objectCache.addEntry(cacheKey, auth); // replace the existing one, if there's any
 
             if (realm.isEmpty()) {
                 break;
@@ -870,13 +869,13 @@ QNetworkAccessManagerPrivate::fetchCachedCredentials(const QNetworkProxy &p,
     QByteArray cacheKey = proxyAuthenticationKey(proxy, realm);
     if (cacheKey.isEmpty())
         return 0;
-    if (!cache.hasEntry(cacheKey))
+    if (!objectCache.hasEntry(cacheKey))
         return 0;
 
     QNetworkAuthenticationCache *auth =
-        static_cast<QNetworkAuthenticationCache *>(cache.requestEntryNow(cacheKey));
+        static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
     QNetworkAuthenticationCredential *cred = auth->findClosestMatch(QString());
-    cache.releaseEntry(cacheKey);
+    objectCache.releaseEntry(cacheKey);
 
     // proxy cache credentials always have exactly one item
     Q_ASSERT_X(cred, "QNetworkAccessManager",
@@ -917,15 +916,15 @@ void QNetworkAccessManagerPrivate::addCredentials(const QUrl &url,
     copy.setUserName(authenticator->user());
     do {
         QByteArray cacheKey = authenticationKey(copy, realm);
-        if (cache.hasEntry(cacheKey)) {
+        if (objectCache.hasEntry(cacheKey)) {
             QNetworkAuthenticationCache *auth =
-                static_cast<QNetworkAuthenticationCache *>(cache.requestEntryNow(cacheKey));
+                static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
             auth->insert(domain, authenticator->user(), authenticator->password());
-            cache.releaseEntry(cacheKey);
+            objectCache.releaseEntry(cacheKey);
         } else {
             QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
             auth->insert(domain, authenticator->user(), authenticator->password());
-            cache.addEntry(cacheKey, auth);
+            objectCache.addEntry(cacheKey, auth);
         }
 
         if (copy.userName().isEmpty()) {
@@ -959,19 +958,19 @@ QNetworkAccessManagerPrivate::fetchCachedCredentials(const QUrl &url,
         realm = authentication->realm();
 
     QByteArray cacheKey = authenticationKey(url, realm);
-    if (!cache.hasEntry(cacheKey))
+    if (!objectCache.hasEntry(cacheKey))
         return 0;
 
     QNetworkAuthenticationCache *auth =
-        static_cast<QNetworkAuthenticationCache *>(cache.requestEntryNow(cacheKey));
+        static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
     QNetworkAuthenticationCredential *cred = auth->findClosestMatch(url.path());
-    cache.releaseEntry(cacheKey);
+    objectCache.releaseEntry(cacheKey);
     return cred;
 }
 
 void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
 {
-    manager->d_func()->cache.clear();
+    manager->d_func()->objectCache.clear();
 }
 
 QT_END_NAMESPACE

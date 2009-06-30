@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,6 +64,7 @@ public:
     virtual ~tst_QScriptEngine();
 
 private slots:
+    void constructWithParent();
     void currentContext();
     void pushPopContext();
     void getSetDefaultPrototype();
@@ -100,6 +101,7 @@ private slots:
     void automaticSemicolonInsertion();
     void abortEvaluation();
     void isEvaluating();
+    void printFunctionWithCustomHandler();
     void printThrowsException();
     void errorConstructors();
     void argumentsProperty();
@@ -119,6 +121,7 @@ private slots:
     void getSetAgent();
     void reentrancy();
     void incDecNonObjectProperty();
+    void installTranslatorFunctions();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -127,6 +130,17 @@ tst_QScriptEngine::tst_QScriptEngine()
 
 tst_QScriptEngine::~tst_QScriptEngine()
 {
+}
+
+void tst_QScriptEngine::constructWithParent()
+{
+    QPointer<QScriptEngine> ptr;
+    {
+        QObject obj;
+        QScriptEngine *engine = new QScriptEngine(&obj);
+        ptr = engine;
+    }
+    QVERIFY(ptr == 0);
 }
 
 void tst_QScriptEngine::currentContext()
@@ -945,6 +959,22 @@ void tst_QScriptEngine::checkSyntax()
     QCOMPARE(result.errorLineNumber(), errorLineNumber);
     QCOMPARE(result.errorColumnNumber(), errorColumnNumber);
     QCOMPARE(result.errorMessage(), errorMessage);
+
+    // assignment
+    {
+        QScriptSyntaxCheckResult copy = result;
+        QCOMPARE(copy.state(), result.state());
+        QCOMPARE(copy.errorLineNumber(), result.errorLineNumber());
+        QCOMPARE(copy.errorColumnNumber(), result.errorColumnNumber());
+        QCOMPARE(copy.errorMessage(), result.errorMessage());
+    }
+    {
+        QScriptSyntaxCheckResult copy(result);
+        QCOMPARE(copy.state(), result.state());
+        QCOMPARE(copy.errorLineNumber(), result.errorLineNumber());
+        QCOMPARE(copy.errorColumnNumber(), result.errorColumnNumber());
+        QCOMPARE(copy.errorMessage(), result.errorMessage());
+    }
 }
 
 void tst_QScriptEngine::canEvaluate_data()
@@ -1467,6 +1497,61 @@ void tst_QScriptEngine::valueConversion()
         Foo foo = qScriptValueToValue<Foo>(str);
         QCOMPARE(foo.x, 123);
     }
+
+    // more built-in types
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, uint(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, qulonglong(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, float(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, short(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, ushort(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, char(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, uchar(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QDateTime in = QDateTime::currentDateTime();
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isDate());
+        QCOMPARE(val.toDateTime(), in);
+    }
+    {
+        QDate in = QDate::currentDate();
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isDate());
+        QCOMPARE(val.toDateTime().date(), in);
+    }
+    {
+        QRegExp in = QRegExp("foo");
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isRegExp());
+        QCOMPARE(val.toRegExp(), in);
+    }
 }
 
 static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
@@ -1477,7 +1562,7 @@ static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
 void tst_QScriptEngine::importExtension()
 {
     QStringList libPaths = QCoreApplication::instance()->libraryPaths();
-    QCoreApplication::instance()->setLibraryPaths(QStringList() << ".");
+    QCoreApplication::instance()->setLibraryPaths(QStringList() << SRCDIR);
 
     QStringList availableExtensions;
     {
@@ -2387,6 +2472,33 @@ void tst_QScriptEngine::isEvaluating()
         eng.evaluate(script);
         QVERIFY(receiver.wasEvaluating);
     }
+}
+
+static QtMsgType theMessageType;
+static QString theMessage;
+
+static void myMsgHandler(QtMsgType type, const char *msg)
+{
+    theMessageType = type;
+    theMessage = QString::fromLatin1(msg);
+}
+
+void tst_QScriptEngine::printFunctionWithCustomHandler()
+{
+    QScriptEngine eng;
+    QtMsgHandler oldHandler = qInstallMsgHandler(myMsgHandler);
+    QVERIFY(eng.globalObject().property("print").isFunction());
+    theMessageType = QtSystemMsg;
+    QVERIFY(theMessage.isEmpty());
+    QVERIFY(eng.evaluate("print('test')").isUndefined());
+    QCOMPARE(theMessageType, QtDebugMsg);
+    QCOMPARE(theMessage, QString::fromLatin1("test"));
+    theMessageType = QtSystemMsg;
+    theMessage.clear();
+    QVERIFY(eng.evaluate("print(3, true, 'little pigs')").isUndefined());
+    QCOMPARE(theMessageType, QtDebugMsg);
+    QCOMPARE(theMessage, QString::fromLatin1("3 true little pigs"));
+    qInstallMsgHandler(oldHandler);
 }
 
 void tst_QScriptEngine::printThrowsException()
@@ -3412,6 +3524,50 @@ void tst_QScriptEngine:: incDecNonObjectProperty()
         QScriptValue ret = eng.evaluate("var a = 'ciao'; --a.length");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 3);
+    }
+}
+
+void tst_QScriptEngine::installTranslatorFunctions()
+{
+    QScriptEngine eng;
+    QScriptValue global = eng.globalObject();
+    QVERIFY(!global.property("qsTranslate").isValid());
+    QVERIFY(!global.property("QT_TRANSLATE_NOOP").isValid());
+    QVERIFY(!global.property("qsTr").isValid());
+    QVERIFY(!global.property("QT_TR_NOOP").isValid());
+    QVERIFY(!global.property("String").property("prototype").property("arg").isValid());
+
+    eng.installTranslatorFunctions();
+    QVERIFY(global.property("qsTranslate").isFunction());
+    QVERIFY(global.property("QT_TRANSLATE_NOOP").isFunction());
+    QVERIFY(global.property("qsTr").isFunction());
+    QVERIFY(global.property("QT_TR_NOOP").isFunction());
+    QVERIFY(global.property("String").property("prototype").property("arg").isFunction());
+
+    {
+        QScriptValue ret = eng.evaluate("qsTr('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("qsTranslate('foo', 'bar')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("bar"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("QT_TR_NOOP('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("QT_TRANSLATE_NOOP('foo', 'bar')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("bar"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("'foo%0'.arg('bar')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
     }
 }
 

@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSDOMImplementation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSStyleSheet.h"
 #include "DOMImplementation.h"
@@ -34,15 +31,14 @@
 #include "JSDocumentType.h"
 #include "JSHTMLDocument.h"
 #include "NodeFilter.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDOMImplementation)
+ASSERT_CLASS_FITS_IN_CELL(JSDOMImplementation);
 
 /* Hash table */
 
@@ -78,13 +74,13 @@ public:
     JSDOMImplementationConstructor(ExecState* exec)
         : DOMObject(JSDOMImplementationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMImplementationPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMImplementationPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -118,9 +114,9 @@ static const HashTable JSDOMImplementationPrototypeTable =
 
 const ClassInfo JSDOMImplementationPrototype::s_info = { "DOMImplementationPrototype", 0, &JSDOMImplementationPrototypeTable, 0 };
 
-JSObject* JSDOMImplementationPrototype::self(ExecState* exec)
+JSObject* JSDOMImplementationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMImplementation>(exec);
+    return getDOMPrototype<JSDOMImplementation>(exec, globalObject);
 }
 
 bool JSDOMImplementationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -139,12 +135,11 @@ JSDOMImplementation::JSDOMImplementation(PassRefPtr<Structure> structure, PassRe
 JSDOMImplementation::~JSDOMImplementation()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSDOMImplementation::createPrototype(ExecState* exec)
+JSObject* JSDOMImplementation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMImplementationPrototype(JSDOMImplementationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMImplementationPrototype(JSDOMImplementationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMImplementation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -152,99 +147,104 @@ bool JSDOMImplementation::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSDOMImplementation, Base>(exec, &JSDOMImplementationTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSDOMImplementation*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSDOMImplementation::getConstructor(ExecState* exec)
+JSValue JSDOMImplementation::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSDOMImplementationConstructor>(exec);
 }
 
-JSValuePtr jsDOMImplementationPrototypeFunctionHasFeature(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionHasFeature(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMImplementation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMImplementation::s_info))
         return throwError(exec, TypeError);
     JSDOMImplementation* castedThisObj = static_cast<JSDOMImplementation*>(asObject(thisValue));
     DOMImplementation* imp = static_cast<DOMImplementation*>(castedThisObj->impl());
-    const UString& feature = args.at(exec, 0)->toString(exec);
-    const UString& version = valueToStringWithNullCheck(exec, args.at(exec, 1));
+    const UString& feature = args.at(0).toString(exec);
+    const UString& version = valueToStringWithNullCheck(exec, args.at(1));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasFeature(feature, version));
+    JSC::JSValue result = jsBoolean(imp->hasFeature(feature, version));
     return result;
 }
 
-JSValuePtr jsDOMImplementationPrototypeFunctionCreateDocumentType(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateDocumentType(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMImplementation::s_info))
-        return throwError(exec, TypeError);
-    JSDOMImplementation* castedThisObj = static_cast<JSDOMImplementation*>(asObject(thisValue));
-    DOMImplementation* imp = static_cast<DOMImplementation*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    const UString& qualifiedName = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
-    const UString& publicId = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 1));
-    const UString& systemId = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 2));
-
-
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createDocumentType(qualifiedName, publicId, systemId, ec)));
-    setDOMException(exec, ec);
-    return result;
-}
-
-JSValuePtr jsDOMImplementationPrototypeFunctionCreateDocument(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSDOMImplementation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMImplementation::s_info))
         return throwError(exec, TypeError);
     JSDOMImplementation* castedThisObj = static_cast<JSDOMImplementation*>(asObject(thisValue));
     DOMImplementation* imp = static_cast<DOMImplementation*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    const UString& qualifiedName = valueToStringWithNullCheck(exec, args.at(exec, 1));
-    DocumentType* doctype = toDocumentType(args.at(exec, 2));
+    const UString& qualifiedName = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
+    const UString& publicId = valueToStringWithUndefinedOrNullCheck(exec, args.at(1));
+    const UString& systemId = valueToStringWithUndefinedOrNullCheck(exec, args.at(2));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createDocument(namespaceURI, qualifiedName, doctype, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createDocumentType(qualifiedName, publicId, systemId, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsDOMImplementationPrototypeFunctionCreateCSSStyleSheet(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateDocument(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMImplementation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMImplementation::s_info))
         return throwError(exec, TypeError);
     JSDOMImplementation* castedThisObj = static_cast<JSDOMImplementation*>(asObject(thisValue));
     DOMImplementation* imp = static_cast<DOMImplementation*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& title = args.at(exec, 0)->toString(exec);
-    const UString& media = args.at(exec, 1)->toString(exec);
+    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    const UString& qualifiedName = valueToStringWithNullCheck(exec, args.at(1));
+    DocumentType* doctype = toDocumentType(args.at(2));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createCSSStyleSheet(title, media, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createDocument(namespaceURI, qualifiedName, doctype, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsDOMImplementationPrototypeFunctionCreateHTMLDocument(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateCSSStyleSheet(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMImplementation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMImplementation::s_info))
         return throwError(exec, TypeError);
     JSDOMImplementation* castedThisObj = static_cast<JSDOMImplementation*>(asObject(thisValue));
     DOMImplementation* imp = static_cast<DOMImplementation*>(castedThisObj->impl());
-    const UString& title = args.at(exec, 0)->toString(exec);
+    ExceptionCode ec = 0;
+    const UString& title = args.at(0).toString(exec);
+    const UString& media = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createHTMLDocument(title)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createCSSStyleSheet(title, media, ec)));
+    setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, DOMImplementation* object)
+JSValue JSC_HOST_CALL jsDOMImplementationPrototypeFunctionCreateHTMLDocument(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMImplementation::s_info))
+        return throwError(exec, TypeError);
+    JSDOMImplementation* castedThisObj = static_cast<JSDOMImplementation*>(asObject(thisValue));
+    DOMImplementation* imp = static_cast<DOMImplementation*>(castedThisObj->impl());
+    const UString& title = args.at(0).toString(exec);
+
+
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createHTMLDocument(title)));
+    return result;
+}
+
+JSC::JSValue toJS(JSC::ExecState* exec, DOMImplementation* object)
 {
     return getDOMObjectWrapper<JSDOMImplementation>(exec, object);
 }
-DOMImplementation* toDOMImplementation(JSC::JSValuePtr value)
+DOMImplementation* toDOMImplementation(JSC::JSValue value)
 {
-    return value->isObject(&JSDOMImplementation::s_info) ? static_cast<JSDOMImplementation*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSDOMImplementation::s_info) ? static_cast<JSDOMImplementation*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -20,12 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorker.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -34,14 +31,14 @@
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "Worker.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSWorker)
+ASSERT_CLASS_FITS_IN_CELL(JSWorker);
 
 /* Hash table */
 
@@ -80,9 +77,9 @@ static const HashTable JSWorkerPrototypeTable =
 
 const ClassInfo JSWorkerPrototype::s_info = { "WorkerPrototype", 0, &JSWorkerPrototypeTable, 0 };
 
-JSObject* JSWorkerPrototype::self(ExecState* exec)
+JSObject* JSWorkerPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWorker>(exec);
+    return getDOMPrototype<JSWorker>(exec, globalObject);
 }
 
 bool JSWorkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -101,12 +98,11 @@ JSWorker::JSWorker(PassRefPtr<Structure> structure, PassRefPtr<Worker> impl)
 JSWorker::~JSWorker()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSWorker::createPrototype(ExecState* exec)
+JSObject* JSWorker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWorkerPrototype(JSWorkerPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSWorkerPrototype(JSWorkerPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSWorker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -114,64 +110,70 @@ bool JSWorker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNam
     return getStaticValueSlot<JSWorker, Base>(exec, &JSWorkerTable, this, propertyName, slot);
 }
 
-JSValuePtr jsWorkerOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(static_cast<JSWorker*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onerror())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onerror()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsWorkerOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(static_cast<JSWorker*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onmessage())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onmessage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-void JSWorker::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSWorker::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSWorker, Base>(exec, propertyName, value, &JSWorkerTable, this, slot);
 }
 
-void setJSWorkerOnerror(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSWorkerOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(static_cast<JSWorker*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnerror(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSWorkerOnmessage(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSWorkerOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(static_cast<JSWorker*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnmessage(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValuePtr jsWorkerPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWorker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     Worker* imp = static_cast<Worker*>(castedThisObj->impl());
-    const UString& message = args.at(exec, 0)->toString(exec);
+    const UString& message = args.at(0).toString(exec);
 
     imp->postMessage(message);
     return jsUndefined();
 }
 
-JSValuePtr jsWorkerPrototypeFunctionTerminate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionTerminate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWorker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     Worker* imp = static_cast<Worker*>(castedThisObj->impl());
@@ -180,44 +182,47 @@ JSValuePtr jsWorkerPrototypeFunctionTerminate(ExecState* exec, JSObject*, JSValu
     return jsUndefined();
 }
 
-JSValuePtr jsWorkerPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWorker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
 }
 
-JSValuePtr jsWorkerPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWorker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
 }
 
-JSValuePtr jsWorkerPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWorker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     Worker* imp = static_cast<Worker*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    Event* evt = toEvent(args.at(exec, 0));
+    Event* evt = toEvent(args.at(0));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->dispatchEvent(evt, ec));
+    JSC::JSValue result = jsBoolean(imp->dispatchEvent(evt, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Worker* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Worker* object)
 {
     return getDOMObjectWrapper<JSWorker>(exec, object);
 }
-Worker* toWorker(JSC::JSValuePtr value)
+Worker* toWorker(JSC::JSValue value)
 {
-    return value->isObject(&JSWorker::s_info) ? static_cast<JSWorker*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSWorker::s_info) ? static_cast<JSWorker*>(asObject(value))->impl() : 0;
 }
 
 }

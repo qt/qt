@@ -29,13 +29,15 @@
 #ifndef CallData_h
 #define CallData_h
 
+#include "NativeFunctionWrapper.h"
+
 namespace JSC {
 
     class ArgList;
     class ExecState;
     class FunctionBodyNode;
     class JSObject;
-    class JSValuePtr;
+    class JSValue;
     class ScopeChainNode;
 
     enum CallType {
@@ -44,7 +46,7 @@ namespace JSC {
         CallTypeJS
     };
 
-    typedef JSValuePtr (*NativeFunction)(ExecState*, JSObject*, JSValuePtr thisValue, const ArgList&);
+    typedef JSValue (JSC_HOST_CALL *NativeFunction)(ExecState*, JSObject*, JSValue thisValue, const ArgList&);
 
     union CallData {
         struct {
@@ -56,7 +58,7 @@ namespace JSC {
         } js;
     };
 
-    JSValuePtr call(ExecState*, JSValuePtr functionObject, CallType, const CallData&, JSValuePtr thisValue, const ArgList&);
+    JSValue call(ExecState*, JSValue functionObject, CallType, const CallData&, JSValue thisValue, const ArgList&);
 
 } // namespace JSC
 

@@ -60,7 +60,7 @@ RGBA32 makeRGBA(int r, int g, int b, int a)
     return max(0, min(a, 255)) << 24 | max(0, min(r, 255)) << 16 | max(0, min(g, 255)) << 8 | max(0, min(b, 255));
 }
 
-int colorFloatToRGBAByte(float f)
+static int colorFloatToRGBAByte(float f)
 {
     // We use lroundf and 255 instead of nextafterf(256, 0) to match CG's rounding
     return max(0, min(static_cast<int>(lroundf(255.0f * f)), 255));
@@ -114,6 +114,15 @@ RGBA32 makeRGBAFromHSLA(double hue, double saturation, double lightness, double 
                     static_cast<int>(calcHue(temp1, temp2, hue) * scaleFactor),
                     static_cast<int>(calcHue(temp1, temp2, hue - 1.0 / 3.0) * scaleFactor),
                     static_cast<int>(alpha * scaleFactor));
+}
+
+RGBA32 makeRGBAFromCMYKA(float c, float m, float y, float k, float a)
+{
+    double colors = 1 - k;
+    int r = static_cast<int>(nextafter(256, 0) * (colors * (1 - c)));
+    int g = static_cast<int>(nextafter(256, 0) * (colors * (1 - m)));
+    int b = static_cast<int>(nextafter(256, 0) * (colors * (1 - y)));
+    return makeRGBA(r, g, b, static_cast<float>(nextafter(256, 0) * a));
 }
 
 // originally moved here from the CSS parser
@@ -310,6 +319,71 @@ void Color::getRGBA(double& r, double& g, double& b, double& a) const
     g = green() / 255.0;
     b = blue() / 255.0;
     a = alpha() / 255.0;
+}
+
+void Color::getHSL(double& hue, double& saturation, double& lightness) const
+{
+    // http://en.wikipedia.org/wiki/HSL_color_space. This is a direct copy of
+    // the algorithm therein, although it's 360^o based and we end up wanting
+    // [0...1) based. It's clearer if we stick to 360^o until the end.
+    double r = static_cast<double>(red()) / 255.0;
+    double g = static_cast<double>(green()) / 255.0;
+    double b = static_cast<double>(blue()) / 255.0;
+    double max = std::max(std::max(r, g), b);
+    double min = std::min(std::min(r, g), b);
+
+    if (max == min)
+        hue = 0.0;
+    else if (max == r)
+        hue = (60.0 * ((g - b) / (max - min))) + 360.0;
+    else if (max == g)
+        hue = (60.0 * ((b - r) / (max - min))) + 120.0;
+    else
+        hue = (60.0 * ((r - g) / (max - min))) + 240.0;
+
+    if (hue >= 360.0)
+        hue -= 360.0;
+
+    // makeRGBAFromHSLA assumes that hue is in [0...1).
+    hue /= 360.0;
+
+    lightness = 0.5 * (max + min);
+    if (max == min)
+        saturation = 0.0;
+    else if (lightness <= 0.5)
+        saturation = ((max - min) / (max + min));
+    else
+        saturation = ((max - min) / (2.0 - (max + min)));
+}
+
+Color colorFromPremultipliedARGB(unsigned pixelColor)
+{
+    RGBA32 rgba;
+
+    if (unsigned alpha = (pixelColor & 0xFF000000) >> 24) {
+        rgba = makeRGBA(((pixelColor & 0x00FF0000) >> 16) * 255 / alpha,
+                        ((pixelColor & 0x0000FF00) >> 8) * 255 / alpha,
+                         (pixelColor & 0x000000FF) * 255 / alpha,
+                          alpha);
+    } else
+        rgba = pixelColor;
+
+    return Color(rgba);
+}
+
+unsigned premultipliedARGBFromColor(const Color& color)
+{
+    unsigned pixelColor;
+
+    if (unsigned alpha = color.alpha()) {
+        pixelColor = alpha << 24 |
+             ((color.red() * alpha  + 254) / 255) << 16 | 
+             ((color.green() * alpha  + 254) / 255) << 8 | 
+             ((color.blue() * alpha  + 254) / 255);
+    } else
+         pixelColor = color.rgb();
+
+    return pixelColor;
 }
 
 } // namespace WebCore

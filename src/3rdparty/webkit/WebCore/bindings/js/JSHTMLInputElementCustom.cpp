@@ -26,47 +26,93 @@
 #include "config.h"
 #include "JSHTMLInputElement.h"
 
+#include "Document.h"
 #include "HTMLInputElement.h"
+#include "Settings.h"
 
 using namespace JSC;
 
 namespace WebCore {
 
-bool JSHTMLInputElement::customGetOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+static bool needsGmailQuirk(HTMLInputElement* input)
 {
-    HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
-    if (input->canHaveSelection())
+    Document* document = input->document();
+
+    const KURL& url = document->url();
+    if (url.host() != "mail.google.com")
         return false;
 
-    const HashEntry* entry = JSHTMLInputElementPrototype::s_info.propHashTable(exec)->entry(exec, propertyName);
-    if (entry) {
-        if (entry->attributes() & Function) {
-            if (entry->function() == jsHTMLInputElementPrototypeFunctionSetSelectionRange) {
-                slot.setUndefined();
-                return true;
-            }
-        }
-    }
+    // As with other site-specific quirks, allow website developers to turn this off.
+    // In theory, this allows website developers to check if their fixes are effective.
+    Settings* settings = document->settings();
+    if (!settings)
+        return false;
+    if (!settings->needsSiteSpecificQuirks())
+        return false;
 
-    return false;
+    return true;
 }
 
-JSValuePtr JSHTMLInputElement::selectionStart(ExecState* exec) const
+JSValue JSHTMLInputElement::type(ExecState* exec) const
+{
+    HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
+    const AtomicString& type = input->type();
+
+    DEFINE_STATIC_LOCAL(const AtomicString, url, ("url"));
+    DEFINE_STATIC_LOCAL(const AtomicString, text, ("text"));
+
+    if (type == url && needsGmailQuirk(input))
+        return jsString(exec, text);
+    return jsString(exec, type);
+}
+
+JSValue JSHTMLInputElement::selectionStart(ExecState* exec) const
 {
     HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
     if (!input->canHaveSelection())
-        return jsUndefined();
+        return throwError(exec, TypeError);
 
     return jsNumber(exec, input->selectionStart());
 }
 
-JSValuePtr JSHTMLInputElement::selectionEnd(ExecState* exec) const
+void JSHTMLInputElement::setSelectionStart(ExecState* exec, JSValue value)
 {
     HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
     if (!input->canHaveSelection())
-        return jsUndefined();
+        throwError(exec, TypeError);
+
+    input->setSelectionStart(value.toInt32(exec));
+}
+
+JSValue JSHTMLInputElement::selectionEnd(ExecState* exec) const
+{
+    HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
+    if (!input->canHaveSelection())
+        return throwError(exec, TypeError);
 
     return jsNumber(exec, input->selectionEnd());
+}
+
+void JSHTMLInputElement::setSelectionEnd(ExecState* exec, JSValue value)
+{
+    HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
+    if (!input->canHaveSelection())
+        throwError(exec, TypeError);
+
+    input->setSelectionEnd(value.toInt32(exec));
+}
+
+JSValue JSHTMLInputElement::setSelectionRange(ExecState* exec, const ArgList& args)
+{
+    HTMLInputElement* input = static_cast<HTMLInputElement*>(impl());
+    if (!input->canHaveSelection())
+        return throwError(exec, TypeError);
+
+    int start = args.at(0).toInt32(exec);
+    int end = args.at(1).toInt32(exec);
+
+    input->setSelectionRange(start, end);
+    return jsUndefined();
 }
 
 } // namespace WebCore

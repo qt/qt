@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007 Apple Inc.
+ * Copyright (C) 2009 Kenneth Rohde Christiansen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -21,16 +22,19 @@
 #include "config.h"
 #include "RenderThemeWin.h"
 
-#include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
-#include "Document.h"
+#include "Element.h"
+#include "Frame.h"
 #include "GraphicsContext.h"
-#include "HTMLElement.h"
-#include "HTMLSelectElement.h"
-#include "Icon.h"
 #include "RenderSlider.h"
+#include "Settings.h"
 #include "SoftLinking.h"
+#include "SystemInfo.h"
 #include "UserAgentStyleSheets.h"
+
+#if ENABLE(VIDEO)
+#include "RenderMediaControls.h"
+#endif
 
 #include <tchar.h>
 
@@ -54,10 +58,14 @@
 
 // Textfield constants
 #define TFP_TEXTFIELD 1
+#define EP_EDITBORDER_NOSCROLL 6
 #define TFS_READONLY  6
 
-// ComboBox constants (from tmschema.h)
+// ComboBox constants (from vsstyle.h)
 #define CP_DROPDOWNBUTTON 1
+#define CP_BORDER 4
+#define CP_READONLY 5
+#define CP_DROPDOWNBUTTONRIGHT 6
 
 // TrackBar (slider) parts
 #define TKP_TRACK       1
@@ -83,14 +91,6 @@
 #define PBS_DISABLED    4
 #define PBS_DEFAULTED   5
 
-// This is the fixed width IE and Firefox use for buttons on dropdown menus
-static const int dropDownButtonWidth = 17;
-
-static const int shell32MagnifierIconIndex = 22;
-
-// Default font size to match Firefox.
-static const float defaultControlFontPixelSize = 13;
-
 SOFT_LINK_LIBRARY(uxtheme)
 SOFT_LINK(uxtheme, OpenThemeData, HANDLE, WINAPI, (HWND hwnd, LPCWSTR pszClassList), (hwnd, pszClassList))
 SOFT_LINK(uxtheme, CloseThemeData, HRESULT, WINAPI, (HANDLE hTheme), (hTheme))
@@ -100,20 +100,51 @@ SOFT_LINK(uxtheme, IsThemeBackgroundPartiallyTransparent, BOOL, WINAPI, (HANDLE 
 
 static bool haveTheme;
 
+static const unsigned vistaMenuListButtonOutset = 1;
+
+using namespace std;
+
 namespace WebCore {
 
+// This is the fixed width IE and Firefox use for buttons on dropdown menus
+static const int dropDownButtonWidth = 17;
+
+static const int shell32MagnifierIconIndex = 22;
+
+// Default font size to match Firefox.
+static const float defaultControlFontPixelSize = 13;
+
+static const float defaultCancelButtonSize = 9;
+static const float minCancelButtonSize = 5;
+static const float maxCancelButtonSize = 21;
+static const float defaultSearchFieldResultsDecorationSize = 13;
+static const float minSearchFieldResultsDecorationSize = 9;
+static const float maxSearchFieldResultsDecorationSize = 30;
+static const float defaultSearchFieldResultsButtonWidth = 18;
+
 static bool gWebKitIsBeingUnloaded;
+
+static bool documentIsInApplicationChromeMode(const Document* document)
+{
+    Settings* settings = document->settings();
+    return settings && settings->inApplicationChromeMode();
+}
 
 void RenderThemeWin::setWebKitIsBeingUnloaded()
 {
     gWebKitIsBeingUnloaded = true;
 }
 
-#if !USE(SAFARI_THEME)
-RenderTheme* theme()
+PassRefPtr<RenderTheme> RenderThemeWin::create()
 {
-    static RenderThemeWin winTheme;
-    return &winTheme;
+    return adoptRef(new RenderThemeWin);
+}
+
+#if !USE(SAFARI_THEME)
+PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
+{
+    static RenderTheme* winTheme = RenderThemeWin::create().releaseRef();
+    return winTheme;
 }
 #endif
 
@@ -202,24 +233,24 @@ bool RenderThemeWin::supportsHover(const RenderStyle*) const
 Color RenderThemeWin::platformActiveSelectionBackgroundColor() const
 {
     COLORREF color = GetSysColor(COLOR_HIGHLIGHT);
-    return Color(GetRValue(color), GetGValue(color), GetBValue(color), 255);
+    return Color(GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
 Color RenderThemeWin::platformInactiveSelectionBackgroundColor() const
 {
-    COLORREF color = GetSysColor(COLOR_GRAYTEXT);
-    return Color(GetRValue(color), GetGValue(color), GetBValue(color), 255);
+    // This color matches Firefox.
+    return Color(176, 176, 176);
 }
 
 Color RenderThemeWin::platformActiveSelectionForegroundColor() const
 {
     COLORREF color = GetSysColor(COLOR_HIGHLIGHTTEXT);
-    return Color(GetRValue(color), GetGValue(color), GetBValue(color), 255);
+    return Color(GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
 Color RenderThemeWin::platformInactiveSelectionForegroundColor() const
 {
-    return Color::white;
+    return platformActiveSelectionForegroundColor();
 }
 
 static void fillFontDescription(FontDescription& fontDescription, LOGFONT& logFont, float fontSize)
@@ -319,20 +350,21 @@ void RenderThemeWin::systemFont(int propId, FontDescription& fontDescription) co
     }
 }
 
-bool RenderThemeWin::supportsFocus(ControlPart appearance)
+bool RenderThemeWin::supportsFocus(ControlPart appearance) const
 {
     switch (appearance) {
         case PushButtonPart:
         case ButtonPart:
         case DefaultButtonPart:
-        case TextFieldPart:
-        case TextAreaPart:
             return true;
-        case MenulistPart:
-            return false;
         default:
             return false;
     }
+}
+
+bool RenderThemeWin::supportsFocusRing(const RenderStyle* style) const
+{
+    return supportsFocus(style->appearance());
 }
 
 unsigned RenderThemeWin::determineClassicState(RenderObject* o)
@@ -376,7 +408,7 @@ unsigned RenderThemeWin::determineState(RenderObject* o)
     ControlPart appearance = o->style()->appearance();
     if (!isEnabled(o))
         result = TS_DISABLED;
-    else if (isReadOnlyControl(o) && (TextFieldPart == appearance || TextAreaPart == appearance))
+    else if (isReadOnlyControl(o) && (TextFieldPart == appearance || TextAreaPart == appearance || SearchFieldPart == appearance))
         result = TFS_READONLY; // Readonly is supported on textfields.
     else if (isPressed(o)) // Active overrides hover and focused.
         result = TS_ACTIVE;
@@ -435,6 +467,7 @@ ThemeData RenderThemeWin::getClassicThemeData(RenderObject* o)
             result.m_part = DFC_SCROLL;
             result.m_state = determineClassicState(o);
             break;
+        case SearchFieldPart:
         case TextFieldPart:
         case TextAreaPart:
             result.m_part = TFP_TEXTFIELD;
@@ -481,16 +514,22 @@ ThemeData RenderThemeWin::getThemeData(RenderObject* o)
             break;
         case MenulistPart:
         case MenulistButtonPart:
-            result.m_part = CP_DROPDOWNBUTTON;
-            result.m_state = determineState(o);
+            result.m_part = isRunningOnVistaOrLater() ? CP_DROPDOWNBUTTONRIGHT : CP_DROPDOWNBUTTON;
+            if (isRunningOnVistaOrLater() && documentIsInApplicationChromeMode(o->document())) {
+                // The "readonly" look we use in application chrome mode
+                // only uses a "normal" look for the drop down button.
+                result.m_state = TS_NORMAL;
+            } else
+                result.m_state = determineState(o);
             break;
         case RadioPart:
             result.m_part = BP_RADIO;
             result.m_state = determineState(o);
             break;
+        case SearchFieldPart:
         case TextFieldPart:
         case TextAreaPart:
-            result.m_part = TFP_TEXTFIELD;
+            result.m_part = isRunningOnVistaOrLater() ? EP_EDITBORDER_NOSCROLL : TFP_TEXTFIELD;
             result.m_state = determineState(o);
             break;
         case SliderHorizontalPart:
@@ -602,8 +641,20 @@ bool RenderThemeWin::paintTextField(RenderObject* o, const RenderObject::PaintIn
 
 bool RenderThemeWin::paintMenuList(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
 {
-    // The outer box of a menu list is just a text field.  Paint it first.
-    drawControl(i.context,  o, textFieldTheme(), ThemeData(TFP_TEXTFIELD, determineState(o)), r);
+    HANDLE theme;
+    int part;
+    if (haveTheme && isRunningOnVistaOrLater()) {
+        theme = menuListTheme();
+        if (documentIsInApplicationChromeMode(o->document()))
+            part = CP_READONLY;
+        else
+            part = CP_BORDER;
+    } else {
+        theme = textFieldTheme();
+        part = TFP_TEXTFIELD;
+    }
+
+    drawControl(i.context,  o, theme, ThemeData(part, determineState(o)), r);
     
     return paintMenuListButton(o, i, r);
 }
@@ -656,6 +707,13 @@ bool RenderThemeWin::paintMenuListButton(RenderObject* o, const RenderObject::Pa
         buttonRect.setX(buttonRect.right() - dropDownButtonWidth);
     buttonRect.setWidth(dropDownButtonWidth);
 
+    if (isRunningOnVistaOrLater()) {
+        // Outset the top, right, and bottom borders of the button so that they coincide with the <select>'s border.
+        buttonRect.setY(buttonRect.y() - vistaMenuListButtonOutset);
+        buttonRect.setHeight(buttonRect.height() + 2 * vistaMenuListButtonOutset);
+        buttonRect.setWidth(buttonRect.width() + vistaMenuListButtonOutset);
+    }
+
     drawControl(i.context, o, menuListTheme(), getThemeData(o), buttonRect);
 
     return false;
@@ -697,15 +755,30 @@ void RenderThemeWin::adjustSliderThumbSize(RenderObject* o) const
         o->style()->setWidth(Length(sliderThumbWidth, Fixed));
         o->style()->setHeight(Length(sliderThumbHeight, Fixed));
     }
+#if ENABLE(VIDEO)
+    else if (o->style()->appearance() == MediaSliderThumbPart) 
+        RenderMediaControls::adjustMediaSliderThumbSize(o);
+#endif
 }
 
-void RenderThemeWin::adjustButtonInnerStyle(RenderStyle* style) const
+int RenderThemeWin::buttonInternalPaddingLeft() const
 {
-    // This inner padding matches Firefox.
-    style->setPaddingTop(Length(1, Fixed));
-    style->setPaddingRight(Length(3, Fixed));
-    style->setPaddingBottom(Length(1, Fixed));
-    style->setPaddingLeft(Length(3, Fixed));
+    return 3;
+}
+
+int RenderThemeWin::buttonInternalPaddingRight() const
+{
+    return 3;
+}
+
+int RenderThemeWin::buttonInternalPaddingTop() const
+{
+    return 1;
+}
+
+int RenderThemeWin::buttonInternalPaddingBottom() const
+{
+    return 1;
 }
 
 bool RenderThemeWin::paintSearchField(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
@@ -714,44 +787,49 @@ bool RenderThemeWin::paintSearchField(RenderObject* o, const RenderObject::Paint
 }
 
 void RenderThemeWin::adjustSearchFieldStyle(CSSStyleSelector* selector, RenderStyle* style, Element* e) const
-{   
-    // Override padding size to match AppKit text positioning.
+{
+    // Override paddingSize to match AppKit text positioning.
     const int padding = 1;
     style->setPaddingLeft(Length(padding, Fixed));
     style->setPaddingRight(Length(padding, Fixed));
     style->setPaddingTop(Length(padding, Fixed));
     style->setPaddingBottom(Length(padding, Fixed));
+    if (e && e->focused() && e->document()->frame()->selection()->isFocusedAndActive())
+        style->setOutlineOffset(-2);
 }
 
 bool RenderThemeWin::paintSearchFieldCancelButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
 {
-    Color buttonColor = (o->element() && o->element()->active()) ? Color(138, 138, 138) : Color(186, 186, 186);
+    IntRect bounds = r;
+    ASSERT(o->parent());
+    if (!o->parent() || !o->parent()->isBox())
+        return false;
+    
+    RenderBox* parentRenderBox = toRenderBox(o->parent());
 
-    IntSize cancelSize(10, 10);
-    IntSize cancelRadius(cancelSize.width() / 2, cancelSize.height() / 2);
-    int x = r.x() + (r.width() - cancelSize.width()) / 2;
-    int y = r.y() + (r.height() - cancelSize.height()) / 2 + 1;
-    IntRect cancelBounds(IntPoint(x, y), cancelSize);
-    paintInfo.context->save();
-    paintInfo.context->addRoundedRectClip(cancelBounds, cancelRadius, cancelRadius, cancelRadius, cancelRadius);
-    paintInfo.context->fillRect(cancelBounds, buttonColor);
+    IntRect parentBox = parentRenderBox->absoluteContentBox();
+    
+    // Make sure the scaled button stays square and will fit in its parent's box
+    bounds.setHeight(min(parentBox.width(), min(parentBox.height(), bounds.height())));
+    bounds.setWidth(bounds.height());
 
-    // Draw the 'x'
-    IntSize xSize(3, 3);
-    IntRect xBounds(cancelBounds.location() + IntSize(3, 3), xSize);
-    paintInfo.context->setStrokeColor(Color::white);
-    paintInfo.context->drawLine(xBounds.location(),  xBounds.location() + xBounds.size());
-    paintInfo.context->drawLine(IntPoint(xBounds.right(), xBounds.y()),  IntPoint(xBounds.x(), xBounds.bottom()));
+    // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
+    // be one pixel closer to the bottom of the field.  This tends to look better with the text.
+    bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
 
-    paintInfo.context->restore(); 
+    static Image* cancelImage = Image::loadPlatformResource("searchCancel").releaseRef();
+    static Image* cancelPressedImage = Image::loadPlatformResource("searchCancelPressed").releaseRef();
+    paintInfo.context->drawImage(isPressed(o) ? cancelPressedImage : cancelImage, bounds);
     return false;
 }
 
 void RenderThemeWin::adjustSearchFieldCancelButtonStyle(CSSStyleSelector* selector, RenderStyle* style, Element* e) const
 {
-    IntSize cancelSize(13, 11);
-    style->setWidth(Length(cancelSize.width(), Fixed));
-    style->setHeight(Length(cancelSize.height(), Fixed));
+    // Scale the button size based on the font size
+    float fontScale = style->fontSize() / defaultControlFontPixelSize;
+    int cancelButtonSize = lroundf(min(max(minCancelButtonSize, defaultCancelButtonSize * fontScale), maxCancelButtonSize));
+    style->setWidth(Length(cancelButtonSize, Fixed));
+    style->setHeight(Length(cancelButtonSize, Fixed));
 }
 
 void RenderThemeWin::adjustSearchFieldDecorationStyle(CSSStyleSelector* selector, RenderStyle* style, Element* e) const
@@ -760,46 +838,73 @@ void RenderThemeWin::adjustSearchFieldDecorationStyle(CSSStyleSelector* selector
     style->setWidth(Length(emptySize.width(), Fixed));
     style->setHeight(Length(emptySize.height(), Fixed));
 }
-   
+
 void RenderThemeWin::adjustSearchFieldResultsDecorationStyle(CSSStyleSelector* selector, RenderStyle* style, Element* e) const
 {
-    IntSize magnifierSize(15, 11);
-    style->setWidth(Length(magnifierSize.width(), Fixed));
-    style->setHeight(Length(magnifierSize.height(), Fixed));
+    // Scale the decoration size based on the font size
+    float fontScale = style->fontSize() / defaultControlFontPixelSize;
+    int magnifierSize = lroundf(min(max(minSearchFieldResultsDecorationSize, defaultSearchFieldResultsDecorationSize * fontScale), 
+                                     maxSearchFieldResultsDecorationSize));
+    style->setWidth(Length(magnifierSize, Fixed));
+    style->setHeight(Length(magnifierSize, Fixed));
 }
 
 bool RenderThemeWin::paintSearchFieldResultsDecoration(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
 {
     IntRect bounds = r;
+    ASSERT(o->parent());
+    if (!o->parent() || !o->parent()->isBox())
+        return false;
+    
+    RenderBox* parentRenderBox = toRenderBox(o->parent());
+    IntRect parentBox = parentRenderBox->absoluteContentBox();
+    
+    // Make sure the scaled decoration stays square and will fit in its parent's box
+    bounds.setHeight(min(parentBox.width(), min(parentBox.height(), bounds.height())));
     bounds.setWidth(bounds.height());
 
-    TCHAR buffer[MAX_PATH];
-    UINT length = ::GetSystemDirectory(buffer, ARRAYSIZE(buffer));
-    if (!length)
-        return 0;
+    // Center the decoration vertically.  Round up though, so if it has to be one pixel off-center, it will
+    // be one pixel closer to the bottom of the field.  This tends to look better with the text.
+    bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
     
-    if (_tcscat_s(buffer, TEXT("\\shell32.dll")))
-        return 0;
-
-    HICON hIcon;
-    if (!::ExtractIconEx(buffer, shell32MagnifierIconIndex, 0, &hIcon, 1))
-        return 0;
-
-    RefPtr<Icon> icon = Icon::create(hIcon);
-    icon->paint(paintInfo.context, bounds);
+    static Image* magnifierImage = Image::loadPlatformResource("searchMagnifier").releaseRef();
+    paintInfo.context->drawImage(magnifierImage, bounds);
     return false;
 }
 
 void RenderThemeWin::adjustSearchFieldResultsButtonStyle(CSSStyleSelector* selector, RenderStyle* style, Element* e) const
 {
-    IntSize magnifierSize(15, 11);
-    style->setWidth(Length(magnifierSize.width(), Fixed));
-    style->setHeight(Length(magnifierSize.height(), Fixed));
+    // Scale the button size based on the font size
+    float fontScale = style->fontSize() / defaultControlFontPixelSize;
+    int magnifierHeight = lroundf(min(max(minSearchFieldResultsDecorationSize, defaultSearchFieldResultsDecorationSize * fontScale), 
+                                   maxSearchFieldResultsDecorationSize));
+    int magnifierWidth = lroundf(magnifierHeight * defaultSearchFieldResultsButtonWidth / defaultSearchFieldResultsDecorationSize);
+    style->setWidth(Length(magnifierWidth, Fixed));
+    style->setHeight(Length(magnifierHeight, Fixed));
 }
 
 bool RenderThemeWin::paintSearchFieldResultsButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
 {
-    paintSearchFieldResultsDecoration(o, paintInfo, r);
+    IntRect bounds = r;
+    ASSERT(o->parent());
+    if (!o->parent())
+        return false;
+    if (!o->parent() || !o->parent()->isBox())
+        return false;
+    
+    RenderBox* parentRenderBox = toRenderBox(o->parent());
+    IntRect parentBox = parentRenderBox->absoluteContentBox();
+    
+    // Make sure the scaled decoration will fit in its parent's box
+    bounds.setHeight(min(parentBox.height(), bounds.height()));
+    bounds.setWidth(min(parentBox.width(), static_cast<int>(bounds.height() * defaultSearchFieldResultsButtonWidth / defaultSearchFieldResultsDecorationSize)));
+
+    // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
+    // be one pixel closer to the bottom of the field.  This tends to look better with the text.
+    bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
+
+    static Image* magnifierImage = Image::loadPlatformResource("searchMagnifierResults").releaseRef();
+    paintInfo.context->drawImage(magnifierImage, bounds);
     return false;
 }
 
@@ -848,5 +953,42 @@ Color RenderThemeWin::systemColor(int cssValueId) const
     COLORREF color = GetSysColor(sysColorIndex);
     return Color(GetRValue(color), GetGValue(color), GetBValue(color));
 }
+
+#if ENABLE(VIDEO)
+bool RenderThemeWin::paintMediaFullscreenButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaFullscreenButton, o, paintInfo, r);
+}
+
+bool RenderThemeWin::paintMediaMuteButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaMuteButton, o, paintInfo, r);
+}
+
+bool RenderThemeWin::paintMediaPlayButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaPlayButton, o, paintInfo, r);
+}
+
+bool RenderThemeWin::paintMediaSeekBackButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaSeekBackButton, o, paintInfo, r);
+}
+
+bool RenderThemeWin::paintMediaSeekForwardButton(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaSeekForwardButton, o, paintInfo, r);
+}
+
+bool RenderThemeWin::paintMediaSliderTrack(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaSlider, o, paintInfo, r);
+}
+
+bool RenderThemeWin::paintMediaSliderThumb(RenderObject* o, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaSliderThumb, o, paintInfo, r);
+}
+#endif
 
 }

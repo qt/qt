@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -206,6 +206,7 @@ private slots:
 
     void drawImage_task217400_data();
     void drawImage_task217400();
+    void drawImage_1x1();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -232,6 +233,7 @@ private slots:
 
     void zeroOpacity();
     void clippingBug();
+    void emptyClip();
 
 private:
     void fillData();
@@ -4216,6 +4218,44 @@ void tst_QPainter::clippingBug()
     p.begin(&img);
     p.setClipPath(path);
     p.fillRect(0, 0, 32, 32, Qt::red);
+    p.end();
+
+    QCOMPARE(img, expected);
+}
+
+void tst_QPainter::emptyClip()
+{
+    QImage img(64, 64, QImage::Format_ARGB32_Premultiplied);
+    QPainter p(&img);
+    p.setRenderHints(QPainter::Antialiasing);
+    p.setClipRect(0, 32, 64, 0);
+    p.fillRect(0, 0, 64, 64, Qt::white);
+
+    QPainterPath path;
+    path.lineTo(64, 0);
+    path.lineTo(64, 64);
+    path.lineTo(40, 64);
+    path.lineTo(40, 80);
+    path.lineTo(0, 80);
+
+    p.fillPath(path, Qt::green);
+}
+
+void tst_QPainter::drawImage_1x1()
+{
+    QImage source(1, 1, QImage::Format_ARGB32_Premultiplied);
+    source.fill(0xffffffff);
+
+    QImage img(32, 32, QImage::Format_ARGB32_Premultiplied);
+    img.fill(0xff000000);
+    QPainter p(&img);
+    p.drawImage(QRectF(0.9, 0.9, 32, 32), source);
+    p.end();
+
+    QImage expected = img;
+    expected.fill(0xff000000);
+    p.begin(&expected);
+    p.fillRect(1, 1, 31, 31, Qt::white);
     p.end();
 
     QCOMPARE(img, expected);

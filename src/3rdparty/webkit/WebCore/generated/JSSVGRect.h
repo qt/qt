@@ -21,14 +21,14 @@
 #ifndef JSSVGRect_h
 #define JSSVGRect_h
 
-
 #if ENABLE(SVG)
 
+#include "FloatRect.h"
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "FloatRect.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 
@@ -37,13 +37,13 @@ class JSSVGRect : public DOMObject {
 public:
     JSSVGRect(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> >, SVGElement* context);
     virtual ~JSSVGRect();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -56,12 +56,13 @@ private:
     RefPtr<JSSVGPODTypeWrapper<FloatRect> > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, JSSVGPODTypeWrapper<FloatRect>*, SVGElement* context);
-FloatRect toSVGRect(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<FloatRect>*, SVGElement* context);
+FloatRect toSVGRect(JSC::JSValue);
 
 class JSSVGRectPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGRectPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -69,14 +70,14 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGRectX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGRectX(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGRectY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGRectY(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGRectWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGRectWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGRectHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGRectHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsSVGRectX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGRectX(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGRectY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGRectY(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGRectWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGRectWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGRectHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGRectHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

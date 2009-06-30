@@ -20,13 +20,9 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFETurbulenceElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -39,15 +35,14 @@
 #include "JSSVGAnimatedNumber.h"
 #include "JSSVGAnimatedString.h"
 #include "SVGFETurbulenceElement.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFETurbulenceElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFETurbulenceElement);
 
 /* Hash table */
 
@@ -102,13 +97,13 @@ public:
     JSSVGFETurbulenceElementConstructor(ExecState* exec)
         : DOMObject(JSSVGFETurbulenceElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFETurbulenceElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFETurbulenceElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -144,9 +139,9 @@ static const HashTable JSSVGFETurbulenceElementPrototypeTable =
 
 const ClassInfo JSSVGFETurbulenceElementPrototype::s_info = { "SVGFETurbulenceElementPrototype", 0, &JSSVGFETurbulenceElementPrototypeTable, 0 };
 
-JSObject* JSSVGFETurbulenceElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFETurbulenceElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFETurbulenceElement>(exec);
+    return getDOMPrototype<JSSVGFETurbulenceElement>(exec, globalObject);
 }
 
 bool JSSVGFETurbulenceElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -161,9 +156,9 @@ JSSVGFETurbulenceElement::JSSVGFETurbulenceElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGFETurbulenceElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFETurbulenceElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFETurbulenceElementPrototype(JSSVGFETurbulenceElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFETurbulenceElementPrototype(JSSVGFETurbulenceElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFETurbulenceElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -171,146 +166,160 @@ bool JSSVGFETurbulenceElement::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticValueSlot<JSSVGFETurbulenceElement, Base>(exec, &JSSVGFETurbulenceElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFETurbulenceElementBaseFrequencyX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementBaseFrequencyX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->baseFrequencyXAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementBaseFrequencyY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementBaseFrequencyY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->baseFrequencyYAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementNumOctaves(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementNumOctaves(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedInteger> obj = imp->numOctavesAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementSeed(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementSeed(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->seedAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementStitchTiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementStitchTiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->stitchTilesAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->typeAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFETurbulenceElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGFETurbulenceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFETurbulenceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGFETurbulenceElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSSVGFETurbulenceElement::getConstructor(ExecState* exec)
+JSValue JSSVGFETurbulenceElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGFETurbulenceElementConstructor>(exec);
 }
 
-JSValuePtr jsSVGFETurbulenceElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGFETurbulenceElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGFETurbulenceElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGFETurbulenceElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFETurbulenceElement* castedThisObj = static_cast<JSSVGFETurbulenceElement*>(asObject(thisValue));
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsSVGFETurbulenceElementSVG_TURBULENCE_TYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFETurbulenceElementSVG_TURBULENCE_TYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGFETurbulenceElementSVG_TURBULENCE_TYPE_FRACTALNOISE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFETurbulenceElementSVG_TURBULENCE_TYPE_FRACTALNOISE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGFETurbulenceElementSVG_TURBULENCE_TYPE_TURBULENCE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFETurbulenceElementSVG_TURBULENCE_TYPE_TURBULENCE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsSVGFETurbulenceElementSVG_STITCHTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFETurbulenceElementSVG_STITCHTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGFETurbulenceElementSVG_STITCHTYPE_STITCH(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFETurbulenceElementSVG_STITCHTYPE_STITCH(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGFETurbulenceElementSVG_STITCHTYPE_NOSTITCH(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFETurbulenceElementSVG_STITCHTYPE_NOSTITCH(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
@@ -318,4 +327,4 @@ JSValuePtr jsSVGFETurbulenceElementSVG_STITCHTYPE_NOSTITCH(ExecState* exec, cons
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

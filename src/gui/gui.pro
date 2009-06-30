@@ -35,6 +35,8 @@ include(util/util.pri)
 include(statemachine/statemachine.pri)
 include(math3d/math3d.pri)
 
+contains(QT_CONFIG, egl): include(egl/egl.pri)
+
 embedded: QT += network
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI

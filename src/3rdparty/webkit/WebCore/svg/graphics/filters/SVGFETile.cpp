@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2008 Alex Mathews <possessedpenguinbob@gmail.com>
+                  2009 Dirk Schulze <krit@webkit.org>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -19,8 +20,13 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFETile.h"
+
+#include "Filter.h"
+#include "GraphicsContext.h"
+#include "Pattern.h"
+#include "TransformationMatrix.h"
 #include "SVGRenderTreeAsText.h"
 
 namespace WebCore {
@@ -36,8 +42,40 @@ PassRefPtr<FETile> FETile::create(FilterEffect* in)
     return adoptRef(new FETile(in));
 }
 
-void FETile::apply()
+FloatRect FETile::uniteChildEffectSubregions(Filter* filter)
 {
+    m_in->calculateEffectRect(filter);
+    return filter->filterRegion();
+}
+
+void FETile::apply(Filter* filter)
+{
+    m_in->apply(filter);
+    if (!m_in->resultImage())
+        return;
+
+    GraphicsContext* filterContext = getEffectContext();
+    if (!filterContext)
+        return;
+
+    IntRect tileRect = enclosingIntRect(m_in->subRegion());
+
+    // Source input needs more attention. It has the size of the filterRegion but gives the
+    // size of the cutted sourceImage back. This is part of the specification and optimization.
+    if (m_in->isSourceInput())
+        tileRect = enclosingIntRect(filter->filterRegion());
+
+    OwnPtr<ImageBuffer> tileImage = ImageBuffer::create(tileRect.size(), false);
+    GraphicsContext* tileImageContext = tileImage->context();
+    tileImageContext->drawImage(m_in->resultImage()->image(), IntPoint());
+    RefPtr<Pattern> pattern = Pattern::create(tileImage->image(), true, true);
+
+    TransformationMatrix matrix;
+    matrix.translate(m_in->subRegion().x() - subRegion().x(), m_in->subRegion().y() - subRegion().y());
+    pattern.get()->setPatternSpaceTransform(matrix);
+
+    filterContext->setFillPattern(pattern);
+    filterContext->fillRect(FloatRect(FloatPoint(), subRegion().size()));
 }
 
 void FETile::dump()
@@ -53,5 +91,5 @@ TextStream& FETile::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 

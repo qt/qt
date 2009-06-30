@@ -89,39 +89,31 @@ bool InsertTextCommand::performTrivialReplace(const String& text, bool selectIns
     if (start.node() != end.node() || !start.node()->isTextNode() || isTabSpanTextNode(start.node()))
         return false;
         
-    replaceTextInNode(static_cast<Text*>(start.node()), start.offset(), end.offset() - start.offset(), text);
+    replaceTextInNode(static_cast<Text*>(start.node()), start.deprecatedEditingOffset(), end.deprecatedEditingOffset() - start.deprecatedEditingOffset(), text);
     
-    Position endPosition(start.node(), start.offset() + text.length());
+    Position endPosition(start.node(), start.deprecatedEditingOffset() + text.length());
     
     // We could have inserted a part of composed character sequence,
     // so we are basically treating ending selection as a range to avoid validation.
     // <http://bugs.webkit.org/show_bug.cgi?id=15781>
-    Selection forcedEndingSelection;
+    VisibleSelection forcedEndingSelection;
     forcedEndingSelection.setWithoutValidation(start, endPosition);
     setEndingSelection(forcedEndingSelection);
     
     if (!selectInsertedText)
-        setEndingSelection(Selection(endingSelection().visibleEnd()));
+        setEndingSelection(VisibleSelection(endingSelection().visibleEnd()));
     
     return true;
 }
 
-void InsertTextCommand::input(const String& originalText, bool selectInsertedText)
+void InsertTextCommand::input(const String& text, bool selectInsertedText)
 {
-    String text = originalText;
     
     ASSERT(text.find('\n') == -1);
 
     if (endingSelection().isNone())
         return;
-        
-    if (RenderObject* renderer = endingSelection().start().node()->renderer())
-        if (renderer->style()->collapseWhiteSpace())
-            // Turn all spaces into non breaking spaces, to make sure that they are treated
-            // literally, and aren't collapsed after insertion. They will be rebalanced 
-            // (turned into a sequence of regular and non breaking spaces) below.
-            text.replace(' ', noBreakSpace);
-    
+
     // Delete the current selection.
     // FIXME: This delete operation blows away the typing style.
     if (endingSelection().isRange()) {
@@ -129,9 +121,28 @@ void InsertTextCommand::input(const String& originalText, bool selectInsertedTex
             return;
         deleteSelection(false, true, true, false);
     }
+
+    Position startPosition(endingSelection().start());
+    
+    Position placeholder;
+    // We want to remove preserved newlines and brs that will collapse (and thus become unnecessary) when content 
+    // is inserted just before them.
+    // FIXME: We shouldn't really have to do this, but removing placeholders is a workaround for 9661.
+    // If the caret is just before a placeholder, downstream will normalize the caret to it.
+    Position downstream(startPosition.downstream());
+    if (lineBreakExistsAtPosition(downstream)) {
+        // FIXME: This doesn't handle placeholders at the end of anonymous blocks.
+        VisiblePosition caret(startPosition);
+        if (isEndOfBlock(caret) && isStartOfParagraph(caret))
+            placeholder = downstream;
+        // Don't remove the placeholder yet, otherwise the block we're inserting into would collapse before
+        // we get a chance to insert into it.  We check for a placeholder now, though, because doing so requires
+        // the creation of a VisiblePosition, and if we did that post-insertion it would force a layout.
+    }
     
     // Insert the character at the leftmost candidate.
-    Position startPosition = endingSelection().start().upstream();
+    startPosition = startPosition.upstream();
+    
     // It is possible for the node that contains startPosition to contain only unrendered whitespace,
     // and so deleteInsignificantText could remove it.  Save the position before the node in case that happens.
     Position positionBeforeStartNode(positionBeforeNode(startPosition.node()));
@@ -148,14 +159,16 @@ void InsertTextCommand::input(const String& originalText, bool selectInsertedTex
     if (text == "\t") {
         endPosition = insertTab(startPosition);
         startPosition = endPosition.previous();
-        removePlaceholderAt(VisiblePosition(startPosition));
+        if (placeholder.isNotNull())
+            removePlaceholderAt(placeholder);
         m_charactersAdded += 1;
     } else {
         // Make sure the document is set up to receive text
         startPosition = prepareForTextInsertion(startPosition);
-        removePlaceholderAt(VisiblePosition(startPosition));
+        if (placeholder.isNotNull())
+            removePlaceholderAt(placeholder);
         Text *textNode = static_cast<Text *>(startPosition.node());
-        int offset = startPosition.offset();
+        int offset = startPosition.deprecatedEditingOffset();
 
         insertTextIntoNode(textNode, offset, text);
         endPosition = Position(textNode, offset + text.length());
@@ -163,7 +176,7 @@ void InsertTextCommand::input(const String& originalText, bool selectInsertedTex
         // The insertion may require adjusting adjacent whitespace, if it is present.
         rebalanceWhitespaceAt(endPosition);
         // Rebalancing on both sides isn't necessary if we've inserted a space.
-        if (originalText != " ") 
+        if (text != " ") 
             rebalanceWhitespaceAt(startPosition);
             
         m_charactersAdded += text.length();
@@ -172,7 +185,7 @@ void InsertTextCommand::input(const String& originalText, bool selectInsertedTex
     // We could have inserted a part of composed character sequence,
     // so we are basically treating ending selection as a range to avoid validation.
     // <http://bugs.webkit.org/show_bug.cgi?id=15781>
-    Selection forcedEndingSelection;
+    VisibleSelection forcedEndingSelection;
     forcedEndingSelection.setWithoutValidation(startPosition, endPosition);
     setEndingSelection(forcedEndingSelection);
 
@@ -199,7 +212,7 @@ void InsertTextCommand::input(const String& originalText, bool selectInsertedTex
         applyStyle(typingStyle);
 
     if (!selectInsertedText)
-        setEndingSelection(Selection(endingSelection().end(), endingSelection().affinity()));
+        setEndingSelection(VisibleSelection(endingSelection().end(), endingSelection().affinity()));
 }
 
 Position InsertTextCommand::insertTab(const Position& pos)
@@ -207,7 +220,7 @@ Position InsertTextCommand::insertTab(const Position& pos)
     Position insertPos = VisiblePosition(pos, DOWNSTREAM).deepEquivalent();
         
     Node *node = insertPos.node();
-    unsigned int offset = insertPos.offset();
+    unsigned int offset = insertPos.deprecatedEditingOffset();
 
     // keep tabs coalesced in tab span
     if (isTabSpanTextNode(node)) {
@@ -232,7 +245,7 @@ Position InsertTextCommand::insertTab(const Position& pos)
             // insert the span before it.
             if (offset > 0)
                 splitTextNode(textNode, offset);
-            insertNodeBefore(spanNode.get(), textNode);
+            insertNodeBefore(spanNode, textNode);
         }
     }
     

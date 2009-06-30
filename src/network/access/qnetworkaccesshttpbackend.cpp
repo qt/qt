@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -270,12 +270,12 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
     return code;
 }
 
-class QNetworkAccessHttpBackendCache: public QHttpNetworkConnection,
+class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
                                       public QNetworkAccessCache::CacheableObject
 {
     // Q_OBJECT
 public:
-    QNetworkAccessHttpBackendCache(const QString &hostName, quint16 port, bool encrypt)
+    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt)
         : QHttpNetworkConnection(hostName, port, encrypt)
     {
         setExpires(true);
@@ -311,11 +311,15 @@ QNetworkAccessHttpBackend::~QNetworkAccessHttpBackend()
 void QNetworkAccessHttpBackend::disconnectFromHttp()
 {
     if (http) {
+        // This is abut disconnecting signals, not about disconnecting TCP connections
         disconnect(http, 0, this, 0);
-        QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getCache(this);
+
+        // Get the object cache that stores our QHttpNetworkConnection objects
+        QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getObjectCache(this);
         cache->releaseEntry(cacheKey);
     }
 
+    // This is abut disconnecting signals, not about disconnecting TCP connections
     if (httpReply)
         disconnect(httpReply, 0, this, 0);
 
@@ -582,17 +586,20 @@ void QNetworkAccessHttpBackend::open()
 
     // check if we have an open connection to this host
     cacheKey = makeCacheKey(this, theProxy);
-    QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getCache(this);
-    if ((http = static_cast<QNetworkAccessHttpBackendCache *>(cache->requestEntryNow(cacheKey))) == 0) {
+    QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getObjectCache(this);
+    // the http object is actually a QHttpNetworkConnection
+    http = static_cast<QNetworkAccessCachedHttpConnection *>(cache->requestEntryNow(cacheKey));
+    if (http == 0) {
         // no entry in cache; create an object
-        //### thiago: can we try/catch/ignore this????
-        http = new QNetworkAccessHttpBackendCache(url.host(), url.port(), encrypt);
+        // the http object is actually a QHttpNetworkConnection
+        http = new QNetworkAccessCachedHttpConnection(url.host(), url.port(), encrypt);
 
 #ifndef QT_NO_NETWORKPROXY
         http->setTransparentProxy(transparentProxy);
         http->setCacheProxy(cacheProxy);
 #endif
 
+        // cache the QHttpNetworkConnection corresponding to this cache key
         cache->addEntry(cacheKey, http);
     }
 

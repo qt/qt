@@ -30,12 +30,12 @@
 
 namespace WebCore {
 
-PassRefPtr<Scrollbar> RenderScrollbar::createCustomScrollbar(ScrollbarClient* client, ScrollbarOrientation orientation, RenderObject* renderer)
+PassRefPtr<Scrollbar> RenderScrollbar::createCustomScrollbar(ScrollbarClient* client, ScrollbarOrientation orientation, RenderBox* renderer)
 {
     return adoptRef(new RenderScrollbar(client, orientation, renderer));
 }
 
-RenderScrollbar::RenderScrollbar(ScrollbarClient* client, ScrollbarOrientation orientation, RenderObject* renderer)
+RenderScrollbar::RenderScrollbar(ScrollbarClient* client, ScrollbarOrientation orientation, RenderBox* renderer)
     : Scrollbar(client, orientation, RegularScrollbar, RenderScrollbarTheme::renderScrollbarTheme())
     , m_owner(renderer)
 {
@@ -50,7 +50,7 @@ void RenderScrollbar::setParent(ScrollView* parent)
 {
     Scrollbar::setParent(parent);
     if (!parent) {
-        // Destroy all of the scrollbar's RenderObjects.
+        // Destroy all of the scrollbar's RenderBoxes.
         updateScrollbarParts(true);
     }
 }
@@ -117,7 +117,7 @@ ScrollbarPart RenderScrollbar::partForStyleResolve()
     return s_styleResolvePart;
 }
 
-PassRefPtr<RenderStyle> RenderScrollbar::getScrollbarPseudoStyle(ScrollbarPart partType, RenderStyle::PseudoId pseudoId)
+PassRefPtr<RenderStyle> RenderScrollbar::getScrollbarPseudoStyle(ScrollbarPart partType, PseudoId pseudoId)
 {
     s_styleResolvePart = partType;
     s_styleResolveScrollbar = this;
@@ -158,23 +158,23 @@ void RenderScrollbar::updateScrollbarParts(bool destroy)
     }
 }
 
-static RenderStyle::PseudoId pseudoForScrollbarPart(ScrollbarPart part)
+static PseudoId pseudoForScrollbarPart(ScrollbarPart part)
 {
     switch (part) {
         case BackButtonStartPart:
         case ForwardButtonStartPart:
         case BackButtonEndPart:
         case ForwardButtonEndPart:
-            return RenderStyle::SCROLLBAR_BUTTON;
+            return SCROLLBAR_BUTTON;
         case BackTrackPart:
         case ForwardTrackPart:
-            return RenderStyle::SCROLLBAR_TRACK_PIECE;
+            return SCROLLBAR_TRACK_PIECE;
         case ThumbPart:
-            return RenderStyle::SCROLLBAR_THUMB;
+            return SCROLLBAR_THUMB;
         case TrackBGPart:
-            return RenderStyle::SCROLLBAR_TRACK;
+            return SCROLLBAR_TRACK;
         default:
-            return RenderStyle::SCROLLBAR;
+            return SCROLLBAR;
     }
 }
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2314,7 +2314,8 @@ void QScriptEnginePrivate::deletePendingQObjects()
 
 bool QScriptEnginePrivate::scriptConnect(QObject *sender, const char *signal,
                                          const QScriptValueImpl &receiver,
-                                         const QScriptValueImpl &function)
+                                         const QScriptValueImpl &function,
+                                         Qt::ConnectionType type)
 {
     Q_ASSERT(sender);
     Q_ASSERT(signal);
@@ -2322,7 +2323,7 @@ bool QScriptEnginePrivate::scriptConnect(QObject *sender, const char *signal,
     int index = meta->indexOfSignal(QMetaObject::normalizedSignature(signal+1));
     if (index == -1)
         return false;
-    return scriptConnect(sender, index, receiver, function);
+    return scriptConnect(sender, index, receiver, function, /*wrapper=*/QScriptValueImpl(), type);
 }
 
 bool QScriptEnginePrivate::scriptDisconnect(QObject *sender, const char *signal,
@@ -2341,10 +2342,11 @@ bool QScriptEnginePrivate::scriptDisconnect(QObject *sender, const char *signal,
 bool QScriptEnginePrivate::scriptConnect(QObject *sender, int signalIndex,
                                          const QScriptValueImpl &receiver,
                                          const QScriptValueImpl &function,
-                                         const QScriptValueImpl &senderWrapper)
+                                         const QScriptValueImpl &senderWrapper,
+                                         Qt::ConnectionType type)
 {
     QScriptQObjectData *data = qobjectData(sender);
-    return data->addSignalHandler(sender, signalIndex, receiver, function, senderWrapper);
+    return data->addSignalHandler(sender, signalIndex, receiver, function, senderWrapper, type);
 }
 
 bool QScriptEnginePrivate::scriptDisconnect(QObject *sender, int signalIndex,
@@ -2359,11 +2361,12 @@ bool QScriptEnginePrivate::scriptDisconnect(QObject *sender, int signalIndex,
 
 bool QScriptEnginePrivate::scriptConnect(const QScriptValueImpl &signal,
                                          const QScriptValueImpl &receiver,
-                                         const QScriptValueImpl &function)
+                                         const QScriptValueImpl &function,
+                                         Qt::ConnectionType type)
 {
     QScript::QtFunction *fun = static_cast<QScript::QtFunction*>(signal.toFunction());
     int index = fun->mostGeneralMethod();
-    return scriptConnect(fun->qobject(), index, receiver, function, fun->object());
+    return scriptConnect(fun->qobject(), index, receiver, function, fun->object(), type);
 }
 
 bool QScriptEnginePrivate::scriptDisconnect(const QScriptValueImpl &signal,

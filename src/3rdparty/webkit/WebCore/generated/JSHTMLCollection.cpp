@@ -19,12 +19,8 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLCollection.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "HTMLCollection.h"
 #include "JSNode.h"
@@ -32,15 +28,16 @@
 #include "NameNodeList.h"
 #include "Node.h"
 #include "NodeList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLCollection)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLCollection);
 
 /* Hash table */
 
@@ -77,13 +74,13 @@ public:
     JSHTMLCollectionConstructor(ExecState* exec)
         : DOMObject(JSHTMLCollectionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLCollectionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLCollectionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -115,9 +112,9 @@ static const HashTable JSHTMLCollectionPrototypeTable =
 
 const ClassInfo JSHTMLCollectionPrototype::s_info = { "HTMLCollectionPrototype", 0, &JSHTMLCollectionPrototypeTable, 0 };
 
-JSObject* JSHTMLCollectionPrototype::self(ExecState* exec)
+JSObject* JSHTMLCollectionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLCollection>(exec);
+    return getDOMPrototype<JSHTMLCollection>(exec, globalObject);
 }
 
 bool JSHTMLCollectionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -136,18 +133,17 @@ JSHTMLCollection::JSHTMLCollection(PassRefPtr<Structure> structure, PassRefPtr<H
 JSHTMLCollection::~JSHTMLCollection()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSHTMLCollection::createPrototype(ExecState* exec)
+JSObject* JSHTMLCollection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLCollectionPrototype(JSHTMLCollectionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSHTMLCollectionPrototype(JSHTMLCollectionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSHTMLCollection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    JSValuePtr proto = prototype();
-    if (proto->isObject() && static_cast<JSObject*>(asObject(proto))->hasProperty(exec, propertyName))
+    JSValue proto = prototype();
+    if (proto.isObject() && static_cast<JSObject*>(asObject(proto))->hasProperty(exec, propertyName))
         return false;
 
     const HashEntry* entry = JSHTMLCollectionTable.entry(exec, propertyName);
@@ -177,13 +173,14 @@ bool JSHTMLCollection::getOwnPropertySlot(ExecState* exec, unsigned propertyName
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValuePtr jsHTMLCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLCollection* imp = static_cast<HTMLCollection*>(static_cast<JSHTMLCollection*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLCollection*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
@@ -194,49 +191,52 @@ void JSHTMLCollection::getPropertyNames(ExecState* exec, PropertyNameArray& prop
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSHTMLCollection::getConstructor(ExecState* exec)
+JSValue JSHTMLCollection::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLCollectionConstructor>(exec);
 }
 
-JSValuePtr jsHTMLCollectionPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLCollection::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     return castedThisObj->item(exec, args);
 }
 
-JSValuePtr jsHTMLCollectionPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLCollection::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     return castedThisObj->namedItem(exec, args);
 }
 
-JSValuePtr jsHTMLCollectionPrototypeFunctionTags(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionTags(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLCollection::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     HTMLCollection* imp = static_cast<HTMLCollection*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->tags(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->tags(name)));
     return result;
 }
 
 
-JSValuePtr JSHTMLCollection::indexGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSHTMLCollection::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLCollection* thisObj = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
     return toJS(exec, static_cast<HTMLCollection*>(thisObj->impl())->item(slot.index()));
 }
-HTMLCollection* toHTMLCollection(JSC::JSValuePtr value)
+HTMLCollection* toHTMLCollection(JSC::JSValue value)
 {
-    return value->isObject(&JSHTMLCollection::s_info) ? static_cast<JSHTMLCollection*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSHTMLCollection::s_info) ? static_cast<JSHTMLCollection*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -35,7 +35,7 @@
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "WorkerContext.h"
-#include "WorkerMessagingProxy.h"
+#include "WorkerObjectProxy.h"
 #include "WorkerThread.h"
 #include <interpreter/Interpreter.h>
 #include <runtime/Completion.h>
@@ -68,8 +68,13 @@ void WorkerScriptController::initScript()
 
     JSLock lock(false);
 
+    // Explicitly protect the global object's prototype so it isn't collected
+    // when we allocate the global object. (Once the global object is fully
+    // constructed, it can mark its own prototype.)
     RefPtr<Structure> prototypeStructure = JSWorkerContextPrototype::createStructure(jsNull());
-    RefPtr<Structure> structure = JSWorkerContext::createStructure(new (m_globalData.get()) JSWorkerContextPrototype(prototypeStructure.release()));
+    ProtectedPtr<JSWorkerContextPrototype> prototype = new (m_globalData.get()) JSWorkerContextPrototype(prototypeStructure.release());
+
+    RefPtr<Structure> structure = JSWorkerContext::createStructure(prototype);
     m_workerContextWrapper = new (m_globalData.get()) JSWorkerContext(structure.release(), m_workerContext);
 }
 
@@ -78,25 +83,46 @@ ScriptValue WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode)
     {
         MutexLocker lock(m_sharedDataMutex);
         if (m_executionForbidden)
-            return noValue();
+            return JSValue();
+    }
+    ScriptValue exception;
+    ScriptValue result = evaluate(sourceCode, &exception);
+    if (exception.jsValue()) {
+        JSLock lock(false);
+        reportException(m_workerContextWrapper->globalExec(), exception.jsValue());
+    }
+    return result;
+}
+
+ScriptValue WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, ScriptValue* exception)
+{
+    {
+        MutexLocker lock(m_sharedDataMutex);
+        if (m_executionForbidden)
+            return JSValue();
     }
 
     initScriptIfNeeded();
     JSLock lock(false);
 
     ExecState* exec = m_workerContextWrapper->globalExec();
-    m_workerContextWrapper->startTimeoutCheck();
+    m_workerContextWrapper->globalData()->timeoutChecker.start();
     Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), sourceCode.jsSourceCode(), m_workerContextWrapper);
-    m_workerContextWrapper->stopTimeoutCheck();
+    m_workerContextWrapper->globalData()->timeoutChecker.stop();
 
-    m_workerContext->thread()->messagingProxy()->reportWorkerThreadActivity(m_workerContext->hasPendingActivity());
+    m_workerContext->thread()->workerObjectProxy().reportPendingActivity(m_workerContext->hasPendingActivity());
 
     if (comp.complType() == Normal || comp.complType() == ReturnValue)
         return comp.value();
 
     if (comp.complType() == Throw)
-        reportException(exec, comp.value());
-    return noValue();
+        *exception = comp.value();
+    return JSValue();
+}
+
+void WorkerScriptController::setException(ScriptValue exception)
+{
+    m_workerContextWrapper->globalExec()->setException(exception.jsValue());
 }
 
 void WorkerScriptController::forbidExecution()
@@ -107,7 +133,7 @@ void WorkerScriptController::forbidExecution()
     // It is not critical for Interpreter::m_timeoutTime to be synchronized, we just rely on it reaching the worker thread's processor sooner or later.
     MutexLocker lock(m_sharedDataMutex);
     m_executionForbidden = true;
-    m_globalData->interpreter->setTimeoutTime(1); // 1 ms is the smallest timeout that can be set.
+    m_globalData->timeoutChecker.setTimeoutInterval(1); // 1ms is the smallest timeout that can be set.
 }
 
 } // namespace WebCore

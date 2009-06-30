@@ -20,21 +20,21 @@
 
 #include "config.h"
 
-#include "JSSQLResultSet.h"
+#if ENABLE(DATABASE)
 
-#include <wtf/GetPtr.h>
+#include "JSSQLResultSet.h"
 
 #include "JSSQLResultSetRowList.h"
 #include "SQLResultSet.h"
 #include "SQLResultSetRowList.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSQLResultSet)
+ASSERT_CLASS_FITS_IN_CELL(JSSQLResultSet);
 
 /* Hash table */
 
@@ -69,9 +69,9 @@ static const HashTable JSSQLResultSetPrototypeTable =
 
 const ClassInfo JSSQLResultSetPrototype::s_info = { "SQLResultSetPrototype", 0, &JSSQLResultSetPrototypeTable, 0 };
 
-JSObject* JSSQLResultSetPrototype::self(ExecState* exec)
+JSObject* JSSQLResultSetPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSQLResultSet>(exec);
+    return getDOMPrototype<JSSQLResultSet>(exec, globalObject);
 }
 
 const ClassInfo JSSQLResultSet::s_info = { "SQLResultSet", 0, &JSSQLResultSetTable, 0 };
@@ -85,12 +85,11 @@ JSSQLResultSet::JSSQLResultSet(PassRefPtr<Structure> structure, PassRefPtr<SQLRe
 JSSQLResultSet::~JSSQLResultSet()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSQLResultSet::createPrototype(ExecState* exec)
+JSObject* JSSQLResultSet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSQLResultSetPrototype(JSSQLResultSetPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSQLResultSetPrototype(JSSQLResultSetPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSQLResultSet::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -98,34 +97,38 @@ bool JSSQLResultSet::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSQLResultSet, Base>(exec, &JSSQLResultSetTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSQLResultSetRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SQLResultSet* imp = static_cast<SQLResultSet*>(static_cast<JSSQLResultSet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->rows()));
 }
 
-JSValuePtr jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     ExceptionCode ec = 0;
     SQLResultSet* imp = static_cast<SQLResultSet*>(static_cast<JSSQLResultSet*>(asObject(slot.slotBase()))->impl());
-    JSC::JSValuePtr result = jsNumber(exec, imp->insertId(ec));
+    JSC::JSValue result = jsNumber(exec, imp->insertId(ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsSQLResultSetRowsAffected(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetRowsAffected(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SQLResultSet* imp = static_cast<SQLResultSet*>(static_cast<JSSQLResultSet*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->rowsAffected());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SQLResultSet* object)
+JSC::JSValue toJS(JSC::ExecState* exec, SQLResultSet* object)
 {
     return getDOMObjectWrapper<JSSQLResultSet>(exec, object);
 }
-SQLResultSet* toSQLResultSet(JSC::JSValuePtr value)
+SQLResultSet* toSQLResultSet(JSC::JSValue value)
 {
-    return value->isObject(&JSSQLResultSet::s_info) ? static_cast<JSSQLResultSet*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSQLResultSet::s_info) ? static_cast<JSSQLResultSet*>(asObject(value))->impl() : 0;
 }
 
 }
+
+#endif // ENABLE(DATABASE)

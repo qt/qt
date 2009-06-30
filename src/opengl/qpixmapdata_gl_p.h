@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -94,9 +94,7 @@ public:
     bool needsFill() const { return m_hasFillColor; }
     QColor fillColor() const { return m_fillColor; }
 
-    QSize size() const { return QSize(m_width, m_height); }
-    int width() const { return m_width; }
-    int height() const { return m_height; }
+    QSize size() const { return QSize(w, h); }
 
     QGLFramebufferObject *fbo() const;
 
@@ -116,9 +114,6 @@ private:
     static bool useFramebufferObjects();
 
     QImage fillImage(const QColor &color) const;
-
-    int m_width;
-    int m_height;
 
     mutable QGLFramebufferObject *m_renderFbo;
     mutable GLuint m_textureId;

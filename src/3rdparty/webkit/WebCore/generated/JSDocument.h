@@ -21,37 +21,38 @@
 #ifndef JSDocument_h
 #define JSDocument_h
 
-#include "JSEventTargetNode.h"
+#include "Document.h"
+#include "JSNode.h"
 #include <runtime/Lookup.h>
 #include <wtf/AlwaysInline.h>
-#include "Document.h"
+
 namespace WebCore {
 
 class Document;
 
-class JSDocument : public JSEventTargetNode {
-    typedef JSEventTargetNode Base;
+class JSDocument : public JSNode {
+    typedef JSNode Base;
 public:
     JSDocument(PassRefPtr<JSC::Structure>, PassRefPtr<Document>);
     virtual ~JSDocument();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
     virtual void mark();
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom attributes
-    JSC::JSValuePtr location(JSC::ExecState*) const;
-    void setLocation(JSC::ExecState*, JSC::JSValuePtr);
+    JSC::JSValue location(JSC::ExecState*) const;
+    void setLocation(JSC::ExecState*, JSC::JSValue);
     Document* impl() const
     {
         return static_cast<Document*>(Base::impl());
@@ -63,16 +64,17 @@ ALWAYS_INLINE bool JSDocument::getOwnPropertySlot(JSC::ExecState* exec, const JS
     return JSC::getStaticValueSlot<JSDocument, Base>(exec, s_info.staticPropHashTable, this, propertyName, slot);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState*, Document*);
-Document* toDocument(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, Document*);
+Document* toDocument(JSC::JSValue);
 
 class JSDocumentPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -81,84 +83,160 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateElement(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateDocumentFragment(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateTextNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateComment(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateCDATASection(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateProcessingInstruction(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateEntityReference(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetElementsByTagName(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionImportNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateElementNS(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateAttributeNS(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetElementsByTagNameNS(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetElementById(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionAdoptNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateRange(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateNodeIterator(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateTreeWalker(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetOverrideStyle(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateExpression(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionCreateNSResolver(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionEvaluate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionExecCommand(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQueryCommandEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQueryCommandIndeterm(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQueryCommandState(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQueryCommandSupported(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQueryCommandValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetElementsByName(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionElementFromPoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetSelection(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetCSSCanvasContext(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionGetElementsByClassName(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQuerySelector(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsDocumentPrototypeFunctionQuerySelectorAll(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElement(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateDocumentFragment(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTextNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateComment(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateCDATASection(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateProcessingInstruction(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEntityReference(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionImportNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElementNS(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttributeNS(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagNameNS(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementById(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionAdoptNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateRange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNodeIterator(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTreeWalker(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetOverrideStyle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateExpression(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNSResolver(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionEvaluate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionExecCommand(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandIndeterm(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandState(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandSupported(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionElementFromPoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetSelection(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetCSSCanvasContext(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByClassName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelector(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelectorAll(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsDocumentDoctype(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentImplementation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentDocumentElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentInputEncoding(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentXMLEncoding(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentXMLVersion(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentXMLVersion(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentXMLStandalone(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentXMLStandalone(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentDocumentURI(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentDocumentURI(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentDefaultView(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentStyleSheets(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentTitle(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentReferrer(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentDomain(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentDomain(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentURL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentCookie(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentBody(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentBody(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentImages(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentApplets(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentLinks(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentForms(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentAnchors(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentLastModified(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentCharset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentCharset(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentDefaultCharset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentReadyState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentCharacterSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentPreferredStylesheetSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsDocumentSelectedStylesheetSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSDocumentSelectedStylesheetSet(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsDocumentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentDoctype(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentImplementation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentDocumentElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentInputEncoding(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentXMLEncoding(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentXMLVersion(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentXMLVersion(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentXMLStandalone(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentXMLStandalone(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentDocumentURI(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentDocumentURI(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentDefaultView(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentStyleSheets(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentTitle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentReferrer(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentDomain(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentDomain(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentURL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentCookie(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentBody(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentBody(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentImages(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentApplets(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentLinks(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentForms(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentAnchors(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentLastModified(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentCharset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentCharset(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentDefaultCharset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentReadyState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentCharacterSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentPreferredStylesheetSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentSelectedStylesheetSet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentSelectedStylesheetSet(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnblur(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnblur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOncontextmenu(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOncontextmenu(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndblclick(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndblclick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndrag(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndrag(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragenter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragenter(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragleave(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragleave(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndragstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndragstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOndrop(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOndrop(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnkeypress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnkeyup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnkeyup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmousedown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmousedown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmousemove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmousemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmouseout(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmouseout(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmouseover(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmouseover(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmouseup(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmouseup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnmousewheel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnmousewheel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnscroll(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnscroll(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnselect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnselect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnsubmit(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnsubmit(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnbeforecut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnbeforecut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOncut(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOncut(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnbeforecopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnbeforecopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOncopy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOncopy(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnbeforepaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnbeforepaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnpaste(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnpaste(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnreset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnreset(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnsearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

@@ -25,20 +25,21 @@ information about a particular change.
 *                          Library                                         *
 ****************************************************************************
 
+    * [245219] Added QXmlQuery::setFocus(const QString &focus);
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
- 
+
 
 ****************************************************************************
 *                   Important Behavior Changes                             *
 ****************************************************************************
 
- - The experimental Direct3D paint engine has been removed. The
-   reasons for this is that Qt Software focuses on OpenGL for desktop
-   hardware accelerated rendering.
+ - The experimental Direct3D paint engine has been removed. The reason for
+   this is that Nokia focuses on OpenGL for desktop hardware accelerated
+   rendering.
 
  - When mixing OpenGL and QPainter calls you need to first call syncState()
    on the paint engine, for example "painter->paintEngine()->syncState()".

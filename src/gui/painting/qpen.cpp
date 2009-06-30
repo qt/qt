@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -462,8 +462,8 @@ QVector<qreal> QPen::dashPattern() const
     Sets the dash pattern for this pen to the given \a pattern. This
     implicitly converts the style of the pen to Qt::CustomDashLine.
 
-    The pattern must be specified as an even number of entries where
-    the entries 1, 3, 5... are the dashes and 2, 4, 6... are the
+    The pattern must be specified as an even number of positive entries
+    where the entries 1, 3, 5... are the dashes and 2, 4, 6... are the
     spaces. For example:
 
     \table 100%

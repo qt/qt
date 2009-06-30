@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2001 Harri Porten (porten@kde.org)
- *  Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Samuel Weinig <sam@webkit.org>
  *
  *  This library is free software; you can redistribute it and/or
@@ -33,6 +33,7 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "HTMLImageElement.h"
+#include "HTMLScriptElement.h"
 #include "HTMLNames.h"
 #include "JSDOMCoreException.h"
 #include "JSDOMWindowCustom.h"
@@ -259,32 +260,47 @@ void forgetAllDOMNodesForDocument(Document* document)
     removeWrappers(document->wrapperCache());
 }
 
+static inline bool isObservableThroughDOM(JSNode* jsNode)
+{
+    // Certain conditions implicitly make a JS DOM node wrapper observable
+    // through the DOM, even if no explicit reference to it remains.
+
+    Node* node = jsNode->impl();
+
+    if (node->inDocument()) {
+        // 1. If a node is in the document, and its wrapper has custom properties,
+        // the wrapper is observable because future access to the node through the
+        // DOM must reflect those properties.
+        if (jsNode->hasCustomProperties())
+            return true;
+
+        // 2. If a node is in the document, and has event listeners, its wrapper is
+        // observable because its wrapper is responsible for marking those event listeners.
+        if (node->eventListeners().size())
+            return true; // Technically, we may overzealously mark a wrapper for a node that has only non-JS event listeners. Oh well.
+    } else {
+        // 3. If a wrapper is the last reference to an image or script element
+        // that is loading but not in the document, the wrapper is observable
+        // because it is the only thing keeping the image element alive, and if
+        // the image element is destroyed, its load event will not fire.
+        // FIXME: The DOM should manage this issue without the help of JavaScript wrappers.
+        if (node->hasTagName(imgTag) && !static_cast<HTMLImageElement*>(node)->haveFiredLoadEvent())
+            return true;
+        if (node->hasTagName(scriptTag) && !static_cast<HTMLScriptElement*>(node)->haveFiredLoadEvent())
+            return true;
+    }
+
+    return false;
+}
+
 void markDOMNodesForDocument(Document* doc)
 {
-    // If a node's JS wrapper holds custom properties, those properties must
-    // persist every time the node is fetched from the DOM. So, we keep JS
-    // wrappers like that from being garbage collected.
-
     JSWrapperCache& nodeDict = doc->wrapperCache();
     JSWrapperCache::iterator nodeEnd = nodeDict.end();
     for (JSWrapperCache::iterator nodeIt = nodeDict.begin(); nodeIt != nodeEnd; ++nodeIt) {
         JSNode* jsNode = nodeIt->second;
-        Node* node = jsNode->impl();
-
-        if (jsNode->marked())
-            continue;
-
-        // No need to preserve a wrapper that has no custom properties or is no
-        // longer fetchable through the DOM.
-        if (!jsNode->hasCustomProperties() || !node->inDocument()) {
-            //... unless the wrapper wraps a loading image, since the "new Image"
-            // syntax allows an orphan image wrapper to be the last reference
-            // to a loading image, whose load event might have important side-effects.
-            if (!node->hasTagName(imgTag) || static_cast<HTMLImageElement*>(node)->haveFiredLoadEvent())
-                continue;
-        }
-
-        jsNode->mark();
+        if (!jsNode->marked() && isObservableThroughDOM(jsNode))
+            jsNode->mark();
     }
 }
 
@@ -309,10 +325,10 @@ void markActiveObjectsForContext(JSGlobalData& globalData, ScriptExecutionContex
     const HashSet<MessagePort*>& messagePorts = scriptExecutionContext->messagePorts();
     HashSet<MessagePort*>::const_iterator portsEnd = messagePorts.end();
     for (HashSet<MessagePort*>::const_iterator iter = messagePorts.begin(); iter != portsEnd; ++iter) {
-        if ((*iter)->hasPendingActivity()) {
+        // If the message port is remotely entangled, then always mark it as in-use because we can't determine reachability across threads.
+        if (!(*iter)->locallyEntangledPort() || (*iter)->hasPendingActivity()) {
             DOMObject* wrapper = getCachedDOMObjectWrapper(globalData, *iter);
-            // A port with pending activity must have a wrapper to mark its listeners, so no null check.
-            if (!wrapper->marked())
+            if (wrapper && !wrapper->marked())
                 wrapper->mark();
         }
     }
@@ -340,84 +356,91 @@ void markDOMObjectWrapper(JSGlobalData& globalData, void* object)
     wrapper->mark();
 }
 
-JSValuePtr jsStringOrNull(ExecState* exec, const String& s)
+JSValue jsStringOrNull(ExecState* exec, const String& s)
 {
     if (s.isNull())
         return jsNull();
     return jsString(exec, s);
 }
 
-JSValuePtr jsOwnedStringOrNull(ExecState* exec, const UString& s)
+JSValue jsOwnedStringOrNull(ExecState* exec, const UString& s)
 {
     if (s.isNull())
         return jsNull();
     return jsOwnedString(exec, s);
 }
 
-JSValuePtr jsStringOrUndefined(ExecState* exec, const String& s)
+JSValue jsStringOrUndefined(ExecState* exec, const String& s)
 {
     if (s.isNull())
         return jsUndefined();
     return jsString(exec, s);
 }
 
-JSValuePtr jsStringOrFalse(ExecState* exec, const String& s)
+JSValue jsStringOrFalse(ExecState* exec, const String& s)
 {
     if (s.isNull())
         return jsBoolean(false);
     return jsString(exec, s);
 }
 
-JSValuePtr jsStringOrNull(ExecState* exec, const KURL& url)
+JSValue jsStringOrNull(ExecState* exec, const KURL& url)
 {
     if (url.isNull())
         return jsNull();
     return jsString(exec, url.string());
 }
 
-JSValuePtr jsStringOrUndefined(ExecState* exec, const KURL& url)
+JSValue jsStringOrUndefined(ExecState* exec, const KURL& url)
 {
     if (url.isNull())
         return jsUndefined();
     return jsString(exec, url.string());
 }
 
-JSValuePtr jsStringOrFalse(ExecState* exec, const KURL& url)
+JSValue jsStringOrFalse(ExecState* exec, const KURL& url)
 {
     if (url.isNull())
         return jsBoolean(false);
     return jsString(exec, url.string());
 }
 
-UString valueToStringWithNullCheck(ExecState* exec, JSValuePtr value)
+UString valueToStringWithNullCheck(ExecState* exec, JSValue value)
 {
-    if (value->isNull())
+    if (value.isNull())
         return UString();
-    return value->toString(exec);
+    return value.toString(exec);
 }
 
-UString valueToStringWithUndefinedOrNullCheck(ExecState* exec, JSValuePtr value)
+UString valueToStringWithUndefinedOrNullCheck(ExecState* exec, JSValue value)
 {
-    if (value->isUndefinedOrNull())
+    if (value.isUndefinedOrNull())
         return UString();
-    return value->toString(exec);
+    return value.toString(exec);
 }
 
-void reportException(JSC::ExecState* exec, JSValuePtr exception)
+void reportException(ExecState* exec, JSValue exception)
 {
-    UString errorMessage = exception->toString(exec);
-    JSObject* exceptionObject = exception->toObject(exec);
-    int lineNumber = exceptionObject->get(exec, Identifier(exec, "line"))->toInt32(exec);
-    UString exceptionSourceURL = exceptionObject->get(exec, Identifier(exec, "sourceURL"))->toString(exec);
+    UString errorMessage = exception.toString(exec);
+    JSObject* exceptionObject = exception.toObject(exec);
+    int lineNumber = exceptionObject->get(exec, Identifier(exec, "line")).toInt32(exec);
+    UString exceptionSourceURL = exceptionObject->get(exec, Identifier(exec, "sourceURL")).toString(exec);
     exec->clearException();
 
     ScriptExecutionContext* scriptExecutionContext = static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject())->scriptExecutionContext();
+    ASSERT(scriptExecutionContext);
+
+    // Crash data indicates null-dereference crashes at this point in the Safari 4 Public Beta.
+    // It's harmless to return here without reporting the exception to the log and the debugger in this case.
+    if (!scriptExecutionContext)
+        return;
+
     scriptExecutionContext->reportException(errorMessage, lineNumber, exceptionSourceURL);
 }
 
-void reportCurrentException(JSC::ExecState* exec)
+void reportCurrentException(ExecState* exec)
 {
-    JSValuePtr exception = exec->exception();
+    JSValue exception = exec->exception();
     exec->clearException();
     reportException(exec, exception);
 }
@@ -430,7 +453,7 @@ void setDOMException(ExecState* exec, ExceptionCode ec)
     ExceptionCodeDescription description;
     getExceptionCodeDescription(ec, description);
 
-    JSValuePtr errorObject = noValue();
+    JSValue errorObject;
     switch (description.type) {
         case DOMExceptionType:
             errorObject = toJS(exec, DOMCoreException::create(description));
@@ -481,6 +504,12 @@ bool allowsAccessFromFrame(ExecState* exec, Frame* frame, String& message)
     return window && window->allowsAccessFrom(exec, message);
 }
 
+bool shouldAllowNavigation(ExecState* exec, Frame* frame)
+{
+    Frame* lexicalFrame = toLexicalFrame(exec);
+    return lexicalFrame && lexicalFrame->loader()->shouldAllowNavigation(frame);
+}
+
 void printErrorMessageForFrame(Frame* frame, const String& message)
 {
     if (!frame)
@@ -489,37 +518,57 @@ void printErrorMessageForFrame(Frame* frame, const String& message)
         window->printErrorMessage(message);
 }
 
-JSValuePtr objectToStringFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+Frame* toLexicalFrame(ExecState* exec)
 {
-    return new (exec) PrototypeFunction(exec, 0, propertyName, objectProtoFuncToString);
+    return asJSDOMWindow(exec->lexicalGlobalObject())->impl()->frame();
 }
 
-ScriptState* scriptStateFromNode(Node* node)
+Frame* toDynamicFrame(ExecState* exec)
 {
-    if (!node)
-        return 0;
-    Document* document = node->document();
-    if (!document)
-        return 0;
-    Frame* frame = document->frame();
+    return asJSDOMWindow(exec->dynamicGlobalObject())->impl()->frame();
+}
+
+bool processingUserGesture(ExecState* exec)
+{
+    Frame* frame = toDynamicFrame(exec);
+    return frame && frame->script()->processingUserGesture();
+}
+
+KURL completeURL(ExecState* exec, const String& relativeURL)
+{
+    // For histoical reasons, we need to complete the URL using the dynamic frame.
+    Frame* frame = toDynamicFrame(exec);
     if (!frame)
-        return 0;
-    if (!frame->script()->isEnabled())
-        return 0;
-    return frame->script()->globalObject()->globalExec();
+        return KURL();
+    return frame->loader()->completeURL(relativeURL);
+}
+
+JSValue objectToStringFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+{
+    return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 0, propertyName, objectProtoFuncToString);
+}
+
+Structure* getCachedDOMStructure(JSDOMGlobalObject* globalObject, const ClassInfo* classInfo)
+{
+    JSDOMStructureMap& structures = globalObject->structures();
+    return structures.get(classInfo).get();
+}
+
+Structure* cacheDOMStructure(JSDOMGlobalObject* globalObject, PassRefPtr<Structure> structure, const ClassInfo* classInfo)
+{
+    JSDOMStructureMap& structures = globalObject->structures();
+    ASSERT(!structures.contains(classInfo));
+    return structures.set(classInfo, structure).first->second.get();
 }
 
 Structure* getCachedDOMStructure(ExecState* exec, const ClassInfo* classInfo)
 {
-    JSDOMStructureMap& structures = static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject())->structures();
-    return structures.get(classInfo).get();
+    return getCachedDOMStructure(static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()), classInfo);
 }
 
 Structure* cacheDOMStructure(ExecState* exec, PassRefPtr<Structure> structure, const ClassInfo* classInfo)
 {
-    JSDOMStructureMap& structures = static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject())->structures();
-    ASSERT(!structures.contains(classInfo));
-    return structures.set(classInfo, structure).first->second.get();
+    return cacheDOMStructure(static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()), structure, classInfo);
 }
 
 JSObject* getCachedDOMConstructor(ExecState* exec, const ClassInfo* classInfo)

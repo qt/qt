@@ -19,20 +19,17 @@
 */
 
 #include "config.h"
-
 #include "JSImageData.h"
 
-#include <wtf/GetPtr.h>
-
 #include "ImageData.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSImageData)
+ASSERT_CLASS_FITS_IN_CELL(JSImageData);
 
 /* Hash table */
 
@@ -70,13 +67,13 @@ public:
     JSImageDataConstructor(ExecState* exec)
         : DOMObject(JSImageDataConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSImageDataPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSImageDataPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -105,9 +102,9 @@ static const HashTable JSImageDataPrototypeTable =
 
 const ClassInfo JSImageDataPrototype::s_info = { "ImageDataPrototype", 0, &JSImageDataPrototypeTable, 0 };
 
-JSObject* JSImageDataPrototype::self(ExecState* exec)
+JSObject* JSImageDataPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSImageData>(exec);
+    return getDOMPrototype<JSImageData>(exec, globalObject);
 }
 
 const ClassInfo JSImageData::s_info = { "ImageData", 0, &JSImageDataTable, 0 };
@@ -121,12 +118,11 @@ JSImageData::JSImageData(PassRefPtr<Structure> structure, PassRefPtr<ImageData> 
 JSImageData::~JSImageData()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSImageData::createPrototype(ExecState* exec)
+JSObject* JSImageData::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSImageDataPrototype(JSImageDataPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSImageDataPrototype(JSImageDataPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSImageData::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -134,30 +130,32 @@ bool JSImageData::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSImageData, Base>(exec, &JSImageDataTable, this, propertyName, slot);
 }
 
-JSValuePtr jsImageDataWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsImageDataWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     ImageData* imp = static_cast<ImageData*>(static_cast<JSImageData*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->width());
 }
 
-JSValuePtr jsImageDataHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsImageDataHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     ImageData* imp = static_cast<ImageData*>(static_cast<JSImageData*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->height());
 }
 
-JSValuePtr jsImageDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsImageDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSImageData*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSImageData::getConstructor(ExecState* exec)
+JSValue JSImageData::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSImageDataConstructor>(exec);
 }
 
-ImageData* toImageData(JSC::JSValuePtr value)
+ImageData* toImageData(JSC::JSValue value)
 {
-    return value->isObject(&JSImageData::s_info) ? static_cast<JSImageData*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSImageData::s_info) ? static_cast<JSImageData*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1325,6 +1325,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
             delete s->clip;
 
         s->clip = clip;
+        s->clip->enabled = true;
         s->flags.has_clip_ownership = true;
 
     } else { // intersect clip with current clip
@@ -1341,6 +1342,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 s->clip->setClipRect(base->clipRect & clipRect);
             else
                 s->clip->setClipRegion(base->clipRegion & clipRect);
+            s->clip->enabled = true;
         } else {
             QPaintEngineEx::clip(rect, op);
             return;
@@ -1774,10 +1776,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    int x1 = int(rect.x() + aliasedCoordinateDelta);
-    int y1 = int(rect.y() + aliasedCoordinateDelta);
-    int x2 = int(rect.right() + aliasedCoordinateDelta);
-    int y2 = int(rect.bottom() + aliasedCoordinateDelta);
+    int x1 = qRound(rect.x() + aliasedCoordinateDelta);
+    int y1 = qRound(rect.y() + aliasedCoordinateDelta);
+    int x2 = qRound(rect.right() + aliasedCoordinateDelta);
+    int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
 
     if (x2 < x1)
         qSwap(x1, x2);
@@ -3354,6 +3356,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         break;
     default:
         Q_ASSERT(false);
+        depth = 0;
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
@@ -3381,6 +3384,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
             break;
         default:
             Q_ASSERT(false);
+            pitch = 0;
         };
 
         alphaPenBlt(glyph->data, pitch, depth,
@@ -3999,7 +4003,7 @@ void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
     const QClipData *c = clip();
     if (c) {
         const QRect r(QPoint(c->xmin, c->ymin),
-                QPoint(c->xmax, c->ymax));
+                      QSize(c->xmax - c->xmin, c->ymax - c->ymin));
         clipRect = clipRect.intersected(r);
         blend = data->blend;
     } else {

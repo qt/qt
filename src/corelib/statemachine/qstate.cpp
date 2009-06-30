@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -240,7 +240,7 @@ void QState::assignProperty(QObject *object, const char *name,
 }
 
 /*!
-  Returns this state group's error state. 
+  Returns this state's error state. 
 
   \sa QStateMachine::errorState(), QStateMachine::setErrorState()
 */
@@ -253,7 +253,9 @@ QAbstractState *QState::errorState() const
 /*!
   Sets this state's error state to be the given \a state. If the error state
   is not set, or if it is set to 0, the state will inherit its parent's error
-  state recursively.
+  state recursively. If no error state is set for the state itself or any of 
+  its ancestors, an error will cause the machine to stop executing and an error
+  will be printed to the console.
 
   \sa QStateMachine::setErrorState(), QStateMachine::errorState()
 */
@@ -333,10 +335,13 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
         return 0;
     }
     int offset = (*signal == '0'+QSIGNAL_CODE) ? 1 : 0;
-    if (sender->metaObject()->indexOfSignal(signal+offset) == -1) {
-        qWarning("QState::addTransition: no such signal %s::%s",
-                 sender->metaObject()->className(), signal+offset);
-        return 0;
+    const QMetaObject *meta = sender->metaObject();
+    if (meta->indexOfSignal(signal+offset) == -1) {
+        if (meta->indexOfSignal(QMetaObject::normalizedSignature(signal+offset)) == -1) {
+            qWarning("QState::addTransition: no such signal %s::%s",
+                     meta->className(), signal+offset);
+            return 0;
+        }
     }
     QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
     addTransition(trans);

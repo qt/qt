@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,6 @@ public:
     ~QSqlQueryPrivate();
     QAtomicInt ref;
     QSqlResult* sqlResult;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 
     static QSqlQueryPrivate* shared_null();
 };
@@ -81,7 +80,7 @@ QSqlQueryPrivate* QSqlQueryPrivate::shared_null()
 \internal
 */
 QSqlQueryPrivate::QSqlQueryPrivate(QSqlResult* result)
-    : ref(1), sqlResult(result), precisionPolicy(QSql::HighPrecision)
+    : ref(1), sqlResult(result)
 {
     if (!sqlResult)
         sqlResult = nullResult();
@@ -351,14 +350,14 @@ bool QSqlQuery::exec(const QString& query)
     if (d->ref != 1) {
         bool fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
-        d->sqlResult->setNumericalPrecisionPolicy(d->precisionPolicy);
+        d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
         setForwardOnly(fo);
     } else {
         d->sqlResult->clear();
         d->sqlResult->setActive(false);
         d->sqlResult->setLastError(QSqlError());
         d->sqlResult->setAt(QSql::BeforeFirstRow);
-        d->sqlResult->setNumericalPrecisionPolicy(d->precisionPolicy);
+        d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
     }
     d->sqlResult->setQuery(query.trimmed());
     if (!driver()->isOpen() || driver()->isOpenError()) {
@@ -891,12 +890,12 @@ bool QSqlQuery::prepare(const QString& query)
         bool fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
         setForwardOnly(fo);
-        d->sqlResult->setNumericalPrecisionPolicy(d->precisionPolicy);
+        d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
     } else {
         d->sqlResult->setActive(false);
         d->sqlResult->setLastError(QSqlError());
         d->sqlResult->setAt(QSql::BeforeFirstRow);
-        d->sqlResult->setNumericalPrecisionPolicy(d->precisionPolicy);
+        d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
     }
     if (!driver()) {
         qWarning("QSqlQuery::prepare: no driver");
@@ -1126,10 +1125,10 @@ QVariant QSqlQuery::lastInsertId() const
   Instruct the database driver to return numerical values with a
   precision specified by \a precisionPolicy.
 
-  The Oracle driver, for example, retrieves numerical values as
-  strings by default to prevent the loss of precision. If the high
-  precision doesn't matter, use this method to increase execution
-  speed by bypassing string conversions.
+  The Oracle driver, for example, can retrieve numerical values as
+  strings to prevent the loss of precision. If high precision doesn't
+  matter, use this method to increase execution speed by bypassing
+  string conversions.
 
   Note: Drivers that don't support fetching numerical values with low
   precision will ignore the precision policy. You can use
@@ -1144,7 +1143,7 @@ QVariant QSqlQuery::lastInsertId() const
 */
 void QSqlQuery::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
-    d->precisionPolicy = precisionPolicy;
+    d->sqlResult->setNumericalPrecisionPolicy(precisionPolicy);
 }
 
 /*!
@@ -1154,7 +1153,7 @@ void QSqlQuery::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy preci
 */
 QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy() const
 {
-    return d->precisionPolicy;
+    return d->sqlResult->numericalPrecisionPolicy();
 }
 
 /*!

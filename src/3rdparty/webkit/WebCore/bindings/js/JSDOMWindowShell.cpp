@@ -39,7 +39,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDOMWindowShell)
+ASSERT_CLASS_FITS_IN_CELL(JSDOMWindowShell);
 
 const ClassInfo JSDOMWindowShell::s_info = { "JSDOMWindowShell", 0, 0, 0 };
 
@@ -54,11 +54,17 @@ JSDOMWindowShell::~JSDOMWindowShell()
 {
 }
 
-void JSDOMWindowShell::setWindow(PassRefPtr<DOMWindow> window)
+void JSDOMWindowShell::setWindow(PassRefPtr<DOMWindow> domWindow)
 {
+    // Explicitly protect the global object's prototype so it isn't collected
+    // when we allocate the global object. (Once the global object is fully
+    // constructed, it can mark its own prototype.)
     RefPtr<Structure> prototypeStructure = JSDOMWindowPrototype::createStructure(jsNull());
-    RefPtr<Structure> structure = JSDOMWindow::createStructure(new JSDOMWindowPrototype(prototypeStructure.release()));
-    setWindow(new (JSDOMWindow::commonJSGlobalData()) JSDOMWindow(structure.release(), window, this));
+    ProtectedPtr<JSDOMWindowPrototype> prototype = new JSDOMWindowPrototype(prototypeStructure.release());
+
+    RefPtr<Structure> structure = JSDOMWindow::createStructure(prototype);
+    JSDOMWindow* jsDOMWindow = new (JSDOMWindow::commonJSGlobalData()) JSDOMWindow(structure.release(), domWindow, this);
+    setWindow(jsDOMWindow);
 }
 
 // ----
@@ -82,12 +88,12 @@ bool JSDOMWindowShell::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return m_window->getOwnPropertySlot(exec, propertyName, slot);
 }
 
-void JSDOMWindowShell::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSDOMWindowShell::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     m_window->put(exec, propertyName, value, slot);
 }
 
-void JSDOMWindowShell::putWithAttributes(ExecState* exec, const Identifier& propertyName, JSValuePtr value, unsigned attributes)
+void JSDOMWindowShell::putWithAttributes(ExecState* exec, const Identifier& propertyName, JSValue value, unsigned attributes)
 {
     m_window->putWithAttributes(exec, propertyName, value, attributes);
 }
@@ -117,12 +123,12 @@ void JSDOMWindowShell::defineSetter(ExecState* exec, const Identifier& propertyN
     m_window->defineSetter(exec, propertyName, setterFunction);
 }
 
-JSValuePtr JSDOMWindowShell::lookupGetter(ExecState* exec, const Identifier& propertyName)
+JSValue JSDOMWindowShell::lookupGetter(ExecState* exec, const Identifier& propertyName)
 {
     return m_window->lookupGetter(exec, propertyName);
 }
 
-JSValuePtr JSDOMWindowShell::lookupSetter(ExecState* exec, const Identifier& propertyName)
+JSValue JSDOMWindowShell::lookupSetter(ExecState* exec, const Identifier& propertyName)
 {
     return m_window->lookupSetter(exec, propertyName);
 }
@@ -141,16 +147,6 @@ DOMWindow* JSDOMWindowShell::impl() const
     return m_window->impl();
 }
 
-void JSDOMWindowShell::disconnectFrame()
-{
-    m_window->disconnectFrame();
-}
-
-void JSDOMWindowShell::clear()
-{
-    m_window->clear();
-}
-
 void* JSDOMWindowShell::operator new(size_t size)
 {
     return JSDOMWindow::commonJSGlobalData()->heap.allocate(size);
@@ -160,7 +156,7 @@ void* JSDOMWindowShell::operator new(size_t size)
 // Conversion methods
 // ----
 
-JSValuePtr toJS(ExecState*, Frame* frame)
+JSValue toJS(ExecState*, Frame* frame)
 {
     if (!frame)
         return jsNull();

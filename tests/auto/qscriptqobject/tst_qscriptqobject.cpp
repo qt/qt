@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1910,6 +1910,22 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
         QVERIFY(qScriptDisconnect(m_myObject, SIGNAL(mySignal()), QScriptValue(), fun));
         QCOMPARE(m_myObject->disconnectedSignal().constData(), SIGNAL(mySignal()));
     }
+
+    // bad args
+    QVERIFY(!qScriptConnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    QVERIFY(!qScriptDisconnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    {
+        QScriptEngine eng2;
+        QScriptValue receiverInDifferentEngine = eng2.newObject();
+        QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+    }
 }
 
 void tst_QScriptExtQObject::classEnums()
@@ -1942,7 +1958,7 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.AllAbility").toInt32()),
              MyQObject::AllAbility);
 
-    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly;
+    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly | QScriptValue::Undeletable;
     QCOMPARE(myClass.propertyFlags("FooPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BarPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BazPolicy"), expectedEnumFlags);
@@ -1993,6 +2009,15 @@ void tst_QScriptExtQObject::classEnums()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 0);
         QCOMPARE(ret.isNumber(), true);
     }
+
+    // enum properties are not deletable or writable
+    QVERIFY(!m_engine->evaluate("delete MyQObject.BazPolicy").toBool());
+    myClass.setProperty("BazPolicy", QScriptValue());
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
+    myClass.setProperty("BazPolicy", MyQObject::FooPolicy);
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
 }
 
 QT_BEGIN_NAMESPACE

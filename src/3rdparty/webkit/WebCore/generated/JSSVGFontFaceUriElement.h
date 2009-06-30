@@ -21,10 +21,10 @@
 #ifndef JSSVGFontFaceUriElement_h
 #define JSSVGFontFaceUriElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -34,7 +34,7 @@ class JSSVGFontFaceUriElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
     JSSVGFontFaceUriElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFontFaceUriElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -42,8 +42,9 @@ public:
 
 
 class JSSVGFontFaceUriElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGFontFaceUriElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

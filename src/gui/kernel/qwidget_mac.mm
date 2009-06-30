@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -505,16 +505,9 @@ static void qt_mac_release_window_group(WindowGroupRef group)
 SInt32 qt_mac_get_group_level(WindowClass wclass)
 {
     SInt32 group_level;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        CGWindowLevel tmpLevel;
-        GetWindowGroupLevelOfType(GetWindowGroupOfClass(wclass), kWindowGroupLevelActive, &tmpLevel);
-        group_level = tmpLevel;
-    } else
-#endif
-    {
-        GetWindowGroupLevel(GetWindowGroupOfClass(wclass), &group_level);
-    }
+    CGWindowLevel tmpLevel;
+    GetWindowGroupLevelOfType(GetWindowGroupOfClass(wclass), kWindowGroupLevelActive, &tmpLevel);
+    group_level = tmpLevel;
     return group_level;
 }
 #endif
@@ -736,11 +729,8 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowProxyEndDrag },
     { kEventClassWindow, kEventWindowResizeCompleted },
     { kEventClassWindow, kEventWindowBoundsChanging },
-    { kEventClassWindow, kEventWindowBoundsChanged },
     { kEventClassWindow, kEventWindowGetRegion },
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
     { kEventClassWindow, kEventWindowGetClickModality },
-#endif
     { kEventClassWindow, kEventWindowTransitionCompleted },
     { kEventClassMouse, kEventMouseDown }
 };
@@ -770,7 +760,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
         QWidget *widget = qt_mac_find_window(wid);
         if(!widget) {
             handled_event = false;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
         } else if(ekind == kEventWindowGetClickModality) {
             // Carbon will send us kEventWindowGetClickModality before every
             // mouse press / release event. By returning 'true', we tell Carbon
@@ -781,7 +770,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             // By also setting the current modal window back into the event, we
             // help Carbon determining which window is supposed to be raised.
             handled_event = qApp->activePopupWidget() ? true : false;
-#endif
         } else if(ekind == kEventWindowClose) {
             widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
             QMenuBar::macUpdateMenuBar();
@@ -904,87 +892,78 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             SetEventParameter(mouseUpEvent, kEventParamMouseLocation, typeQDPoint, sizeof(pos), &pos);
             SendEventToApplication(mouseUpEvent);
             ReleaseEvent(mouseUpEvent);
-        } else if(ekind == kEventWindowBoundsChanging || ekind == kEventWindowBoundsChanged) {
-            // Panther doesn't send Changing for sheets, only changed, so only
-            // bother handling Changed event if we are on 10.3 and we are a
-            // sheet.
-            if (ekind == kEventWindowBoundsChanged
-                    && (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4
-                        || !(widget->windowFlags() & Qt::Sheet))) {
-                handled_event = false;
+        } else if(ekind == kEventWindowBoundsChanging) {
+            UInt32 flags = 0;
+            GetEventParameter(event, kEventParamAttributes, typeUInt32, 0,
+                                  sizeof(flags), 0, &flags);
+            Rect nr;
+            GetEventParameter(event, kEventParamCurrentBounds, typeQDRectangle, 0,
+                                  sizeof(nr), 0, &nr);
+
+            QRect newRect(nr.left, nr.top, nr.right - nr.left, nr.bottom - nr.top);
+
+            QTLWExtra * const tlwExtra = widget->d_func()->maybeTopData();
+            if (tlwExtra && tlwExtra->isSetGeometry == 1) {
+                widget->d_func()->setGeometry_sys_helper(newRect.left(), newRect.top(), newRect.width(), newRect.height(), tlwExtra->isMove);
             } else {
-                UInt32 flags = 0;
-                GetEventParameter(event, kEventParamAttributes, typeUInt32, 0,
-                                      sizeof(flags), 0, &flags);
-                Rect nr;
-                GetEventParameter(event, kEventParamCurrentBounds, typeQDRectangle, 0,
-                                      sizeof(nr), 0, &nr);
+                //implicitly removes the maximized bit
+                if((widget->data->window_state & Qt::WindowMaximized) &&
+                   IsWindowInStandardState(wid, 0, 0)) {
+                    widget->data->window_state &= ~Qt::WindowMaximized;
+                    QWindowStateChangeEvent e(Qt::WindowStates(widget->data->window_state
+                                                | Qt::WindowMaximized));
+                    QApplication::sendSpontaneousEvent(widget, &e);
 
-                QRect newRect(nr.left, nr.top, nr.right - nr.left, nr.bottom - nr.top);
+                }
 
-                QTLWExtra * const tlwExtra = widget->d_func()->maybeTopData();
-                if (tlwExtra && tlwExtra->isSetGeometry == 1) {
-                    widget->d_func()->setGeometry_sys_helper(newRect.left(), newRect.top(), newRect.width(), newRect.height(), tlwExtra->isMove);
-                } else {
-                    //implicitly removes the maximized bit
-                    if((widget->data->window_state & Qt::WindowMaximized) &&
-                       IsWindowInStandardState(wid, 0, 0)) {
-                        widget->data->window_state &= ~Qt::WindowMaximized;
-                        QWindowStateChangeEvent e(Qt::WindowStates(widget->data->window_state
-                                                    | Qt::WindowMaximized));
-                        QApplication::sendSpontaneousEvent(widget, &e);
+                handled_event = false;
+                const QRect oldRect = widget->data->crect;
+                if((flags & kWindowBoundsChangeOriginChanged)) {
+                    if(nr.left != oldRect.x() || nr.top != oldRect.y()) {
+                        widget->data->crect.moveTo(nr.left, nr.top);
+                        QMoveEvent qme(widget->data->crect.topLeft(), oldRect.topLeft());
+                        QApplication::sendSpontaneousEvent(widget, &qme);
+                    }
+                }
+                if((flags & kWindowBoundsChangeSizeChanged)) {
+                    if (widget->isWindow()) {
+                        QSize newSize = QLayout::closestAcceptableSize(widget, newRect.size());
+                        int dh = newSize.height() - newRect.height();
+                        int dw = newSize.width() - newRect.width();
+                        if (dw != 0 || dh != 0) {
+                            handled_event = true;  // We want to change the bounds, so we handle the event
 
+                            // set the rect, so we can also do the resize down below (yes, we need to resize).
+                            newRect.setBottom(newRect.bottom() + dh);
+                            newRect.setRight(newRect.right() + dw);
+
+                            nr.left = newRect.x();
+                            nr.top = newRect.y();
+                            nr.right = nr.left + newRect.width();
+                            nr.bottom = nr.top + newRect.height();
+                            SetEventParameter(event, kEventParamCurrentBounds, typeQDRectangle, sizeof(Rect), &nr);
+                        }
                     }
 
-                    handled_event = false;
-                    const QRect oldRect = widget->data->crect;
-                    if((flags & kWindowBoundsChangeOriginChanged)) {
-                        if(nr.left != oldRect.x() || nr.top != oldRect.y()) {
-                            widget->data->crect.moveTo(nr.left, nr.top);
-                            QMoveEvent qme(widget->data->crect.topLeft(), oldRect.topLeft());
-                            QApplication::sendSpontaneousEvent(widget, &qme);
-                        }
-                    }
-                    if((flags & kWindowBoundsChangeSizeChanged)) {
-                        if (widget->isWindow()) {
-                            QSize newSize = QLayout::closestAcceptableSize(widget, newRect.size());
-                            int dh = newSize.height() - newRect.height();
-                            int dw = newSize.width() - newRect.width();
-                            if (dw != 0 || dh != 0) {
-                                handled_event = true;  // We want to change the bounds, so we handle the event
+                    if (oldRect.width() != newRect.width() || oldRect.height() != newRect.height()) {
+                        widget->data->crect.setSize(newRect.size());
+                        HIRect bounds = CGRectMake(0, 0, newRect.width(), newRect.height());
 
-                                // set the rect, so we can also do the resize down below (yes, we need to resize).
-                                newRect.setBottom(newRect.bottom() + dh);
-                                newRect.setRight(newRect.right() + dw);
+                        // If the WA_StaticContents attribute is set we can optimize the resize
+                        // by only repainting the newly exposed area. We do this by disabling
+                        // painting when setting the size of the view. The OS will invalidate
+                        // the newly exposed area for us.
+                        const bool staticContents = widget->testAttribute(Qt::WA_StaticContents);
+                        const HIViewRef view = qt_mac_nativeview_for(widget);
+                        if (staticContents)
+                            HIViewSetDrawingEnabled(view, false);
+                        HIViewSetFrame(view, &bounds);
+                        if (staticContents)
+                            HIViewSetDrawingEnabled(view, true);
 
-                                nr.left = newRect.x();
-                                nr.top = newRect.y();
-                                nr.right = nr.left + newRect.width();
-                                nr.bottom = nr.top + newRect.height();
-                                SetEventParameter(event, kEventParamCurrentBounds, typeQDRectangle, sizeof(Rect), &nr);
-                            }
-                        }
-
-                        if (oldRect.width() != newRect.width() || oldRect.height() != newRect.height()) {
-                            widget->data->crect.setSize(newRect.size());
-                            HIRect bounds = CGRectMake(0, 0, newRect.width(), newRect.height());
-
-                            // If the WA_StaticContents attribute is set we can optimize the resize
-                            // by only repainting the newly exposed area. We do this by disabling
-                            // painting when setting the size of the view. The OS will invalidate
-                            // the newly exposed area for us.
-                            const bool staticContents = widget->testAttribute(Qt::WA_StaticContents);
-                            const HIViewRef view = qt_mac_nativeview_for(widget);
-                            if (staticContents)
-                                HIViewSetDrawingEnabled(view, false);
-                            HIViewSetFrame(view, &bounds);
-                            if (staticContents)
-                                HIViewSetDrawingEnabled(view, true);
-
-                            QResizeEvent qre(newRect.size(), oldRect.size());
-                            QApplication::sendSpontaneousEvent(widget, &qre);
-                            qt_event_request_window_change(widget);
-                        }
+                        QResizeEvent qre(newRect.size(), oldRect.size());
+                        QApplication::sendSpontaneousEvent(widget, &qre);
+                        qt_event_request_window_change(widget);
                     }
                 }
             }
@@ -1703,17 +1682,11 @@ void QWidgetPrivate::determineWindowClass()
         bool framelessWindow = (flags & Qt::FramelessWindowHint || (customize && !(flags & Qt::WindowTitleHint)));
         if (framelessWindow) {
             if(wclass == kDocumentWindowClass) {
-                if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-                    wattr |= kWindowNoTitleBarAttribute;
-                else
-                    wclass = kPlainWindowClass;
+                wattr |= kWindowNoTitleBarAttribute;
             } else if(wclass == kFloatingWindowClass) {
-                if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-                    wattr |= kWindowNoTitleBarAttribute;
-                else
-                    wclass = kToolbarWindowClass;
+                wattr |= kWindowNoTitleBarAttribute;
             } else if (wclass  == kMovableModalWindowClass) {
-                    wclass = kModalWindowClass;
+                wclass = kModalWindowClass;
             }
         } else {
             if(wclass != kModalWindowClass)
@@ -2011,14 +1984,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Carbon(OSWindowRef windowRef)
     if (!desktop)
         SetAutomaticControlDragTrackingEnabledForWindow(windowRef, true);
     HIWindowChangeFeatures(windowRef, kWindowCanCollapse, 0);
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        if (wattr & kWindowHideOnSuspendAttribute)
-            HIWindowChangeAvailability(windowRef, kHIWindowExposeHidden, 0);
-        else
-            HIWindowChangeAvailability(windowRef, 0, kHIWindowExposeHidden);
-    }
-#endif
+    if (wattr & kWindowHideOnSuspendAttribute)
+        HIWindowChangeAvailability(windowRef, kHIWindowExposeHidden, 0);
+    else
+        HIWindowChangeAvailability(windowRef, 0, kHIWindowExposeHidden);
     if ((flags & Qt::WindowStaysOnTopHint))
         ChangeWindowAttributes(windowRef, kWindowNoAttributes, kWindowHideOnSuspendAttribute);
     if (qt_mac_is_macdrawer(q) && parentWidget)
@@ -2512,9 +2481,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         setFocus_sys();
     if (!topLevel && initializeWindow)
         setWSGeometry();
-
     if (destroyid)
         qt_mac_destructView(destroyid);
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
 }
 
 /*!
@@ -2906,21 +2876,10 @@ void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
     }
     // Set the proxy regardless, since this is our way of clearing it as well, but ignore the
     // return value as well.
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        if (validRef) {
-            status = HIWindowSetProxyFSRef(qt_mac_window_for(q), &ref);
-        } else {
-            status = RemoveWindowProxy(qt_mac_window_for(q));
-        }
+    if (validRef) {
+        status = HIWindowSetProxyFSRef(qt_mac_window_for(q), &ref);
     } else {
-        // Convert to an FSSpec and set it. It's deprecated but it works for where we don't have the other call.
-        if (validRef) {
-            FSSpec fsspec;
-            FSGetCatalogInfo(&ref, kFSCatInfoNone, 0, 0, &fsspec, 0);
-            status = SetWindowProxyFSSpec(qt_mac_window_for(q), &fsspec);
-        } else {
-            status = RemoveWindowProxy(qt_mac_window_for(q));
-        }
+        status = RemoveWindowProxy(qt_mac_window_for(q));
     }
     if (status != noErr)
         qWarning("QWidget::setWindowFilePath: Error setting proxyicon for path (%s):%ld",
@@ -3128,16 +3087,9 @@ void QWidgetPrivate::update_sys(const QRect &r)
         if (updateRedirectedToGraphicsProxyWidget(q, updateRect))
             return;
 #ifndef QT_MAC_USE_COCOA
-#    if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            dirtyOnWidget += updateRect;
-            HIRect r = CGRectMake(x, y, w, h);
-            HIViewSetNeedsDisplayInRect(qt_mac_nativeview_for(q), &r, true);
-        } else
-    #endif
-        {
-            q->update(QRegion(updateRect));
-        }
+        dirtyOnWidget += updateRect;
+        HIRect r = CGRectMake(x, y, w, h);
+        HIViewSetNeedsDisplayInRect(qt_mac_nativeview_for(q), &r, true);
 #else
         [qt_mac_nativeview_for(q) setNeedsDisplayInRect:NSMakeRect(x, y, w, h)];
 #endif
@@ -3739,7 +3691,7 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
     // Perform a normal (complete repaint) update in some cases:
     if (
         // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && qd->isOpaque == false) ||
+        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||
@@ -4263,7 +4215,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
                         HIRect bounds = CGRectMake(w->data->crect.x(), w->data->crect.y(),
                                                    w->data->crect.width(), w->data->crect.height());
                         HIViewRef hiview = qt_mac_nativeview_for(w);
-                        const bool opaque = qt_widget_private(w)->isOpaque;
+                        const bool opaque = q->testAttribute(Qt::WA_OpaquePaintEvent);
 
                         if (opaque)
                             HIViewSetDrawingEnabled(hiview,  false);
@@ -4294,32 +4246,14 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
     OSViewRef view = qt_mac_nativeview_for(q);
 #ifndef QT_MAC_USE_COCOA
     HIRect scrollrect = CGRectMake(r.x(), r.y(), r.width(), r.height());
-#  if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-   if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-       OSStatus err = _HIViewScrollRectWithOptions(view, valid_rect ? &scrollrect : 0, dx, dy, kHIViewScrollRectAdjustInvalid);
-       if (err) {
-           // The only parameter that can go wrong, is the rect.
-           qWarning("QWidget::scroll: Your rectangle was too big for the widget, clipping rect");
-           scrollrect = CGRectMake(qMax(r.x(), 0), qMax(r.y(), 0),
-                                   qMin(r.width(), q->width()), qMin(r.height(), q->height()));
-           _HIViewScrollRectWithOptions(view, valid_rect ? &scrollrect : 0, dx, dy, kHIViewScrollRectAdjustInvalid);
-       }
-   } else {
-       if (HIViewGetNeedsDisplay(view)) {
-           q->update(valid_rect ? r : q->rect());
-           return;
-       }
-       HIRect scrollrect = CGRectMake(r.x(), r.y(), r.width(), r.height());
-       OSStatus err = HIViewScrollRect(view, valid_rect ? &scrollrect : 0, dx, dy);
-       if (err) {
-           // The only parameter that can go wrong, is the rect.
-           qWarning("QWidget::scroll: Your rectangle was too big for the widget, clipping rect");
-           scrollrect = CGRectMake(qMax(r.x(), 0), qMax(r.y(), 0),
-                   qMin(r.width(), q->width()), qMin(r.height(), q->height()));
-           HIViewScrollRect(view, valid_rect ? &scrollrect : 0, dx, dy);
-       }
+   OSStatus err = _HIViewScrollRectWithOptions(view, valid_rect ? &scrollrect : 0, dx, dy, kHIViewScrollRectAdjustInvalid);
+   if (err) {
+       // The only parameter that can go wrong, is the rect.
+       qWarning("QWidget::scroll: Your rectangle was too big for the widget, clipping rect");
+       scrollrect = CGRectMake(qMax(r.x(), 0), qMax(r.y(), 0),
+                               qMin(r.width(), q->width()), qMin(r.height(), q->height()));
+       _HIViewScrollRectWithOptions(view, valid_rect ? &scrollrect : 0, dx, dy, kHIViewScrollRectAdjustInvalid);
    }
-#  endif
 #else
     NSRect scrollRect = valid_rect ? NSMakeRect(r.x(), r.y(), r.width(), r.height())
                                    : NSMakeRect(0, 0, q->width(), q->height());
@@ -4347,20 +4281,9 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
         }
     }
 
-    // ### Scroll the dirty regions as well, the following is not correct.
-    QRegion displayRegion = r.isNull() ? dirtyOnWidget : (dirtyOnWidget & r);
-    const QVector<QRect> &rects = dirtyOnWidget.rects();
-    const QVector<QRect>::const_iterator end = rects.end();
-    QVector<QRect>::const_iterator it = rects.begin();
-    while (it != end) {
-         const QRect rect = *it;
-         const NSRect dirtyRect = NSMakeRect(rect.x() + dx, rect.y() + dy,
-                                             rect.width(), rect.height());
-         [view setNeedsDisplayInRect:dirtyRect];
-         ++it;
-    }
-    [view scrollRect:scrollRect by:NSMakeSize(dx, dy)];
-    // Yes, we potentially send a duplicate area, but I think Cocoa can handle it.
+    NSSize deltaSize = NSMakeSize(dx, dy);
+    [view translateRectsNeedingDisplayInRect:scrollRect by:deltaSize];
+    [view scrollRect:scrollRect by:deltaSize];
     [view setNeedsDisplayInRect:deltaXRect];
     [view setNeedsDisplayInRect:deltaYRect];
 #endif // QT_MAC_USE_COCOA
@@ -4488,6 +4411,23 @@ void QWidgetPrivate::registerDropSite(bool on)
     if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
         [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
     }
+#endif
+}
+
+void QWidgetPrivate::registerTouchWindow()
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+        return;
+    Q_Q(QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created))
+        return;
+#ifndef QT_MAC_USE_COCOA
+    // Needs implementation!
+#else
+    NSView *view = qt_mac_nativeview_for(q);
+    [view setAcceptsTouchEvents:YES];
+#endif
 #endif
 }
 
@@ -4871,11 +4811,9 @@ void QWidgetPrivate::macUpdateMetalAttribute()
             if (layout)
                 layout->updateHIToolBarStatus();
             ChangeWindowAttributes(qt_mac_window_for(q), kWindowMetalAttribute, 0);
-            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-                ChangeWindowAttributes(qt_mac_window_for(q), kWindowMetalNoContentSeparatorAttribute, 0);
+            ChangeWindowAttributes(qt_mac_window_for(q), kWindowMetalNoContentSeparatorAttribute, 0);
         } else {
-            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-                ChangeWindowAttributes(qt_mac_window_for(q), 0, kWindowMetalNoContentSeparatorAttribute);
+            ChangeWindowAttributes(qt_mac_window_for(q), 0, kWindowMetalNoContentSeparatorAttribute);
             ChangeWindowAttributes(qt_mac_window_for(q), 0, kWindowMetalAttribute);
             if (layout)
                 layout->updateHIToolBarStatus();

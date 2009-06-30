@@ -117,7 +117,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(11);
+        vboxLayout->setContentsMargins(11, 11, 11, 11);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setObjectName(QString::fromUtf8("unnamed"));
         hboxLayout = new QHBoxLayout();
@@ -125,7 +125,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setObjectName(QString::fromUtf8("unnamed"));
@@ -134,7 +134,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(0);
+        vboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         vboxLayout1->setObjectName(QString::fromUtf8("unnamed"));
@@ -144,7 +144,7 @@ public:
 #ifndef Q_OS_MAC
         ButtonGroup1->layout()->setSpacing(6);
 #endif
-        ButtonGroup1->layout()->setMargin(11);
+        ButtonGroup1->layout()->setContentsMargins(11, 11, 11, 11);
         vboxLayout2 = new QVBoxLayout();
         QBoxLayout *boxlayout = qobject_cast<QBoxLayout *>(ButtonGroup1->layout());
         if (boxlayout)
@@ -177,7 +177,7 @@ public:
 #ifndef Q_OS_MAC
         ButtonGroup2->layout()->setSpacing(6);
 #endif
-        ButtonGroup2->layout()->setMargin(11);
+        ButtonGroup2->layout()->setContentsMargins(11, 11, 11, 11);
         vboxLayout3 = new QVBoxLayout();
         QBoxLayout *boxlayout1 = qobject_cast<QBoxLayout *>(ButtonGroup2->layout());
         if (boxlayout1)
@@ -212,7 +212,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout4->setSpacing(6);
 #endif
-        vboxLayout4->setMargin(0);
+        vboxLayout4->setContentsMargins(0, 0, 0, 0);
         vboxLayout4->setObjectName(QString::fromUtf8("vboxLayout4"));
         vboxLayout4->setObjectName(QString::fromUtf8("unnamed"));
         LineEdit1 = new QLineEdit(PreviewWidgetBase);
@@ -229,7 +229,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         hboxLayout1->setObjectName(QString::fromUtf8("unnamed"));
         SpinBox1 = new QSpinBox(PreviewWidgetBase);

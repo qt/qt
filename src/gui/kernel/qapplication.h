@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,6 +75,7 @@ class QStyle;
 class QEventLoop;
 class QIcon;
 class QInputContext;
+class QGestureRecognizer;
 template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
@@ -113,6 +114,7 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
 #endif
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
+    Q_PROPERTY(int eventDeliveryDelayForGestures READ eventDeliveryDelayForGestures WRITE setEventDeliveryDelayForGestures)
 
 public:
     enum Type { Tty, GuiClient, GuiServer };
@@ -278,6 +280,12 @@ public:
     static bool keypadNavigationEnabled();
 #endif
 
+    void addGestureRecognizer(QGestureRecognizer *recognizer);
+    void removeGestureRecognizer(QGestureRecognizer *recognizer);
+
+    void setEventDeliveryDelayForGestures(int delay);
+    int eventDeliveryDelayForGestures();
+
 Q_SIGNALS:
     void lastWindowClosed();
     void focusChanged(QWidget *old, QWidget *now);
@@ -388,6 +396,7 @@ private:
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
 #endif
+    friend class QGestureManager;
 
 #if defined(Q_WS_WIN)
     friend QApplicationPrivate* getQApplicationPrivateInternal();
@@ -395,6 +404,9 @@ private:
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
     Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())
+#endif
+#if defined(QT_RX71_MULTITOUCH)
+    Q_PRIVATE_SLOT(d_func(), void _q_readRX71MultiTouchEvents())
 #endif
 };
 

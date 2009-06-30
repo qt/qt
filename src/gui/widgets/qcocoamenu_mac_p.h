@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,16 +56,23 @@
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
 
-@interface QT_MANGLE_NAMESPACE(QCocoaMenu) : NSMenu
-{
-    QMenu *qmenu;
-}
-- (id)initWithQMenu:(QMenu*)menu;
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+
+@protocol NSMenuDelegate <NSObject>
 - (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item;
 - (void)menuWillOpen:(NSMenu*)menu;
 - (void)menuWillClose:(NSMenu*)menu;
 - (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
   whichItem:(NSMenuItem**)outItem;
+@end
+
+#endif
+
+@interface QT_MANGLE_NAMESPACE(QCocoaMenu) : NSMenu <NSMenuDelegate>
+{
+    QMenu *qmenu;
+}
+- (id)initWithQMenu:(QMenu*)menu;
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action;
 @end
 #endif

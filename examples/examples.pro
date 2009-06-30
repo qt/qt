@@ -22,7 +22,9 @@ SUBDIRS       = \
                 widgets \
                 uitools \
                 xml \
-                script
+                script \
+                multitouch \
+                gestures
 
 symbian: SUBDIRS = \
                 graphicsview \

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,10 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qrect.h>
+#include <QtGui/qpolygon.h>
+#include <QtCore/qset.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_HEADER
 
@@ -301,6 +305,49 @@ public:
 
     QPointF newPos() const;
     void setNewPos(const QPointF &pos);
+};
+
+class QGesture;
+class QGraphicsItem;
+class QGraphicsSceneGestureEventPrivate;
+class Q_GUI_EXPORT QGraphicsSceneGestureEvent : public QGraphicsSceneEvent
+{
+    Q_DECLARE_PRIVATE(QGraphicsSceneGestureEvent)
+public:
+    QGraphicsSceneGestureEvent();
+    ~QGraphicsSceneGestureEvent();
+
+    bool contains(const QString &type) const;
+    bool contains(Qt::GestureType type) const;
+
+    QList<QString> gestureTypes() const;
+
+    const QGesture* gesture(Qt::GestureType type) const;
+    const QGesture* gesture(const QString &type) const;
+    QList<QGesture*> gestures() const;
+    void setGestures(const QList<QGesture*> &gestures);
+    void setGestures(const QSet<QGesture*> &gestures);
+
+    QSet<QString> cancelledGestures() const;
+    void setCancelledGestures(const QSet<QString> &cancelledGestures);
+
+    void acceptAll();
+#ifndef Q_NO_USING_KEYWORD
+    using QEvent::accept;
+#else
+    inline void accept() { QEvent::accept(); }
+#endif
+    void accept(Qt::GestureType type);
+    void accept(const QString &type);
+
+    QPointF mapToScene(const QPoint &point) const;
+    QPolygonF mapToScene(const QRect &rect) const;
+    QPointF mapToItem(const QPoint &point, QGraphicsItem *item) const;
+    QPolygonF mapToItem(const QRect &rect, QGraphicsItem *item) const;
+
+protected:
+    QHash<QString, QGesture*> m_gestures;
+    QSet<QString> m_cancelledGestures;
 };
 
 #endif // QT_NO_GRAPHICSVIEW

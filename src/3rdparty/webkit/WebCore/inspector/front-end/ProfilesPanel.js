@@ -218,7 +218,7 @@ WebInspector.ProfilesPanel.prototype = {
         view.show(this.profileViews);
 
         profile._profilesTreeElement.select(true);
-        profile._profilesTreeElement.reveal()
+        profile._profilesTreeElement.reveal();
 
         this.visibleView = view;
 
@@ -231,8 +231,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     showView: function(view)
     {
-        // Always use the treeProfile, since the heavy profile might be showing.
-        this.showProfile(view.profile.treeProfile);
+        this.showProfile(view.profile);
     },
 
     profileViewForProfile: function(profile)
@@ -267,8 +266,10 @@ WebInspector.ProfilesPanel.prototype = {
 
             groupNumber = ++this._profileGroupsForLinks[title];
 
-            if (groupNumber >= 2)
-                title += " " + WebInspector.UIString("Run %d", groupNumber);
+            if (groupNumber > 2)
+                // The title is used in the console message announcing that a profile has started so it gets
+                // incremented twice as often as it's displayed
+                title += " " + WebInspector.UIString("Run %d", groupNumber / 2);
         }
         
         return title;
@@ -295,8 +296,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     searchMatchFound: function(view, matches)
     {
-        // Always use the treeProfile, since the heavy profile might be showing.
-        view.profile.treeProfile._profilesTreeElement.searchMatches = matches;
+        view.profile._profilesTreeElement.searchMatches = matches;
     },
 
     searchCanceled: function(startingNewSearch)
@@ -356,15 +356,15 @@ WebInspector.ProfilesPanel.prototype = {
     {
         if (InspectorController.profilerEnabled())
             return;
-        this._toggleProfiling();
+        this._toggleProfiling(this.panelEnablerView.alwaysEnabled);
     },
 
-    _toggleProfiling: function()
+    _toggleProfiling: function(optionalAlways)
     {
         if (InspectorController.profilerEnabled())
-            InspectorController.disableProfiler();
+            InspectorController.disableProfiler(true);
         else
-            InspectorController.enableProfiler();
+            InspectorController.enableProfiler(!!optionalAlways);
     },
 
     _populateProfiles: function()

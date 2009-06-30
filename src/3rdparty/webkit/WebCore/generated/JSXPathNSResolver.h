@@ -21,7 +21,6 @@
 #ifndef JSXPathNSResolver_h
 #define JSXPathNSResolver_h
 
-
 #if ENABLE(XPATH)
 
 #include "JSDOMBinding.h"
@@ -37,7 +36,7 @@ class JSXPathNSResolver : public DOMObject {
 public:
     JSXPathNSResolver(PassRefPtr<JSC::Structure>, PassRefPtr<XPathNSResolver>);
     virtual ~JSXPathNSResolver();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -47,16 +46,17 @@ private:
     RefPtr<XPathNSResolver> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, XPathNSResolver*);
-XPathNSResolver* toXPathNSResolver(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, XPathNSResolver*);
+XPathNSResolver* toXPathNSResolver(JSC::JSValue);
 
 class JSXPathNSResolverPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -65,7 +65,7 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
 } // namespace WebCore
 

@@ -4,7 +4,7 @@
              (C) 1998, 1999 Torben Weis (weis@kde.org)
              (C) 1999 Lars Knoll (knoll@kde.org)
              (C) 1999 Antti Koivisto (koivisto@kde.org)
-   Copyright (C) 2004, 2005, 2006, 2007 Apple Inc. All rights reserved.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -35,25 +35,25 @@ namespace WebCore {
 
 class Color;
 class Event;
-class EventTargetNode;
 class Frame;
 class FrameViewPrivate;
 class IntRect;
-class PlatformMouseEvent;
 class Node;
+class PlatformMouseEvent;
 class RenderLayer;
 class RenderObject;
 class RenderPartObject;
+class ScheduledEvent;
 class String;
 
 template <typename T> class Timer;
 
-class FrameView : public ScrollView {
+class FrameView : public ScrollView, public RefCounted<FrameView> {
 public:
     friend class RenderView;
 
-    FrameView(Frame*);
-    FrameView(Frame*, const IntSize& initialSize);
+    static PassRefPtr<FrameView> create(Frame*);
+    static PassRefPtr<FrameView> create(Frame*, const IntSize& initialSize);
 
     virtual ~FrameView();
 
@@ -63,10 +63,6 @@ public:
 
     Frame* frame() const { return m_frame.get(); }
     void clearFrame();
-
-    void ref() { ++m_refCount; }
-    void deref() { if (!--m_refCount) delete this; }
-    bool hasOneRef() { return m_refCount == 1; }
 
     int marginWidth() const { return m_margins.width(); } // -1 means default
     int marginHeight() const { return m_margins.height(); } // -1 means default
@@ -88,15 +84,28 @@ public:
     bool layoutPending() const;
 
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
-    int layoutCount() const;
+    int layoutCount() const { return m_layoutCount; }
 
     // These two helper functions just pass through to the RenderView.
     bool needsLayout() const;
     void setNeedsLayout();
 
-    bool needsFullRepaint() const;
+    bool needsFullRepaint() const { return m_doFullRepaint; }
+
+#if USE(ACCELERATED_COMPOSITING)
+    enum CompositingUpdate { NormalCompositingUpdate, ForcedCompositingUpdate };
+    void updateCompositingLayers(CompositingUpdate updateType = NormalCompositingUpdate);
+
+    // Called when changes to the GraphicsLayer hierarchy have to be synchronized with
+    // content rendered via the normal painting path.
+    void setNeedsOneShotDrawingSynchronization();
+#endif
+
+    void didMoveOnscreen();
+    void willMoveOffscreen();
 
     void resetScrollbars();
+    void detachCustomScrollbars();
 
     void clear();
 
@@ -131,12 +140,16 @@ public:
     void setMediaType(const String&);
 
     void setUseSlowRepaints();
+    void setIsOverlapped(bool);
+    void setContentIsOpaque(bool);
 
     void addSlowRepaintObject();
     void removeSlowRepaintObject();
 
     void beginDeferredRepaints();
     void endDeferredRepaints();
+    void checkStopDelayingDeferredRepaints();
+    void resetDeferredRepaintDelay();
 
 #if ENABLE(DASHBOARD_SUPPORT)
     void updateDashboardRegions();
@@ -145,7 +158,7 @@ public:
 
     void restoreScrollbar();
 
-    void scheduleEvent(PassRefPtr<Event>, PassRefPtr<EventTargetNode>);
+    void scheduleEvent(PassRefPtr<Event>, PassRefPtr<Node>);
     void pauseScheduledEvents();
     void resumeScheduledEvents();
     void postLayoutTimerFired(Timer<FrameView>*);
@@ -165,13 +178,26 @@ public:
     
     void layoutIfNeededRecursive();
 
-    void setIsVisuallyNonEmpty();
+    void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
+
+    void forceLayout(bool allowSubtree = false);
+    void forceLayoutWithPageWidthRange(float minPageWidth, float maxPageWidth, bool adjustViewSize);
+
+    void adjustPageHeight(float* newBottom, float oldTop, float oldBottom, float bottomLimit);
+
+    bool lockedToAnchor() { return m_lockedToAnchor; }
+    void setLockedToAnchor(bool lockedToAnchor) { m_lockedToAnchor = lockedToAnchor; }
+
 
 private:
+    FrameView(Frame*);
+
+    void reset();
     void init();
 
     virtual bool isFrameView() const;
 
+    friend class RenderWidget;
     bool useSlowRepaints() const;
 
     void applyOverflowToViewport(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
@@ -183,18 +209,90 @@ private:
 
     virtual void repaintContentRectangle(const IntRect&, bool immediate);
     virtual void contentsResized() { setNeedsLayout(); }
-    virtual void visibleContentsResized() { layout(); }
+    virtual void visibleContentsResized()
+    {
+        if (needsLayout())
+            layout();
+    }
 
+    void deferredRepaintTimerFired(Timer<FrameView>*);
+    void doDeferredRepaints();
+    void updateDeferredRepaintDelay();
+    double adjustedDeferredRepaintDelay() const;
+
+    bool updateWidgets();
+    
     static double sCurrentPaintTimeStamp; // used for detecting decoded resource thrash in the cache
 
-    unsigned m_refCount;
     IntSize m_size;
     IntSize m_margins;
     OwnPtr<HashSet<RenderPartObject*> > m_widgetUpdateSet;
     RefPtr<Frame> m_frame;
-    FrameViewPrivate* d;
+
+    bool m_doFullRepaint;
+    
+    ScrollbarMode m_vmode;
+    ScrollbarMode m_hmode;
+    bool m_useSlowRepaints;
+    bool m_isOverlapped;
+    bool m_contentIsOpaque;
+    unsigned m_slowRepaintObjectCount;
+
+    int m_borderX, m_borderY;
+
+    Timer<FrameView> m_layoutTimer;
+    bool m_delayedLayout;
+    RenderObject* m_layoutRoot;
+    
+    bool m_layoutSchedulingEnabled;
+    bool m_midLayout;
+    int m_layoutCount;
+    unsigned m_nestedLayoutCount;
+    Timer<FrameView> m_postLayoutTasksTimer;
+    bool m_firstLayoutCallbackPending;
+
+    bool m_firstLayout;
+    bool m_needToInitScrollbars;
+    bool m_isTransparent;
+    Color m_baseBackgroundColor;
+    IntSize m_lastLayoutSize;
+    float m_lastZoomFactor;
+
+    String m_mediaType;
+    
+    unsigned m_enqueueEvents;
+    Vector<ScheduledEvent*> m_scheduledEvents;
+    
+    bool m_overflowStatusDirty;
+    bool m_horizontalOverflow;
+    bool m_verticalOverflow;    
+    RenderObject* m_viewportRenderer;
+
+    bool m_wasScrolledByUser;
+    bool m_inProgrammaticScroll;
+    
+    unsigned m_deferringRepaints;
+    unsigned m_repaintCount;
+    Vector<IntRect> m_repaintRects;
+    Timer<FrameView> m_deferredRepaintTimer;
+    double m_deferredRepaintDelay;
+    double m_lastPaintTime;
+
+    bool m_shouldUpdateWhileOffscreen;
+
+    unsigned m_deferSetNeedsLayouts;
+    bool m_setNeedsLayoutWasDeferred;
+
+    RefPtr<Node> m_nodeToDraw;
+    PaintRestriction m_paintRestriction;
+    bool m_isPainting;
+
+    bool m_isVisuallyNonEmpty;
+    bool m_firstVisuallyNonEmptyLayoutCallbackPending;
+
+    bool m_lockedToAnchor;
 };
 
-}
+} // namespace WebCore
 
-#endif
+#endif // FrameView_h

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,6 +70,8 @@ class QScriptErrorLogWidgetInterface;
 class QScriptDebuggerWidgetFactoryInterface;
 class QAction;
 class QEvent;
+class QMenu;
+class QToolBar;
 
 class QScriptDebuggerPrivate;
 class Q_AUTOTEST_EXPORT QScriptDebugger : public QObject
@@ -165,7 +167,12 @@ public:
     QAction *clearConsoleAction(QObject *parent) const;
     QAction *clearErrorLogAction(QObject *parent) const;
 
+    QMenu *createStandardMenu(QWidget *widgetParent, QObject *actionParent);
+    QToolBar *createStandardToolBar(QWidget *widgetParent, QObject *actionParent);
+
     bool eventFilter(QObject *, QEvent *e);
+
+    bool isInteractive() const;
 
 Q_SIGNALS:
     void stopped() const;

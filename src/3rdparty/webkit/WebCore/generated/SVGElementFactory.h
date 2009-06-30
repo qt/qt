@@ -42,13 +42,12 @@ namespace WebCore {
 namespace WebCore {
 
     class SVGElement;
-
     // The idea behind this class is that there will eventually be a mapping from namespace URIs to ElementFactories that can dispense
     // elements. In a compound document world, the generic createElement function (will end up being virtual) will be called.
     class SVGElementFactory {
     public:
         PassRefPtr<Element> createElement(const WebCore::QualifiedName&, WebCore::Document*, bool createdByParser = true);
-        static PassRefPtr<SVGElement> createSVGElement(const WebCore::QualifiedName&, WebCore::Document*, bool createdByParser = true);
+        static PassRefPtr<SVGElement> createSVGElement(const WebCore::QualifiedName&, WebCore::Document*, bool /*createdByParser*/ = true);
     };
 }
 

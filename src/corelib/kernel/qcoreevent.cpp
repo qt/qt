@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -224,6 +224,11 @@ QT_BEGIN_NAMESPACE
     \value ZOrderChange                     The widget's z-order has changed. This event is never sent to top level windows.
     \value KeyboardLayoutChange             The keyboard layout has changed.
     \value DynamicPropertyChange            A dynamic property was added, changed or removed from the object.
+    \value TouchBegin                       Beginning of a sequence of touch-screen and/or track-pad events (QTouchEvent)
+    \value TouchUpdate                      Touch-screen event (QTouchEvent)
+    \value TouchEnd                         End of touch-event sequence (QTouchEvent)
+    \value Gesture                          A gesture has occured.
+    \value GraphicsSceneGesture             A gesture has occured on a graphics scene.
 
     User events should have values between \c User and \c{MaxUser}:
 

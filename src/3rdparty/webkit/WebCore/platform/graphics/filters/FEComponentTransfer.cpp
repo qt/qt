@@ -21,8 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FEComponentTransfer.h"
+
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -83,7 +85,7 @@ void FEComponentTransfer::setAlphaFunction(const ComponentTransferFunction& func
     m_alphaFunc = func;
 }
 
-void FEComponentTransfer::apply()
+void FEComponentTransfer::apply(Filter*)
 {
 }
 
@@ -93,4 +95,4 @@ void FEComponentTransfer::dump()
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)

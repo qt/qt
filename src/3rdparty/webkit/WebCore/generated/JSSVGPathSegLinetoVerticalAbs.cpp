@@ -20,23 +20,19 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPathSegLinetoVerticalAbs.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGPathSegLinetoVertical.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegLinetoVerticalAbs)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegLinetoVerticalAbs);
 
 /* Hash table */
 
@@ -69,9 +65,9 @@ static const HashTable JSSVGPathSegLinetoVerticalAbsPrototypeTable =
 
 const ClassInfo JSSVGPathSegLinetoVerticalAbsPrototype::s_info = { "SVGPathSegLinetoVerticalAbsPrototype", 0, &JSSVGPathSegLinetoVerticalAbsPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegLinetoVerticalAbsPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegLinetoVerticalAbsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegLinetoVerticalAbs>(exec);
+    return getDOMPrototype<JSSVGPathSegLinetoVerticalAbs>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegLinetoVerticalAbs::s_info = { "SVGPathSegLinetoVerticalAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoVerticalAbsTable, 0 };
@@ -81,9 +77,9 @@ JSSVGPathSegLinetoVerticalAbs::JSSVGPathSegLinetoVerticalAbs(PassRefPtr<Structur
 {
 }
 
-JSObject* JSSVGPathSegLinetoVerticalAbs::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegLinetoVerticalAbs::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegLinetoVerticalAbsPrototype(JSSVGPathSegLinetoVerticalAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegLinetoVerticalAbsPrototype(JSSVGPathSegLinetoVerticalAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegLinetoVerticalAbs::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -91,21 +87,22 @@ bool JSSVGPathSegLinetoVerticalAbs::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticValueSlot<JSSVGPathSegLinetoVerticalAbs, Base>(exec, &JSSVGPathSegLinetoVerticalAbsTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPathSegLinetoVerticalAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegLinetoVerticalAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegLinetoVerticalAbs* imp = static_cast<SVGPathSegLinetoVerticalAbs*>(static_cast<JSSVGPathSegLinetoVerticalAbs*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-void JSSVGPathSegLinetoVerticalAbs::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPathSegLinetoVerticalAbs::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegLinetoVerticalAbs, Base>(exec, propertyName, value, &JSSVGPathSegLinetoVerticalAbsTable, this, slot);
 }
 
-void setJSSVGPathSegLinetoVerticalAbsY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegLinetoVerticalAbsY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegLinetoVerticalAbs* imp = static_cast<SVGPathSegLinetoVerticalAbs*>(static_cast<JSSVGPathSegLinetoVerticalAbs*>(thisObject)->impl());
-    imp->setY(value->toFloat(exec));
+    imp->setY(value.toFloat(exec));
     if (static_cast<JSSVGPathSegLinetoVerticalAbs*>(thisObject)->context())
         static_cast<JSSVGPathSegLinetoVerticalAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegLinetoVerticalAbs*>(thisObject)->impl()->associatedAttributeName());
 }

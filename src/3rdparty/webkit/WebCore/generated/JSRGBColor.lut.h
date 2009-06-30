@@ -12,10 +12,5 @@ static const struct HashTableValue JSRGBColorTableValues[4] = {
 };
 
 extern const struct HashTable JSRGBColorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 7, JSRGBColorTableValues, 0 };
-#else
     { 8, 7, JSRGBColorTableValues, 0 };
-#endif
-
 } // namespace

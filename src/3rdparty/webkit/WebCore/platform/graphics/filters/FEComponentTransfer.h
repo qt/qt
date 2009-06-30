@@ -22,10 +22,11 @@
 #ifndef SVGFEComponentTransfer_h
 #define SVGFEComponentTransfer_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FilterEffect.h"
-#include "SVGFEDisplacementMap.h"
 
+#include "SVGFEDisplacementMap.h"
+#include "Filter.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {
@@ -77,9 +78,10 @@ namespace WebCore {
 
         ComponentTransferFunction alphaFunction() const;
         void setAlphaFunction(const ComponentTransferFunction&);
-        
-        virtual void apply();
-        virtual void dump();
+
+        virtual FloatRect uniteChildEffectSubregions(Filter* filter) { return calculateUnionOfChildEffectSubregions(filter, m_in.get()); }
+        void apply(Filter*);
+        void dump();
 
     private:
         FEComponentTransfer(FilterEffect*,const ComponentTransferFunction&, const ComponentTransferFunction&,
@@ -94,6 +96,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)
 
 #endif // SVGFEComponentTransfer_h

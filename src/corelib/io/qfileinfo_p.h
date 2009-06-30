@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -95,14 +95,15 @@ public:
                 (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
         }
         inline void clear() {
-            fileNames.clear();
             clearFlags();
+            for (int i = QAbstractFileEngine::NFileNames - 1 ; i >= 0 ; --i)
+                fileNames[i].clear();
         }
         mutable QAtomicInt ref;
 
         QAbstractFileEngine *fileEngine;
         mutable QString fileName;
-        mutable QHash<int, QString> fileNames;
+        mutable QString fileNames[QAbstractFileEngine::NFileNames];
 
         mutable uint cachedFlags : 31;
         mutable uint cache_enabled : 1;

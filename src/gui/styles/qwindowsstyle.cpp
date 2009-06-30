@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,7 @@
 #include "qwindowsstyle.h"
 #include "qwindowsstyle_p.h"
 #include <private/qpixmapdata_p.h>
+#include <private/qstylehelper_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
 
@@ -405,7 +406,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 
 #ifndef QT_NO_SLIDER
     case PM_SliderLength:
-        ret = 11;
+        ret = int(QStyleHelper::dpiScaled(11.));
         break;
 
         // Returns the number of pixels to use for the business part of the
@@ -453,11 +454,11 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 
     case PM_SmallIconSize:
-        ret = 16;
+        ret = int(QStyleHelper::dpiScaled(16.));
         break;
 
     case PM_LargeIconSize:
-        ret = 32;
+        ret = int(QStyleHelper::dpiScaled(32.));
         break;
 
     case PM_IconViewIconSize:
@@ -465,13 +466,13 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 
     case PM_ToolBarIconSize:
-        ret = 24;
+        ret = int(QStyleHelper::dpiScaled(24.));
         break;
     case PM_DockWidgetTitleMargin:
-        ret = 2;
+        ret = int(QStyleHelper::dpiScaled(2.));
         break;
     case PM_DockWidgetTitleBarButtonMargin:
-        ret = 4;
+        ret = int(QStyleHelper::dpiScaled(4.));
         break;
 #if defined(Q_WS_WIN)
     case PM_DockWidgetFrameWidth:
@@ -553,7 +554,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_ToolBarHandleExtent:
-        ret = 10;
+        ret = int(QStyleHelper::dpiScaled(10.));
         break;
     default:
         ret = QCommonStyle::pixelMetric(pm, opt, widget);
@@ -3200,11 +3201,14 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             int defwidth = 0;
             if (btn->features & QStyleOptionButton::AutoDefaultButton)
                 defwidth = 2 * proxy()->pixelMetric(PM_ButtonDefaultIndicator, btn, widget);
+            int minwidth = int(QStyleHelper::dpiScaled(75.));
+            int minheight = int(QStyleHelper::dpiScaled(23.));
+
 #ifndef QT_QWS_SMALL_PUSHBUTTON
-            if (w < 75 + defwidth && !btn->text.isEmpty())
-                w = 75 + defwidth;
-            if (h < 23 + defwidth)
-                h = 23 + defwidth;
+            if (w < minwidth + defwidth && !btn->text.isEmpty())
+                w = minwidth + defwidth;
+            if (h < minheight + defwidth)
+                h = minheight + defwidth;
 #endif
             sz = QSize(w, h);
         }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,7 @@
     \image drilldown-example.png Screenshot of the Drill Down Example
 
     When running the example application, a user can retrieve
-    information about each of Nokia's Qt Software offices by clicking the
+    information about each of Nokia's Qt offices by clicking the
     corresponding image. The application pops up an information window
     displaying the data, and allows the users to alter the location
     description as well as the image. The main view will be updated
@@ -294,7 +294,7 @@
 
     The QGraphicsView class is part of the \l {The Graphics View
     Framework} which we will use to display the images of Nokia's
-    Qt Software offices. To be able to respond to user interaction;
+    Qt offices. To be able to respond to user interaction;
     i.e., showing the
     appropriate information window whenever the user clicks one of the
     office images, we reimplement QGraphicsView's \l

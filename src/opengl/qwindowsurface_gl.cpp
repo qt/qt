@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,6 +71,10 @@
 #include <private/qgraphicssystem_gl_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
+
+#ifndef QT_OPENGL_ES_2
+#include <private/qpaintengine_opengl_p.h>
+#endif
 
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
@@ -180,11 +184,13 @@ QGLGraphicsSystem::QGLGraphicsSystem()
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : widget(0) {}
+    QGLGlobalShareWidget() : widget(0), initializing(false) {}
 
     QGLWidget *shareWidget() {
-        if (!widget && !cleanedUp) {
+        if (!initializing && !widget && !cleanedUp) {
+            initializing = true;
             widget = new QGLWidget;
+            initializing = false;
         }
         return widget;
     }
@@ -200,6 +206,7 @@ public:
 
 private:
     QGLWidget *widget;
+    bool initializing;
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
@@ -315,9 +322,17 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
 
+#if !defined (QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
+#endif
+
 /*! \reimp */
 QPaintEngine *QGLWindowSurface::paintEngine() const
 {
+#if !defined(QT_OPENGL_ES_2)
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_window_surface_engine();
+#endif
     return qt_gl_window_surface_2_engine();
 }
 

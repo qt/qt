@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -696,8 +696,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 /*!
   Sends \a event to \a receiver: \a {receiver}->event(\a event).
   Returns the value that is returned from the receiver's event
-  handler. Note that this function is called for all events send to
-  any object is all threads.
+  handler. Note that this function is called for all events sent to
+  any object in any thread.
 
   For certain types of events (e.g. mouse and key events),
   the event will be propagated to the receiver's parent and so on up to

@@ -37,13 +37,13 @@ class HTMLElement;
 class Node;
 class Position;
 class Range;
-class Selection;
 class String;
 class VisiblePosition;
+class VisibleSelection;
 
 Position rangeCompliantEquivalent(const Position&);
 Position rangeCompliantEquivalent(const VisiblePosition&);
-int maxDeepOffset(const Node*);
+int lastOffsetForEditing(const Node*);
 bool isAtomicNode(const Node*);
 bool editingIgnoresContent(const Node*);
 bool canHaveChildrenForEditing(const Node*);
@@ -51,6 +51,7 @@ Node* highestEditableRoot(const Position&);
 VisiblePosition firstEditablePositionAfterPositionInRoot(const Position&, Node*);
 VisiblePosition lastEditablePositionBeforePositionInRoot(const Position&, Node*);
 int comparePositions(const Position&, const Position&);
+int comparePositions(const VisiblePosition&, const VisiblePosition&);
 Node* lowestEditableAncestor(Node*);
 bool isContentEditable(const Node*);
 Position nextCandidate(const Position&);
@@ -72,7 +73,7 @@ Position positionBeforeNode(const Node*);
 Position positionAfterNode(const Node*);
 
 PassRefPtr<Range> avoidIntersectionWithNode(const Range*, Node*);
-Selection avoidIntersectionWithNode(const Selection&, Node*);
+VisibleSelection avoidIntersectionWithNode(const VisibleSelection&, Node*);
 
 bool isSpecialElement(const Node*);
 bool validBlockTag(const String&);
@@ -82,6 +83,7 @@ PassRefPtr<HTMLElement> createBreakElement(Document*);
 PassRefPtr<HTMLElement> createOrderedListElement(Document*);
 PassRefPtr<HTMLElement> createUnorderedListElement(Document*);
 PassRefPtr<HTMLElement> createListItemElement(Document*);
+PassRefPtr<HTMLElement> createHTMLElement(Document*, const QualifiedName&);
 PassRefPtr<HTMLElement> createHTMLElement(Document*, const AtomicString&);
 
 bool isTabSpanNode(const Node*);
@@ -121,17 +123,19 @@ Node* enclosingAnchorElement(const Position&);
 bool isListElement(Node*);
 HTMLElement* enclosingList(Node*);
 HTMLElement* outermostEnclosingList(Node*);
-Node* enclosingListChild(Node*);
+HTMLElement* enclosingListChild(Node*);
+bool canMergeLists(Element* firstList, Element* secondList);
 Node* highestAncestor(Node*);
 bool isTableElement(Node*);
 bool isTableCell(const Node*);
 
-bool lineBreakExistsAtPosition(const VisiblePosition&);
+bool lineBreakExistsAtPosition(const Position&);
+bool lineBreakExistsAtVisiblePosition(const VisiblePosition&);
 
-Selection selectionForParagraphIteration(const Selection&);
+VisibleSelection selectionForParagraphIteration(const VisibleSelection&);
 
 int indexForVisiblePosition(VisiblePosition&);
-
+bool isVisibilyAdjacent(const Position& first, const Position& second);
 }
 
 #endif

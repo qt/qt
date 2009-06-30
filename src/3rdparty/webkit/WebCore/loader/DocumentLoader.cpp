@@ -95,9 +95,6 @@ static inline String canonicalizedTitle(const String& title, Frame* frame)
                 continue;
             buffer[builderIndex++] = ' ';
             previousCharWasWS = true;
-        } else if (c == '\\') {
-            buffer[builderIndex++] = frame->backslashAsCurrencySymbol();
-            previousCharWasWS = false;
         } else {
             buffer[builderIndex++] = c;
             previousCharWasWS = false;
@@ -115,6 +112,10 @@ static inline String canonicalizedTitle(const String& title, Frame* frame)
         return "";
 
     buffer.shrink(builderIndex + 1);
+    
+    // Replace the backslashes with currency symbols if the encoding requires it.
+    frame->document()->displayBufferModifiedByEncoding(buffer.characters(), buffer.length());
+
     return String::adopt(buffer);
 }
 
@@ -150,6 +151,7 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_loadingFromCachedPage(false)
     , m_stopRecordingResponses(false)
     , m_substituteResourceDeliveryTimer(this, &DocumentLoader::substituteResourceDeliveryTimerFired)
+    , m_didCreateGlobalHistoryEntry(false)
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
     , m_candidateApplicationCacheGroup(0)
 #endif
@@ -169,9 +171,9 @@ DocumentLoader::~DocumentLoader()
     
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
     if (m_applicationCache)
-        m_applicationCache->group()->documentLoaderDestroyed(this);
+        m_applicationCache->group()->disassociateDocumentLoader(this);
     else if (m_candidateApplicationCacheGroup)
-        m_candidateApplicationCacheGroup->documentLoaderDestroyed(this);
+        m_candidateApplicationCacheGroup->disassociateDocumentLoader(this);
 #endif
 }
 
@@ -253,10 +255,14 @@ void DocumentLoader::clearErrors()
 
 void DocumentLoader::mainReceivedError(const ResourceError& error, bool isComplete)
 {
+    ASSERT(!error.isNull());
+
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
     ApplicationCacheGroup* group = m_candidateApplicationCacheGroup;
-    if (!group && m_applicationCache && !mainResourceApplicationCache())
+    if (!group && m_applicationCache) {
+        ASSERT(!mainResourceApplicationCache()); // If the main resource were loaded from a cache, it wouldn't fail.
         group = m_applicationCache->group();
+    }
     
     if (group)
         group->failedLoadingMainResource(this);
@@ -273,7 +279,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error, bool isComple
 // one document at a time, but one document may have many related resources. 
 // stopLoading will stop all loads initiated by the data source, 
 // but not loads initiated by child frames' data sources -- that's the WebFrame's job.
-void DocumentLoader::stopLoading()
+void DocumentLoader::stopLoading(DatabasePolicy databasePolicy)
 {
     // In some rare cases, calling FrameLoader::stopLoading could set m_loading to false.
     // (This can happen when there's a single XMLHttpRequest currently loading and stopLoading causes it
@@ -285,8 +291,8 @@ void DocumentLoader::stopLoading()
         // still  parsing. Failure to do so can cause a world leak.
         Document* doc = m_frame->document();
         
-        if (loading || (doc && doc->parsing()))
-            m_frame->loader()->stopLoading(false);
+        if (loading || doc->parsing())
+            m_frame->loader()->stopLoading(false, databasePolicy);
     }
 
     // Always cancel multipart loaders
@@ -399,6 +405,10 @@ void DocumentLoader::setupForReplaceByMIMEType(const String& newMIMEType)
 
 void DocumentLoader::updateLoading()
 {
+    if (!m_frame) {
+        setLoading(false);
+        return;
+    }
     ASSERT(this == frameLoader()->activeDocumentLoader());
     setLoading(frameLoader()->isLoading());
 }
@@ -461,13 +471,12 @@ bool DocumentLoader::isLoadingInAPISense() const
             return true;
         if (!m_subresourceLoaders.isEmpty())
             return true;
-        if (Document* doc = m_frame->document()) {
-            if (doc->docLoader()->requestCount())
+        Document* doc = m_frame->document();
+        if (doc->docLoader()->requestCount())
+            return true;
+        if (Tokenizer* tok = doc->tokenizer())
+            if (tok->processingData())
                 return true;
-            if (Tokenizer* tok = doc->tokenizer())
-                if (tok->processingData())
-                    return true;
-        }
     }
     return frameLoader()->subframeIsLoading();
 }
@@ -544,15 +553,20 @@ PassRefPtr<ArchiveResource> DocumentLoader::subresource(const KURL& url) const
     if (!isCommitted())
         return 0;
     
-    Document* doc = m_frame->document();
-    if (!doc)
+    CachedResource* resource = m_frame->document()->docLoader()->cachedResource(url);
+    if (!resource || !resource->isLoaded())
         return archiveResourceForURL(url);
-        
-    CachedResource* resource = doc->docLoader()->cachedResource(url);
-    if (!resource || resource->preloadResult() == CachedResource::PreloadReferenced)
-        return archiveResourceForURL(url);
-        
-    return ArchiveResource::create(resource->data(), url, resource->response());
+
+    // FIXME: This has the side effect of making the resource non-purgeable.
+    // It would be better if it didn't have this permanent effect.
+    if (!resource->makePurgeable(false))
+        return 0;
+
+    RefPtr<SharedBuffer> data = resource->data();
+    if (!data)
+        return 0;
+
+    return ArchiveResource::create(data.release(), url, resource->response());
 }
 
 void DocumentLoader::getSubresources(Vector<PassRefPtr<ArchiveResource> >& subresources) const
@@ -561,8 +575,6 @@ void DocumentLoader::getSubresources(Vector<PassRefPtr<ArchiveResource> >& subre
         return;
 
     Document* document = m_frame->document();
-    if (!document)
-        return;
 
     const DocLoader::DocumentResourceMap& allResources = document->docLoader()->allCachedResources();
     DocLoader::DocumentResourceMap::const_iterator end = allResources.end();
@@ -864,14 +876,14 @@ ApplicationCache* DocumentLoader::mainResourceApplicationCache() const
 bool DocumentLoader::shouldLoadResourceFromApplicationCache(const ResourceRequest& request, ApplicationCacheResource*& resource)
 {
     ApplicationCache* cache = applicationCache();
-    if (!cache)
+    if (!cache || !cache->isComplete())
         return false;
 
     // If the resource is not a HTTP/HTTPS GET, then abort
     if (!ApplicationCache::requestIsHTTPOrHTTPSGet(request))
         return false;
 
-    // If the resource's URL is an master entry, the manifest, an explicit entry, a fallback entry, or a dynamic entry
+    // If the resource's URL is an master entry, the manifest, an explicit entry, or a fallback entry
     // in the application cache, then get the resource from the cache (instead of fetching it).
     resource = cache->resourceForURL(request.url());
 
@@ -892,6 +904,8 @@ bool DocumentLoader::getApplicationCacheFallbackResource(const ResourceRequest& 
         if (!cache)
             return false;
     }
+    if (!cache->isComplete())
+        return false;
     
     // If the resource is not a HTTP/HTTPS GET, then abort
     if (!ApplicationCache::requestIsHTTPOrHTTPSGet(request))
