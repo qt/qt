@@ -2989,14 +2989,7 @@ void tst_QGraphicsView::embeddedViews()
     v2->QWidget::render(&actual);
     QTransform b = item->transform;
 
-#ifdef Q_WS_MAC
-    // We don't use shared painter on the Mac, so the
-    // transform should be exactly the same.
     QVERIFY(a == b);
-#else
-    QVERIFY(a != b);
-#endif
-
     delete v1;
 }
 
