@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 class QGraphicsProxyWidget;
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class RoundRectItem : public QObject, public QGraphicsRectItem
 {

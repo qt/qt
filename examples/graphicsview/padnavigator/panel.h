@@ -44,7 +44,7 @@
 QT_BEGIN_NAMESPACE
 class QTimeLine;
 class Ui_BackSide;
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class RoundRectItem;
 
