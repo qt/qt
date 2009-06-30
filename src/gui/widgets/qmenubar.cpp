@@ -661,8 +661,9 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     \header \i String matches \i Placement \i Notes
     \row \i about.*
          \i Application Menu | About <application name>
-         \i If this entry is not found no About item will appear in
-            the Application Menu
+         \i The application name is fetched from the \c {Info.plist} file
+            (see note below). If this entry is not found no About item
+            will appear in the Application Menu. 
     \row \i config, options, setup, settings or preferences
          \i Application Menu | Preferences
          \i If this entry is not found the Settings item will be disabled
