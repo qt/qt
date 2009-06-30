@@ -82,6 +82,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPrintDialog>
+#include <QPrinter>
 #include <QProcess>
 #include <QRegExp>
 #include <QSettings>
@@ -257,6 +258,7 @@ bool FocusWatcher::eventFilter(QObject *, QEvent *event)
 MainWindow::MainWindow()
     : QMainWindow(0, Qt::Window),
       m_assistantProcess(0),
+      m_printer(0),
       m_findMatchCase(Qt::CaseInsensitive),
       m_findIgnoreAccelerators(true),
       m_findWhere(DataModel::NoLocation),
@@ -503,6 +505,7 @@ MainWindow::~MainWindow()
     qDeleteAll(m_phraseBooks);
     delete m_dataModel;
     delete m_statistics;
+    delete m_printer;
 }
 
 void MainWindow::modelCountChanged()
@@ -870,15 +873,22 @@ void MainWindow::releaseAll()
             releaseInternal(i);
 }
 
+QPrinter *MainWindow::printer()
+{
+    if (!m_printer)
+        m_printer = new QPrinter;
+    return m_printer;
+}
+
 void MainWindow::print()
 {
     int pageNum = 0;
-    QPrintDialog dlg(&m_printer, this);
+    QPrintDialog dlg(printer(), this);
     if (dlg.exec()) {
         QApplication::setOverrideCursor(Qt::WaitCursor);
-        m_printer.setDocName(m_dataModel->condensedSrcFileNames(true));
+        printer()->setDocName(m_dataModel->condensedSrcFileNames(true));
         statusBar()->showMessage(tr("Printing..."));
-        PrintOut pout(&m_printer);
+        PrintOut pout(printer());
 
         for (int i = 0; i < m_dataModel->contextCount(); ++i) {
             MultiContextItem *mc = m_dataModel->multiContextItem(i);
@@ -1229,11 +1239,11 @@ void MainWindow::printPhraseBook(QAction *action)
 
     int pageNum = 0;
 
-    QPrintDialog dlg(&m_printer, this);
+    QPrintDialog dlg(printer(), this);
     if (dlg.exec()) {
-        m_printer.setDocName(phraseBook->fileName());
+        printer()->setDocName(phraseBook->fileName());
         statusBar()->showMessage(tr("Printing..."));
-        PrintOut pout(&m_printer);
+        PrintOut pout(printer());
         pout.setRule(PrintOut::ThinRule);
         foreach (const Phrase *p, phraseBook->phrases()) {
             pout.setGuide(p->source());
