@@ -59,8 +59,6 @@
 #include <QtCore/qcryptographichash.h>
 #include <private/qmlcustomparser_p.h>
 
-QT_BEGIN_NAMESPACE
-
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT
 #  define QT_NO_GEOM_VARIANT
@@ -78,6 +76,8 @@ QT_BEGIN_NAMESPACE
 # include <qline.h>
 #endif
 #define NS(x) QT_PREPEND_NAMESPACE(x)
+
+QT_BEGIN_NAMESPACE
 
 struct QmlMetaTypeData
 {

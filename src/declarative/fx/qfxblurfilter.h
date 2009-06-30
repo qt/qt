@@ -45,12 +45,12 @@
 #include <QtDeclarative/qsimplecanvasfilter.h>
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxBlurFilterPrivate;
 class Q_DECLARATIVE_EXPORT QFxBlurFilter : public QSimpleCanvasFilter
 {
@@ -73,10 +73,11 @@ protected:
 private:
     QFxBlurFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxBlurFilter)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxBlurFilter)
+
 QT_END_HEADER
+
 #endif // QFXBLURFILTER_H

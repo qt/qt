@@ -77,10 +77,11 @@ protected:
 private:
     QFxShadowFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxShadowFilter)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxShadowFilter)
+
 QT_END_HEADER
-#endif // _QFXSHADOWFILTER_H_
+
+#endif // QFXSHADOWFILTER_H

@@ -92,9 +92,9 @@ Q_SIGNALS:
     void valueChanged(qreal);
 };
 
-QML_DECLARE_TYPE(QmlFollow)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlFollow)
 
 QT_END_HEADER
 

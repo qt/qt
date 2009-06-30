@@ -67,7 +67,6 @@ public:
     virtual bool isIdentity() const;
     virtual QSimpleCanvas::Matrix transform() const;
 };
-QML_DECLARE_TYPE(QFxTransform)
 
 class Q_DECLARATIVE_EXPORT QFxAxis : public QObject
 {
@@ -107,7 +106,6 @@ private:
     qreal _endY;
     qreal _endZ;
 };
-QML_DECLARE_TYPE(QFxAxis)
 
 class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
 {
@@ -145,7 +143,6 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxRotation)
 
 class Q_DECLARATIVE_EXPORT QFxRotation3D : public QFxTransform
 {
@@ -174,7 +171,6 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxRotation3D)
 
 class Q_DECLARATIVE_EXPORT QFxTranslation3D : public QFxTransform
 {
@@ -203,7 +199,6 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxTranslation3D)
 
 class Q_DECLARATIVE_EXPORT QFxPerspective : public QFxTransform
 {
@@ -244,7 +239,6 @@ private:
     qreal _angle;
     qreal _aspect;
 };
-QML_DECLARE_TYPE(QFxPerspective)
 
 class Q_DECLARATIVE_EXPORT QFxSquish : public QFxTransform
 {
@@ -310,9 +304,16 @@ private:
     QSizeF s;
     QPointF p1, p2, p3, p4;
 };
-QML_DECLARE_TYPE(QFxSquish)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxTransform)
+QML_DECLARE_TYPE(QFxAxis)
+QML_DECLARE_TYPE(QFxRotation)
+QML_DECLARE_TYPE(QFxRotation3D)
+QML_DECLARE_TYPE(QFxTranslation3D)
+QML_DECLARE_TYPE(QFxPerspective)
+QML_DECLARE_TYPE(QFxSquish)
 
 QT_END_HEADER
 

@@ -101,9 +101,10 @@ private:
     QPixmap primPix;
     QPixmap secPix;
 };
-QML_DECLARE_TYPE(QFxBlendedImage)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxBlendedImage)
 
 QT_END_HEADER
 

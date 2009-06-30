@@ -98,9 +98,10 @@ private:
     QList<QFxFlowViewValue *> m_values;
     int m_dragIdx;
 };
-QML_DECLARE_TYPE(QFxFlowView);
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxFlowView);
 
 QT_END_HEADER
 

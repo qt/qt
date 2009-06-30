@@ -66,9 +66,8 @@ private:
     QFxTestEngine *testEngine;
 };
 
-#endif // _QFXTESTVIEW_H_
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // _QFXTESTVIEW_H_

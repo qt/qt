@@ -77,9 +77,9 @@ private:
     QFxIntegerModelPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxIntegerModel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxIntegerModel)
 
 QT_END_HEADER
 

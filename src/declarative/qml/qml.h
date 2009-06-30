@@ -54,8 +54,6 @@
 
 QT_BEGIN_HEADER
 
-QT_BEGIN_NAMESPACE
-
 QT_MODULE(Declarative)
 
 #define QML_DECLARE_TYPE(TYPE) \
@@ -72,6 +70,8 @@ QT_MODULE(Declarative)
 
 #define QML_DECLARE_INTERFACE_HASMETATYPE(INTERFACE) \
     QML_DECLARE_TYPE_HASMETATYPE(INTERFACE)
+
+QT_BEGIN_NAMESPACE
 
 #define QML_DEFINE_INTERFACE(INTERFACE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
@@ -110,10 +110,10 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj)
     return qmlAttachedPropertiesObjectById(idx, obj);
 }
 
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(QObject)
 Q_DECLARE_METATYPE(QVariant)
-
-QT_END_NAMESPACE
 
 QT_END_HEADER
 

@@ -45,12 +45,12 @@
 #include <QtDeclarative/qsimplecanvasfilter.h>
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxHighlightFilterPrivate;
 class Q_DECLARATIVE_EXPORT QFxHighlightFilter : public QSimpleCanvasFilter
 {
@@ -89,9 +89,10 @@ protected:
 private:
     QFxHighlightFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxHighlightFilter)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxHighlightFilter)
 
 QT_END_HEADER
 

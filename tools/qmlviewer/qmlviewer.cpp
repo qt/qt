@@ -41,6 +41,8 @@
 #include <QTimer>
 #include <QNetworkProxyFactory>
 
+QT_BEGIN_NAMESPACE
+
 class PreviewDeviceSkin : public DeviceSkin
 {
     Q_OBJECT
@@ -710,5 +712,7 @@ void QmlViewer::setCacheEnabled(bool on)
         nam->setCache(0);
     }
 }
+
+QT_END_NAMESPACE
 
 #include "qmlviewer.moc"

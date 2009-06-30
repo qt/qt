@@ -46,10 +46,10 @@
 
 #include <math.h>
 #ifndef M_PI
-
-QT_BEGIN_NAMESPACE
 #define M_PI 3.14159265358979323846
 #endif
+
+QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QFxTransform);
 

@@ -90,9 +90,10 @@ private:
     Q_DISABLE_COPY(QFxAnimatedImageItem)
     Q_DECLARE_PRIVATE(QFxAnimatedImageItem)
 };
-QML_DECLARE_TYPE(QFxAnimatedImageItem)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxAnimatedImageItem)
 
 QT_END_HEADER
 

@@ -49,6 +49,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxKeyProxyPrivate;
 class Q_DECLARATIVE_EXPORT QFxKeyProxy : public QFxItem
 {
@@ -69,9 +70,9 @@ private:
     QFxKeyProxyPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxKeyProxy)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxKeyProxy)
 
 QT_END_HEADER
 

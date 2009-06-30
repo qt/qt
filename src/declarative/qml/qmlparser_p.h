@@ -295,9 +295,10 @@ namespace QmlParser
         void dump(int = 0) const;
     };
 }
-Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_HEADER
 

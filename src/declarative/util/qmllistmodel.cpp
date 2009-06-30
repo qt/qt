@@ -49,6 +49,8 @@
 #include <qmlbindablevalue.h>
 #include "qmllistmodel.h"
 
+Q_DECLARE_METATYPE(QListModelInterface *)
+
 QT_BEGIN_NAMESPACE
 
 #define DATA_ROLE_ID 1
@@ -66,8 +68,6 @@ struct ListModelData
     int instrCount;
     ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
 };
-
-Q_DECLARE_METATYPE(QListModelInterface *)
 
 /*!
     \qmlclass ListModel 
@@ -243,7 +243,6 @@ struct ModelNode
     ListModel *modelCache;
     ModelObject *objectCache;
 };
-Q_DECLARE_METATYPE(ModelNode *)
 
 ModelObject::ModelObject(ModelNode *node)
 : _node(node), _haveProperties(false), _mo(new QmlOpenMetaObject(this))
@@ -519,7 +518,6 @@ void ListModelParser::setCustomData(QObject *obj, const QByteArray &d)
     }
 }
 
-QML_DECLARE_TYPE(ListModel)
 QML_DEFINE_CUSTOM_TYPE(ListModel, ListModel, ListModelParser)
 
 // ### FIXME
@@ -527,7 +525,6 @@ class ListElement : public QObject
 {
 Q_OBJECT
 };
-QML_DECLARE_TYPE(ListElement)
 QML_DEFINE_TYPE(ListElement,ListElement)
 
 static void dump(ModelNode *node, int ind)
@@ -567,5 +564,9 @@ ModelNode::~ModelNode()
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(ModelNode *)
+QML_DECLARE_TYPE(ListModel)
+QML_DECLARE_TYPE(ListElement)
 
 #include "qmllistmodel.moc"

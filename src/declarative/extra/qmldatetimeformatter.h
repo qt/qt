@@ -106,9 +106,10 @@ private:
     Q_DISABLE_COPY(QmlDateTimeFormatter)
     Q_DECLARE_PRIVATE(QmlDateTimeFormatter)
 };
-QML_DECLARE_TYPE(QmlDateTimeFormatter)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlDateTimeFormatter)
 
 QT_END_HEADER
 

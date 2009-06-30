@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxFlickablePrivate;
 class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
 {
@@ -186,10 +186,11 @@ private:
     Q_DISABLE_COPY(QFxFlickable)
     Q_DECLARE_PRIVATE(QFxFlickable)
 };
-QML_DECLARE_TYPE(QFxFlickable)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxFlickable)
+
 QT_END_HEADER
+
 #endif

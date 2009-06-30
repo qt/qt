@@ -69,9 +69,10 @@ protected:
 private:
     Q_DISABLE_COPY(QmlPropertyValueSource)
 };
-QML_DECLARE_TYPE(QmlPropertyValueSource)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlPropertyValueSource)
 
 QT_END_HEADER
 

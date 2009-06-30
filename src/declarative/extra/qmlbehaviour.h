@@ -87,9 +87,10 @@ protected:
 private Q_SLOTS:
     void propertyValueChanged();
 };
-QML_DECLARE_TYPE(QmlBehaviour)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlBehaviour)
 
 QT_END_HEADER
 

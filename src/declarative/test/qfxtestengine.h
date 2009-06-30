@@ -77,9 +77,9 @@ private:
     QFxTestEnginePrivate *d;
 };
 
-#endif // _QFXTESTENGINE_H_
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // _QFXTESTENGINE_H_
