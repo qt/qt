@@ -60,6 +60,9 @@ class MyObject: public QObject
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"com.trolltech.QtDBus.MyObject\" >\n"
 "    <property access=\"readwrite\" type=\"i\" name=\"prop1\" />\n"
+"    <property name=\"complexProp\" type=\"ai\" access=\"readwrite\">\n"
+"      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"QList&lt;int&gt;\"/>\n"
+"    </property>\n"
 "    <signal name=\"somethingHappened\" >\n"
 "      <arg direction=\"out\" type=\"s\" />\n"
 "    </signal>\n"
@@ -75,6 +78,9 @@ class MyObject: public QObject
 "    </method>\n"
 "  </interface>\n"
         "")
+    Q_PROPERTY(int prop1 READ prop1 WRITE setProp1)
+    Q_PROPERTY(QList<int> complexProp READ complexProp WRITE setComplexProp)
+
 public:
     static int callCount;
     static QVariantList callArgs;
@@ -82,6 +88,30 @@ public:
     {
         QObject *subObject = new QObject(this);
         subObject->setObjectName("subObject");
+    }
+
+    int m_prop1;
+    int prop1() const
+    {
+        ++callCount;
+        return m_prop1;
+    }
+    void setProp1(int value)
+    {
+        ++callCount;
+        m_prop1 = value;
+    }
+
+    QList<int> m_complexProp;
+    QList<int> complexProp() const
+    {
+        ++callCount;
+        return m_complexProp;
+    }
+    void setComplexProp(const QList<int> &value)
+    {
+        ++callCount;
+        m_complexProp = value;
     }
 
 public slots:
@@ -146,6 +176,11 @@ private slots:
     void invokeMethod();
 
     void signal();
+
+    void propertyRead();
+    void propertyWrite();
+    void complexPropertyRead();
+    void complexPropertyWrite();
 };
 
 void tst_QDBusInterface::initTestCase()
@@ -154,7 +189,7 @@ void tst_QDBusInterface::initTestCase()
     QVERIFY(con.isConnected());
     QTest::qWait(500);
 
-    con.registerObject("/", &obj, QDBusConnection::ExportAdaptors
+    con.registerObject("/", &obj, QDBusConnection::ExportAllProperties
                        | QDBusConnection::ExportAllSlots
                        | QDBusConnection::ExportChildObjects);
 }
@@ -231,8 +266,9 @@ void tst_QDBusInterface::introspect()
     QCOMPARE(mo->methodCount() - mo->methodOffset(), 3);
     QVERIFY(mo->indexOfSignal(TEST_SIGNAL_NAME "(QString)") != -1);
 
-    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 1);
+    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 2);
     QVERIFY(mo->indexOfProperty("prop1") != -1);
+    QVERIFY(mo->indexOfProperty("complexProp") != -1);
 }
 
 void tst_QDBusInterface::callMethod()
@@ -320,6 +356,68 @@ void tst_QDBusInterface::signal()
         QCOMPARE(spy2.count, 1);
         QCOMPARE(spy2.received, arg);
     }
+}
+
+void tst_QDBusInterface::propertyRead()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME);
+
+    int arg = obj.m_prop1 = 42;
+    MyObject::callCount = 0;
+
+    QVariant v = iface.property("prop1");
+    QVERIFY(v.isValid());
+    QCOMPARE(v.userType(), int(QVariant::Int));
+    QCOMPARE(v.toInt(), arg);
+    QCOMPARE(MyObject::callCount, 1);
+}
+
+void tst_QDBusInterface::propertyWrite()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME);
+
+    int arg = 42;
+    obj.m_prop1 = 0;
+    MyObject::callCount = 0;
+
+    QVERIFY(iface.setProperty("prop1", arg));
+    QCOMPARE(MyObject::callCount, 1);
+    QCOMPARE(obj.m_prop1, arg);
+}
+
+void tst_QDBusInterface::complexPropertyRead()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME);
+
+    QList<int> arg = obj.m_complexProp = QList<int>() << 42 << -47;
+    MyObject::callCount = 0;
+
+    QVariant v = iface.property("complexProp");
+    QVERIFY(v.isValid());
+    QCOMPARE(v.userType(), qMetaTypeId<QList<int> >());
+    QCOMPARE(v.value<QList<int> >(), arg);
+    QCOMPARE(MyObject::callCount, 1);
+}
+
+void tst_QDBusInterface::complexPropertyWrite()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME);
+
+    QList<int> arg = QList<int>() << -47 << 42;
+    obj.m_complexProp.clear();
+    MyObject::callCount = 0;
+
+    QVERIFY(iface.setProperty("complexProp", qVariantFromValue(arg)));
+    QCOMPARE(MyObject::callCount, 1);
+    QCOMPARE(obj.m_complexProp, arg);
 }
 
 QTEST_MAIN(tst_QDBusInterface)
