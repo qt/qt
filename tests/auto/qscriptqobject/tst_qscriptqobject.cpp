@@ -494,6 +494,7 @@ private slots:
     void getSetChildren();
     void callQtInvokable();
     void connectAndDisconnect();
+    void connectAndDisconnectWithBadArgs();
     void cppConnectAndDisconnect();
     void classEnums();
     void classConstructor();
@@ -741,6 +742,8 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     // test that we do value conversion if necessary when setting properties
     {
         QScriptValue br = m_engine->evaluate("myObject.brushProperty");
+        QVERIFY(br.isVariant());
+        QVERIFY(!br.strictlyEquals(m_engine->evaluate("myObject.brushProperty")));
         QCOMPARE(qscriptvalue_cast<QBrush>(br), m_myObject->brushProperty());
         QCOMPARE(qscriptvalue_cast<QColor>(br), m_myObject->brushProperty().color());
 
@@ -847,6 +850,15 @@ void tst_QScriptExtQObject::getSetStaticProperty()
                              "`intProperty'");
         mobj.setProperty("intProperty", m_engine->newFunction(getSetProperty),
                          QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    }
+
+    // method properties are persistent
+    {
+        QScriptValue slot = m_engine->evaluate("myObject.mySlot");
+        QVERIFY(slot.isFunction());
+        QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
+        QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
+        QVERIFY(sameSlot.strictlyEquals(slot));
     }
 }
 
@@ -1644,6 +1656,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(yetAnotherObject, 'func')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject, 'mySlot')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(yetAnotherObject, 'func')").isUndefined());
+    QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(myObject, 'mySlot')").isUndefined());
 
     // check that emitting signals from script works
@@ -1653,6 +1666,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->resetQtFunctionInvoked();
     QCOMPARE(m_engine->evaluate("myObject.mySignal()").isUndefined(), true);
     QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
+    QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(myObject.mySlot)").isUndefined());
 
     // one argument
@@ -1697,7 +1711,20 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), 456);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithIntArg.disconnect(myObject['myOverloadedSlot(int)'])").isUndefined());
 
-    // erroneous input
+    // when the wrapper dies, the connection stays alive
+    QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
+    m_myObject->resetQtFunctionInvoked();
+    m_myObject->emitMySignal();
+    QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
+    m_engine->evaluate("myObject = null");
+    m_engine->collectGarbage();
+    m_myObject->resetQtFunctionInvoked();
+    m_myObject->emitMySignal();
+    QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
+}
+
+void tst_QScriptExtQObject::connectAndDisconnectWithBadArgs()
+{
     {
         QScriptValue ret = m_engine->evaluate("(function() { }).connect()");
         QVERIFY(ret.isError());
@@ -1781,17 +1808,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
         QVERIFY(ret.isError());
         QCOMPARE(ret.toString(), QLatin1String("Error: Function.prototype.disconnect: failed to disconnect from MyQObject::mySignal()"));
     }
-
-    // when the wrapper dies, the connection stays alive
-    QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
-    m_myObject->resetQtFunctionInvoked();
-    m_myObject->emitMySignal();
-    QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
-    m_engine->evaluate("myObject = null");
-    m_engine->collectGarbage();
-    m_myObject->resetQtFunctionInvoked();
-    m_myObject->emitMySignal();
-    QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
 }
 
 void tst_QScriptExtQObject::cppConnectAndDisconnect()

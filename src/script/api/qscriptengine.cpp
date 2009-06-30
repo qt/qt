@@ -329,6 +329,8 @@ JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/,
         return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
     }
 
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
+
     JSC::JSValue receiver;
     JSC::JSValue slot;
     JSC::JSValue arg0 = args.at(0);
@@ -340,8 +342,10 @@ JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/,
         if (isFunction(arg1))
             slot = arg1;
         else {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-//            slot = receiver.property(arg1.toString(), QScriptValue::ResolvePrototype);
+            // ### don't go via QScriptValue
+            QScriptValue tmp = engine->scriptValueFromJSCValue(arg0);
+            QString propertyName = QScript::qtStringFromJSCUString(arg1.toString(exec));
+            slot = engine->scriptValueToJSCValue(tmp.property(propertyName, QScriptValue::ResolvePrototype));
         }
     }
 
@@ -349,7 +353,6 @@ JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/,
         return JSC::throwError(exec, JSC::TypeError, "Function.prototype.disconnect: target is not a function");
     }
 
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
     bool ok = engine->scriptDisconnect(thisObject, receiver, slot);
     if (!ok) {
         QString message = QString::fromLatin1("Function.prototype.disconnect: failed to disconnect from %0::%1")
@@ -373,7 +376,7 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
     }
 
     if (!JSC::asObject(thisObject)->inherits(&QScript::QtFunction::info)) {
-        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.disconnect: this object is not a signal");
+        return JSC::throwError(exec, JSC::TypeError, "Function.prototype.connect: this object is not a signal");
     }
 
     QScript::QtFunction *qtSignal = static_cast<QScript::QtFunction*>(JSC::asObject(thisObject));
@@ -409,6 +412,8 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
         }
     }
 
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
+
     JSC::JSValue receiver;
     JSC::JSValue slot;
     JSC::JSValue arg0 = args.at(0);
@@ -420,8 +425,10 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
         if (isFunction(arg1))
             slot = arg1;
         else {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "Not implemented");
-//            slot = receiver.property(arg1.toString(), QScriptValue::ResolvePrototype);
+            // ### don't go via QScriptValue
+            QScriptValue tmp = engine->scriptValueFromJSCValue(arg0);
+            QString propertyName = QScript::qtStringFromJSCUString(arg1.toString(exec));
+            slot = engine->scriptValueToJSCValue(tmp.property(propertyName, QScriptValue::ResolvePrototype));
         }
     }
 
@@ -429,7 +436,6 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
         return JSC::throwError(exec, JSC::TypeError, "Function.prototype.connect: target is not a function");
     }
 
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
     bool ok = engine->scriptConnect(thisObject, receiver, slot);
     if (!ok) {
         QString message = QString::fromLatin1("Function.prototype.connect: failed to connect to %0::%1")
