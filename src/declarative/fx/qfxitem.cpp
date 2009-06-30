@@ -199,9 +199,9 @@ void QFxContents::setItem(QFxItem *item)
     for (int i = 0; i < children.count(); ++i) {
         const QSimpleCanvasItem *child = children.at(i);
         connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(topChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
-        connect(child, SIGNAL(leftChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
     }
 
     calcHeight();
@@ -269,15 +269,15 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::leftChanged()
+    \fn void QFxItem::xChanged()
 
-    This signal is emitted when the left coordinate of the item changes.
+    This signal is emitted when the x coordinate of the item changes.
 */
 
 /*!
-    \fn void QFxItem::topChanged()
+    \fn void QFxItem::yChanged()
 
-    This signal is emitted when the top coordinate of the item changes.
+    This signal is emitted when the y coordinate of the item changes.
 */
 
 /*!
@@ -1068,11 +1068,11 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     }
 
     if (newGeometry.x() != oldGeometry.x()) 
-        emit leftChanged();
+        emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
         emit widthChanged();
     if (newGeometry.y() != oldGeometry.y()) 
-        emit topChanged();
+        emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
 

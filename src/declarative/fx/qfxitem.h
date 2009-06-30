@@ -112,8 +112,8 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(qreal z READ z WRITE setZ)
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(bool flipVertically READ flipVertically WRITE setFlipVertically)
@@ -212,10 +212,10 @@ public Q_SLOTS:
     void newChild(const QString &url);
 
 Q_SIGNALS:
-    void leftChanged();
+    void xChanged();
+    void yChanged();
     void widthChanged();
     void heightChanged();
-    void topChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
