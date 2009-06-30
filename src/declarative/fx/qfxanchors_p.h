@@ -56,8 +56,8 @@
 #include "qfxanchors.h"
 #include "private/qobject_p.h"
 
-
 QT_BEGIN_NAMESPACE
+
 class QFxAnchorsPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFxAnchors)
@@ -119,12 +119,12 @@ public:
     QFxAnchorLine hCenter;
     QFxAnchorLine baseline;
 
-    int leftMargin;
-    int rightMargin;
-    int topMargin;
-    int bottomMargin;
-    int vCenterOffset;
-    int hCenterOffset;
+    qreal leftMargin;
+    qreal rightMargin;
+    qreal topMargin;
+    qreal bottomMargin;
+    qreal vCenterOffset;
+    qreal hCenterOffset;
 
 };
 
