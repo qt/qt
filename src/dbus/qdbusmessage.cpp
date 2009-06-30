@@ -108,8 +108,11 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
         //qDebug() << "QDBusMessagePrivate::toDBusMessage" <<  "message is invalid";
         break;
     case DBUS_MESSAGE_TYPE_METHOD_CALL:
-        msg = q_dbus_message_new_method_call(data(d_ptr->service.toUtf8()), data(d_ptr->path.toUtf8()),
-                                           data(d_ptr->interface.toUtf8()), data(d_ptr->name.toUtf8()));
+        // only interface can be empty
+        if (d_ptr->service.isEmpty() || d_ptr->path.isEmpty() || d_ptr->name.isEmpty())
+            break;
+        msg = q_dbus_message_new_method_call(d_ptr->service.toUtf8(), d_ptr->path.toUtf8(),
+                                             data(d_ptr->interface.toUtf8()), d_ptr->name.toUtf8());
         break;
     case DBUS_MESSAGE_TYPE_METHOD_RETURN:
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN);
@@ -119,16 +122,22 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
         }
         break;
     case DBUS_MESSAGE_TYPE_ERROR:
+        // error name can't be empty
+        if (d_ptr->name.isEmpty())
+            break;
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_ERROR);
-        q_dbus_message_set_error_name(msg, data(d_ptr->name.toUtf8()));
+        q_dbus_message_set_error_name(msg, d_ptr->name.toUtf8());
         if (!d_ptr->localMessage) {
             q_dbus_message_set_destination(msg, q_dbus_message_get_sender(d_ptr->reply));
             q_dbus_message_set_reply_serial(msg, q_dbus_message_get_serial(d_ptr->reply));
         }
         break;
     case DBUS_MESSAGE_TYPE_SIGNAL:
-        msg = q_dbus_message_new_signal(data(d_ptr->path.toUtf8()), data(d_ptr->interface.toUtf8()),
-                                      data(d_ptr->name.toUtf8()));
+        // nothing can be empty here
+        if (d_ptr->path.isEmpty() || d_ptr->interface.isEmpty() || d_ptr->name.isEmpty())
+            break;
+        msg = q_dbus_message_new_signal(d_ptr->path.toUtf8(), d_ptr->interface.toUtf8(),
+                                        d_ptr->name.toUtf8());
         break;
     default:
         Q_ASSERT(false);

@@ -1536,6 +1536,7 @@ bool QODBCResult::exec()
                 values[i] = QVariant(QDateTime(QDate(dt.year, dt.month, dt.day),
                                QTime(dt.hour, dt.minute, dt.second, dt.fraction / 1000000)));
                 break; }
+            case QVariant::Bool:
             case QVariant::Int:
             case QVariant::UInt:
             case QVariant::Double:

@@ -2132,11 +2132,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
 
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
-        [windowRef setHasShadow:YES];
     } else {
         [windowRef setHidesOnDeactivate:NO];
     }
-
+    [windowRef setHasShadow:YES];
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -4012,6 +4011,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             setGeometry_sys_helper(x, y, w, h, isMove);
         }
 #else
+        QSize  olds = q->size();
+        const bool isResize = (olds != QSize(w, h));
         NSWindow *window = qt_mac_window_for(q);
         const QRect &fStrut = frameStrut();
         const QRect frameRect(QPoint(x - fStrut.left(), y - fStrut.top()),
@@ -4019,7 +4020,10 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                                     fStrut.top() + fStrut.bottom() + h));
         NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
                                            frameRect.width(), frameRect.height());
-
+        // The setFrame call will trigger a 'windowDidResize' notification for the corresponding
+        // NSWindow. The pending flag is set, so that the resize event can be send as non-spontaneous.
+        if (isResize)
+            q->setAttribute(Qt::WA_PendingResizeEvent);
         QPoint currTopLeft = data.crect.topLeft();
         if (currTopLeft.x() == x && currTopLeft.y() == y
                 && cocoaFrameRect.size.width != 0
