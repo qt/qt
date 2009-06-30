@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Apple Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +13,7 @@
  * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,45 +23,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef SessionStorage_h
-#define SessionStorage_h
+module html {
 
-#if ENABLE(DOM_STORAGE)
+    interface [
+        GenerateConstructor
+    ] DataGridColumn {
+        attribute DOMString id; // The identifier for the column.
+        attribute DOMString label; // The text to display in the column.
+        attribute DOMString type; // The type of data displayed in this column.
 
-#include "SecurityOriginHash.h"
-#include "SessionStorageArea.h"
+        const unsigned short NEVER_SORTED = 0;
+        const unsigned short ALWAYS_SORTED = 1;
+        const unsigned short SOMETIMES_SORTED = 2;
+        attribute unsigned short sortable; // Whether or not the column can be sorted.
 
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-
-namespace WebCore {
-
-    class Page;
-
-    class SessionStorage : public RefCounted<SessionStorage> {
-    public:
-        static PassRefPtr<SessionStorage> create(Page*);
-        PassRefPtr<SessionStorage> copy(Page*);
-        
-        PassRefPtr<StorageArea> storageArea(SecurityOrigin*);
-
-#ifndef NDEBUG
-        Page* page() { return m_page; }
-#endif
-
-    private:
-        SessionStorage(Page*);
-
-        void dispatchStorageEvent(StorageArea*, const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame);
-
-        Page* m_page;
-        
-        typedef HashMap<RefPtr<SecurityOrigin>, RefPtr<SessionStorageArea>, SecurityOriginHash> SessionStorageAreaMap;
-        SessionStorageAreaMap m_storageAreaMap;
+        const unsigned short NATURAL_SORT = 0;
+        const unsigned short SORT_ASCENDING = 1;
+        const unsigned short SORC_DESCENDING = 2;
+        attribute unsigned short sortDirection; // The sort direction for the column.  Valid values are ascending, descending and natural (no sort applied).
+    
+        attribute boolean primary; // Whether or not this is the primary column of the tree (this will be where the disclosure triangle and connecting tree lines will display)
     };
 
-} // namespace WebCore
-
-#endif // ENABLE(DOM_STORAGE)
-
-#endif // SessionStorage_h
+}

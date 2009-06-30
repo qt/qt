@@ -21,7 +21,9 @@
 #include "config.h"
 #include "JSHTMLDataGridElement.h"
 
+#include "DataGridColumnList.h"
 #include "HTMLDataGridElement.h"
+#include "JSDataGridColumnList.h"
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -32,9 +34,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDataGridElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLDataGridElementTableValues[6] =
+static const HashTableValue JSHTMLDataGridElementTableValues[7] =
 {
     { "dataSource", DontDelete, (intptr_t)jsHTMLDataGridElementDataSource, (intptr_t)setJSHTMLDataGridElementDataSource },
+    { "columns", DontDelete|ReadOnly, (intptr_t)jsHTMLDataGridElementColumns, (intptr_t)0 },
     { "autofocus", DontDelete, (intptr_t)jsHTMLDataGridElementAutofocus, (intptr_t)setJSHTMLDataGridElementAutofocus },
     { "disabled", DontDelete, (intptr_t)jsHTMLDataGridElementDisabled, (intptr_t)setJSHTMLDataGridElementDisabled },
     { "multiple", DontDelete, (intptr_t)jsHTMLDataGridElementMultiple, (intptr_t)setJSHTMLDataGridElementMultiple },
@@ -44,9 +47,9 @@ static const HashTableValue JSHTMLDataGridElementTableValues[6] =
 
 static const HashTable JSHTMLDataGridElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 31, JSHTMLDataGridElementTableValues, 0 };
+    { 63, JSHTMLDataGridElementTableValues, 0 };
 #else
-    { 17, 15, JSHTMLDataGridElementTableValues, 0 };
+    { 18, 15, JSHTMLDataGridElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -128,6 +131,13 @@ bool JSHTMLDataGridElement::getOwnPropertySlot(ExecState* exec, const Identifier
 JSValue jsHTMLDataGridElementDataSource(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->dataSource(exec);
+}
+
+JSValue jsHTMLDataGridElementColumns(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()))->impl());
+    return toJS(exec, WTF::getPtr(imp->columns()));
 }
 
 JSValue jsHTMLDataGridElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)

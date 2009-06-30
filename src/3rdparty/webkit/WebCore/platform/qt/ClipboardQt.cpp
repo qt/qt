@@ -32,16 +32,19 @@
 #include "CSSHelper.h"
 #include "Document.h"
 #include "Element.h"
+#include "FileList.h"
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "Image.h"
 #include "IntPoint.h"
 #include "KURL.h"
 #include "markup.h"
+#include "NotImplemented.h"
 #include "PlatformString.h"
 #include "Range.h"
 #include "RenderImage.h"
 #include "StringHash.h"
+
 #include <QList>
 #include <QMimeData>
 #include <QStringList>
@@ -176,6 +179,12 @@ HashSet<String> ClipboardQt::types() const
     for (int i = 0; i < formats.count(); ++i)
         result.add(formats.at(i));
     return result;
+}
+
+PassRefPtr<FileList> ClipboardQt::files() const
+{
+    notImplemented();
+    return 0;
 }
 
 void ClipboardQt::setDragImage(CachedImage* image, const IntPoint& point) 

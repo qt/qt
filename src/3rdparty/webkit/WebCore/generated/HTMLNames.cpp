@@ -290,10 +290,13 @@ DEFINE_GLOBAL(QualifiedName, archiveAttr, nullAtom, "archive", xhtmlNamespaceURI
 DEFINE_GLOBAL(QualifiedName, aria_activedescendantAttr, nullAtom, "aria_activedescendant", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_checkedAttr, nullAtom, "aria_checked", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_describedbyAttr, nullAtom, "aria_describedby", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_disabledAttr, nullAtom, "aria_disabled", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_hiddenAttr, nullAtom, "aria_hidden", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_labeledbyAttr, nullAtom, "aria_labeledby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_labelledbyAttr, nullAtom, "aria_labelledby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_levelAttr, nullAtom, "aria_level", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_pressedAttr, nullAtom, "aria_pressed", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_readonlyAttr, nullAtom, "aria_readonly", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valuemaxAttr, nullAtom, "aria_valuemax", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valueminAttr, nullAtom, "aria_valuemin", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valuenowAttr, nullAtom, "aria_valuenow", xhtmlNamespaceURI);
@@ -524,10 +527,13 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&aria_activedescendantAttr,
         (WebCore::QualifiedName*)&aria_checkedAttr,
         (WebCore::QualifiedName*)&aria_describedbyAttr,
+        (WebCore::QualifiedName*)&aria_disabledAttr,
+        (WebCore::QualifiedName*)&aria_hiddenAttr,
         (WebCore::QualifiedName*)&aria_labeledbyAttr,
         (WebCore::QualifiedName*)&aria_labelledbyAttr,
         (WebCore::QualifiedName*)&aria_levelAttr,
         (WebCore::QualifiedName*)&aria_pressedAttr,
+        (WebCore::QualifiedName*)&aria_readonlyAttr,
         (WebCore::QualifiedName*)&aria_valuemaxAttr,
         (WebCore::QualifiedName*)&aria_valueminAttr,
         (WebCore::QualifiedName*)&aria_valuenowAttr,
@@ -742,7 +748,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&widthAttr,
         (WebCore::QualifiedName*)&wrapAttr,
     };
-    *size = 229;
+    *size = 232;
     return HTMLAttr;
 }
 
@@ -1002,10 +1008,13 @@ void init()
     const char *aria_activedescendantAttrString = "aria-activedescendant";
     const char *aria_checkedAttrString = "aria-checked";
     const char *aria_describedbyAttrString = "aria-describedby";
+    const char *aria_disabledAttrString = "aria-disabled";
+    const char *aria_hiddenAttrString = "aria-hidden";
     const char *aria_labeledbyAttrString = "aria-labeledby";
     const char *aria_labelledbyAttrString = "aria-labelledby";
     const char *aria_levelAttrString = "aria-level";
     const char *aria_pressedAttrString = "aria-pressed";
+    const char *aria_readonlyAttrString = "aria-readonly";
     const char *aria_valuemaxAttrString = "aria-valuemax";
     const char *aria_valueminAttrString = "aria-valuemin";
     const char *aria_valuenowAttrString = "aria-valuenow";
@@ -1230,10 +1239,13 @@ void init()
     new ((void*)&aria_activedescendantAttr) QualifiedName(nullAtom, aria_activedescendantAttrString, nullAtom);
     new ((void*)&aria_checkedAttr) QualifiedName(nullAtom, aria_checkedAttrString, nullAtom);
     new ((void*)&aria_describedbyAttr) QualifiedName(nullAtom, aria_describedbyAttrString, nullAtom);
+    new ((void*)&aria_disabledAttr) QualifiedName(nullAtom, aria_disabledAttrString, nullAtom);
+    new ((void*)&aria_hiddenAttr) QualifiedName(nullAtom, aria_hiddenAttrString, nullAtom);
     new ((void*)&aria_labeledbyAttr) QualifiedName(nullAtom, aria_labeledbyAttrString, nullAtom);
     new ((void*)&aria_labelledbyAttr) QualifiedName(nullAtom, aria_labelledbyAttrString, nullAtom);
     new ((void*)&aria_levelAttr) QualifiedName(nullAtom, aria_levelAttrString, nullAtom);
     new ((void*)&aria_pressedAttr) QualifiedName(nullAtom, aria_pressedAttrString, nullAtom);
+    new ((void*)&aria_readonlyAttr) QualifiedName(nullAtom, aria_readonlyAttrString, nullAtom);
     new ((void*)&aria_valuemaxAttr) QualifiedName(nullAtom, aria_valuemaxAttrString, nullAtom);
     new ((void*)&aria_valueminAttr) QualifiedName(nullAtom, aria_valueminAttrString, nullAtom);
     new ((void*)&aria_valuenowAttr) QualifiedName(nullAtom, aria_valuenowAttrString, nullAtom);

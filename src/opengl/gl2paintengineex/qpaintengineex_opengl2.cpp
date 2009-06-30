@@ -656,7 +656,6 @@ void QGL2PaintEngineEx::sync()
     glActiveTexture(GL_TEXTURE0);
 
     d->needsSync = true;
-    d->shaderManager->setDirty();
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
@@ -833,7 +832,6 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
             useGlobalOpacityUniform = false; // Global opacity handled by srcPixel shader
     }
     shaderManager->setUseGlobalOpacity(useGlobalOpacityUniform);
-
 
     bool changed = shaderManager->useCorrectShaderProg();
     // If the shader program needs changing, we change it and mark all uniforms as dirty
@@ -1182,7 +1180,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
 
-    if (!d->shaderManager) {
+    if (d->shaderManager) {
+        d->shaderManager->setDirty();
+    } else {
         d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
         d->uniformIdentifiers[QGL2PaintEngineExPrivate::ImageTexture] = d->shaderManager->getUniformIdentifier("imageTexture");
@@ -1553,6 +1553,8 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
     d->simpleShaderMatrixUniformDirty = true;
     d->shaderMatrixUniformDirty = true;
     d->opacityUniformDirty = true;
+
+    d->shaderManager->setDirty();
 
     if (old_state && old_state != s && old_state->canRestoreClip) {
         d->updateDepthScissorTest();

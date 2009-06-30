@@ -241,7 +241,7 @@ void Generator::generateFakeNode(const FakeNode * /* fake */,
 {
 }
 
-void Generator::generateText(const Text& text,
+bool Generator::generateText(const Text& text,
                              const Node *relative,
                              CodeMarker *marker)
 {
@@ -254,31 +254,35 @@ void Generator::generateText(const Text& text,
                          true,
                          numAtoms);
         endText(relative, marker);
+        return true;
     }
+    return false;
 }
 
 #ifdef QDOC_QML
-void Generator::generateQmlText(const Text& text,
+bool Generator::generateQmlText(const Text& text,
                                 const Node *relative,
                                 CodeMarker *marker)
 {
-    if (text.firstAtom() != 0) {
-        startText(relative, marker);
-        const Atom *atom = text.firstAtom();
-        while (atom) {
-            if (atom->type() != Atom::QmlText)
-                atom = atom->next();
-            else {
-                atom = atom->next();
-                while (atom && (atom->type() != Atom::EndQmlText)) {
-                    int n = 1 + generateAtom(atom, relative, marker);
-                    while (n-- > 0)
-                        atom = atom->next();
-                }
+    const Atom* atom = text.firstAtom();
+    if (atom == 0)
+        return false;
+
+    startText(relative, marker);
+    while (atom) {
+        if (atom->type() != Atom::QmlText)
+            atom = atom->next();
+        else {
+            atom = atom->next();
+            while (atom && (atom->type() != Atom::EndQmlText)) {
+                int n = 1 + generateAtom(atom, relative, marker);
+                while (n-- > 0)
+                    atom = atom->next();
             }
         }
-        endText(relative, marker);
     }
+    endText(relative, marker);
+    return true;
 }
 #endif
 
@@ -302,7 +306,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
 
     if (node->doc().isEmpty()) {
-        if (!quiet) // ### might be unnecessary
+        if (!quiet && !node->isReimp()) // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'")
                             .arg(marker->plainFullName(node)));
     }
@@ -313,7 +317,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                 generateReimplementedFrom(func, marker);
         }
         
-        generateText(node->doc().body(), node, marker);
+        if (!generateText(node->doc().body(), node, marker))
+            if (node->isReimp())
+                return;
 
         if (node->type() == Node::Enum) {
             const EnumNode *enume = (const EnumNode *) node;

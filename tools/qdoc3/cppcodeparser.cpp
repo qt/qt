@@ -743,7 +743,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             // Reimplemented functions now reported in separate sections.
             func->setAccess(Node::Private);
             func->setStatus(Node::Internal);
-#endif            
+#endif
+            func->setReimp(true);
         }
         else {
             doc.location().warning(tr("Ignored '\\%1' in %2")

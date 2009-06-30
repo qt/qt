@@ -1322,8 +1322,7 @@ void QDockWidget::changeEvent(QEvent *event)
             QMainWindow *win = qobject_cast<QMainWindow*>(parentWidget());
             if (QMainWindowLayout *winLayout =
                 (win ? qobject_cast<QMainWindowLayout*>(win->layout()) : 0))
-                if (QDockAreaLayoutInfo *info =
-                    (winLayout ? winLayout->layoutState.dockAreaLayout.info(this) : 0))
+                if (QDockAreaLayoutInfo *info = winLayout->layoutState.dockAreaLayout.info(this))
                     info->updateTabBar();
         }
 #endif // QT_NO_TABBAR

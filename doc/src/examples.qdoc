@@ -90,6 +90,7 @@
     \section1 Animation
 
     \list
+    \o \l{animation/moveblocks}{Move Blocks}\raisedaster
     \o \l{animation/stickman}{Stick man}\raisedaster
     \endlist
 
