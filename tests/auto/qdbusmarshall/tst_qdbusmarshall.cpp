@@ -793,7 +793,7 @@ void tst_QDBusMarshall::sendErrors()
                                                   "signalName");
     msg << qVariantFromValue(QDBusObjectPath());
 
-    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\"");
+    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid object path passed in arguments");
     QVERIFY(!con.send(msg));
 
     msg.setArguments(QVariantList());
@@ -803,7 +803,19 @@ void tst_QDBusMarshall::sendErrors()
     path.setPath("abc");
     msg << qVariantFromValue(path);
 
-    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\"");
+    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid object path passed in arguments");
+    QVERIFY(!con.send(msg));
+
+    QDBusSignature sig;
+    msg.setArguments(QVariantList() << qVariantFromValue(sig));
+    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
+    QVERIFY(!con.send(msg));
+
+    QTest::ignoreMessage(QtWarningMsg, "QDBusSignature: invalid signature \"a\"");
+    sig.setSignature("a");
+    msg.setArguments(QVariantList());
+    msg << qVariantFromValue(sig);
+    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
     QVERIFY(!con.send(msg));
 }
 

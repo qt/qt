@@ -80,7 +80,7 @@ public:
     mutable uint delayedReply : 1;
     uint localMessage : 1;
 
-    static DBusMessage *toDBusMessage(const QDBusMessage &message);
+    static DBusMessage *toDBusMessage(const QDBusMessage &message, QDBusError *error);
     static QDBusMessage fromDBusMessage(DBusMessage *dmsg);
 
     static bool isLocal(const QDBusMessage &msg);

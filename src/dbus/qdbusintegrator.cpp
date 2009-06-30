@@ -1144,9 +1144,12 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
                                                       QLatin1String(memberName));
     message.setArguments(args);
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
+    QDBusError error;
+    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
     if (!msg) {
-        qWarning("QDBusConnection: Could not emit signal %s.%s", qPrintable(interface), memberName.constData());
+        qWarning("QDBusConnection: Could not emit signal %s.%s: %s", qPrintable(interface), memberName.constData(),
+                 qPrintable(error.message()));
+        lastError = error;
         return;
     }
 
@@ -1698,21 +1701,26 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
         return -1;              // don't send; the reply will be retrieved by the caller
                                 // through the d_ptr->localReply link
 
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
+    QDBusError error;
+    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
     if (!msg) {
         if (message.type() == QDBusMessage::MethodCallMessage)
-            qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\"",
+            qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
                      qPrintable(message.service()), qPrintable(message.path()),
-                     qPrintable(message.interface()), qPrintable(message.member()));
+                     qPrintable(message.interface()), qPrintable(message.member()),
+                     qPrintable(error.message()));
         else if (message.type() == QDBusMessage::SignalMessage)
-            qWarning("QDBusConnection: error: could not send signal path \"%s\" interface \"%s\" member \"%s\"",
+            qWarning("QDBusConnection: error: could not send signal path \"%s\" interface \"%s\" member \"%s\": %s",
                      qPrintable(message.path()), qPrintable(message.interface()),
-                     qPrintable(message.member()));
+                     qPrintable(message.member()),
+                     qPrintable(error.message()));
         else
-            qWarning("QDBusConnection: error: could not send %s message to service \"%s\"",
+            qWarning("QDBusConnection: error: could not send %s message to service \"%s\": %s",
                      message.type() == QDBusMessage::ReplyMessage ? "reply" :
                      message.type() == QDBusMessage::ErrorMessage ? "error" :
-                     "invalid", qPrintable(message.service()));
+                     "invalid", qPrintable(message.service()),
+                     qPrintable(error.message()));
+        lastError = error;
         return 0;
     }
 
@@ -1739,12 +1747,15 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         return sendWithReplyLocal(message);
 
     if (!QCoreApplication::instance() || sendMode == QDBus::Block) {
-        DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
+        QDBusError err;
+        DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &err);
         if (!msg) {
-            qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\"",
+            qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
                      qPrintable(message.service()), qPrintable(message.path()),
-                     qPrintable(message.interface()), qPrintable(message.member()));
-            return QDBusMessage();
+                     qPrintable(message.interface()), qPrintable(message.member()),
+                     qPrintable(err.message()));
+            lastError = err;
+            return QDBusMessage::createError(err);
         }
 
         qDBusDebug() << QThread::currentThread() << "sending message (blocking):" << message;
@@ -1754,9 +1765,8 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         q_dbus_message_unref(msg);
 
         if (!!error) {
-            QDBusError qe = error;
-            lastError = qe;
-            return QDBusMessage::createError(qe);
+            lastError = err = error;
+            return QDBusMessage::createError(err);
         }
 
         QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(reply);
@@ -1766,16 +1776,17 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         return amsg;
     } else { // use the event loop
         QDBusPendingCallPrivate *pcall = sendWithReplyAsync(message, timeout);
-        if (!pcall)
-            return QDBusMessage();
+        Q_ASSERT(pcall);
 
-        pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
-        QEventLoop loop;
-        loop.connect(pcall->watcherHelper, SIGNAL(reply(QDBusMessage)), SLOT(quit()));
-        loop.connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), SLOT(quit())); 
+        if (pcall->replyMessage.type() != QDBusMessage::InvalidMessage) {
+            pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
+            QEventLoop loop;
+            loop.connect(pcall->watcherHelper, SIGNAL(reply(QDBusMessage)), SLOT(quit()));
+            loop.connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), SLOT(quit()));
 
-        // enter the event loop and wait for a reply
-        loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents);
+            // enter the event loop and wait for a reply
+            loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents);
+        }
 
         QDBusMessage reply = pcall->replyMessage;
         lastError = reply;      // set or clear error
@@ -1831,20 +1842,25 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
         return pcall;
     }
 
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
-    if (!msg) {
-        qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\"",
-                 qPrintable(message.service()), qPrintable(message.path()),
-                 qPrintable(message.interface()), qPrintable(message.member()));
-        return 0;
-    }
-
     checkThread();
-    qDBusDebug() << QThread::currentThread() << "sending message (async):" << message;
-    DBusPendingCall *pending = 0;
     QDBusPendingCallPrivate *pcall = new QDBusPendingCallPrivate;
     pcall->sentMessage = message;
     pcall->ref = 0;
+
+    QDBusError error;
+    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
+    if (!msg) {
+        qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
+                 qPrintable(message.service()), qPrintable(message.path()),
+                 qPrintable(message.interface()), qPrintable(message.member()),
+                 qPrintable(error.message()));
+        pcall->replyMessage = QDBusMessage::createError(error);
+        lastError = error;
+        return pcall;
+    }
+
+    qDBusDebug() << QThread::currentThread() << "sending message (async):" << message;
+    DBusPendingCall *pending = 0;
 
     QDBusDispatchLocker locker(SendWithReplyAsyncAction, this);
     if (q_dbus_connection_send_with_reply(connection, msg, &pending, timeout)) {
@@ -1858,14 +1874,14 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
             return pcall;
         } else {
             // we're probably disconnected at this point
-            lastError = QDBusError(QDBusError::Disconnected, QLatin1String("Not connected to server"));
+            lastError = error = QDBusError(QDBusError::Disconnected, QLatin1String("Not connected to server"));
         }
     } else {
-        lastError = QDBusError(QDBusError::NoMemory, QLatin1String("Out of memory"));
+        lastError = error = QDBusError(QDBusError::NoMemory, QLatin1String("Out of memory"));
     }
 
     q_dbus_message_unref(msg);
-    pcall->replyMessage = QDBusMessage::createError(lastError);
+    pcall->replyMessage = QDBusMessage::createError(error);
     return pcall;
 }
 
@@ -1874,8 +1890,7 @@ int QDBusConnectionPrivate::sendWithReplyAsync(const QDBusMessage &message, QObj
                                                int timeout)
 {
     QDBusPendingCallPrivate *pcall = sendWithReplyAsync(message, timeout);
-    if (!pcall)
-        return 0;
+    Q_ASSERT(pcall);
 
     // has it already finished (dispatched locally)?
     if (pcall->replyMessage.type() == QDBusMessage::ReplyMessage) {
