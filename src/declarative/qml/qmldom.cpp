@@ -512,40 +512,40 @@ QByteArray QmlDomDynamicProperty::propertyName() const
         return QByteArray();
 }
 
-QVariant::Type QmlDomDynamicProperty::propertyType() const
+int QmlDomDynamicProperty::propertyType() const
 {
     if (isValid()) {
         switch (d->property.type) {
             case QmlParser::Object::DynamicProperty::Bool:
-                return QVariant::Bool;
+                return QMetaType::type("bool");
 
             case QmlParser::Object::DynamicProperty::Color:
-                return QVariant::Color;
+                return QMetaType::type("QColor");
 
             case QmlParser::Object::DynamicProperty::Date:
-                return QVariant::Date;
+                return QMetaType::type("QDateTime");
 
             case QmlParser::Object::DynamicProperty::Int:
-                return QVariant::Int;
+                return QMetaType::type("int");
 
             case QmlParser::Object::DynamicProperty::Real:
-                return QVariant::Double;
+                return QMetaType::type("double");
 
             case QmlParser::Object::DynamicProperty::String:
-                return QVariant::String;
+                return QMetaType::type("QString");
 
             case QmlParser::Object::DynamicProperty::Url:
-                return QVariant::Url;
+                return QMetaType::type("QUrl");
 
             case QmlParser::Object::DynamicProperty::Variant:
-                return QVariant::
+                return QMetaType::type("QVariant");
 
             default:
-                return QVariant::Invalid;
+                break;
         }
-    } else {
-        return QVariant::Invalid;
     }
+
+    return -1;
 }
 
 /*!
@@ -578,7 +578,7 @@ QmlDomProperty QmlDomDynamicProperty::defaultValue() const
 {
     QmlDomProperty rp;
 
-    if (isValid()) {
+    if (isValid() && d->property.defaultValue) {
         rp.d->property = d->property.defaultValue;
         rp.d->property->addref();
     }
@@ -881,8 +881,11 @@ QList<QmlDomDynamicProperty> QmlDomObject::dynamicProperties() const
         QmlDomDynamicProperty p;
         p.d = new QmlDomDynamicPropertyPrivate;
         p.d->property = d->object->dynamicProperties.at(i);
-        if (p.d->property.defaultValue) p.d->property.defaultValue->addref();
         p.d->valid = true;
+
+        if (p.d->property.defaultValue)
+            p.d->property.defaultValue->addref();
+
         properties.append(p);
     }
 

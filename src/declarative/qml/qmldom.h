@@ -44,7 +44,6 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvariant.h>
 #include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
@@ -124,7 +123,7 @@ public:
     bool isValid() const;
 
     QByteArray propertyName() const;
-    QVariant::Type propertyType() const;
+    int propertyType() const;
 
     bool isDefaultProperty() const;
 
