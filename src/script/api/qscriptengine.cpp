@@ -294,7 +294,7 @@ QString qtStringFromJSCUString(const JSC::UString &str)
 
 bool isFunction(JSC::JSValue value)
 {
-    if (!value.isObject())
+    if (!value || !value.isObject())
         return false;
     JSC::CallData callData;
     return (JSC::asObject(value)->getCallData(callData) != JSC::CallTypeNone);
