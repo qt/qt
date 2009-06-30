@@ -1,14 +1,27 @@
 SOURCES += \
            extra/qnumberformat.cpp \
            extra/qmlnumberformatter.cpp \
+           extra/qmldatetimeformatter.cpp \
            extra/qfxintegermodel.cpp \
-           extra/qmltimer.cpp
+           extra/qmltimer.cpp \
+           extra/qfxanimatedimageitem.cpp \
+           extra/qfxblendedimage.cpp \
+           extra/qfxflowview.cpp \
+           extra/qmlbehaviour.cpp \
+           extra/qbindablemap.cpp
 
 HEADERS += \
            extra/qnumberformat.h \
            extra/qmlnumberformatter.h \
+           extra/qmldatetimeformatter.h \
            extra/qfxintegermodel.h \
-           extra/qmltimer.h
+           extra/qmltimer.h \
+           extra/qfxanimatedimageitem.h \
+           extra/qfxanimatedimageitem_p.h \
+           extra/qfxblendedimage.h \
+           extra/qfxflowview.h \
+           extra/qmlbehaviour.h \
+           extra/qbindablemap.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns

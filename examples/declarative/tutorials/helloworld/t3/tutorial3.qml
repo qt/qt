@@ -27,12 +27,12 @@ Rect {
                 toState: "down"
                 reversible: true
                 ParallelAnimation {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "y"
                         duration: 500
                         easing: "easeOutBounce"
                     }
-                    ColorAnimation { duration: 500 }
+                    ColorAnimation { property: "color"; duration: 500 }
                 }
             }
         ]

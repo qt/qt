@@ -104,17 +104,17 @@
                     </states>
                     <transitions>
                         <Transition fromState="*" toState="*">
-                            <NumericAnimation property="r" duration="500" />
+                            <NumberAnimation property="r" duration="500" />
                             <SerialAnimation>
                                 <SetPropertyAction target="{MeRect}" property="moveToParent" value="{Bounce}" />
                                 <ParallelAnimation>
-                                    <NumericAnimation target="{MeRect}" properties="x" to="0" duration="250" />
-                                    <NumericAnimation target="{MeRect}" properties="y" to="0" easing="easeInQuad" duration="250"/>
+                                    <NumberAnimation target="{MeRect}" properties="x" to="0" duration="250" />
+                                    <NumberAnimation target="{MeRect}" properties="y" to="0" easing="easeInQuad" duration="250"/>
                                 </ParallelAnimation>
                                 <SetPropertyAction target="{MeRect}" property="moveToParent" />
                                 <ParallelAnimation>
-                                    <NumericAnimation target="{MeRect}" properties="x" to="0" duration="250"/>
-                                    <NumericAnimation target="{MeRect}" properties="y" to="0" easing="easeOutQuad" duration="250"/>
+                                    <NumberAnimation target="{MeRect}" properties="x" to="0" duration="250"/>
+                                    <NumberAnimation target="{MeRect}" properties="y" to="0" easing="easeOutQuad" duration="250"/>
                                 </ParallelAnimation>
                             </SerialAnimation>
                         </Transition>

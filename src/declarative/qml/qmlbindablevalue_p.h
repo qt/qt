@@ -54,8 +54,10 @@ class QmlBindableValuePrivate : public QObjectPrivate
 public:
     QmlBindableValuePrivate();
 
-    bool inited;
-    bool updating;
+    bool inited:1;
+    bool updating:1;
+    bool enabled:1;
+
     QmlMetaProperty property;
 
     QmlBindableValue **mePtr;

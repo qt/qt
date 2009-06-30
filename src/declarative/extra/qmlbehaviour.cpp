@@ -115,7 +115,7 @@ public:
         color: "#00ff00"
         y: 200  //initial value
         y: Behavior {
-            NumericAnimation {
+            NumberAnimation {
                 easing: "easeOutBounce(amplitude:100)"
                 duration: 200
             }

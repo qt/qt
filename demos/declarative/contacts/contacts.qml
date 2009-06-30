@@ -50,10 +50,9 @@ Rect {
                         State {
                             name: "currentItem"
                             when: wrapper.ListView.isCurrentItem
-                            SetProperty {
+                            SetProperties {
                                 target: label
-                                property: "color"
-                                value: "black"
+                                color: "black"
                             }
                         }
                     ]
@@ -94,36 +93,31 @@ Rect {
                 states: [
                     State {
                         name: "opened"
-                        SetProperty {
+                        SetProperties {
                             target: wrapper
-                            property: "height"
-                            value: contactListView.height
+                            height: contactListView.height
                         }
-                        SetProperty {
+                        SetProperties {
                             target: contactListView
-                            property: "yPosition"
-                            value: wrapper.y
+                            yPosition: wrapper.y
                         }
-                        SetProperty {
+                        SetProperties {
                             target: contactListView
-                            property: "locked"
-                            value: 1
+                            locked: 1
                         }
-                        SetProperty {
+                        SetProperties {
                             target: label
-                            property: "opacity"
-                            value: 0
+                            opacity: 0
                         }
-                        SetProperty {
+                        SetProperties {
                             target: Details
-                            property: "opacity"
-                            value: 1
+                            opacity: 1
                         }
                     }
                 ]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             duration: 500
                             properties: "yPosition,height,opacity"
                         }
@@ -221,7 +215,7 @@ Rect {
                 color: 'white'
                 opacity: contacts.mode == 'list' ? 1 : 0
                 opacity: Behavior {
-                    NumericAnimation {
+                    NumberAnimation {
                         property: "opacity"
                         duration: 250
                     }
@@ -277,10 +271,9 @@ Rect {
             State {
                 name: "searchHidden"
                 when: searchBar.text == '' || contacts.mode != 'list'
-                SetProperty {
+                SetProperties {
                     target: searchBarWrapper.anchors
-                    property: "bottomMargin"
-                    value: -30
+                    bottomMargin: -30
                 }
             }
         ]
@@ -288,7 +281,7 @@ Rect {
             Transition {
                 fromState: "*"
                 toState: "*"
-                NumericAnimation {
+                NumberAnimation {
                     property: "bottomMargin"
                     duration: 250
                 }
@@ -303,15 +296,13 @@ Rect {
         State {
             name: "editNewState"
             when: contacts.mode == 'new'
-            SetProperty {
+            SetProperties {
                 target: contactListView
-                property: "opacity"
-                value: 0
+                opacity: 0
             }
-            SetProperty {
+            SetProperties {
                 target: newContactWrapper
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
         }
     ]
@@ -319,7 +310,7 @@ Rect {
         Transition {
             fromState: "*"
             toState: "*"
-            NumericAnimation {
+            NumberAnimation {
                 property: "opacity"
                 duration: 500
             }

@@ -417,14 +417,8 @@ QmlSetProperty::ActionList QmlSetProperty::actions()
     a.property = prop;
     a.fromValue = cur;
     a.toValue = d->value;
-    if (!d->binding.isEmpty()) {
-        QmlBindableValue *bv = prop.binding();
-        if (bv) {
-            a.fromBinding = bv->expression();
-            a.bv = bv;
-        }
-    }
-    a.toBinding = d->binding;
+    if (!d->binding.isEmpty()) 
+        a.toBinding = new QmlBindableValue(d->binding, object(), qmlContext(this));
 
     return ActionList() << a;
 }

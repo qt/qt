@@ -50,17 +50,17 @@ Rect {
         // with easeOutBounce easing function.
         Transition {
             fromState: "*"; toState: "Position1"
-            NumericAnimation { properties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
+            NumberAnimation { properties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
         },
         // When transitioning to 'Position2' move x,y over a duration of 2 seconds,
         // with easeInOutQuad easing function.
         Transition {
             fromState: "*"; toState: "Position2"
-            NumericAnimation { properties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
+            NumberAnimation { properties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
         },
         // For any other state changes move x,y linearly over duration of 200ms.
         Transition {
-            NumericAnimation { properties: "x,y"; duration: 200 }
+            NumberAnimation { properties: "x,y"; duration: 200 }
         }
     ]
 }

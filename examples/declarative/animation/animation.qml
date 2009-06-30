@@ -14,7 +14,7 @@ Rect {
             running: true
             repeat: true
             // Move from 0 to 360 in 500ms, using the easeInOutQuad easing function
-            NumericAnimation {
+            NumberAnimation {
                 from: 0
                 to: 360
                 easing: "easeInOutQuad"
@@ -25,7 +25,7 @@ Rect {
                 duration: 200
             }
             // Then move back to 0 in 2 seconds, using the easeInOutElastic easing function
-            NumericAnimation {
+            NumberAnimation {
                 from: 360
                 to: 0
                 easing: "easeInOutElastic"
@@ -37,11 +37,13 @@ Rect {
             running: true
             repeat: true
             ColorAnimation {
+                property: "color"
                 from: "#FF0000"
                 to: "#00FF00"
                 duration: 5000
             }
             ColorAnimation {
+                property: "color"
                 from: "#00FF00"
                 to: "#FF0000"
                 duration: 5000

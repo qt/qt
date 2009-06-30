@@ -29,7 +29,7 @@ Item {
                         source: "pics/flag.png"
                         opacity: modelData.hasFlag
                         opacity: Behavior {
-                            NumericAnimation {
+                            NumberAnimation {
                                 property: "opacity"
                                 duration: 250
                             }
@@ -64,11 +64,7 @@ Item {
                     State {
                         name: "back"
                         when: modelData.flipped == true
-                        SetProperty {
-                            target: flipable
-                            property: "rotation"
-                            value: 180
-                        }
+                        SetProperties { target: flipable; rotation: 180 }
                     }
                 ]
                 transitions: [
@@ -77,7 +73,7 @@ Item {
                             PauseAnimation {
                                 duration: {var ret = Math.abs(flipable.parent.x-field.clickx) + Math.abs(flipable.parent.y-field.clicky); if (ret > 0) {if(modelData.hasMine==true && modelData.flipped==true){ret*3;}else{ret;}} else {0}}
                             }
-                            NumericAnimation {
+                            NumberAnimation {
                                 easing: "easeInOutQuad"
                                 properties: "rotation"
                             }

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-Action::Action() : restore(true), bv(0), event(0), actionDone(false)
+Action::Action() : restore(true), actionDone(false), fromBinding(0), toBinding(0), event(0)
 {
 }
 
@@ -237,8 +237,9 @@ QmlState &QmlState::operator<<(QmlStateOperation *op)
 void QmlStatePrivate::applyBindings()
 {
     foreach(const Action &action, bindingsList) {
-        if (action.bv && !action.toBinding.isEmpty()) {
-            action.bv->setExpression(action.toBinding);
+        if (action.toBinding) {
+            action.property.setBinding(action.toBinding);
+            action.toBinding->forceUpdate();
         }
     }
 }
@@ -246,6 +247,7 @@ void QmlStatePrivate::applyBindings()
 void QmlStatePrivate::complete()
 {
     Q_Q(QmlState);
+
     //apply bindings (now that all transitions are complete)
     applyBindings();
 
@@ -316,6 +318,15 @@ void QmlState::cancel()
     }
 }
 
+void Action::deleteFromBinding() 
+{
+    if (fromBinding) {
+        property.setBinding(0);
+        delete fromBinding;
+        fromBinding = 0;
+    }
+}
+
 void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *revert)
 {
     Q_D(QmlState);
@@ -341,20 +352,36 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     QmlStatePrivate::SimpleActionList additionalReverts;
     // First add the reverse of all the applyList actions
     for (int ii = 0; ii < applyList.count(); ++ii) {
-        const Action &action = applyList.at(ii);
-        if (action.event || !action.restore)
+        Action &action = applyList[ii];
+
+        if (action.event)
             continue;
 
+        action.fromBinding = action.property.binding();
+
         bool found = false;
-        for (int jj = 0; !found && jj < d->revertList.count(); ++jj) {
-            if (d->revertList.at(jj).property == action.property)
+        int jj;
+        for (jj = 0; jj < d->revertList.count(); ++jj) {
+            if (d->revertList.at(jj).property == action.property) {
                 found = true;
+                break;
+            }
         }
+
         if (!found) {
-            // Only need to revert the applyList action if the previous
-            // state doesn't have a higher priority revert already
-            SimpleAction r(action);
-            additionalReverts << r;
+            if (!action.restore) {
+                action.deleteFromBinding(); 
+            } else {
+                // Only need to revert the applyList action if the previous
+                // state doesn't have a higher priority revert already
+                SimpleAction r(action);
+                additionalReverts << r;
+            }
+        } else {
+
+            if (!found || d->revertList.at(jj).binding != action.fromBinding) {
+                action.deleteFromBinding();
+            }
         }
     }
     
@@ -369,15 +396,13 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         }
         if (!found) {
             QVariant cur = d->revertList.at(ii).property.read();
+            delete d->revertList.at(ii).property.setBinding(0);
+
             Action a;
             a.property = d->revertList.at(ii).property;
             a.fromValue = cur;
             a.toValue = d->revertList.at(ii).value;
             a.toBinding = d->revertList.at(ii).binding;
-            if (!a.toBinding.isEmpty()) {
-                a.fromBinding = d->revertList.at(ii).bv->expression();
-                a.bv = d->revertList.at(ii).bv;
-            }
             applyList << a;
             // Store these special reverts in the reverting list
             d->reverting << d->revertList.at(ii).property;
@@ -396,9 +421,12 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
 
     // Determine which actions are binding changes.
     foreach(const Action &action, applyList) {
-        if (action.bv && !action.toBinding.isEmpty()) {
+        if (action.toBinding) {
             d->bindingsList << action;
-            action.bv->clearExpression();
+            if (action.fromBinding)
+                action.property.setBinding(0); // Disable current binding
+        } else if (action.fromBinding) {
+            action.property.setBinding(0); // Disable current binding
         }
     }
 
@@ -415,8 +443,9 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
 
         // Apply all the property and binding changes
         foreach(const Action &action, applyList) {
-            if (action.bv && !action.toBinding.isEmpty()) {
-                action.bv->setExpression(action.toBinding);
+            if (action.toBinding) {
+                action.property.setBinding(action.toBinding);
+                action.toBinding->forceUpdate();
             } else if (!action.event) {
                 action.property.write(action.toValue);
             }
@@ -429,9 +458,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                 continue;
 
             const QmlMetaProperty &prop = action->property;
-            if (action->bv && !action->toBinding.isEmpty()) {
+            if (action->toBinding) 
                 action->toValue = prop.read();
-            }
         }
 
         // Revert back to the original values
@@ -439,8 +467,9 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             if (action.event)
                 continue;
 
-            if (action.bv && !action.toBinding.isEmpty())
-                action.bv->clearExpression();
+            if (action.toBinding)
+                action.property.setBinding(0);
+
             action.property.write(action.fromValue);
         }
     }
@@ -480,12 +509,15 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     }
 
     // Any actions remaining have not been handled by the transition and should
-    // be applied immediately
+    // be applied immediately.  We skip applying transitions, as they are all
+    // applied at the end in applyBindings() to avoid any nastiness mid 
+    // transition
     foreach(const Action &action, applyList) {
-        if (action.event)
+        if (action.event) {
             action.event->execute();
-        else
+        } else {
             action.property.write(action.toValue);
+        }
     }
     if (!trans)
         d->applyBindings(); //### merge into above foreach?

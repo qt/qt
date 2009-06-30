@@ -130,7 +130,7 @@ Flipable {
     states: [
         State {
             name: "Back"
-            SetProperty { target: Container; property: "rotation"; value: 180 }
+            SetProperties { target: Container; rotation: 180 }
         }
     ]
 
@@ -142,7 +142,7 @@ Flipable {
                     property: "smooth"
                     value: false
                 }
-                NumericAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+                NumberAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
                 SetPropertyAction {
                     target: BigImage
                     property: "smooth"

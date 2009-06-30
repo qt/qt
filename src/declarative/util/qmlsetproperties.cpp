@@ -47,6 +47,7 @@
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
 #include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlbindablevalue.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -113,7 +114,8 @@ class QmlSetPropertiesPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlSetProperties)
 public:
-    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true) {}
+    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true), 
+                                isExplicit(false) {}
 
     QObject *object;
     QByteArray data;
@@ -121,6 +123,7 @@ public:
     void decode();
 
     bool restore;
+    bool isExplicit;
 
     QList<QPair<QByteArray, QVariant> > properties;
     QList<QPair<QByteArray, QmlExpression *> > expressions;
@@ -205,6 +208,7 @@ QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props,
 
 void QmlSetPropertiesPrivate::decode()
 {
+    Q_Q(QmlSetProperties);
     if (decoded)
         return;
 
@@ -221,7 +225,7 @@ void QmlSetPropertiesPrivate::decode()
         ds >> data;
 
         if (isScript) {
-            QmlExpression *expression = new QmlExpression(qmlContext(object), data.toString(), object);
+            QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
             expression->setTrackChange(false);
             expressions << qMakePair(name, expression);
         } else {
@@ -347,7 +351,13 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
             a.restore = restoreEntryValues();
             a.property = prop;
             a.fromValue = a.property.read();
-            a.toValue = d->expressions.at(ii).second->value();
+
+            if (d->isExplicit) {
+                a.toValue = d->expressions.at(ii).second->value();
+            } else {
+                a.toBinding = new QmlBindableValue(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                a.toBinding->setTarget(prop);
+            }
 
             list << a;
         }
@@ -355,6 +365,18 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
     }
 
     return list;
+}
+
+bool QmlSetProperties::isExplicit() const
+{
+    Q_D(const QmlSetProperties);
+    return d->isExplicit;
+}
+
+void QmlSetProperties::setIsExplicit(bool e)
+{
+    Q_D(QmlSetProperties);
+    d->isExplicit = e;
 }
 
 QML_DEFINE_CUSTOM_TYPE(QmlSetProperties,SetProperties,QmlSetPropertiesParser)

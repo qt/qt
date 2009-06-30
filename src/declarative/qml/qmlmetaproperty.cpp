@@ -519,7 +519,7 @@ QMetaProperty QmlMetaProperty::property() const
     Returns the binding associated with this property, or 0 if no binding 
     exists.
 */
-QmlBindableValue *QmlMetaProperty::binding()
+QmlBindableValue *QmlMetaProperty::binding() const
 {
     if (!isProperty() || type() & Attached)
         return 0;
@@ -534,6 +534,51 @@ QmlBindableValue *QmlMetaProperty::binding()
                 return v;
         }
     }
+    return 0;
+}
+
+/*!
+    Set the binding associated with this property to \a binding.  Returns
+    the existing binding (if any), otherwise 0.
+
+    \a binding will be enabled, and the returned binding (if any) will be
+    disabled.
+*/
+QmlBindableValue *QmlMetaProperty::setBinding(QmlBindableValue *binding) const
+{
+    if (!isProperty() || type() & Attached)
+        return 0;
+
+    const QObjectList &children = object()->children();
+    for (QObjectList::ConstIterator iter = children.begin();
+            iter != children.end(); ++iter) {
+        QObject *child = *iter;
+        if (child->metaObject() == &QmlBindableValue::staticMetaObject) {
+            QmlBindableValue *v = static_cast<QmlBindableValue *>(child);
+            if (v->property() == *this && v->enabled()) {
+
+                v->setEnabled(false);
+
+                if (binding) {
+                    binding->setParent(object());
+                    binding->setTarget(*this);
+                    binding->setEnabled(true);
+                    binding->forceUpdate();
+                }
+
+                return v;
+
+            }
+        }
+    }
+
+    if (binding) {
+        binding->setParent(object());
+        binding->setTarget(*this);
+        binding->setEnabled(true);
+        binding->forceUpdate();
+    }
+
     return 0;
 }
 

@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(XmlListModelRole, Role)
+QML_DEFINE_TYPE(XmlListModelRole, XmlRole)
 QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel)
 
 
@@ -105,7 +105,7 @@ public:
         m_modelData.clear();
         m_size = 0;
         m_data = data;
-        m_query = query;
+        m_query = QLatin1String("doc($src)") + query;
         m_namespaces = namespaces;
         m_roleObjects = roleObjects;
         if (!isRunning()) {
@@ -224,6 +224,13 @@ void QmlXmlQuery::doSubQueryJob()
     //### we might be able to condense even further (query for everything in one go)
     for (int i = 0; i < m_roleObjects->size(); ++i) {
         XmlListModelRole *role = m_roleObjects->at(i);
+        if (!role->isValid()) {
+            QList<QVariant> resultList;
+            for (int j = 0; j < m_size; ++j)
+                resultList << QVariant();
+            m_modelData << resultList;
+            continue;
+        }
         subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + role->query() + QLatin1String(" return if ($v) then ") + role->query() + QLatin1String(" else \"\")"));
         QXmlResultItems output3;
         subquery.evaluateTo(&output3);
@@ -233,6 +240,9 @@ void QmlXmlQuery::doSubQueryJob()
             resultList << item.toAtomicValue(); //### we used to trim strings
             item = output3.next();
         }
+        //### should warn here if things have gone wrong.
+        while (resultList.count() < m_size)
+            resultList << QVariant();
         m_modelData << resultList;
         b.seek(0);
     }
@@ -308,6 +318,38 @@ void QmlXmlRoleList::append(XmlListModelRole *role) {
     model->roleNames << role->name();
     ++model->highestRole;
 }
+
+/*!
+    \qmlclass XmlRole
+    \brief The XmlRole element allows you to specify a role for an XmlListModel.
+*/
+
+/*!
+    \qmlproperty string XmlRole::name
+    The name for the role. This name is used to access the model data for this role from Qml.
+
+    \qml
+    XmlRole { name: "title"; query: "title/string()" }
+
+    ...
+
+    Component {
+        id: Delegate
+        Text { text: title }
+    }
+    \endqml
+*/
+
+/*!
+    \qmlproperty string XmlRole::query
+    The relative XPath query for this role. The query should not start with a '/' (i.e. it must be
+    relative).
+
+    \qml
+    XmlRole { name: "title"; query: "title/string()" }
+    \endqml
+*/
+
 //XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
 //    (and the model should emit the appropriate signals)
 void QmlXmlRoleList::clear()
@@ -316,12 +358,15 @@ void QmlXmlRoleList::clear()
     model->roleNames.clear();
     QmlConcreteList<XmlListModelRole *>::clear();
 }
+
 void QmlXmlRoleList::removeAt(int i)
 {
     model->roles.removeAt(i);
     model->roleNames.removeAt(i);
     QmlConcreteList<XmlListModelRole *>::removeAt(i);
 }
+
+//### we should enforce unique role names
 void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
 {
     QmlConcreteList<XmlListModelRole *>::insert(i, role);
@@ -332,7 +377,7 @@ void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
 
 /*!
     \qmlclass XmlListModel
-    \brief The XmlListModel class allows you to specify a model using XQuery.
+    \brief The XmlListModel element allows you to specify a model using XPath expressions.
 
     XmlListModel allows you to construct a model from XML data that can then be used as a data source
     for the view classes (ListView, PathView, GridView) and any other classes that interact with model
@@ -343,13 +388,14 @@ void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
     XmlListModel {
         id: FeedModel
         source: "http://rss.news.yahoo.com/rss/oceania"
-        query: "doc($src)/rss/channel/item"
-        Role { name: "title"; query: "title/string()" }
-        Role { name: "link"; query: "link/string()" }
-        Role { name: "description"; query: "description/string()" }
+        query: "/rss/channel/item"
+        XmlRole { name: "title"; query: "title/string()" }
+        XmlRole { name: "link"; query: "link/string()" }
+        XmlRole { name: "description"; query: "description/string()" }
     }
     \endqml
-    \note The model is currently static, so the above is really just a snapshot of an RSS feed.
+    \note The model is currently static, so the above is really just a snapshot of an RSS feed. To force a
+    reload of the entire model, you can call the reload function.
 */
 
 QmlXmlListModel::QmlXmlListModel(QObject *parent)
@@ -364,6 +410,11 @@ QmlXmlListModel::~QmlXmlListModel()
 {
 }
 
+/*!
+    \qmlproperty list<XmlRole> QmlListModel::roles
+
+    The roles to make available for this model.
+*/
 QmlList<XmlListModelRole *> *QmlXmlListModel::roleObjects()
 {
     Q_D(QmlXmlListModel);
@@ -403,6 +454,10 @@ QString QmlXmlListModel::toString(int role) const
     return d->roleNames.at(index);
 }
 
+/*!
+    \qmlproperty url XmlListModel::source
+    The location of the XML data source.
+*/
 QUrl QmlXmlListModel::source() const
 {
     Q_D(const QmlXmlListModel);
@@ -418,6 +473,11 @@ void QmlXmlListModel::setSource(const QUrl &src)
     }
 }
 
+/*!
+    \qmlproperty url XmlListModel::query
+    An absolute XPath query representing the base query for the model items. The query should start with
+    a '/' or '//'.
+*/
 QString QmlXmlListModel::query() const
 {
     Q_D(const QmlXmlListModel);
@@ -427,12 +487,21 @@ QString QmlXmlListModel::query() const
 void QmlXmlListModel::setQuery(const QString &query)
 {
     Q_D(QmlXmlListModel);
+    if (!query.startsWith(QLatin1Char('/'))) {
+        qmlInfo(this) << "An XmlListModel query must start with '/' or \"//\"";
+        return;
+    }
+
     if (d->query != query) {
         d->query = query;
         reload();
     }
 }
 
+/*!
+    \qmlproperty string XmlListModel::namespaceDeclarations
+    A set of declarations for the namespaces used in the query.
+*/
 QString QmlXmlListModel::namespaceDeclarations() const
 {
     Q_D(const QmlXmlListModel);
@@ -447,12 +516,34 @@ void QmlXmlListModel::setNamespaceDeclarations(const QString &declarations)
         reload();
     }
 }
+
+/*!
+    \qmlproperty enum XmlListModel::status
+
+    This property holds the status of data source loading.  It can be one of:
+    \list
+    \o Idle - no data source has been set, or the data source has been loaded
+    \o Loading - the data source is currently being loaded
+    \o Error - an error occurred while loading the data source
+    \endlist
+
+    \sa progress
+
+*/
 QmlXmlListModel::Status QmlXmlListModel::status() const
 {
     Q_D(const QmlXmlListModel);
     return d->status;
 }
 
+/*!
+    \qmlproperty real XmlListModel::progress
+
+    This property holds the progress of data source loading, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+
+    \sa status
+*/
 qreal QmlXmlListModel::progress() const
 {
     Q_D(const QmlXmlListModel);
@@ -466,6 +557,12 @@ void QmlXmlListModel::classComplete()
     reload();
 }
 
+/*!
+    \qmlmethod XmlListModel::reload()
+
+    Reloads the model. All the existing model data will be removed, and the model
+    will be rebuilt from scratch.
+*/
 void QmlXmlListModel::reload()
 {
     Q_D(QmlXmlListModel);
@@ -484,7 +581,7 @@ void QmlXmlListModel::reload()
         emit itemsRemoved(0, count);
 
     if (d->src.isEmpty()) {
-        qWarning() << "Can't load empty src string";
+        qmlInfo(this) << "Can't load empty src string";
         return;
     }
 
