@@ -74,7 +74,7 @@ public:
     JSCharacterDataConstructor(ExecState* exec)
         : DOMObject(JSCharacterDataConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCharacterDataPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCharacterDataPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSCharacterDataPrototypeTable =
 
 const ClassInfo JSCharacterDataPrototype::s_info = { "CharacterDataPrototype", 0, &JSCharacterDataPrototypeTable, 0 };
 
-JSObject* JSCharacterDataPrototype::self(ExecState* exec)
+JSObject* JSCharacterDataPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCharacterData>(exec);
+    return getDOMPrototype<JSCharacterData>(exec, globalObject);
 }
 
 bool JSCharacterDataPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,9 +131,9 @@ JSCharacterData::JSCharacterData(PassRefPtr<Structure> structure, PassRefPtr<Cha
 {
 }
 
-JSObject* JSCharacterData::createPrototype(ExecState* exec)
+JSObject* JSCharacterData::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCharacterDataPrototype(JSCharacterDataPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSCharacterDataPrototype(JSCharacterDataPrototype::createStructure(JSEventTargetNodePrototype::self(exec, globalObject)));
 }
 
 bool JSCharacterData::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

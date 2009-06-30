@@ -74,7 +74,7 @@ public:
     JSHTMLHRElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLHRElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLHRElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLHRElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSHTMLHRElementPrototypeTable =
 
 const ClassInfo JSHTMLHRElementPrototype::s_info = { "HTMLHRElementPrototype", 0, &JSHTMLHRElementPrototypeTable, 0 };
 
-JSObject* JSHTMLHRElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLHRElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLHRElement>(exec);
+    return getDOMPrototype<JSHTMLHRElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLHRElement::s_info = { "HTMLHRElement", &JSHTMLElement::s_info, &JSHTMLHRElementTable, 0 };
@@ -121,9 +121,9 @@ JSHTMLHRElement::JSHTMLHRElement(PassRefPtr<Structure> structure, PassRefPtr<HTM
 {
 }
 
-JSObject* JSHTMLHRElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLHRElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLHRElementPrototype(JSHTMLHRElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLHRElementPrototype(JSHTMLHRElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLHRElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

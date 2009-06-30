@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2154,48 +2154,42 @@ bool QRectF::contains(const QRectF &r) const
 
 QRectF QRectF::operator|(const QRectF &r) const
 {
-    qreal l1 = xp;
-    qreal r1 = xp;
+    if (isNull())
+        return r;
+    if (r.isNull())
+        return *this;
+
+    qreal left = xp;
+    qreal right = xp;
     if (w < 0)
-        l1 += w;
+        left += w;
     else
-        r1 += w;
-    if (l1 == r1) // null rect
-        return r;
+        right += w;
 
-    qreal l2 = r.xp;
-    qreal r2 = r.xp;
-    if (r.w < 0)
-        l2 += r.w;
-    else
-        r2 += r.w;
-    if (l2 == r2) // null rect
-        return *this;
+    if (r.w < 0) {
+        left = qMin(left, r.xp + r.w);
+        right = qMax(right, r.xp);
+    } else {
+        left = qMin(left, r.xp);
+        right = qMax(right, r.xp + r.w);
+    }
 
-    qreal t1 = yp;
-    qreal b1 = yp;
+    qreal top = yp;
+    qreal bottom = yp;
     if (h < 0)
-        t1 += h;
+        top += h;
     else
-        b1 += h;
-    if (t1 == b1) // null rect
-        return r;
+        bottom += h;
 
-    qreal t2 = r.yp;
-    qreal b2 = r.yp;
-    if (r.h < 0)
-        t2 += r.h;
-    else
-        b2 += r.h;
-    if (t2 == b2) // null rect
-        return *this;
+    if (r.h < 0) {
+        top = qMin(top, r.yp + r.h);
+        bottom = qMax(bottom, r.yp);
+    } else {
+        top = qMin(top, r.yp);
+        bottom = qMax(bottom, r.yp + r.h);
+    }
 
-    QRectF tmp;
-    tmp.xp = qMin(l1, l2);
-    tmp.yp = qMin(t1, t2);
-    tmp.w = qMax(r1, r2) - tmp.xp;
-    tmp.h = qMax(b1, b2) - tmp.yp;
-    return tmp;
+    return QRectF(left, top, right - left, bottom - top);
 }
 
 /*!

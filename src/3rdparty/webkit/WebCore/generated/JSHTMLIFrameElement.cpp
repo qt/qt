@@ -90,7 +90,7 @@ public:
     JSHTMLIFrameElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLIFrameElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLIFrameElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLIFrameElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -126,9 +126,9 @@ static const HashTable JSHTMLIFrameElementPrototypeTable =
 
 const ClassInfo JSHTMLIFrameElementPrototype::s_info = { "HTMLIFrameElementPrototype", 0, &JSHTMLIFrameElementPrototypeTable, 0 };
 
-JSObject* JSHTMLIFrameElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLIFrameElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLIFrameElement>(exec);
+    return getDOMPrototype<JSHTMLIFrameElement>(exec, globalObject);
 }
 
 bool JSHTMLIFrameElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -143,9 +143,9 @@ JSHTMLIFrameElement::JSHTMLIFrameElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLIFrameElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLIFrameElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLIFrameElementPrototype(JSHTMLIFrameElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLIFrameElementPrototype(JSHTMLIFrameElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLIFrameElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

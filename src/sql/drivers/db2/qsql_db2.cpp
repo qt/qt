@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1182,7 +1182,7 @@ QDB2Driver::~QDB2Driver()
     delete d;
 }
 
-bool QDB2Driver::open(const QString& db, const QString& user, const QString& password, const QString& host, int port,
+bool QDB2Driver::open(const QString& db, const QString& user, const QString& password, const QString&, int,
                        const QString& connOpts)
 {
     if (isOpen())
@@ -1205,8 +1205,6 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         setOpenError(true);
         return false;
     }
-
-    QString protocol;
     // Set connection attributes
     const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
     for (int i = 0; i < opts.count(); ++i) {
@@ -1237,10 +1235,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         } else if (opt == QLatin1String("SQL_ATTR_LOGIN_TIMEOUT")) {
             v = val.toUInt();
             r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) v, 0);
-        } else if (opt.compare(QLatin1String("PROTOCOL"), Qt::CaseInsensitive) == 0) {
-                        protocol = tmp;
-        }
-        else {
+        } else {
             qWarning("QDB2Driver::open: Unknown connection attribute '%s'",
                       tmp.toLocal8Bit().constData());
         }
@@ -1249,18 +1244,9 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
                            "Unable to set connection attribute '%1'").arg(opt), d);
     }
 
-    if (protocol.isEmpty())
-        protocol = QLatin1String("PROTOCOL=TCPIP");
-
-    if (port < 0 )
-        port = 50000;
-
     QString connQStr;
-    connQStr =  protocol + QLatin1String(";DATABASE=") + db + QLatin1String(";HOSTNAME=") + host
-        + QLatin1String(";PORT=") + QString::number(port) + QLatin1String(";UID=") + user
-        + QLatin1String(";PWD=") + password;
-
-
+    connQStr = QLatin1String("DSN=") + db + QLatin1String(";UID=") + user + QLatin1String(";PWD=")
+               + password;
     SQLTCHAR connOut[SQL_MAX_OPTION_STRING_LENGTH];
     SQLSMALLINT cb;
 
@@ -1279,7 +1265,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         return false;
     }
 
-    d->user = user;
+    d->user = user.toUpper();
     setOpen(true);
     setOpenError(false);
     return true;
@@ -1324,24 +1310,9 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
 
     SQLHANDLE hStmt;
     QString catalog, schema, table;
-    qSplitTableQualifier(tableName, &catalog, &schema, &table);
+    qSplitTableQualifier(tableName.toUpper(), &catalog, &schema, &table);
     if (schema.isEmpty())
         schema = d->user;
-
-    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
-        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
-    else
-        catalog = catalog.toUpper();
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = schema.toUpper();
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = table.toUpper();
 
     SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
                                   d->hDbc,
@@ -1356,9 +1327,6 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
                         (SQLPOINTER) SQL_CURSOR_FORWARD_ONLY,
                         SQL_IS_UINTEGER);
 
-
-    //Aside: szSchemaName and szTableName parameters of SQLColumns
-    //are case sensitive search patterns, so no escaping is used.
     r =  SQLColumns(hStmt,
                      NULL,
                      0,
@@ -1439,13 +1407,7 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
         bool isNull;
         QString fieldVal = qGetStringData(hStmt, 2, -1, isNull);
         QString userVal = qGetStringData(hStmt, 1, -1, isNull);
-        QString user = d->user;
-        if ( isIdentifierEscaped(user, QSqlDriver::TableName))
-            user = stripDelimiters(user, QSqlDriver::TableName);
-        else
-            user = user.toUpper();
-
-        if (userVal != user)
+        if (userVal != d->user)
             fieldVal = userVal + QLatin1Char('.') + fieldVal;
         tl.append(fieldVal);
         r = SQLFetchScroll(hStmt,
@@ -1476,23 +1438,7 @@ QSqlIndex QDB2Driver::primaryIndex(const QString& tablename) const
         return index;
     }
     QString catalog, schema, table;
-    qSplitTableQualifier(tablename, &catalog, &schema, &table);
-
-    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
-        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
-    else
-        catalog = catalog.toUpper();
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = schema.toUpper();
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = table.toUpper();
-
+    qSplitTableQualifier(tablename.toUpper(), &catalog, &schema, &table);
     r = SQLSetStmtAttr(hStmt,
                         SQL_ATTR_CURSOR_TYPE,
                         (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,

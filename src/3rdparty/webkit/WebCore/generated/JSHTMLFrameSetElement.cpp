@@ -73,7 +73,7 @@ public:
     JSHTMLFrameSetElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLFrameSetElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFrameSetElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFrameSetElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -108,9 +108,9 @@ static const HashTable JSHTMLFrameSetElementPrototypeTable =
 
 const ClassInfo JSHTMLFrameSetElementPrototype::s_info = { "HTMLFrameSetElementPrototype", 0, &JSHTMLFrameSetElementPrototypeTable, 0 };
 
-JSObject* JSHTMLFrameSetElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLFrameSetElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLFrameSetElement>(exec);
+    return getDOMPrototype<JSHTMLFrameSetElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLFrameSetElement::s_info = { "HTMLFrameSetElement", &JSHTMLElement::s_info, &JSHTMLFrameSetElementTable, 0 };
@@ -120,9 +120,9 @@ JSHTMLFrameSetElement::JSHTMLFrameSetElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLFrameSetElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLFrameSetElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLFrameSetElementPrototype(JSHTMLFrameSetElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLFrameSetElementPrototype(JSHTMLFrameSetElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLFrameSetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -114,7 +114,7 @@ public:
     JSNodeConstructor(ExecState* exec)
         : DOMObject(JSNodeConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSNodePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSNodePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -182,9 +182,9 @@ static const HashTable JSNodePrototypeTable =
 
 const ClassInfo JSNodePrototype::s_info = { "NodePrototype", 0, &JSNodePrototypeTable, 0 };
 
-JSObject* JSNodePrototype::self(ExecState* exec)
+JSObject* JSNodePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNode>(exec);
+    return getDOMPrototype<JSNode>(exec, globalObject);
 }
 
 bool JSNodePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -206,9 +206,9 @@ JSNode::~JSNode()
 
 }
 
-JSObject* JSNode::createPrototype(ExecState* exec)
+JSObject* JSNode::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNodePrototype(JSNodePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNodePrototype(JSNodePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSValuePtr jsNodeNodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)

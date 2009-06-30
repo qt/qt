@@ -69,7 +69,7 @@ public:
     JSHTMLDirectoryElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLDirectoryElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDirectoryElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDirectoryElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -104,9 +104,9 @@ static const HashTable JSHTMLDirectoryElementPrototypeTable =
 
 const ClassInfo JSHTMLDirectoryElementPrototype::s_info = { "HTMLDirectoryElementPrototype", 0, &JSHTMLDirectoryElementPrototypeTable, 0 };
 
-JSObject* JSHTMLDirectoryElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLDirectoryElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLDirectoryElement>(exec);
+    return getDOMPrototype<JSHTMLDirectoryElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLDirectoryElement::s_info = { "HTMLDirectoryElement", &JSHTMLElement::s_info, &JSHTMLDirectoryElementTable, 0 };
@@ -116,9 +116,9 @@ JSHTMLDirectoryElement::JSHTMLDirectoryElement(PassRefPtr<Structure> structure, 
 {
 }
 
-JSObject* JSHTMLDirectoryElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLDirectoryElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLDirectoryElementPrototype(JSHTMLDirectoryElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLDirectoryElementPrototype(JSHTMLDirectoryElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLDirectoryElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

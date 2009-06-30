@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -293,8 +293,6 @@ QTDSResult::QTDSResult(const QTDSDriver* db)
 
     // insert d in error handler dict
     errs()->insert(d->dbproc, d);
-    dbcmd(d->dbproc, "set quoted_identifier on");
-    dbsqlexec(d->dbproc);
 }
 
 QTDSResult::~QTDSResult()
@@ -369,7 +367,7 @@ bool QTDSResult::gotoNext(QSqlCachedResult::ValueCache &values, int index)
                 if (qIsNull(d->buffer.at(i * 2 + 1)))
                     values[idx] = QVariant(QVariant::String);
                 else
-                    values[idx] = QString::fromLocal8Bit((const char*)d->buffer.at(i * 2)).trimmed();
+                    values[idx] = QString::fromLocal8Bit((const char*)d->buffer.at(i * 2));
                 break;
             case QVariant::ByteArray: {
                 if (qIsNull(d->buffer.at(i * 2 + 1)))
@@ -700,14 +698,9 @@ QSqlRecord QTDSDriver::record(const QString& tablename) const
         return info;
     QSqlQuery t(createResult());
     t.setForwardOnly(true);
-
-    QString table = tablename;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-
     QString stmt (QLatin1String("select name, type, length, prec from syscolumns "
                    "where id = (select id from sysobjects where name = '%1')"));
-    t.exec(stmt.arg(table));
+    t.exec(stmt.arg(tablename));
     while (t.next()) {
         QSqlField f(t.value(0).toString().simplified(), qDecodeTDSType(t.value(1).toInt()));
         f.setLength(t.value(2).toInt());
@@ -777,17 +770,13 @@ QSqlIndex QTDSDriver::primaryIndex(const QString& tablename) const
 {
     QSqlRecord rec = record(tablename);
 
-    QString table = tablename;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-
-    QSqlIndex idx(table);
-    if ((!isOpen()) || (table.isEmpty()))
+    QSqlIndex idx(tablename);
+    if ((!isOpen()) || (tablename.isEmpty()))
         return QSqlIndex();
 
     QSqlQuery t(createResult());
     t.setForwardOnly(true);
-    t.exec(QString::fromLatin1("sp_helpindex '%1'").arg(table));
+    t.exec(QString::fromLatin1("sp_helpindex '%1'").arg(tablename));
     if (t.next()) {
         QStringList fNames = t.value(2).toString().simplified().split(QLatin1Char(','));
         QRegExp regx(QLatin1String("\\s*(\\S+)(?:\\s+(DESC|desc))?\\s*"));

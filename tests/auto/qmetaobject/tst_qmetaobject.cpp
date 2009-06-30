@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -605,6 +605,19 @@ void tst_QMetaObject::invokeCustomTypes()
     QCOMPARE(obj.sum, 3);
 }
 
+namespace NamespaceWithConstructibleClass
+{
+
+class ConstructibleClass : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE ConstructibleClass(QObject *parent = 0)
+        : QObject(parent) {}
+};
+
+}
+
 void tst_QMetaObject::invokeMetaConstructor()
 {
     const QMetaObject *mo = &QtTestObject::staticMetaObject;
@@ -618,6 +631,15 @@ void tst_QMetaObject::invokeMetaConstructor()
         QVERIFY(obj2 != 0);
         QCOMPARE(obj2->parent(), (QObject*)&obj);
         QVERIFY(qobject_cast<QtTestObject*>(obj2) != 0);
+    }
+    // class in namespace
+    const QMetaObject *nsmo = &NamespaceWithConstructibleClass::ConstructibleClass::staticMetaObject;
+    {
+        QtTestObject obj;
+        QObject *obj2 = nsmo->newInstance(Q_ARG(QObject*, &obj));
+        QVERIFY(obj2 != 0);
+        QCOMPARE(obj2->parent(), (QObject*)&obj);
+        QVERIFY(qobject_cast<NamespaceWithConstructibleClass::ConstructibleClass*>(obj2) != 0);
     }
 }
 

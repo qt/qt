@@ -72,7 +72,7 @@ public:
     JSCSSFontFaceRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSFontFaceRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSFontFaceRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSFontFaceRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,9 +107,9 @@ static const HashTable JSCSSFontFaceRulePrototypeTable =
 
 const ClassInfo JSCSSFontFaceRulePrototype::s_info = { "CSSFontFaceRulePrototype", 0, &JSCSSFontFaceRulePrototypeTable, 0 };
 
-JSObject* JSCSSFontFaceRulePrototype::self(ExecState* exec)
+JSObject* JSCSSFontFaceRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSFontFaceRule>(exec);
+    return getDOMPrototype<JSCSSFontFaceRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSFontFaceRule::s_info = { "CSSFontFaceRule", &JSCSSRule::s_info, &JSCSSFontFaceRuleTable, 0 };
@@ -119,9 +119,9 @@ JSCSSFontFaceRule::JSCSSFontFaceRule(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSCSSFontFaceRule::createPrototype(ExecState* exec)
+JSObject* JSCSSFontFaceRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSFontFaceRulePrototype(JSCSSFontFaceRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSFontFaceRulePrototype(JSCSSFontFaceRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSFontFaceRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

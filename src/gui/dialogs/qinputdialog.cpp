@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1129,8 +1129,8 @@ void QInputDialog::done(int result)
     is \a parent. The dialog will be modal and uses the specified widget
     \a flags.
 
-    This function returns the text which has been entered in the line
-    edit. It will not return an empty string.
+    If the dialog is accepted, this function returns the text in the dialog's
+    line edit. If the dialog is rejected, a null QString is returned.
 
     Use this static function like this:
 
@@ -1159,7 +1159,7 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     if (ret) {
         return dialog.textValue();
     } else {
-        return text;
+        return QString();
     }
 }
 
@@ -1250,9 +1250,9 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     QInputDialog dialog(parent, flags);
     dialog.setWindowTitle(title);
     dialog.setLabelText(label);
+    dialog.setDoubleDecimals(decimals);
     dialog.setDoubleRange(min, max);
     dialog.setDoubleValue(value);
-    dialog.setDoubleDecimals(decimals);
 
     int ret = dialog.exec();
     if (ok)

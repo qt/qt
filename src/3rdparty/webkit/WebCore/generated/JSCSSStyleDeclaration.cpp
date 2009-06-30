@@ -80,7 +80,7 @@ public:
     JSCSSStyleDeclarationConstructor(ExecState* exec)
         : DOMObject(JSCSSStyleDeclarationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSStyleDeclarationPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSStyleDeclarationPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -123,9 +123,9 @@ static const HashTable JSCSSStyleDeclarationPrototypeTable =
 
 const ClassInfo JSCSSStyleDeclarationPrototype::s_info = { "CSSStyleDeclarationPrototype", 0, &JSCSSStyleDeclarationPrototypeTable, 0 };
 
-JSObject* JSCSSStyleDeclarationPrototype::self(ExecState* exec)
+JSObject* JSCSSStyleDeclarationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSStyleDeclaration>(exec);
+    return getDOMPrototype<JSCSSStyleDeclaration>(exec, globalObject);
 }
 
 bool JSCSSStyleDeclarationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -147,9 +147,9 @@ JSCSSStyleDeclaration::~JSCSSStyleDeclaration()
 
 }
 
-JSObject* JSCSSStyleDeclaration::createPrototype(ExecState* exec)
+JSObject* JSCSSStyleDeclaration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSStyleDeclarationPrototype(JSCSSStyleDeclarationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCSSStyleDeclarationPrototype(JSCSSStyleDeclarationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCSSStyleDeclaration::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

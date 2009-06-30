@@ -85,9 +85,9 @@ static const HashTable JSNavigatorPrototypeTable =
 
 const ClassInfo JSNavigatorPrototype::s_info = { "NavigatorPrototype", 0, &JSNavigatorPrototypeTable, 0 };
 
-JSObject* JSNavigatorPrototype::self(ExecState* exec)
+JSObject* JSNavigatorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNavigator>(exec);
+    return getDOMPrototype<JSNavigator>(exec, globalObject);
 }
 
 bool JSNavigatorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -109,9 +109,9 @@ JSNavigator::~JSNavigator()
 
 }
 
-JSObject* JSNavigator::createPrototype(ExecState* exec)
+JSObject* JSNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNavigatorPrototype(JSNavigatorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNavigatorPrototype(JSNavigatorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

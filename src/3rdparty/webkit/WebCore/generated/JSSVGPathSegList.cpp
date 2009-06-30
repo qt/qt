@@ -78,9 +78,9 @@ static const HashTable JSSVGPathSegListPrototypeTable =
 
 const ClassInfo JSSVGPathSegListPrototype::s_info = { "SVGPathSegListPrototype", 0, &JSSVGPathSegListPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegListPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegList>(exec);
+    return getDOMPrototype<JSSVGPathSegList>(exec, globalObject);
 }
 
 bool JSSVGPathSegListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -103,9 +103,9 @@ JSSVGPathSegList::~JSSVGPathSegList()
 
 }
 
-JSObject* JSSVGPathSegList::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegListPrototype(JSSVGPathSegListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGPathSegListPrototype(JSSVGPathSegListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGPathSegList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -76,7 +76,7 @@ public:
     JSHTMLStyleElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLStyleElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLStyleElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLStyleElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSHTMLStyleElementPrototypeTable =
 
 const ClassInfo JSHTMLStyleElementPrototype::s_info = { "HTMLStyleElementPrototype", 0, &JSHTMLStyleElementPrototypeTable, 0 };
 
-JSObject* JSHTMLStyleElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLStyleElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLStyleElement>(exec);
+    return getDOMPrototype<JSHTMLStyleElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLStyleElement::s_info = { "HTMLStyleElement", &JSHTMLElement::s_info, &JSHTMLStyleElementTable, 0 };
@@ -123,9 +123,9 @@ JSHTMLStyleElement::JSHTMLStyleElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLStyleElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLStyleElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLStyleElementPrototype(JSHTMLStyleElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLStyleElementPrototype(JSHTMLStyleElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLStyleElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

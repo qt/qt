@@ -85,7 +85,7 @@ public:
     JSNodeFilterConstructor(ExecState* exec)
         : DOMObject(JSNodeFilterConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSNodeFilterPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSNodeFilterPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -137,9 +137,9 @@ static const HashTable JSNodeFilterPrototypeTable =
 
 const ClassInfo JSNodeFilterPrototype::s_info = { "NodeFilterPrototype", 0, &JSNodeFilterPrototypeTable, 0 };
 
-JSObject* JSNodeFilterPrototype::self(ExecState* exec)
+JSObject* JSNodeFilterPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNodeFilter>(exec);
+    return getDOMPrototype<JSNodeFilter>(exec, globalObject);
 }
 
 bool JSNodeFilterPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -161,9 +161,9 @@ JSNodeFilter::~JSNodeFilter()
 
 }
 
-JSObject* JSNodeFilter::createPrototype(ExecState* exec)
+JSObject* JSNodeFilter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNodeFilterPrototype(JSNodeFilterPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNodeFilterPrototype(JSNodeFilterPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSNodeFilter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

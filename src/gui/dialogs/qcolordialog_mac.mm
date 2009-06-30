@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,11 +54,19 @@
 typedef float CGFloat;  // Should only not be defined on 32-bit platforms
 #endif
 
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+@protocol NSWindowDelegate <NSObject>
+- (void)windowDidResize:(NSNotification *)notification;
+- (BOOL)windowShouldClose:(id)window;
+@end
+#endif
+
 QT_USE_NAMESPACE
 
 @class QCocoaColorPanelDelegate;
 
-@interface QCocoaColorPanelDelegate : NSObject {
+@interface QCocoaColorPanelDelegate : NSObject<NSWindowDelegate> {
     NSColorPanel *mColorPanel;
     NSView *mStolenContentView;
     NSButton *mOkButton;
@@ -74,8 +82,6 @@ QT_USE_NAMESPACE
                 okButton:(NSButton *)okButton
             cancelButton:(NSButton *)cancelButton
                     priv:(QColorDialogPrivate *)priv;
-- (BOOL)windowShouldClose:(id)window;
-- (void)windowDidResize:(NSNotification *)notification;
 - (void)colorChanged:(NSNotification *)notification;
 - (void)relayout;
 - (void)onOkClicked;

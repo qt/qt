@@ -72,9 +72,9 @@ static const HashTable JSSVGLinearGradientElementPrototypeTable =
 
 const ClassInfo JSSVGLinearGradientElementPrototype::s_info = { "SVGLinearGradientElementPrototype", 0, &JSSVGLinearGradientElementPrototypeTable, 0 };
 
-JSObject* JSSVGLinearGradientElementPrototype::self(ExecState* exec)
+JSObject* JSSVGLinearGradientElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGLinearGradientElement>(exec);
+    return getDOMPrototype<JSSVGLinearGradientElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGLinearGradientElement::s_info = { "SVGLinearGradientElement", &JSSVGGradientElement::s_info, &JSSVGLinearGradientElementTable, 0 };
@@ -84,9 +84,9 @@ JSSVGLinearGradientElement::JSSVGLinearGradientElement(PassRefPtr<Structure> str
 {
 }
 
-JSObject* JSSVGLinearGradientElement::createPrototype(ExecState* exec)
+JSObject* JSSVGLinearGradientElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGLinearGradientElementPrototype(JSSVGLinearGradientElementPrototype::createStructure(JSSVGGradientElementPrototype::self(exec)));
+    return new (exec) JSSVGLinearGradientElementPrototype(JSSVGLinearGradientElementPrototype::createStructure(JSSVGGradientElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGLinearGradientElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

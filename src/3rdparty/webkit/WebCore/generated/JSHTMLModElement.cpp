@@ -72,7 +72,7 @@ public:
     JSHTMLModElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLModElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLModElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLModElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,9 +107,9 @@ static const HashTable JSHTMLModElementPrototypeTable =
 
 const ClassInfo JSHTMLModElementPrototype::s_info = { "HTMLModElementPrototype", 0, &JSHTMLModElementPrototypeTable, 0 };
 
-JSObject* JSHTMLModElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLModElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLModElement>(exec);
+    return getDOMPrototype<JSHTMLModElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLModElement::s_info = { "HTMLModElement", &JSHTMLElement::s_info, &JSHTMLModElementTable, 0 };
@@ -119,9 +119,9 @@ JSHTMLModElement::JSHTMLModElement(PassRefPtr<Structure> structure, PassRefPtr<H
 {
 }
 
-JSObject* JSHTMLModElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLModElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLModElementPrototype(JSHTMLModElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLModElementPrototype(JSHTMLModElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLModElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

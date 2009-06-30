@@ -72,7 +72,7 @@ public:
     JSXMLSerializerConstructor(ExecState* exec)
         : DOMObject(JSXMLSerializerConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXMLSerializerPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXMLSerializerPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,9 +117,9 @@ static const HashTable JSXMLSerializerPrototypeTable =
 
 const ClassInfo JSXMLSerializerPrototype::s_info = { "XMLSerializerPrototype", 0, &JSXMLSerializerPrototypeTable, 0 };
 
-JSObject* JSXMLSerializerPrototype::self(ExecState* exec)
+JSObject* JSXMLSerializerPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXMLSerializer>(exec);
+    return getDOMPrototype<JSXMLSerializer>(exec, globalObject);
 }
 
 bool JSXMLSerializerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,9 +141,9 @@ JSXMLSerializer::~JSXMLSerializer()
 
 }
 
-JSObject* JSXMLSerializer::createPrototype(ExecState* exec)
+JSObject* JSXMLSerializer::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXMLSerializerPrototype(JSXMLSerializerPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXMLSerializerPrototype(JSXMLSerializerPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXMLSerializer::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -170,6 +170,7 @@ private slots:
     void boundingRects2();
     void sceneBoundingRect();
     void childrenBoundingRect();
+    void childrenBoundingRect2();
     void group();
     void setGroup();
     void nestedGroups();
@@ -207,6 +208,7 @@ private slots:
     void opacity_data();
     void opacity();
     void opacity2();
+    void opacityZeroUpdates();
     void itemStacksBehindParent();
     void nestedClipping();
     void nestedClippingTransforms();
@@ -2899,6 +2901,16 @@ void tst_QGraphicsItem::childrenBoundingRect()
     QCOMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
 }
 
+void tst_QGraphicsItem::childrenBoundingRect2()
+{
+    QGraphicsItemGroup box;
+    QGraphicsLineItem l1(0, 0, 100, 0, &box);
+    QGraphicsLineItem l2(100, 0, 100, 100, &box);
+    QGraphicsLineItem l3(0, 0, 0, 100, &box);
+    // Make sure lines (zero with/height) are included in the childrenBoundingRect.
+    QCOMPARE(box.childrenBoundingRect(), QRectF(0, 0, 100, 100));
+}
+
 void tst_QGraphicsItem::group()
 {
     QGraphicsScene scene;
@@ -5498,7 +5510,7 @@ void tst_QGraphicsItem::itemTransform_unrelated()
     QCOMPARE(stranger1->itemTransform(stranger2).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(stranger2->itemTransform(stranger1).map(QPointF(10, 10)), QPointF(10, 10));
 }
-        
+
 void tst_QGraphicsItem::opacity_data()
 {
     QTest::addColumn<qreal>("p_opacity");
@@ -5691,6 +5703,54 @@ void tst_QGraphicsItem::opacity2()
     QCOMPARE(parent->repaints, 0);
     QCOMPARE(child->repaints, 0);
     QCOMPARE(grandChild->repaints, 0);
+}
+
+void tst_QGraphicsItem::opacityZeroUpdates()
+{
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+
+    child->setPos(10, 10);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        QRegion paintedRegion;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e)
+        {
+            ++repaints;
+            paintedRegion += e->region();
+            QGraphicsView::paintEvent(e);
+        }
+        void reset() { repaints = 0; paintedRegion = QRegion(); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+    view.reset();
+    parent->setOpacity(0.0);
+
+    QTest::qWait(200);
+
+    // transforming items bounding rect to view coordinates
+    const QRect childDeviceBoundingRect = child->deviceTransform(view.viewportTransform())
+                                           .mapRect(child->boundingRect()).toRect();
+    const QRect parentDeviceBoundingRect = parent->deviceTransform(view.viewportTransform())
+                                           .mapRect(parent->boundingRect()).toRect();
+
+    QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+    expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::itemStacksBehindParent()

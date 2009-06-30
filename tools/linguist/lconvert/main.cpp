@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,6 +85,9 @@ static int usage(const QStringList &args)
         "    -of <outformat>\n"
         "    --output-format <outformat>\n"
         "           Specify output format. See -if.\n\n"
+        "    --input-codec <codec>\n"
+        "           Specify encoding for .qm input files. Default is 'Latin1'.\n"
+        "           UTF-8 is always tried as well, corresponding to the trUtf8() function.\n\n"
         "    --drop-tags <regexp>\n"
         "           Drop named extra tags when writing 'ts' or 'xlf' files.\n"
         "           May be specified repeatedly.\n\n"
@@ -136,6 +139,7 @@ int main(int argc, char *argv[])
     bool verbose = false;
 
     ConversionData cd;
+    cd.m_codecForSource = "Latin1";
     Translator tr;
 
     for (int i = 1; i < args.size(); ++i) {
@@ -164,6 +168,10 @@ int main(int argc, char *argv[])
             if (++i >= args.size())
                 return usage(args);
             inFormat = args[i];
+        } else if (args[i] == QLatin1String("-input-codec")) {
+            if (++i >= args.size())
+                return usage(args);
+            cd.m_codecForSource = args[i].toLatin1();
         } else if (args[i] == QLatin1String("-drop-tag")) {
             if (++i >= args.size())
                 return usage(args);

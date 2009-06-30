@@ -37,7 +37,7 @@ class JSSVGNumberList : public DOMObject {
 public:
     JSSVGNumberList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGNumberList>, SVGElement* context);
     virtual ~JSSVGNumberList();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -60,7 +60,7 @@ SVGNumberList* toSVGNumberList(JSC::JSValuePtr);
 
 class JSSVGNumberListPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

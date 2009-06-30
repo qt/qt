@@ -1,7 +1,7 @@
 /*******    *********************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -686,11 +686,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
 
         QPixmap pixmap;
-        QPixmapCache::find(pmKey, pixmap);
         QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
 
         // Only draw through style once
-        if (pixmap.isNull()) {
+        if (!QPixmapCache::find(pmKey, pixmap)) {
             pixmap = QPixmap(pmSize, pmSize);
             pixmap.fill(Qt::transparent);
             QPainter pmPainter(&pixmap);
@@ -789,24 +788,21 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     case PE_IndicatorBranch:
         if (option->state & State_Children) {
             QRect rect = option->rect;
-            rect = QRect(0, 0, 10, 10);
+            rect = QRect(0, 0, 12, 12);
             rect.moveCenter(option->rect.center());
             rect.translate(2, 0);
             GtkExpanderStyle openState = GTK_EXPANDER_EXPANDED;
             GtkExpanderStyle closedState = GTK_EXPANDER_COLLAPSED;
-            GtkWidget *gtkExpander = QGtk::gtkWidget(QLS("GtkExpander"));
-            guint expanderSize;
-            QGtk::gtk_widget_style_get(gtkExpander, "expander-size", &expanderSize, NULL);
-            // Note CleanIce will crash unless a GtkExpander is provided
-            // but providing the expander will enforce the expander-size, which we
-            // don't neccessarily have room for
+            GtkWidget *gtkTreeView = QGtk::gtkWidget(QLS("GtkTreeView"));
+
             GtkStateType state = GTK_STATE_NORMAL;
             if (!(option->state & State_Enabled))
                 state = GTK_STATE_INSENSITIVE;
             else if (option->state & State_MouseOver)
                 state = GTK_STATE_PRELIGHT;
-            gtkPainter.paintExpander(expanderSize <= 10 ? gtkExpander : NULL, "expander", rect, state,
-                                     option->state & State_Open ? openState : closedState , gtkExpander->style);
+
+            gtkPainter.paintExpander(gtkTreeView, "treeview", rect, state,
+                                     option->state & State_Open ? openState : closedState , gtkTreeView->style);
         }
         break;
     case PE_PanelItemViewItem:

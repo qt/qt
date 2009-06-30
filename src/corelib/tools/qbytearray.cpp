@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -538,9 +538,13 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     QByteArray baunzip;
     int res;
     do {
-        baunzip.resize(len);
-        res = ::uncompress((uchar*)baunzip.data(), &len,
-                            (uchar*)data+4, nbytes-4);
+        QT_TRY {
+            baunzip.resize(len);
+            res = ::uncompress((uchar*)baunzip.data(), &len,
+                                (uchar*)data+4, nbytes-4);
+        } QT_CATCH (const std::bad_alloc &) {
+            res = Z_MEM_ERROR;
+        }
 
         switch (res) {
         case Z_OK:

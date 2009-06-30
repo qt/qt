@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@ GLShader::GLShader(const char *data, int size, GLenum shaderType)
     m_shader = glCreateShaderObjectARB(shaderType);
 
     GLint glSize = size;
-    glShaderSourceARB(m_shader, 1, &data, &glSize);
+    glShaderSourceARB(m_shader, 1, reinterpret_cast<const GLcharARB**>(&data), &glSize);
     glCompileShaderARB(m_shader);
     int status;
     glGetObjectParameterivARB(m_shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
@@ -79,7 +79,7 @@ GLShader::GLShader(const QString& fileName, GLenum shaderType)
         GLint size = file.size();
         const char *p = bytes.data();
         file.close();
-        glShaderSourceARB(m_shader, 1, &p, &size);
+        glShaderSourceARB(m_shader, 1,  reinterpret_cast<const GLcharARB**>(&p), &size);
         glCompileShaderARB(m_shader);
         int status;
         glGetObjectParameterivARB(m_shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
@@ -105,7 +105,7 @@ QString GLShader::log()
     glGetObjectParameterivARB(m_shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
     char *log = new char[length + 1];
     GLsizei glLength = length;
-    glGetInfoLogARB(m_shader, glLength, &glLength, log);
+    glGetInfoLogARB(m_shader, glLength, &glLength,  reinterpret_cast<GLcharARB*>(log));
     log[glLength] = '\0';
     QString result(log);
     delete log;
@@ -184,7 +184,7 @@ QString GLProgram::log()
     glGetObjectParameterivARB(m_program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
     char *log = new char[length + 1];
     GLsizei glLength = length;
-    glGetInfoLogARB(m_program, glLength, &glLength, log);
+    glGetInfoLogARB(m_program, glLength, &glLength,  reinterpret_cast<GLcharARB*>(log));
     log[glLength] = '\0';
     QString result(log);
     delete log;
@@ -212,7 +212,7 @@ bool GLProgram::hasParameter(const QString& name)
 
     if (!failed()) {
         QByteArray asciiName = name.toAscii();
-        return -1 != glGetUniformLocationARB(m_program, asciiName.data());
+        return -1 != glGetUniformLocationARB(m_program, reinterpret_cast<const GLcharARB*>(asciiName.data()));
     }
     return false;
 }
@@ -223,7 +223,7 @@ void GLProgram::setInt(const QString& name, int value)
 
     if (!failed()) {
         QByteArray asciiName = name.toAscii();
-        int loc = glGetUniformLocationARB(m_program, asciiName.data());
+        int loc = glGetUniformLocationARB(m_program,  reinterpret_cast<const GLcharARB*>(asciiName.data()));
 	    glUniform1iARB(loc, value);
     }
 }
@@ -234,7 +234,7 @@ void GLProgram::setFloat(const QString& name, float value)
 
     if (!failed()) {
         QByteArray asciiName = name.toAscii();
-        int loc = glGetUniformLocationARB(m_program, asciiName.data());
+        int loc = glGetUniformLocationARB(m_program, reinterpret_cast<const GLcharARB*>(asciiName.data()));
 	    glUniform1fARB(loc, value);
     }
 }
@@ -246,7 +246,7 @@ void GLProgram::setColor(const QString& name, QRgb value)
     //qDebug() << "Setting color" << name;
     if (!failed()) {
         QByteArray asciiName = name.toAscii();
-        int loc = glGetUniformLocationARB(m_program, asciiName.data());
+        int loc = glGetUniformLocationARB(m_program, reinterpret_cast<const GLcharARB*>(asciiName.data()));
         //qDebug() << "Location of" << name << "is" << loc;
         QColor color(value);
 	    glUniform4fARB(loc, color.redF(), color.greenF(), color.blueF(), color.alphaF());
@@ -259,7 +259,7 @@ void GLProgram::setMatrix(const QString& name, const gfx::Matrix4x4f &mat)
 
     if (!failed()) {
         QByteArray asciiName = name.toAscii();
-        int loc = glGetUniformLocationARB(m_program, asciiName.data());
+        int loc = glGetUniformLocationARB(m_program,  reinterpret_cast<const GLcharARB*>(asciiName.data()));
         //qDebug() << "Location of" << name << "is" << loc;
 	    glUniformMatrix4fvARB(loc, 1, GL_FALSE, mat.bits());
     }

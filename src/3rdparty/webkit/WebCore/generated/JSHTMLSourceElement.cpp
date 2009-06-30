@@ -76,7 +76,7 @@ public:
     JSHTMLSourceElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLSourceElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLSourceElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLSourceElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSHTMLSourceElementPrototypeTable =
 
 const ClassInfo JSHTMLSourceElementPrototype::s_info = { "HTMLSourceElementPrototype", 0, &JSHTMLSourceElementPrototypeTable, 0 };
 
-JSObject* JSHTMLSourceElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLSourceElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLSourceElement>(exec);
+    return getDOMPrototype<JSHTMLSourceElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLSourceElement::s_info = { "HTMLSourceElement", &JSHTMLElement::s_info, &JSHTMLSourceElementTable, 0 };
@@ -123,9 +123,9 @@ JSHTMLSourceElement::JSHTMLSourceElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLSourceElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLSourceElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLSourceElementPrototype(JSHTMLSourceElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLSourceElementPrototype(JSHTMLSourceElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLSourceElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

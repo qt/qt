@@ -4,7 +4,7 @@
 # Synchronizes Qt header files - internal Trolltech tool.
 #
 # Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-# Contact: Qt Software Information (qt-info@nokia.com)
+# Contact: Nokia Corporation (qt-info@nokia.com)
 #
 ######################################################################
 
@@ -308,8 +308,6 @@ sub syncHeader {
     $header =~ s=\\=/=g;
     return copyFile($iheader, $header) if($copy);
 
-    my $iheader_no_basedir = $iheader;
-    $iheader_no_basedir =~ s,^$basedir/?,,;
     unless(-e "$header") {
         my $header_dir = dirname($header);
         mkpath $header_dir, 0777;
@@ -798,10 +796,9 @@ foreach (@modules_to_sync) {
 				my $class = $_;
 				if ($class =~ m/::/) {
 				    $class =~ s,::,/,g;
-				    $class = "../" . $class;
 				}
 				$class_lib_map_contents .= "QT_CLASS_LIB($_, $lib, $header_base)\n";
-				$header_copies++ if(syncHeader("$out_basedir/include/$lib/$class", $header, 0));
+				$header_copies++ if(syncHeader("$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0));
 			    }
 			} else {
 			    @headers = ( "$out_basedir/include/$lib/private/$header" );
@@ -823,7 +820,6 @@ foreach (@modules_to_sync) {
 				    my $class = $_;
 				    if ($class =~ m/::/) {
 					$class =~ s,::,/,g;
-					$class = "../" . $class;
 				    }
 				    my $class_header = fixPaths("$out_basedir/include/$lib/$class",
 								$current_dir) . " ";
@@ -844,25 +840,27 @@ foreach (@modules_to_sync) {
     $master_contents .= "#endif\n";
 
     unless($showonly) {
-        #generate the "master" include file
-        my $master_include = "$out_basedir/include/$lib/$lib";
-	$pri_install_files .= fixPaths($master_include, "$modules{$lib}") . " "; #get the master file installed too
-        if(-e "$master_include") {
-            open MASTERINCLUDE, "<$master_include";
-            local $/;
-            binmode MASTERINCLUDE;
-            my $oldmaster = <MASTERINCLUDE>;
-            close MASTERINCLUDE;
-            $oldmaster =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-            $master_include = 0 if($oldmaster eq $master_contents);
-        }
-        if($master_include && $master_contents) {
-            my $master_dir = dirname($master_include);
-            mkpath $master_dir, 0777;
-            print "header (master) created for $lib\n";
-            open MASTERINCLUDE, ">$master_include";
-            print MASTERINCLUDE "$master_contents";
-            close MASTERINCLUDE;
+        unless ($lib eq "phonon") {
+            #generate the "master" include file
+            my $master_include = "$out_basedir/include/$lib/$lib";
+            $pri_install_files .= fixPaths($master_include, "$modules{$lib}") . " "; #get the master file installed too
+            if($master_include && -e "$master_include") {
+                open MASTERINCLUDE, "<$master_include";
+                local $/;
+                binmode MASTERINCLUDE;
+                my $oldmaster = <MASTERINCLUDE>;
+                close MASTERINCLUDE;
+                $oldmaster =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
+                $master_include = 0 if($oldmaster eq $master_contents);
+            }
+            if($master_include && $master_contents) {
+                my $master_dir = dirname($master_include);
+                mkpath $master_dir, 0777;
+                print "header (master) created for $lib\n";
+                open MASTERINCLUDE, ">$master_include";
+                print MASTERINCLUDE "$master_contents";
+                close MASTERINCLUDE;
+            }
         }
 
         #handle the headers.pri for each module

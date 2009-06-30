@@ -70,9 +70,9 @@ static const HashTable JSSVGFEDistantLightElementPrototypeTable =
 
 const ClassInfo JSSVGFEDistantLightElementPrototype::s_info = { "SVGFEDistantLightElementPrototype", 0, &JSSVGFEDistantLightElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEDistantLightElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEDistantLightElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEDistantLightElement>(exec);
+    return getDOMPrototype<JSSVGFEDistantLightElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEDistantLightElement::s_info = { "SVGFEDistantLightElement", &JSSVGElement::s_info, &JSSVGFEDistantLightElementTable, 0 };
@@ -82,9 +82,9 @@ JSSVGFEDistantLightElement::JSSVGFEDistantLightElement(PassRefPtr<Structure> str
 {
 }
 
-JSObject* JSSVGFEDistantLightElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEDistantLightElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEDistantLightElementPrototype(JSSVGFEDistantLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEDistantLightElementPrototype(JSSVGFEDistantLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEDistantLightElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

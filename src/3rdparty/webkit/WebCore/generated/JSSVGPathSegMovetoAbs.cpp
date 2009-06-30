@@ -70,9 +70,9 @@ static const HashTable JSSVGPathSegMovetoAbsPrototypeTable =
 
 const ClassInfo JSSVGPathSegMovetoAbsPrototype::s_info = { "SVGPathSegMovetoAbsPrototype", 0, &JSSVGPathSegMovetoAbsPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegMovetoAbsPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegMovetoAbsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegMovetoAbs>(exec);
+    return getDOMPrototype<JSSVGPathSegMovetoAbs>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegMovetoAbs::s_info = { "SVGPathSegMovetoAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoAbsTable, 0 };
@@ -82,9 +82,9 @@ JSSVGPathSegMovetoAbs::JSSVGPathSegMovetoAbs(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGPathSegMovetoAbs::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegMovetoAbs::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegMovetoAbsPrototype(JSSVGPathSegMovetoAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegMovetoAbsPrototype(JSSVGPathSegMovetoAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegMovetoAbs::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

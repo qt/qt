@@ -84,9 +84,9 @@ static const HashTable JSSVGFEComponentTransferElementPrototypeTable =
 
 const ClassInfo JSSVGFEComponentTransferElementPrototype::s_info = { "SVGFEComponentTransferElementPrototype", 0, &JSSVGFEComponentTransferElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEComponentTransferElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEComponentTransferElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEComponentTransferElement>(exec);
+    return getDOMPrototype<JSSVGFEComponentTransferElement>(exec, globalObject);
 }
 
 bool JSSVGFEComponentTransferElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -101,9 +101,9 @@ JSSVGFEComponentTransferElement::JSSVGFEComponentTransferElement(PassRefPtr<Stru
 {
 }
 
-JSObject* JSSVGFEComponentTransferElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEComponentTransferElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEComponentTransferElementPrototype(JSSVGFEComponentTransferElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEComponentTransferElementPrototype(JSSVGFEComponentTransferElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEComponentTransferElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

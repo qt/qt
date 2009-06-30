@@ -79,7 +79,7 @@ public:
     JSXPathExceptionConstructor(ExecState* exec)
         : DOMObject(JSXPathExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXPathExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXPathExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,9 +117,9 @@ static const HashTable JSXPathExceptionPrototypeTable =
 
 const ClassInfo JSXPathExceptionPrototype::s_info = { "XPathExceptionPrototype", 0, &JSXPathExceptionPrototypeTable, 0 };
 
-JSObject* JSXPathExceptionPrototype::self(ExecState* exec)
+JSObject* JSXPathExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathException>(exec);
+    return getDOMPrototype<JSXPathException>(exec, globalObject);
 }
 
 bool JSXPathExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,9 +141,9 @@ JSXPathException::~JSXPathException()
 
 }
 
-JSObject* JSXPathException::createPrototype(ExecState* exec)
+JSObject* JSXPathException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathExceptionPrototype(JSXPathExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathExceptionPrototype(JSXPathExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXPathException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

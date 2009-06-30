@@ -93,7 +93,7 @@ public:
     JSXPathResultConstructor(ExecState* exec)
         : DOMObject(JSXPathResultConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXPathResultPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXPathResultPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -140,9 +140,9 @@ static const HashTable JSXPathResultPrototypeTable =
 
 const ClassInfo JSXPathResultPrototype::s_info = { "XPathResultPrototype", 0, &JSXPathResultPrototypeTable, 0 };
 
-JSObject* JSXPathResultPrototype::self(ExecState* exec)
+JSObject* JSXPathResultPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathResult>(exec);
+    return getDOMPrototype<JSXPathResult>(exec, globalObject);
 }
 
 bool JSXPathResultPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -164,9 +164,9 @@ JSXPathResult::~JSXPathResult()
 
 }
 
-JSObject* JSXPathResult::createPrototype(ExecState* exec)
+JSObject* JSXPathResult::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathResultPrototype(JSXPathResultPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathResultPrototype(JSXPathResultPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXPathResult::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

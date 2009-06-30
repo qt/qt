@@ -31,7 +31,7 @@ class JSHTMLTableCellElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
     JSHTMLTableCellElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLTableCellElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -48,7 +48,7 @@ public:
 
 class JSHTMLTableCellElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSHTMLTableCellElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

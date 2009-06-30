@@ -31,9 +31,12 @@
 #include "CSSHelper.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "DocLoader.h"
 #include "Event.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
+#include "Frame.h"
+#include "FrameLoader.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "HTMLSourceElement.h"
@@ -271,6 +274,8 @@ float HTMLMediaElement::bufferingRate()
 void HTMLMediaElement::load(ExceptionCode& ec)
 {
     String mediaSrc;
+    Frame* frame = document()->frame();
+    FrameLoader* loader = frame ? frame->loader() : 0;
     
     // 3.14.9.4. Loading the media resource
     // 1
@@ -320,6 +325,14 @@ void HTMLMediaElement::load(ExceptionCode& ec)
     // 6
     mediaSrc = pickMedia();
     if (mediaSrc.isEmpty()) {
+        ec = INVALID_STATE_ERR;
+        goto end;
+    }
+
+    // don't allow remote to local urls
+    if (!loader || !loader->canLoad(KURL(KURL(), mediaSrc), String(), document())) {
+        FrameLoader::reportLocalLoadFailed(frame, mediaSrc);
+
         ec = INVALID_STATE_ERR;
         goto end;
     }

@@ -105,9 +105,9 @@ static const HashTable JSSVGPolylineElementPrototypeTable =
 
 const ClassInfo JSSVGPolylineElementPrototype::s_info = { "SVGPolylineElementPrototype", 0, &JSSVGPolylineElementPrototypeTable, 0 };
 
-JSObject* JSSVGPolylineElementPrototype::self(ExecState* exec)
+JSObject* JSSVGPolylineElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPolylineElement>(exec);
+    return getDOMPrototype<JSSVGPolylineElement>(exec, globalObject);
 }
 
 bool JSSVGPolylineElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -122,9 +122,9 @@ JSSVGPolylineElement::JSSVGPolylineElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGPolylineElement::createPrototype(ExecState* exec)
+JSObject* JSSVGPolylineElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPolylineElementPrototype(JSSVGPolylineElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGPolylineElementPrototype(JSSVGPolylineElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPolylineElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

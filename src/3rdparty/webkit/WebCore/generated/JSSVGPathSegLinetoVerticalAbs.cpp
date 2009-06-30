@@ -69,9 +69,9 @@ static const HashTable JSSVGPathSegLinetoVerticalAbsPrototypeTable =
 
 const ClassInfo JSSVGPathSegLinetoVerticalAbsPrototype::s_info = { "SVGPathSegLinetoVerticalAbsPrototype", 0, &JSSVGPathSegLinetoVerticalAbsPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegLinetoVerticalAbsPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegLinetoVerticalAbsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegLinetoVerticalAbs>(exec);
+    return getDOMPrototype<JSSVGPathSegLinetoVerticalAbs>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegLinetoVerticalAbs::s_info = { "SVGPathSegLinetoVerticalAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoVerticalAbsTable, 0 };
@@ -81,9 +81,9 @@ JSSVGPathSegLinetoVerticalAbs::JSSVGPathSegLinetoVerticalAbs(PassRefPtr<Structur
 {
 }
 
-JSObject* JSSVGPathSegLinetoVerticalAbs::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegLinetoVerticalAbs::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegLinetoVerticalAbsPrototype(JSSVGPathSegLinetoVerticalAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegLinetoVerticalAbsPrototype(JSSVGPathSegLinetoVerticalAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegLinetoVerticalAbs::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

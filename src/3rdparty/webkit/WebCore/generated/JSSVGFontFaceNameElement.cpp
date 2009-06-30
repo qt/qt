@@ -53,9 +53,9 @@ static const HashTable JSSVGFontFaceNameElementPrototypeTable =
 
 const ClassInfo JSSVGFontFaceNameElementPrototype::s_info = { "SVGFontFaceNameElementPrototype", 0, &JSSVGFontFaceNameElementPrototypeTable, 0 };
 
-JSObject* JSSVGFontFaceNameElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFontFaceNameElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFontFaceNameElement>(exec);
+    return getDOMPrototype<JSSVGFontFaceNameElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFontFaceNameElement::s_info = { "SVGFontFaceNameElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGFontFaceNameElement::JSSVGFontFaceNameElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGFontFaceNameElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFontFaceNameElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFontFaceNameElementPrototype(JSSVGFontFaceNameElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFontFaceNameElementPrototype(JSSVGFontFaceNameElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

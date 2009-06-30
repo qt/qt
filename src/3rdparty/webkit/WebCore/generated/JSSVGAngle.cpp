@@ -84,7 +84,7 @@ public:
     JSSVGAngleConstructor(ExecState* exec)
         : DOMObject(JSSVGAngleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGAnglePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGAnglePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -126,9 +126,9 @@ static const HashTable JSSVGAnglePrototypeTable =
 
 const ClassInfo JSSVGAnglePrototype::s_info = { "SVGAnglePrototype", 0, &JSSVGAnglePrototypeTable, 0 };
 
-JSObject* JSSVGAnglePrototype::self(ExecState* exec)
+JSObject* JSSVGAnglePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAngle>(exec);
+    return getDOMPrototype<JSSVGAngle>(exec, globalObject);
 }
 
 bool JSSVGAnglePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -151,9 +151,9 @@ JSSVGAngle::~JSSVGAngle()
 
 }
 
-JSObject* JSSVGAngle::createPrototype(ExecState* exec)
+JSObject* JSSVGAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnglePrototype(JSSVGAnglePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnglePrototype(JSSVGAnglePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAngle::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

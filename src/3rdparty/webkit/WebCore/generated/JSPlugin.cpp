@@ -79,7 +79,7 @@ public:
     JSPluginConstructor(ExecState* exec)
         : DOMObject(JSPluginConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSPluginPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSPluginPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -116,9 +116,9 @@ static const HashTable JSPluginPrototypeTable =
 
 const ClassInfo JSPluginPrototype::s_info = { "PluginPrototype", 0, &JSPluginPrototypeTable, 0 };
 
-JSObject* JSPluginPrototype::self(ExecState* exec)
+JSObject* JSPluginPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSPlugin>(exec);
+    return getDOMPrototype<JSPlugin>(exec, globalObject);
 }
 
 bool JSPluginPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -140,9 +140,9 @@ JSPlugin::~JSPlugin()
 
 }
 
-JSObject* JSPlugin::createPrototype(ExecState* exec)
+JSObject* JSPlugin::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSPluginPrototype(JSPluginPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSPluginPrototype(JSPluginPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSPlugin::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

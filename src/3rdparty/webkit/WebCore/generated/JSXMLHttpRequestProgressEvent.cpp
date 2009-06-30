@@ -70,7 +70,7 @@ public:
     JSXMLHttpRequestProgressEventConstructor(ExecState* exec)
         : DOMObject(JSXMLHttpRequestProgressEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXMLHttpRequestProgressEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXMLHttpRequestProgressEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -105,9 +105,9 @@ static const HashTable JSXMLHttpRequestProgressEventPrototypeTable =
 
 const ClassInfo JSXMLHttpRequestProgressEventPrototype::s_info = { "XMLHttpRequestProgressEventPrototype", 0, &JSXMLHttpRequestProgressEventPrototypeTable, 0 };
 
-JSObject* JSXMLHttpRequestProgressEventPrototype::self(ExecState* exec)
+JSObject* JSXMLHttpRequestProgressEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXMLHttpRequestProgressEvent>(exec);
+    return getDOMPrototype<JSXMLHttpRequestProgressEvent>(exec, globalObject);
 }
 
 const ClassInfo JSXMLHttpRequestProgressEvent::s_info = { "XMLHttpRequestProgressEvent", &JSProgressEvent::s_info, &JSXMLHttpRequestProgressEventTable, 0 };
@@ -117,9 +117,9 @@ JSXMLHttpRequestProgressEvent::JSXMLHttpRequestProgressEvent(PassRefPtr<Structur
 {
 }
 
-JSObject* JSXMLHttpRequestProgressEvent::createPrototype(ExecState* exec)
+JSObject* JSXMLHttpRequestProgressEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXMLHttpRequestProgressEventPrototype(JSXMLHttpRequestProgressEventPrototype::createStructure(JSProgressEventPrototype::self(exec)));
+    return new (exec) JSXMLHttpRequestProgressEventPrototype(JSXMLHttpRequestProgressEventPrototype::createStructure(JSProgressEventPrototype::self(exec, globalObject)));
 }
 
 bool JSXMLHttpRequestProgressEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

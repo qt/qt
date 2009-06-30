@@ -87,7 +87,7 @@ public:
     JSHTMLTextAreaElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLTextAreaElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTextAreaElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTextAreaElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -124,9 +124,9 @@ static const HashTable JSHTMLTextAreaElementPrototypeTable =
 
 const ClassInfo JSHTMLTextAreaElementPrototype::s_info = { "HTMLTextAreaElementPrototype", 0, &JSHTMLTextAreaElementPrototypeTable, 0 };
 
-JSObject* JSHTMLTextAreaElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLTextAreaElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLTextAreaElement>(exec);
+    return getDOMPrototype<JSHTMLTextAreaElement>(exec, globalObject);
 }
 
 bool JSHTMLTextAreaElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,9 +141,9 @@ JSHTMLTextAreaElement::JSHTMLTextAreaElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLTextAreaElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLTextAreaElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLTextAreaElementPrototype(JSHTMLTextAreaElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLTextAreaElementPrototype(JSHTMLTextAreaElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLTextAreaElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

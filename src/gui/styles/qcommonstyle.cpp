@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -848,7 +848,7 @@ void QCommonStylePrivate::lookupIconTheme() const
         dataDirs = QLatin1String("/usr/local/share/:/usr/share/");
     dataDirs += QLatin1Char(':') + QApplicationPrivate::kdeHome() + QLatin1String("/share");
     dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
-    QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'));
+    QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'), QString::SkipEmptyParts);
     foreach (const QString &dirName, kdeDirs)
         dataDirs.append(QLatin1String(":") + dirName + QLatin1String("/share"));
     iconDirs = dataDirs.split(QLatin1Char(':'));

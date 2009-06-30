@@ -108,7 +108,7 @@ public:
     JSSVGMarkerElementConstructor(ExecState* exec)
         : DOMObject(JSSVGMarkerElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGMarkerElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGMarkerElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -152,9 +152,9 @@ static const HashTable JSSVGMarkerElementPrototypeTable =
 
 const ClassInfo JSSVGMarkerElementPrototype::s_info = { "SVGMarkerElementPrototype", 0, &JSSVGMarkerElementPrototypeTable, 0 };
 
-JSObject* JSSVGMarkerElementPrototype::self(ExecState* exec)
+JSObject* JSSVGMarkerElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGMarkerElement>(exec);
+    return getDOMPrototype<JSSVGMarkerElement>(exec, globalObject);
 }
 
 bool JSSVGMarkerElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -169,9 +169,9 @@ JSSVGMarkerElement::JSSVGMarkerElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGMarkerElement::createPrototype(ExecState* exec)
+JSObject* JSSVGMarkerElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGMarkerElementPrototype(JSSVGMarkerElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGMarkerElementPrototype(JSSVGMarkerElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGMarkerElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

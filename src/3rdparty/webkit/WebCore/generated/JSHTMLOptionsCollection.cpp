@@ -69,9 +69,9 @@ static const HashTable JSHTMLOptionsCollectionPrototypeTable =
 
 const ClassInfo JSHTMLOptionsCollectionPrototype::s_info = { "HTMLOptionsCollectionPrototype", 0, &JSHTMLOptionsCollectionPrototypeTable, 0 };
 
-JSObject* JSHTMLOptionsCollectionPrototype::self(ExecState* exec)
+JSObject* JSHTMLOptionsCollectionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLOptionsCollection>(exec);
+    return getDOMPrototype<JSHTMLOptionsCollection>(exec, globalObject);
 }
 
 bool JSHTMLOptionsCollectionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -86,9 +86,9 @@ JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSHTMLOptionsCollection::createPrototype(ExecState* exec)
+JSObject* JSHTMLOptionsCollection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLOptionsCollectionPrototype(JSHTMLOptionsCollectionPrototype::createStructure(JSHTMLCollectionPrototype::self(exec)));
+    return new (exec) JSHTMLOptionsCollectionPrototype(JSHTMLOptionsCollectionPrototype::createStructure(JSHTMLCollectionPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLOptionsCollection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

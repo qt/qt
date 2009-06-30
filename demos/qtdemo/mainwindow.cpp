@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -190,6 +190,7 @@ void MainWindow::switchTimerOnOff(bool on)
 
     if (on && !Colors::noTimerUpdate){
         this->useTimer = true;
+        this->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
         this->fpsTime = QTime::currentTime();
         this->updateTimer.start(int(1000 / Colors::fps));
     }
@@ -261,6 +262,7 @@ void MainWindow::tick()
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->tick();
 
+    this->viewport()->update();
     if (this->useTimer)
         this->updateTimer.start(int(1000 / Colors::fps));
 }
@@ -430,7 +432,9 @@ void MainWindow::focusInEvent(QFocusEvent *)
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->pause(false);
 
-    this->switchTimerOnOff(true);
+    int code = MenuManager::instance()->currentMenuCode;
+    if (code == MenuManager::ROOT || code == MenuManager::MENU1)
+        this->switchTimerOnOff(true);
 
     this->pausedLabel->setRecursiveVisible(false);
 }
@@ -443,7 +447,9 @@ void MainWindow::focusOutEvent(QFocusEvent *)
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->pause(true);
 
-    this->switchTimerOnOff(false);
+    int code = MenuManager::instance()->currentMenuCode;
+    if (code == MenuManager::ROOT || code == MenuManager::MENU1)
+        this->switchTimerOnOff(false);
 
     this->pausedLabel->setRecursiveVisible(true);
 }

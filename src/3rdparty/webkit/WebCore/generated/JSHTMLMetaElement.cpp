@@ -74,7 +74,7 @@ public:
     JSHTMLMetaElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLMetaElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMetaElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMetaElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSHTMLMetaElementPrototypeTable =
 
 const ClassInfo JSHTMLMetaElementPrototype::s_info = { "HTMLMetaElementPrototype", 0, &JSHTMLMetaElementPrototypeTable, 0 };
 
-JSObject* JSHTMLMetaElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLMetaElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLMetaElement>(exec);
+    return getDOMPrototype<JSHTMLMetaElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLMetaElement::s_info = { "HTMLMetaElement", &JSHTMLElement::s_info, &JSHTMLMetaElementTable, 0 };
@@ -121,9 +121,9 @@ JSHTMLMetaElement::JSHTMLMetaElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSHTMLMetaElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLMetaElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLMetaElementPrototype(JSHTMLMetaElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLMetaElementPrototype(JSHTMLMetaElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLMetaElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

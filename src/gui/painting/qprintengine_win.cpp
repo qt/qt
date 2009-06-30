@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -862,7 +862,25 @@ void QWin32PrintEnginePrivate::fillPath_dev(const QPainterPath &path, const QCol
 void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QColor &color, qreal penWidth)
 {
     composeGdiPath(path);
-    HPEN pen = CreatePen(PS_SOLID, qRound(penWidth), RGB(color.red(), color.green(), color.blue()));
+    LOGBRUSH brush;
+    brush.lbStyle = BS_SOLID;
+    brush.lbColor = RGB(color.red(), color.green(), color.blue());
+    DWORD capStyle = PS_ENDCAP_SQUARE;
+    DWORD joinStyle = PS_JOIN_BEVEL;
+    if (pen.capStyle() == Qt::FlatCap)
+        capStyle = PS_ENDCAP_FLAT;
+    else if (pen.capStyle() == Qt::RoundCap)
+        capStyle = PS_ENDCAP_ROUND;
+
+    if (pen.joinStyle() == Qt::MiterJoin)
+        joinStyle = PS_JOIN_MITER;
+    else if (pen.joinStyle() == Qt::RoundJoin)
+        joinStyle = PS_JOIN_ROUND;
+
+    HPEN pen = ExtCreatePen(((penWidth == 0) ? PS_COSMETIC : PS_GEOMETRIC)
+                            | PS_SOLID | capStyle | joinStyle,
+                            penWidth, &brush, 0, 0);
+
     HGDIOBJ old_pen = SelectObject(hdc, pen);
     StrokePath(hdc);
     DeleteObject(SelectObject(hdc, old_pen));

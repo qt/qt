@@ -78,7 +78,7 @@ public:
     JSStorageEventConstructor(ExecState* exec)
         : DOMObject(JSStorageEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSStorageEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSStorageEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSStorageEventPrototypeTable =
 
 const ClassInfo JSStorageEventPrototype::s_info = { "StorageEventPrototype", 0, &JSStorageEventPrototypeTable, 0 };
 
-JSObject* JSStorageEventPrototype::self(ExecState* exec)
+JSObject* JSStorageEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSStorageEvent>(exec);
+    return getDOMPrototype<JSStorageEvent>(exec, globalObject);
 }
 
 bool JSStorageEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,9 +131,9 @@ JSStorageEvent::JSStorageEvent(PassRefPtr<Structure> structure, PassRefPtr<Stora
 {
 }
 
-JSObject* JSStorageEvent::createPrototype(ExecState* exec)
+JSObject* JSStorageEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSStorageEventPrototype(JSStorageEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSStorageEventPrototype(JSStorageEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSStorageEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

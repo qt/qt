@@ -78,7 +78,7 @@ public:
     JSHTMLVideoElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLVideoElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLVideoElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLVideoElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -113,9 +113,9 @@ static const HashTable JSHTMLVideoElementPrototypeTable =
 
 const ClassInfo JSHTMLVideoElementPrototype::s_info = { "HTMLVideoElementPrototype", 0, &JSHTMLVideoElementPrototypeTable, 0 };
 
-JSObject* JSHTMLVideoElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLVideoElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLVideoElement>(exec);
+    return getDOMPrototype<JSHTMLVideoElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLVideoElement::s_info = { "HTMLVideoElement", &JSHTMLMediaElement::s_info, &JSHTMLVideoElementTable, 0 };
@@ -125,9 +125,9 @@ JSHTMLVideoElement::JSHTMLVideoElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLVideoElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLVideoElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLVideoElementPrototype(JSHTMLVideoElementPrototype::createStructure(JSHTMLMediaElementPrototype::self(exec)));
+    return new (exec) JSHTMLVideoElementPrototype(JSHTMLVideoElementPrototype::createStructure(JSHTMLMediaElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLVideoElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

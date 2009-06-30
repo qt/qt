@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -127,9 +127,6 @@ public:
     bool unsubscribeFromNotification(const QString &name);  // ### Qt 5: make virtual
     QStringList subscribedToNotifications() const;          // ### Qt 5: make virtual
 
-    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const; // ### Qt 5: make virtual
-    QString stripDelimiters(const QString &identifier, IdentifierType type) const;  // ### Qt 5: make virtual
-
 Q_SIGNALS:
     void notification(const QString &name);
 
@@ -142,9 +139,6 @@ protected Q_SLOTS:
     bool subscribeToNotificationImplementation(const QString &name);        // ### Qt 5: eliminate, see subscribeToNotification()
     bool unsubscribeFromNotificationImplementation(const QString &name);    // ### Qt 5: eliminate, see unsubscribeFromNotification()
     QStringList subscribedToNotificationsImplementation() const;            // ### Qt 5: eliminate, see subscribedNotifications()
-
-    bool isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const;   // ### Qt 5: eliminate, see isIdentifierEscaped()
-    QString stripDelimitersImplementation(const QString &identifier, IdentifierType type) const;    // ### Qt 5: eliminate, see stripDelimiters()
 
 private:
     Q_DISABLE_COPY(QSqlDriver)

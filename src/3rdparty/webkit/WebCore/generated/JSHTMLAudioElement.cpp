@@ -71,7 +71,7 @@ public:
     JSHTMLAudioElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLAudioElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLAudioElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLAudioElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLAudioElementPrototypeTable =
 
 const ClassInfo JSHTMLAudioElementPrototype::s_info = { "HTMLAudioElementPrototype", 0, &JSHTMLAudioElementPrototypeTable, 0 };
 
-JSObject* JSHTMLAudioElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLAudioElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLAudioElement>(exec);
+    return getDOMPrototype<JSHTMLAudioElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLAudioElement::s_info = { "HTMLAudioElement", &JSHTMLMediaElement::s_info, &JSHTMLAudioElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLAudioElement::JSHTMLAudioElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLAudioElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLAudioElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLAudioElementPrototype(JSHTMLAudioElementPrototype::createStructure(JSHTMLMediaElementPrototype::self(exec)));
+    return new (exec) JSHTMLAudioElementPrototype(JSHTMLAudioElementPrototype::createStructure(JSHTMLMediaElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLAudioElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

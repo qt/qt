@@ -74,7 +74,7 @@ public:
     JSDocumentFragmentConstructor(ExecState* exec)
         : DOMObject(JSDocumentFragmentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSDocumentFragmentPrototypeTable =
 
 const ClassInfo JSDocumentFragmentPrototype::s_info = { "DocumentFragmentPrototype", 0, &JSDocumentFragmentPrototypeTable, 0 };
 
-JSObject* JSDocumentFragmentPrototype::self(ExecState* exec)
+JSObject* JSDocumentFragmentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDocumentFragment>(exec);
+    return getDOMPrototype<JSDocumentFragment>(exec, globalObject);
 }
 
 bool JSDocumentFragmentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,9 +128,9 @@ JSDocumentFragment::JSDocumentFragment(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSDocumentFragment::createPrototype(ExecState* exec)
+JSObject* JSDocumentFragment::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDocumentFragmentPrototype(JSDocumentFragmentPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSDocumentFragmentPrototype(JSDocumentFragmentPrototype::createStructure(JSEventTargetNodePrototype::self(exec, globalObject)));
 }
 
 bool JSDocumentFragment::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

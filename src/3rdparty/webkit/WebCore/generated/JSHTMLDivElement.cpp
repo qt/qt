@@ -71,7 +71,7 @@ public:
     JSHTMLDivElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLDivElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDivElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDivElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLDivElementPrototypeTable =
 
 const ClassInfo JSHTMLDivElementPrototype::s_info = { "HTMLDivElementPrototype", 0, &JSHTMLDivElementPrototypeTable, 0 };
 
-JSObject* JSHTMLDivElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLDivElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLDivElement>(exec);
+    return getDOMPrototype<JSHTMLDivElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLDivElement::s_info = { "HTMLDivElement", &JSHTMLElement::s_info, &JSHTMLDivElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLDivElement::JSHTMLDivElement(PassRefPtr<Structure> structure, PassRefPtr<H
 {
 }
 
-JSObject* JSHTMLDivElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLDivElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLDivElementPrototype(JSHTMLDivElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLDivElementPrototype(JSHTMLDivElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLDivElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

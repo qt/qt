@@ -144,7 +144,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }
 
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool /* dontShow */)
 {
 
 }
@@ -686,7 +686,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     }
 }
 
-void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
+void QWidgetPrivate::setWindowIconText_sys(const QString & /*iconText */)
 {
 
 }
@@ -738,7 +738,7 @@ void QWidgetPrivate::updateSystemBackground()
 
 }
 
-void QWidgetPrivate::registerDropSite(bool on)
+void QWidgetPrivate::registerDropSite(bool /* on */)
 {
 
 }
@@ -771,7 +771,7 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
     return new QS60WindowSurface(q_func());
 }
 
-void QWidgetPrivate::setMask_sys(const QRegion& region)
+void QWidgetPrivate::setMask_sys(const QRegion& /* region */)
 {
 
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -97,6 +97,8 @@ tst_Bic::tst_Bic()
     bic.addBlacklistedClass(QLatin1String("QTypeInfo<*>"));
     bic.addBlacklistedClass(QLatin1String("QMetaTypeId<*>"));
     bic.addBlacklistedClass(QLatin1String("QVector<QGradientStop>*"));
+    bic.addBlacklistedClass(QLatin1String("QMap<*>::iterator"));
+    bic.addBlacklistedClass(QLatin1String("QMap<*>::Node"));
 
     /* this guy is never instantiated, just for compile-time checking */
     bic.addBlacklistedClass(QLatin1String("QMap<*>::PayloadNode"));
@@ -158,55 +160,52 @@ void tst_Bic::sizesAndVTables_data()
     QSKIP("Test not implemented for this compiler/platform", SkipAll);
 #else
 
-    QString archFileName400;
-    QString archFileName410;
-    QString archFileName420;
-    QString archFileName430;
+    int major = QT_VERSION >> 16;
+    if (major != 4) {
+        QFAIL("This test is for Qt 4");
+    }
+    int minor = (QT_VERSION & 0x00FF00) >> 8;
+    int patch = (QT_VERSION & 0x0000FF);
 
+    // Test every Qt 4 version up to this minor version.
+    typedef QPair<QString,bool> VersionPair;
+    QList<VersionPair> versions;
+    for (int i = 0; i <= minor; ++i) {
+        bool isPatchRelease = (i == minor && patch);
+        versions << qMakePair(QString("%1.%2").arg(major).arg(i), isPatchRelease);
+    }
+
+    QString arch;
 #if defined Q_OS_LINUX && defined Q_WS_X11
 # if defined(__powerpc__) && !defined(__powerpc64__)
-    archFileName400 = "data/%1.4.0.0.linux-gcc-ppc32.txt";
-    archFileName410 = "data/%1.4.1.0.linux-gcc-ppc32.txt";
-    archFileName420 = "data/%1.4.2.0.linux-gcc-ppc32.txt";
+    arch = "linux-gcc-ppc32";
 # elif defined(__amd64__)
-    archFileName400 = "data/%1.4.0.0.linux-gcc-amd64.txt";
+    arch = "linux-gcc-amd64";
 # elif defined(__i386__)
-    archFileName400 = "data/%1.4.0.0.linux-gcc-ia32.txt";
-    archFileName410 = "data/%1.4.1.0.linux-gcc-ia32.txt";
-    archFileName420 = "data/%1.4.2.0.linux-gcc-ia32.txt";
-    archFileName430 = "data/%1.4.3.0.linux-gcc-ia32.txt";
+    arch = "linux-gcc-ia32";
 # endif
 #elif defined Q_OS_AIX
-    if (sizeof(void*) == 4)
-        archFileName400 = "data/%1.4.0.0.aix-gcc-power32.txt";
+    if (sizeof(void*) == 4) {
+        arch = "aix-gcc-power32";
+    }
 #elif defined Q_OS_MAC && defined(__powerpc__)
-    archFileName400 = "data/%1.4.0.0.macx-gcc-ppc32.txt";
-    archFileName410 = "data/%1.4.1.0.macx-gcc-ppc32.txt";
-    archFileName420 = "data/%1.4.2.0.macx-gcc-ppc32.txt";
+    arch = "macx-gcc-ppc32";
 #elif defined Q_OS_MAC && defined(__i386__)
-    archFileName410 = "data/%1.4.1.0.macx-gcc-ia32.txt";
-    archFileName420 = "data/%1.4.2.0.macx-gcc-ia32.txt";
+    arch = "macx-gcc-ia32";
 #elif defined Q_OS_WIN && defined Q_CC_GNU
-    archFileName410 = "data/%1.4.1.0.win32-gcc-ia32.txt";
-    archFileName420 = "data/%1.4.2.0.win32-gcc-ia32.txt";
+    arch = "win32-gcc-ia32";
 #endif
 
-    if (archFileName400.isEmpty() && archFileName410.isEmpty()
-        && archFileName420.isEmpty())
-        QSKIP("No reference files found for this platform", SkipAll);
-
-    bool isPatchRelease400 = false;
-    bool isPatchRelease410 = false;
-    bool isPatchRelease420 = false;
-    bool isPatchRelease430 = false;
+    if (arch.isEmpty())
+        QSKIP("No reference files found for this arch", SkipAll);
 
     QTest::addColumn<QString>("oldLib");
     QTest::addColumn<bool>("isPatchRelease");
 
-    QTest::newRow("4.0") << archFileName400 << isPatchRelease400;
-    QTest::newRow("4.1") << archFileName410 << isPatchRelease410;
-    QTest::newRow("4.2") << archFileName420 << isPatchRelease420;
-    QTest::newRow("4.3") << archFileName430 << isPatchRelease430;
+    foreach (VersionPair const& version, versions) {
+        QString archFileName = QString("data/%3.%1.0.%2.txt").arg(version.first).arg(arch);
+        QTest::newRow(qPrintable(version.first)) << archFileName << version.second;
+    }
 #endif
 }
 

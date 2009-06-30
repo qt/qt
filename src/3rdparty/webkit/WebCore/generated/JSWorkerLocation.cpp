@@ -82,7 +82,7 @@ public:
     JSWorkerLocationConstructor(ExecState* exec)
         : DOMObject(JSWorkerLocationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWorkerLocationPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWorkerLocationPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -122,9 +122,9 @@ static const HashTable* getJSWorkerLocationPrototypeTable(ExecState* exec)
 }
 const ClassInfo JSWorkerLocationPrototype::s_info = { "WorkerLocationPrototype", 0, 0, getJSWorkerLocationPrototypeTable };
 
-JSObject* JSWorkerLocationPrototype::self(ExecState* exec)
+JSObject* JSWorkerLocationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWorkerLocation>(exec);
+    return getDOMPrototype<JSWorkerLocation>(exec, globalObject);
 }
 
 bool JSWorkerLocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -150,9 +150,9 @@ JSWorkerLocation::~JSWorkerLocation()
 
 }
 
-JSObject* JSWorkerLocation::createPrototype(ExecState* exec)
+JSObject* JSWorkerLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWorkerLocationPrototype(JSWorkerLocationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSWorkerLocationPrototype(JSWorkerLocationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSWorkerLocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

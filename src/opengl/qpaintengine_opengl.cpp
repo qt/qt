@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -973,7 +973,7 @@ public:
     bool isFastRect(const QRectF &r);
 
     void drawImageAsPath(const QRectF &r, const QImage &img, const QRectF &sr);
-    void drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy);
+    void drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy, const QPointF &offset);
 
     void drawOffscreenPath(const QPainterPath &path);
 
@@ -4431,7 +4431,8 @@ void QOpenGLPaintEnginePrivate::drawImageAsPath(const QRectF &r, const QImage &i
     brush_origin = old_brush_origin;
 }
 
-void QOpenGLPaintEnginePrivate::drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy)
+void QOpenGLPaintEnginePrivate::drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy,
+                                                     const QPointF &offset)
 {
     QBrush old_brush = cbrush;
     QPointF old_brush_origin = brush_origin;
@@ -4439,6 +4440,7 @@ void QOpenGLPaintEnginePrivate::drawTiledImageAsPath(const QRectF &r, const QIma
     QTransform brush_matrix;
     brush_matrix.translate(r.left(), r.top());
     brush_matrix.scale(sx, sy);
+    brush_matrix.translate(-offset.x(), -offset.y());
 
     cbrush = QBrush(img);
     cbrush.setTransform(brush_matrix);
@@ -4515,7 +4517,7 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
     }
 }
 
-void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &)
+void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &offset)
 {
     Q_D(QOpenGLPaintEngine);
 
@@ -4525,7 +4527,7 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         int rw = qCeil(r.width());
         int rh = qCeil(r.height());
         if (rw < pm.width() && rh < pm.height()) {
-            drawTiledPixmap(r, pm.copy(0, 0, rw, rh), QPointF());
+            drawTiledPixmap(r, pm.copy(0, 0, rw, rh), offset);
             return;
         }
 
@@ -4534,11 +4536,11 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
     if (d->composition_mode > QPainter::CompositionMode_Plus || (d->high_quality_antialiasing && !d->isFastRect(r))) {
         if (scaled.isNull())
-            d->drawTiledImageAsPath(r, pm.toImage(), 1, 1);
+            d->drawTiledImageAsPath(r, pm.toImage(), 1, 1, offset);
         else {
             const qreal sx = pm.width() / qreal(scaled.width());
             const qreal sy = pm.height() / qreal(scaled.height());
-            d->drawTiledImageAsPath(r, scaled, sx, sy);
+            d->drawTiledImageAsPath(r, scaled, sx, sy, offset);
         }
     } else {
         d->flushDrawQueue();
@@ -4569,8 +4571,12 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         q_vertexType vertexArray[4*2];
         q_vertexType texCoordArray[4*2];
 
+        double offset_x = offset.x() / pm.width();
+        double offset_y = offset.y() / pm.height();
+
         qt_add_rect_to_array(r, vertexArray);
-        qt_add_texcoords_to_array(0, 0, tc_w, tc_h, texCoordArray);
+        qt_add_texcoords_to_array(offset_x, offset_y,
+                                  tc_w + offset_x, tc_h + offset_y, texCoordArray);
 
         glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
         glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);

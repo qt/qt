@@ -101,9 +101,9 @@ static const HashTable JSSVGSwitchElementPrototypeTable =
 
 const ClassInfo JSSVGSwitchElementPrototype::s_info = { "SVGSwitchElementPrototype", 0, &JSSVGSwitchElementPrototypeTable, 0 };
 
-JSObject* JSSVGSwitchElementPrototype::self(ExecState* exec)
+JSObject* JSSVGSwitchElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGSwitchElement>(exec);
+    return getDOMPrototype<JSSVGSwitchElement>(exec, globalObject);
 }
 
 bool JSSVGSwitchElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -118,9 +118,9 @@ JSSVGSwitchElement::JSSVGSwitchElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGSwitchElement::createPrototype(ExecState* exec)
+JSObject* JSSVGSwitchElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGSwitchElementPrototype(JSSVGSwitchElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGSwitchElementPrototype(JSSVGSwitchElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGSwitchElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

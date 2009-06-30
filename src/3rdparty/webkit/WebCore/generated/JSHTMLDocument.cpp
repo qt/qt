@@ -91,7 +91,7 @@ public:
     JSHTMLDocumentConstructor(ExecState* exec)
         : DOMObject(JSHTMLDocumentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -134,9 +134,9 @@ static const HashTable JSHTMLDocumentPrototypeTable =
 
 const ClassInfo JSHTMLDocumentPrototype::s_info = { "HTMLDocumentPrototype", 0, &JSHTMLDocumentPrototypeTable, 0 };
 
-JSObject* JSHTMLDocumentPrototype::self(ExecState* exec)
+JSObject* JSHTMLDocumentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLDocument>(exec);
+    return getDOMPrototype<JSHTMLDocument>(exec, globalObject);
 }
 
 bool JSHTMLDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -151,9 +151,9 @@ JSHTMLDocument::JSHTMLDocument(PassRefPtr<Structure> structure, PassRefPtr<HTMLD
 {
 }
 
-JSObject* JSHTMLDocument::createPrototype(ExecState* exec)
+JSObject* JSHTMLDocument::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLDocumentPrototype(JSHTMLDocumentPrototype::createStructure(JSDocumentPrototype::self(exec)));
+    return new (exec) JSHTMLDocumentPrototype(JSHTMLDocumentPrototype::createStructure(JSDocumentPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLDocument::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

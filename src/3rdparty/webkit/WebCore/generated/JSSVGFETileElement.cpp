@@ -84,9 +84,9 @@ static const HashTable JSSVGFETileElementPrototypeTable =
 
 const ClassInfo JSSVGFETileElementPrototype::s_info = { "SVGFETileElementPrototype", 0, &JSSVGFETileElementPrototypeTable, 0 };
 
-JSObject* JSSVGFETileElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFETileElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFETileElement>(exec);
+    return getDOMPrototype<JSSVGFETileElement>(exec, globalObject);
 }
 
 bool JSSVGFETileElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -101,9 +101,9 @@ JSSVGFETileElement::JSSVGFETileElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGFETileElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFETileElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFETileElementPrototype(JSSVGFETileElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFETileElementPrototype(JSSVGFETileElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFETileElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

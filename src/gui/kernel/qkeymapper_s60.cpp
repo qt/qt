@@ -53,7 +53,7 @@ QKeyMapperPrivate::~QKeyMapperPrivate()
 {
 }
 
-QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
+QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent * /* e */)
 {
     QList<int> result;
     return result;
@@ -64,7 +64,7 @@ void QKeyMapperPrivate::clearMappings()
     // stub
 }
 
-QString QKeyMapperPrivate::translateKeyEvent(int keySym, Qt::KeyboardModifiers modifiers)
+QString QKeyMapperPrivate::translateKeyEvent(int keySym, Qt::KeyboardModifiers /* modifiers */)
 {
     if (keySym >= Qt::Key_Escape)
         return QString();

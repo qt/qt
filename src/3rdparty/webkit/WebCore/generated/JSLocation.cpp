@@ -79,9 +79,9 @@ static const HashTable JSLocationPrototypeTable =
 
 const ClassInfo JSLocationPrototype::s_info = { "LocationPrototype", 0, &JSLocationPrototypeTable, 0 };
 
-JSObject* JSLocationPrototype::self(ExecState* exec)
+JSObject* JSLocationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSLocation>(exec);
+    return getDOMPrototype<JSLocation>(exec, globalObject);
 }
 
 bool JSLocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -103,9 +103,9 @@ JSLocation::~JSLocation()
 
 }
 
-JSObject* JSLocation::createPrototype(ExecState* exec)
+JSObject* JSLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSLocationPrototype(JSLocationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSLocationPrototype(JSLocationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSLocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

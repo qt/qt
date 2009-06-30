@@ -55,6 +55,7 @@
 #include "RenderImage.h"
 #include "ReplaceSelectionCommand.h"
 #include "ResourceRequest.h"
+#include "SecurityOrigin.h"
 #include "SelectionController.h"
 #include "Settings.h"
 #include "SystemTime.h"
@@ -156,7 +157,7 @@ void DragController::dragExited(DragData* dragData)
     Frame* mainFrame = m_page->mainFrame();
     
     if (RefPtr<FrameView> v = mainFrame->view()) {
-        ClipboardAccessPolicy policy = mainFrame->loader()->baseURL().isLocalFile() ? ClipboardReadable : ClipboardTypesReadable;
+        ClipboardAccessPolicy policy = m_document->securityOrigin()->isLocal() ? ClipboardReadable : ClipboardTypesReadable;
         RefPtr<Clipboard> clipboard = dragData->createClipboard(policy);
         clipboard->setSourceOperation(dragData->draggingSourceOperationMask());
         mainFrame->eventHandler()->cancelDragAndDrop(createMouseEvent(dragData), clipboard.get());
@@ -166,6 +167,7 @@ void DragController::dragExited(DragData* dragData)
     cancelDrag();
     m_document = 0;
 }
+
     
 DragOperation DragController::dragUpdated(DragData* dragData) 
 {
@@ -463,18 +465,18 @@ DragOperation DragController::tryDHTMLDrag(DragData* dragData)
     ASSERT(dragData);
     ASSERT(m_document);
     DragOperation op = DragOperationNone;
-    RefPtr<Frame> frame = m_page->mainFrame();
-    RefPtr<FrameView> viewProtector = frame->view();
+    RefPtr<Frame> mainFrame = m_page->mainFrame();
+    RefPtr<FrameView> viewProtector = mainFrame->view();
     if (!viewProtector)
         return DragOperationNone;
     
-    ClipboardAccessPolicy policy = frame->loader()->baseURL().isLocalFile() ? ClipboardReadable : ClipboardTypesReadable;
+    ClipboardAccessPolicy policy = m_document->securityOrigin()->isLocal() ? ClipboardReadable : ClipboardTypesReadable;
     RefPtr<Clipboard> clipboard = dragData->createClipboard(policy);
     DragOperation srcOp = dragData->draggingSourceOperationMask();
     clipboard->setSourceOperation(srcOp);
     
     PlatformMouseEvent event = createMouseEvent(dragData);
-    if (frame->eventHandler()->updateDragAndDrop(event, clipboard.get())) {
+    if (mainFrame->eventHandler()->updateDragAndDrop(event, clipboard.get())) {
         // *op unchanged if no source op was set
         if (!clipboard->destinationOperation(op)) {
             // The element accepted but they didn't pick an operation, so we pick one for them

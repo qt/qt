@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1342,7 +1342,7 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
     QSqlQuery i(createResult());
     QString stmt(QLatin1String("show index from %1;"));
     QSqlRecord fil = record(tablename);
-    i.exec(stmt.arg(tablename));
+    i.exec(stmt.arg(escapeIdentifier(tablename, QSqlDriver::TableName)));
     while (i.isActive() && i.next()) {
         if (i.value(2).toString() == QLatin1String("PRIMARY")) {
             idx.append(fil.field(i.value(4).toString()));
@@ -1357,14 +1357,10 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
 
 QSqlRecord QMYSQLDriver::record(const QString& tablename) const
 {
-    QString table=tablename;
-    if(isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-
     QSqlRecord info;
     if (!isOpen())
         return info;
-    MYSQL_RES* r = mysql_list_fields(d->mysql, table.toLocal8Bit().constData(), 0);
+    MYSQL_RES* r = mysql_list_fields(d->mysql, tablename.toLocal8Bit().constData(), 0);
     if (!r) {
         return info;
     }
@@ -1473,17 +1469,6 @@ QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType
         res.replace(QLatin1Char('.'), QLatin1String("`.`"));
     }
     return res;
-}
-
-bool QMYSQLDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
-{
-    Q_UNUSED(type);
-    bool isLeftDelimited = (identifier.left(1) == QString(QLatin1Char('`')));
-    bool isRightDelimited = (identifier.right(1) == QString(QLatin1Char('`')));
-    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
-        return true;
-    else
-        return false;
 }
 
 QT_END_NAMESPACE

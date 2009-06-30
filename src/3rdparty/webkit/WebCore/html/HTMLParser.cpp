@@ -118,7 +118,6 @@ HTMLParser::HTMLParser(HTMLDocument* doc, bool reportErrors)
     , didRefCurrent(false)
     , blockStack(0)
     , m_hasPElementInScope(NotInScope)
-    , head(0)
     , inBody(false)
     , haveContent(false)
     , haveFrameSet(false)
@@ -135,7 +134,6 @@ HTMLParser::HTMLParser(DocumentFragment* frag)
     , didRefCurrent(true)
     , blockStack(0)
     , m_hasPElementInScope(NotInScope)
-    , head(0)
     , inBody(true)
     , haveContent(false)
     , haveFrameSet(false)
@@ -489,8 +487,7 @@ bool HTMLParser::handleError(Node* n, bool flat, const AtomicString& localName, 
                 elt->hasLocalName(baseTag))) {
                 if (!head) {
                     head = new HTMLHeadElement(headTag, document);
-                    e = head;
-                    insertNode(e);
+                    insertNode(head.get());
                     handled = true;
                 }
             } else {
@@ -1492,14 +1489,14 @@ void HTMLParser::createHead()
     head = new HTMLHeadElement(headTag, document);
     HTMLElement* body = document->body();
     ExceptionCode ec = 0;
-    document->documentElement()->insertBefore(head, body, ec);
+    document->documentElement()->insertBefore(head.get(), body, ec);
     if (ec)
         head = 0;
         
     // If the body does not exist yet, then the <head> should be pushed as the current block.
     if (head && !body) {
         pushBlock(head->localName(), head->tagPriority());
-        setCurrent(head);
+        setCurrent(head.get());
     }
 }
 

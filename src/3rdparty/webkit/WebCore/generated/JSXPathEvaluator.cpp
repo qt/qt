@@ -81,7 +81,7 @@ public:
     JSXPathEvaluatorConstructor(ExecState* exec)
         : DOMObject(JSXPathEvaluatorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXPathEvaluatorPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXPathEvaluatorPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -128,9 +128,9 @@ static const HashTable JSXPathEvaluatorPrototypeTable =
 
 const ClassInfo JSXPathEvaluatorPrototype::s_info = { "XPathEvaluatorPrototype", 0, &JSXPathEvaluatorPrototypeTable, 0 };
 
-JSObject* JSXPathEvaluatorPrototype::self(ExecState* exec)
+JSObject* JSXPathEvaluatorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathEvaluator>(exec);
+    return getDOMPrototype<JSXPathEvaluator>(exec, globalObject);
 }
 
 bool JSXPathEvaluatorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -152,9 +152,9 @@ JSXPathEvaluator::~JSXPathEvaluator()
 
 }
 
-JSObject* JSXPathEvaluator::createPrototype(ExecState* exec)
+JSObject* JSXPathEvaluator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathEvaluatorPrototype(JSXPathEvaluatorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathEvaluatorPrototype(JSXPathEvaluatorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXPathEvaluator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

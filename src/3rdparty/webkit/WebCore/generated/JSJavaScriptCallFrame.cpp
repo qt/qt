@@ -76,9 +76,9 @@ static const HashTable JSJavaScriptCallFramePrototypeTable =
 
 const ClassInfo JSJavaScriptCallFramePrototype::s_info = { "JavaScriptCallFramePrototype", 0, &JSJavaScriptCallFramePrototypeTable, 0 };
 
-JSObject* JSJavaScriptCallFramePrototype::self(ExecState* exec)
+JSObject* JSJavaScriptCallFramePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSJavaScriptCallFrame>(exec);
+    return getDOMPrototype<JSJavaScriptCallFrame>(exec, globalObject);
 }
 
 bool JSJavaScriptCallFramePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -100,9 +100,9 @@ JSJavaScriptCallFrame::~JSJavaScriptCallFrame()
 
 }
 
-JSObject* JSJavaScriptCallFrame::createPrototype(ExecState* exec)
+JSObject* JSJavaScriptCallFrame::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSJavaScriptCallFramePrototype(JSJavaScriptCallFramePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSJavaScriptCallFramePrototype(JSJavaScriptCallFramePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSJavaScriptCallFrame::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

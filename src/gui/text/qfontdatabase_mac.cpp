@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 int qt_mac_pixelsize(const QFontDef &def, int dpi); //qfont_mac.cpp
 int qt_mac_pointsize(const QFontDef &def, int dpi); //qfont_mac.cpp
 
+#ifndef QT_MAC_USE_COCOA
 static void initWritingSystems(QtFontFamily *family, ATSFontRef atsFont)
 {
     ByteCount length = 0;
@@ -81,6 +82,7 @@ qDebug() << "first char" << hex << unicodeRange[0];
     for (int i = 0; i < systems.count(); ++i)
         family->writingSystems[systems.at(i)] = QtFontFamily::Supported;
 }
+#endif
 
 static void initializeDb()
 {
@@ -150,7 +152,7 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
 } else 
 #endif
     {
-#ifndef Q_WS_MAC64
+#ifndef QT_MAC_USE_COCOA
         FMFontIterator it;
         if (!FMCreateFontIterator(0, 0, kFMUseGlobalScopeOption, &it)) {
             while (true) {

@@ -81,7 +81,7 @@ public:
     JSStyleSheetConstructor(ExecState* exec)
         : DOMObject(JSStyleSheetConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSStyleSheetPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSStyleSheetPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -116,9 +116,9 @@ static const HashTable JSStyleSheetPrototypeTable =
 
 const ClassInfo JSStyleSheetPrototype::s_info = { "StyleSheetPrototype", 0, &JSStyleSheetPrototypeTable, 0 };
 
-JSObject* JSStyleSheetPrototype::self(ExecState* exec)
+JSObject* JSStyleSheetPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSStyleSheet>(exec);
+    return getDOMPrototype<JSStyleSheet>(exec, globalObject);
 }
 
 const ClassInfo JSStyleSheet::s_info = { "StyleSheet", 0, &JSStyleSheetTable, 0 };
@@ -135,9 +135,9 @@ JSStyleSheet::~JSStyleSheet()
 
 }
 
-JSObject* JSStyleSheet::createPrototype(ExecState* exec)
+JSObject* JSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSStyleSheetPrototype(JSStyleSheetPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSStyleSheetPrototype(JSStyleSheetPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

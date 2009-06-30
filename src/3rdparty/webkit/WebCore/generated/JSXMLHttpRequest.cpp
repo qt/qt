@@ -104,9 +104,9 @@ static const HashTable JSXMLHttpRequestPrototypeTable =
 
 const ClassInfo JSXMLHttpRequestPrototype::s_info = { "XMLHttpRequestPrototype", 0, &JSXMLHttpRequestPrototypeTable, 0 };
 
-JSObject* JSXMLHttpRequestPrototype::self(ExecState* exec)
+JSObject* JSXMLHttpRequestPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXMLHttpRequest>(exec);
+    return getDOMPrototype<JSXMLHttpRequest>(exec, globalObject);
 }
 
 bool JSXMLHttpRequestPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,9 +128,9 @@ JSXMLHttpRequest::~JSXMLHttpRequest()
 
 }
 
-JSObject* JSXMLHttpRequest::createPrototype(ExecState* exec)
+JSObject* JSXMLHttpRequest::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXMLHttpRequestPrototype(JSXMLHttpRequestPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXMLHttpRequestPrototype(JSXMLHttpRequestPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXMLHttpRequest::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

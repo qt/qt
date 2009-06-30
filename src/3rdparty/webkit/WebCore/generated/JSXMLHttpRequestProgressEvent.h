@@ -31,7 +31,7 @@ class JSXMLHttpRequestProgressEvent : public JSProgressEvent {
     typedef JSProgressEvent Base;
 public:
     JSXMLHttpRequestProgressEvent(PassRefPtr<JSC::Structure>, PassRefPtr<XMLHttpRequestProgressEvent>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -47,7 +47,7 @@ public:
 
 class JSXMLHttpRequestProgressEventPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSXMLHttpRequestProgressEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
