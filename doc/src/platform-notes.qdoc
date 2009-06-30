@@ -397,7 +397,7 @@
     \row    \o Apple Mac OS X (32-bit) \o gcc 4.0.1
     \row    \o Linux (32 and 64-bit)   \o gcc 4.1, 4.2, 4.3
     \row    \o Microsoft Windows       \o gcc 3.4.2 (MinGW) (32-bit), MSVC 2003, 2005 (32 and 64-bit), 2008,
-                                          \l{Known Issues in %VERSION%}{Intel icc (see note)}
+                                          \l{Intel C++ Compiler}{Intel icc (see note)}
     \endtable
 
     Any platform-compiler combinations not listed here should be considered unsupported.
@@ -596,8 +596,9 @@
 
     \section1 Intel C++ Compiler
 
-    \warning Please see the \l{Known Issues in %VERSION%} page for information
-    about an issue with this compiler.
+    Qt supports the Intel C++ compiler on both Windows and Linux.
+    However, there are a few issues on Linux (see the following
+    section).
 
     \section2 Intel C++ Compiler for Linux
 
