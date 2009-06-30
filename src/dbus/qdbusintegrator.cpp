@@ -1143,6 +1143,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QDBusReadLocker locker(RelaySignalAction, this);
     QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
                                                       QLatin1String(memberName));
+    QDBusMessagePrivate::setParametersValidated(message, true);
     message.setArguments(args);
     QDBusError error;
     DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
@@ -2092,6 +2093,7 @@ QString QDBusConnectionPrivate::getNameOwner(const QString& serviceName)
     QDBusMessage msg = QDBusMessage::createMethodCall(QLatin1String(DBUS_SERVICE_DBUS),
             QLatin1String(DBUS_PATH_DBUS), QLatin1String(DBUS_INTERFACE_DBUS),
             QLatin1String("GetNameOwner"));
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << serviceName;
     QDBusMessage reply = sendWithReply(msg, QDBus::Block);
     if (reply.type() == QDBusMessage::ReplyMessage)
@@ -2115,6 +2117,7 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
                                                 QLatin1String(DBUS_INTERFACE_INTROSPECTABLE),
                                                 QLatin1String("Introspect"));
+    QDBusMessagePrivate::setParametersValidated(msg, true);
 
     QDBusMessage reply = sendWithReply(msg, QDBus::Block);
 

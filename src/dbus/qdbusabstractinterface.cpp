@@ -44,6 +44,7 @@
 
 #include "qdbusargument.h"
 #include "qdbuspendingcall.h"
+#include "qdbusmessage_p.h"
 #include "qdbusmetaobject_p.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
@@ -139,6 +140,7 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
                                                       QLatin1String(DBUS_INTERFACE_PROPERTIES),
                                                       QLatin1String("Get"));
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name());
     QDBusMessage reply = connection.call(msg, QDBus::Block);
 
@@ -202,6 +204,7 @@ void QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
                                                 QLatin1String(DBUS_INTERFACE_PROPERTIES),
                                                 QLatin1String("Set"));
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name()) << qVariantFromValue(QDBusVariant(value));
     QDBusMessage reply = connection.call(msg, QDBus::Block);
 
@@ -386,6 +389,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 
 //    qDebug() << "QDBusAbstractInterface" << "Service" << service() << "Path:" << path();
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), m);
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
     QDBusMessage reply = d->connection.call(msg, mode);
@@ -418,6 +422,7 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
         return QDBusPendingCall::fromError(d->lastError);
 
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), method);
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
     return d->connection.asyncCall(msg);
 }
@@ -458,6 +463,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
                                                       path(),
                                                       interface(),
                                                       method);
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
     d->lastError = 0;
