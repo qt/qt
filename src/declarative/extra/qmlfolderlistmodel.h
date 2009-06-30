@@ -94,9 +94,9 @@ private:
     Q_DISABLE_COPY(QmlFolderListModel)
 };
 
-QML_DECLARE_TYPE(QmlFolderListModel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlFolderListModel)
 
 QT_END_HEADER
 
