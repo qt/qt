@@ -2074,7 +2074,7 @@ void QDockAreaLayoutInfo::updateTabBar() const
 
     QDockAreaLayoutInfo *that = const_cast<QDockAreaLayoutInfo*>(this);
 
-    if (tabBar == 0) {
+    if (that->tabBar == 0) {
         that->tabBar = mainWindowLayout()->getTabBar();
         that->tabBar->setShape(static_cast<QTabBar::Shape>(tabBarShape));
         that->tabBar->setDrawBase(true);
