@@ -2,6 +2,7 @@
 <node>
   <interface name="com.trolltech.QtDBus.Pinger">
     <property name="stringProp" type="s" access="readwrite"/>
+    <property name="variantProp" type="v" access="readwrite"/>
     <property name="complexProp" type="(s)" access="readwrite">
       <annotation name="com.trolltech.QtDBus.QtTypeName" value="RegisteredType"/>
     </property>

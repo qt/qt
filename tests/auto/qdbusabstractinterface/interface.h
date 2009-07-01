@@ -80,10 +80,12 @@ class Interface: public QObject
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "com.trolltech.QtDBus.Pinger")
     Q_PROPERTY(QString stringProp READ stringProp WRITE setStringProp SCRIPTABLE true)
+    Q_PROPERTY(QDBusVariant variantProp READ variantProp WRITE setVariantProp SCRIPTABLE true)
     Q_PROPERTY(RegisteredType complexProp READ complexProp WRITE setComplexProp SCRIPTABLE true)
 
     friend class tst_QDBusAbstractInterface;
     QString m_stringProp;
+    QDBusVariant m_variantProp;
     RegisteredType m_complexProp;
 
 public:
@@ -91,6 +93,8 @@ public:
 
     QString stringProp() const { return m_stringProp; }
     void setStringProp(const QString &s) { m_stringProp = s; }
+    QDBusVariant variantProp() const { return m_variantProp; }
+    void setVariantProp(const QDBusVariant &v) { m_variantProp = v; }
     RegisteredType complexProp() const { return m_complexProp; }
     void setComplexProp(const RegisteredType &r) { m_complexProp = r; }
 

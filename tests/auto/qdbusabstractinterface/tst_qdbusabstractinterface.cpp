@@ -84,11 +84,15 @@ private slots:
 
     void stringPropRead();
     void stringPropWrite();
+    void variantPropRead();
+    void variantPropWrite();
     void complexPropRead();
     void complexPropWrite();
 
     void stringPropDirectRead();
     void stringPropDirectWrite();
+    void variantPropDirectRead();
+    void variantPropDirectWrite();
     void complexPropDirectRead();
     void complexPropDirectWrite();
 
@@ -242,6 +246,29 @@ void tst_QDBusAbstractInterface::stringPropWrite()
     QCOMPARE(targetObj.m_stringProp, expectedValue);
 }
 
+void tst_QDBusAbstractInterface::variantPropRead()
+{
+    Pinger p = getPinger();
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    QDBusVariant expectedValue = targetObj.m_variantProp = QDBusVariant(QVariant(42));
+    QVariant v = p->property("variantProp");
+    QVERIFY(v.isValid());
+    QDBusVariant value = v.value<QDBusVariant>();
+    QCOMPARE(value.variant().userType(), expectedValue.variant().userType());
+    QCOMPARE(value.variant(), expectedValue.variant());
+}
+
+void tst_QDBusAbstractInterface::variantPropWrite()
+{
+    Pinger p = getPinger();
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    QDBusVariant expectedValue = QDBusVariant(Q_INT64_C(-47));
+    QVERIFY(p->setProperty("variantProp", qVariantFromValue(expectedValue)));
+    QCOMPARE(targetObj.m_variantProp.variant(), expectedValue.variant());
+}
+
 void tst_QDBusAbstractInterface::complexPropRead()
 {
     Pinger p = getPinger();
@@ -280,6 +307,26 @@ void tst_QDBusAbstractInterface::stringPropDirectWrite()
     QString expectedValue = "This is a value";
     p->setStringProp(expectedValue);
     QCOMPARE(targetObj.m_stringProp, expectedValue);
+}
+
+void tst_QDBusAbstractInterface::variantPropDirectRead()
+{
+    Pinger p = getPinger();
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    QDBusVariant expectedValue = targetObj.m_variantProp = QDBusVariant(42);
+    QCOMPARE(p->variantProp().variant(), expectedValue.variant());
+}
+
+void tst_QDBusAbstractInterface::variantPropDirectWrite()
+{
+    Pinger p = getPinger();
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    QDBusVariant expectedValue = QDBusVariant(Q_INT64_C(-47));
+    p->setVariantProp(expectedValue);
+    QCOMPARE(targetObj.m_variantProp.variant().userType(), expectedValue.variant().userType());
+    QCOMPARE(targetObj.m_variantProp.variant(), expectedValue.variant());
 }
 
 void tst_QDBusAbstractInterface::complexPropDirectRead()

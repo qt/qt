@@ -49,8 +49,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef PINGER_H_1246371899
-#define PINGER_H_1246371899
+#ifndef PINGER_H_1246460303
+#define PINGER_H_1246460303
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -88,6 +88,12 @@ public:
     { return qvariant_cast< QString >(internalPropGet("stringProp")); }
     inline void setStringProp(const QString &value)
     { internalPropSet("stringProp", qVariantFromValue(value)); }
+
+    Q_PROPERTY(QDBusVariant variantProp READ variantProp WRITE setVariantProp)
+    inline QDBusVariant variantProp() const
+    { return qvariant_cast< QDBusVariant >(internalPropGet("variantProp")); }
+    inline void setVariantProp(const QDBusVariant &value)
+    { internalPropSet("variantProp", qVariantFromValue(value)); }
 
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<RegisteredType> complexMethod()
