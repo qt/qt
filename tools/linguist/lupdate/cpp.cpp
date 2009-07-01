@@ -180,7 +180,8 @@ private:
     QString transcode(const QString &str, bool utf8);
     void recordMessage(
         int line, const QString &context, const QString &text, const QString &comment,
-        const QString &extracomment,  bool utf8, bool plural);
+        const QString &extracomment, const QString &msgid, const TranslatorMessage::ExtraData &extra,
+        bool utf8, bool plural);
 
     void processInclude(const QString &file, ConversionData &cd,
                         QSet<QString> &inclusions);
@@ -1299,13 +1300,16 @@ QString CppParser::transcode(const QString &str, bool utf8)
 
 void CppParser::recordMessage(
     int line, const QString &context, const QString &text, const QString &comment,
-    const QString &extracomment,  bool utf8, bool plural)
+    const QString &extracomment, const QString &msgid, const TranslatorMessage::ExtraData &extra,
+    bool utf8, bool plural)
 {
     TranslatorMessage msg(
         transcode(context, utf8), transcode(text, utf8), transcode(comment, utf8), QString(),
         yyFileName, line, QStringList(),
         TranslatorMessage::Unfinished, plural);
     msg.setExtraComment(transcode(extracomment.simplified(), utf8));
+    msg.setId(msgid);
+    msg.setExtras(extra);
     if ((utf8 || yyForceUtf8) && !yyCodecIsUtf8 && msg.needs8Bit())
         msg.setUtf8(true);
     results->tor->append(msg);
@@ -1332,6 +1336,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
     QString text;
     QString comment;
     QString extracomment;
+    QString msgid;
+    TranslatorMessage::ExtraData extra;
     QString prefix;
 #ifdef DIAGNOSE_RETRANSLATABILITY
     QString functionName;
@@ -1604,9 +1610,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     prefix.clear();
                 }
 
-                recordMessage(line, context, text, comment, extracomment, utf8, plural);
+                recordMessage(line, context, text, comment, extracomment, msgid, extra, utf8, plural);
             }
             extracomment.clear();
+            msgid.clear();
+            extra.clear();
             break;
         case Tok_translateUtf8:
         case Tok_translate:
@@ -1655,9 +1663,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         break;
                     }
                 }
-                recordMessage(line, context, text, comment, extracomment, utf8, plural);
+                recordMessage(line, context, text, comment, extracomment, msgid, extra, utf8, plural);
             }
             extracomment.clear();
+            msgid.clear();
+            extra.clear();
             break;
         case Tok_Q_DECLARE_TR_FUNCTIONS:
         case Tok_Q_OBJECT:
@@ -1679,6 +1689,15 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             if (yyComment.startsWith(QLatin1Char(':'))) {
                 yyComment.remove(0, 1);
                 extracomment.append(yyComment);
+            } else if (yyComment.startsWith(QLatin1Char('='))) {
+                yyComment.remove(0, 1);
+                msgid = yyComment.simplified();
+            } else if (yyComment.startsWith(QLatin1Char('~'))) {
+                yyComment.remove(0, 1);
+                yyComment = yyComment.trimmed();
+                int k = yyComment.indexOf(QLatin1Char(' '));
+                if (k > -1)
+                    extra.insert(yyComment.left(k), yyComment.mid(k + 1).trimmed());
             } else {
                 comment = yyComment.simplified();
                 if (comment.startsWith(QLatin1String(MagicComment))) {
@@ -1689,7 +1708,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     } else {
                         context = comment.left(k);
                         comment.remove(0, k + 1);
-                        recordMessage(yyLineNo, context, QString(), comment, extracomment, false, false);
+                        recordMessage(yyLineNo, context, QString(), comment, extracomment,
+                                      QString(), TranslatorMessage::ExtraData(), false, false);
+                        extracomment.clear();
+                        results->tor->setExtras(extra);
+                        extra.clear();
                     }
                 }
             }
@@ -1739,6 +1762,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             prospectiveContext.clear();
             prefix.clear();
             extracomment.clear();
+            msgid.clear();
+            extra.clear();
             yyTokColonSeen = false;
             yyTok = getToken();
             break;

@@ -156,3 +156,22 @@ QT_TRANSLATE_NOOP3_UTF8("scope", "string", "comment") // 4.4 doesn't see this
 
 QT_TRANSLATE_NOOP("scope", "string " // this is an interleaved comment
                   "continuation on next line")
+
+
+class TestingTake17 : QObject {
+    Q_OBJECT
+
+    int function(void)
+    {
+        //: random comment
+        //= this_is_an_id
+        //~ loc-layout_id fooish_bar
+        //~ po-ignore_me totally foo-barred  nonsense
+        tr("something cool");
+
+        tr("less cool");
+
+        //= another_id
+        tr("even more cool");
+    }
+};

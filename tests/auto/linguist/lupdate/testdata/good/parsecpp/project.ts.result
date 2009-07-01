@@ -239,6 +239,27 @@
     </message>
 </context>
 <context>
+    <name>TestingTake17</name>
+    <message id="this_is_an_id">
+        <location filename="main.cpp" line="170"/>
+        <source>something cool</source>
+        <extracomment>random comment</extracomment>
+        <translation type="unfinished"></translation>
+        <extra-po-ignore_me>totally foo-barred  nonsense</extra-po-ignore_me>
+        <extra-loc-layout_id>fooish_bar</extra-loc-layout_id>
+    </message>
+    <message>
+        <location filename="main.cpp" line="172"/>
+        <source>less cool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="another_id">
+        <location filename="main.cpp" line="175"/>
+        <source>even more cool</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>scope</name>
     <message numerus="yes">
         <location filename="main.cpp" line="146"/>
