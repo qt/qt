@@ -154,7 +154,7 @@ void QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     solveMaxHelper();
 
     if (valueAt(0, columns - 1) != 0.0) {
-        qWarning() << "QSimplex: No feaseable solution!";
+        qWarning() << "QSimplex: No feasible solution!";
         clearDataStructures();
         return;
     }
