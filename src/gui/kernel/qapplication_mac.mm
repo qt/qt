@@ -1069,7 +1069,7 @@ void qt_init(QApplicationPrivate *priv, int)
         if (GetCurrentProcess(&psn) == noErr) {
             // Jambi needs to transform itself since most people aren't "used"
             // to putting things in bundles, but other people may actually not
-            // want to tranform the process (running as a helper or somethng)
+            // want to tranform the process (running as a helper or something)
             // so don't do that for them. This means checking both LSUIElement
             // and LSBackgroundOnly. If you set them both... well, you
             // shouldn't do that.
@@ -1760,7 +1760,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                     if(window) {
                         HIViewRef hiview;
                         if(HIViewGetViewForMouseEvent(HIViewGetRoot(window), event, &hiview) == noErr) {
-                            widget = QWidget::find((WId)hiview);;
+                            widget = QWidget::find((WId)hiview);
                             if (widget) {
                                 // Make sure we didn't pass over a widget with a "fake hole" in it.
                                 QWidget *otherWidget = QApplication::widgetAt(where.h, where.v);
@@ -1877,9 +1877,10 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             tablet_button_state = new_tablet_button_state;
 
             QMacTabletHash *tabletHash = qt_mac_tablet_hash();
-            if (!tabletHash->contains(tabletPointRec.deviceID)) {
-                qWarning("QCocoaView handleTabletEvent: This tablet device is unknown"
-                        " (received no proximity event for it). Discarding event.");
+            if (!tabletHash->contains(tabletPointRec.deviceID) && t != QEvent::TabletRelease) {
+                // Never discard TabletRelease events as they may be delivered *after* TabletLeaveProximity events
+                qWarning("handleTabletEvent: This tablet device is unknown"
+                         " (received no proximity event for it). Discarding event.");
                 return false;
             }
             QTabletDeviceData &deviceData = tabletHash->operator[](tabletPointRec.deviceID);
@@ -1921,8 +1922,13 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                                tp, rotation, z, modifiers, deviceData.tabletUniqueID);
                 QApplication::sendSpontaneousEvent(widget, &e);
                 if (e.isAccepted()) {
+                    if (t == QEvent::TabletPress) {
+                        qt_button_down = widget;
+                    } else if (t == QEvent::TabletRelease) {
+                        qt_button_down = 0;
+                    }
 #if defined(DEBUG_MOUSE_MAPS)
-                    qDebug("Bail out early due to table acceptance");
+                    qDebug("Bail out early due to tablet acceptance");
 #endif
                     break;
                 }

@@ -154,10 +154,7 @@ namespace Phonon
                 path = QString::fromLatin1("\\\\.\\%1:").arg(drive); 	 
             }
 
-            m_cddrive = QT_WA_INLINE (
-			::CreateFile( (TCHAR*)path.utf16(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL ),
-			::CreateFileA( path.toLocal8Bit().constData(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )
-	                );
+            m_cddrive = ::CreateFile((const wchar_t *)path.utf16(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 
             qMemSet(m_toc, 0, sizeof(CDROM_TOC));
             //read the TOC

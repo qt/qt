@@ -161,8 +161,7 @@ HTHEME XPThemeData::handle()
         htheme = QWindowsXPStylePrivate::handleMap->operator[](name);
 
     if (!htheme) {
-        htheme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget),
-                                (TCHAR*)name.utf16());
+        htheme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), (wchar_t*)name.utf16());
         if (htheme) {
             if (!QWindowsXPStylePrivate::handleMap)
                 QWindowsXPStylePrivate::handleMap = new QMap<QString, HTHEME>;
@@ -1547,11 +1546,11 @@ case PE_Frame:
             if (widget) {
                 bool useGradient = true;
                 const int maxlength = 256;
-                WCHAR themeFileName[maxlength];
-                WCHAR themeColor[maxlength];
+                wchar_t themeFileName[maxlength];
+                wchar_t themeColor[maxlength];
                 // Due to a a scaling issue with the XP Silver theme, tab gradients are not used with it
                 if (pGetCurrentThemeName(themeFileName, maxlength, themeColor, maxlength, NULL, 0) == S_OK) {
-                    WCHAR* offset;
+                    wchar_t *offset = 0;
                     if ((offset = wcsrchr(themeFileName, QChar(QLatin1Char('\\')).unicode())) != NULL) {
                         offset++;
                         if (!lstrcmp(offset, L"Luna.msstyles") && !lstrcmp(offset, L"Metallic")) {

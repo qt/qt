@@ -188,11 +188,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     parentw = q->parentWidget() ? q->parentWidget()->effectiveWinId() : 0;
 
-#ifdef UNICODE
     QString title;
-    const TCHAR *ttitle = 0;
-#endif
-    QByteArray title95;
     int style = WS_CHILD;
     int exsty = WS_EX_NOPARENTNOTIFY;
 
@@ -236,12 +232,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     if (flags & Qt::WindowTitleHint) {
-        QT_WA({
-            title = q->isWindow() ? qAppName() : q->objectName();
-            ttitle = (TCHAR*)title.utf16();
-        } , {
-            title95 = q->isWindow() ? qAppName().toLocal8Bit() : q->objectName().toLatin1();
-        });
+        title = q->isWindow() ? qAppName() : q->objectName();
     }
 
     // The Qt::WA_WState_Created flag is checked by translateConfigEvent() in
@@ -254,11 +245,11 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             destroyw = data.winid;
         id = window;
         setWinId(window);
-        LONG res = SetWindowLongA(window, GWL_STYLE, style);
+        LONG res = SetWindowLong(window, GWL_STYLE, style);
         if (!res)
             qErrnoWarning("QWidget::create: Failed to set window style");
 
-        res = SetWindowLongA( window, GWL_WNDPROC, (LONG)QtWndProc );
+        res = SetWindowLong( window, GWL_WNDPROC, (LONG)QtWndProc );
 
         if (!res)
             qErrnoWarning("QWidget::create: Failed to set window procedure");
@@ -267,10 +258,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         if (!id) { //Create a dummy desktop
             RECT r;
             SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
-            const TCHAR *cname = reinterpret_cast<const TCHAR *> (windowClassName.utf16());
-            id = CreateWindow(cname, ttitle, style,
-                                r.left, r.top, r.right - r.left, r.bottom - r.top,
-                                0, 0, appinst, 0);
+            id = CreateWindow(reinterpret_cast<const wchar_t *>(windowClassName.utf16()),
+                              reinterpret_cast<const wchar_t *>(title.utf16()), style,
+                              r.left, r.top, r.right - r.left, r.bottom - r.top,
+                              0, 0, appinst, 0);
         }
         setWinId(id);
     } else if (topLevel) {                       // create top-level widget
@@ -303,8 +294,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             }
         }
 
-        const TCHAR *cname = reinterpret_cast<const TCHAR *> (windowClassName.utf16());
-        id = CreateWindowEx(exsty, cname, ttitle, style,
+        id = CreateWindowEx(exsty, reinterpret_cast<const wchar_t *>(windowClassName.utf16()),
+                            reinterpret_cast<const wchar_t *>(title.utf16()), style,
                             x, y, w, h,
                             0, 0, appinst, 0);
 
@@ -314,16 +305,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         if ((flags & Qt::WindowStaysOnTopHint) || (type == Qt::ToolTip))
             SetWindowPos(id, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create child widget
-        QT_WA({
-            const TCHAR *cname = (TCHAR*)windowClassName.utf16();
-            id = CreateWindowEx(exsty, cname, ttitle, style,
-                                data.crect.left(), data.crect.top(), data.crect.width(), data.crect.height(),
+        id = CreateWindowEx(exsty, (wchar_t*)windowClassName.utf16(), (wchar_t*)title.utf16(), style,
+                            data.crect.left(), data.crect.top(), data.crect.width(), data.crect.height(),
                             parentw, NULL, appinst, NULL);
-        } , {
-            id = CreateWindowExA(exsty, windowClassName.toLatin1(), title95, style,
-                                 data.crect.left(), data.crect.top(), data.crect.width(), data.crect.height(),
-                            parentw, NULL, appinst, NULL);
-        });
         if (!id)
             qErrnoWarning("QWidget::create: Failed to create window");
         SetWindowPos(id, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -510,7 +494,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
         if ((oldstate & Qt::WindowMaximized) != (newstate & Qt::WindowMaximized)) {
              if (!(newstate & Qt::WindowMaximized)) {
-                int style = GetWindowLongW(internalWinId(), GWL_STYLE) | WS_BORDER | WS_POPUP | WS_CAPTION;
+                int style = GetWindowLong(internalWinId(), GWL_STYLE) | WS_BORDER | WS_POPUP | WS_CAPTION;
                 SetWindowLong(internalWinId(), GWL_STYLE, style);
                 SetWindowLong(internalWinId(), GWL_EXSTYLE, GetWindowLong (internalWinId(), GWL_EXSTYLE) & ~ WS_EX_NODRAG);
             }
@@ -535,11 +519,11 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowFullScreen) {
                 if (d->topData()->normalGeometry.width() < 0 && !(oldstate & Qt::WindowMaximized))
                     d->topData()->normalGeometry = geometry();
-                d->topData()->savedFlags = (Qt::WindowFlags) GetWindowLongA(internalWinId(), GWL_STYLE);
+                d->topData()->savedFlags = (Qt::WindowFlags)GetWindowLong(internalWinId(), GWL_STYLE);
                 UINT style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
                 if (isVisible())
                     style |= WS_VISIBLE;
-                SetWindowLongA(internalWinId(), GWL_STYLE, style);
+                SetWindowLong(internalWinId(), GWL_STYLE, style);
                 QRect r = qApp->desktop()->screenGeometry(this);
                 UINT swpf = SWP_FRAMECHANGED;
                 if (newstate & Qt::WindowActive)
@@ -550,7 +534,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 UINT style = d->topData()->savedFlags;
                 if (isVisible())
                     style |= WS_VISIBLE;
-                SetWindowLongA(internalWinId(), GWL_STYLE, style);
+                SetWindowLong(internalWinId(), GWL_STYLE, style);
                 UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE;
                 if (newstate & Qt::WindowActive)
                     swpf |= SWP_NOACTIVATE;

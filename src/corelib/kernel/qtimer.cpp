@@ -103,9 +103,8 @@ QT_BEGIN_NAMESPACE
 
     Note that QTimer's accuracy depends on the underlying operating
     system and hardware. Most platforms support an accuracy of
-    1 millisecond, but Windows 98 supports only 55. If Qt is
-    unable to deliver the requested number of timer clicks, it will
-    silently discard some.
+    1 millisecond. If Qt is unable to deliver the requested number of
+    timer clicks, it will silently discard some.
 
     An alternative to using QTimer is to call QObject::startTimer()
     for your object and reimplement the QObject::timerEvent() event

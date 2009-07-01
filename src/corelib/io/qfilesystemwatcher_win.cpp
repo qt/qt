@@ -56,9 +56,7 @@ QT_BEGIN_NAMESPACE
 QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine()
     : msg(0)
 {
-    HANDLE h = QT_WA_INLINE(CreateEventW(0, false, false, 0),
-                                CreateEventA(0, false, false, 0));
-    if (h != INVALID_HANDLE_VALUE) {
+    if (HANDLE h = CreateEvent(0, false, false, 0)) {
         handles.reserve(MAXIMUM_WAIT_OBJECTS);
         handles.append(h);
     }
@@ -216,13 +214,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             const QString effectiveAbsolutePath =
                 isDir ? (absolutePath + QLatin1Char('/')) : absolutePath;
 
-            QT_WA({
-                    handle.handle = FindFirstChangeNotificationW((TCHAR *) QDir::toNativeSeparators(effectiveAbsolutePath).utf16(),
-                                                      false, flags);
-            },{
-                    handle.handle = FindFirstChangeNotificationA(QDir::toNativeSeparators(effectiveAbsolutePath).toLocal8Bit(),
-                                                      false, flags);
-            })
+            handle.handle = FindFirstChangeNotification((wchar_t*) QDir::toNativeSeparators(effectiveAbsolutePath).utf16(), false, flags);
             handle.flags = flags;
             if (handle.handle == INVALID_HANDLE_VALUE)
                 continue;

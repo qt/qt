@@ -233,9 +233,9 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
         return QString();
 
     const int wclen_auto = 4096;
-    WCHAR wc_auto[wclen_auto];
+    wchar_t wc_auto[wclen_auto];
     int wclen = wclen_auto;
-    WCHAR *wc = wc_auto;
+    wchar_t *wc = wc_auto;
     int len;
     QString sp;
     bool prepend = false;
@@ -275,7 +275,7 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
             } else {
                 wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
-                wc = new WCHAR[wclen];
+                wc = new wchar_t[wclen];
                 // and try again...
             }
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
@@ -341,7 +341,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
     const char *next = 0;
     QString s;
     while((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
-        WCHAR wc[2] ={0};
+        wchar_t wc[2] ={0};
         int charlength = next - mb;
         int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
         if (len>0) {
@@ -1042,16 +1042,10 @@ QList<int> QTextCodec::availableMibs()
     This might be needed for some applications that want to use their
     own mechanism for setting the locale.
 
-    Setting this codec is not supported on DOS based Windows.
-
     \sa codecForLocale()
 */
 void QTextCodec::setCodecForLocale(QTextCodec *c)
 {
-#ifdef Q_WS_WIN
-    if (QSysInfo::WindowsVersion& QSysInfo::WV_DOS_based)
-	return;
-#endif
     localeMapper = c;
     if (!localeMapper)
         setupLocaleMapper();

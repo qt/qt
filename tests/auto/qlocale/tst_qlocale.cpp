@@ -1093,12 +1093,7 @@ void tst_QLocale::macDefaultLocale()
 static QString getWinLocaleInfo(LCTYPE type)
 {
     LCID id = GetThreadLocale();
-    int cnt = 0;
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type, 0, 0)*2;
-    } , {
-        cnt = GetLocaleInfoA(id, type, 0, 0);
-    });
+    int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", type);
@@ -1107,38 +1102,20 @@ static QString getWinLocaleInfo(LCTYPE type)
 
     QByteArray buff(cnt, 0);
 
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type,
-                                reinterpret_cast<wchar_t*>(buff.data()),
-                                buff.size()/2);
-    } , {
-        cnt = GetLocaleInfoA(id, type,
-                                buff.data(), buff.size());
-    });
+    cnt = GetLocaleInfo(id, type, reinterpret_cast<wchar_t*>(buff.data()), buff.size() / 2);
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", type);
         return QString();
     }
 
-    QString result;
-    QT_WA({
-        result = QString::fromUtf16(reinterpret_cast<ushort*>(buff.data()));
-    } , {
-        result = QString::fromLocal8Bit(buff.data());
-    });
-    return result;
+    return QString::fromWCharArray(reinterpret_cast<wchar_t*>(buff.data()));
 }
 
 static void setWinLocaleInfo(LCTYPE type, const QString &value)
 {
     LCID id = GetThreadLocale();
-
-    QT_WA({
-        SetLocaleInfoW(id, type, reinterpret_cast<const wchar_t*>(value.utf16()));
-    } , {
-        SetLocaleInfoA(id, type, value.toLocal8Bit());
-    });
+    SetLocaleInfo(id, type, reinterpret_cast<const wchar_t*>(value.utf16()));
 }
 
 class RestoreLocaleHelper {

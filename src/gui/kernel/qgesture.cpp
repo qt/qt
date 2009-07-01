@@ -266,6 +266,22 @@ void QGesture::setPos(const QPoint &point)
     d_func()->pos = point;
 }
 
+/*! \fn void QGesture::setAccepted(bool accepted)
+  Marks the gesture with the value of \a accepted.
+ */
+
+/*! \fn bool QGesture::isAccepted() const
+  Returns true if the gesture is marked accepted.
+ */
+
+/*! \fn void QGesture::accept()
+  Marks the gesture accepted.
+*/
+
+/*! \fn void QGesture::ignore()
+  Marks the gesture ignored.
+*/
+
 /*!
     \class QPanningGesture
     \since 4.6

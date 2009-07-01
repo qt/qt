@@ -6322,6 +6322,8 @@ void QGraphicsItem::releaseGesture(int gestureId)
 */
 void QGraphicsItem::setGestureEnabled(int gestureId, bool enable)
 {
+    Q_UNUSED(gestureId);
+    Q_UNUSED(enable);
     //###
 }
 
