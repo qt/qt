@@ -151,7 +151,7 @@ namespace QTest {
         int length = strlen(str);
         for (int pos = 0; pos < length; pos +=255) {
             QString uniText = QString::fromLatin1(str + pos, 255);
-            OutputDebugStringW((const LPCWSTR) uniText.utf16());
+            OutputDebugString((wchar_t*)uniText.utf16());
         }
         if (QTestLog::outputFileName())
 #elif defined(Q_OS_WIN)
