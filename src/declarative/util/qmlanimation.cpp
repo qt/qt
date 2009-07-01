@@ -1347,17 +1347,9 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
             d->animations.at(i)->setTarget(d->userProperty);
    }
 
-    //XXX removing and readding isn't ideal; we do it to get around the problem mentioned below.
-    for (int i = d->ag->animationCount()-1; i >= 0; --i)
-        d->ag->takeAnimationAt(i);
-
     for (int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
         d->animations.at(ii)->transition(actions, modified, direction);
-        d->ag->addAnimation(d->animations.at(ii)->qtAnimation());
     }
-
-    //XXX changing direction means all the animations play in reverse, while we only want the ordering reversed.
-    //d->ag->setDirection(direction == Backward ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
 }
 
 QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation)
@@ -1797,8 +1789,11 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         int interpolatorType;       //for Number/ColorAnimation
         int prevInterpolatorType;   //for generic
         QVariantAnimation::Interpolator interpolator;
+        bool reverse;
         void setValue(qreal v)
         {
+            if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
+                v = 1 - v;
             QmlTimeLineValue::setValue(v);
             for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
@@ -1844,6 +1839,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     PropertyUpdater *data = new PropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
+    data->reverse = direction == Backward ? true : false;
 
     QSet<QObject *> objs;
     for (int ii = 0; ii < actions.count(); ++ii) {
