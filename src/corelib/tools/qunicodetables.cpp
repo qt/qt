@@ -4336,13 +4336,13 @@ static inline const QUnicodeTables::Properties *qGetProp(ushort ucs2)
     return uc_properties + index;
 }
 
-Q_CORE_EXPORT const QUnicodeTables::Properties *QUnicodeTables::properties(uint ucs4)
+Q_CORE_EXPORT const QUnicodeTables::Properties * QT_FASTCALL QUnicodeTables::properties(uint ucs4)
 {
     int index = GET_PROP_INDEX(ucs4);
     return uc_properties + index;
 }
 
-Q_CORE_EXPORT const QUnicodeTables::Properties *QUnicodeTables::properties(ushort ucs2)
+Q_CORE_EXPORT const QUnicodeTables::Properties * QT_FASTCALL QUnicodeTables::properties(ushort ucs2)
 {
     int index = GET_PROP_INDEX_UCS2(ucs2);
     return uc_properties + index;
