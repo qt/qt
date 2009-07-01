@@ -1420,17 +1420,9 @@ inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#ifdef Q_OS_WINCE
-#define QT_WA(uni, ansi) uni
-#define QT_WA_INLINE(uni, ansi) (uni)
-#elif defined(UNICODE)
-#define QT_WA(uni, ansi) if (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)) { uni } else { ansi }
+#define QT_WA(unicode, ansi) unicode
+#define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#define QT_WA_INLINE(uni, ansi) (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based) ? uni : ansi)
-#else
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) ansi
-#endif
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
