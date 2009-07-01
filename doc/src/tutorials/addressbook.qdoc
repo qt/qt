@@ -818,21 +818,23 @@
 
     \image addressbook-tutorial-part6-screenshot.png
 
-    Although browsing and searching for contacts are useful features, our address
-    book is not really fully ready for use until we can saving existing contacts
-    and load them again at a later time.
-    Qt provides a number of classes for \l{Input/Output and Networking}{input and output},
-    but we have chosen to use two which are simple to use in combination: QFile and
-    QDataStream.
+    Although browsing and searching for contacts are useful features, our
+    address book is not ready for use until we can save existing contacts and
+    load them again at a later time.
 
-    A QFile object represents a file on disk that can be read from and written to.
-    QFile is a subclass of the more general QIODevice class which represents many
-    different kinds of devices.
+    Qt provides a number of classes for \l{Input/Output and Networking}
+    {input and output}, but we have chosen to use two which are simple to use
+    in combination: QFile and QDataStream.
 
-    A QDataStream object is used to serialize binary data so that it can be stored
-    in a QIODevice and retrieved again later. Reading from a QIODevice and writing
-    to it is as simple as opening the stream - with the respective device as a
-    parameter - and reading from or writing to it.
+    A QFile object represents a file on disk that can be read from and written
+    to. QFile is a subclass of the more general QIODevice class which
+    represents many different kinds of devices.
+
+    A QDataStream object is used to serialize binary data so that it can be
+    stored in a QIODevice and retrieved again later. Reading from a QIODevice
+    and writing to it is as simple as opening the stream - with the respective
+    device as a parameter - and reading from or writing to it.
+
 
     \section1 Defining the AddressBook Class
 
