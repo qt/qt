@@ -1877,7 +1877,8 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             tablet_button_state = new_tablet_button_state;
 
             QMacTabletHash *tabletHash = qt_mac_tablet_hash();
-            if (!tabletHash->contains(tabletPointRec.deviceID)) {
+            if (!tabletHash->contains(tabletPointRec.deviceID) && t != QEvent::TabletRelease) {
+                // Never discard TabletRelease events as they may be delivered *after* TabletLeaveProximity events
                 qWarning("handleTabletEvent: This tablet device is unknown"
                          " (received no proximity event for it). Discarding event.");
                 return false;
