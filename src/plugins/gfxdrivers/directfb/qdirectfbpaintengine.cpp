@@ -299,7 +299,7 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
     d->lastLockedHeight = -1;
     if (device->devType() == QInternal::CustomRaster) {
         d->dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
-    } else if (d->device->devType() == QInternal::Pixmap) {
+    } else if (device->devType() == QInternal::Pixmap) {
         QPixmapData *data = static_cast<QPixmap*>(device)->pixmapData();
         Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
         QDirectFBPixmapData *dfbPixmapData = static_cast<QDirectFBPixmapData*>(data);
@@ -342,7 +342,7 @@ bool QDirectFBPaintEngine::end()
 #endif
     d->surface->SetClip(d->surface, NULL);
     d->surface = 0;
-    return true;
+    return QRasterPaintEngine::end();
 }
 
 void QDirectFBPaintEngine::clipEnabledChanged()
