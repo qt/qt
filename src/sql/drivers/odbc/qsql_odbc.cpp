@@ -1843,14 +1843,7 @@ void QODBCDriverPrivate::checkUnicode()
     unicode = false;
     return;
 #endif
-#if defined(Q_WS_WIN)
-    QT_WA(
-    {},
-    {
-        unicode = false;
-        return;
-    })
-#endif
+
     SQLRETURN   r;
     SQLUINTEGER fFunc;
 

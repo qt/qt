@@ -194,7 +194,7 @@ protected:
             /* If we don't open stdout in "binary" mode on Windows, it will translate
              * 0xA into 0xD 0xA. See Trolltech task 173619, for an example. */
             _setmode(_fileno(stdout), _O_BINARY);
-            m_stdout = QT_WA_INLINE(_wfdopen(_fileno(stdout), L"wb"),_fdopen(_fileno(stdout), "wb"));
+            m_stdout = _wfdopen(_fileno(stdout), L"wb");
             out->open(m_stdout, QIODevice::WriteOnly);
 #else
             out->open(stdout, QIODevice::WriteOnly);

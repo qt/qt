@@ -89,18 +89,12 @@ extern "C"
 int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR /*cmdParamarg*/, int cmdShow)
 #endif
 {
-    QByteArray cmdParam;
-    QT_WA({
-        LPTSTR cmdline = GetCommandLineW();
-        cmdParam = QString::fromUtf16((const unsigned short *)cmdline).toLocal8Bit();
-    }, {
-        cmdParam = GetCommandLineA();
-    });
+    QByteArray cmdParam = QString::fromWCharArray(GetCommandLine()).toLocal8Bit();
 
 #if defined(Q_OS_WINCE)
-    TCHAR appName[256];
-    GetModuleFileName(0, appName, 255);
-    cmdParam.prepend(QString::fromLatin1("\"%1\" ").arg(QString::fromUtf16((const unsigned short *)appName)).toLocal8Bit());
+    wchar_t appName[MAX_PATH];
+    GetModuleFileName(0, appName, MAX_PATH);
+    cmdParam.prepend(QString(QLatin1String("\"%1\" ")).arg(QString::fromWCharArray(appName)).toLocal8Bit());
 #endif
 
     int argc = 0;
@@ -108,9 +102,9 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR /*cmdPara
     qWinMain(instance, prevInstance, cmdParam.data(), cmdShow, argc, argv);
 
 #if defined(Q_OS_WINCE)
-    TCHAR uniqueAppID[256];
-    GetModuleFileName(0, uniqueAppID, 255);
-    QString uid = QString::fromUtf16((const unsigned short *)uniqueAppID).toLower().replace(QLatin1Char('\\'), QLatin1Char('_'));
+    wchar_t uniqueAppID[MAX_PATH];
+    GetModuleFileName(0, uniqueAppID, MAX_PATH);
+    QString uid = QString::fromWCharArray(uniqueAppID).toLower().replace(QLatin1String("\\"), QLatin1String("_"));
 
     // If there exists an other instance of this application
     // it will be the owner of a mutex with the unique ID.
