@@ -274,8 +274,6 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
             bool forward;
             AnchorVertex *prev = beforeSequence;
             int intervalFrom = 0;
-            int intervalTo = candidates.count() + 1;
-            bool forwardSet = false;
 
             // Check for directionality (origin). We don't want to destroy that information,
             // thus we only combine anchors with the same direction.
