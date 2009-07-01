@@ -98,6 +98,9 @@ static void qt_SetDefaultIapL()
                             activeLanConnectionFound = ETrue;
                             break;
                         }
+                        // close & reopen from previous attach
+                        conn.Close();
+                        User::LeaveIfError(conn.Open(serv));
                     }
                 }
             }
@@ -106,10 +109,10 @@ static void qt_SetDefaultIapL()
 
     if (!activeLanConnectionFound) {
         /*
-         * no active connections yet
+         * no active LAN connections yet
          * offer IAP dialog to user
          */
-        conn.Close();
+        conn.Close(); // might be opened after attach
         User::LeaveIfError(conn.Open(serv));
         User::LeaveIfError(conn.Start());
         User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iapName));
