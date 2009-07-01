@@ -123,6 +123,7 @@ public:
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
     QByteArray read(qint64 maxSize = -1);
+    QByteArray readAny();
 
     bool isFinished() const;
 
