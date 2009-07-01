@@ -303,24 +303,31 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
     }
 }
 
+void QGraphicsSceneIndexPrivate::init()
+{
+    if (!scene)
+        return;
+
+    QObject::connect(scene, SIGNAL(sceneRectChanged(const QRectF&)),
+                     q_func(), SLOT(updateSceneRect(const QRectF&)));
+}
+
 /*!
     Constructs an abstract scene index for a given \a scene.
 */
 QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsScene *scene)
 : QObject(*new QGraphicsSceneIndexPrivate(scene), scene)
 {
-    if (scene) {
-        connect(scene, SIGNAL(sceneRectChanged(const QRectF&)),
-                this, SLOT(updateSceneRect(const QRectF&)));
-    }
+    d_func()->init();
 }
 
 /*!
     \internal
 */
-QGraphicsSceneIndex::QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene)
+QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsSceneIndexPrivate &dd, QGraphicsScene *scene)
     : QObject(dd, scene)
 {
+    d_func()->init();
 }
 
 /*!

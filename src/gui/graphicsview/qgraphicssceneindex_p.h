@@ -114,7 +114,7 @@ protected:
     virtual void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
     virtual void prepareBoundingRectChange(const QGraphicsItem *item);
 
-    QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene);
+    QGraphicsSceneIndex(QGraphicsSceneIndexPrivate &dd, QGraphicsScene *scene);
 
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
@@ -133,6 +133,7 @@ public:
     QGraphicsSceneIndexPrivate(QGraphicsScene *scene);
     ~QGraphicsSceneIndexPrivate();
 
+    void init();
     static bool itemCollidesWithPath(const QGraphicsItem *item, const QPainterPath &path, Qt::ItemSelectionMode mode);
 
     void recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,

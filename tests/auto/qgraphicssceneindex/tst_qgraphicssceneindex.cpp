@@ -64,6 +64,7 @@ private slots:
     void overlappedItems();
     void movingItems_data();
     void movingItems();
+    void connectedToSceneRectChanged();
 
 private:
     void common_data();
@@ -214,6 +215,18 @@ void tst_QGraphicsSceneIndex::movingItems()
     QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 11);
 }
 
+void tst_QGraphicsSceneIndex::connectedToSceneRectChanged()
+{
+
+    class MyScene : public QGraphicsScene
+    { public: using QGraphicsScene::receivers; };
+
+    MyScene scene; // Uses QGraphicsSceneBspTreeIndex by default.
+    QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(const QRectF&))), 1);
+
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex); // QGraphicsSceneLinearIndex
+    QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(const QRectF&))), 1);
+}
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)
 #include "tst_qgraphicssceneindex.moc"
