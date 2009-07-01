@@ -286,6 +286,10 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
 
 CentralWidget::~CentralWidget()
 {
+#ifndef QT_NO_PRINTER
+    delete printer;
+#endif
+
     QHelpEngineCore engine(collectionFile, 0);
     if (!engine.setupData())
         return;
@@ -357,10 +361,10 @@ void CentralWidget::findNext()
 
 void CentralWidget::nextPage()
 {
-    if(tabWidget->currentIndex() < tabWidget->count() -1)
-        tabWidget->setCurrentIndex(tabWidget->currentIndex() +1);
-    else
-        tabWidget->setCurrentIndex(0);
+    int index = tabWidget->currentIndex() + 1;
+    if (index >= tabWidget->count())
+        index = 0;
+    tabWidget->setCurrentIndex(index);
 }
 
 void CentralWidget::resetZoom()
@@ -376,10 +380,9 @@ void CentralWidget::resetZoom()
 void CentralWidget::previousPage()
 {
     int index = tabWidget->currentIndex() -1;
-    if(index >= 0)
-        tabWidget->setCurrentIndex(index);
-    else
-        tabWidget->setCurrentIndex(tabWidget->count() -1);
+    if (index < 0)
+        index = tabWidget->count() -1;
+    tabWidget->setCurrentIndex(index);
 }
 
 void CentralWidget::findPrevious()
@@ -400,7 +403,8 @@ void CentralWidget::closeTab()
 void CentralWidget::setSource(const QUrl &url)
 {
     HelpViewer *viewer = currentHelpViewer();
-    HelpViewer *lastViewer = qobject_cast<HelpViewer*>(tabWidget->widget(lastTabPage));
+    HelpViewer *lastViewer =
+        qobject_cast<HelpViewer*>(tabWidget->widget(lastTabPage));
 
     if (!viewer && !lastViewer) {
         viewer = new HelpViewer(helpEngine, this);
