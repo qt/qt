@@ -86,7 +86,6 @@ public:
 
     QVariant read() const;
     void write(const QVariant &) const;
-    void emitSignal();
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;
@@ -101,7 +100,6 @@ public:
     enum Type { Invalid = 0x00, 
                 Property = 0x01, 
                 SignalProperty = 0x02,
-                Signal = 0x04,
                 Default = 0x08,
                 Attached = 0x10 };
 
@@ -126,7 +124,6 @@ public:
     QmlBindableValue *binding() const;
     QmlBindableValue *setBinding(QmlBindableValue *) const;
 
-    static int findSignal(const QObject *, const char *);
     static QmlMetaProperty createProperty(QObject *, const QString &);
 
     int coreIndex() const;

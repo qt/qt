@@ -124,7 +124,6 @@ public:
     enum { Invalid,
            Core, 
            Attached, 
-           Signal,
            SignalProperty, 
            Variant
     } type;

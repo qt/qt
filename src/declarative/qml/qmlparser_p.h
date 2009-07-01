@@ -157,6 +157,8 @@ namespace QmlParser
             DynamicSignal(const DynamicSignal &);
 
             QByteArray name;
+            QList<QByteArray> parameterTypes;
+            QList<QByteArray> parameterNames;
         };
         struct DynamicSlot {
             DynamicSlot();

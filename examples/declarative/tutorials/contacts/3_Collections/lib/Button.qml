@@ -18,7 +18,7 @@ Item {
         MouseRegion {
             id: buttonMouseRegion
             anchors.fill: buttonRect
-            onClicked: { button.clicked.emit() }
+            onClicked: { button.clicked() }
         }
         states: [
             State {

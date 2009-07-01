@@ -60,7 +60,7 @@ Rect {
 //! [use signal]
         MouseRegion {
             anchors.fill: parent
-            onClicked: { toggle(); removeButton.confirmed.emit() }
+            onClicked: { toggle(); removeButton.confirmed() }
         }
 //! [use signal]
     }

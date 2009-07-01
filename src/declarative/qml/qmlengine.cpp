@@ -82,14 +82,6 @@ DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 
 QML_DEFINE_TYPE(QObject,Object)
 
-static QScriptValue qmlMetaProperty_emit(QScriptContext *ctx, QScriptEngine *engine)
-{
-    QmlMetaProperty mp = qscriptvalue_cast<QmlMetaProperty>(ctx->thisObject());
-    if (mp.type() & QmlMetaProperty::Signal)
-        mp.emitSignal();
-    return engine->nullValue();
-}
-
 struct StaticQtMetaObject : public QObject
 {
     static const QMetaObject *get()
@@ -143,11 +135,6 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentBindContext(0), currentExpression(0), q(e),
   rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
-    QScriptValue proto = scriptEngine.newObject();
-    proto.setProperty(QLatin1String("emit"), 
-                      scriptEngine.newFunction(qmlMetaProperty_emit));
-    scriptEngine.setDefaultPrototype(qMetaTypeId<QmlMetaProperty>(), proto);
-
     QScriptValue qtObject = scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 }
@@ -278,22 +265,18 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
         if (!prop.isValid())
             return QScriptValue();
 
-        if (prop.type() & QmlMetaProperty::Signal) {
-            return scriptEngine.newVariant(qVariantFromValue(prop));
+        QVariant var = prop.read();
+        if (prop.needsChangedNotifier())
+            capturedProperties << CapturedProperty(prop);
+        QObject *varobj = QmlMetaType::toQObject(var);
+        if (!varobj)
+            varobj = qvariant_cast<QObject *>(var);
+        if (varobj) {
+            return scriptEngine.newObject(objectClass, scriptEngine.newVariant(QVariant::fromValue(varobj)));
         } else {
-            QVariant var = prop.read();
-            if (prop.needsChangedNotifier())
-                capturedProperties << CapturedProperty(prop);
-            QObject *varobj = QmlMetaType::toQObject(var);
-            if (!varobj)
-                varobj = qvariant_cast<QObject *>(var);
-            if (varobj) {
-                return scriptEngine.newObject(objectClass, scriptEngine.newVariant(QVariant::fromValue(varobj)));
-            } else {
-                if (var.type() == QVariant::Bool)
-                    return QScriptValue(&scriptEngine, var.toBool());
-                return scriptEngine.newVariant(var);
-            }
+            if (var.type() == QVariant::Bool)
+                return QScriptValue(&scriptEngine, var.toBool());
+            return scriptEngine.newVariant(var);
         }
     }
 
@@ -355,13 +338,6 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::SignalProperty;
-        cache.core = prop.coreIndex();
-        return true;
-
-    } else if (prop.type() & QmlMetaProperty::Signal) {
-
-        cache.object = obj;
-        cache.type = QmlBasicScriptNodeCache::Signal;
         cache.core = prop.coreIndex();
         return true;
 
