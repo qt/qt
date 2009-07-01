@@ -2571,9 +2571,7 @@ void QWindowsVistaStylePrivate::startAnimation(Animation *t)
 bool QWindowsVistaStylePrivate::transitionsEnabled() const
 {
     BOOL animEnabled = false;
-    if (QT_WA_INLINE(SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &animEnabled, 0),
-                     SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION, 0, &animEnabled, 0)
-    ))
+    if (SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &animEnabled, 0))
     {
         if (animEnabled)
             return true;

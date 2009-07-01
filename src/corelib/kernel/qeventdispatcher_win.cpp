@@ -495,7 +495,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatcher)
 {
     // make sure that multiple Qt's can coexist in the same process
-    QString className = QLatin1Strign("QEventDispatcherWin32_Internal_Widget") + QString::number(quintptr(qt_internal_proc));
+    QString className = QLatin1String("QEventDispatcherWin32_Internal_Widget") + QString::number(quintptr(qt_internal_proc));
 
     WNDCLASS wc;
     wc.style = 0;

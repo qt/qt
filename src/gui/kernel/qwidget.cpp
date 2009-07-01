@@ -863,8 +863,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
     \o X11: This feature relies on the use of an X server that supports ARGB visuals
     and a compositing window manager.
-    \o Windows: This feature requires Windows 2000 or later. The widget needs to have
-    the Qt::FramelessWindowHint window flag set for the translucency to work.
+    \o Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
+    for the translucency to work.
     \endlist
 
 
@@ -9964,8 +9964,8 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, Mac OS X, X11 platforms that
-  support the Composite extension, and Windows 2000 and later.
+  This feature is available on Embedded Linux, Mac OS X, Windows,
+  and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
 

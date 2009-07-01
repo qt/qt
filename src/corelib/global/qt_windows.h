@@ -60,7 +60,6 @@
 #endif
 
 // already defined when compiled with WINVER >= 0x0500
-// and we only use them in Qt::WV_2000 and Qt::WV_98
 #ifndef SPI_SETMENUANIMATION
 #define SPI_SETMENUANIMATION 0x1003
 #endif
@@ -112,5 +111,25 @@
 #ifndef ETO_PDY
 #define ETO_PDY 0x2000
 #endif
+
+// already defined when compiled with WINVER >= 0x0600
+#ifndef SPI_GETFLATMENU
+#define SPI_GETFLATMENU 0x1022
+#endif
+#ifndef CS_DROPSHADOW
+#define CS_DROPSHADOW 0x00020000
+#endif
+#ifndef CLEARTYPE_QUALITY
+#define CLEARTYPE_QUALITY 5
+#endif
+
+#ifdef Q_WS_WINCE
+#ifndef LR_DEFAULTSIZE
+#define LR_DEFAULTSIZE 0
+#endif
+#ifndef LR_SHARED
+#define LR_SHARED 0
+#endif
+#endif // Q_WS_WINCE
 
 #endif // QT_WINDOWS_H

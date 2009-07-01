@@ -77,27 +77,22 @@ public:
     QWin32PrintEnginePrivate *ep;
 };
 
-#ifndef Q_OS_WINCE
-// If you change this function, make sure you also change the unicode equivalent
-template <class PrintDialog, class DeviceMode>
-static PrintDialog *qt_win_make_PRINTDLG(QWidget *parent,
-                                         QPrintDialog *pdlg,
-                                         QPrintDialogPrivate *d, HGLOBAL *tempDevNames)
+static PRINTDLG* qt_win_make_PRINTDLG(QWidget *parent,
+                                      QPrintDialog *pdlg,
+                                      QPrintDialogPrivate *d, HGLOBAL *tempDevNames)
 {
-    PrintDialog *pd = new PrintDialog;
-    memset(pd, 0, sizeof(PrintDialog));
-    pd->lStructSize = sizeof(PrintDialog);
+    PRINTDLG *pd = new PRINTDLG;
+    memset(pd, 0, sizeof(PRINTDLG));
+    pd->lStructSize = sizeof(PRINTDLG);
 
-    void *devMode = sizeof(DeviceMode) == sizeof(DEVMODEA)
-                    ? (void *) d->ep->devModeA()
-                    : (void *) d->ep->devModeW();
+    DEVMODE *devMode = d->ep->devMode;
 
     if (devMode) {
-        int size = sizeof(DeviceMode) + ((DeviceMode *) devMode)->dmDriverExtra;
+        int size = sizeof(DEVMODE) + devMode->dmDriverExtra;
         pd->hDevMode = GlobalAlloc(GHND, size);
         {
             void *dest = GlobalLock(pd->hDevMode);
-            memcpy(dest, d->ep->devMode, size);
+            memcpy(dest, devMode, size);
             GlobalUnlock(pd->hDevMode);
         }
     } else {
@@ -140,20 +135,14 @@ static PrintDialog *qt_win_make_PRINTDLG(QWidget *parent,
 
     return pd;
 }
-#endif // Q_OS_WINCE
 
-// If you change this function, make sure you also change the ansi equivalent
-template <typename T>
-static void qt_win_clean_up_PRINTDLG(T **pd)
+static void qt_win_clean_up_PRINTDLG(PRINTDLG **pd)
 {
     delete *pd;
     *pd = 0;
 }
 
-
-// If you change this function, make sure you also change the ansi equivalent
-template <typename T>
-static void qt_win_read_back_PRINTDLG(T *pd, QPrintDialog *pdlg, QPrintDialogPrivate *d)
+static void qt_win_read_back_PRINTDLG(PRINTDLG *pd, QPrintDialog *pdlg, QPrintDialogPrivate *d)
 {
     if (pd->Flags & PD_SELECTION) {
         pdlg->setPrintRange(QPrintDialog::Selection);
@@ -236,32 +225,18 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
 
     bool result;
     bool done;
-    void *pd = QT_WA_INLINE(
-        (void*)(qt_win_make_PRINTDLG<PRINTDLGW, DEVMODEW>(parent, q, this, tempDevNames)),
-        (void*)(qt_win_make_PRINTDLG<PRINTDLGA, DEVMODEA>(parent, q, this, tempDevNames))
-        );
+    PRINTDLG *pd = qt_win_make_PRINTDLG(parent, q, this, tempDevNames);
 
     do {
         done = true;
-        QT_WA({
-            PRINTDLGW *pdw = reinterpret_cast<PRINTDLGW *>(pd);
-            result = PrintDlgW(pdw);
-            if ((pdw->Flags & PD_PAGENUMS) && (pdw->nFromPage > pdw->nToPage))
-                done = false;
-            if (result && pdw->hDC == 0)
-                result = false;
-            else if (!result)
-                done = true;
-        }, {
-            PRINTDLGA *pda = reinterpret_cast<PRINTDLGA *>(pd);
-            result = PrintDlgA(pda);
-            if ((pda->Flags & PD_PAGENUMS) && (pda->nFromPage > pda->nToPage))
-                done = false;
-            if (result && pda->hDC == 0)
-                result = false;
-            else if (!result)
-                done = true;
-        });
+        result = PrintDlg(pd);
+        if ((pd->Flags & PD_PAGENUMS) && (pd->nFromPage > pd->nToPage))
+            done = false;
+        if (result && pd->hDC == 0)
+            result = false;
+        else if (!result)
+            done = true;
+
         if (!done) {
             QMessageBox::warning(0, QPrintDialog::tr("Print"),
                                  QPrintDialog::tr("The 'From' value cannot be greater than the 'To' value."),
@@ -275,15 +250,8 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
 
     // write values back...
     if (result) {
-        QT_WA({
-            PRINTDLGW *pdw = reinterpret_cast<PRINTDLGW *>(pd);
-            qt_win_read_back_PRINTDLG(pdw, q, this);
-            qt_win_clean_up_PRINTDLG(&pdw);
-        }, {
-            PRINTDLGA *pda = reinterpret_cast<PRINTDLGA *>(pd);
-            qt_win_read_back_PRINTDLG(pda, q, this);
-            qt_win_clean_up_PRINTDLG(&pda);
-        });
+        qt_win_read_back_PRINTDLG(pd, q, this);
+        qt_win_clean_up_PRINTDLG(&pd);
         // update printer validity
         printer->d_func()->validPrinter = !ep->name.isEmpty();
     }
