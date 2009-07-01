@@ -709,6 +709,10 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
     \code
     ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
     \endcode
+
+    When used in a transition, ColorAnimation will by default animate
+    all properties of type color that are changing. If a property or properties
+    are explicity set for the animation, then those will be used instead.
 */
 /*!
     \internal
@@ -728,6 +732,7 @@ QmlColorAnimation::QmlColorAnimation(QObject *parent)
     d->init();
     d->interpolatorType = QMetaType::QColor;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
+    d->defaultToInterpolatorType = true;
 }
 
 QmlColorAnimation::~QmlColorAnimation()
@@ -1828,8 +1833,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
-    /* ### we used to select properties of name 'color' by default for color animations
-    props << QLatin1String("color");*/
+    bool useType = (props.isEmpty() && d->defaultToInterpolatorType) ? true : false;
 
     if (d->userProperty.isValid() && props.isEmpty() && !target()) {
         props.append(d->userProperty.value.name());
@@ -1853,7 +1857,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
         if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
-           (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
+           (props.contains(propertyName) || (!same && props.contains(sPropertyName))
+               || (useType && action.property.propertyType() == d->interpolatorType)) &&
            (!target() || target() == obj || (!same && target() == sObj))) {
             objs.insert(obj);
             Action myAction = action;
