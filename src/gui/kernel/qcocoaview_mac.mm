@@ -554,6 +554,13 @@ extern "C" {
     return !qwidget->testAttribute(Qt::WA_MacNoClickThrough);
 }
 
+- (NSView *)hitTest:(NSPoint)aPoint
+{
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents))
+        return nil; // You cannot hit a transparent for mouse event widget.
+    return [super hitTest:aPoint];
+}
+
 - (void)updateTrackingAreas
 {
     QMacCocoaAutoReleasePool pool;
@@ -794,16 +801,6 @@ extern "C" {
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
 
     QWidget *widgetToGetMouse = qwidget;
-    if (widgetToGetMouse->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // Simulate passing the event through since Cocoa doesn't do that for us.
-        // Start by building a tree up.
-        NSView *candidateView = [self viewUnderTransparentForMouseView:self
-                                                       widget:widgetToGetMouse
-                                                       withWindowPoint:windowPoint];
-        if (candidateView != nil) {
-            widgetToGetMouse = QWidget::find(WId(candidateView));
-        }
-    }
 
     // Mouse wheel deltas seem to tick in at increments of 0.1. Qt widgets
     // expect the delta to be a multiple of 120.
