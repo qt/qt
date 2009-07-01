@@ -51,6 +51,102 @@
 
 QT_BEGIN_NAMESPACE
 
+static void copyArgument(void *to, int id, const QVariant &arg)
+{
+    if (id == arg.userType()) {
+        switch (id) {
+        case QVariant::Bool:
+            *reinterpret_cast<bool *>(to) = arg.toBool();
+            return;
+
+        case QMetaType::UChar:
+            *reinterpret_cast<uchar *>(to) = arg.value<uchar>();
+            return;
+
+        case QMetaType::Short:
+            *reinterpret_cast<short *>(to) = arg.value<short>();
+            return;
+
+        case QMetaType::UShort:
+            *reinterpret_cast<ushort *>(to) = arg.value<ushort>();
+            return;
+
+        case QVariant::Int:
+            *reinterpret_cast<int *>(to) = arg.toInt();
+            return;
+
+        case QVariant::UInt:
+            *reinterpret_cast<uint *>(to) = arg.toUInt();
+            return;
+
+        case QVariant::LongLong:
+            *reinterpret_cast<qlonglong *>(to) = arg.toLongLong();
+            return;
+
+        case QVariant::ULongLong:
+            *reinterpret_cast<qulonglong *>(to) = arg.toULongLong();
+            return;
+
+        case QVariant::Double:
+            *reinterpret_cast<double *>(to) = arg.toDouble();
+            return;
+
+        case QVariant::String:
+            *reinterpret_cast<QString *>(to) = arg.toString();
+            return;
+
+        case QVariant::ByteArray:
+            *reinterpret_cast<QByteArray *>(to) = arg.toByteArray();
+            return;
+
+        case QVariant::StringList:
+            *reinterpret_cast<QStringList *>(to) = arg.toStringList();
+            return;
+        }
+
+        if (id == QDBusMetaTypeId::variant) {
+            *reinterpret_cast<QDBusVariant *>(to) = arg.value<QDBusVariant>();
+            return;
+        } else if (id == QDBusMetaTypeId::objectpath) {
+            *reinterpret_cast<QDBusObjectPath *>(to) = arg.value<QDBusObjectPath>();
+            return;
+        } else if (id == QDBusMetaTypeId::signature) {
+            *reinterpret_cast<QDBusSignature *>(to) = arg.value<QDBusSignature>();
+            return;
+        }
+
+        // those above are the only types possible
+        // the demarshaller code doesn't demarshall anything else
+        qFatal("Found a decoded basic type in a D-Bus reply that shouldn't be there");
+    }
+
+    // if we got here, it's either an un-dermarshalled type or a mismatch
+    if (arg.userType() != QDBusMetaTypeId::argument) {
+        // it's a mismatch
+        //qWarning?
+        return;
+    }
+
+    // is this type registered?
+    const char *userSignature = QDBusMetaType::typeToSignature(id);
+    if (!userSignature || !*userSignature) {
+        // type not registered
+        //qWarning?
+        return;
+    }
+
+    // is it the same signature?
+    QDBusArgument dbarg = arg.value<QDBusArgument>();
+    if (dbarg.currentSignature() != QLatin1String(userSignature)) {
+        // not the same signature, another mismatch
+        //qWarning?
+        return;
+    }
+
+    // we can demarshall
+    QDBusMetaType::demarshall(dbarg, id, to);
+}
+
 QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString &p,
                                              const QString &iface, const QDBusConnection &con)
     : QDBusAbstractInterfacePrivate(serv, p, iface, con, true), metaObject(0)
@@ -186,23 +282,37 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
 
             // we will assume that the input arguments were passed correctly
             QVariantList args;
-            for (int i = 1; i <= inputTypesCount; ++i)
+            int i = 1;
+            for ( ; i <= inputTypesCount; ++i)
                 args << QVariant(inputTypes[i], argv[i]);
 
             // make the call
-            QPointer<QDBusInterface> qq = q;
             QDBusMessage reply = q->callWithArgumentList(QDBus::Block, methodName, args);
-            args.clear();
 
-            // we ignore return values
+            if (reply.type() == QDBusMessage::ReplyMessage) {
+                // attempt to demarshall the return values
+                args = reply.arguments();
+                QVariantList::ConstIterator it = args.constBegin();
+                const int *outputTypes = metaObject->outputTypesForMethod(id);
+                int outputTypesCount = *outputTypes++;
 
-            // access to "this" or to "q" below this point must check for "qq"
-            // we may have been deleted!
+                if (*mm.typeName()) {
+                    // this method has a return type
+                    if (argv[0] && it != args.constEnd())
+                        copyArgument(argv[0], *outputTypes++, *it);
 
-            if (!qq.isNull())
-                lastError = reply;
+                    // skip this argument even if we didn't copy it
+                    --outputTypesCount;
+                    ++it;
+                }
+
+                for (int j = 0; j < outputTypesCount && it != args.constEnd(); ++i, ++j, ++it) {
+                    copyArgument(argv[i], outputTypes[j], *it);
+                }
+            }
 
             // done
+            lastError = reply;
             return -1;
         }
     }
