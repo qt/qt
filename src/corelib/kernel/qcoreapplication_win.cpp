@@ -45,14 +45,15 @@
 #include "qt_windows.h"
 #include "qvector.h"
 #include "qmutex.h"
+#include "qfileinfo.h"
 #include "qcorecmdlineargs_p.h"
 #include <private/qthread_p.h>
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
 
-char         appFileName[MAX_PATH+1];                // application file name
-char         theAppName[MAX_PATH+1];                        // application name
+char         appFileName[MAX_PATH];                // application file name
+char         theAppName[MAX_PATH];                        // application name
 HINSTANCE appInst        = 0;                // handle to app instance
 HINSTANCE appPrevInst        = 0;                // handle to prev app instance
 int appCmdShow = 0;
@@ -73,48 +74,35 @@ Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window sho
     return appCmdShow;
 }
 
+Q_CORE_EXPORT QString qAppFileName()                // get application file name
+{
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileName(0, buffer, MAX_PATH);
+    return QString::fromWCharArray(buffer);
+}
 
 void set_winapp_name()
 {
     static bool already_set = false;
     if (!already_set) {
         already_set = true;
-#ifndef Q_OS_WINCE
-        GetModuleFileNameA(0, appFileName, sizeof(appFileName));
-        appFileName[sizeof(appFileName)-1] = 0;
-#else
-        QString afm;
-        afm.resize(sizeof(appFileName));
-        afm.resize(GetModuleFileName(0, (wchar_t *) (afm.unicode()), sizeof(appFileName)));
-        memcpy(appFileName, afm.toLatin1(), sizeof(appFileName));
-#endif
-        const char *p = strrchr(appFileName, '\\');        // skip path
-        if (p)
-            memcpy(theAppName, p+1, qstrlen(p));
-        int l = qstrlen(theAppName);
-        if ((l > 4) && !qstricmp(theAppName + l - 4, ".exe"))
-            theAppName[l-4] = '\0';                // drop .exe extension
 
-        if (appInst == 0) {
-            QT_WA({
-                appInst = GetModuleHandle(0);
-            }, {
-                appInst = GetModuleHandleA(0);
-            });
-        }
+        QString moduleName = qAppFileName();
+
+        QByteArray filePath = moduleName.toLocal8Bit();
+        QByteArray fileName = QFileInfo(moduleName).baseName().toLocal8Bit();
+
+        memcpy(appFileName, filePath.constData(), filePath.length());
+        memcpy(theAppName, fileName.constData(), fileName.length());
+
+        if (appInst == 0)
+            appInst = GetModuleHandle(0);
     }
-}
-
-Q_CORE_EXPORT QString qAppFileName()                // get application file name
-{
-    return QString::fromLatin1(appFileName);
 }
 
 QString QCoreApplicationPrivate::appName() const
 {
-    if (!theAppName[0])
-        set_winapp_name();
-    return QString::fromLatin1(theAppName);
+    return QFileInfo(qAppFileName()).baseName();
 }
 
 class QWinMsgHandlerCriticalSection
@@ -145,15 +133,11 @@ Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
         str = "(null)";
 
     staticCriticalSection.lock();
-    QT_WA({
-        QString s(QString::fromLocal8Bit(str));
-        s += QLatin1Char('\n');
-        OutputDebugStringW((TCHAR*)s.utf16());
-    }, {
-        QByteArray s(str);
-        s += '\n';
-        OutputDebugStringA(s.data());
-    })
+
+    QString s(QString::fromLocal8Bit(str));
+    s += QLatin1Char('\n');
+    OutputDebugString((wchar_t*)s.utf16());
+
     staticCriticalSection.unlock();
 }
 

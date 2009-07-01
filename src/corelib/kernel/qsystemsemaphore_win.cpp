@@ -87,11 +87,7 @@ HANDLE QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
     // Create it if it doesn't already exists.
     if (semaphore == 0) {
         QString safeName = makeKeyFileName();
-        QT_WA({
-            semaphore = CreateSemaphoreW(0, initialValue, MAXLONG, (TCHAR*)safeName.utf16());
-        }, {
-            semaphore = CreateSemaphoreA(0, initialValue, MAXLONG, safeName.toLocal8Bit().constData());
-        });
+        semaphore = CreateSemaphore(0, initialValue, MAXLONG, (wchar_t*)safeName.utf16());
         if (semaphore == NULL)
             setErrorString(QLatin1String("QSystemSemaphore::handle"));
     }

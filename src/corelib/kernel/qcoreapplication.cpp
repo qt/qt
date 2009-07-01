@@ -1742,18 +1742,10 @@ QString QCoreApplication::applicationFilePath()
         return d->cachedApplicationFilePath;
 
 #if defined( Q_WS_WIN )
-    QFileInfo filePath;
-    QT_WA({
-        wchar_t module_name[MAX_PATH+1];
-        GetModuleFileNameW(0, module_name, MAX_PATH);
-        module_name[MAX_PATH] = 0;
-        filePath = QString::fromUtf16((ushort *)module_name);
-    }, {
-        char module_name[MAX_PATH+1];
-        GetModuleFileNameA(0, module_name, MAX_PATH);
-        module_name[MAX_PATH] = 0;
-        filePath = QString::fromLocal8Bit(module_name);
-    });
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, MAX_PATH);
+    module_name[MAX_PATH] = 0;
+    QFileInfo filePath = QString::fromWCharArray(module_name);
 
     d->cachedApplicationFilePath = filePath.filePath();
     return d->cachedApplicationFilePath;
@@ -1902,13 +1894,13 @@ QStringList QCoreApplication::arguments()
         return list;
     }
 #ifdef Q_OS_WIN
-    QString cmdline = QT_WA_INLINE(QString::fromUtf16((unsigned short *)GetCommandLineW()), QString::fromLocal8Bit(GetCommandLineA()));
+    QString cmdline = QString::fromWCharArray(GetCommandLine());
 
 #if defined(Q_OS_WINCE)
     wchar_t tempFilename[MAX_PATH+1];
-    if (GetModuleFileNameW(0, tempFilename, MAX_PATH)) {
+    if (GetModuleFileName(0, tempFilename, MAX_PATH)) {
         tempFilename[MAX_PATH] = 0;
-        cmdline.prepend(QLatin1Char('\"') + QString::fromUtf16((unsigned short *)tempFilename) + QLatin1String("\" "));
+        cmdline.prepend(QLatin1Char('\"') + QString::fromWCharArray(tempFilename) + QLatin1String("\" "));
     }
 #endif // Q_OS_WINCE
 

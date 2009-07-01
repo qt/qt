@@ -915,7 +915,7 @@ QT_BEGIN_NAMESPACE
     \fn bool qt_winUnicode()
     \relates <QtGlobal>
 
-    Use QSysInfo::WindowsVersion and QSysInfo::WV_DOS_based instead.
+    This function always returns true.
 
     \sa QSysInfo
 */
@@ -1620,15 +1620,11 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
     winver = QSysInfo::WV_NT;
-#ifndef Q_OS_WINCE
-    OSVERSIONINFOA osver;
-    osver.dwOSVersionInfoSize = sizeof(osver);
-    GetVersionExA(&osver);
-#else
-    DWORD qt_cever = 0;
     OSVERSIONINFOW osver;
     osver.dwOSVersionInfoSize = sizeof(osver);
     GetVersionEx(&osver);
+#ifdef Q_OS_WINCE
+    DWORD qt_cever = 0;
     qt_cever = osver.dwMajorVersion * 100;
     qt_cever += osver.dwMinorVersion * 10;
 #endif
@@ -1904,29 +1900,16 @@ QString qt_error_string(int errorCode)
         break;
     default: {
 #ifdef Q_OS_WIN
-        QT_WA({
-            unsigned short *string = 0;
-            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-                          NULL,
-                          errorCode,
-                          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                          (LPTSTR)&string,
-                          0,
-                          NULL);
-            ret = QString::fromUtf16(string);
-            LocalFree((HLOCAL)string);
-        }, {
-            char *string = 0;
-            FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-                           NULL,
-                           errorCode,
-                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                           (LPSTR)&string,
-                           0,
-                           NULL);
-            ret = QString::fromLocal8Bit(string);
-            LocalFree((HLOCAL)string);
-        });
+        wchar_t *string = 0;
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+                      NULL,
+                      errorCode,
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      string,
+                      0,
+                      NULL);
+        ret = QString::fromWCharArray(string);
+        LocalFree((HLOCAL)string);
 
         if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
             ret = QString::fromLatin1("The specified module could not be found.");

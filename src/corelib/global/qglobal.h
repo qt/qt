@@ -147,7 +147,7 @@ namespace QT_NAMESPACE {}
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
-     WIN32    - Win32 (Windows 95/98/ME and Windows NT/2000/XP)
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      WINCE    - WinCE (Windows CE 5.0)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -1416,7 +1416,7 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
-inline QT3_SUPPORT bool qt_winUnicode() { return !(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based); }
+inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
