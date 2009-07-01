@@ -639,7 +639,7 @@ void QHelpSearchIndexWriter::run()
 
     QFileInfo fInfo(indexPath);
     if (fInfo.exists() && !fInfo.isWritable()) {
-        qWarning("Full Text Search, could not create index (missing permissions).");
+        qWarning("Full Text Search, could not create index (missing permissions for '%s').", qPrintable(indexPath));
         return;
     }
 
@@ -720,7 +720,7 @@ void QHelpSearchIndexWriter::run()
         }
 #if !defined(QT_NO_EXCEPTIONS)
     } catch (...) {
-        qWarning("Full Text Search, could not create index writer.");
+        qWarning("Full Text Search, could not create index writer in '%s'.", qPrintable(indexPath));
         return;
     }
 #endif
