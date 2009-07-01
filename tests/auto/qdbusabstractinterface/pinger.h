@@ -49,8 +49,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef PINGER_H_1246460303
-#define PINGER_H_1246460303
+#ifndef PINGER_H_1246463415
+#define PINGER_H_1246463415
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -79,21 +79,21 @@ public:
 
     Q_PROPERTY(RegisteredType complexProp READ complexProp WRITE setComplexProp)
     inline RegisteredType complexProp() const
-    { return qvariant_cast< RegisteredType >(internalPropGet("complexProp")); }
+    { return qvariant_cast< RegisteredType >(property("complexProp")); }
     inline void setComplexProp(RegisteredType value)
-    { internalPropSet("complexProp", qVariantFromValue(value)); }
+    { setProperty("complexProp", qVariantFromValue(value)); }
 
     Q_PROPERTY(QString stringProp READ stringProp WRITE setStringProp)
     inline QString stringProp() const
-    { return qvariant_cast< QString >(internalPropGet("stringProp")); }
+    { return qvariant_cast< QString >(property("stringProp")); }
     inline void setStringProp(const QString &value)
-    { internalPropSet("stringProp", qVariantFromValue(value)); }
+    { setProperty("stringProp", qVariantFromValue(value)); }
 
     Q_PROPERTY(QDBusVariant variantProp READ variantProp WRITE setVariantProp)
     inline QDBusVariant variantProp() const
-    { return qvariant_cast< QDBusVariant >(internalPropGet("variantProp")); }
+    { return qvariant_cast< QDBusVariant >(property("variantProp")); }
     inline void setVariantProp(const QDBusVariant &value)
-    { internalPropSet("variantProp", qVariantFromValue(value)); }
+    { setProperty("variantProp", qVariantFromValue(value)); }
 
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<RegisteredType> complexMethod()
