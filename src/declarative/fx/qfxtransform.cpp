@@ -84,6 +84,139 @@ void QFxTransform::update()
 }
 
 /*!
+    \qmlclass Scale
+    \brief A Scale object provides a way to scale an Item.
+
+    The scale object gives more control over scaling than using Item's scale property. Specifically,
+    it allows a different scale for the x and y axes, and allows the scale to be relative to an
+    arbitrary point.
+
+    The following example scales the X axis of the Rect, relative to its interior point 25, 25:
+    \qml
+    Rect {
+        width: 100; height: 100
+        color: "blue"
+        transform: Scale { originX: 25; originY: 25; xScale: 3}
+    }
+    \endqml
+*/
+
+QFxScale::QFxScale(QObject *parent)
+: QFxTransform(parent), _originX(0), _originY(0), _xScale(1), _yScale(1), _dirty(true)
+{
+}
+
+QFxScale::~QFxScale()
+{
+}
+
+/*!
+    \qmlproperty real Scale::originX
+    \qmlproperty real Scale::originY
+
+    The origin point for the scale. The scale will be relative to this point.
+*/
+qreal QFxScale::originX() const
+{
+    return _originX;
+}
+
+void QFxScale::setOriginX(qreal ox)
+{
+    _originX = ox;
+    update();
+}
+
+qreal QFxScale::originY() const
+{
+    return _originY;
+}
+
+void QFxScale::setOriginY(qreal oy)
+{
+    _originY = oy;
+    update();
+}
+
+/*!
+    \qmlproperty real Scale::xScale
+
+    The scaling factor for the X axis.
+*/
+qreal QFxScale::xScale() const
+{
+    return _xScale;
+}
+
+void QFxScale::setXScale(qreal scale)
+{
+    if (_xScale == scale)
+        return;
+    _xScale = scale;
+    update();
+    emit scaleChanged();
+}
+
+/*!
+    \qmlproperty real Scale::yScale
+
+    The scaling factor for the Y axis.
+*/
+qreal QFxScale::yScale() const
+{
+    return _yScale;
+}
+
+void QFxScale::setYScale(qreal scale)
+{
+    if (_yScale == scale)
+        return;
+    _yScale = scale;
+    update();
+    emit scaleChanged();
+}
+
+bool QFxScale::isIdentity() const
+{
+    return (_xScale == 1. && _yScale == 1.);
+}
+
+#if defined(QFX_RENDER_QPAINTER)
+QTransform QFxScale::transform() const
+{
+    if (_dirty) {
+        _transform = QTransform();
+        _dirty = false;
+        _transform.translate(_originX, _originY);
+        _transform.scale(_xScale, _yScale);
+        _transform.translate(-_originX, -_originY);
+    }
+    return _transform;
+}
+#elif defined(QFX_RENDER_OPENGL)
+QMatrix4x4 QFxScale::transform() const
+{
+    if (_dirty) {
+        _transform = QMatrix4x4();
+        _dirty = false;
+        _transform.translate(_originX, _originY);
+        _transform.scale(_xScale, _yScale);
+        _transform.translate(-_originX, -_originY);
+    }
+    return _transform;
+}
+#endif
+
+void QFxScale::update()
+{
+    _dirty = true;
+    QFxTransform::update();
+}
+
+QML_DEFINE_TYPE(QFxScale, Scale)
+
+
+/*!
     \qmlclass Axis
     \brief A Axis object defines an axis that can be used for rotation or translation.
 

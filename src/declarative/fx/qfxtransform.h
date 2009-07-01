@@ -68,6 +68,48 @@ public:
     virtual QSimpleCanvas::Matrix transform() const;
 };
 
+class Q_DECLARATIVE_EXPORT QFxScale : public QFxTransform
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal originX READ originX WRITE setOriginX)
+    Q_PROPERTY(qreal originY READ originY WRITE setOriginY)
+    Q_PROPERTY(qreal xScale READ xScale WRITE setXScale NOTIFY scaleChanged())
+    Q_PROPERTY(qreal yScale READ yScale WRITE setYScale NOTIFY scaleChanged())
+public:
+    QFxScale(QObject *parent=0);
+    ~QFxScale();
+
+    qreal originX() const;
+    void setOriginX(qreal);
+
+    qreal originY() const;
+    void setOriginY(qreal);
+
+    qreal xScale() const;
+    void setXScale(qreal);
+
+    qreal yScale() const;
+    void setYScale(qreal);
+
+    virtual bool isIdentity() const;
+    virtual QSimpleCanvas::Matrix transform() const;
+
+Q_SIGNALS:
+    void scaleChanged();
+
+private Q_SLOTS:
+    void update();
+private:
+    qreal _originX;
+    qreal _originY;
+    qreal _xScale;
+    qreal _yScale;
+
+    mutable bool _dirty;
+    mutable QSimpleCanvas::Matrix _transform;
+};
+
 class Q_DECLARATIVE_EXPORT QFxAxis : public QObject
 {
     Q_OBJECT
@@ -308,6 +350,7 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxTransform)
+QML_DECLARE_TYPE(QFxScale)
 QML_DECLARE_TYPE(QFxAxis)
 QML_DECLARE_TYPE(QFxRotation)
 QML_DECLARE_TYPE(QFxRotation3D)
