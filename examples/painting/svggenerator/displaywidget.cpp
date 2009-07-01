@@ -63,7 +63,7 @@ DisplayWidget::DisplayWidget(QWidget *parent)
 }
 
 //! [paint event]
-void DisplayWidget::paintEvent(QPaintEvent *event)
+void DisplayWidget::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter;
     painter.begin(this);

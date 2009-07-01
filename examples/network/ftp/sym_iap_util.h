@@ -42,9 +42,9 @@
 #define QSYM_IAP_UTIL_H
 
 #include <es_sock.h>
+#include <es_enum.h>
 #include <sys/socket.h>
 #include <net/if.h>
-#include <rconnmon.h>
 
 QString qt_TDesC2QStringL(const TDesC& aDescriptor) 
 {
@@ -59,7 +59,6 @@ static void qt_SetDefaultIapL()
 {
     TUint count;
     TRequestStatus status;
-    TUint ids[15];
 
     RSocketServ serv;
     CleanupClosePushL(serv);
@@ -67,57 +66,47 @@ static void qt_SetDefaultIapL()
     RConnection conn;
     CleanupClosePushL(conn);
 
-    RConnectionMonitor monitor;
-    CleanupClosePushL(monitor);
+    User::LeaveIfError(serv.Connect());
+    User::LeaveIfError(conn.Open(serv));
 
-    monitor.ConnectL();
-    monitor.GetConnectionCount(count, status);
-    User::WaitForRequest(status);
-    if(status.Int() != KErrNone) {
-        User::Leave(status.Int());
-    }
+    TConnectionInfoBuf connInfo;
 
-    TUint numSubConnections;
+    _LIT(KIapNameSetting, "IAP\\Name");
+    TBuf8<256> iap8Name;
 
-    if(count > 0) {
-        for (TInt i = 1; i <= count; i++) {
-            User::LeaveIfError(monitor.GetConnectionInfo(i, ids[i-1], numSubConnections));
-        }
-        /*
-         * get IAP value for first active connection
-         */
-        TBuf< 50 > iapName;
-        monitor.GetStringAttribute(ids[0], 0, KIAPName, iapName, status);
-        User::WaitForRequest(status);
-        if (status.Int() != KErrNone) {
-            User::Leave(status.Int());
+    if (conn.EnumerateConnections(count) == KErrNone) {
+        if(count > 0) {
+            for (TUint i = 1; i <= count; i++) {
+                // Note: GetConnectionInfo expects 1-based index.
+                if (conn.GetConnectionInfo(i, connInfo) == KErrNone) {
+                    if (conn.Attach(connInfo, RConnection::EAttachTypeNormal) == KErrNone) {
+                        conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name);
+                        break;
+                    }
+                }
+            }
         } else {
-            QString strIapName = qt_TDesC2QStringL(iapName);
-            struct ifreq ifReq;
-            strcpy(ifReq.ifr_name, strIapName.toLatin1().data());
-            User::LeaveIfError(setdefaultif(&ifReq));
+            /*
+             * no active connections yet
+             * use IAP dialog to select one
+             */
+            User::LeaveIfError(conn.Start());
+            User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name));
         }
-    } else {
-        /*
-         * no active connections yet
-         * use IAP dialog to select one
-         */
-        User::LeaveIfError(serv.Connect());
-        User::LeaveIfError(conn.Open(serv));
-        User::LeaveIfError(conn.Start());
 
-        _LIT(KIapNameSetting, "IAP\\Name");
-        TBuf8<50> iap8Name;
-        User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name));
         iap8Name.ZeroTerminate();
 
         conn.Stop();
 
         struct ifreq ifReq;
         strcpy(ifReq.ifr_name, (char*)iap8Name.Ptr());
+
         User::LeaveIfError(setdefaultif(&ifReq));
+
+        conn.Close();
+        serv.Close();
     }
-    CleanupStack::PopAndDestroy(&monitor);
+
     CleanupStack::PopAndDestroy(&conn);
     CleanupStack::PopAndDestroy(&serv);
 }
