@@ -42,6 +42,17 @@
 #ifndef QMLCOMPILER_P_H
 #define QMLCOMPILER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
 #include <QtDeclarative/qml.h>
@@ -50,9 +61,8 @@
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>
 
-class QStringList;
-
 QT_BEGIN_NAMESPACE
+
 class QmlEngine;
 class QmlComponent;
 class QmlCompiledComponent;
@@ -215,4 +225,5 @@ private:
 };
 
 QT_END_NAMESPACE
+
 #endif // QMLCOMPILER_P_H

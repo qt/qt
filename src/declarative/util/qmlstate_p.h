@@ -42,6 +42,17 @@
 #ifndef QMLSTATE_P_H
 #define QMLSTATE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtDeclarative/qmlstate.h>
 #include <private/qobject_p.h>
 #include <private/qmlanimation_p.h>
@@ -55,6 +66,8 @@ public:
     SimpleAction(const Action &a, State state = StartState) 
     {
         property = a.property;
+        specifiedObject = a.specifiedObject;
+        specifiedProperty = a.specifiedProperty;
         if (state == StartState) {
             value = a.fromValue;
             binding = property.binding();
@@ -67,6 +80,8 @@ public:
     QmlMetaProperty property;
     QVariant value;
     QmlBindableValue *binding;
+    QObject *specifiedObject;
+    QString specifiedProperty;
 };
 
 class QmlStatePrivate : public QObjectPrivate

@@ -633,7 +633,7 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
         if (isCustomParser) {
             // Custom parser types don't support signal properties
             if (testProperty(prop, obj)) {
-                if (deferred.contains(prop->name))
+                if (deferred.contains(QString::fromLatin1(prop->name.constData())))
                     deferredProps << prop;
                 else 
                     COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
@@ -644,7 +644,7 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
             if (isSignalPropertyName(prop->name))  {
                 COMPILE_CHECK(compileSignal(prop,obj));
             } else {
-                if (deferred.contains(prop->name))
+                if (deferred.contains(QString::fromLatin1(prop->name.constData())))
                     deferredProps << prop;
                 else 
                     COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
@@ -660,7 +660,7 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
         if (isCustomParser) {
             if (testProperty(prop, obj)) {
                 QMetaProperty p = deferred.isEmpty()?QMetaProperty():QmlMetaType::defaultProperty(obj->metaObject());
-                if (deferred.contains(p.name()))
+                if (deferred.contains(QString::fromLatin1(p.name())))
                     deferredProps << prop;
                 else
                     COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
@@ -669,7 +669,7 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
             }
         } else {
             QMetaProperty p = deferred.isEmpty()?QMetaProperty():QmlMetaType::defaultProperty(obj->metaObject());
-            if (deferred.contains(p.name()))
+            if (deferred.contains(QString::fromLatin1(p.name())))
                 deferredProps << prop;
             else
                 COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
@@ -1683,7 +1683,7 @@ QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
         return QStringList();
 
     QMetaClassInfo classInfo = mo->classInfo(idx);
-    QStringList rv = QString(QLatin1String(classInfo.value())).split(',');
+    QStringList rv = QString(QLatin1String(classInfo.value())).split(QLatin1Char(','));
     return rv;
 }
 

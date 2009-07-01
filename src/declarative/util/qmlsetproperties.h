@@ -44,7 +44,6 @@
 
 #include <QtDeclarative/qmlstateoperations.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -75,9 +74,10 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlSetProperties)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlSetProperties)
 
 QT_END_HEADER
 

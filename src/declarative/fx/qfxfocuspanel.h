@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class Q_DECLARATIVE_EXPORT QFxFocusPanel : public QFxItem
 {
     Q_OBJECT
@@ -72,9 +72,9 @@ private:
     Q_DISABLE_COPY(QFxFocusPanel)
 };
 
-QML_DECLARE_TYPE(QFxFocusPanel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxFocusPanel)
 
 QT_END_HEADER
 

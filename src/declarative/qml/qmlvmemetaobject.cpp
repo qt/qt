@@ -48,8 +48,8 @@
 #include <QtCore/qdebug.h>
 #include <qmlexpression.h>
 
-
 QT_BEGIN_NAMESPACE
+
 QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    const QMetaObject *other, 
                                    QList<QString> *strData,

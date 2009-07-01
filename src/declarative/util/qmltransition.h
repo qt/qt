@@ -88,9 +88,10 @@ public:
     void setReversed(bool r);
     void stop();
 };
-QML_DECLARE_TYPE(QmlTransition)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlTransition)
 
 QT_END_HEADER
 

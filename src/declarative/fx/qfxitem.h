@@ -53,7 +53,6 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlstate.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -63,14 +62,14 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int height READ height NOTIFY heightChanged)
-    Q_PROPERTY(int width READ width NOTIFY widthChanged)
+    Q_PROPERTY(qreal height READ height NOTIFY heightChanged)
+    Q_PROPERTY(qreal width READ width NOTIFY widthChanged)
 public:
     QFxContents();
 
-    int height() const;
+    qreal height() const;
 
-    int width() const;
+    qreal width() const;
 
     void setItem(QFxItem *item);
 
@@ -83,11 +82,10 @@ Q_SIGNALS:
     void widthChanged();
 
 private:
-    QFxItem *_item;
-    int _height;
-    int _width;
+    QFxItem *m_item;
+    qreal m_height;
+    qreal m_width;
 };
-QML_DECLARE_TYPE(QFxContents)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
 
 class QmlState;
@@ -113,14 +111,11 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(qreal z READ z WRITE setZ)
-    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
-    Q_PROPERTY(bool flipVertically READ flipVertically WRITE setFlipVertically)
-    Q_PROPERTY(bool flipHorizontally READ flipHorizontally WRITE setFlipHorizontally)
-    Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
+    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged)
+    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(QFxAnchorLine left READ left)
     Q_PROPERTY(QFxAnchorLine right READ right)
     Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter)
@@ -128,6 +123,9 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QFxAnchorLine bottom READ bottom)
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter)
     Q_PROPERTY(QFxAnchorLine baseline READ baseline)
+    Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
+    Q_PROPERTY(bool flipVertically READ flipVertically WRITE setFlipVertically)
+    Q_PROPERTY(bool flipHorizontally READ flipHorizontally WRITE setFlipHorizontally)
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
@@ -179,8 +177,8 @@ public:
     bool flipHorizontally() const;
     void setFlipHorizontally(bool);
 
-    int baselineOffset() const;
-    void setBaselineOffset(int);
+    qreal baselineOffset() const;
+    void setBaselineOffset(qreal);
 
     qreal rotation() const;
     void setRotation(qreal);
@@ -213,10 +211,10 @@ public Q_SLOTS:
     void newChild(const QString &url);
 
 Q_SIGNALS:
-    void leftChanged();
+    void xChanged();
+    void yChanged();
     void widthChanged();
     void heightChanged();
-    void topChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
@@ -267,11 +265,13 @@ private:
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };
-QML_DECLARE_TYPE(QFxItem)
-
-QML_DECLARE_TYPE(QSimpleCanvasFilter)
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxContents)
+QML_DECLARE_TYPE(QFxItem)
+QML_DECLARE_TYPE(QSimpleCanvasFilter)
+
 QT_END_HEADER
+
 #endif // QFXITEM_H

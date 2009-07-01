@@ -48,6 +48,8 @@
 #include <qfxperf.h>
 #include <QtCore/qdebug.h>
 
+Q_DECLARE_METATYPE(QList<QObject *>);
+
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
@@ -114,7 +116,6 @@ void QmlBindableValue::forceUpdate()
         update();
 }
 
-Q_DECLARE_METATYPE(QList<QObject *>);
 void QmlBindableValue::update()
 {
     Q_D(QmlBindableValue);

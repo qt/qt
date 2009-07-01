@@ -109,7 +109,6 @@ Q_SIGNALS:
     void valueChanged();
 };
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

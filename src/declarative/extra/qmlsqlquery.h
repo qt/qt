@@ -82,8 +82,6 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlBind)
 };
 
-QML_DECLARE_TYPE(QmlSqlBind)
-
 class QSqlQuery;
 class QmlSqlQueryPrivate;
 class Q_DECLARATIVE_EXPORT QmlSqlQuery : public QListModelInterface, public QmlParserStatus
@@ -135,10 +133,12 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlQuery)
 };
 
-QML_DECLARE_TYPE(QmlSqlQuery)
-
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QmlSqlBind)
+QML_DECLARE_TYPE(QmlSqlQuery)
+
 QT_END_HEADER
+
 #endif
 

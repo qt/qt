@@ -85,9 +85,10 @@ private:
     friend class QmlState;
     void updateAutoState();
 };
-QML_DECLARE_TYPE(QmlStateGroup)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlStateGroup)
 
 QT_END_HEADER
 

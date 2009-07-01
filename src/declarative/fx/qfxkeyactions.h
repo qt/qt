@@ -47,12 +47,12 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxKeyActionsPrivate;
 class Q_DECLARATIVE_EXPORT QFxKeyActions : public QFxItem
 {
@@ -310,9 +310,9 @@ private:
     QFxKeyActionsPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxKeyActions)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxKeyActions)
 
 QT_END_HEADER
 

@@ -113,7 +113,8 @@ QmlParser::Object::DynamicProperty::DynamicProperty(const DynamicProperty &o)
 : isDefaultProperty(o.isDefaultProperty),
   type(o.type),
   name(o.name),
-  defaultValue(o.defaultValue)
+  defaultValue(o.defaultValue),
+  range(o.range)
 {
 }
 

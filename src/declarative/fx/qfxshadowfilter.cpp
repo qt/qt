@@ -47,9 +47,9 @@
 #include <glbasicshaders.h>
 #endif
 
-class QFxShadowFilterPrivate
-
 QT_BEGIN_NAMESPACE
+
+class QFxShadowFilterPrivate
 {
 public:
     QFxShadowFilterPrivate()

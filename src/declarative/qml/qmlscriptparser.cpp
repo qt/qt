@@ -532,6 +532,8 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;
         property.name = name.toUtf8();
+        property.range.offset = node->firstSourceLocation().offset;
+        property.range.length = node->semicolonToken.end() - property.range.offset;
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
@@ -885,6 +887,5 @@ void QmlScriptParser::addNamespacePath(const QString &path)
 {
     _nameSpacePaths.insertMulti(QString(), path);
 }
-
 
 QT_END_NAMESPACE

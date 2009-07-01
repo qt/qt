@@ -42,6 +42,17 @@
 #ifndef QMLPARSER_P_H
 #define QMLPARSER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
 #include <QtCore/qstring.h>
@@ -139,6 +150,7 @@ namespace QmlParser
             Type type;
             QByteArray name;
             QmlParser::Property *defaultValue;
+            LocationRange range;
         };
         struct DynamicSignal {
             DynamicSignal();
@@ -284,9 +296,10 @@ namespace QmlParser
         void dump(int = 0) const;
     };
 }
-Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_HEADER
 

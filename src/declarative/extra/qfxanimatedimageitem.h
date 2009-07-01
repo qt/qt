@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfximage.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QMovie;
 class QFxAnimatedImageItemPrivate;
 
@@ -91,10 +91,10 @@ private:
     Q_DECLARE_PRIVATE(QFxAnimatedImageItem)
 };
 
-QML_DECLARE_TYPE(QFxAnimatedImageItem)
-
-
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxAnimatedImageItem)
+
 QT_END_HEADER
+
 #endif

@@ -41,8 +41,10 @@
 
 #include "qmlproxymetaobject_p.h"
 
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
+
 QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
 : metaObjects(mList), proxies(0), parent(0), object(obj)
 {
@@ -78,7 +80,6 @@ QmlProxyMetaObject::~QmlProxyMetaObject()
     proxies = 0;
 }
 
-#include <QDebug>
 int QmlProxyMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
     if ((c == QMetaObject::ReadProperty ||

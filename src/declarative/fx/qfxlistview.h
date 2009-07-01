@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxflickable.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxVisualItemModel;
 class QFxListViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
@@ -145,9 +145,9 @@ private Q_SLOTS:
     void destroyingItem(QFxItem *item);
 };
 
-QML_DECLARE_TYPE(QFxListView)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxListView)
 
 QT_END_HEADER
 

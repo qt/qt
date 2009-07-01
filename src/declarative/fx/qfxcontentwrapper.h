@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxContentWrapperPrivate;
 class Q_DECLARATIVE_EXPORT QFxContentWrapper : public QFxItem
 {
@@ -73,7 +73,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QFxContentWrapper)
 };
-QML_DECLARE_TYPE(QFxContentWrapper)
 
 class Q_DECLARATIVE_EXPORT QFxContent : public QFxItem
 {
@@ -81,9 +80,11 @@ class Q_DECLARATIVE_EXPORT QFxContent : public QFxItem
 public:
     QFxContent(QFxItem *parent=0) : QFxItem(parent) {}
 };
-QML_DECLARE_TYPE(QFxContent)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxContentWrapper)
+QML_DECLARE_TYPE(QFxContent)
 
 QT_END_HEADER
 

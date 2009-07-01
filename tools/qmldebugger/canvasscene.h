@@ -6,6 +6,8 @@
 #include <QtDeclarative/qsimplecanvas.h>
 #include <QtDeclarative/qsimplecanvasitem.h>
 
+QT_BEGIN_NAMESPACE
+
 class QmlDebugClient;
 class CanvasSceneClient;
 class QmlDebugClientPlugin;
@@ -34,6 +36,8 @@ private:
     QSimpleCanvasItem *m_canvasRoot;
     QTreeWidgetItem *m_selected;
 };
+
+QT_END_NAMESPACE
 
 #endif // CANVASSCENE_H
 

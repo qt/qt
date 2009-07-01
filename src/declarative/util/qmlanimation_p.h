@@ -42,6 +42,17 @@
 #ifndef QMLANIMATION_P_H
 #define QMLANIMATION_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qobject_p.h>
 #include <private/qmlnullablevalue_p.h>
 #include <private/qvariantanimation_p.h>
@@ -193,6 +204,8 @@ public:
 
     QmlMetaProperty property;
     QmlAnimationGroup *group;
+
+    QmlMetaProperty createProperty(QObject *obj, const QString &str);
 };
 
 class QmlPauseAnimationPrivate : public QmlAbstractAnimationPrivate
@@ -306,7 +319,8 @@ class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
 public:
     QmlPropertyAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      interpolatorType(0), interpolator(0), va(0), value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
+      defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
+      value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
 
     void init();
 
@@ -322,6 +336,7 @@ public:
     bool fromSourced;
     bool fromIsDefined;
     bool toIsDefined;
+    bool defaultToInterpolatorType;
     int interpolatorType;
     QVariantAnimation::Interpolator interpolator;
 
@@ -334,6 +349,6 @@ public:
     static void convertVariant(QVariant &variant, QVariant::Type type);
 };
 
-#endif // QMLANIMATION_P_H
-
 QT_END_NAMESPACE
+
+#endif // QMLANIMATION_P_H

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-Action::Action() : restore(true), actionDone(false), fromBinding(0), toBinding(0), event(0)
+Action::Action() : restore(true), actionDone(false), fromBinding(0), toBinding(0), event(0), specifiedObject(0)
 {
 }
 
@@ -403,6 +403,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             a.fromValue = cur;
             a.toValue = d->revertList.at(ii).value;
             a.toBinding = d->revertList.at(ii).binding;
+            a.specifiedObject = d->revertList.at(ii).specifiedObject; //###
+            a.specifiedProperty = d->revertList.at(ii).specifiedProperty;
             applyList << a;
             // Store these special reverts in the reverting list
             d->reverting << d->revertList.at(ii).property;
@@ -523,7 +525,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         d->applyBindings(); //### merge into above foreach?
 }
 
-QML_DEFINE_TYPE(QmlStateOperation,StateOperation)
+QML_DEFINE_NOCREATE_TYPE(QmlStateOperation)
 QmlStateOperation::ActionList QmlStateOperation::actions()
 {
     return ActionList();

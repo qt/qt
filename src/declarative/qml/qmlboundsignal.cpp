@@ -47,6 +47,7 @@
 #include <qmlmetatype.h>
 #include <qml.h>
 #include <qmlcontext.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,7 +89,6 @@ int QmlBoundSignalProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
     }
 }
 
-#include <QDebug>
 QmlBoundSignalParameters::QmlBoundSignalParameters(const QMetaMethod &method, 
                                                    QObject *parent)
 : QObject(parent), types(0), values(0)

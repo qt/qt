@@ -66,7 +66,6 @@ public:
     virtual void created(QFxParticle &);
     virtual void destroy(QFxParticle &);
 };
-QML_DECLARE_TYPE(QFxParticleMotion)
 
 class Q_DECLARATIVE_EXPORT QFxParticleMotionLinear : public QFxParticleMotion
 {
@@ -77,7 +76,6 @@ public:
 
     virtual void advance(QFxParticle &, int interval);
 };
-QML_DECLARE_TYPE(QFxParticleMotionLinear)
 
 class Q_DECLARATIVE_EXPORT QFxParticleMotionGravity : public QFxParticleMotion
 {
@@ -106,7 +104,6 @@ private:
     int _yAttr;
     qreal _accel;
 };
-QML_DECLARE_TYPE(QFxParticleMotionGravity)
 
 class Q_DECLARATIVE_EXPORT QFxParticleMotionWander : public QFxParticleMotion
 {
@@ -146,7 +143,6 @@ private:
     qreal _yvariance;
     qreal _pace;
 };
-QML_DECLARE_TYPE(QFxParticleMotionWander)
 
 class QFxParticlesPrivate;
 class Q_DECLARATIVE_EXPORT QFxParticles : public QFxItem
@@ -231,9 +227,14 @@ private:
     Q_DISABLE_COPY(QFxParticles)
     Q_DECLARE_PRIVATE(QFxParticles)
 };
-QML_DECLARE_TYPE(QFxParticles)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxParticleMotion)
+QML_DECLARE_TYPE(QFxParticleMotionLinear)
+QML_DECLARE_TYPE(QFxParticleMotionGravity)
+QML_DECLARE_TYPE(QFxParticleMotionWander)
+QML_DECLARE_TYPE(QFxParticles)
 
 QT_END_HEADER
 

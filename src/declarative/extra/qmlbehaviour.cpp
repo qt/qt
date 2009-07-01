@@ -254,6 +254,6 @@ void QmlBehaviour::classComplete()
     d->context->deactivate();
 }
 
-#include "qmlbehaviour.moc"
-
 QT_END_NAMESPACE
+
+#include "qmlbehaviour.moc"

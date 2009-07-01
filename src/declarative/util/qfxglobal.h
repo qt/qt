@@ -45,12 +45,12 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QObject>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 #if defined(QT_OPENGL_ES_1)
 #define QFX_CONFIGURATION_OPENGL1
 #elif defined(QT_OPENGL_ES_2)
@@ -117,8 +117,8 @@ inline void QFx_setParent_noEvent(QObject *object, QObject *parent)
     static_cast<QFx_DerivedObject *>(object)->setParent_noEvent(parent);
 }
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif // QFXGLOBAL_H

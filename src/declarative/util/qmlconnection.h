@@ -81,9 +81,10 @@ private:
     void connectIfValid();
     void componentComplete();
 };
-QML_DECLARE_TYPE(QmlConnection)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlConnection)
 
 QT_END_HEADER
 

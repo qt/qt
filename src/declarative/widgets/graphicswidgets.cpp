@@ -168,6 +168,6 @@ QML_DEFINE_EXTENDED_TYPE(QGraphicsWidget,QGraphicsWidget,QGraphicsWidgetDeclarat
 
 QML_DEFINE_INTERFACE(QGraphicsItem)
 
-#include "graphicswidgets.moc"
-
 QT_END_NAMESPACE
+
+#include "graphicswidgets.moc"

@@ -51,6 +51,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlAbstractAnimation;
 class QmlBehaviourPrivate;
 class Q_DECLARATIVE_EXPORT QmlBehaviour : public QmlPropertyValueSource, 
@@ -86,9 +87,10 @@ protected:
 private Q_SLOTS:
     void propertyValueChanged();
 };
-QML_DECLARE_TYPE(QmlBehaviour)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlBehaviour)
 
 QT_END_HEADER
 

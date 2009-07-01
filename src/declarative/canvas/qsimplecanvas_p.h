@@ -81,10 +81,13 @@ private:
     QSimpleCanvas::Matrix defaultTransform;
     QSimpleCanvas::Matrix invDefaultTransform;
 };
+QT_END_NAMESPACE
 #endif
 
 #include <QGraphicsView>
 #include <QGraphicsScene>
+
+QT_BEGIN_NAMESPACE
 
 struct QSimpleCanvasGraphicsView : public QGraphicsView
 {
@@ -198,6 +201,6 @@ public:
     int paintVersion;
 };
 
-#endif
-
 QT_END_NAMESPACE
+
+#endif

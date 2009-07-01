@@ -42,11 +42,23 @@
 #ifndef QMLVME_P_H
 #define QMLVME_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/QString>
 #include <QtCore/QStack>
 #include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_NAMESPACE
+
 class QObject;
 class QmlInstruction;
 class QmlCompiledComponent;
@@ -70,4 +82,5 @@ private:
 };
 
 QT_END_NAMESPACE
+
 #endif // QMLVME_P_H

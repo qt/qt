@@ -43,6 +43,8 @@
 #include "qmlcustomparser_p_p.h"
 #include "qmlparser_p.h"
 
+#include <QtCore/qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QmlParser;
@@ -120,7 +122,6 @@ QmlCustomParserNodePrivate::fromObject(QmlParser::Object *root)
     return rootNode;
 }
 
-#include <QtCore/qdebug.h>
 QmlCustomParserProperty 
 QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
 {

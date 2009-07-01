@@ -204,9 +204,8 @@ private:
     QList<TestObject *> _actions;
 };
 
-#endif // _QFXTESTOBJECTS_H_
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // _QFXTESTOBJECTS_H_

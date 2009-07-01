@@ -41,8 +41,8 @@
 
 #include "qfxperf.h"
 
-
 QT_BEGIN_NAMESPACE
+
 Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(QmlParsing, "Compilation: QML Parsing")
     Q_DEFINE_PERFORMANCE_METRIC(Compilation, "             QML Compilation")
@@ -64,4 +64,5 @@ Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "             QFxText::setText")
     Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine")
 }
+
 QT_END_NAMESPACE

@@ -62,8 +62,8 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmldebugger.h>
 
-
 QT_BEGIN_NAMESPACE
+
 DEFINE_BOOL_CONFIG_OPTION(itemTreeDump, ITEMTREE_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
 
@@ -561,4 +561,5 @@ void QFxView::dumpRoot()
 {
     root()->dump();
 }
+
 QT_END_NAMESPACE
