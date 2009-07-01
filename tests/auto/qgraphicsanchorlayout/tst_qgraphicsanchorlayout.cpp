@@ -2,6 +2,7 @@
 #include <qgraphicsanchorlayout.h>
 #include <qgraphicswidget.h>
 #include <qgraphicsproxywidget.h>
+#include <QtGui/qgraphicsview.h>
 
 class tst_QGraphicsAnchorLayout : public QObject {
     Q_OBJECT;
@@ -14,11 +15,26 @@ private slots:
     void fairDistribution();
 };
 
+class RectWidget : public QGraphicsWidget
+{
+public:
+    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent){}
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
+        painter->drawRoundRect(rect());
+        painter->drawLine(rect().topLeft(), rect().bottomRight());
+        painter->drawLine(rect().bottomLeft(), rect().topRight());
+    }
+};
+
 static QGraphicsWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 100.0),
                                    const QSizeF &preferred = QSize(150.0, 100.0),
                                    const QSizeF &maximum = QSizeF(200.0, 100.0))
 {
-    QGraphicsWidget *w = new QGraphicsWidget;
+    QGraphicsWidget *w = new RectWidget;
     w->setMinimumSize(minimum);
     w->setPreferredSize(preferred);
     w->setMaximumSize(maximum);
@@ -56,28 +72,28 @@ void tst_QGraphicsAnchorLayout::diagonal()
     l->setContentsMargins(0, 0, 0, 0);
 
     // vertical
-    l->anchor(a, QGraphicsAnchorLayout::Top, l, QGraphicsAnchorLayout::Top);
-    l->anchor(b, QGraphicsAnchorLayout::Top, l, QGraphicsAnchorLayout::Top);
+    l->anchor(a, QGraphicsAnchorLayout::Top, l, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Top, l, QGraphicsAnchorLayout::Top, 0);
 
-    l->anchor(c, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Bottom);
-    l->anchor(c, QGraphicsAnchorLayout::Top, b, QGraphicsAnchorLayout::Bottom);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, e, QGraphicsAnchorLayout::Top);
+    l->anchor(c, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Bottom, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Top, b, QGraphicsAnchorLayout::Bottom, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, e, QGraphicsAnchorLayout::Top, 0);
 
-    l->anchor(d, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom);
-    l->anchor(e, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom);
+    l->anchor(d, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
+    l->anchor(e, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
 
     // horizontal
-    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left);
-    l->anchor(l, QGraphicsAnchorLayout::Left, d, QGraphicsAnchorLayout::Left);
-    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left);
+    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(l, QGraphicsAnchorLayout::Left, d, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left, 0);
 
-    l->anchor(a, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left);
-    l->anchor(c, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left);
+    l->anchor(a, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left, 0);
 
-    l->anchor(b, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right);
-    l->anchor(e, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right);
-    l->anchor(d, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left);
+    l->anchor(b, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
+    l->anchor(e, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left, 0);
 
     QCOMPARE(l->count(), 5);
 
@@ -155,23 +171,23 @@ void tst_QGraphicsAnchorLayout::parallel()
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top);
-    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top);
-    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top);
-    l->anchor(d, QGraphicsAnchorLayout::Bottom, e, QGraphicsAnchorLayout::Top);
-    l->anchor(e, QGraphicsAnchorLayout::Bottom, f, QGraphicsAnchorLayout::Top);
-    l->anchor(f, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom);
+    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Bottom, e, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(e, QGraphicsAnchorLayout::Bottom, f, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(f, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left);
-    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left);
-    l->anchor(a, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left);
-    l->anchor(b, QGraphicsAnchorLayout::Right, d, QGraphicsAnchorLayout::Left);
-    l->anchor(b, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left);
-    l->anchor(c, QGraphicsAnchorLayout::Right, f, QGraphicsAnchorLayout::Left);
-    l->anchor(d, QGraphicsAnchorLayout::Right, f, QGraphicsAnchorLayout::Left);
-    l->anchor(e, QGraphicsAnchorLayout::Right, f, QGraphicsAnchorLayout::Left);
-    l->anchor(f, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right);
+    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Right, d, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Right, f, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Right, f, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(e, QGraphicsAnchorLayout::Right, f, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(f, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
 
     QCOMPARE(l->count(), 6);
 
@@ -234,15 +250,15 @@ void tst_QGraphicsAnchorLayout::snake()
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top);
-    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top);
-    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom);
+    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left);
-    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Right);
-    l->anchor(b, QGraphicsAnchorLayout::Left, c, QGraphicsAnchorLayout::Left);
-    l->anchor(c, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right);
+    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Right, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Left, c, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
 
     QCOMPARE(l->count(), 3);
 
@@ -298,18 +314,18 @@ void tst_QGraphicsAnchorLayout::fairDistribution()
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top);
-    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top);
-    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top);
-    l->anchor(d, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom);
+    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left);
-    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left);
-    l->anchor(b, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left);
-    l->anchor(c, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right);
-    l->anchor(l, QGraphicsAnchorLayout::Left, d, QGraphicsAnchorLayout::Left);
-    l->anchor(d, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right);
+    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
+    l->anchor(l, QGraphicsAnchorLayout::Left, d, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
 
     QCOMPARE(l->count(), 4);
 

@@ -536,6 +536,75 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
     }
 }
 
+/*!
+ * \internal
+ *
+ * Helper function that is called from the anchor functions in the public API.
+ * If \a spacing is 0, it will pick up the spacing defined by the style.
+ */
+void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
+                                          QGraphicsAnchorLayout::Edge firstEdge,
+                                          QGraphicsLayoutItem *secondItem,
+                                          QGraphicsAnchorLayout::Edge secondEdge,
+                                          qreal *spacing)
+{
+    Q_Q(QGraphicsAnchorLayout);
+    if ((firstItem == 0) || (secondItem == 0)) {
+        qWarning("QGraphicsAnchorLayout::anchor(): "
+                 "Cannot anchor NULL items");
+        return;
+    }
+
+    if (firstItem == secondItem) {
+        qWarning("QGraphicsAnchorLayout::anchor(): "
+                 "Cannot anchor the item to itself");
+        return;
+    }
+
+    if (edgeOrientation(secondEdge) != edgeOrientation(firstEdge)) {
+        qWarning("QGraphicsAnchorLayout::anchor(): "
+                 "Cannot anchor edges of different orientations");
+        return;
+    }
+
+    // In QGraphicsAnchorLayout, items are represented in its internal
+    // graph as four anchors that connect:
+    //  - Left -> HCenter
+    //  - HCenter-> Right
+    //  - Top -> VCenter
+    //  - VCenter -> Bottom
+
+    // Ensure that the internal anchors have been created for both items.
+    if (firstItem != q && !items.contains(firstItem)) {
+        createItemEdges(firstItem);
+        addChildLayoutItem(firstItem);
+    }
+    if (secondItem != q && !items.contains(secondItem)) {
+        createItemEdges(secondItem);
+        addChildLayoutItem(secondItem);
+    }
+
+    // Use heuristics to find out what the user meant with this anchor.
+    correctEdgeDirection(firstItem, firstEdge, secondItem, secondEdge);
+
+    AnchorData *data;
+    if (!spacing) {
+        // If we anchor to the layout edges or if we anchor
+        // Right->Right or Left->Left, our default spacing will be 0
+        if (firstItem == q || secondItem == q || firstEdge == secondEdge)
+            data = new AnchorData(0);
+        else
+            data = new AnchorData;  // otherwise, ask the style later
+        addAnchor(firstItem, firstEdge, secondItem, secondEdge, data);
+    } else if (*spacing >= 0) {
+        data = new AnchorData(*spacing);
+        addAnchor(firstItem, firstEdge, secondItem, secondEdge, data);
+    } else {
+        data = new AnchorData(-*spacing);
+        addAnchor(secondItem, secondEdge, firstItem, firstEdge, data);
+    }
+}
+
 void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
                                              QGraphicsAnchorLayout::Edge firstEdge,
                                              QGraphicsLayoutItem *secondItem,
@@ -697,6 +766,28 @@ void QGraphicsAnchorLayoutPrivate::correctEdgeDirection(QGraphicsLayoutItem *&fi
     }
 }
 
+qreal QGraphicsAnchorLayoutPrivate::effectiveSpacing(Orientation orientation) const
+{
+    Q_Q(const QGraphicsAnchorLayout);
+    qreal s = spacing[orientation];
+    if (s < 0) {
+        QGraphicsLayoutItem *parent = q->parentLayoutItem();
+        while (parent && parent->isLayout()) {
+            parent = parent->parentLayoutItem();
+        }
+        if (parent) {
+            QGraphicsItem *parentItem = parent->graphicsItem();
+            if (parentItem && parentItem->isWidget()) {
+                QGraphicsWidget *w = static_cast<QGraphicsWidget*>(parentItem);
+                s = w->style()->pixelMetric(orientation == Horizontal
+                                            ? QStyle::PM_LayoutHorizontalSpacing
+                                            : QStyle::PM_LayoutVerticalSpacing);
+            }
+        }
+    }
+    return s;
+}
+
 /*!
   \internal
 
@@ -749,6 +840,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     //q->dumpGraph();
 //    restoreSimplifiedGraph(orientation);    // should not be here
     //q->dumpGraph();
+
+    // Reset the nominal sizes of each anchor based on the current item sizes
+    setAnchorSizeHintsFromDefaults(orientation);
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
@@ -848,6 +942,33 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
+}
+
+void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation orientation)
+{
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    QSet<AnchorVertex *> setOfVertices = g.vertices();
+
+    for (QSet<AnchorVertex *>::const_iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it) {
+        AnchorVertex *v = *it;
+        QList<AnchorVertex *> adjacents = g.adjacentVertices(v);
+        for (int i = 0; i < adjacents.count(); ++i) {
+            AnchorVertex *v1 = adjacents.at(i);
+            AnchorData *data = g.edgeData(v, v1);
+            if (!data->hasSize) {
+                bool forward = data->origin == v;
+                if (forward) {
+                    qreal s = effectiveSpacing(orientation);
+                    data->minSize = s;
+                    data->prefSize = s;
+                    data->maxSize = s;
+                    data->sizeAtMinimum = s;
+                    data->sizeAtPreferred = s;
+                    data->sizeAtMaximum = s;
+                }
+            }
+        }
+    }
 }
 
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orientation)

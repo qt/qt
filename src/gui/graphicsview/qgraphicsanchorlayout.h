@@ -72,8 +72,18 @@ public:
     virtual ~QGraphicsAnchorLayout();
 
     void anchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
+                QGraphicsLayoutItem *secondItem, Edge secondEdge);
+
+    void anchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
                 QGraphicsLayoutItem *secondItem, Edge secondEdge,
-                qreal spacing = 0);
+                qreal spacing);
+
+    void anchor(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
+                QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner);
+
+    void anchor(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
+                QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner,
+                qreal spacing);
 
     void removeAnchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
                       QGraphicsLayoutItem *secondItem, Edge secondEdge);

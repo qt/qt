@@ -133,12 +133,17 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
           sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
-          skipInPreferred(0), type(Normal) {}
+          skipInPreferred(0), type(Normal), hasSize(true) {}
 
-    AnchorData(qreal size = 0)
+    AnchorData(qreal size)
         : QSimplexVariable(), minSize(size), prefSize(size), maxSize(size),
           sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
-          skipInPreferred(0), type(Normal) {}
+          skipInPreferred(0), type(Normal), hasSize(true) {}
+
+    AnchorData()
+        : QSimplexVariable(), minSize(0), prefSize(0), maxSize(0),
+          sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
+          skipInPreferred(0), type(Normal), hasSize(false) {}
 
     inline QString toString() const;
     QString name;
@@ -163,12 +168,13 @@ struct AnchorData : public QSimplexVariable {
 
     uint skipInPreferred : 1;
     uint type : 2;          // either Normal, Sequential or Parallel
+    uint hasSize : 1;       // if false, get size from style.
 protected:
     AnchorData(Type type, qreal size = 0)
         : QSimplexVariable(), minSize(size), prefSize(size),
           maxSize(size), sizeAtMinimum(size),
           sizeAtPreferred(size), sizeAtMaximum(size),
-          skipInPreferred(0), type(type) {}
+          skipInPreferred(0), type(type), hasSize(true) {}
 };
 
 inline QString AnchorData::toString() const
@@ -288,6 +294,13 @@ public:
     void createItemEdges(QGraphicsLayoutItem *item);
     void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
 
+    // helper function used by the 4 API functions
+    void anchor(QGraphicsLayoutItem *firstItem,
+                QGraphicsAnchorLayout::Edge firstEdge,
+                QGraphicsLayoutItem *secondItem,
+                QGraphicsAnchorLayout::Edge secondEdge,
+                qreal *spacing = 0);
+
     // Anchor Manipulation methods
     void addAnchor(QGraphicsLayoutItem *firstItem,
                    QGraphicsAnchorLayout::Edge firstEdge,
@@ -306,6 +319,9 @@ public:
                               QGraphicsAnchorLayout::Edge &firstEdge,
                               QGraphicsLayoutItem *&secondItem,
                               QGraphicsAnchorLayout::Edge &secondEdge);
+    // for getting the actual spacing (will query the style if the
+    // spacing is not explicitly set).
+    qreal effectiveSpacing(Orientation orientation) const;
 
     // Activation methods
     void simplifyGraph(Orientation orientation);
@@ -313,6 +329,7 @@ public:
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
     void setAnchorSizeHintsFromItems(Orientation orientation);
+    void setAnchorSizeHintsFromDefaults(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
