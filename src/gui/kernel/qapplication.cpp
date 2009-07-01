@@ -863,12 +863,6 @@ void QApplicationPrivate::initialize()
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
         q->setAttribute(Qt::AA_NativeWindows);
 
-#if defined(Q_WS_WIN)
-    // Alien is not currently working on Windows 98
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)
-        q->setAttribute(Qt::AA_NativeWindows);
-#endif
-
 #ifdef Q_WS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
     autoMaximizeThreshold = QT_AUTO_MAXIMIZE_THRESHOLD;
@@ -4414,13 +4408,13 @@ HRESULT qt_CoCreateGuid(GUID* guid)
 {
     // We will use the following information to create the GUID
     // 1. absolute path to application
-    wchar_t tempFilename[512];
-    if (!GetModuleFileNameW(0, tempFilename, 512))
+    wchar_t tempFilename[MAX_PATH];
+    if (!GetModuleFileName(0, tempFilename, MAX_PATH))
         return S_FALSE;
-    unsigned int hash = qHash(QString::fromUtf16((const unsigned short *) tempFilename));
+    unsigned int hash = qHash(QString::fromWCharArray(tempFilename));
     guid->Data1 = hash;
     // 2. creation time of file
-    QFileInfo info(QString::fromUtf16((const unsigned short *) tempFilename));
+    QFileInfo info(QString::fromWCharArray(tempFilename));
     guid->Data2 = qHash(info.created().toTime_t());
     // 3. current system time
     guid->Data3 = qHash(QDateTime::currentDateTime().toTime_t());
@@ -4454,10 +4448,10 @@ QSessionManager::QSessionManager(QApplication * app, QString &id, QString &key)
     GUID guid;
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
-    id = QString::fromUtf16((ushort*)guidstr);
+    id = QString::fromWCharArray(guidstr);
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
-    key = QString::fromUtf16((ushort*)guidstr);
+    key = QString::fromWCharArray(guidstr);
 #endif
     d->sessionId = id;
     d->sessionKey = key;

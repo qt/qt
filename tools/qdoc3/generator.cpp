@@ -401,7 +401,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                                 }
                             }
                         }
-                        if (needWarning)
+                        if (needWarning && !func->isReimp())
                             node->doc().location().warning(
                                 tr("Undocumented parameter '%1' in %2").arg(*a).arg(marker->plainFullName(node)));
                     }

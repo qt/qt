@@ -72,7 +72,6 @@ class QFSFileEnginePrivate : public QAbstractFileEnginePrivate
 
 public:
 #ifdef Q_WS_WIN
-    static QByteArray win95Name(const QString &path);
     static QString longFileName(const QString &path);
 #endif
     static QString canonicalized(const QString &path);
@@ -151,8 +150,7 @@ public:
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     static void resolveLibs();
-    static bool resolveUNCLibs_NT();
-    static bool resolveUNCLibs_9x();
+    static bool resolveUNCLibs();
     static bool uncListSharesOnServer(const QString &server, QStringList *list);
 #endif
 

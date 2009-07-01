@@ -3997,15 +3997,15 @@ void tst_QString::localeAwareCompare()
 #  if defined(Q_OS_WINCE)
     DWORD oldLcid = GetUserDefaultLCID();
     SetUserDefaultLCID(locale);
-    if (locale != GetUserDefaultLCID()) {
+
+    QCOMPARE(locale, GetUserDefaultLCID());
 #  else
     DWORD oldLcid = GetThreadLocale();
     SetThreadLocale(locale);
 
-    if (locale != GetThreadLocale()) {
+    QCOMPARE(locale, GetThreadLocale());
 #  endif
-        QSKIP("SetThreadLocale() not supported on Win9x", SkipSingle);
-    }
+
 #elif defined (Q_WS_MAC)
     QSKIP("Setting the locale is not supported on OS X (you can set the C locale, but that won't affect CFStringCompare which is used to compare strings)", SkipAll);
 #else

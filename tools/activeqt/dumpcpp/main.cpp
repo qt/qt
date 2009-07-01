@@ -969,7 +969,7 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
     QString libName;
     BSTR nameString;
     typelib->GetDocumentation(-1, &nameString, 0, 0, 0);
-    libName = QString::fromUtf16((const ushort *)nameString);
+    libName = QString::fromWCharArray(nameString);
     SysFreeString(nameString);
     if (!nameSpace.isEmpty())
         libName = QString(nameSpace);
@@ -1086,7 +1086,7 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
                         BSTR bstr;
                         if (S_OK != typeinfo->GetDocumentation(-1, &bstr, 0, 0, 0))
                             break;
-                        className = QString::fromUtf16((const ushort *)bstr).toLatin1();
+                        className = QString::fromWCharArray(bstr).toLatin1();
                         SysFreeString(bstr);
                         switch (typekind) {
                         case TKIND_RECORD:
@@ -1227,7 +1227,7 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
                 BSTR bstr;
                 if (S_OK != typeinfo->GetDocumentation(-1, &bstr, 0, 0, 0))
                     break;
-                className = QString::fromUtf16((const ushort *)bstr).toLatin1();
+                className = QString::fromWCharArray(bstr).toLatin1();
                 SysFreeString(bstr);
 
                 declOut << "// stub for vtable-only interface" << endl;
