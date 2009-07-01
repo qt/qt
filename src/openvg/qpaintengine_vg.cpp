@@ -1656,10 +1656,10 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     clip = r;
                 else
                     clip = clip.intersect(r);
-                if (r.numRects() == 1) {
+                if (clip.numRects() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
-                    d->maskRect = r.boundingRect();
+                    d->maskRect = clip.boundingRect();
                     vgSeti(VG_MASKING, VG_FALSE);
                     updateScissor();
                 } else {
