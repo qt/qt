@@ -1367,29 +1367,6 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
 #endif
 }
 
-static QWidget *qt_mac_recursive_widgetAt(QWidget *widget, int x, int y)
-{
-    if (!widget)
-        return 0;
-    const QObjectList kids = widget->children();
-    for(int i = kids.size()-1; i >= 0; --i) {
-        if ( QWidget *kid = qobject_cast<QWidget*>(kids.at(i)) ) {
-            if (kid->isVisible() && !kid->isTopLevel() &&
-                    !kid->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-                const int wx=kid->x(), wy=kid->y(),
-                      wx2=wx+kid->width(), wy2=wy+kid->height();
-                if (x >= wx && y >= wy && x < wx2 && y < wy2) {
-                    const QRegion mask = kid->mask();
-                    if (!mask.isEmpty() && !mask.contains(QPoint(x-wx, y-wy)))
-                        continue;
-                    return qt_mac_recursive_widgetAt(kid, x-wx, y-wy);
-                }
-            }
-        }
-    }
-    return widget;
-}
-
 /*****************************************************************************
   Main event loop
  *****************************************************************************/
