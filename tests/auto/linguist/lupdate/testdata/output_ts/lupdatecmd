@@ -1,0 +1,5 @@
+# Add the command that lupdate should run here. If it can't find anything it will default to
+# 'lupdate project.pro -ts project.ts'
+
+# lupdate project.pro
+lupdate toplevel/library/tools/tools.pro

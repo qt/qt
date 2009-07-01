@@ -54,7 +54,7 @@
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
-#include <Carbon/Carbon.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -178,8 +178,8 @@ QPixmapIconEngine::~QPixmapIconEngine()
 void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
     QSize pixmapSize = rect.size();
-#if defined(Q_WS_MAC) && !defined(Q_WS_MAC64)
-    pixmapSize *= (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) ? HIGetScaleFactor() : 1;
+#if defined(Q_WS_MAC)
+    pixmapSize *= qt_mac_get_scalefactor();
 #endif
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }

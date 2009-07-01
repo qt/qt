@@ -79,7 +79,7 @@ public:
     QUrl linkUrl() const;
     QUrl linkTitle() const;
     QWebFrame *linkTargetFrame() const;
-    QString linkTarget() const;
+    QWebElement linkElement() const;
 
     QString alternateText() const; // for img, area, input and applet
 
@@ -92,8 +92,6 @@ public:
     QWebElement element() const;
 
     QWebFrame *frame() const;
-
-    bool isScrollBar() const;
 
 private:
     QWebHitTestResult(QWebHitTestResultPrivate *priv);

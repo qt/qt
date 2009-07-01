@@ -19,16 +19,13 @@
 */
 
 #include "config.h"
-
 #include "JSGeolocation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Geolocation.h"
 #include "Geoposition.h"
 #include "JSGeoposition.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

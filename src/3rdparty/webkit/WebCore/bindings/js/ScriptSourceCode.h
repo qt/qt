@@ -53,6 +53,8 @@ public:
 
     const JSC::SourceCode& jsSourceCode() const { return m_code; }
 
+    const String& source() const { return static_cast<StringSourceProvider*>(m_code.provider())->source(); }
+
 private:
     JSC::SourceCode m_code;
 };

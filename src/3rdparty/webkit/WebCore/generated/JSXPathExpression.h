@@ -21,7 +21,6 @@
 #ifndef JSXPathExpression_h
 #define JSXPathExpression_h
 
-
 #if ENABLE(XPATH)
 
 #include "JSDOMBinding.h"

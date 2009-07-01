@@ -39,6 +39,10 @@ include($$OUTPUT_DIR/config.pri)
 CONFIG -= warn_on
 *-g++*:QMAKE_CXXFLAGS += -Wreturn-type -fno-strict-aliasing
 
+# Disable a few warnings on Windows. The warnings are also
+# disabled in WebKitLibraries/win/tools/vsprops/common.vsprops
+win32-*: QMAKE_CXXFLAGS += -wd4291 -wd4344
+
 unix:!mac:*-g++*:QMAKE_CXXFLAGS += -ffunction-sections -fdata-sections 
 unix:!mac:*-g++*:QMAKE_LFLAGS += -Wl,--gc-sections
 
@@ -144,6 +148,12 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
+# Used to compute defaults for the build-webkit script
+CONFIG(compute_defaults) {
+    message($$DEFINES)
+    error("Done computing defaults")
+}
+
 # Ensure that we pick up WebCore's config.h over JavaScriptCore's
 INCLUDEPATH = $$PWD $$INCLUDEPATH
 
@@ -183,6 +193,7 @@ INCLUDEPATH +=  $$PWD/accessibility \
                 $$PWD/loader/icon \
                 $$PWD/css \
                 $$PWD/dom \
+                $$PWD/dom/default \
                 $$PWD/page \
                 $$PWD/page/animation \
                 $$PWD/editing \
@@ -284,7 +295,6 @@ IDL_BINDINGS += \
     dom/DocumentType.idl \
     dom/DOMCoreException.idl \
     dom/DOMImplementation.idl \
-    dom/DOMStringList.idl \
     dom/Element.idl \
     dom/Entity.idl \
     dom/EntityReference.idl \
@@ -319,6 +329,8 @@ IDL_BINDINGS += \
     html/CanvasGradient.idl \
     html/CanvasPattern.idl \
     html/CanvasRenderingContext2D.idl \
+    html/DataGridColumn.idl \
+    html/DataGridColumnList.idl \
     html/File.idl \
     html/FileList.idl \
     html/HTMLAudioElement.idl \
@@ -333,6 +345,10 @@ IDL_BINDINGS += \
     html/HTMLButtonElement.idl \
     html/HTMLCanvasElement.idl \
     html/HTMLCollection.idl \
+    html/HTMLDataGridElement.idl \
+    html/HTMLDataGridCellElement.idl \
+    html/HTMLDataGridColElement.idl \
+    html/HTMLDataGridRowElement.idl \
     html/HTMLDirectoryElement.idl \
     html/HTMLDivElement.idl \
     html/HTMLDListElement.idl \
@@ -445,10 +461,11 @@ SOURCES += \
     bindings/js/JSCustomPositionErrorCallback.cpp \
     bindings/js/JSCustomVoidCallback.cpp \
     bindings/js/JSCustomXPathNSResolver.cpp \
+    bindings/js/JSDataGridColumnListCustom.cpp \
+    bindings/js/JSDataGridDataSource.cpp \
     bindings/js/JSDocumentCustom.cpp \
     bindings/js/JSDocumentFragmentCustom.cpp \
     bindings/js/JSDOMGlobalObject.cpp \
-    bindings/js/JSDOMStringListCustom.cpp \
     bindings/js/JSDOMWindowBase.cpp \
     bindings/js/JSDOMWindowCustom.cpp \
     bindings/js/JSDOMWindowShell.cpp \
@@ -460,6 +477,7 @@ SOURCES += \
     bindings/js/JSHistoryCustom.cpp \
     bindings/js/JSHTMLAppletElementCustom.cpp \
     bindings/js/JSHTMLCollectionCustom.cpp \
+    bindings/js/JSHTMLDataGridElementCustom.cpp \
     bindings/js/JSHTMLDocumentCustom.cpp \
     bindings/js/JSHTMLElementCustom.cpp \
     bindings/js/JSHTMLEmbedElementCustom.cpp \
@@ -610,7 +628,6 @@ SOURCES += \
     dom/DocumentFragment.cpp \
     dom/DocumentType.cpp \
     dom/DOMImplementation.cpp \
-    dom/DOMStringList.cpp \
     dom/DynamicNodeList.cpp \
     dom/EditingText.cpp \
     dom/Element.cpp \
@@ -627,6 +644,7 @@ SOURCES += \
     dom/MessageChannel.cpp \
     dom/MessageEvent.cpp \
     dom/MessagePort.cpp \
+    dom/MessagePortChannel.cpp \
     dom/MouseEvent.cpp \
     dom/MouseRelatedEvent.cpp \
     dom/MutationEvent.cpp \
@@ -653,7 +671,6 @@ SOURCES += \
     dom/SelectElement.cpp \
     dom/SelectorNodeList.cpp \
     dom/StaticNodeList.cpp \
-    dom/StaticStringList.cpp \
     dom/StyledElement.cpp \
     dom/StyleElement.cpp \
     dom/TagNodeList.cpp \
@@ -669,6 +686,7 @@ SOURCES += \
     dom/XMLTokenizer.cpp \
     dom/XMLTokenizerQt.cpp \
     dom/XMLTokenizerScope.cpp \
+    dom/default/PlatformMessagePortChannel.cpp \
     editing/AppendNodeCommand.cpp \
     editing/ApplyStyleCommand.cpp \
     editing/BreakBlockquoteCommand.cpp \
@@ -720,6 +738,7 @@ SOURCES += \
     history/CachedFrame.cpp \
     history/CachedPage.cpp \
     history/HistoryItem.cpp \
+    history/qt/HistoryItemQt.cpp \
     history/PageCache.cpp \
     html/CanvasGradient.cpp \
     html/CanvasPattern.cpp \
@@ -727,6 +746,8 @@ SOURCES += \
     html/CanvasRenderingContext2D.cpp \
     html/CanvasStyle.cpp \
     html/CollectionCache.cpp \
+    html/DataGridColumn.cpp \
+    html/DataGridColumnList.cpp \
     html/File.cpp \
     html/FileList.cpp \
     html/FormDataList.cpp \
@@ -741,6 +762,10 @@ SOURCES += \
     html/HTMLButtonElement.cpp \
     html/HTMLCanvasElement.cpp \
     html/HTMLCollection.cpp \
+    html/HTMLDataGridElement.cpp \
+    html/HTMLDataGridCellElement.cpp \
+    html/HTMLDataGridColElement.cpp \
+    html/HTMLDataGridRowElement.cpp \
     html/HTMLDirectoryElement.cpp \
     html/HTMLDivElement.cpp \
     html/HTMLDListElement.cpp \
@@ -814,7 +839,7 @@ SOURCES += \
     inspector/InspectorController.cpp \
     inspector/InspectorFrontend.cpp \
     inspector/InspectorResource.cpp \
-    inspector/JSONObject.cpp \
+    inspector/InspectorJSONObject.cpp \
     loader/archive/ArchiveFactory.cpp \
     loader/archive/ArchiveResource.cpp \
     loader/archive/ArchiveResourceCollection.cpp \
@@ -887,6 +912,7 @@ SOURCES += \
     page/Screen.cpp \
     page/Settings.cpp \
     page/WindowFeatures.cpp \
+    page/XSSAuditor.cpp \
     plugins/PluginData.cpp \
     plugins/PluginArray.cpp \
     plugins/Plugin.cpp \
@@ -1004,6 +1030,7 @@ SOURCES += \
     rendering/RenderBR.cpp \
     rendering/RenderButton.cpp \
     rendering/RenderCounter.cpp \
+    rendering/RenderDataGrid.cpp \
     rendering/RenderFieldset.cpp \
     rendering/RenderFileUploadControl.cpp \
     rendering/RenderFlexibleBox.cpp \
@@ -1337,23 +1364,27 @@ contains(DEFINES, ENABLE_DOM_STORAGE=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_DOM_STORAGE=1
 
     HEADERS += \
+        storage/LocalStorageTask.h \
+        storage/LocalStorageThread.h \
         storage/Storage.h \
+        storage/StorageArea.h \
+        storage/StorageAreaSync.h \
         storage/StorageEvent.h \
-        storage/SessionStorage.h \
-        storage/SessionStorageArea.h
+        storage/StorageMap.h \
+        storage/StorageNamespace.h \
+        storage/StorageSyncManager.h
 
     SOURCES += \
-        storage/LocalStorage.cpp \
-        storage/LocalStorageArea.cpp \
+        bindings/js/JSStorageCustom.cpp \
         storage/LocalStorageTask.cpp \
         storage/LocalStorageThread.cpp \
         storage/Storage.cpp \
         storage/StorageArea.cpp \
-        storage/StorageMap.cpp \
+        storage/StorageAreaSync.cpp \
         storage/StorageEvent.cpp \
-        storage/SessionStorage.cpp \
-        storage/SessionStorageArea.cpp \
-        bindings/js/JSStorageCustom.cpp
+        storage/StorageMap.cpp \
+        storage/StorageNamespace.cpp \
+        storage/StorageSyncManager.cpp
 
     IDL_BINDINGS += \
         storage/Storage.idl \
@@ -1393,7 +1424,7 @@ contains(DEFINES, ENABLE_WORKERS=1) {
         workers/WorkerMessagingProxy.cpp \
         workers/WorkerRunLoop.cpp \
         workers/WorkerThread.cpp \
-        workers/WorkerImportScriptsClient.cpp
+        workers/WorkerScriptLoader.cpp
 }
 
 contains(DEFINES, ENABLE_VIDEO=1) {
@@ -2163,26 +2194,31 @@ HEADERS += $$WEBKIT_API_HEADERS
         QMAKE_PKGCONFIG_INSTALL_REPLACE += lib_replace
     }
 
-    mac:!static:contains(QT_CONFIG, qt_framework):!CONFIG(webkit_no_framework) {
-        !build_pass {
-            message("Building QtWebKit as a framework, as that's how Qt was built. You can")
-            message("override this by passing CONFIG+=webkit_no_framework to build-webkit.")
-        } else {
-            debug_and_release:CONFIG(debug, debug|release) {
-                TARGET = $$qtLibraryTarget($$TARGET)
+    mac {
+        !static:contains(QT_CONFIG, qt_framework):!CONFIG(webkit_no_framework) {
+            !build_pass {
+                message("Building QtWebKit as a framework, as that's how Qt was built. You can")
+                message("override this by passing CONFIG+=webkit_no_framework to build-webkit.")
+            } else {
+                debug_and_release:CONFIG(debug, debug|release) {
+                    TARGET = $$qtLibraryTarget($$TARGET)
+                }
             }
+
+            CONFIG += lib_bundle qt_no_framework_direct_includes qt_framework
+            FRAMEWORK_HEADERS.version = Versions
+            FRAMEWORK_HEADERS.files = $$WEBKIT_API_HEADERS
+            FRAMEWORK_HEADERS.path = Headers
+            QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
         }
 
-        CONFIG += lib_bundle qt_no_framework_direct_includes qt_framework
-        FRAMEWORK_HEADERS.version = Versions
-        FRAMEWORK_HEADERS.files = $$WEBKIT_API_HEADERS
-        FRAMEWORK_HEADERS.path = Headers
-        QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
+        QMAKE_LFLAGS_SONAME = "$${QMAKE_LFLAGS_SONAME}$${DESTDIR}$${QMAKE_DIR_SEP}"
     }
 }
 
 CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4) {
     # start with 4.5
+    # Remove the following 2 lines if you want debug information in WebCore
     CONFIG -= separate_debug_info
     CONFIG += no_debug_info
 }

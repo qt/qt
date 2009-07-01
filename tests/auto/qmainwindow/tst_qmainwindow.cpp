@@ -1434,10 +1434,7 @@ void MoveSeparator::apply(QMainWindow *mw) const
     }
     QVERIFY(!path.isEmpty());
 
-    QVector<QLayoutStruct> cache;
-
-    l->layoutState.dockAreaLayout.separatorMove(path, QPoint(0, 0), QPoint(delta, delta), &cache);
-
+    l->layoutState.dockAreaLayout.separatorMove(path, QPoint(0, 0), QPoint(delta, delta));
 }
 
 QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)

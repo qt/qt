@@ -41,6 +41,7 @@
 
 #include "qwindowsvistastyle.h"
 #include "qwindowsvistastyle_p.h"
+#include <private/qstylehelper_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA) || defined(QT_PLUGIN)
 
@@ -487,7 +488,12 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
     case PE_IndicatorBranch:
         {
             XPThemeData theme(d->treeViewHelper(), painter, QLatin1String("TREEVIEW"));
-            static const int decoration_size = 16;
+            static int decoration_size = 0;
+            if (theme.isValid() && !decoration_size) {
+                SIZE size;
+                pGetThemePartSize(theme.handle(), 0, TVP_HOTGLYPH, GLPS_OPENED, 0, TS_TRUE, &size);
+                decoration_size = qMax(size.cx, size.cy);
+            }
             int mid_h = option->rect.x() + option->rect.width() / 2;
             int mid_v = option->rect.y() + option->rect.height() / 2;
             int bef_h = mid_h;
@@ -532,17 +538,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             } else {
                 QWindowsXPStyle::drawPrimitive(element, option, painter, widget);
             }
-        }
-        break;
-
-    case PE_IndicatorToolBarHandle:
-        {
-            XPThemeData theme;
-            if (option->state & State_Horizontal)
-                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPER, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
-            else
-                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPERVERT, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
-            d->drawBackground(theme);
         }
         break;
 
@@ -691,6 +686,24 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 d->drawBackground(theme);
                 painter->restore();
             }
+        }
+        break;
+
+    case PE_IndicatorToolBarHandle:
+        {
+            XPThemeData theme;
+            QRect rect;
+            if (option->state & State_Horizontal) {
+                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPER, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
+                rect = option->rect.adjusted(0, 1, 0, -2);
+                rect.setWidth(4);
+            } else {
+                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPERVERT, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
+                rect = option->rect.adjusted(1, 0, -1, 0);
+                rect.setHeight(4);
+            }
+            theme.rect = rect;
+            d->drawBackground(theme);
         }
         break;
 
@@ -1230,7 +1243,15 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = qMax(menuitem->maxIconWidth, 28);
+            int checkcol = 28;
+            {
+                SIZE    size;
+                MARGINS margins;
+                XPThemeData theme(widget, 0, QLatin1String("MENU"), MENU_POPUPCHECKBACKGROUND, MBI_HOT);
+                pGetThemePartSize(theme.handle(), NULL, MENU_POPUPCHECK, 0, NULL,TS_TRUE, &size);
+                pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &margins);
+                checkcol = qMax(menuitem->maxIconWidth, int(6 + size.cx + margins.cxLeftWidth + margins.cxRightWidth));
+            }
             QColor darkLine = option->palette.background().color().darker(108);
             QColor lightLine = option->palette.background().color().lighter(107);
             QRect rect = option->rect;
@@ -1275,8 +1296,23 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (checked) {
                 XPThemeData theme(widget, painter, QLatin1String("MENU"), MENU_POPUPCHECKBACKGROUND,
                                   menuitem->icon.isNull() ? MBI_HOT : MBI_PUSHED, vCheckRect);
+                SIZE    size;
+                MARGINS margins;
+                pGetThemePartSize(theme.handle(), NULL, MENU_POPUPCHECK, 0, NULL,TS_TRUE, &size);
+                pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0,
+                                TMT_CONTENTMARGINS, NULL, &margins);
+                QRect checkRect(0, 0, size.cx + margins.cxLeftWidth + margins.cxRightWidth ,
+                                size.cy + margins.cyBottomHeight + margins.cyTopHeight);
+                checkRect.moveCenter(vCheckRect.center());
+                theme.rect = checkRect;
+
                 d->drawBackground(theme);
+
                 if (menuitem->icon.isNull()) {
+                    checkRect = QRect(0, 0, size.cx, size.cy);
+                    checkRect.moveCenter(theme.rect.center());
+                    theme.rect = checkRect;
+
                     theme.partId = MENU_POPUPCHECK;
                     bool bullet = menuitem->checkType & QStyleOptionMenuItem::Exclusive;
                     if (dis)
@@ -1926,9 +1962,18 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
         return sz;
     case CT_MenuItem:
         sz = QWindowsXPStyle::sizeFromContents(type, option, size, widget);
-        sz.rwidth() += 28;
+        int minimumHeight;
+        {
+            SIZE    size;
+            MARGINS margins;
+            XPThemeData theme(widget, 0, QLatin1String("MENU"), MENU_POPUPCHECKBACKGROUND, MBI_HOT);
+            pGetThemePartSize(theme.handle(), NULL, MENU_POPUPCHECK, 0, NULL,TS_TRUE, &size);
+            pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &margins);
+            minimumHeight = qMax<qint32>(size.cy + margins.cyBottomHeight+ margins.cyTopHeight, sz.height());
+            sz.rwidth() += size.cx + margins.cxLeftWidth + margins.cxRightWidth;
+        }
+        
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            int minimumHeight = qMax<qint32>(22, sz.height());
             if (menuitem->menuItemType != QStyleOptionMenuItem::Separator)
                 sz.setHeight(minimumHeight);
         }
@@ -2318,9 +2363,9 @@ int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *opti
     switch (metric) {
 
     case PM_DockWidgetTitleBarButtonMargin:
-        return 5;
+        return int(QStyleHelper::dpiScaled(5.));
     case PM_ScrollBarSliderMin:
-        return 18;
+        return int(QStyleHelper::dpiScaled(18.));
     case PM_MenuHMargin:
     case PM_MenuVMargin:
         return 0;

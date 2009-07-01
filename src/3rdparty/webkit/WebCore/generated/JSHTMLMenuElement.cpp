@@ -19,14 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLMenuElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLMenuElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

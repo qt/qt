@@ -172,16 +172,9 @@ bool QPrinterInfo::isDefault() const
 
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_4)
-		return QList<QPrinter::PaperSize>();
-#else
-	if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_4)
-		return QList<QPrinter::PaperSize>();
-
     const Q_D(QPrinterInfo);
 
-    PMPrinter cfPrn = PMPrinterCreateFromPrinterID(
-            QCFString::toCFStringRef(d->m_name));
+    PMPrinter cfPrn = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(d->m_name));
 
     if (!cfPrn) return QList<QPrinter::PaperSize>();
 
@@ -211,7 +204,6 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
     PMRelease(cfPrn);
 
     return paperList;
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED
 }
 
 /////////////////////////////////////////////////////////////////////////////

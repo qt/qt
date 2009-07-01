@@ -238,12 +238,8 @@ Prefix Releaser::commonPrefix(const ByteTranslatorMessage &m1, const ByteTransla
 void Releaser::writeMessage(const ByteTranslatorMessage &msg, QDataStream &stream,
     TranslatorSaveMode mode, Prefix prefix) const
 {
-    for (int i = 0; i < msg.translations().count(); ++i) {
-        QString str = msg.translations().at(i);
-        str.replace(QChar(Translator::DefaultVariantSeparator),
-                    QChar(Translator::InternalVariantSeparator));
-        stream << quint8(Tag_Translation) << str;
-    }
+    for (int i = 0; i < msg.translations().count(); ++i)
+        stream << quint8(Tag_Translation) << msg.translations().at(i);
 
     if (mode == SaveEverything)
         prefix = HashContextSourceTextComment;
@@ -592,8 +588,6 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                         str[i] = QChar((str.at(i).unicode() >> 8) +
                             ((str.at(i).unicode() << 8) & 0xff00));
                 }
-                str.replace(QChar(Translator::InternalVariantSeparator),
-                            QChar(Translator::DefaultVariantSeparator));
                 translations << str;
                 m += len;
                 break;

@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG_ANIMATION)
 
-#include "SVGElement.h"
 #include "JSSVGAnimationElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedBoolean.h"
 #include "JSSVGElement.h"
@@ -34,9 +30,9 @@
 #include "SVGAnimationElement.h"
 #include "SVGElement.h"
 #include "SVGStringList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

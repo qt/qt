@@ -21,8 +21,9 @@
 #ifndef JSHTMLElement_h
 #define JSHTMLElement_h
 
-#include "JSElement.h"
 #include "HTMLElement.h"
+#include "JSElement.h"
+
 namespace WebCore {
 
 class HTMLElement;

@@ -1848,8 +1848,7 @@ QTime QTime::currentTime()
 #else
     time_t ltime; // no millisecond resolution
     ::time(&ltime);
-    tm *t = 0;
-    localtime(&ltime);
+    const tm *const t = localtime(&ltime);
     ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec;
 #endif
     return ct;
@@ -4398,6 +4397,13 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case DateSectionMask:
         qWarning("QDateTimeParser::sectionMaxSize: Invalid section %s",
                  sectionName(s).toLatin1().constData());
+
+    case NoSectionIndex:
+    case FirstSectionIndex:
+    case LastSectionIndex:
+    case CalendarPopupIndex:
+        // these cases can't happen
+        break;
     }
     return -1;
 }

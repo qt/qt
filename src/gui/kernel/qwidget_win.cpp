@@ -500,6 +500,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     q->setAttribute(Qt::WA_WState_Created);                // accept move/resize events
     hd = 0;                                        // no display context
 
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
+
     if (window) {                                // got window from outside
         if (IsWindowVisible(window))
             q->setAttribute(Qt::WA_WState_Visible);
@@ -2069,8 +2072,16 @@ void QWidgetPrivate::setModal_sys()
 {
 }
 
+void QWidgetPrivate::registerTouchWindow()
+{
+    Q_Q(QWidget);
 
-
+    // enable WM_TOUCH* messages on our window
+    if (q->testAttribute(Qt::WA_WState_Created)
+        && QApplicationPrivate::RegisterTouchWindow
+        && q->windowType() != Qt::Desktop)
+        QApplicationPrivate::RegisterTouchWindow(q->effectiveWinId(), 0);
+}
 
 QT_END_NAMESPACE
 

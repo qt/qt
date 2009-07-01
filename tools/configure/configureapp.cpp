@@ -604,10 +604,13 @@ void Configure::parseCmdLine()
         // cetest ---------------------------------------------------
         else if (configCmdLine.at(i) == "-no-cetest") {
             dictionary[ "CETEST" ] = "no";
+            dictionary[ "CETEST_REQUESTED" ] = "no";
         } else if (configCmdLine.at(i) == "-cetest") {
             // although specified to use it, we stay at "auto" state
             // this is because checkAvailability() adds variables
-            // we need for crosscompilation
+            // we need for crosscompilation; but remember if we asked
+            // for it.
+            dictionary[ "CETEST_REQUESTED" ] = "yes";
         }
         // Qt/CE - signing tool -------------------------------------
         else if( configCmdLine.at(i) == "-signature") {
@@ -891,6 +894,11 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
+        } else if( configCmdLine.at(i) == "-qtlibinfix" ) {
+            ++i;
+            if(i==argCount)
+                break;
+            dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -1418,8 +1426,8 @@ bool Configure::displayHelp()
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
-                    "[-qtnamespace <namespace>] [-no-phonon] [-phonon]\n"
-                    "[-no-phonon-backend] [-phonon-backend]\n"
+                    "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
+                    "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-webkit] [-webkit]\n"
                     "[-no-scripttools] [-scripttools]\n"
                     "[-graphicssystem raster|opengl]\n\n", 0, 7);
@@ -1510,7 +1518,8 @@ bool Configure::displayHelp()
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
 
 #if !defined(EVAL)
-        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}\n");
+        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
+        desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>\n");
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
@@ -1817,6 +1826,11 @@ bool Configure::checkAvailability(const QString &part)
         if (available) {
             dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");
             dictionary[ "QT_CE_RAPI_LIB" ] += QLatin1String("\"") + rapiLib + QLatin1String("\"");
+        }
+        else if (dictionary[ "CETEST_REQUESTED" ] == "yes") {
+            cout << "cetest could not be enabled: rapi.h and rapi.lib could not be found." << endl;
+            cout << "Make sure the environment is set up for compiling with ActiveSync." << endl;
+            dictionary[ "DONE" ] = "error";
         }
     }
     else if (part == "INCREDIBUILD_XGE")
@@ -2498,7 +2512,10 @@ void Configure::generateCachefile()
             configStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
         if(!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream<<"QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
+            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
+
+        if (!dictionary["QT_LIBINFIX"].isEmpty())
+            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
 
         configStream.flush();
         configFile.close();

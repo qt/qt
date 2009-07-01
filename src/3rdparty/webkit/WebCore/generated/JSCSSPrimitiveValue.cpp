@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSCSSPrimitiveValue.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSPrimitiveValue.h"
 #include "Counter.h"
@@ -31,10 +28,10 @@
 #include "JSRect.h"
 #include "KURL.h"
 #include "Rect.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -57,6 +57,7 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
 #include "qgraphicsitem_p.h"
 
@@ -75,6 +76,7 @@ QT_BEGIN_NAMESPACE
 class QGraphicsSceneIndex;
 class QGraphicsView;
 class QGraphicsWidget;
+class QGesture;
 
 class QGraphicsScenePrivate : public QObjectPrivate
 {
@@ -145,7 +147,7 @@ public:
     void grabKeyboard(QGraphicsItem *item);
     void ungrabKeyboard(QGraphicsItem *item, bool itemIsDying = false);
     void clearKeyboardGrabber();
-    
+
     QGraphicsItem *dragDropItem;
     QGraphicsWidget *enterWidget;
     Qt::DropAction lastDropAction;
@@ -163,6 +165,9 @@ public:
     void storeMouseButtonsForMouseGrabber(QGraphicsSceneMouseEvent *event);
 
     QList<QGraphicsView *> views;
+    void addView(QGraphicsView *view);
+    void removeView(QGraphicsView *view);
+
     bool painterStateProtection;
 
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
@@ -240,6 +245,22 @@ public:
     void updatePalette(const QPalette &palette);
 
     QStyleOptionGraphicsItem styleOptionTmp;
+
+    // items with gestures -> list of started gestures.
+    QMap<QGraphicsItem*, QSet<QGesture*> > itemsWithGestures;
+    QSet<int> grabbedGestures;
+    void grabGesture(QGraphicsItem *item, int gestureId);
+    void releaseGesture(QGraphicsItem *item, int gestureId);
+    void sendGestureEvent(const QSet<QGesture*> &gestures, const QSet<QString> &cancelled);
+
+    QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
+    QMap<int, QGraphicsItem *> itemForTouchPointId;
+    static void updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent);
+    int findClosestTouchPointId(const QPointF &scenePos);
+    void touchEventHandler(QTouchEvent *touchEvent);
+    bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
+    bool allItemsIgnoreTouchEvents;
+    void enableTouchEventsOnViews();
 };
 
 // QRectF::intersects() returns false always if either the source or target

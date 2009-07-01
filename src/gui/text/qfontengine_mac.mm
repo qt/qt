@@ -540,14 +540,9 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
     im.fill(0);
 
     CGColorSpaceRef colorspace = QCoreGraphicsPaintEngine::macGenericColorSpace();
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-    CGImageAlphaInfo cgflags = kCGImageAlphaNoneSkipFirst;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
     CGContextRef ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
                                              8, im.bytesPerLine(), colorspace,
@@ -1431,14 +1426,9 @@ QImage QFontEngineMac::imageForGlyph(glyph_t glyph, int margin, bool colorful)
     im.fill(0xff000000);
 
     CGColorSpaceRef colorspace = QCoreGraphicsPaintEngine::macGenericColorSpace();
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-    CGImageAlphaInfo cgflags = kCGImageAlphaNoneSkipFirst;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
     CGContextRef ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
                                              8, im.bytesPerLine(), colorspace,

@@ -164,7 +164,6 @@ QT_BEGIN_NAMESPACE
 //for qt_mac.h
 QPaintDevice *qt_mac_safe_pdev = 0;
 QList<QMacWindowChangeEvent*> *QMacWindowChangeEvent::change_events = 0;
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash(); // qapplication.cpp
 
 /*****************************************************************************
   Internal variables and functions
@@ -527,9 +526,9 @@ void qt_mac_update_os_settings()
         for(int i = 0; mac_widget_fonts[i].qt_class; i++) {
             QFont fnt = qfontForThemeFont(mac_widget_fonts[i].font_key);
             bool set_font = true;
-            QHash<QByteArray, QFont> *hash = qt_app_fonts_hash();
+            FontHash *hash = qt_app_fonts_hash();
             if (!hash->isEmpty()) {
-                QHash<QByteArray, QFont>::const_iterator it
+                FontHash::const_iterator it
                                         = hash->constFind(mac_widget_fonts[i].qt_class);
                 if (it != hash->constEnd())
                     set_font = (fnt != *it);
@@ -628,10 +627,9 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
             }
 
             bool set_palette = true;
-            extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
-            QHash<QByteArray, QPalette> *phash = qt_app_palettes_hash();
+            PaletteHash *phash = qt_app_palettes_hash();
             if (!phash->isEmpty()) {
-                QHash<QByteArray, QPalette>::const_iterator it
+                PaletteHash::const_iterator it
                                     = phash->constFind(mac_widget_colors[i].qt_class);
                 if (it != phash->constEnd())
                     set_palette = (pal != *it);
@@ -2997,5 +2995,10 @@ void onApplicationChangedActivation( bool activated )
     Q_UNUSED(activated);
 #endif
 }
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
 
 QT_END_NAMESPACE

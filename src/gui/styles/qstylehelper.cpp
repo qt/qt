@@ -48,6 +48,12 @@
 #include <private/qstyle_p.h>
 #include <qmath.h>
 
+#if defined(Q_WS_WIN)
+#include "qt_windows.h"
+#elif defined(Q_WS_MAC)
+#include <private/qt_cocoa_helpers_mac_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QStyleHelper {
@@ -71,6 +77,26 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
 #endif // QT_NO_SPINBOX
     return tmp;
 }
+
+qreal dpiScaled(qreal value)
+{
+    static qreal scale = -1;
+    if (scale < 0) {
+        scale = 1.0;
+#if defined(Q_WS_WIN)
+        {
+            HDC hdcScreen = GetDC(0);
+            int dpi = GetDeviceCaps(hdcScreen, LOGPIXELSX);
+            ReleaseDC(0, hdcScreen);
+            scale = dpi/96.0;
+        }
+#elif defined(Q_WS_MAC)
+    scale = qt_mac_get_scalefactor();
+#endif
+    }
+    return value * scale;
+}
+
 
 #ifndef QT_NO_DIAL
 
@@ -177,7 +203,6 @@ QPolygonF calcLines(const QStyleOptionSlider *dial)
     }
     return poly;
 }
-
 
 // This will draw a nice and shiny QDial for us. We don't want
 // all the shinyness in QWindowsStyle, hence we place it here

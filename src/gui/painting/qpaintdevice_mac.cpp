@@ -142,14 +142,9 @@ Q_GUI_EXPORT CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
     if (pdev->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap*>(pdev);
         CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
         uint flags = kCGImageAlphaPremultipliedFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-        if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-            flags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-        CGImageAlphaInfo flags = kCGImageAlphaPremultipliedFirst;
+        flags |= kCGBitmapByteOrder32Host;
 #endif
         CGContextRef ret = 0;
 

@@ -21,14 +21,14 @@
 #ifndef JSSVGLength_h
 #define JSSVGLength_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
+#include "SVGLength.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "SVGLength.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 

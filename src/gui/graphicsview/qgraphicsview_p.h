@@ -174,6 +174,10 @@ public:
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems,
                                      const QTransform &viewTransform) const;
+
+    QPointF mapToScene(const QPointF &point) const;
+    QRectF mapToScene(const QRectF &rect) const;
+    static void translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

@@ -47,9 +47,6 @@
     This is a list of all Qt classes excluding the \l{Qt 3
     compatibility classes}. For a shorter list that only includes the
     most frequently used classes, see \l{Qt's Main Classes}.
-    \omit This is old and dingy now.
-    and the \l{http://doc.trolltech.com/extras/qt43-class-chart.pdf}{Qt 4.3 Class Chart (PDF)}.
-    \endomit
 
     \generatelist classes
 

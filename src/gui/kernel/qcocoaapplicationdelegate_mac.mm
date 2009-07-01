@@ -259,14 +259,13 @@ static void cleanupCocoaApplicationDelegate()
     onApplicationChangedActivation(false);
 }
 
-class QDesktopWidgetImplementation;
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification
 {
     Q_UNUSED(notification);
     QDesktopWidgetImplementation::instance()->onResize();
 }
 
-- (void)setReflectionDelegate:(NSObject *)oldDelegate
+- (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate
 {
     [oldDelegate retain];
     [reflectionDelegate release];

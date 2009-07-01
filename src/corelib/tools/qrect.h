@@ -653,7 +653,7 @@ inline QRectF::QRectF(const QRect &r)
 }
 
 inline bool QRectF::isNull() const
-{ return qIsNull(w) && qIsNull(h); }
+{ return w == 0. && h == 0.; }
 
 inline bool QRectF::isEmpty() const
 { return w <= 0. || h <= 0.; }

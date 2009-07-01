@@ -139,6 +139,9 @@ public:
                                                                    const QEvent *event) const;
     virtual void selectAll(QItemSelectionModel::SelectionFlags command);
 
+    void checkMouseMove(const QPersistentModelIndex &index);
+    inline void checkMouseMove(const QPoint &pos) { checkMouseMove(q_func()->indexAt(pos)); }
+
     inline QItemSelectionModel::SelectionFlags selectionBehaviorFlags() const
     {
         switch (selectionBehavior) {

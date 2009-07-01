@@ -21,10 +21,10 @@
 #ifndef JSSVGNumberList_h
 #define JSSVGNumberList_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 

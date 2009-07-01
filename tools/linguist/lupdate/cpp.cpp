@@ -1799,7 +1799,7 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
                             ? translator.codecName() : cd.m_codecForSource;
     QTextCodec *codec = QTextCodec::codecForName(codecName);
 
-    foreach (const QString filename, filenames) {
+    foreach (const QString &filename, filenames) {
         if (CppFiles::getResults(filename) || CppFiles::isBlacklisted(filename))
             continue;
 

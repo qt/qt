@@ -92,15 +92,15 @@ int runConfigure( int argc, char** argv )
 	app.generateHeaders();
     if( !app.isDone() )
 	app.buildQmake();
-    if( !app.isOk() )
-	return 2;
 #endif
     if( !app.isDone() )
 	app.generateMakefiles();
-    if( app.isOk() )
+    if( !app.isDone() && app.isOk() )
 	app.buildHostTools();
     if( !app.isDone() )
 	app.showSummary();
+    if( !app.isOk() )
+	return 2;
 
     return 0;
 }

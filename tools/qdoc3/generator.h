@@ -93,11 +93,11 @@ class Generator
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
 
-    virtual void generateText(const Text& text, 
+    virtual bool generateText(const Text& text, 
                               const Node *relative,
                               CodeMarker *marker);
 #ifdef QDOC_QML
-    virtual void generateQmlText(const Text& text, 
+    virtual bool generateQmlText(const Text& text, 
                                  const Node *relative,
                                  CodeMarker *marker);
 #endif
@@ -150,6 +150,10 @@ class Generator
                         const Node *relative, 
                         CodeMarker *marker,
                         const Node *actualNode = 0);
+    void appendFullName(Text& text,
+                        const Node *apparentNode,
+                        const QString& fullName,
+                        const Node *actualNode);
     void appendSortedNames(Text& text, 
                            const ClassNode *classe,
                            const QList<RelatedClass> &classes,

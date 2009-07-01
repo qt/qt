@@ -214,6 +214,13 @@ RenderObject::~RenderObject()
 #endif
 }
 
+RenderTheme* RenderObject::theme() const
+{
+    ASSERT(document()->page());
+
+    return document()->page()->theme();
+}
+
 bool RenderObject::isDescendantOf(const RenderObject* obj) const
 {
     for (const RenderObject* r = this; r; r = r->m_parent) {
@@ -636,13 +643,16 @@ static bool mustRepaintFillLayers(const RenderObject* renderer, const FillLayer*
 
     // Make sure we have a valid image.
     StyleImage* img = layer->image();
-    bool shouldPaintBackgroundImage = img && img->canRender(renderer->style()->effectiveZoom());
+    if (!img || !img->canRender(renderer->style()->effectiveZoom()))
+        return false;
 
-    // These are always percents or auto.
-    if (shouldPaintBackgroundImage &&
-        (!layer->xPosition().isZero() || !layer->yPosition().isZero() ||
-         layer->size().width().isPercent() || layer->size().height().isPercent()))
-        // The image will shift unpredictably if the size changes.
+    if (!layer->xPosition().isZero() || !layer->yPosition().isZero())
+        return true;
+
+    if (layer->isSizeSet()) {
+        if (layer->size().width().isPercent() || layer->size().height().isPercent())
+            return true;
+    } else if (img->usesImageContainerSize())
         return true;
 
     return false;
@@ -1689,7 +1699,7 @@ void RenderObject::getTransformFromContainer(const RenderObject* containerObject
         transform.multLeft(layer->currentTransform());
     
 #if ENABLE(3D_RENDERING)
-    if (containerObject && containerObject->style()->hasPerspective()) {
+    if (containerObject && containerObject->hasLayer() && containerObject->style()->hasPerspective()) {
         // Perpsective on the container affects us, so we have to factor it in here.
         ASSERT(containerObject->hasLayer());
         FloatPoint perspectiveOrigin = toRenderBox(containerObject)->layer()->perspectiveOrigin();
@@ -1812,7 +1822,7 @@ void RenderObject::destroy()
         children->destroyLeftoverChildren();
 
     // If this renderer is being autoscrolled, stop the autoscroll timer
-    if (document()->frame() && document()->frame()->eventHandler()->autoscrollRenderer() == this)
+    if (document()->frame()->eventHandler()->autoscrollRenderer() == this)
         document()->frame()->eventHandler()->stopAutoscrollTimer(true);
 
     if (m_hasCounterNodeMap)

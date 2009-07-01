@@ -3690,10 +3690,10 @@ void QOpenGLPaintEngine::drawLines(const QLineF *lines, int lineCount)
             bool useRects = false;
             // scale or 90 degree rotation?
             if (d->matrix.type() <= QTransform::TxTranslate
-                || !d->cpen.isCosmetic()
-                   && (d->matrix.type() <= QTransform::TxScale
-                       || (d->matrix.type() == QTransform::TxRotate
-                           && d->matrix.m11() == 0 && d->matrix.m22() == 0))) {
+                || (!d->cpen.isCosmetic()
+                    && (d->matrix.type() <= QTransform::TxScale
+                        || (d->matrix.type() == QTransform::TxRotate
+                            && d->matrix.m11() == 0 && d->matrix.m22() == 0)))) {
                 useRects = true;
                 for (int i = 0; i < lineCount; ++i) {
                     if (lines[i].p1().x() != lines[i].p2().x()

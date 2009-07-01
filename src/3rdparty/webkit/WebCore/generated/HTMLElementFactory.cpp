@@ -51,10 +51,14 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLTableCaptionElement.h"
 #include "HTMLTableColElement.h"
+#include "HTMLDataGridElement.h"
+#include "HTMLDataGridCellElement.h"
+#include "HTMLDataGridColElement.h"
 #include "HTMLModElement.h"
 #include "HTMLDirectoryElement.h"
 #include "HTMLDivElement.h"
 #include "HTMLDListElement.h"
+#include "HTMLDataGridRowElement.h"
 #include "HTMLEmbedElement.h"
 #include "HTMLFieldSetElement.h"
 #include "HTMLFontElement.h"
@@ -180,6 +184,21 @@ static PassRefPtr<HTMLElement> tablecolConstructor(const QualifiedName& tagName,
     return new HTMLTableColElement(tagName, doc);
 }
 
+static PassRefPtr<HTMLElement> datagridConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
+{
+    return new HTMLDataGridElement(tagName, doc);
+}
+
+static PassRefPtr<HTMLElement> datagridcellConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
+{
+    return new HTMLDataGridCellElement(tagName, doc);
+}
+
+static PassRefPtr<HTMLElement> datagridcolConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
+{
+    return new HTMLDataGridColElement(tagName, doc);
+}
+
 static PassRefPtr<HTMLElement> modConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
     return new HTMLModElement(tagName, doc);
@@ -198,6 +217,11 @@ static PassRefPtr<HTMLElement> divConstructor(const QualifiedName& tagName, Docu
 static PassRefPtr<HTMLElement> dlistConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
     return new HTMLDListElement(tagName, doc);
+}
+
+static PassRefPtr<HTMLElement> datagridrowConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
+{
+    return new HTMLDataGridRowElement(tagName, doc);
 }
 
 static PassRefPtr<HTMLElement> embedConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
@@ -462,10 +486,14 @@ static inline void createFunctionMapIfNecessary()
     addTag(captionTag, tablecaptionConstructor);
     addTag(colTag, tablecolConstructor);
     addTag(colgroupTag, tablecolConstructor);
+    addTag(datagridTag, datagridConstructor);
+    addTag(dcellTag, datagridcellConstructor);
+    addTag(dcolTag, datagridcolConstructor);
     addTag(delTag, modConstructor);
     addTag(dirTag, directoryConstructor);
     addTag(divTag, divConstructor);
     addTag(dlTag, dlistConstructor);
+    addTag(drowTag, datagridrowConstructor);
     addTag(embedTag, embedConstructor);
     addTag(fieldsetTag, fieldsetConstructor);
     addTag(fontTag, fontConstructor);
