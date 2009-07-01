@@ -1741,13 +1741,8 @@ QString QCoreApplication::applicationFilePath()
     if (!d->cachedApplicationFilePath.isNull())
         return d->cachedApplicationFilePath;
 
-#if defined( Q_WS_WIN )
-    wchar_t module_name[MAX_PATH];
-    GetModuleFileName(0, module_name, MAX_PATH);
-    module_name[MAX_PATH] = 0;
-    QFileInfo filePath = QString::fromWCharArray(module_name);
-
-    d->cachedApplicationFilePath = filePath.filePath();
+#if defined(Q_WS_WIN)
+    d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
 #elif defined(Q_WS_MAC)
     QString qAppFileName_str = qAppFileName();
