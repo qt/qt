@@ -427,8 +427,11 @@ void CentralWidget::setLastShownPages()
         QString::SkipEmptyParts);
 
     const int pageCount = lastShownPageList.count();
-    if (pageCount == 0 && usesDefaultCollection) {
-        setSource(QUrl(QLatin1String("help")));
+    if (pageCount == 0) {
+        if (usesDefaultCollection)
+            setSource(QUrl(QLatin1String("help")));
+        else
+            setSource(QUrl(QLatin1String("about:blank")));
         return;
     }
 
