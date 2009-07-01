@@ -88,8 +88,9 @@ static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush 
 static const GLuint QT_MASK_TEXTURE_UNIT        = 1;
 static const GLuint QT_BACKGROUND_TEXTURE_UNIT  = 2;
 
-class QGLTextureGlyphCache : public QTextureGlyphCache
+class QGLTextureGlyphCache : public QObject, public QTextureGlyphCache
 {
+    Q_OBJECT
 public:
     QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
     ~QGLTextureGlyphCache();
@@ -104,6 +105,24 @@ public:
     inline int height() const { return m_height; }
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
+
+
+public Q_SLOTS:
+    void contextDestroyed(const QGLContext *context) {
+        if (context == ctx) {
+            QList<const QGLContext *> shares = qgl_share_reg()->shares(ctx);
+            if (shares.isEmpty()) {
+                glDeleteFramebuffers(1, &m_fbo);
+                if (m_width || m_height)
+                    glDeleteTextures(1, &m_texture);
+            } else {
+                // since the context holding the texture is shared, and
+                // about to be destroyed, we have to transfer ownership
+                // of the texture to one of the share contexts
+                ctx = const_cast<QGLContext *>(shares.at(0));
+            }
+        }
+    }
 
 private:
     QGLContext *ctx;
@@ -126,6 +145,8 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
     , m_height(0)
 {
     glGenFramebuffers(1, &m_fbo);
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)),
+            SLOT(contextDestroyed(const QGLContext *)));
 }
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
@@ -251,7 +272,7 @@ QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
 {
 //    glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
-    if (id != -1 && id == lastTexture)
+    if (id != GLuint(-1) && id == lastTexture)
         return;
 
     lastTexture = id;
@@ -1408,7 +1429,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         if (state()->matrix.type() <= QTransform::TxScale) {
             rect = state()->matrix.mapRect(rect);
 
-            if (d->use_system_clip && rect.contains(d->systemClip.boundingRect())
+            if ((d->use_system_clip && rect.contains(d->systemClip.boundingRect()))
                 || rect.contains(QRect(0, 0, d->width, d->height)))
                 return;
         }
@@ -1606,3 +1627,5 @@ QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 }
 
 QT_END_NAMESPACE
+
+#include "qpaintengineex_opengl2.moc"
