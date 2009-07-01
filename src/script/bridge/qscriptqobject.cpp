@@ -1168,6 +1168,29 @@ void QObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyN
     JSC::JSObject::getPropertyNames(exec, propertyNames);
 }
 
+static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec, JSC::JSObject*,
+                                                            JSC::JSValue thisValue, const JSC::ArgList &args)
+{
+    if (!thisValue.isObject(&QObjectWrapperObject::info))
+        return throwError(exec, JSC::TypeError);
+    QObject *obj = static_cast<QObjectWrapperObject*>(JSC::asObject(thisValue))->value();
+    QString name;
+    if (args.size() != 0)
+        name = QScript::qtStringFromJSCUString(args.at(0).toString(exec));
+    QObject *child = qFindChild<QObject*>(obj, name);
+    QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    return engine->newQObject(child, QScriptEngine::QtOwnership, opt);
+}
+
+static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *exec, JSC::JSObject*,
+                                                               JSC::JSValue thisValue, const JSC::ArgList &args)
+{
+    if (!thisValue.isObject(&QObjectWrapperObject::info))
+        return throwError(exec, JSC::TypeError);
+    return throwError(exec, JSC::GeneralError, "QObject.prototype.findChildren not implemented");
+}
+
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec, JSC::JSObject*,
                                                            JSC::JSValue thisValue, const JSC::ArgList&)
 {
@@ -1186,7 +1209,8 @@ QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::St
     : QObjectWrapperObject(new QObject(), QScriptEngine::AutoOwnership, /*options=*/0, structure)
 {
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, exec->propertyNames().toString, qobjectProtoFuncToString), JSC::DontEnum);
-    // ### findChild(), findChildren()
+    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChild"), qobjectProtoFuncFindChild), JSC::DontEnum);
+    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChildren"), qobjectProtoFuncFindChildren), JSC::DontEnum);
 }
 
 const JSC::ClassInfo QMetaObjectWrapperObject::info = { "QMetaObject", 0, 0, 0 };
