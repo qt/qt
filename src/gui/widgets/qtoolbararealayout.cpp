@@ -932,7 +932,7 @@ void QToolBarAreaLayout::apply(bool animate)
                 if (visible && dock.o == Qt::Horizontal)
                     geo = QStyle::visualRect(dir, line.rect, geo);
 
-                layout->widgetAnimator->animate(widget, geo, animate);
+                layout->widgetAnimator.animate(widget, geo, animate);
             }
         }
     }
