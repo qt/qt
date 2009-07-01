@@ -617,7 +617,7 @@ void QFxRect::drawRect(QPainter &p)
     if (d->gradient && d->gradient->gradient() /*|| p.usingQt() */) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
-        QPainter::RenderHints oldHints = p.renderHints();
+        bool oldAA = p.testRenderHint(QPainter::Antialiasing);
         p.setRenderHint(QPainter::Antialiasing);
         if (d->pen && d->pen->isValid()) {
             QPen pn(QColor(d->pen->color()), d->pen->width());
@@ -630,7 +630,7 @@ void QFxRect::drawRect(QPainter &p)
             p.drawRoundedRect(0, 0, width(), height(), d->radius, d->radius);
         else
             p.drawRect(0, 0, width(), height());
-        p.setRenderHints(oldHints);
+        p.setRenderHint(QPainter::Antialiasing, oldAA);
     } else {
         int offset = 0;
         const int pw = d->pen && d->pen->isValid() ? (d->pen->width()+1)/2*2 : 0;

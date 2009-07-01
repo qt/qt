@@ -12,6 +12,7 @@ public:
 
 private slots:
     void badTypes();
+    void badProperties();
     //void mixedTypes();
 };
 
@@ -48,6 +49,20 @@ void tst_animations::badTypes()
 
         QVERIFY(c.errors().count() == 1);
         QCOMPARE(c.errors().at(0).description(), QLatin1String("Cannot convert value \"10\" to color"));
+    }
+}
+
+void tst_animations::badProperties()
+{
+    //don't crash (should be runtime error)
+    {
+        QFxView *view = new QFxView;
+        view->setUrl(QUrl("file://" SRCDIR "/data/badproperty1.qml"));
+
+        view->execute();
+        qApp->processEvents();
+
+        delete view;
     }
 }
 

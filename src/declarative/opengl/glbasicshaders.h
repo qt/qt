@@ -236,9 +236,8 @@ private:
     GLBasicShadersPrivate *d;
 };
 
-#endif // _GLBASICSHADERS_H_
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // _GLBASICSHADERS_H_

@@ -328,11 +328,8 @@ private:
     QSimpleCanvasLayer();
 };
 
-
-
-#endif // _GFXCANVASITEM_H_
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QSIMPLECANVASITEM_H

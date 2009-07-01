@@ -88,15 +88,17 @@ Q_SIGNALS:
 private Q_SLOTS:
     void refresh();
     void inserted(const QModelIndex &index, int start, int end);
+    void removed(const QModelIndex &index, int start, int end);
+    void dataChanged(const QModelIndex &start, const QModelIndex &end);
 
 private:
     Q_DECLARE_PRIVATE(QmlFolderListModel)
     Q_DISABLE_COPY(QmlFolderListModel)
 };
 
-QML_DECLARE_TYPE(QmlFolderListModel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlFolderListModel)
 
 QT_END_HEADER
 

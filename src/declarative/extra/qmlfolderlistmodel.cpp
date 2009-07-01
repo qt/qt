@@ -46,12 +46,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
 class QmlFolderListModelPrivate : public QObjectPrivate
 {
 public:
-    QmlFolderListModelPrivate() {
+    QmlFolderListModelPrivate() : count(0) {
         folder = QDir::currentPath();
         nameFilters << "*";
     }
@@ -60,6 +58,7 @@ public:
     QString folder;
     QStringList nameFilters;
     QModelIndex folderIndex;
+    int count;
 };
 
 QmlFolderListModel::QmlFolderListModel(QObject *parent)
@@ -69,6 +68,11 @@ QmlFolderListModel::QmlFolderListModel(QObject *parent)
     d->model.setFilter(QDir::AllDirs | QDir::Files | QDir::Drives);
     connect(&d->model, SIGNAL(rowsInserted(const QModelIndex&,int,int))
             , this, SLOT(inserted(const QModelIndex&,int,int)));
+    connect(&d->model, SIGNAL(rowsRemoved(const QModelIndex&,int,int))
+            , this, SLOT(removed(const QModelIndex&,int,int)));
+    connect(&d->model, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&))
+            , this, SLOT(dataChanged(const QModelIndex&,const QModelIndex&)));
+    connect(&d->model, SIGNAL(modelReset()), this, SLOT(refresh()));
 }
 
 QmlFolderListModel::~QmlFolderListModel()
@@ -91,9 +95,7 @@ QHash<int,QVariant> QmlFolderListModel::data(int index, const QList<int> &roles)
 int QmlFolderListModel::count() const
 {
     Q_D(const QmlFolderListModel);
-    if (!d->folderIndex.isValid())
-        return 0;
-    return d->model.rowCount(d->folderIndex);
+    return d->count;
 }
 
 QList<int> QmlFolderListModel::roles() const
@@ -164,22 +166,42 @@ bool QmlFolderListModel::isFolder(int index) const
 void QmlFolderListModel::refresh()
 {
     Q_D(QmlFolderListModel);
-    int prevCount = count();
     d->folderIndex = QModelIndex();
-    if (prevCount)
-        emit itemsRemoved(0, prevCount);
+    if (d->count) {
+        int tmpCount = d->count;
+        d->count = 0;
+        emit itemsRemoved(0, tmpCount);
+    }
     d->folderIndex = d->model.index(d->folder);
-    qDebug() << "count" << count();
-    if (count())
-        emit itemsInserted(0, count());
+    d->count = d->model.rowCount(d->folderIndex);
+    if (d->count) {
+        emit itemsInserted(0, d->count);
+    }
 }
 
 void QmlFolderListModel::inserted(const QModelIndex &index, int start, int end)
 {
     Q_D(QmlFolderListModel);
-    qDebug() << "inserted" << start << end;
-    if (index == d->folderIndex)
+    if (index == d->folderIndex) {
+        d->count = d->model.rowCount(d->folderIndex);
         emit itemsInserted(start, end - start + 1);
+    }
+}
+
+void QmlFolderListModel::removed(const QModelIndex &index, int start, int end)
+{
+    Q_D(QmlFolderListModel);
+    if (index == d->folderIndex) {
+        d->count = d->model.rowCount(d->folderIndex);
+        emit itemsRemoved(start, end - start + 1);
+    }
+}
+
+void QmlFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
+{
+    Q_D(QmlFolderListModel);
+    if (start.parent() == d->folderIndex)
+        emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
 }
 
 QML_DEFINE_TYPE(QmlFolderListModel,FolderListModel)

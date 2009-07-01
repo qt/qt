@@ -1010,6 +1010,6 @@ QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStrin
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 
-#include "qfxwebview.moc"
-
 QT_END_NAMESPACE
+
+#include "qfxwebview.moc"

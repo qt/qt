@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class Q_DECLARATIVE_EXPORT QFxFocusRealm : public QFxItem
 {
     Q_OBJECT
@@ -58,9 +58,9 @@ public:
     virtual ~QFxFocusRealm();
 };
 
-QML_DECLARE_TYPE(QFxFocusRealm)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxFocusRealm)
 
 QT_END_HEADER
 

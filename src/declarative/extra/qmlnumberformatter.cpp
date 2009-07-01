@@ -42,8 +42,8 @@
 #include "qmlnumberformatter.h"
 #include "private/qobject_p.h"
 
-
 QT_BEGIN_NAMESPACE
+
 //TODO: set locale
 //      docs
 //      this is a wrapper around qnumberformat (test integration)
@@ -210,6 +210,6 @@ void QmlNumberFormatter::classComplete()
     d->classComplete = true;
     d->updateText();
 }
-
 QML_DEFINE_TYPE(QmlNumberFormatter, NumberFormatter);
+
 QT_END_NAMESPACE

@@ -61,9 +61,8 @@
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>
 
-class QStringList;
-
 QT_BEGIN_NAMESPACE
+
 class QmlEngine;
 class QmlComponent;
 class QmlCompiledComponent;

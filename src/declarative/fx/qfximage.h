@@ -120,9 +120,10 @@ private:
     Q_DECLARE_PRIVATE(QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
 };
-QML_DECLARE_TYPE(QFxImage)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxImage)
 
 QT_END_HEADER
 

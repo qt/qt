@@ -14,6 +14,8 @@
 #include <QLineEdit>
 #include <QCheckBox>
 
+QT_BEGIN_NAMESPACE
+
 class QLineGraph : public QWidget
 {
 Q_OBJECT
@@ -300,5 +302,7 @@ void CanvasFrameRate::stateChanged(int s)
 
     static_cast<QmlDebugClientPlugin *>(m_plugin)->setEnabled(checked);
 }
+
+QT_END_NAMESPACE
 
 #include "canvasframerate.moc"

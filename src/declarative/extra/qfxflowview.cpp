@@ -42,6 +42,8 @@
 #include "qfxvisualitemmodel.h"
 #include "qfxflowview.h"
 
+#include <QGraphicsSceneMouseEvent>
+
 QT_BEGIN_NAMESPACE
 
 class QFxFlowViewAttached : public QObject
@@ -288,8 +290,6 @@ void QFxFlowView::moveItem(QFxItem *item, const QPointF &p)
     m_timeline.move(*yv, p.y(), 100);
 }
 
-#include <QGraphicsSceneMouseEvent>
-
 void QFxFlowView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     for (int ii = 0; ii < m_items.count(); ++ii) {
@@ -376,6 +376,6 @@ void QFxFlowView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 QML_DEFINE_TYPE(QFxFlowView,FlowView);
 
-#include "qfxflowview.moc"
-
 QT_END_NAMESPACE
+
+#include "qfxflowview.moc"

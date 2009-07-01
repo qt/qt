@@ -54,14 +54,9 @@
 //
 
 #include <QtCore/QtGlobal>
-
-QT_BEGIN_HEADER
+#include "qmlparser_p.h"
 
 QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-#include "qmlparser_p.h"
 
 class QmlDomDocumentPrivate : public QSharedData
 {
@@ -135,8 +130,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMLDOM_P_H
 

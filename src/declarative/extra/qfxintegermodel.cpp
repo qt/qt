@@ -41,8 +41,8 @@
 
 #include "qfxintegermodel.h"
 
-
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QFxIntegerModel, IntegerModel)
 
 class QFxIntegerModelPrivate

@@ -55,6 +55,7 @@
 #include <QTimerEvent>
 
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QmlSqlBind, SqlBind)
 QML_DEFINE_TYPE(QmlSqlQuery, SqlQuery)
 
@@ -790,4 +791,5 @@ void QmlSqlQueryPrivate::grabRoles() const
         roles.append(i);
     }
 }
+
 QT_END_NAMESPACE

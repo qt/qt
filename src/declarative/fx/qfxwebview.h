@@ -49,14 +49,14 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWebKit/QWebPage>
 
-
 QT_BEGIN_HEADER
+
+class QWebHistory;
+class QWebSettings;
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QWebHistory;
-class QWebSettings;
 class QFxWebViewPrivate;
 class QNetworkRequest;
 class QFxWebView;
@@ -206,10 +206,11 @@ private:
     Q_DISABLE_COPY(QFxWebView)
     Q_DECLARE_PRIVATE(QFxWebView)
 };
-QML_DECLARE_TYPE(QFxWebView)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxWebView)
+
 QT_END_HEADER
+
 #endif

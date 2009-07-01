@@ -77,9 +77,10 @@ public:
 
     static QmlPackageAttached *qmlAttachedProperties(QObject *);
 };
-QML_DECLARE_TYPE(QmlPackage)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlPackage)
 
 QT_END_HEADER
 

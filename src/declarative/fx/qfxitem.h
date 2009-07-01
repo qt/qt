@@ -86,7 +86,6 @@ private:
     qreal m_height;
     qreal m_width;
 };
-QML_DECLARE_TYPE(QFxContents)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
 
 class QmlState;
@@ -266,11 +265,12 @@ private:
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };
-QML_DECLARE_TYPE(QFxItem)
-
-QML_DECLARE_TYPE(QSimpleCanvasFilter)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxContents)
+QML_DECLARE_TYPE(QFxItem)
+QML_DECLARE_TYPE(QSimpleCanvasFilter)
 
 QT_END_HEADER
 

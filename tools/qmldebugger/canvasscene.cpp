@@ -8,6 +8,8 @@
 #include <QtDeclarative/qfxrect.h>
 #include <QtDeclarative/qfximage.h>
 
+QT_BEGIN_NAMESPACE
+
 class CanvasSceneClientPlugin : public QmlDebugClientPlugin
 {
 public:
@@ -243,3 +245,4 @@ void CanvasScene::setY(int y)
     m_canvasRoot->setY(y);
 }
 
+QT_END_NAMESPACE
