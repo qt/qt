@@ -293,11 +293,16 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << CREATE_TEMPS_TARGET ":" << endl;
         // generate command lines like this ...
         // -@ if NOT EXIST  ".\somedir"         mkdir ".\somedir"
+        QStringList dirsToClean;
         for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
-                t << "\t-@ if NOT EXIST \""  << QDir::toNativeSeparators(values.at(i)) << "\\tmp\" mkdir \""
-                  << QDir::toNativeSeparators(values.at(i)) << "\\tmp\"" << endl;
+                if (values.at(i).endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
+                    QString fixedValue(QDir::toNativeSeparators(values.at(i)));
+                    dirsToClean << fixedValue;
+                    t << "\t-@ if NOT EXIST \""  << fixedValue << "\" mkdir \""
+                      << fixedValue << "\"" << endl;
+                }
             }
         }
         t << endl;
@@ -305,10 +310,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // Note: EXTENSION_CLEAN will get called many times when doing reallyclean
         //       This is why the "2> NUL" gets appended to generated clean targets in makefile.cpp.
         t << EXTENSION_CLEAN ": " COMPILER_CLEAN_TARGET << endl;
-        for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
-            QStringList dirsToClean = it.value();
-            generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_DIR"), " /S /Q ", "", "/tmp");
-        }
+        generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_DIR"), " /S /Q ", "", "");
         t << endl;
 
         t << PRE_TARGETDEPS_TARGET ":"
@@ -356,56 +358,8 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
     writeDeploymentTargets(t);
 
-    t << "dodistclean:" << endl;
-    foreach(QString item, project->values("SUBDIRS")) {
-        bool fromFile = false;
-        QString fixedItem;
-        if(!project->isEmpty(item + ".file")) {
-            fixedItem = project->first(item + ".file");
-            fromFile = true;
-        } else if(!project->isEmpty(item + ".subdir")) {
-            fixedItem = project->first(item + ".subdir");
-            fromFile = false;
-        } else {
-            fromFile = item.endsWith(Option::pro_ext);
-            fixedItem = item;
-        }
-        QFileInfo fi(fileInfo(fixedItem));
-        if (!fromFile) {
-            t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fi.canonicalFilePath()) << "\\Makefile\" dodistclean" << endl;
-        } else {
-            QString itemName = fi.fileName();
-            int extIndex = itemName.lastIndexOf(Option::pro_ext);
-            if (extIndex)
-                fixedItem = fi.canonicalPath() + "/" + QString("Makefile.") + itemName.mid(0,extIndex);
-            t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fixedItem) << "\" dodistclean" << endl;
-        }
+    generateDistcleanTargets(t);
 
-    }
-
-    generatedFiles << Option::fixPathToTargetOS(fileInfo(Option::output.fileName()).canonicalFilePath()); // bld.inf
-    generatedFiles << project->values("QMAKE_INTERNAL_PRL_FILE"); // Add generated prl files for cleanup
-    generatedFiles << project->values("QMAKE_DISTCLEAN"); // Add any additional files marked for distclean
-    QStringList fixedFiles;
-    QStringList fixedDirs;
-    foreach(QString item, generatedFiles) {
-        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).canonicalFilePath());
-        if (!fixedFiles.contains(fixedItem)) {
-            fixedFiles << fixedItem;
-        }
-    }
-    foreach(QString item, generatedDirs) {
-        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).canonicalFilePath());
-        if (!fixedDirs.contains(fixedItem)) {
-            fixedDirs << fixedItem;
-        }
-    }
-    generateCleanCommands(t, fixedFiles, "$(DEL_FILE)", "", "", "");
-    generateCleanCommands(t, fixedDirs, "$(DEL_DIR)", "", "", "");
-    t << endl;
-
-    t << "distclean: clean dodistclean" << endl;
-    t << endl;
     t << "clean: $(ABLD)" << endl;
     t << "\t-$(ABLD)" << testClause << " reallyclean" << endl;
     t << "\t-bldmake clean" << endl;
