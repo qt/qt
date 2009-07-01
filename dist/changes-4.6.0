@@ -31,6 +31,8 @@ information about a particular change.
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
+ - Significant external contribution from Milan Burda for planned removal
+   of (non-unicode) Windows 9x/ME support.
 
 
 ****************************************************************************
