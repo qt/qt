@@ -253,6 +253,7 @@ struct QGLEngineShaderProg
     QGLShader*          srcPixelFragShader;
     QGLShader*          maskFragShader;        // Can be null for no mask
     QGLShader*          compositionFragShader; // Can be null for GL-handled mode
+    QGLShader*          customShader;
     QGLShaderProgram*   program;
 
     QVector<uint> uniformLocations;
@@ -387,6 +388,9 @@ public:
     Q_ENUMS(ShaderName)
 #endif
 
+private slots:
+    void shaderDestroyed(QObject *shader);
+
 private:
     QGLContext*     ctx;
     bool            shaderProgNeedsChanging;
@@ -403,7 +407,6 @@ private:
     QGLShaderProgram*     simpleShaderProg;
     QGLEngineShaderProg*  currentShaderProg;
 
-    QGLEngineShaderProg customShaderProg;
     QGLCustomShader* customShader;
 
     // TODO: Possibly convert to a LUT

@@ -506,6 +506,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     else
         requiredProgram.compositionFragShader = 0;
 
+    requiredProgram.customShader = customShader ? customShader->shader() : 0;
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     for (int i = 0; i < cachedPrograms.size(); ++i) {
@@ -514,11 +515,15 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
              && (prog.positionVertexShader == requiredProgram.positionVertexShader)
              && (prog.mainFragShader == requiredProgram.mainFragShader)
              && (prog.srcPixelFragShader == requiredProgram.srcPixelFragShader)
-             && (prog.compositionFragShader == requiredProgram.compositionFragShader) )
+             && (prog.compositionFragShader == requiredProgram.compositionFragShader)
+             && (prog.customShader == requiredProgram.customShader) )
         {
             currentShaderProg = &prog;
             currentShaderProg->program->enable();
             shaderProgNeedsChanging = false;
+
+            if (customShader)
+                customShader->updateUniforms(currentShaderProg->program);
 
             return true;
         }
@@ -533,8 +538,8 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     requiredProgram.program->addShader(requiredProgram.maskFragShader);
     requiredProgram.program->addShader(requiredProgram.compositionFragShader);
 
-    if (customShader)
-        requiredProgram.program->addShader(customShader->shader());
+    if (requiredProgram.customShader)
+        requiredProgram.program->addShader(requiredProgram.customShader);
 
     // We have to bind the vertex attribute names before the program is linked:
     requiredProgram.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
@@ -560,23 +565,32 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         qWarning() << error;
     }
     else {
-        if (customShader) {
-            // don't cache custom shaders
-            customShaderProg = requiredProgram;
-            currentShaderProg = &customShaderProg;
-        } else {
-            cachedPrograms.append(requiredProgram);
-            // taking the address here is safe since
-            // cachePrograms isn't resized anywhere else
-            currentShaderProg = &cachedPrograms.last();
-        }
+        cachedPrograms.append(requiredProgram);
+        // taking the address here is safe since
+        // cachePrograms isn't resized anywhere else
+        currentShaderProg = &cachedPrograms.last();
         currentShaderProg->program->enable();
 
-        if (customShader)
+        if (customShader) {
             customShader->updateUniforms(currentShaderProg->program);
+            connect(customShader->shader(), SIGNAL(destroyed(QObject *)),
+                    this, SLOT(shaderDestroyed(QObject *)));
+        }
     }
     shaderProgNeedsChanging = false;
     return true;
+}
+
+void QGLEngineShaderManager::shaderDestroyed(QObject *shader)
+{
+    for (int i = 0; i < cachedPrograms.size(); ++i) {
+        if (cachedPrograms.at(i).customShader == shader) {
+            delete cachedPrograms.at(i).program;
+            cachedPrograms.removeAt(i--);
+        }
+    }
+
+    shaderProgNeedsChanging = true;
 }
 
 void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type)
