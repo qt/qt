@@ -396,8 +396,13 @@ void tst_QPropertyAnimation::duration0()
     animation.setEndValue(43);
     QVERIFY(!animation.currentValue().isValid());
     QCOMPARE(animation.currentValue().toInt(), 0);
+    animation.setStartValue(42);
+    QVERIFY(animation.currentValue().isValid());
+    QCOMPARE(animation.currentValue().toInt(), 42);
+    
     QCOMPARE(o.property("ole").toInt(), 42);
     animation.setDuration(0);
+    QCOMPARE(animation.currentValue().toInt(), 43); //it is at the end
     animation.start();
     QCOMPARE(animation.state(), QAnimationGroup::Stopped);
     QCOMPARE(animation.currentTime(), 0);
