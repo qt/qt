@@ -1551,7 +1551,7 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
 {
     engine = bindEngine;
     prototypeObject = engine->scriptEngine()->newObject();
-    prototypeObject.setProperty("destroy",
+    prototypeObject.setProperty(QLatin1String("destroy"),
             engine->scriptEngine()->newFunction(QmlObjectDestroy));
 }
 
