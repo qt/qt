@@ -131,14 +131,13 @@ private:
 
 
 QScriptDebuggerBackendPrivate::QScriptDebuggerBackendPrivate()
+    : agent(0), commandExecutor(0),
+        pendingEvaluateContextIndex(-1), pendingEvaluateLineNumber(-1),
+        ignoreExceptions(false),
+        nextScriptValueIteratorId(0), nextScriptObjectSnapshotId(0),
+        eventReceiver(0),
+        q_ptr(0) // q_ptr will be set later by QScriptDebuggerBackend constructor
 {
-    eventReceiver = 0;
-    agent = 0;
-    commandExecutor = 0;
-    pendingEvaluateLineNumber = -1;
-    ignoreExceptions = false;
-    nextScriptValueIteratorId = 0;
-    nextScriptObjectSnapshotId = 0;
 }
 
 QScriptDebuggerBackendPrivate::~QScriptDebuggerBackendPrivate()

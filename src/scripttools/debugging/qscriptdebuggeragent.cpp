@@ -61,11 +61,11 @@ QT_BEGIN_NAMESPACE
 */
 
 QScriptDebuggerAgentPrivate::QScriptDebuggerAgentPrivate()
+    : state(NoState), stepDepth(0), stepCount(0),
+        targetScriptId(-1), targetLineNumber(-1), returnCounter(0),
+        nextBreakpointId(1), hitBreakpointId(0),
+        nextContextId(0), statementCounter(0)
 {
-    state = NoState;
-    nextBreakpointId = 1;
-    nextContextId = 0;
-    statementCounter = 0;
 }
 
 QScriptDebuggerAgentPrivate::~QScriptDebuggerAgentPrivate()

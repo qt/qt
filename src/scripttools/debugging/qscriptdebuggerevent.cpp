@@ -60,6 +60,7 @@ public:
 };
 
 QScriptDebuggerEventPrivate::QScriptDebuggerEventPrivate()
+    : type(QScriptDebuggerEvent::None)
 {
 }
 

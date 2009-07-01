@@ -1013,7 +1013,7 @@ class SyncBreakpointsJob : public QScriptDebuggerCommandSchedulerJob
 public:
     SyncBreakpointsJob(QScriptDebuggerPrivate *debugger)
         : QScriptDebuggerCommandSchedulerJob(debugger),
-          m_debugger(debugger) {}
+          m_debugger(debugger), m_index(-1) {}
     void start()
     {
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);

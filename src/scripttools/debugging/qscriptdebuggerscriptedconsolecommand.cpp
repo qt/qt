@@ -367,7 +367,7 @@ class QScriptDebuggerScriptedConsoleCommandJobPrivate
     : public QScriptDebuggerConsoleCommandJobPrivate
 {
 public:
-    QScriptDebuggerScriptedConsoleCommandJobPrivate() {}
+    QScriptDebuggerScriptedConsoleCommandJobPrivate() : command(0), commandCount(0) {}
     ~QScriptDebuggerScriptedConsoleCommandJobPrivate() {}
 
     QScriptDebuggerScriptedConsoleCommandPrivate *command;

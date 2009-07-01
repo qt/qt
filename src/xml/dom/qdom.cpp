@@ -7379,11 +7379,9 @@ QDomComment QDomNode::toComment() const
  **************************************************************/
 
 QDomHandler::QDomHandler(QDomDocumentPrivate* adoc, bool namespaceProcessing)
+    : errorLine(0), errorColumn(0), doc(adoc), node(adoc), cdata(false),
+        nsProcessing(namespaceProcessing), locator(0)
 {
-    doc = adoc;
-    node = doc;
-    cdata = false;
-    nsProcessing = namespaceProcessing;
 }
 
 QDomHandler::~QDomHandler()

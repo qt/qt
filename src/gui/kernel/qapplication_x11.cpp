@@ -5404,7 +5404,8 @@ class QSessionManagerPrivate : public QObjectPrivate
 {
 public:
     QSessionManagerPrivate(QSessionManager* mgr, QString& id, QString& key)
-        : QObjectPrivate(), sm(mgr), sessionId(id), sessionKey(key), eventLoop(0) {}
+        : QObjectPrivate(), sm(mgr), sessionId(id), sessionKey(key),
+            restartHint(QSessionManager::RestartIfRunning), eventLoop(0) {}
     QSessionManager* sm;
     QStringList restartCommand;
     QStringList discardCommand;
