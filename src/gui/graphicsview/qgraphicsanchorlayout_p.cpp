@@ -798,11 +798,11 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
     if (!calculateGraphCacheDirty)
         return;
 
-    simplifyGraph(Horizontal);
-    simplifyGraph(Vertical);
+    //simplifyGraph(Horizontal);
+    //simplifyGraph(Vertical);
     //q->dumpGraph();
-    restoreSimplifiedGraph(Horizontal);    // should not be here, but currently crashes if not
-    restoreSimplifiedGraph(Vertical);    // should not be here, but currently crashes if not
+    //restoreSimplifiedGraph(Horizontal);    // should not be here, but currently crashes if not
+    //restoreSimplifiedGraph(Vertical);    // should not be here, but currently crashes if not
 
 
     calculateGraphs(Horizontal);
