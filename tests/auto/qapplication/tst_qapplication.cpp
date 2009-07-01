@@ -755,9 +755,9 @@ void tst_QApplication::libraryPaths()
         // current Path. Therefore we need to identify it ourselves
         // here for the test.
         QFileInfo filePath;
-        wchar_t module_name[256];
-        GetModuleFileNameW(0, module_name, sizeof(module_name) / sizeof(wchar_t));
-        filePath = QString::fromUtf16((ushort *)module_name);
+        wchar_t module_name[MAX_PATH];
+        GetModuleFileName(0, module_name, MAX_PATH);
+        filePath = QString::fromWCharArray(module_name);
         QString testDir = filePath.path() + "/test";
 #endif
         QApplication::setLibraryPaths(QStringList() << testDir);

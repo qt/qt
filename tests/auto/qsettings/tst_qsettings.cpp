@@ -3010,12 +3010,6 @@ void tst_QSettings::oldWriteEntry_QString_QString()
 	QSettings readSettings("software.org", "KillerAPP");
 	QFETCH( QString, s );
 	bool ok = FALSE;
-#ifdef Q_OS_WIN
-	if (qWinVersion() & Qt::WV_DOS_based) {
-	    QEXPECT_FAIL("data2", "Windows 9x does not support unicode characters in the registry", Abort);
-	    QEXPECT_FAIL("data5", "Windows 9x does not support unicode characters in the registry", Abort);
-	}
-#endif
 	QCOMPARE( readSettings.readEntry( "/Trolltech/QSettingsTesting/String", QString::null, &ok ), s );
 	QVERIFY( ok );
     }
