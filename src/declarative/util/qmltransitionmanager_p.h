@@ -39,67 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSTATEOPERATIONS_H
-#define QMLSTATEOPERATIONS_H
+#ifndef QMLTRANSITIONMANAGER_P_H
+#define QMLTRANSITIONMANAGER_P_H
 
-#include <QtDeclarative/qmlstate.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include <QtDeclarative/qmlstateoperations.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QmlParentChangePrivate;
-class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation
+class QmlStatePrivate;
+class QmlTransitionManagerPrivate;
+class QmlTransitionManager 
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlParentChange)
-
-    Q_PROPERTY(QObject *target READ object WRITE setObject)
-    Q_PROPERTY(QObject *parent READ parent WRITE setParent)
 public:
-    QmlParentChange(QObject *parent=0);
-    ~QmlParentChange();
+    QmlTransitionManager();
+    ~QmlTransitionManager();
 
-    QObject *object() const;
-    void setObject(QObject *);
+    void transition(const QList<Action> &, QmlTransition *transition);
 
-    QObject *parent() const;
-    void setParent(QObject *);
+    void cancel();
 
-    virtual ActionList actions();
-};
+private:
+    Q_DISABLE_COPY(QmlTransitionManager);
+    QmlTransitionManagerPrivate *d;
 
-class QmlRunScriptPrivate;
-class Q_DECLARATIVE_EXPORT QmlRunScript : public QmlStateOperation, public ActionEvent
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlRunScript)
+    void complete();
+    void setState(QmlState *);
 
-    Q_PROPERTY(QString script READ script WRITE setScript)
-    Q_PROPERTY(QString name READ name WRITE setName)
-
-public:
-    QmlRunScript(QObject *parent=0);
-    ~QmlRunScript();
-
-    virtual ActionList actions();
-
-    QString script() const;
-    void setScript(const QString &);
-    
-    virtual QString name() const;
-    void setName(const QString &);
-
-    virtual void execute();
+    friend class QmlState;
+    friend class QmlTransitionPrivate;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlParentChange)
-QML_DECLARE_TYPE(QmlRunScript)
-
-QT_END_HEADER
-
-#endif // QMLSTATEOPERATIONS_H
+#endif // QMLTRANSITIONMANAGER_P_H
