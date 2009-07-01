@@ -97,13 +97,11 @@ QEasingCurve stringToCurve(const QString &curve)
     if (normalizedCurve.startsWith(QLatin1String("ease")))
         normalizedCurve = normalizedCurve.mid(4);
 
-    //XXX optimize?
-    int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
-    QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
+    static int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
+    static QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
 
     int value = me.keyToValue(normalizedCurve.toLatin1().constData());
     if (value < 0) {
-        //XXX print line number
         qWarning("QEasingCurve: Unknown easing curve '%s'",
                  curve.toLatin1().constData());
         value = 0;
@@ -130,7 +128,6 @@ QEasingCurve stringToCurve(const QString &curve)
                 return easingCurve;
             }
 
-            //XXX optimize
             if (propName == QLatin1String("amplitude")) {
                 easingCurve.setAmplitude(propValue);
             } else if (propName == QLatin1String("period")) {
@@ -696,15 +693,6 @@ void QmlPauseAnimation::setDuration(int duration)
         return;
     d->pa->setDuration(duration);
     emit durationChanged(duration);
-}
-
-void QmlPauseAnimation::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlPauseAnimation);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
 }
 
 QAbstractAnimation *QmlPauseAnimation::qtAnimation()

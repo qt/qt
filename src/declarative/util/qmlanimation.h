@@ -154,7 +154,6 @@ Q_SIGNALS:
 
 protected:
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 };
 
 class QmlRunScriptActionPrivate;
