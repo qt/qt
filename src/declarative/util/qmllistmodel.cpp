@@ -169,31 +169,6 @@ struct ListModelData
 
 */
 
-struct ModelNode;
-class ListModel : public QListModelInterface
-{
-    Q_OBJECT
-public:
-    ListModel(QObject *parent=0);
-
-    virtual QList<int> roles() const;
-    virtual QString toString(int role) const;
-    Q_PROPERTY(int count READ count)
-    virtual int count() const;
-    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
-
-private:
-    QVariant valueForNode(ModelNode *) const;
-    mutable QStringList roleStrings;
-    friend class ListModelParser;
-    friend struct ModelNode;
-
-    void checkRoles() const;
-    void addRole(const QString &) const;
-    mutable bool _rolesOk;
-    ModelNode *_root;
-};
-
 class ModelObject : public QObject
 {
     Q_OBJECT
@@ -220,9 +195,9 @@ struct ModelNode
     QList<QVariant> values;
     QHash<QString, ModelNode *> properties;
 
-    ListModel *model() {
+    QmlListModel *model() {
         if (!modelCache) { 
-            modelCache = new ListModel;
+            modelCache = new QmlListModel;
             modelCache->_root = this; 
         }
         return modelCache;
@@ -240,7 +215,7 @@ struct ModelNode
         return objectCache;
     }
 
-    ListModel *modelCache;
+    QmlListModel *modelCache;
     ModelObject *objectCache;
 };
 
@@ -249,12 +224,16 @@ ModelObject::ModelObject(ModelNode *node)
 {
 }
 
-ListModel::ListModel(QObject *parent)
+QmlListModel::QmlListModel(QObject *parent)
 : QListModelInterface(parent), _rolesOk(false), _root(0)
 {
 }
 
-void ListModel::checkRoles() const
+QmlListModel::~QmlListModel()
+{
+}
+
+void QmlListModel::checkRoles() const
 {
     if (_rolesOk)
         return;
@@ -270,13 +249,13 @@ void ListModel::checkRoles() const
     _rolesOk = true;
 }
 
-void ListModel::addRole(const QString &role) const
+void QmlListModel::addRole(const QString &role) const
 {
     if (!roleStrings.contains(role))
         roleStrings << role;
 }
 
-QList<int> ListModel::roles() const
+QList<int> QmlListModel::roles() const
 {
     checkRoles();
     QList<int> rv;
@@ -285,7 +264,7 @@ QList<int> ListModel::roles() const
     return rv;
 }
 
-QString ListModel::toString(int role) const
+QString QmlListModel::toString(int role) const
 {
     checkRoles();
     if (role < roleStrings.count())
@@ -294,7 +273,7 @@ QString ListModel::toString(int role) const
         return QString();
 }
 
-QVariant ListModel::valueForNode(ModelNode *node) const
+QVariant QmlListModel::valueForNode(ModelNode *node) const
 {
     QObject *rv = 0;
 
@@ -327,7 +306,7 @@ QVariant ListModel::valueForNode(ModelNode *node) const
         return QVariant();
 }
 
-QHash<int,QVariant> ListModel::data(int index, const QList<int> &roles) const
+QHash<int,QVariant> QmlListModel::data(int index, const QList<int> &roles) const
 {
     checkRoles();
     QHash<int, QVariant> rv;
@@ -352,13 +331,13 @@ QHash<int,QVariant> ListModel::data(int index, const QList<int> &roles) const
     return rv;
 }
 
-int ListModel::count() const
+int QmlListModel::count() const
 {
     if (!_root) return 0;
     return _root->values.count();
 }
 
-class ListModelParser : public QmlCustomParser
+class QmlListModelParser : public QmlCustomParser
 {
 public:
     QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
@@ -366,7 +345,7 @@ public:
     void setCustomData(QObject *, const QByteArray &);
 };
 
-bool ListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data)
+bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data)
 {
     QList<QVariant> values = prop.assignedValues();
     for(int ii = 0; ii < values.count(); ++ii) {
@@ -433,7 +412,7 @@ bool ListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList
     return true;
 }
 
-QByteArray ListModelParser::compile(const QList<QmlCustomParserProperty> &customProps, bool *ok)
+QByteArray QmlListModelParser::compile(const QList<QmlCustomParserProperty> &customProps, bool *ok)
 {
     *ok = true;
     QList<ListInstruction> instr;
@@ -470,9 +449,9 @@ QByteArray ListModelParser::compile(const QList<QmlCustomParserProperty> &custom
     return rv;
 }
 
-void ListModelParser::setCustomData(QObject *obj, const QByteArray &d)
+void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
 {
-    ListModel *rv = static_cast<ListModel *>(obj);
+    QmlListModel *rv = static_cast<QmlListModel *>(obj);
 
     ModelNode *root = new ModelNode;
     rv->_root = root;
@@ -518,14 +497,14 @@ void ListModelParser::setCustomData(QObject *obj, const QByteArray &d)
     }
 }
 
-QML_DEFINE_CUSTOM_TYPE(ListModel, ListModel, ListModelParser)
+QML_DEFINE_CUSTOM_TYPE(QmlListModel, ListModel, QmlListModelParser)
 
 // ### FIXME
-class ListElement : public QObject
+class QmlListElement : public QObject
 {
 Q_OBJECT
 };
-QML_DEFINE_TYPE(ListElement,ListElement)
+QML_DEFINE_TYPE(QmlListElement,ListElement)
 
 static void dump(ModelNode *node, int ind)
 {
@@ -566,7 +545,6 @@ ModelNode::~ModelNode()
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(ModelNode *)
-QML_DECLARE_TYPE(ListModel)
-QML_DECLARE_TYPE(ListElement)
+QML_DECLARE_TYPE(QmlListElement)
 
 #include "qmllistmodel.moc"
