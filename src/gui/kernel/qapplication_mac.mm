@@ -1921,6 +1921,11 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                                tp, rotation, z, modifiers, deviceData.tabletUniqueID);
                 QApplication::sendSpontaneousEvent(widget, &e);
                 if (e.isAccepted()) {
+                    if (t == QEvent::TabletPress) {
+                        qt_button_down = widget;
+                    } else if (t == QEvent::TabletRelease) {
+                        qt_button_down = 0;
+                    }
 #if defined(DEBUG_MOUSE_MAPS)
                     qDebug("Bail out early due to tablet acceptance");
 #endif
