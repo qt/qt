@@ -676,6 +676,11 @@ void QGL2PaintEngineEx::sync()
     glDisable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
 
+    glDisable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(true);
+    glClearDepth(1);
+
     d->needsSync = true;
 }
 
