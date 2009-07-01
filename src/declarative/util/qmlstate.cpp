@@ -525,7 +525,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         d->applyBindings(); //### merge into above foreach?
 }
 
-QML_DEFINE_TYPE(QmlStateOperation,StateOperation)
+QML_DEFINE_NOCREATE_TYPE(QmlStateOperation)
 QmlStateOperation::ActionList QmlStateOperation::actions()
 {
     return ActionList();

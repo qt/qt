@@ -52,9 +52,9 @@
 #include "qmllistaccessor.h"
 #include "qfxvisualitemmodel.h"
 
+QML_DECLARE_TYPE(QListModelInterface)
 
 QT_BEGIN_NAMESPACE
-QML_DECLARE_TYPE(QListModelInterface)
 
 class QFxVisualItemModelParts;
 class QFxVisualItemModelData;

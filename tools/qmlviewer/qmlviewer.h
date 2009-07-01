@@ -20,6 +20,7 @@
 #include <qfxtestengine.h>
 #include <QList>
 
+QT_BEGIN_NAMESPACE
 
 class QFxView;
 class PreviewDeviceSkin;
@@ -93,5 +94,7 @@ private:
 
     QFxTestEngine *testEngine;
 };
+
+QT_END_NAMESPACE
 
 #endif

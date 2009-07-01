@@ -150,6 +150,7 @@ namespace QmlParser
             Type type;
             QByteArray name;
             QmlParser::Property *defaultValue;
+            LocationRange range;
         };
         struct DynamicSignal {
             DynamicSignal();
@@ -295,9 +296,10 @@ namespace QmlParser
         void dump(int = 0) const;
     };
 }
-Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_HEADER
 

@@ -133,7 +133,9 @@ QFxContents::QFxContents() : m_height(0), m_width(0)
 
     The contents properties allow an item access to the size of its
     children. This property is useful if you have an item that needs to be
-    sized to fit its children.
+    sized to fit its children.    
+*/
+
 /*!
     \property QFxContents::height
     \brief The height of the contents.

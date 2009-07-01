@@ -50,6 +50,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxVisualItemModel;
 class QFxFlowViewValue;
 class QFxFlowViewAttached;
@@ -97,9 +98,10 @@ private:
     QList<QFxFlowViewValue *> m_values;
     int m_dragIdx;
 };
-QML_DECLARE_TYPE(QFxFlowView);
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxFlowView);
 
 QT_END_HEADER
 

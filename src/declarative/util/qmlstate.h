@@ -99,7 +99,6 @@ public:
 protected:
     QmlStateOperation(QObjectPrivate &dd, QObject *parent = 0);
 };
-QML_DECLARE_TYPE(QmlStateOperation)
 
 typedef QmlStateOperation::ActionList QmlStateActions;
 
@@ -149,9 +148,11 @@ private:
     Q_DISABLE_COPY(QmlState)
     friend class QmlTransitionPrivate;
 };
-QML_DECLARE_TYPE(QmlState)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlStateOperation)
+QML_DECLARE_TYPE(QmlState)
 
 QT_END_HEADER
 

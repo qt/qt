@@ -50,6 +50,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlDateTimeFormatterPrivate;
 class Q_DECLARATIVE_EXPORT QmlDateTimeFormatter : public QObject, public QmlParserStatus
 {
@@ -106,9 +107,9 @@ private:
     Q_DECLARE_PRIVATE(QmlDateTimeFormatter)
 };
 
-QML_DECLARE_TYPE(QmlDateTimeFormatter)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlDateTimeFormatter)
 
 QT_END_HEADER
 

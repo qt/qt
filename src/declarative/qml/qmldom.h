@@ -107,7 +107,34 @@ public:
 
 private:
     friend class QmlDomObject;
+    friend class QmlDomDynamicProperty;
     QSharedDataPointer<QmlDomPropertyPrivate> d;
+};
+
+class QmlDomDynamicPropertyPrivate;
+class Q_DECLARATIVE_EXPORT QmlDomDynamicProperty
+{
+public:
+    QmlDomDynamicProperty();
+    QmlDomDynamicProperty(const QmlDomDynamicProperty &);
+    ~QmlDomDynamicProperty();
+    QmlDomDynamicProperty &operator=(const QmlDomDynamicProperty &);
+
+    bool isValid() const;
+
+    QByteArray propertyName() const;
+    int propertyType() const;
+
+    bool isDefaultProperty() const;
+
+    QmlDomProperty defaultValue() const;
+
+    int position() const;
+    int length() const;
+
+private:
+    friend class QmlDomObject;
+    QSharedDataPointer<QmlDomDynamicPropertyPrivate> d;
 };
 
 class QmlDomObjectPrivate;
@@ -132,6 +159,9 @@ public:
 
     void removeProperty(const QByteArray &);
     void addProperty(const QByteArray &, const QmlDomValue &);
+
+    QList<QmlDomDynamicProperty> dynamicProperties() const;
+    QmlDomDynamicProperty dynamicProperty(const QByteArray &) const;
 
     bool isCustomType() const;
     QByteArray customTypeData() const;

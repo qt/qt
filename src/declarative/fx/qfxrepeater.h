@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxRepeaterPrivate;
 class Q_DECLARATIVE_EXPORT QFxRepeater : public QFxItem
 {
@@ -80,10 +80,11 @@ private:
     Q_DISABLE_COPY(QFxRepeater)
     Q_DECLARE_PRIVATE(QFxRepeater)
 };
-QML_DECLARE_TYPE(QFxRepeater)
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxRepeater)
+
 QT_END_HEADER
 
-#endif // _QFXREPEATER_H_
+#endif // QFXREPEATER_H

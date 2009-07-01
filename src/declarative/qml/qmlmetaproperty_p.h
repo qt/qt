@@ -55,6 +55,8 @@
 
 #include "qmlmetaproperty.h"
 
+QT_BEGIN_NAMESPACE
+
 class QmlContext;
 class QmlMetaPropertyPrivate
 {
@@ -88,5 +90,7 @@ public:
     void writeSignalProperty(const QVariant &);
     void writeValueProperty(const QVariant &);
 };
+
+QT_END_NAMESPACE
 
 #endif // QMLMETAPROPERTY_P_H

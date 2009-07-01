@@ -77,7 +77,6 @@ private:
     QColor _color;
     bool _valid;
 };
-QML_DECLARE_TYPE(QFxPen)
 
 class Q_DECLARATIVE_EXPORT QFxGradientStop : public QObject
 {
@@ -102,7 +101,6 @@ private:
     qreal m_position;
     QColor m_color;
 };
-QML_DECLARE_TYPE(QFxGradientStop)
 
 class Q_DECLARATIVE_EXPORT QFxGradient : public QObject
 {
@@ -130,7 +128,6 @@ private:
     mutable QGradient *m_gradient;
     friend class QFxGradientStop;
 };
-QML_DECLARE_TYPE(QFxGradient)
 
 class QFxRectPrivate;
 class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
@@ -184,9 +181,13 @@ private:
     Q_DISABLE_COPY(QFxRect)
     Q_DECLARE_PRIVATE(QFxRect)
 };
-QML_DECLARE_TYPE(QFxRect)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxPen)
+QML_DECLARE_TYPE(QFxGradientStop)
+QML_DECLARE_TYPE(QFxGradient)
+QML_DECLARE_TYPE(QFxRect)
 
 QT_END_HEADER
 

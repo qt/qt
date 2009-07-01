@@ -47,8 +47,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QString>
 
-QT_BEGIN_NAMESPACE
-
 #include "parser/qmljsengine_p.h"
 #include "parser/qmljsparser_p.h"
 #include "parser/qmljslexer_p.h"
@@ -64,6 +62,8 @@ QT_BEGIN_NAMESPACE
 
 #include <iostream>
 #include <cstdlib>
+
+QT_BEGIN_NAMESPACE
 
 using namespace QmlJS;
 

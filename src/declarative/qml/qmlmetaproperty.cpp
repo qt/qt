@@ -50,6 +50,8 @@
 #include <math.h>
 #include <QtCore/qdebug.h>
 
+Q_DECLARE_METATYPE(QList<QObject *>);
+
 QT_BEGIN_NAMESPACE
 
 class QMetaPropertyEx : public QMetaProperty
@@ -650,8 +652,6 @@ QVariant QmlMetaProperty::read() const
     }
     return QVariant();
 }
-
-Q_DECLARE_METATYPE(QList<QObject *>);
 
 void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
 {
