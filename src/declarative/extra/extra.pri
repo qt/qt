@@ -8,6 +8,7 @@ SOURCES += \
            extra/qfxanimatedimageitem.cpp \
            extra/qfxblendedimage.cpp \
            extra/qfxflowview.cpp \
+           extra/qfxparticles.cpp \
            extra/qmlbehaviour.cpp \
            extra/qbindablemap.cpp
 
@@ -22,6 +23,7 @@ HEADERS += \
            extra/qfxanimatedimageitem_p.h \
            extra/qfxblendedimage.h \
            extra/qfxflowview.h \
+           extra/qfxparticles.h \
            extra/qmlbehaviour.h \
            extra/qbindablemap.h
 
