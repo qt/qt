@@ -110,21 +110,17 @@ bool QDBusAbstractInterfacePrivate::canMakeCalls() const
     return true;
 }
 
-QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
+void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &where) const
 {
-    if (!isValid || !canMakeCalls())    // can't make calls
-        return QVariant();
+    if (!isValid || !canMakeCalls()) {   // can't make calls
+        where.clear();
+        return;
+    }
 
     // is this metatype registered?
-    int mid;
-    const char *expectedSignature;
-    if (mp.type() == QVariant::LastType) {
-        // We're asking to read a QVariant
-        mid = qMetaTypeId<QDBusVariant>();
-        expectedSignature = "v";
-    } else {
-        mid = QMetaType::type(mp.typeName());
-        expectedSignature = QDBusMetaType::typeToSignature(mid);
+    const char *expectedSignature = "";
+    if (mp.type() != 0xff) {
+        expectedSignature = QDBusMetaType::typeToSignature(where.userType());
         if (expectedSignature == 0) {
             qWarning("QDBusAbstractInterface: type %s must be registered with QtDBus before it can be "
                      "used to read property %s.%s",
@@ -132,7 +128,8 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
             lastError = QDBusError(QDBusError::Failed,
                                    QString::fromLatin1("Unregistered type %1 cannot be handled")
                                    .arg(QLatin1String(mp.typeName())));
-            return QVariant();
+            where.clear();
+            return;
         }
     }
 
@@ -146,21 +143,27 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = reply;
-        return QVariant();
+        where.clear();
+        return;
     }
     if (reply.signature() != QLatin1String("v")) {
         QString errmsg = QLatin1String("Invalid signature `%1' in return from call to "
                                        DBUS_INTERFACE_PROPERTIES);
         lastError = QDBusError(QDBusError::InvalidSignature, errmsg.arg(reply.signature()));
-        return QVariant();
+        where.clear();
+        return;
     }
 
     QByteArray foundSignature;
     const char *foundType = 0;
     QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
-    if (value.userType() == mid)
-        return value;       // simple match
+    if (value.userType() == where.userType() || mp.type() == 0xff
+        || (expectedSignature[0] == 'v' && expectedSignature[1] == '\0')) {
+        // simple match
+        where = value;
+        return;
+    }
 
     if (value.userType() == qMetaTypeId<QDBusArgument>()) {
         QDBusArgument arg = qvariant_cast<QDBusArgument>(value);
@@ -168,14 +171,9 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
         foundType = "user type";
         foundSignature = arg.currentSignature().toLatin1();
         if (foundSignature == expectedSignature) {
-            void *null = 0;
-            QVariant result(mid, null);
-            QDBusMetaType::demarshall(arg, mid, result.data());
-
-            if (mp.type() == QVariant::LastType)
-                // special case: QVariant
-                return qvariant_cast<QDBusVariant>(result).variant();
-            return result;
+            // signatures match, we can demarshall
+            QDBusMetaType::demarshall(arg, where.userType(), where.data());
+            return;
         }
     } else {
         foundType = value.typeName();
@@ -192,7 +190,8 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
                                       QString::fromUtf8(mp.name()),
                                       QString::fromLatin1(mp.typeName()),
                                       QString::fromLatin1(expectedSignature)));
-    return QVariant();
+    where.clear();
+    return;
 }
 
 bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const QVariant &value)
@@ -246,7 +245,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
         if (_c == QMetaObject::WriteProperty) {
             status = d_func()->setProperty(mp, variant) ? 1 : 0;
         } else {
-            variant = d_func()->property(mp);
+            d_func()->property(mp, variant);
             status = variant.isValid() ? 1 : 0;
         }
         _id = -1;
@@ -576,11 +575,7 @@ QVariant QDBusAbstractInterface::internalPropGet(const char *propname) const
     // assume this property exists and is readable
     // we're only called from generated code anyways
 
-    int idx = metaObject()->indexOfProperty(propname);
-    if (idx != -1)
-        return d_func()->property(metaObject()->property(idx));
-    qWarning("QDBusAbstractInterface::internalPropGet called with unknown property '%s'", propname);
-    return QVariant();          // error
+    return property(propname);
 }
 
 /*!
@@ -589,16 +584,7 @@ QVariant QDBusAbstractInterface::internalPropGet(const char *propname) const
 */
 void QDBusAbstractInterface::internalPropSet(const char *propname, const QVariant &value)
 {
-    Q_D(QDBusAbstractInterface);
-
-    // assume this property exists and is writeable
-    // we're only called from generated code anyways
-
-    int idx = metaObject()->indexOfProperty(propname);
-    if (idx != -1)
-        d->setProperty(metaObject()->property(idx), value);
-    else
-        qWarning("QDBusAbstractInterface::internalPropGet called with unknown property '%s'", propname);
+    setProperty(propname, value);
 }
 
 /*!
