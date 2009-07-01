@@ -4312,7 +4312,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (drawItem) {
         Q_ASSERT(!itemIsFullyTransparent);
         Q_ASSERT(itemHasContents);
-        item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion
+        ENSURE_TRANSFORM_PTR
+        item->d_ptr->initStyleOption(&styleOptionTmp, *transformPtr, exposedRegion
                                      ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         const bool itemClipsToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsToShape;
@@ -4320,10 +4321,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (savePainter)
             painter->save();
 
-        if (!itemHasChildren || !itemClipsChildrenToShape) {
-            ENSURE_TRANSFORM_PTR
+        if (!itemHasChildren || !itemClipsChildrenToShape)
             painter->setWorldTransform(*transformPtr);
-        }
+
         if (itemClipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);

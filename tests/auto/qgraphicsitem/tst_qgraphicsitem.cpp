@@ -6837,9 +6837,11 @@ public:
             //Doesn't use the extended style option so the exposed rect is the boundingRect
             if (!(flags() & QGraphicsItem::ItemUsesExtendedStyleOption)) {
                 QCOMPARE(option->exposedRect, boundingRect());
+                QCOMPARE(option->matrix, QMatrix());
             } else {
                 QVERIFY(option->exposedRect != QRect());
                 QVERIFY(option->exposedRect != boundingRect());
+                QCOMPARE(option->matrix, sceneTransform().toAffine());
             }
         }
         QGraphicsRectItem::paint(painter, option, widget);
@@ -6861,6 +6863,8 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     scene.addItem(rect);
     rect->setPos(200, 200);
     QGraphicsView view(&scene);
+    rect->startTrack = false;
+    view.show();
     QTest::qWait(500);
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
