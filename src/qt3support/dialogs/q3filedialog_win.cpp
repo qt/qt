@@ -64,49 +64,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Don't remove the lines below!
-//
-// resolving the W methods manually is needed, because Windows 95 doesn't include
-// these methods in Shell32.lib (not even stubs!), so you'd get an unresolved symbol
-// when Qt calls getEsistingDirectory(), etc.
-typedef LPITEMIDLIST (WINAPI *PtrSHBrowseForFolder)(BROWSEINFO*);
-static PtrSHBrowseForFolder ptrSHBrowseForFolder = 0;
-typedef BOOL (WINAPI *PtrSHGetPathFromIDList)(LPITEMIDLIST,LPWSTR);
-static PtrSHGetPathFromIDList ptrSHGetPathFromIDList = 0;
-
-static void resolveLibs()
-{
-#ifndef Q_OS_WINCE
-    static bool triedResolve = false;
-
-    if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        // protect initialization
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        // check triedResolve again, since another thread may have already
-        // done the initialization
-        if (triedResolve) {
-            // another thread did initialize the security function pointers,
-            // so we shouldn't do it again.
-            return;
-        }
-#endif
-
-        triedResolve = true;
-        if (qt_winUnicode()) {
-            QLibrary lib(QLatin1String("shell32"));
-            ptrSHBrowseForFolder = (PtrSHBrowseForFolder) lib.resolve("SHBrowseForFolderW");
-            ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList) lib.resolve("SHGetPathFromIDListW");
-        }
-    }
-#endif
-}
-#ifdef Q_OS_WINCE
-#define PtrSHBrowseForFolder SHBrowseForFolder ;
-#define PtrSHGetPathFromIDList SHGetPathFromIDList;
-#endif
-
-
 extern const char qt3_file_dialog_filter_reg_exp[]; // defined in qfiledialog.cpp
 
 const int maxNameLen = 1023;
@@ -168,80 +125,8 @@ static QString selFilter(const QString& filter, DWORD idx)
     return filterLst[(int)idx - 1];
 }
 
-#ifndef Q_OS_WINCE
-// Static vars for OFNA funcs:
-static QByteArray aInitDir;
-static QByteArray aInitSel;
-static QByteArray aTitle;
-static QByteArray aFilter;
-// Use ANSI strings and API
-
-// If you change this, then make sure you change makeOFN (below) too
-static
-OPENFILENAMEA* makeOFNA(QWidget* parent,
-                         const QString& initialSelection,
-                         const QString& initialDirectory,
-                         const QString& title,
-                         const QString& filters,
-                         Q3FileDialog::Mode mode)
-{
-    if (parent)
-        parent = parent->window();
-    else
-        parent = qApp->activeWindow();
-
-    aTitle = title.local8Bit();
-    aInitDir = QDir::toNativeSeparators(initialDirectory).local8Bit();
-    if (initialSelection.isEmpty())
-        aInitSel = "";
-    else
-        aInitSel = QDir::toNativeSeparators(initialSelection).local8Bit();
-    int maxLen = mode == Q3FileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
-    aInitSel.resize(maxLen + 1);                // make room for return value
-    aFilter = filters.local8Bit();
-
-    OPENFILENAMEA* ofn = new OPENFILENAMEA;
-    memset(ofn, 0, sizeof(OPENFILENAMEA));
-
-#if defined(Q_CC_BOR) && (WINVER >= 0x0500) && (_WIN32_WINNT >= 0x0500)
-    // according to the MSDN, this should also be necessary for MSVC, but
-    // OPENFILENAME_SIZE_VERSION_400A is in not Microsoft header, as it seems
-    if (QApplication::winVersion()==Qt::WV_NT || QApplication::winVersion()&Qt::WV_DOS_based) {
-        ofn->lStructSize= OPENFILENAME_SIZE_VERSION_400A;
-    } else {
-        ofn->lStructSize= sizeof(OPENFILENAMEA);
-    }
-#else
-    ofn->lStructSize        = sizeof(OPENFILENAMEA);
-#endif
-    ofn->hwndOwner        = parent ? parent->winId() : 0;
-    ofn->lpstrFilter        = aFilter;
-    ofn->lpstrFile        = aInitSel.data();
-    ofn->nMaxFile        = maxLen;
-    ofn->lpstrInitialDir = aInitDir.data();
-    ofn->lpstrTitle        = aTitle.data();
-    ofn->Flags                = (OFN_NOCHANGEDIR | OFN_HIDEREADONLY);
-
-    if (mode == Q3FileDialog::ExistingFile ||
-         mode == Q3FileDialog::ExistingFiles)
-        ofn->Flags |= (OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
-    if (mode == Q3FileDialog::ExistingFiles)
-        ofn->Flags |= (OFN_ALLOWMULTISELECT | OFN_EXPLORER);
-
-    return ofn;
-}
-
-static void cleanUpOFNA(OPENFILENAMEA** ofn)
-{
-    delete *ofn;
-    *ofn = 0;
-}
-#endif
-
 static QString tFilters, tTitle, tInitDir;
 
-#ifdef UNICODE
-// If you change this, then make sure you change makeOFNA (above) too
 static
 OPENFILENAME* makeOFN(QWidget* parent,
                        const QString& initialSelection,
@@ -261,33 +146,23 @@ OPENFILENAME* makeOFN(QWidget* parent,
     QString initSel = QDir::toNativeSeparators(initialSelection);
 
     int maxLen = mode == Q3FileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
-    TCHAR *tInitSel = new TCHAR[maxLen+1];
+    wchar_t *tInitSel = new wchar_t[maxLen+1];
     if (initSel.length() > 0 && initSel.length() <= maxLen)
-        memcpy(tInitSel, initSel.ucs2(), (initSel.length()+1)*sizeof(QChar));
+        memcpy(tInitSel, initSel.utf16(), (initSel.length() + 1) * sizeof(wchar_t));
     else
         tInitSel[0] = 0;
 
     OPENFILENAME* ofn = new OPENFILENAME;
     memset(ofn, 0, sizeof(OPENFILENAME));
 
-#if defined(Q_CC_BOR) && (WINVER >= 0x0500) && (_WIN32_WINNT >= 0x0500)
-    // according to the MSDN, this should also be necessary for MSVC, but
-    // OPENFILENAME_SIZE_VERSION_400 is in not Microsoft header, as it seems
-    if (QApplication::winVersion()==Qt::WV_NT || QApplication::winVersion()&Qt::WV_DOS_based) {
-        ofn->lStructSize= OPENFILENAME_SIZE_VERSION_400;
-    } else {
-        ofn->lStructSize        = sizeof(OPENFILENAME);
-    }
-#else
-    ofn->lStructSize        = sizeof(OPENFILENAME);
-#endif
-    ofn->hwndOwner        = parent ? parent->winId() : 0;
-    ofn->lpstrFilter        = (TCHAR *)tFilters.ucs2();
-    ofn->lpstrFile        = tInitSel;
+    ofn->lStructSize     = sizeof(OPENFILENAME);
+    ofn->hwndOwner       = parent ? parent->winId() : 0;
+    ofn->lpstrFilter     = (wchar_t*)tFilters.utf16();
+    ofn->lpstrFile       = tInitSel;
     ofn->nMaxFile        = maxLen;
-    ofn->lpstrInitialDir = (TCHAR *)tInitDir.ucs2();
-    ofn->lpstrTitle        = (TCHAR *)tTitle.ucs2();
-    ofn->Flags                = (OFN_NOCHANGEDIR | OFN_HIDEREADONLY);
+    ofn->lpstrInitialDir = (wchar_t*)tInitDir.utf16();
+    ofn->lpstrTitle      = (wchar_t*)tTitle.utf16();
+    ofn->Flags           = (OFN_NOCHANGEDIR | OFN_HIDEREADONLY);
 
     if (mode == Q3FileDialog::ExistingFile ||
          mode == Q3FileDialog::ExistingFiles)
@@ -298,15 +173,12 @@ OPENFILENAME* makeOFN(QWidget* parent,
     return ofn;
 }
 
-
 static void cleanUpOFN(OPENFILENAME** ofn)
 {
     delete (*ofn)->lpstrFile;
     delete *ofn;
     *ofn = 0;
 }
-
-#endif // UNICODE
 
 QString Q3FileDialog::winGetOpenFileName(const QString &initialSelection,
                                          const QString &filter,
@@ -349,31 +221,18 @@ QString Q3FileDialog::winGetOpenFileName(const QString &initialSelection,
         QApplication::sendEvent(parent, &e);
         QApplicationPrivate::enterModal(parent);
     }
-    QT_WA({
-        // Use Unicode strings and API
-        OPENFILENAME* ofn = makeOFN(parent, isel,
-                                     *initialDirectory, title,
-                                     winFilter(filter), ExistingFile);
-        if (idx)
-            ofn->nFilterIndex = idx + 1;
-        if (GetOpenFileName(ofn)) {
-            result = QString::fromUcs2((ushort*)ofn->lpstrFile);
-            selFilIdx = ofn->nFilterIndex;
-        }
-        cleanUpOFN(&ofn);
-    } , {
-        // Use ANSI strings and API
-        OPENFILENAMEA* ofn = makeOFNA(parent, isel,
-                                       *initialDirectory, title,
-                                       winFilter(filter), ExistingFile);
-        if (idx)
-            ofn->nFilterIndex = idx + 1;
-        if (GetOpenFileNameA(ofn)) {
-            result = QString::fromLocal8Bit(ofn->lpstrFile);
-            selFilIdx = ofn->nFilterIndex;
-        }
-        cleanUpOFNA(&ofn);
-    });
+
+    OPENFILENAME* ofn = makeOFN(parent, isel,
+                                *initialDirectory, title,
+                                winFilter(filter), ExistingFile);
+    if (idx)
+        ofn->nFilterIndex = idx + 1;
+    if (GetOpenFileName(ofn)) {
+        result = QString::fromWCharArray(ofn->lpstrFile);
+        selFilIdx = ofn->nFilterIndex;
+    }
+    cleanUpOFN(&ofn);
+
     if (parent) {
         QApplicationPrivate::leaveModal(parent);
         QEvent e(QEvent::WindowUnblocked);
@@ -433,31 +292,18 @@ QString Q3FileDialog::winGetSaveFileName(const QString &initialSelection,
         QApplication::sendEvent(parent, &e);
         QApplicationPrivate::enterModal(parent);
     }
-    QT_WA({
-        // Use Unicode strings and API
-        OPENFILENAME* ofn = makeOFN(parent, isel,
-                                     *initialDirectory, title,
-                                     winFilter(filter), AnyFile);
-        if (idx)
-            ofn->nFilterIndex = idx + 1;
-        if (GetSaveFileName(ofn)) {
-            result = QString::fromUcs2((ushort*)ofn->lpstrFile);
-            selFilIdx = ofn->nFilterIndex;
-        }
-        cleanUpOFN(&ofn);
-    } , {
-        // Use ANSI strings and API
-        OPENFILENAMEA* ofn = makeOFNA(parent, isel,
-                                       *initialDirectory, title,
-                                       winFilter(filter), AnyFile);
-        if (idx)
-            ofn->nFilterIndex = idx + 1;
-        if (GetSaveFileNameA(ofn)) {
-            result = QString::fromLocal8Bit(ofn->lpstrFile);
-            selFilIdx = ofn->nFilterIndex;
-        }
-        cleanUpOFNA(&ofn);
-    });
+
+    OPENFILENAME* ofn = makeOFN(parent, isel,
+                                 *initialDirectory, title,
+                                 winFilter(filter), AnyFile);
+    if (idx)
+        ofn->nFilterIndex = idx + 1;
+    if (GetSaveFileName(ofn)) {
+        result = QString::fromWCharArray(ofn->lpstrFile);
+        selFilIdx = ofn->nFilterIndex;
+    }
+    cleanUpOFN(&ofn);
+
     if (parent) {
         QApplicationPrivate::leaveModal(parent);
         QEvent e(QEvent::WindowUnblocked);
@@ -519,69 +365,38 @@ QStringList Q3FileDialog::winGetOpenFileNames(const QString &filter,
         QApplication::sendEvent(parent, &e);
         QApplicationPrivate::enterModal(parent);
     }
-    QT_WA({
-        OPENFILENAME* ofn = makeOFN(parent, isel,
-                                     *initialDirectory, title,
-                                     winFilter(filter), ExistingFiles);
-        if (idx)
-            ofn->nFilterIndex = idx + 1;
-        if (GetOpenFileName(ofn)) {
-            QString fileOrDir = QString::fromUcs2((ushort*)ofn->lpstrFile);
-            selFilIdx = ofn->nFilterIndex;
-            int offset = fileOrDir.length() + 1;
-            if (ofn->lpstrFile[offset] == 0) {
-                // Only one file selected; has full path
-                fi.setFile(fileOrDir);
+
+    OPENFILENAME* ofn = makeOFN(parent, isel,
+                                 *initialDirectory, title,
+                                 winFilter(filter), ExistingFiles);
+    if (idx)
+        ofn->nFilterIndex = idx + 1;
+    if (GetOpenFileName(ofn)) {
+        QString fileOrDir = QString::fromWCharArray(ofn->lpstrFile);
+        selFilIdx = ofn->nFilterIndex;
+        int offset = fileOrDir.length() + 1;
+        if (ofn->lpstrFile[offset] == 0) {
+            // Only one file selected; has full path
+            fi.setFile(fileOrDir);
+            QString res = fi.absFilePath();
+            if (!res.isEmpty())
+                result.append(res);
+        }
+        else {
+            // Several files selected; first string is path
+            dir.setPath(fileOrDir);
+            QString f;
+            while (!(f = QString::fromWCharArray(ofn->lpstrFile + offset)).isEmpty()) {
+                fi.setFile(dir, f);
                 QString res = fi.absFilePath();
                 if (!res.isEmpty())
                     result.append(res);
-            }
-            else {
-                // Several files selected; first string is path
-                dir.setPath(fileOrDir);
-                QString f;
-                while(!(f = QString::fromUcs2((ushort*)ofn->lpstrFile+offset)).isEmpty()) {
-                    fi.setFile(dir, f);
-                    QString res = fi.absFilePath();
-                    if (!res.isEmpty())
-                        result.append(res);
-                    offset += f.length() + 1;
-                }
+                offset += f.length() + 1;
             }
         }
-        cleanUpOFN(&ofn);
-    } , {
-        OPENFILENAMEA* ofn = makeOFNA(parent, isel,
-                                       *initialDirectory, title,
-                                       winFilter(filter), ExistingFiles);
-        if (idx)
-            ofn->nFilterIndex = idx + 1;
-        if (GetOpenFileNameA(ofn)) {
-            QByteArray fileOrDir(ofn->lpstrFile);
-            selFilIdx = ofn->nFilterIndex;
-            int offset = fileOrDir.length() + 1;
-            if (ofn->lpstrFile[offset] == '\0') {
-                // Only one file selected; has full path
-                fi.setFile(QString::fromLocal8Bit(fileOrDir));
-                QString res = fi.absFilePath();
-                if (!res.isEmpty())
-                    result.append(res);
-            }
-            else {
-                // Several files selected; first string is path
-                dir.setPath(QString::fromLocal8Bit(fileOrDir));
-                QByteArray f;
-                while(!(f = QByteArray(ofn->lpstrFile + offset)).isEmpty()) {
-                    fi.setFile(dir, QString::fromLocal8Bit(f));
-                    QString res = fi.absFilePath();
-                    if (!res.isEmpty())
-                        result.append(res);
-                    offset += f.length() + 1;
-                }
-            }
-            cleanUpOFNA(&ofn);
-        }
-    });
+    }
+    cleanUpOFN(&ofn);
+
     if (parent) {
         QApplicationPrivate::leaveModal(parent);
         QEvent e(QEvent::WindowUnblocked);
@@ -607,34 +422,17 @@ static int __stdcall winGetExistDirCallbackProc(HWND hwnd,
     if (uMsg == BFFM_INITIALIZED && lpData != 0) {
         QString *initDir = (QString *)(lpData);
         if (!initDir->isEmpty()) {
-            // ### Lars asks: is this correct for the A version????
-            QT_WA({
-                SendMessage(hwnd, BFFM_SETSELECTION, TRUE, Q_ULONG(initDir->ucs2()));
-            } , {
-                SendMessageA(hwnd, BFFM_SETSELECTION, TRUE, Q_ULONG(initDir->ucs2()));
-            });
+            SendMessage(hwnd, BFFM_SETSELECTION, TRUE, Q_ULONG(initDir->utf16()));
         }
     } else if (uMsg == BFFM_SELCHANGED) {
-        QT_WA({
-            resolveLibs();
-            TCHAR path[MAX_PATH];
-            ptrSHGetPathFromIDList(LPITEMIDLIST(lParam), path);
-            QString tmpStr = QString::fromUcs2((ushort*)path);
-            if (!tmpStr.isEmpty())
-                SendMessage(hwnd, BFFM_ENABLEOK, 1, 1);
-            else
-                SendMessage(hwnd, BFFM_ENABLEOK, 0, 0);
-            SendMessage(hwnd, BFFM_SETSTATUSTEXT, 1, Q_ULONG(path));
-        } , {
-            char path[MAX_PATH];
-            SHGetPathFromIDListA(LPITEMIDLIST(lParam), path);
-            QString tmpStr = QString::fromLocal8Bit(path);
-            if (!tmpStr.isEmpty())
-                SendMessageA(hwnd, BFFM_ENABLEOK, 1, 1);
-            else
-                SendMessageA(hwnd, BFFM_ENABLEOK, 0, 0);
-            SendMessageA(hwnd, BFFM_SETSTATUSTEXT, 1, Q_ULONG(path));
-        });
+        wchar_t path[MAX_PATH];
+        SHGetPathFromIDList(LPITEMIDLIST(lParam), path);
+        QString tmpStr = QString::fromWCharArray(path);
+        if (!tmpStr.isEmpty())
+            SendMessage(hwnd, BFFM_ENABLEOK, 1, 1);
+        else
+            SendMessage(hwnd, BFFM_ENABLEOK, 0, 0);
+        SendMessage(hwnd, BFFM_SETSTATUSTEXT, 1, Q_ULONG(path));
     }
 #endif
     return 0;
@@ -666,75 +464,41 @@ QString Q3FileDialog::winGetExistingDirectory(const QString& initialDirectory,
         QApplication::sendEvent(parent, &e);
         QApplicationPrivate::enterModal(parent);
     }
-    QT_WA({
-        resolveLibs();
-        QString initDir = QDir::toNativeSeparators(initialDirectory);
-        TCHAR path[MAX_PATH];
-        TCHAR initPath[MAX_PATH];
-        initPath[0] = 0;
-        path[0] = 0;
-        tTitle = title;
-        BROWSEINFO bi;
-        bi.hwndOwner = (parent ? parent->winId() : 0);
-        bi.pidlRoot = NULL;
-        bi.lpszTitle = (TCHAR*)tTitle.ucs2();
-        bi.pszDisplayName = initPath;
-        bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT | BIF_NEWDIALOGSTYLE;
-        bi.lpfn = winGetExistDirCallbackProc;
-        bi.lParam = Q_ULONG(&initDir);
-        LPITEMIDLIST pItemIDList = ptrSHBrowseForFolder(&bi);
-        if (pItemIDList) {
-            ptrSHGetPathFromIDList(pItemIDList, path);
-            IMalloc *pMalloc;
-            if (SHGetMalloc(&pMalloc) != NOERROR)
-                result.clear();
-            else {
-                pMalloc->Free(pItemIDList);
-                pMalloc->Release();
-                result = QString::fromUcs2((ushort*)path);
-            }
-        } else
+
+    QString initDir = QDir::toNativeSeparators(initialDirectory);
+    wchar_t path[MAX_PATH];
+    wchar_t initPath[MAX_PATH];
+    initPath[0] = 0;
+    path[0] = 0;
+    tTitle = title;
+    BROWSEINFO bi;
+    bi.hwndOwner = (parent ? parent->winId() : 0);
+    bi.pidlRoot = NULL;
+    bi.lpszTitle = (wchar_t*)tTitle.utf16();
+    bi.pszDisplayName = initPath;
+    bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT | BIF_NEWDIALOGSTYLE;
+    bi.lpfn = winGetExistDirCallbackProc;
+    bi.lParam = Q_ULONG(&initDir);
+    LPITEMIDLIST pItemIDList = SHBrowseForFolder(&bi);
+    if (pItemIDList) {
+        SHGetPathFromIDList(pItemIDList, path);
+        IMalloc *pMalloc;
+        if (SHGetMalloc(&pMalloc) != NOERROR)
             result.clear();
-        tTitle.clear();
-    } , {
-        QString initDir = QDir::toNativeSeparators(initialDirectory);
-        char path[MAX_PATH];
-        char initPath[MAX_PATH];
-        QByteArray ctitle = title.toLocal8Bit();
-        initPath[0]=0;
-        path[0]=0;
-        BROWSEINFOA bi;
-        bi.hwndOwner = (parent ? parent->winId() : 0);
-        bi.pidlRoot = NULL;
-        bi.lpszTitle = ctitle;
-        bi.pszDisplayName = initPath;
-        bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT | BIF_NEWDIALOGSTYLE;
-        bi.lpfn = winGetExistDirCallbackProc;
-        bi.lParam = Q_ULONG(&initDir);
-        LPITEMIDLIST pItemIDList = SHBrowseForFolderA(&bi);
-        if (pItemIDList) {
-            SHGetPathFromIDListA(pItemIDList, path);
-            IMalloc *pMalloc;
-            if (SHGetMalloc(&pMalloc) != NOERROR)
-                result.clear();
-            else {
-                pMalloc->Free(pItemIDList);
-                pMalloc->Release();
-                result = QString::fromLocal8Bit(path);
-            }
-        } else
-            result.clear();
-    });
+        else {
+            pMalloc->Free(pItemIDList);
+            pMalloc->Release();
+            result = QString::fromWCharArray(path);
+        }
+    } else
+        result.clear();
+    tTitle.clear();
+
     if (parent) {
         QApplicationPrivate::leaveModal(parent);
         QEvent e(QEvent::WindowUnblocked);
         QApplication::sendEvent(parent, &e);
     }
-
-    // Due to a bug on Windows Me, we need to reset the current
-    // directory
-    if ((qWinVersion() == Qt::WV_98 || qWinVersion() == Qt::WV_Me) && QDir::currentDirPath() != currentDir)
-        QDir::setCurrent(currentDir);
 
     if (!result.isEmpty())
         result.replace(QLatin1Char('\\'), QLatin1Char('/'));
