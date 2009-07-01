@@ -597,7 +597,13 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
         int dx = int(event->pos().x() - pressPos.x());
         if (qAbs(dx) > FlickThreshold || pressTime.elapsed() > 200) {
             qreal newX = dx + pressX;
-            if (q->overShoot() || (newX <= q->minXExtent() && newX >= q->maxXExtent())) {
+            const qreal minX = q->minXExtent();
+            const qreal maxX = q->maxXExtent();
+            if (newX > minX)
+                newX = minX + (newX - minX) / 2;
+            if (newX < maxX && maxX - minX < 0)
+                newX = maxX + (newX - maxX) / 2;
+            if (q->overShoot() || (newX <= minX && newX >= maxX)) {
                 if (dragMode == QFxFlickable::Hard)
                     _moveX.setValue(newX);
                 else
