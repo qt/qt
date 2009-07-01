@@ -5988,6 +5988,34 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
     }
 }
 
+/*!
+    \since 4.6
+
+    Sends event \a event to item \a item through possible event filters.
+
+    The event is sent only if the item is enabled.
+
+    Returns \c false if the event was filtered or if the item is disabled.
+    Otherwise returns the value that was returned from the event handler.
+
+    \sa QGraphicsItem::sceneEvent(), QGraphicsItem::sceneEventFilter()
+*/
+bool QGraphicsScene::sendEvent(QGraphicsItem *item, QEvent *event)
+{
+    Q_D(QGraphicsScene);
+    if (!item) {
+        qWarning("QGraphicsScene::sendEvent: cannot send event to a null item");
+        return false;
+    }
+    if (item->scene() != this) {
+        qWarning("QGraphicsScene::sendEvent: item %p's scene (%p)"
+                 " is different from this scene (%p)",
+                 item, item->scene(), this);
+        return false;
+    }
+    return d->sendEvent(item, event);
+}
+
 void QGraphicsScenePrivate::addView(QGraphicsView *view)
 {
     views << view;

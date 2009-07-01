@@ -229,6 +229,8 @@ public:
     QGraphicsWidget *activeWindow() const;
     void setActiveWindow(QGraphicsWidget *widget);
 
+    bool sendEvent(QGraphicsItem *item, QEvent *event);
+
 public Q_SLOTS:
     void update(const QRectF &rect = QRectF());
     void invalidate(const QRectF &rect = QRectF(), SceneLayers layers = AllLayers);
