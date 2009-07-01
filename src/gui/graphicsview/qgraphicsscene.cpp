@@ -4122,7 +4122,6 @@ void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, co
                     continue;
                 }
                 QGesturePrivate *gd = g->d_func();
-                QGraphicsItem *item = gd->graphicsItem;
                 gd->graphicsItem = 0;
 
                 //### THIS IS BS, DONT FORGET TO REWRITE THIS CODE
@@ -6042,6 +6041,7 @@ void QGraphicsScenePrivate::grabGesture(QGraphicsItem *item, int gestureId)
 
 void QGraphicsScenePrivate::releaseGesture(QGraphicsItem *item, int gestureId)
 {
+    Q_UNUSED(gestureId);
     itemsWithGestures.remove(item);
     //###
 }

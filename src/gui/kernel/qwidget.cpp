@@ -11110,6 +11110,8 @@ void QWidget::releaseGesture(int gestureId)
 */
 void QWidget::setGestureEnabled(int gestureId, bool enable)
 {
+    Q_UNUSED(gestureId);
+    Q_UNUSED(enable);
     //###
 }
 
