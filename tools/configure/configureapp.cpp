@@ -116,16 +116,9 @@ Configure::Configure( int& argc, char** argv )
 
 
     // Get the path to the executable
-    QFileInfo sourcePathInfo;
-    QT_WA({
-        unsigned short module_name[256];
-        GetModuleFileNameW(0, reinterpret_cast<wchar_t *>(module_name), sizeof(module_name));
-        sourcePathInfo = QString::fromUtf16(module_name);
-    }, {
-        char module_name[256];
-        GetModuleFileNameA(0, module_name, sizeof(module_name));
-        sourcePathInfo = QString::fromLocal8Bit(module_name);
-    });
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, sizeof(module_name) / sizeof(wchar_t));
+    QFileInfo sourcePathInfo = QString::fromWCharArray(module_name);
     sourcePath = sourcePathInfo.absolutePath();
     sourceDir = sourcePathInfo.dir();
     buildPath = QDir::currentPath();
@@ -2733,7 +2726,7 @@ void Configure::generateConfigfiles()
         tmpFile.flush();
 
         // Replace old qconfig.h with new one
-        ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL);
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
@@ -2769,7 +2762,7 @@ void Configure::generateConfigfiles()
     }
 
     outName = defSpec + "/qmake.conf";
-    ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL );
+    ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
     QFile qmakeConfFile(outName);
     if (qmakeConfFile.open(QFile::Append | QFile::WriteOnly | QFile::Text)) {
         QTextStream qmakeConfStream;
@@ -2837,7 +2830,7 @@ void Configure::generateConfigfiles()
         tmpFile2.flush();
 
         // Replace old qconfig.cpp with new one
-        ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL );
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
         QFile::remove( outName );
         tmpFile2.copy(outName);
         tmpFile2.close();
