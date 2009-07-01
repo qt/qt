@@ -1072,6 +1072,8 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = d->createProperty(obj, props.at(jj));
+            if (!myAction.property.isValid())
+                continue;
             myAction.toValue = d->value;
             data->actions << myAction;
         }
@@ -1895,6 +1897,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = d->createProperty(obj, props.at(jj));
+            if (!myAction.property.isValid())
+                continue;
 
             if (d->fromIsDefined) {
                 d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
