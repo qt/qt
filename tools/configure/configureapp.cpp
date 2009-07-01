@@ -604,10 +604,13 @@ void Configure::parseCmdLine()
         // cetest ---------------------------------------------------
         else if (configCmdLine.at(i) == "-no-cetest") {
             dictionary[ "CETEST" ] = "no";
+            dictionary[ "CETEST_REQUESTED" ] = "no";
         } else if (configCmdLine.at(i) == "-cetest") {
             // although specified to use it, we stay at "auto" state
             // this is because checkAvailability() adds variables
-            // we need for crosscompilation
+            // we need for crosscompilation; but remember if we asked
+            // for it.
+            dictionary[ "CETEST_REQUESTED" ] = "yes";
         }
         // Qt/CE - signing tool -------------------------------------
         else if( configCmdLine.at(i) == "-signature") {
@@ -1823,6 +1826,11 @@ bool Configure::checkAvailability(const QString &part)
         if (available) {
             dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");
             dictionary[ "QT_CE_RAPI_LIB" ] += QLatin1String("\"") + rapiLib + QLatin1String("\"");
+        }
+        else if (dictionary[ "CETEST_REQUESTED" ] == "yes") {
+            cout << "cetest could not be enabled: rapi.h and rapi.lib could not be found." << endl;
+            cout << "Make sure the environment is set up for compiling with ActiveSync." << endl;
+            dictionary[ "DONE" ] = "error";
         }
     }
     else if (part == "INCREDIBUILD_XGE")
