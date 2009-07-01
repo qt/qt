@@ -297,8 +297,8 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       allItemsIgnoreHoverEvents(true),
       allItemsUseDefaultCursor(true),
       painterStateProtection(true),
-      style(0),
       sortCacheEnabled(false),
+      style(0),
       allItemsIgnoreTouchEvents(true)
 {
 }
