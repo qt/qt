@@ -19,6 +19,7 @@
 #include <QtScript/qscriptable.h>
 #include "../api/qscriptengine_p.h"
 #include "../api/qscriptable_p.h"
+#include "../api/qscriptcontext_p.h"
 
 #include "Error.h"
 #include "PrototypeFunction.h"
@@ -917,11 +918,22 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
 const JSC::ClassInfo QtFunction::info = { "QtFunction", 0, 0, 0 };
 
 JSC::JSValue QtFunction_call(JSC::ExecState *exec, JSC::JSObject *callee,
-                              JSC::JSValue thisValue, const JSC::ArgList &args)
+                             JSC::JSValue thisValue, const JSC::ArgList &args)
 {
     if (!callee->isObject(&QtFunction::info))
         return throwError(exec, JSC::TypeError);
-    return static_cast<QtFunction*>(callee)->call(exec, thisValue, args);
+    QtFunction *qfun =  static_cast<QtFunction*>(callee);
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptContext *previousContext = eng_p->currentContext;
+    QScriptContextPrivate ctx_p(callee, thisValue, args,
+                                /*calledAsConstructor=*/false,
+                                previousContext, eng_p);
+    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
+    eng_p->currentContext = ctx;
+    JSC::JSValue result = qfun->call(exec, thisValue, args);
+    eng_p->currentContext = previousContext;
+    delete ctx;
+    return result;
 }
 
 const JSC::ClassInfo QObjectWrapperObject::info = { "QObject", 0, 0, 0 };
