@@ -602,20 +602,17 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::PropertySetter);
         QVERIFY(!(mobj.propertyFlags("intProperty") & QScriptValue::SkipInEnumeration));
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
 
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::ReadOnly));
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::Undeletable));
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::SkipInEnumeration));
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("mySlot") & QScriptValue::QObjectMember);
 
         // signature-based property
         QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::ReadOnly));
         QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::Undeletable));
         QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::SkipInEnumeration));
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("mySlot()") & QScriptValue::QObjectMember);
     }
 
@@ -889,7 +886,6 @@ void tst_QScriptExtQObject::getSetDynamicProperty()
         QVERIFY(!(mobj.propertyFlags("dynamicProperty") & QScriptValue::ReadOnly));
         QVERIFY(!(mobj.propertyFlags("dynamicProperty") & QScriptValue::Undeletable));
         QVERIFY(!(mobj.propertyFlags("dynamicProperty") & QScriptValue::SkipInEnumeration));
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("dynamicProperty") & QScriptValue::QObjectMember);
     }
 

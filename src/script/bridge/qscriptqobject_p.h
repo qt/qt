@@ -38,6 +38,11 @@ QT_BEGIN_NAMESPACE
 namespace QScript
 {
 
+enum AttributeExtension {
+    // ### Make sure there's no conflict with JSC::Attribute
+    QObjectMemberAttribute = 1 << 12
+};
+
 class QObjectWrapperObject : public JSC::JSObject
 {
 public:

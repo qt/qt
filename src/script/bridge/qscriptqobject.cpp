@@ -146,7 +146,8 @@ static inline QByteArray methodName(const QMetaMethod &method)
 static unsigned flagsForMetaProperty(const QMetaProperty &prop)
 {
     return (JSC::DontDelete
-            | (!prop.isWritable() ? unsigned(JSC::ReadOnly) : unsigned(0)));
+            | (!prop.isWritable() ? unsigned(JSC::ReadOnly) : unsigned(0))
+            | QObjectMemberAttribute);
 }
 
 static int indexOfMetaEnum(const QMetaObject *meta, const QByteArray &str)
@@ -1151,7 +1152,7 @@ bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
             if (hasMethodAccess(method, index, opt)) {
                 if (!(opt & QScriptEngine::ExcludeSuperClassMethods)
                     || (index >= meta->methodOffset())) {
-                    attributes = 0;
+                    attributes = QObjectMemberAttribute;
                     if (opt & QScriptEngine::SkipMethodsInEnumeration)
                         attributes |= JSC::DontEnum;
                     return true;
@@ -1174,7 +1175,7 @@ bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
 
     index = qobject->dynamicPropertyNames().indexOf(name);
     if (index != -1) {
-        attributes = 0;
+        attributes = QObjectMemberAttribute;
         return true;
     }
 
@@ -1184,7 +1185,7 @@ bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
         QMetaMethod method = meta->method(index);
         if (hasMethodAccess(method, index, opt)
             && (methodName(method) == name)) {
-            attributes = 0;
+            attributes = QObjectMemberAttribute;
             if (opt & QScriptEngine::SkipMethodsInEnumeration)
                 attributes |= JSC::DontEnum;
             return true;

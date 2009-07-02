@@ -1795,6 +1795,8 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
         result |= QScriptValue::PropertyGetter;
     if (attribs & JSC::Setter)
         result |= QScriptValue::PropertySetter;
+    if (attribs & QScript::QObjectMemberAttribute)
+        result |= QScriptValue::QObjectMember;
 
     result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
     return result;
