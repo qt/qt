@@ -61,6 +61,19 @@ QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
 class QGLFramebufferObject;
+class QGLFramebufferObjectFormat;
+
+class QGLFramebufferObjectPool
+{
+public:
+    QGLFramebufferObject *acquire(const QSize &size, const QGLFramebufferObjectFormat &format);
+    void release(QGLFramebufferObject *fbo);
+
+private:
+    QList<QGLFramebufferObject *> m_fbos;
+};
+
+QGLFramebufferObjectPool* qgl_fbo_pool();
 
 class QGLPixmapData : public QPixmapData
 {
