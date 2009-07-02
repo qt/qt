@@ -115,6 +115,7 @@ public Q_SLOTS:
                 glDeleteFramebuffers(1, &m_fbo);
                 if (m_width || m_height)
                     glDeleteTextures(1, &m_texture);
+                ctx = 0;
             } else {
                 // since the context holding the texture is shared, and
                 // about to be destroyed, we have to transfer ownership
@@ -151,10 +152,17 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
-    glDeleteFramebuffers(1, &m_fbo);
+    if (ctx) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != ctx)
+            ctx->makeCurrent();
+        glDeleteFramebuffers(1, &m_fbo);
 
-    if (m_width || m_height)
-        glDeleteTextures(1, &m_texture);
+        if (m_width || m_height)
+            glDeleteTextures(1, &m_texture);
+        if (oldContext && oldContext != ctx)
+            oldContext->makeCurrent();
+    }
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
