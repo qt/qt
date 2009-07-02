@@ -19,14 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSEntityReference.h"
 
-#include <wtf/GetPtr.h>
-
 #include "EntityReference.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

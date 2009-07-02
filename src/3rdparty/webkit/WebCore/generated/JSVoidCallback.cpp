@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSVoidCallback.h"
 
-#include <wtf/GetPtr.h>
-
 #include "VoidCallback.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

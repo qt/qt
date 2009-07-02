@@ -19,15 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSCanvasGradient.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CanvasGradient.h"
 #include "PlatformString.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

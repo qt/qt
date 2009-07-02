@@ -270,8 +270,8 @@ bool ActiveSyncConnection::copyDirectoryFromDevice(const QString &deviceSource, 
     }
 
     do {
-        QString srcFile = deviceSource + "\\" + QString::fromUtf16(data.cFileName);
-        QString destFile = localDest + "\\" + QString::fromUtf16(data.cFileName);
+        QString srcFile = deviceSource + "\\" + QString::fromWCharArray(data.cFileName);
+        QString destFile = localDest + "\\" + QString::fromWCharArray(data.cFileName);
         if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             if (recursive && !copyDirectoryFromDevice(srcFile, destFile, recursive)) {
                 wprintf(L"Copy of subdirectory(%s) failed\n", srcFile.utf16());
@@ -306,8 +306,8 @@ bool ActiveSyncConnection::copyDirectory(const QString &srcDirectory, const QStr
     }
 
     do {
-        QString srcFile = srcDirectory + "\\" + QString::fromUtf16(data.cFileName);
-        QString destFile = destDirectory + "\\" + QString::fromUtf16(data.cFileName);
+        QString srcFile = srcDirectory + "\\" + QString::fromWCharArray(data.cFileName);
+        QString destFile = destDirectory + "\\" + QString::fromWCharArray(data.cFileName);
         if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             if (recursive && !copyDirectory(srcFile, destFile, recursive)) {
                 wprintf(L"Copy of subdirectory(%s) failed\n", srcFile.utf16());
@@ -341,7 +341,7 @@ bool ActiveSyncConnection::deleteDirectory(const QString &directory, bool recurs
         return false;
 
     do {
-        QString FileName = directory + "\\" + QString::fromUtf16(FindFileData.cFileName);
+        QString FileName = directory + "\\" + QString::fromWCharArray(FindFileData.cFileName);
         if((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             if (recursive)
                 if (!deleteDirectory(FileName, recursive, failIfContentExists))

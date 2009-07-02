@@ -47,6 +47,81 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
+ThreadEngineBarrier::ThreadEngineBarrier()
+:count(0) { }
+
+void ThreadEngineBarrier::acquire()
+{
+    forever {
+        int localCount = int(count);
+        if (localCount < 0) {
+            if (count.testAndSetOrdered(localCount, localCount -1))
+                return;
+        } else {
+            if (count.testAndSetOrdered(localCount, localCount + 1))
+                return;
+        }
+    }
+}
+
+int ThreadEngineBarrier::release()
+{
+    forever {
+        int localCount = int(count);
+        if (localCount == -1) {
+            if (count.testAndSetOrdered(-1, 0)) {
+                semaphore.release();
+                return 0;
+            }
+        } else if (localCount < 0) {
+            if (count.testAndSetOrdered(localCount, localCount + 1))
+                return qAbs(localCount + 1);
+        } else {
+            if (count.testAndSetOrdered(localCount, localCount - 1))
+                return localCount - 1;
+        }
+    }
+}
+
+// Wait until all threads have been released
+void ThreadEngineBarrier::wait()
+{
+    forever {
+        int localCount = int(count);
+        if (localCount == 0)
+            return;
+
+        Q_ASSERT(localCount > 0); // multiple waiters are not allowed.
+        if (count.testAndSetOrdered(localCount, -localCount)) {
+            semaphore.acquire();
+            return;
+        }
+    }
+}
+
+int ThreadEngineBarrier::currentCount()
+{
+    return int(count);
+}
+
+// releases a thread, unless this is the last thread.
+// returns true if the thread was released.
+bool ThreadEngineBarrier::releaseUnlessLast()
+{
+    forever {
+        int localCount = int(count);
+        if (qAbs(localCount) == 1) {
+            return false;
+        } else if (localCount < 0) {
+            if (count.testAndSetOrdered(localCount, localCount + 1))
+                return true;
+        } else {
+            if (count.testAndSetOrdered(localCount, localCount - 1))
+                return true;
+        }
+    }
+}
+
 ThreadEngineBase::ThreadEngineBase()
 :futureInterface(0), threadPool(QThreadPool::globalInstance())
 {
@@ -66,7 +141,7 @@ void ThreadEngineBase::startSingleThreaded()
 void ThreadEngineBase::startBlocking()
 {
     start();
-    semaphore.acquire();
+    barrier.acquire();
     startThreads();
 
     bool throttled = false;
@@ -88,10 +163,10 @@ void ThreadEngineBase::startBlocking()
 #endif
 
     if (throttled == false) {
-        semaphore.release();
+        barrier.release();
     }
 
-    semaphore.wait();
+    barrier.wait();
     finish();
     exceptionStore.throwPossibleException();
 }
@@ -99,6 +174,11 @@ void ThreadEngineBase::startBlocking()
 void ThreadEngineBase::startThread()
 {
     startThreadInternal();
+}
+
+void ThreadEngineBase::acquireBarrierSemaphore()
+{
+    barrier.acquire();
 }
 
 bool ThreadEngineBase::isCanceled()
@@ -138,9 +218,9 @@ bool ThreadEngineBase::startThreadInternal()
     if (this->isCanceled())
         return false;
 
-    semaphore.acquire();
+    barrier.acquire();
     if (!threadPool->tryStart(this)) {
-        semaphore.release();
+        barrier.release();
         return false;
     }
     return true;
@@ -155,7 +235,7 @@ void ThreadEngineBase::startThreads()
 void ThreadEngineBase::threadExit()
 {
     const bool asynchronous = futureInterface != 0;
-    const int lastThread = (semaphore.release() == 0);
+    const int lastThread = (barrier.release() == 0);
 
     if (lastThread && asynchronous)
         this->asynchronousFinish();
@@ -166,7 +246,7 @@ void ThreadEngineBase::threadExit()
 // this function returns one.
 bool ThreadEngineBase::threadThrottleExit()
 {
-    return semaphore.releaseUnlessLast();
+    return barrier.releaseUnlessLast();
 }
 
 void ThreadEngineBase::run() // implements QRunnable.

@@ -4,8 +4,9 @@
 
 namespace JSC {
 
-static const struct HashTableValue dateTableValues[45] = {
+static const struct HashTableValue dateTableValues[47] = {
    { "toString", DontEnum|Function, (intptr_t)dateProtoFuncToString, (intptr_t)0 },
+   { "toISOString", DontEnum|Function, (intptr_t)dateProtoFuncToISOString, (intptr_t)0 },
    { "toUTCString", DontEnum|Function, (intptr_t)dateProtoFuncToUTCString, (intptr_t)0 },
    { "toDateString", DontEnum|Function, (intptr_t)dateProtoFuncToDateString, (intptr_t)0 },
    { "toTimeString", DontEnum|Function, (intptr_t)dateProtoFuncToTimeString, (intptr_t)0 },
@@ -49,6 +50,7 @@ static const struct HashTableValue dateTableValues[45] = {
    { "setUTCFullYear", DontEnum|Function, (intptr_t)dateProtoFuncSetUTCFullYear, (intptr_t)3 },
    { "setYear", DontEnum|Function, (intptr_t)dateProtoFuncSetYear, (intptr_t)1 },
    { "getYear", DontEnum|Function, (intptr_t)dateProtoFuncGetYear, (intptr_t)0 },
+   { "toJSON", DontEnum|Function, (intptr_t)dateProtoFuncToJSON, (intptr_t)0 },
    { 0, 0, 0, 0 }
 };
 

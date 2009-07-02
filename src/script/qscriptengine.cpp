@@ -1616,7 +1616,8 @@ bool qScriptConnect(QObject *sender, const char *signal,
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(function.engine());
     return eng_p->scriptConnect(sender, signal,
                                 eng_p->toImpl(receiver),
-                                eng_p->toImpl(function));
+                                eng_p->toImpl(function),
+                                Qt::AutoConnection);
 }
 
 /*!

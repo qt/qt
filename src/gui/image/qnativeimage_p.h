@@ -95,7 +95,6 @@ public:
 
 #elif defined(Q_WS_MAC)
     CGContextRef cg;
-    CGColorSpaceRef cgColorSpace;
 #endif
 
 private:

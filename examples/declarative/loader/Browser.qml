@@ -21,7 +21,7 @@ Rect {
                     if (folders.isFolder(index)) {
                         folders.folder = filePath;
                     } else {
-                        Shell.qml = filePath;
+                        qmlLauncher.launch(filePath);
                     }
                 }
             }

@@ -48,8 +48,10 @@
 #include <q3popupmenu.h>
 #endif
 #include <qstyle.h>
+#include <qwindowsstyle.h>
 #include <qdesktopwidget.h>
 #include <qaction.h>
+#include <qstyleoption.h>
 
 #ifdef Q_WS_WIN
 #include <windows.h>
@@ -150,6 +152,7 @@ private slots:
     void check_menuPosition();
     void task223138_triggered();
     void task256322_highlight();
+    void menubarSizeHint();
     
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -1554,6 +1557,72 @@ void tst_QMenuBar::task256322_highlight()
     QVERIFY(!menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QVERIFY(!win.menuBar()->activeAction());
+}
+
+void tst_QMenuBar::menubarSizeHint()
+{
+    struct MyStyle : public QWindowsStyle
+    {
+        virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0, const QWidget * widget = 0 ) const
+        {
+            // I chose strange values (prime numbers to be more sure that the size of the menubar is correct)
+            switch (metric) 
+            {
+            case QStyle::PM_MenuBarItemSpacing:
+                return 7;
+            case PM_MenuBarHMargin:
+                return 13;
+            case PM_MenuBarVMargin:
+                return 11;
+            case PM_MenuBarPanelWidth:
+                return 1;
+            }
+            return QWindowsStyle::pixelMetric(metric, option, widget);
+        }
+    } style;
+
+    QMenuBar mb;
+    mb.setStyle(&style);
+    //this is a list of arbitrary strings so that we check the geometry
+    QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
+    foreach(QString str, list)
+        mb.addAction(str);
+
+    const int panelWidth = style.pixelMetric(QStyle::PM_MenuBarPanelWidth);
+    const int hmargin = style.pixelMetric(QStyle::PM_MenuBarHMargin);
+    const int vmargin = style.pixelMetric(QStyle::PM_MenuBarVMargin);
+    const int spacing = style.pixelMetric(QStyle::PM_MenuBarItemSpacing);
+
+    mb.show();
+    QRect result;
+    foreach(QAction *action, mb.actions()) {
+        const QRect actionRect = mb.actionGeometry(action);
+        if (!result.isNull()) //this is the first item
+            QCOMPARE(actionRect.left() - result.right() - 1, spacing);
+        result |= actionRect;
+        QCOMPARE(result.x(), panelWidth + hmargin + spacing);
+        QCOMPARE(result.y(), panelWidth + vmargin);
+    }
+
+    //this code is copied from QMenuBar
+    //there is no public member that allows to initialize a styleoption instance
+    QStyleOptionMenuItem opt;
+    opt.rect = mb.rect();
+    opt.menuRect = mb.rect();
+    opt.state = QStyle::State_None;
+    opt.menuItemType = QStyleOptionMenuItem::Normal;
+    opt.checkType = QStyleOptionMenuItem::NotCheckable;
+    opt.palette = mb.palette();
+
+    QSize resSize = QSize(result.x(), result.y()) + result.size()
+        + QSize(panelWidth + hmargin, panelWidth + vmargin);
+
+
+    resSize = style.sizeFromContents(QStyle::CT_MenuBar, &opt,
+                                         resSize.expandedTo(QApplication::globalStrut()),
+                                         &mb);
+
+    QCOMPARE(resSize, mb.sizeHint());
 }
 
 

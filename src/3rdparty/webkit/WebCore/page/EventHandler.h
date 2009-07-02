@@ -67,6 +67,8 @@ extern const int ImageDragHysteresis;
 extern const int TextDragHysteresis;
 extern const int GeneralDragHysteresis;
 
+enum HitTestScrollbars { ShouldHitTestScrollbars, DontHitTestScrollbars };
+
 class EventHandler : Noncopyable {
 public:
     EventHandler(Frame*);
@@ -86,7 +88,7 @@ public:
     RenderObject* autoscrollRenderer() const;
     void updateAutoscrollRenderer();
 
-    HitTestResult hitTestResultAtPoint(const IntPoint&, bool allowShadowContent, bool ignoreClipping = false);
+    HitTestResult hitTestResultAtPoint(const IntPoint&, bool allowShadowContent, bool ignoreClipping = false, HitTestScrollbars scrollbars = DontHitTestScrollbars);
 
     bool mousePressed() const { return m_mousePressed; }
     void setMousePressed(bool pressed) { m_mousePressed = pressed; }
@@ -108,6 +110,8 @@ public:
     void setIgnoreWheelEvents(bool);
 
     bool scrollOverflow(ScrollDirection, ScrollGranularity);
+
+    bool scrollRecursively(ScrollDirection, ScrollGranularity);
 
     bool shouldDragAutoNode(Node*, const IntPoint&) const; // -webkit-user-drag == auto
 

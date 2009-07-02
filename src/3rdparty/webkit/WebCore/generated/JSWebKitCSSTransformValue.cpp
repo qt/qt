@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSWebKitCSSTransformValue.h"
 
-#include <wtf/GetPtr.h>
-
 #include "WebKitCSSTransformValue.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

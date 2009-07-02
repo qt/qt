@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSNodeIterator.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSNode.h"
 #include "JSNodeFilter.h"
 #include "Node.h"
 #include "NodeFilter.h"
 #include "NodeIterator.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

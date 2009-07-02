@@ -41,7 +41,7 @@
 
 #include "qfxcomponentinstance.h"
 #include "qfxcomponentinstance_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <qfxcontentwrapper.h>
 #include <QtDeclarative/qmlinfo.h>
 

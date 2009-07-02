@@ -335,8 +335,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
             orientation = d->atLeft() ? SZ_SIZETOPLEFT : SZ_SIZETOPRIGHT;
 
         ReleaseCapture();
-        QT_WA_INLINE(PostMessageW(tlw->winId(), WM_SYSCOMMAND, orientation, 0),
-                     PostMessageA(tlw->winId(), WM_SYSCOMMAND, orientation, 0));
+        PostMessage(tlw->winId(), WM_SYSCOMMAND, orientation, 0);
         return;
     }
 #endif // Q_WS_WIN

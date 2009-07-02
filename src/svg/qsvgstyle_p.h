@@ -345,6 +345,16 @@ public:
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
+    void setStroke(bool stroke)
+    {
+        m_strokePresent = stroke;
+    }
+
+    bool strokePresent() const
+    {
+        return m_strokePresent;
+    }
+
     const QPen & qpen() const
     {
         return m_stroke;
@@ -359,8 +369,8 @@ private:
     // stroke-opacity    v 	v 	'inherit' | <OpacityValue.datatype>
     // stroke-width      v 	v 	'inherit' | <StrokeWidthValue.datatype>
     QPen m_stroke;
-
     QPen m_oldStroke;
+	bool m_strokePresent;
 };
 
 

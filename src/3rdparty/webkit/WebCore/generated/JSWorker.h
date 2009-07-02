@@ -21,7 +21,6 @@
 #ifndef JSWorker_h
 #define JSWorker_h
 
-
 #if ENABLE(WORKERS)
 
 #include "JSDOMBinding.h"

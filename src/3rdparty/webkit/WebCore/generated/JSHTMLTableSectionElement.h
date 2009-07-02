@@ -21,8 +21,9 @@
 #ifndef JSHTMLTableSectionElement_h
 #define JSHTMLTableSectionElement_h
 
-#include "JSHTMLElement.h"
 #include "HTMLTableSectionElement.h"
+#include "JSHTMLElement.h"
+
 namespace WebCore {
 
 class HTMLTableSectionElement;

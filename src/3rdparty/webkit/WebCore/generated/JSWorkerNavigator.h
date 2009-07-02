@@ -21,7 +21,6 @@
 #ifndef JSWorkerNavigator_h
 #define JSWorkerNavigator_h
 
-
 #if ENABLE(WORKERS)
 
 #include "JSDOMBinding.h"

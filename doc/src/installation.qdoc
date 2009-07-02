@@ -595,7 +595,9 @@ in the \l{Qt for Windows CE Requirements} document.
     \endraw
 
     The QtGui module and the QtCore module, which provides the non-GUI features required
-    by QtGui, depend on the libraries described in the following table.
+    by QtGui, depend on the libraries described in the following table. To build
+    Qt from its source code, you will also need to install the development
+    packages for these libraries for your system.
 
     \table 90%
     \header \o Name \o Library \o Notes \o Configuration options \o Minimum working version
@@ -652,6 +654,28 @@ in the \l{Qt for Windows CE Requirements} document.
 
     \note You must compile with XRender support to get alpha transparency
     support for pixmaps and images.
+
+    Development packages for these libraries contain header files that are used
+    when building Qt from its source code. On Debian-based GNU/Linux systems,
+    for example, we recommend that you install the following development
+    packages:
+    
+    \list
+    \o libfontconfig1-dev
+    \o libfreetype6-dev
+    \o libx11-dev
+    \o libxcursor-dev
+    \o libxext-dev
+    \o libxfixes-dev
+    \o libxft-dev
+    \o libxi-dev
+    \o libxrandr-dev
+    \o libxrender-dev
+    \endlist
+
+    Some of these packages depend on others in this list, so installing one
+    may cause others to be automatically installed. Other distributions may
+    provide system packages with similar names.
 
     \section1 Phonon Dependencies
 

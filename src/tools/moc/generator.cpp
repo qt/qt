@@ -932,7 +932,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "        switch (_id) {\n");
     for (int ctorindex = 0; ctorindex < cdef->constructorList.count(); ++ctorindex) {
         fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
-                cdef->classname.constData(), cdef->classname.constData());
+                cdef->qualified.constData(), cdef->qualified.constData());
         const FunctionDef &f = cdef->constructorList.at(ctorindex);
         int offset = 1;
         for (int j = 0; j < f.arguments.count(); ++j) {
@@ -950,7 +950,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "    }\n");
 
     if (!isQObject)
-        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->classname.constData());
+        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->qualified.constData());
 
     fprintf(out, "    if (_id < 0)\n        return _id;\n");
 

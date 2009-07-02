@@ -21,10 +21,10 @@
 #ifndef JSSVGFETileElement_h
 #define JSSVGFETileElement_h
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

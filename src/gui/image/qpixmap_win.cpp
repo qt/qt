@@ -179,13 +179,7 @@ QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
     BITMAP bitmap_info;
     memset(&bitmap_info, 0, sizeof(BITMAP));
 
-    int res;
-    QT_WA({
-            res = GetObjectW(bitmap, sizeof(BITMAP), &bitmap_info);
-        } , {
-              res = GetObjectA(bitmap, sizeof(BITMAP), &bitmap_info);
-          });
-
+    int res = GetObject(bitmap, sizeof(BITMAP), &bitmap_info);
     if (!res) {
         qErrnoWarning("QPixmap::fromWinHBITMAP(), failed to get bitmap info");
         return QPixmap();
@@ -417,9 +411,9 @@ QPixmap convertHIconToPixmap( const HICON icon, bool large)
 QPixmap loadIconFromShell32( int resourceId, int size )
 {
 #ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary((const wchar_t *) QString::fromLatin1("ceshell.dll").utf16());
+    HMODULE hmod = LoadLibrary(L"ceshell.dll");
 #else
-    HMODULE hmod = LoadLibraryA("shell32.dll");
+    HMODULE hmod = LoadLibrary(L"shell32.dll");
 #endif
     if( hmod ) {
         HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);

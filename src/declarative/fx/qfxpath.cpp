@@ -41,7 +41,7 @@
 
 #include "qfxpath.h"
 #include "qfxpath_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <private/qbezier_p.h>
 
 

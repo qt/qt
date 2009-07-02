@@ -1,3 +1,195 @@
+2009-06-29  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Fix the Qt build, add missing isSpeaking() implementation to
+        ContextMenuClient.
+
+        * WebCoreSupport/ContextMenuClientQt.cpp:
+        (WebCore::ContextMenuClientQt::isSpeaking):
+        * WebCoreSupport/ContextMenuClientQt.h:
+
+2009-06-28  Sriram Yadavalli  <sriram.yadavalli@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Fix build break for Qt
+        https://bugs.webkit.org/show_bug.cgi?id=26779
+
+        * Api/qwebpage.cpp:
+        (QWebPage::swallowContextMenuEvent):
+
+2009-06-27  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Build fix for Qt under Windows.
+
+        * Api/qwebhistory.h: Use consistent export linkage for the datastream operators.
+
+2009-06-26  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Simon Fraser.
+        
+        Changed call of scrollbarUnderMouse to scrollbarUnderPoint to match new API.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::swallowContextMenuEvent):
+
+2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add support for saving and loading of QWebHistory to and from a QByteArray.
+
+        This includes streaming operators for QWebHistory. for convenience.
+
+        New autotests that test QWebHistory and QWebHistoryItem serialization.
+
+        * Api/qwebhistory.cpp:
+        (QWebHistory::restoreState):
+        (QWebHistory::saveState):
+        (operator<<):
+        (operator>>):
+        * Api/qwebhistory.h:
+        * Api/qwebhistory_p.h:
+        * tests/qwebhistory/tst_qwebhistory.cpp:
+        (tst_QWebHistory::):
+        (tst_QWebHistory::init):
+        (tst_QWebHistory::title):
+        (tst_QWebHistory::count):
+        (tst_QWebHistory::back):
+        (tst_QWebHistory::forward):
+        (tst_QWebHistory::itemAt):
+        (tst_QWebHistory::goToItem):
+        (tst_QWebHistory::items):
+        (tst_QWebHistory::serialize_1):
+        (tst_QWebHistory::serialize_2):
+        (tst_QWebHistory::serialize_3):
+        (tst_QWebHistory::saveAndRestore_1):
+        (tst_QWebHistory::saveAndRestore_2):
+        (tst_QWebHistory::saveAndRestore_3):
+
+2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix the behaviour of QWebHistory::itemAt to interpret the specified index as absolute index.
+
+        Returns an invalid QWebHistoryItem if the index is out of range.
+
+        * Api/qwebhistory.cpp:
+        (QWebHistory::itemAt):
+        * tests/qwebhistory/tst_qwebhistory.cpp:
+        (tst_QWebHistory::itemAt):
+
+2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Added a few autotest to QWebHistory.
+
+        * tests/qwebhistory/data/page1.html: Added.
+        * tests/qwebhistory/data/page2.html: Added.
+        * tests/qwebhistory/data/page3.html: Added.
+        * tests/qwebhistory/data/page4.html: Added.
+        * tests/qwebhistory/data/page5.html: Added.
+        * tests/qwebhistory/data/page6.html: Added.
+        * tests/qwebhistory/qwebhistory.pro: Added.
+        * tests/qwebhistory/tst_qwebhistory.cpp: Added.
+        (tst_QWebHistory::):
+        (tst_QWebHistory::tst_QWebHistory):
+        (tst_QWebHistory::~tst_QWebHistory):
+        (tst_QWebHistory::init):
+        (tst_QWebHistory::cleanup):
+        (tst_QWebHistory::title):
+        (tst_QWebHistory::count):
+        (tst_QWebHistory::back):
+        (tst_QWebHistory::forward):
+        (tst_QWebHistory::goToItem):
+        (tst_QWebHistory::items):
+        * tests/qwebhistory/tst_qwebhistory.qrc: Added.
+        * tests/tests.pro:
+
+2009-06-26  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix support for documenting functions prefixed with QWEBKIT_EXPORT
+
+        Add QWEBKIT_EXPORT to the list of macros to ignore by qdoc.
+
+        * docs/qtwebkit.qdocconf:
+
+2009-06-26  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Bug 20303: [Qt] Key events are not working in frames.
+
+        Send scrolling events to current focused frame, bubble the event
+        up to parent frame if it is not handled.  Use EventHandler's new
+        shared scrolling code.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::keyPressEvent):
+        (QWebPagePrivate::handleScrolling):
+        * Api/qwebpage_p.h:
+
+2009-06-25  Jakub Wieczorek  <faw217@gmail.com>
+
+        Reviewed by Adam Treat.
+
+        Add highlight functionality to the QWebPage::findText() method. Introduced is
+        new HighlightAllOccurrences flag which passed to the function will make it mark
+        all existing occurrences of specified string in the page.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::findText):
+        * Api/qwebpage.h:
+        * Api/qwebview.cpp:
+
+2009-06-19  Daniel Teske <qt-info@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Remove warnings for QString() constructions from const char *
+
+        By explicitly wrapping it with QLatin1String() / QLatin1Char()
+
+        * Api/qwebelement.cpp:
+        (QWebElement::classes): Use QLatin1String.
+        (QWebElement::addClass): Ditto.
+        (QWebElement::removeClass): Ditto.
+        (QWebElement::toggleClass): Ditto.
+
+2009-06-18  Friedemann Kleint  <Friedemann.Kleint@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fixed MinGW compilation.
+
+        * Api/qwebelement.cpp:
+        (QWebElement::evaluateScript):
+
+2009-06-18  Markus Goetz <Markus.Goetz@nokia.com>
+
+        Reviewed by Simon Hausman.
+
+        Clarify in docs how to compile with debug information.
+
+        * docs/qtwebkit.qdoc:
+
+2009-06-17  Markus Goetz <Markus.Goetz@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        QWebPage: Don't call supportsSsl()
+
+        This stops QWebPage from loading the OpenSSL libs,
+        certificates etc. when they are not needed for the non-HTTPS case.
+
+        Loading the SSL libraries can be a very slow operation.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
 2009-06-16  David Boddie  <dboddie@trolltech.com>
 
         Reviewed by Simon Hausmann.
@@ -19,6 +211,50 @@
 
         * Api/qwebframe.cpp:
 
+2009-06-15  Benjamin C Meyer  <benjamin.meyer@torchmobile.com>
+
+        Reviewed by Adam Treat.
+
+        Support the back/forward/stop/refresh multimedia keys and accept the
+        event when handling backspace and shift backspace as we should.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::keyPressEvent):
+
+2009-06-15  Andre Pedralho  <andre.pedralho@openbossa.org>
+
+        Reviewed by Adam Treat.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26351
+        Remove bool QWebHitTestResult::isScrollBar() const and make sure a null QWebHitTestResult is returned instead.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::hitTestContent):
+        * Api/qwebframe.h:
+        * Api/qwebpage.cpp:
+        (QWebPage::updatePositionDependentActions):
+
+2009-06-15  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Adam Treat.
+
+        Fix the logic for disabling the fixed layout feature, when an invalid
+        QSize is set.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::setFixedContentsSize):
+
+2009-06-13  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Darin Fisher.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24492
+
+        Move registerURLSchemeAsLocal from FrameLoader to SecurityOrigin.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::acceptNavigationRequest):
+
 2009-06-10  Antonio Gomes   <antonio.gomes@openbossa.org>
 
         Reviewed by Ariya Hidayat.
@@ -35,11 +271,51 @@
 
 2009-06-09  Ariya Hidayat  <ariya.hidayat@nokia.com>
 
-        Rubber-stamped by Tor Arne Vestbø.
+        Rubber-stamped by Simon Hausmann.
 
         Fix qdoc warning, function parameter string must be referred.
 
         * Api/qwebview.cpp:
+
+2009-06-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Renamed QWebSettings::AllowUniversalAccessFromFileUrls to
+        LocalContentCanAccessRemoteUrls, as discussed in the API review.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::QWebSettings):
+        * Api/qwebsettings.h:
+
+2009-06-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Merged useFixedLayout property with fixedLayoutSize and
+        renamed the latter to fixedContentsSize.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::fixedContentsSize):
+        (QWebPage::setFixedContentsSize):
+        * Api/qwebpage.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::transitionToCommittedForNewPage):
+
+2009-06-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Renamed QWebHitTestResult::linkTarget to linkElement() and made it return
+        a QWebElement. The link target itself is always the target DOM attribute.
+
+        * Api/qwebframe.cpp:
+        (QWebHitTestResultPrivate::QWebHitTestResultPrivate):
+        (QWebHitTestResult::linkElement):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        * tests/qwebframe/tst_qwebframe.cpp:
 
 2009-06-08  Simon Hausmann  <simon.hausmann@nokia.com>
 

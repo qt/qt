@@ -289,6 +289,9 @@ public:
     // Allows updates of layer content without repainting.
     void rendererContentChanged();
 #endif
+
+    // Returns true if the accelerated compositing is enabled
+    bool hasAcceleratedCompositing() const;
     
     void updateLayerPosition();
     void updateLayerPositions(bool doFullRepaint = false, bool checkForRepaint = true);
@@ -439,10 +442,18 @@ private:
 
     void updateLayerListsIfNeeded();
     
+    enum PaintLayerFlag {
+        PaintLayerHaveTransparency = 1,
+        PaintLayerAppliedTransform = 1 << 1,
+        PaintLayerTemporaryClipRects = 1 << 2,
+        PaintLayerPaintingReflection = 1 << 3
+    };
+    
+    typedef unsigned PaintLayerFlags;
+
     void paintLayer(RenderLayer* rootLayer, GraphicsContext*, const IntRect& paintDirtyRect,
-                    bool haveTransparency, PaintRestriction, RenderObject* paintingRoot,
-                    RenderObject::OverlapTestRequestMap* = 0,
-                    bool appliedTransform = false, bool temporaryClipRects = false);
+                    PaintRestriction, RenderObject* paintingRoot, RenderObject::OverlapTestRequestMap* = 0,
+                    PaintLayerFlags paintFlags = 0);
 
     RenderLayer* hitTestLayer(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
                             const IntRect& hitTestRect, const IntPoint& hitTestPoint, bool appliedTransform,
@@ -482,6 +493,7 @@ private:
     void createReflection();
     void updateReflectionStyle();
     bool paintingInsideReflection() const { return m_paintingInsideReflection; }
+    void setPaintingInsideReflection(bool b) { m_paintingInsideReflection = b; }
     
     void parentClipRects(const RenderLayer* rootLayer, ClipRects&, bool temporaryClipRects = false) const;
 

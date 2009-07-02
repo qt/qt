@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLObjectElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "AtomicString.h"
 #include "Document.h"
@@ -35,10 +32,10 @@
 #include "JSSVGDocument.h"
 #include "KURL.h"
 #include "SVGDocument.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -162,7 +159,7 @@ bool JSHTMLObjectElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
         slot.setCustom(this, nameGetter);
         return true;
     }
-    if (customGetOwnPropertySlot(exec, propertyName, slot))
+    if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSHTMLObjectElement, Base>(exec, &JSHTMLObjectElementTable, this, propertyName, slot);
 }
@@ -298,7 +295,7 @@ JSValue jsHTMLObjectElementConstructor(ExecState* exec, const Identifier&, const
 }
 void JSHTMLObjectElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     lookupPut<JSHTMLObjectElement, Base>(exec, propertyName, value, &JSHTMLObjectElementTable, this, slot);
 }

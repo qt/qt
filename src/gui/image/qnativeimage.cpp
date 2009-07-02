@@ -232,14 +232,16 @@ QImage::Format QNativeImage::systemFormat()
 QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *widget)
     : image(width, height, format)
 {
-    cgColorSpace = QCoreGraphicsPaintEngine::macDisplayColorSpace(widget);
+
+
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;
 #endif
 
-    cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(), cgColorSpace, cgflags);
+    cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(),
+                               QCoreGraphicsPaintEngine::macDisplayColorSpace(widget), cgflags);
     CGContextTranslateCTM(cg, 0, height);
     CGContextScaleCTM(cg, 1, -1);
 
@@ -251,7 +253,6 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
 QNativeImage::~QNativeImage()
 {
     CGContextRelease(cg);
-    CGColorSpaceRelease(cgColorSpace);
 }
 
 QImage::Format QNativeImage::systemFormat()

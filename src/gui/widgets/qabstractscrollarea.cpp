@@ -909,6 +909,7 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
+    case QEvent::Gesture:
         return false;
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:

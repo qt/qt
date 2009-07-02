@@ -19,16 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLFieldSetElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLFieldSetElement.h"
 #include "HTMLFormElement.h"
 #include "JSHTMLFormElement.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

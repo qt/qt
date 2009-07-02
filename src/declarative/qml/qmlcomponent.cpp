@@ -46,7 +46,7 @@
 #include "qmlvme_p.h"
 #include "qml.h"
 #include <QStack>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QStringList>
 #include <qmlengine.h>
 #include <QFileInfo>
@@ -369,6 +369,29 @@ QList<QmlError> QmlComponent::errors() const
         return d->errors;
     else
         return QList<QmlError>();
+}
+
+/*!
+    Return the list of errors that occured during the last compile or create
+    operation, as a single string.  An empty string is returned if isError()
+    is not set.
+
+    This function is similar to errors(), except more useful when called from
+    QML. C++ code should usually use errors().
+
+    \sa errors()
+*/
+QString QmlComponent::errorsString() const
+{
+    Q_D(const QmlComponent);
+    QString ret;
+    if(!isError())
+        return ret;
+    foreach(const QmlError &e, d->errors){
+        ret += e.url().toString() + ":" + QString::number(e.line()) + " "
+                + e.description() + "\n";
+    }
+    return ret;
 }
 
 /*!

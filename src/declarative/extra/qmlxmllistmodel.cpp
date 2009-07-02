@@ -289,11 +289,11 @@ class QmlXmlListModelPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlXmlListModel)
 public:
     QmlXmlListModelPrivate()
-        : isClassComplete(false), size(-1), highestRole(Qt::UserRole)
+        : isComponentComplete(true), size(-1), highestRole(Qt::UserRole)
         , reply(0), status(QmlXmlListModel::Idle), progress(0.0)
         , queryId(-1), roleObjects(this) {}
 
-    bool isClassComplete;
+    bool isComponentComplete;
     QUrl src;
     QString query;
     QString namespaces;
@@ -549,10 +549,16 @@ qreal QmlXmlListModel::progress() const
     return d->progress;
 }
 
-void QmlXmlListModel::classComplete()
+void QmlXmlListModel::classBegin()
 {
     Q_D(QmlXmlListModel);
-    d->isClassComplete = true;
+    d->isComponentComplete = false;
+}
+
+void QmlXmlListModel::componentComplete()
+{
+    Q_D(QmlXmlListModel);
+    d->isComponentComplete = true;
     reload();
 }
 
@@ -566,7 +572,7 @@ void QmlXmlListModel::reload()
 {
     Q_D(QmlXmlListModel);
 
-    if (!d->isClassComplete)
+    if (!d->isComponentComplete)
         return;
 
     d->qmlXmlQuery.abort();

@@ -30,15 +30,6 @@
 
 #if ENABLE(JIT)
 
-#if PLATFORM(WIN)
-#undef FIELD_OFFSET // Fix conflict with winnt.h.
-#endif
-
-// FIELD_OFFSET: Like the C++ offsetof macro, but you can use it with classes.
-// The magic number 0x4000 is insignificant. We use it to avoid using NULL, since
-// NULL can cause compiler problems, especially in cases of multiple inheritance.
-#define FIELD_OFFSET(class, field) (reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<class*>(0x4000)->field)) - 0x4000)
-
 namespace JSC {
 
 ALWAYS_INLINE void JIT::killLastResultRegister()
@@ -186,6 +177,8 @@ ALWAYS_INLINE JIT::Call JIT::emitNakedCall(CodePtr function)
     return nakedCall;
 }
 
+#if PLATFORM(X86) || PLATFORM(X86_64)
+
 ALWAYS_INLINE void JIT::preverveReturnAddressAfterCall(RegisterID reg)
 {
     pop(reg);
@@ -201,31 +194,52 @@ ALWAYS_INLINE void JIT::restoreReturnAddressBeforeReturn(Address address)
     push(address);
 }
 
+#elif PLATFORM_ARM_ARCH(7)
+
+ALWAYS_INLINE void JIT::preverveReturnAddressAfterCall(RegisterID reg)
+{
+    move(linkRegister, reg);
+}
+
+ALWAYS_INLINE void JIT::restoreReturnAddressBeforeReturn(RegisterID reg)
+{
+    move(reg, linkRegister);
+}
+
+ALWAYS_INLINE void JIT::restoreReturnAddressBeforeReturn(Address address)
+{
+    loadPtr(address, linkRegister);
+}
+
+#endif
+
 #if USE(JIT_STUB_ARGUMENT_VA_LIST)
 ALWAYS_INLINE void JIT::restoreArgumentReference()
 {
-    poke(callFrameRegister, offsetof(struct JITStackFrame, callFrame) / sizeof (void*));
+    poke(callFrameRegister, OBJECT_OFFSETOF(struct JITStackFrame, callFrame) / sizeof (void*));
 }
 ALWAYS_INLINE void JIT::restoreArgumentReferenceForTrampoline() {}
 #else
 ALWAYS_INLINE void JIT::restoreArgumentReference()
 {
     move(stackPointerRegister, firstArgumentRegister);
-    poke(callFrameRegister, offsetof(struct JITStackFrame, callFrame) / sizeof (void*));
+    poke(callFrameRegister, OBJECT_OFFSETOF(struct JITStackFrame, callFrame) / sizeof (void*));
 }
 ALWAYS_INLINE void JIT::restoreArgumentReferenceForTrampoline()
 {
-    // In the trampoline on x86-64, the first argument register is not overwritten.
-#if !PLATFORM(X86_64)
+#if PLATFORM(X86)
+    // Within a trampoline the return address will be on the stack at this point.
+    addPtr(Imm32(sizeof(void*)), stackPointerRegister, firstArgumentRegister);
+#elif PLATFORM_ARM_ARCH(7)
     move(stackPointerRegister, firstArgumentRegister);
-    addPtr(Imm32(sizeof(void*)), firstArgumentRegister);
 #endif
+    // In the trampoline on x86-64, the first argument register is not overwritten.
 }
 #endif
 
 ALWAYS_INLINE JIT::Jump JIT::checkStructure(RegisterID reg, Structure* structure)
 {
-    return branchPtr(NotEqual, Address(reg, FIELD_OFFSET(JSCell, m_structure)), ImmPtr(structure));
+    return branchPtr(NotEqual, Address(reg, OBJECT_OFFSETOF(JSCell, m_structure)), ImmPtr(structure));
 }
 
 ALWAYS_INLINE JIT::Jump JIT::emitJumpIfJSCell(RegisterID reg)

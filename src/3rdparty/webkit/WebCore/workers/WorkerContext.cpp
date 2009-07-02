@@ -38,16 +38,15 @@
 #include "EventException.h"
 #include "MessageEvent.h"
 #include "NotImplemented.h"
-#include "ResourceRequest.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "SecurityOrigin.h"
-#include "ThreadableLoader.h"
-#include "WorkerImportScriptsClient.h"
 #include "WorkerLocation.h"
 #include "WorkerNavigator.h"
 #include "WorkerObjectProxy.h"
+#include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
+#include "WorkerThreadableLoader.h"
 #include "XMLHttpRequestException.h"
 #include <wtf/RefPtr.h>
 
@@ -67,7 +66,7 @@ WorkerContext::~WorkerContext()
 {
     ASSERT(currentThread() == m_thread->threadID());
 
-    m_thread->workerObjectProxy()->workerContextDestroyed();
+    m_thread->workerObjectProxy().workerContextDestroyed();
 }
 
 ScriptExecutionContext* WorkerContext::scriptExecutionContext() const
@@ -136,12 +135,12 @@ bool WorkerContext::hasPendingActivity() const
 
 void WorkerContext::reportException(const String& errorMessage, int lineNumber, const String& sourceURL)
 {
-    m_thread->workerObjectProxy()->postExceptionToWorkerObject(errorMessage, lineNumber, sourceURL);
+    m_thread->workerObjectProxy().postExceptionToWorkerObject(errorMessage, lineNumber, sourceURL);
 }
 
 void WorkerContext::addMessage(MessageDestination destination, MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
 {
-    m_thread->workerObjectProxy()->postConsoleMessageToWorkerObject(destination, source, level, message, lineNumber, sourceURL);
+    m_thread->workerObjectProxy().postConsoleMessageToWorkerObject(destination, source, level, message, lineNumber, sourceURL);
 }
 
 void WorkerContext::resourceRetrievedByXMLHttpRequest(unsigned long, const ScriptString&)
@@ -161,7 +160,7 @@ void WorkerContext::postMessage(const String& message)
     if (m_closing)
         return;
 
-    m_thread->workerObjectProxy()->postMessageToWorkerObject(message);
+    m_thread->workerObjectProxy().postMessageToWorkerObject(message);
 }
 
 void WorkerContext::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> eventListener, bool)
@@ -274,20 +273,20 @@ void WorkerContext::importScripts(const Vector<String>& urls, const String& call
     Vector<KURL>::const_iterator end = completedURLs.end();
 
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
-        ResourceRequest request(*it);
-        request.setHTTPMethod("GET");
-        request.setHTTPOrigin(securityOrigin);
-        WorkerImportScriptsClient client(scriptExecutionContext(), *it, callerURL, callerLine);
-        ThreadableLoader::loadResourceSynchronously(scriptExecutionContext(), request, client, AllowStoredCredentials);
-        
+        WorkerScriptLoader scriptLoader;
+        scriptLoader.loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRedirect);
+
         // If the fetching attempt failed, throw a NETWORK_ERR exception and abort all these steps.
-        if (client.failed()) {
+        if (scriptLoader.failed()) {
             ec = XMLHttpRequestException::NETWORK_ERR;
             return;
         }
 
+        scriptExecutionContext()->scriptImported(scriptLoader.identifier(), scriptLoader.script());
+        scriptExecutionContext()->addMessage(InspectorControllerDestination, JSMessageSource, LogMessageLevel, "Worker script imported: \"" + *it + "\".", callerLine, callerURL);
+
         ScriptValue exception;
-        m_script->evaluate(ScriptSourceCode(client.script(), *it), &exception);
+        m_script->evaluate(ScriptSourceCode(scriptLoader.script(), *it), &exception);
         if (!exception.hasNoValue()) {
             m_script->setException(exception);
             return;

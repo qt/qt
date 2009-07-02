@@ -716,16 +716,9 @@ QString qmake_libraryInfoFile()
 {
     QString ret;
 #if defined( Q_OS_WIN )
-    QFileInfo filePath;
-    QT_WA({
-        unsigned short module_name[256];
-        GetModuleFileNameW(0, reinterpret_cast<wchar_t *>(module_name), sizeof(module_name));
-        filePath = QString::fromUtf16(module_name);
-    }, {
-        char module_name[256];
-        GetModuleFileNameA(0, module_name, sizeof(module_name));
-        filePath = QString::fromLocal8Bit(module_name);
-    });
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, MAX_PATH);
+    QFileInfo filePath = QString::fromWCharArray(module_name);
     ret = filePath.filePath();
 #else
     QString argv0 = QFile::decodeName(QByteArray(Option::application_argv0));

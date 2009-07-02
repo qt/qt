@@ -19,17 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSWebKitTransitionEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "WebKitTransitionEvent.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -224,8 +224,14 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    QByteArray constructorName = className();
+    {
+        int idx = constructorName.lastIndexOf(':');
+        if (idx != -1)
+            constructorName.remove(0, idx+1); // remove qualified part
+    }
     QVarLengthArray<char, 512> sig;
-    sig.append(className(), qstrlen(className()));
+    sig.append(constructorName.constData(), constructorName.length());
     sig.append('(');
 
     enum { MaximumParamCount = 10 };

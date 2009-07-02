@@ -1848,8 +1848,7 @@ QTime QTime::currentTime()
 #else
     time_t ltime; // no millisecond resolution
     ::time(&ltime);
-    tm *t = 0;
-    localtime(&ltime);
+    const tm *const t = localtime(&ltime);
     ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec;
 #endif
     return ct;
@@ -2504,16 +2503,9 @@ QString QDateTime::toString(Qt::DateFormat f) const
         buf += QLatin1Char(' ');
         buf += QString::number(d->date.day());
 #else
-        QString winstr;
-        QT_WA({
-            TCHAR out[255];
-            GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILDATE, out, 255);
-            winstr = QString::fromUtf16((ushort*)out);
-        } , {
-            char out[255];
-            GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_ILDATE, (char*)&out, 255);
-            winstr = QString::fromLocal8Bit(out);
-        });
+        wchar_t out[255];
+        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILDATE, out, 255);
+        QString winstr = QString::fromWCharArray(out);
         switch (winstr.toInt()) {
         case 1:
             buf = d->date.shortDayName(d->date.dayOfWeek());
@@ -4398,6 +4390,13 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case DateSectionMask:
         qWarning("QDateTimeParser::sectionMaxSize: Invalid section %s",
                  sectionName(s).toLatin1().constData());
+
+    case NoSectionIndex:
+    case FirstSectionIndex:
+    case LastSectionIndex:
+    case CalendarPopupIndex:
+        // these cases can't happen
+        break;
     }
     return -1;
 }

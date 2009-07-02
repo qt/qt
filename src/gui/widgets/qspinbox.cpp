@@ -284,6 +284,9 @@ void QSpinBox::setPrefix(const QString &prefix)
 
     d->prefix = prefix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!
@@ -318,6 +321,9 @@ void QSpinBox::setSuffix(const QString &suffix)
 
     d->suffix = suffix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!

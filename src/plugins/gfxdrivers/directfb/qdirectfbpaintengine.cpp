@@ -378,7 +378,7 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
     const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().bottom())));
-    if (bottom.y() >= d->lastLockedHeight)
+    if (bottom.y() > d->lastLockedHeight)
         d->lock();
     QRasterPaintEngine::clip(path, op);
 }
@@ -389,7 +389,7 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     d->dirtyClip = true;
     if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
         const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
-        if (bottom.y() >= d->lastLockedHeight)
+        if (bottom.y() > d->lastLockedHeight)
             d->lock();
     }
 
@@ -567,6 +567,7 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QPixmapData *data = pixmap.pixmapData();
         Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
         QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        dfbData->unlockDirectFB();
         IDirectFBSurface *s = dfbData->directFBSurface();
         d->blit(r, s, sr);
     }
@@ -598,6 +599,10 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pix, sp);
     } else {
         d->unlock();
+        QPixmapData *data = pixmap.pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
+        QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        dfbData->unlockDirectFB();
         d->drawTiledPixmap(r, pixmap);
     }
 }
@@ -913,11 +918,17 @@ void QDirectFBPaintEnginePrivate::end()
 void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
 {
     pen = p;
-    simplePen = (pen.style() == Qt::NoPen) ||
-                (pen.style() == Qt::SolidLine
-                 && !antialiased
-                 && (pen.brush().style() == Qt::SolidPattern)
-                 && (pen.widthF() <= 1 && scale != NoScale));
+    if (pen.style() == Qt::NoPen) {
+        simplePen = true;
+    } else if (pen.style() == Qt::SolidLine
+               && !antialiased
+               && pen.brush().style() == Qt::SolidPattern
+               && pen.widthF() <= 1.0
+               && (scale == NoScale || pen.isCosmetic())) {
+        simplePen = true;
+    } else {
+        simplePen = false;
+    }
 }
 
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)

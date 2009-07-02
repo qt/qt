@@ -19,15 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSNotation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "Notation.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

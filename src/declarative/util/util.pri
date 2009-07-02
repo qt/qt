@@ -17,13 +17,14 @@ SOURCES += \
            util/qmllistmodel.cpp\
            util/qmllistaccessor.cpp \
            util/qmlopenmetaobject.cpp \
+           util/qmltimeline.cpp \
            util/qmlbind.cpp
 
 HEADERS += \
            util/qfxview.h \
-           util/qfxperf.h \
+           util/qfxperf_p.h \
            util/qfxglobal.h \
-           util/qperformancelog.h \
+           util/qperformancelog_p.h \
            util/qmlconnection.h \
            util/qmlpackage.h \
            util/qmlscript.h \
@@ -42,4 +43,5 @@ HEADERS += \
            util/qmllistaccessor.h \
            util/qmlopenmetaobject.h \
            util/qmlnullablevalue_p.h \
+           util/qmltimeline_p.h \
            util/qmlbind.h

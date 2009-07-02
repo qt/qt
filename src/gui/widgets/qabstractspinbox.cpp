@@ -1696,6 +1696,8 @@ void QAbstractSpinBoxPrivate::updateEdit()
 
 void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
 {
+    Q_Q(QAbstractSpinBox);
+
     clearCache();
     minimum = min;
     maximum = (variantCompare(min, max) < 0 ? max : min);
@@ -1707,6 +1709,8 @@ void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
     } else if (value == minimum && !specialValueText.isEmpty()) {
         updateEdit();
     }
+
+    q->updateGeometry();
 }
 
 /*!

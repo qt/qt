@@ -21,7 +21,6 @@
 #ifndef JSJavaScriptCallFrame_h
 #define JSJavaScriptCallFrame_h
 
-
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "JSDOMBinding.h"

@@ -20,17 +20,12 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGRenderingIntent.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGRenderingIntent.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
