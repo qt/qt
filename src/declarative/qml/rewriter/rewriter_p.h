@@ -121,7 +121,8 @@ public:
 	//
 	// low-level offset based API
 	//
-	void replace(int offset, int length, const QString &text);
+    virtual void replace(int offset, int length, const QString &text);
+    virtual void move(int pos, int length, int to);
 	void insertText(int offset, const QString &text);
 	void removeText(int offset, int length);
 
