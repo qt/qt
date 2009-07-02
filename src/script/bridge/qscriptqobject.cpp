@@ -36,6 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::QObjectWrapperObject);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QObjectPrototype);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QMetaObjectWrapperObject);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QMetaObjectPrototype);
+ASSERT_CLASS_FITS_IN_CELL(QScript::QtFunction);
+ASSERT_CLASS_FITS_IN_CELL(QScript::QtPropertyFunction);
 }
 
 namespace QScript
@@ -144,10 +146,40 @@ static inline QByteArray methodName(const QMetaMethod &method)
     return signature.left(signature.indexOf('('));
 }
 
+static QVariant variantFromValue(QScriptEnginePrivate *eng,
+                                 int targetType, const QScriptValue &value)
+{
+    QVariant v(targetType, (void *)0);
+    Q_ASSERT(eng);
+    if (QScriptEnginePrivate::convert(value, targetType, v.data(), eng))
+        return v;
+    if (uint(targetType) == QVariant::LastType)
+        return value.toVariant();
+    if (value.isVariant()) {
+        v = value.toVariant();
+        if (v.canConvert(QVariant::Type(targetType))) {
+            v.convert(QVariant::Type(targetType));
+            return v;
+        }
+        QByteArray typeName = v.typeName();
+        if (typeName.endsWith('*')
+            && (QMetaType::type(typeName.left(typeName.size()-1)) == targetType)) {
+            return QVariant(targetType, *reinterpret_cast<void* *>(v.data()));
+        }
+    }
+
+    return QVariant();
+}
+
+static const bool GeneratePropertyFunctions = false;
+
 static unsigned flagsForMetaProperty(const QMetaProperty &prop)
 {
     return (JSC::DontDelete
             | (!prop.isWritable() ? unsigned(JSC::ReadOnly) : unsigned(0))
+            | (GeneratePropertyFunctions
+               ? unsigned(JSC::Getter | JSC::Setter)
+                  : unsigned(0))
             | QObjectMemberAttribute);
 }
 
@@ -179,9 +211,6 @@ static inline QScriptable *scriptableFromQObject(QObject *qobj)
 JSC::UString qtStringToJSCUString(const QString &str);
 QString qtStringFromJSCUString(const JSC::UString &str);
 
-static JSC::JSValue JSC_HOST_CALL QtFunction_call(JSC::ExecState *exec, JSC::JSObject*,
-                                                  JSC::JSValue thisValue, const JSC::ArgList &args);
-
 QtFunction::QtFunction(JSC::JSValue object, int initialIndex, bool maybeOverloaded,
                        JSC::JSGlobalData *data, WTF::PassRefPtr<JSC::Structure> sid,
                        const JSC::Identifier &ident)
@@ -197,7 +226,7 @@ QtFunction::~QtFunction()
 
 JSC::CallType QtFunction::getCallData(JSC::CallData &callData)
 {
-    callData.native.function = QtFunction_call;
+    callData.native.function = call;
     return JSC::CallTypeHost;
 }
 
@@ -430,8 +459,8 @@ struct QScriptMetaArguments
     { return (index != -1); }
 };
 
-JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
-                              const JSC::ArgList &scriptArgs)
+JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
+                                 const JSC::ArgList &scriptArgs)
 {
     Q_ASSERT(data->object.isObject(&QObjectWrapperObject::info));
     QObjectWrapperObject *wrapper = static_cast<QObjectWrapperObject*>(JSC::asObject(data->object));
@@ -919,11 +948,11 @@ JSC::JSValue QtFunction::call(JSC::ExecState *exec, JSC::JSValue thisValue,
 
 const JSC::ClassInfo QtFunction::info = { "QtFunction", 0, 0, 0 };
 
-JSC::JSValue QtFunction_call(JSC::ExecState *exec, JSC::JSObject *callee,
-                             JSC::JSValue thisValue, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL QtFunction::call(JSC::ExecState *exec, JSC::JSObject *callee,
+                                            JSC::JSValue thisValue, const JSC::ArgList &args)
 {
     if (!callee->isObject(&QtFunction::info))
-        return throwError(exec, JSC::TypeError);
+        return throwError(exec, JSC::TypeError, "callee is not a QtFunction object");
     QtFunction *qfun =  static_cast<QtFunction*>(callee);
     QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
     QScriptContext *previousContext = eng_p->currentContext;
@@ -932,9 +961,120 @@ JSC::JSValue QtFunction_call(JSC::ExecState *exec, JSC::JSObject *callee,
                                 previousContext, eng_p);
     QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
     eng_p->currentContext = ctx;
-    JSC::JSValue result = qfun->call(exec, thisValue, args);
+    JSC::JSValue result = qfun->execute(exec, thisValue, args);
     eng_p->currentContext = previousContext;
     delete ctx;
+    return result;
+}
+
+const JSC::ClassInfo QtPropertyFunction::info = { "QtPropertyFunction", 0, 0, 0 };
+
+QtPropertyFunction::QtPropertyFunction(const QMetaObject *meta, int index,
+                                       JSC::JSGlobalData *data,
+                                       WTF::PassRefPtr<JSC::Structure> sid,
+                                       const JSC::Identifier &ident)
+    : JSC::InternalFunction(data, sid, ident),
+      data(new Data(meta, index))
+{
+}
+
+QtPropertyFunction::~QtPropertyFunction()
+{
+    delete data;
+}
+
+JSC::CallType QtPropertyFunction::getCallData(JSC::CallData &callData)
+{
+    callData.native.function = call;
+    return JSC::CallTypeHost;
+}
+
+JSC::JSValue JSC_HOST_CALL QtPropertyFunction::call(
+    JSC::ExecState *exec, JSC::JSObject *callee,
+    JSC::JSValue thisValue, const JSC::ArgList &args)
+{
+    if (!callee->isObject(&QtPropertyFunction::info))
+        return throwError(exec, JSC::TypeError, "callee is not a QtPropertyFunction object");
+    QtPropertyFunction *qfun =  static_cast<QtPropertyFunction*>(callee);
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptContext *previousContext = eng_p->currentContext;
+    QScriptContextPrivate ctx_p(callee, thisValue, args,
+                                /*calledAsConstructor=*/false,
+                                previousContext, eng_p);
+    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
+    eng_p->currentContext = ctx;
+    JSC::JSValue result = qfun->execute(exec, thisValue, args);
+    eng_p->currentContext = previousContext;
+    delete ctx;
+    return result;
+}
+
+JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
+                                         JSC::JSValue thisValue,
+                                         const JSC::ArgList &args)
+{
+    JSC::JSValue result = JSC::jsUndefined();
+
+    // ### don't go via QScriptValue
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptValue object = engine->scriptValueFromJSCValue(thisValue);
+    QObject *qobject = object.toQObject();
+    while ((!qobject || (qobject->metaObject() != data->meta))
+           && object.prototype().isObject()) {
+        object = object.prototype();
+        qobject = object.toQObject();
+    }
+    Q_ASSERT(qobject);
+
+    QMetaProperty prop = data->meta->property(data->index);
+    Q_ASSERT(prop.isScriptable());
+    if (args.size() == 0) {
+        // get
+        if (prop.isValid()) {
+            QScriptable *scriptable = scriptableFromQObject(qobject);
+            QScriptEngine *oldEngine = 0;
+            if (scriptable) {
+                oldEngine = QScriptablePrivate::get(scriptable)->engine;
+                QScriptablePrivate::get(scriptable)->engine = QScriptEnginePrivate::get(engine);
+            }
+
+            QVariant v = prop.read(qobject);
+
+            if (scriptable)
+                QScriptablePrivate::get(scriptable)->engine = oldEngine;
+
+            result = engine->jscValueFromVariant(v);
+        }
+    } else {
+        // set
+        Q_ASSERT_X(false, Q_FUNC_INFO, "check me");
+        JSC::JSValue arg = args.at(0);
+        QVariant v;
+        if (prop.isEnumType() && arg.isString()
+            && !engine->hasDemarshalFunction(prop.userType())) {
+            // give QMetaProperty::write() a chance to convert from
+            // string to enum value
+            v = qtStringFromJSCUString(arg.toString(exec));
+        } else {
+            // ### don't go via QScriptValue
+            QScriptValue tmp = engine->scriptValueFromJSCValue(arg);
+            v = variantFromValue(engine, prop.userType(), tmp);
+        }
+
+        QScriptable *scriptable = scriptableFromQObject(qobject);
+        QScriptEngine *oldEngine = 0;
+        if (scriptable) {
+            oldEngine = QScriptablePrivate::get(scriptable)->engine;
+            QScriptablePrivate::get(scriptable)->engine = QScriptEnginePrivate::get(engine);
+        }
+
+        prop.write(qobject, v);
+
+        if (scriptable)
+            QScriptablePrivate::get(scriptable)->engine = oldEngine;
+
+        result = arg;
+    }
     return result;
 }
 
@@ -1017,13 +1157,21 @@ bool QObjectWrapperObject::getOwnPropertySlot(JSC::ExecState *exec,
         if (prop.isScriptable()) {
             if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
                 || (index >= meta->propertyOffset())) {
-                // ### use property getter function
-                JSC::JSValue val;
-                if (!prop.isValid())
-                    val = JSC::jsUndefined();
-                else
-                    val = eng->jscValueFromVariant(prop.read(qobject));
-                slot.setValue(val);
+                if (GeneratePropertyFunctions) {
+                    QtPropertyFunction *fun = new (exec)QtPropertyFunction(
+                        meta, index, &exec->globalData(),
+                        exec->dynamicGlobalObject()->functionStructure(),
+                        propertyName);
+                    data->cachedMembers.insert(name, fun);
+                    slot.setGetterSlot(fun);
+                } else {
+                    JSC::JSValue val;
+                    if (!prop.isValid())
+                        val = JSC::jsUndefined();
+                    else
+                        val = eng->jscValueFromVariant(prop.read(qobject));
+                    slot.setValue(val);
+                }
                 return true;
             }
         }
@@ -1100,6 +1248,8 @@ void QObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& prop
 
     index = meta->indexOfProperty(name);
     if (index != -1) {
+        if (GeneratePropertyFunctions)
+            qWarning("Booo, the property setter should be called...");
         QMetaProperty prop = meta->property(index);
         if (prop.isScriptable()) {
             if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
@@ -1173,7 +1323,6 @@ bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
 
     const QScriptEngine::QObjectWrapOptions &opt = data->options;
     const QMetaObject *meta = qobject->metaObject();
-    QScriptEnginePrivate *eng = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
     int index = -1;
     if (name.contains('(')) {
         QByteArray normalized = QMetaObject::normalizedSignature(name);
@@ -1234,6 +1383,18 @@ bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
     }
 
     return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
+}
+
+JSC::JSValue QObjectWrapperObject::lookupGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+{
+    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+    return JSC::JSObject::lookupGetter(exec, propertyName);
+}
+
+JSC::JSValue QObjectWrapperObject::lookupSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+{
+    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+    return JSC::JSObject::lookupSetter(exec, propertyName);
 }
 
 void QObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyNameArray &propertyNames)
@@ -1298,7 +1459,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec
                                                             JSC::JSValue thisValue, const JSC::ArgList &args)
 {
     if (!thisValue.isObject(&QObjectWrapperObject::info))
-        return throwError(exec, JSC::TypeError);
+        return throwError(exec, JSC::TypeError, "this object is not a QObject");
     QObject *obj = static_cast<QObjectWrapperObject*>(JSC::asObject(thisValue))->value();
     QString name;
     if (args.size() != 0)
@@ -1313,7 +1474,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
                                                                JSC::JSValue thisValue, const JSC::ArgList &args)
 {
     if (!thisValue.isObject(&QObjectWrapperObject::info))
-        return throwError(exec, JSC::TypeError);
+        return throwError(exec, JSC::TypeError, "this object is not a QObject");
     return throwError(exec, JSC::GeneralError, "QObject.prototype.findChildren not implemented");
 }
 
@@ -1321,7 +1482,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec,
                                                            JSC::JSValue thisValue, const JSC::ArgList&)
 {
     if (!thisValue.isObject(&QObjectWrapperObject::info))
-        return throwError(exec, JSC::TypeError);
+        return throwError(exec, JSC::TypeError, "this object is not a QObject");
     QObject *obj = static_cast<QObjectWrapperObject*>(JSC::asObject(thisValue))->value();
     const QMetaObject *meta = obj ? obj->metaObject() : &QObject::staticMetaObject;
     QString name = obj ? obj->objectName() : QString::fromUtf8("unnamed");
@@ -1457,7 +1618,7 @@ static JSC::JSValue JSC_HOST_CALL qmetaobjectProtoFuncClassName(
     JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisValue, const JSC::ArgList&)
 {
     if (!thisValue.isObject(&QMetaObjectWrapperObject::info))
-        return throwError(exec, JSC::TypeError);
+        return throwError(exec, JSC::TypeError, "this object is not a QMetaObject");
     const QMetaObject *meta = static_cast<QMetaObjectWrapperObject*>(JSC::asObject(thisValue))->value();
     return JSC::jsString(exec, meta->className());
 }

@@ -78,6 +78,7 @@ public:
                         int type, void *ptr,
                         QScriptEnginePrivate *eng);
     QScriptValue create(int type, const void *ptr);
+    bool hasDemarshalFunction(int type) const;
 
     QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
     JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);

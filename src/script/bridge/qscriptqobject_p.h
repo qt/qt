@@ -76,6 +76,8 @@ public:
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);
+    virtual JSC::JSValue lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);
     virtual void mark();
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
@@ -160,8 +162,11 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
 
-    JSC::JSValue call(JSC::ExecState *exec, JSC::JSValue thisValue,
-                       const JSC::ArgList &args);
+    static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,
+                                           JSC::JSValue, const JSC::ArgList&);
+
+    JSC::JSValue execute(JSC::ExecState *exec, JSC::JSValue thisValue,
+                         const JSC::ArgList &args);
 
     QObjectWrapperObject *wrapperObject() const;
     QObject *qobject() const;
@@ -171,6 +176,39 @@ public:
     int mostGeneralMethod(QMetaMethod *out = 0) const;
     QList<int> overloadedIndexes() const;
     QString functionName() const;
+
+private:
+    Data *data;
+};
+
+class QtPropertyFunction: public JSC::InternalFunction
+{
+public:
+    // work around CELL_SIZE limitation
+    struct Data
+    {
+        const QMetaObject *meta;
+        int index;
+
+        Data(const QMetaObject *m, int i)
+            : meta(m), index(i) {}
+    };
+
+    QtPropertyFunction(const QMetaObject *meta, int index,
+                       JSC::JSGlobalData*, WTF::PassRefPtr<JSC::Structure>,
+                       const JSC::Identifier&);
+    virtual ~QtPropertyFunction();
+
+    virtual JSC::CallType getCallData(JSC::CallData&);
+
+    virtual const JSC::ClassInfo* classInfo() const { return &info; }
+    static const JSC::ClassInfo info;
+
+    static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,
+                                           JSC::JSValue, const JSC::ArgList&);
+
+    JSC::JSValue execute(JSC::ExecState *exec, JSC::JSValue thisValue,
+                         const JSC::ArgList &args);
 
 private:
     Data *data;

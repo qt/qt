@@ -2241,6 +2241,12 @@ bool QScriptEnginePrivate::convert(const QScriptValue &value,
     return false;
 }
 
+bool QScriptEnginePrivate::hasDemarshalFunction(int type) const
+{
+    QScriptTypeInfo *info = m_typeInfos.value(type);
+    return info && (info->demarshal != 0);
+}
+
 /*!
     \internal
 */
