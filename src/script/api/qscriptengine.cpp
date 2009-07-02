@@ -19,6 +19,7 @@
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
+#include "qscriptclass.h"
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmetaobject.h>
@@ -291,6 +292,122 @@ QString qtStringFromJSCUString(const JSC::UString &str)
 {
     return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
 }
+
+// ### move
+const JSC::ClassInfo ClassObject::info = { "QScript::ClassObject", 0, 0, 0 };
+
+ClassObject::ClassObject(QScriptClass *scriptClass, WTF::PassRefPtr<JSC::Structure> sid)
+    : JSC::JSObject(sid), data(new Data(scriptClass))
+{
+}
+
+ClassObject::~ClassObject()
+{
+    delete data;
+}
+
+bool ClassObject::getOwnPropertySlot(JSC::ExecState *exec,
+                                     const JSC::Identifier &propertyName,
+                                     JSC::PropertySlot &slot)
+{
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
+    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
+    uint id = 0;
+    QScriptClass::QueryFlags flags = data->scriptClass->queryProperty(
+        scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
+    if (flags & QScriptClass::HandlesReadAccess) {
+        QScriptValue value = data->scriptClass->property(scriptObject, scriptName, id);
+        slot.setValue(engine->scriptValueToJSCValue(value));
+        return true;
+    }
+    return JSC::JSObject::getOwnPropertySlot(exec, propertyName, slot);
+}
+
+void ClassObject::put(JSC::ExecState *exec, const JSC::Identifier &propertyName,
+                      JSC::JSValue value, JSC::PutPropertySlot &slot)
+{
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
+    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
+    uint id = 0;
+    QScriptClass::QueryFlags flags = data->scriptClass->queryProperty(
+        scriptObject, scriptName, QScriptClass::HandlesWriteAccess, &id);
+    if (flags & QScriptClass::HandlesWriteAccess) {
+        data->scriptClass->setProperty(scriptObject, scriptName, id, engine->scriptValueFromJSCValue(value));
+        return;
+    }
+    JSC::JSObject::put(exec, propertyName, value, slot);
+}
+
+bool ClassObject::deleteProperty(JSC::ExecState *exec,
+                                 const JSC::Identifier &propertyName)
+{
+    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+    return JSC::JSObject::deleteProperty(exec, propertyName);
+}
+
+bool ClassObject::getPropertyAttributes(JSC::ExecState *exec,
+                                        const JSC::Identifier &propertyName,
+                                        unsigned &attribs) const
+{
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
+    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
+    uint id = 0;
+    QScriptClass::QueryFlags flags = data->scriptClass->queryProperty(
+        scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
+    if (flags & QScriptClass::HandlesReadAccess) {
+        QScriptValue::PropertyFlags flags = data->scriptClass->propertyFlags(scriptObject, scriptName, id);
+        attribs = 0;
+        if (flags & QScriptValue::ReadOnly)
+            attribs |= JSC::ReadOnly;
+        if (flags & QScriptValue::SkipInEnumeration)
+            attribs |= JSC::DontEnum;
+        if (flags & QScriptValue::Undeletable)
+            attribs |= JSC::DontDelete;
+        if (flags & QScriptValue::PropertyGetter)
+            attribs |= JSC::Getter;
+        if (flags & QScriptValue::PropertySetter)
+            attribs |= JSC::Setter;
+        attribs |= flags & QScriptValue::UserRange;
+        return true;
+    }
+    return JSC::JSObject::getPropertyAttributes(exec, propertyName, attribs);
+}
+
+void ClassObject::getPropertyNames(JSC::ExecState *exec,
+                                   JSC::PropertyNameArray &propertyNames)
+{
+    qWarning("Enumeration of custom script objects not implemented");
+    JSC::JSObject::getPropertyNames(exec, propertyNames);
+}
+
+const JSC::ClassInfo* ClassObject::classInfo() const
+{
+    // ### respect QScriptClass::name()
+    return &info;
+}
+
+QScriptClass *ClassObject::scriptClass() const
+{
+    return data->scriptClass;
+}
+
+void ClassObject::setScriptClass(QScriptClass *scriptClass)
+{
+    data->scriptClass = scriptClass;
+}
+
+ClassObjectPrototype::ClassObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::Structure> structure,
+                                           JSC::Structure* prototypeFunctionStructure)
+    : ClassObject(/*scriptClass=*/0, structure)
+{
+}
+
 
 bool isFunction(JSC::JSValue value)
 {
@@ -667,10 +784,15 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
     qobjectPrototype = new (exec) QScript::QObjectPrototype(exec, QScript::QObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     qobjectWrapperObjectStructure = QScript::QObjectWrapperObject::createStructure(qobjectPrototype);
+
     qmetaobjectPrototype = new (exec) QScript::QMetaObjectPrototype(exec, QScript::QMetaObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     qmetaobjectWrapperObjectStructure = QScript::QMetaObjectWrapperObject::createStructure(qmetaobjectPrototype);
+
     variantPrototype = new (exec) QScript::QVariantPrototype(exec, QScript::QVariantPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     variantWrapperObjectStructure = QScript::QVariantWrapperObject::createStructure(variantPrototype);
+
+    classObjectPrototype = new (exec) QScript::ClassObjectPrototype(exec, QScript::ClassObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
+    classObjectStructure = QScript::ClassObject::createStructure(classObjectPrototype);
 
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "print"), QScript::functionPrint));
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "gc"), QScript::functionGC));
@@ -1386,11 +1508,15 @@ QScriptValue QScriptEngine::newObject()
 QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
                                       const QScriptValue &data)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // use an internal map from JSObject -> data
-    Q_UNUSED(scriptClass);
-    Q_UNUSED(data);
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    JSC::ExecState* exec = d->globalObject->globalExec();
+    QScript::ClassObject *result = new (exec) QScript::ClassObject(scriptClass, d->classObjectStructure);
+    QScriptValue scriptObject = d->scriptValueFromJSCValue(result);
+    scriptObject.setData(data);
+    QScriptValue proto = scriptClass->prototype();
+    if (proto.isValid())
+        scriptObject.setPrototype(proto);
+    return scriptObject;
 }
 
 /*!

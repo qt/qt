@@ -48,6 +48,7 @@ namespace QScript
     class QObjectPrototype;
     class QMetaObjectPrototype;
     class QVariantPrototype;
+    class ClassObjectPrototype;
 #ifndef QT_NO_QOBJECT
     class QObjectData;
 #endif
@@ -142,10 +143,15 @@ public:
 
     QScript::QObjectPrototype *qobjectPrototype;
     WTF::RefPtr<JSC::Structure> qobjectWrapperObjectStructure;
+
     QScript::QMetaObjectPrototype *qmetaobjectPrototype;
     WTF::RefPtr<JSC::Structure> qmetaobjectWrapperObjectStructure;
+
     QScript::QVariantPrototype *variantPrototype;
     WTF::RefPtr<JSC::Structure> variantWrapperObjectStructure;
+
+    QScript::ClassObjectPrototype *classObjectPrototype;
+    WTF::RefPtr<JSC::Structure> classObjectStructure;
 
     QScriptEngineAgent *agent;
     QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
@@ -176,7 +182,57 @@ public:
     QScriptEnginePrivate *engine;
 };
 
-}
+// ### move
+class ClassObject : public JSC::JSObject
+{
+public:
+     // work around CELL_SIZE limitation
+    struct Data
+    {
+        QScriptClass *scriptClass;
+
+        Data(QScriptClass *sc)
+            : scriptClass(sc) {}
+    };
+
+    explicit ClassObject(QScriptClass *scriptClass,
+                         WTF::PassRefPtr<JSC::Structure> sid);
+    ~ClassObject();
+    
+    virtual bool getOwnPropertySlot(JSC::ExecState*,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertySlot&);
+    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                     JSC::JSValue, JSC::PutPropertySlot&);
+    virtual bool deleteProperty(JSC::ExecState*,
+                                const JSC::Identifier& propertyName);
+    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
+                                       unsigned&) const;
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+
+    virtual const JSC::ClassInfo* classInfo() const;
+    static const JSC::ClassInfo info;
+
+    static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+    }
+
+    QScriptClass *scriptClass() const;
+    void setScriptClass(QScriptClass *scriptClass);
+
+private:
+    Data *data;
+};
+
+class ClassObjectPrototype : public ClassObject
+{
+public:
+    ClassObjectPrototype(JSC::ExecState*, WTF::PassRefPtr<JSC::Structure>,
+                         JSC::Structure* prototypeFunctionStructure);
+};
+
+} // namespace QScript
 
 QT_END_NAMESPACE
 

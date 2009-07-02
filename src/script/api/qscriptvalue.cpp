@@ -2323,11 +2323,13 @@ void QScriptValue::setData(const QScriptValue &data)
 */
 QScriptClass *QScriptValue::scriptClass() const
 {
-    if (isObject())
+    Q_D(const QScriptValue);
+    if (!d || !d->isJSC() || !d->jscValue.isObject())
         return 0;
-    // ### implement me
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return 0;
+    if (!d->jscValue.isObject(&QScript::ClassObject::info))
+        return 0;
+    QScript::ClassObject *instance = static_cast<QScript::ClassObject*>(JSC::asObject(d->jscValue));
+    return instance->scriptClass();
 }
 
 /*!
@@ -2345,9 +2347,15 @@ QScriptClass *QScriptValue::scriptClass() const
 */
 void QScriptValue::setScriptClass(QScriptClass *scriptClass)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // no idea... use a "hidden" property?
-    Q_UNUSED(scriptClass);
+    Q_D(QScriptValue);
+    if (!d || !d->isJSC() || !d->jscValue.isObject())
+        return;
+    if (!d->jscValue.isObject(&QScript::ClassObject::info)) {
+        qWarning("QScriptValue::setScriptClass() not implemented");
+        return;
+    }
+    QScript::ClassObject *instance = static_cast<QScript::ClassObject*>(JSC::asObject(d->jscValue));
+    instance->setScriptClass(scriptClass);
 }
 
 /*!

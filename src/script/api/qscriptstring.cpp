@@ -138,7 +138,9 @@ bool QScriptString::isValid() const
 bool QScriptString::operator==(const QScriptString &other) const
 {
     Q_D(const QScriptString);
-    return (d == other.d_func());
+    // ### change back once proper string handles are implemented
+    return toString() == other.toString();
+//    return (d == other.d_func());
 }
 
 /*!
@@ -148,7 +150,9 @@ bool QScriptString::operator==(const QScriptString &other) const
 bool QScriptString::operator!=(const QScriptString &other) const
 {
     Q_D(const QScriptString);
-    return (d != other.d_func());
+    // ### change back once proper string handles are implemented
+    return toString() != other.toString();
+//    return (d != other.d_func());
 }
 
 /*!
