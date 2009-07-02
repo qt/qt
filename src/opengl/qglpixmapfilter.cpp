@@ -338,6 +338,8 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
@@ -355,12 +357,26 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     // first pass, to fbo
     fbo->bind();
     manager->setCustomShader(customShader);
+
+    QTransform transform = engine->state()->matrix;
+
+    if (!transform.isIdentity()) {
+        engine->state()->matrix = QTransform();
+        engine->transformChanged();
+    }
+
     engine->drawPixmap(src.rect(), src, src.rect());
+
+    if (!transform.isIdentity()) {
+        engine->state()->matrix = transform;
+        engine->transformChanged();
+    }
+
     fbo->release();
 
     // second pass, to widget
     m_program->setUniformValue("delta", 0.0, 1.0);
-    engine->drawTexture(src.rect().translated(pos.x(), pos.y()), fbo->texture(), src.size(), src.rect());
+    engine->drawTexture(src.rect().translated(pos.x(), pos.y()), fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
     manager->setCustomShader(0);
 
     painter->restore();
