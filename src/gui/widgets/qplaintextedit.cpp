@@ -252,7 +252,7 @@ QPlainTextDocumentLayoutPrivate *QPlainTextDocumentLayout::priv() const
  */
 void QPlainTextDocumentLayout::requestUpdate()
 {
-    emit update(QRectF(0., -4., 1000000000., 1000000000.));
+    emit update(QRectF(0., -document()->documentMargin(), 1000000000., 1000000000.));
 }
 
 
@@ -347,8 +347,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int /*charsRemoved*/, i
     }
 
     if (!d->blockUpdate)
-        emit update(); // optimization potential
-
+	emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
 }
 
 
