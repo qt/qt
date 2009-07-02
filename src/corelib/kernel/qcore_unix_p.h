@@ -193,7 +193,7 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     return 0;
 }
 
-static inline qint64 qt_safe_read(int fd, char *data, qint64 maxlen)
+static inline qint64 qt_safe_read(int fd, void *data, qint64 maxlen)
 {
     qint64 ret = 0;
     EINTR_LOOP(ret, QT_READ(fd, data, maxlen));
@@ -202,7 +202,7 @@ static inline qint64 qt_safe_read(int fd, char *data, qint64 maxlen)
 #undef QT_READ
 #define QT_READ qt_safe_read
 
-static inline qint64 qt_safe_write(int fd, const char *data, qint64 len)
+static inline qint64 qt_safe_write(int fd, const void *data, qint64 len)
 {
     qint64 ret = 0;
     EINTR_LOOP(ret, QT_WRITE(fd, data, len));
