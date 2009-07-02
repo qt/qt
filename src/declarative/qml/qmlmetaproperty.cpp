@@ -1043,7 +1043,7 @@ QMetaMethod QmlMetaProperty::method() const
 */
 QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj, const QString &name)
 {
-    QStringList path = name.split('.');
+    QStringList path = name.split(QLatin1Char('.'));
 
     QObject *object = obj;
 
