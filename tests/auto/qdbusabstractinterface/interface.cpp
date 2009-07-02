@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDBus module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,85 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSERROR_H
-#define QDBUSERROR_H
+#include "interface.h"
 
-#include <QtDBus/qdbusmacros.h>
-#include <QtCore/qstring.h>
-
-QT_BEGIN_HEADER
-
-struct DBusError;
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(DBus)
-
-class QDBusMessage;
-
-class QDBUS_EXPORT QDBusError
+Interface::Interface()
 {
-public:
-    enum ErrorType {
-        NoError = 0,
-        Other = 1,
-        Failed,
-        NoMemory,
-        ServiceUnknown,
-        NoReply,
-        BadAddress,
-        NotSupported,
-        LimitsExceeded,
-        AccessDenied,
-        NoServer,
-        Timeout,
-        NoNetwork,
-        AddressInUse,
-        Disconnected,
-        InvalidArgs,
-        UnknownMethod,
-        TimedOut,
-        InvalidSignature,
-        UnknownInterface,
-        InternalError,
-        UnknownObject,
-        InvalidService,
-        InvalidObjectPath,
-        InvalidInterface,
-        InvalidMember,
+}
 
-#ifndef Q_QDOC
-        // don't use this one!
-        LastErrorType = InvalidMember
-#endif
-    };
-
-    QDBusError(const DBusError *error = 0);
-    QDBusError(const QDBusMessage& msg);
-    QDBusError(ErrorType error, const QString &message);
-    QDBusError(const QDBusError &other);
-    QDBusError &operator=(const QDBusError &other);
-
-    ErrorType type() const;
-    QString name() const;
-    QString message() const;
-    bool isValid() const;
-
-    static QString errorString(ErrorType error);
-
-private:
-    ErrorType code;
-    QString msg;
-    QString nm;
-    void *unused;
-};
-
-#ifndef QT_NO_DEBUG_STREAM
-QDBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
-#endif
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif
+#include "moc_interface.cpp"

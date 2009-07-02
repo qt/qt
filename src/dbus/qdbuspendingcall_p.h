@@ -63,6 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDBusPendingCall;
 class QDBusPendingCallWatcher;
 class QDBusPendingCallWatcherHelper;
 class QDBusConnectionPrivate;
@@ -94,6 +95,8 @@ public:
     void waitForFinished();
     void setMetaTypes(int count, const int *types);
     void checkReceivedSignature();
+
+    static QDBusPendingCall fromMessage(const QDBusMessage &msg);
 };
 
 class QDBusPendingCallWatcherHelper: public QObject
