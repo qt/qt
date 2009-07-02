@@ -221,7 +221,7 @@ protected:
     bool isIndexHidden(const QModelIndex &index) const;
 
     QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers);
-    void setSelection(const QRect&, QItemSelectionModel::SelectionFlags);
+    void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags);
     QRegion visualRegionForSelection(const QItemSelection &selection) const;
     void initStyleOption(QStyleOptionHeader *option) const;
 

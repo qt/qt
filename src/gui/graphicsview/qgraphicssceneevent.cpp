@@ -1875,12 +1875,12 @@ void QGraphicsSceneGestureEvent::setGestures(const QSet<QGesture*> &gestures)
 }
 
 /*!
-    Sets the accept flag of the all gestures inside the event object,
-    the equivalent of calling \l{QEvent::accept()}{accept()} or
-    \l{QEvent::setAccepted()}{setAccepted(true)}.
+    Sets the accept flag of the all gestures for the event object.
+    This is the equivalent of calling \l{QEvent::accept()} {accept()}
+    or \l{QEvent::setAccepted()}{setAccepted(true)}.
 
-    Setting the accept parameter indicates that the event receiver
-    wants the gesture. Unwanted gestures might be propagated to the parent
+    Setting the accept flag indicates that the event receiver wants
+    the gesture. Unwanted gestures might be propagated to the parent
     widget.
 */
 void QGraphicsSceneGestureEvent::acceptAll()
@@ -1893,13 +1893,14 @@ void QGraphicsSceneGestureEvent::acceptAll()
 }
 
 /*!
-    Sets the accept flag of the specified gesture inside the event
-    object, the equivalent of calling
-    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
 
-    Setting the accept parameter indicates that the event receiver
-    wants the gesture. Unwanted gestures might be propagated to the parent
-    widget.
+  Sets the accept flag of the gesture specified by \a type.  This is
+  equivalent to calling \l{QGestureEvent::gesture()} {gesture(type)}->
+  \l{QGesture::accept()}{accept()}
+
+  Setting the accept flag indicates that the event receiver
+  wants the gesture. Unwanted gestures might be propagated to the parent
+  widget.
 */
 void QGraphicsSceneGestureEvent::accept(Qt::GestureType type)
 {
@@ -1908,13 +1909,13 @@ void QGraphicsSceneGestureEvent::accept(Qt::GestureType type)
 }
 
 /*!
-    Sets the accept flag of the specified gesture inside the event
-    object, the equivalent of calling
-    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
 
-    Setting the accept parameter indicates that the event receiver
-    wants the gesture. Unwanted gestures might be propagated to the parent
-    widget.
+  Sets the accept flag of the gesture specified by \a type.  This is
+  equivalent to calling \l{QGestureEvent::gesture()} {gesture(type)}->
+  \l{QGesture::accept()}{accept()}
+
+  Setting the accept flag indicates that the event receiver wants the
+  gesture. Unwanted gestures might be propagated to the parent widget.
 */
 void QGraphicsSceneGestureEvent::accept(const QString &type)
 {

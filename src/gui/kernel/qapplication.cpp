@@ -5096,7 +5096,7 @@ void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
     The delay allows to postpone widget's input event handling until
     gestures framework can successfully recognize a gesture.
 
-    \sa QWidget::grabGesture
+    \sa QWidget::grabGesture()
 */
 void QApplication::setEventDeliveryDelayForGestures(int delay)
 {
