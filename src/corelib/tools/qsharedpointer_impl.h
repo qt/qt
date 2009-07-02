@@ -48,7 +48,6 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
 
@@ -191,34 +190,6 @@ namespace QtSharedPointer {
     };
 
     template <class T>
-    struct ExternalRefCountWithContiguousData: public ExternalRefCountData
-    {
-#ifdef Q_DECL_ALIGN
-# ifdef Q_ALIGNOF
-#   define QSP_ALIGNOF(T) Q_ALIGNOF(T)
-# else
-#   define QSP_ALIGNOF(T) (sizeof(T) >= 16 ? 16 : sizeof(T) >= 8 ? 8 : sizeof(T) >= 4 ? 4 : sizeof(T) >= 2 ? 2 : 1)
-# endif
-
-        char data[sizeof(T)] Q_DECL_ALIGN(QSP_ALIGNOF(T));
-        inline T *pointer() { return reinterpret_cast<T *>(data); }
-
-# undef QSP_ALIGNOF
-#else
-        union {
-            char data[sizeof(T) + 16];
-            double dummy1;
-# ifndef Q_OS_DARWIN
-            long double dummy2;
-# endif
-        };
-        inline T *pointer() { return reinterpret_cast<T *>(data + 16 - (quintptr(data) & 0xf)); }
-#endif
-
-        inline bool destroy() { this->pointer()->~T(); return true; }
-    };
-
-    template <class T>
     class ExternalRefCount: public Basic<T>
     {
         typedef ExternalRefCountData Data;
@@ -247,16 +218,6 @@ namespace QtSharedPointer {
             Q_ASSERT(!d);
             if (ptr)
                 d = new ExternalRefCountWithSpecializedDeleter<T, Deleter>(ptr, deleter);
-        }
-
-        inline void internalCreate()
-        {
-            ExternalRefCountWithContiguousData<T> *dd = new ExternalRefCountWithContiguousData<T>;
-            T *ptr = dd->pointer();
-            new (ptr) T(); // create
-
-            Basic<T>::internalConstruct(ptr);
-            d = dd;
         }
 
         inline ExternalRefCount() : d(0) { }
@@ -386,14 +347,6 @@ public:
     inline void clear() { *this = QSharedPointer<T>(); }
 
     QWeakPointer<T> toWeakRef() const;
-
-public:
-    static QSharedPointer<T> create()
-    {
-        QSharedPointer<T> result;
-        result.internalCreate();
-        return result;
-    }
 };
 
 template <class T>
