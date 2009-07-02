@@ -234,6 +234,14 @@ public:
         item->d_ptr->ignoreOpacity = 0;
     }
 
+    inline void ensureSortedTopLevelItems()
+    {
+        if (needSortTopLevelItems) {
+            qSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+            needSortTopLevelItems = false;
+        }
+    }
+
     QStyle *style;
     QFont font;
     void setFont_helper(const QFont &font);

@@ -266,10 +266,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
     int i = 0;
     if (itemHasChildren) {
         // Sort children.
-        if (item->d_ptr->needSortChildren) {
-            item->d_ptr->needSortChildren = 0;
-            qStableSort(item->d_ptr->children.begin(), item->d_ptr->children.end(), qt_notclosestLeaf);
-        }
+        item->d_ptr->ensureSortedChildren();
 
         // Clip to shape.
         if (itemClipsChildrenToShape)

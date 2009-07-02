@@ -173,20 +173,12 @@ inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item
     const QGraphicsItemPrivate *d2 = item2->d_ptr;
     bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
     bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
-    if (f1 != f2) return f2;
-    qreal z1 = d1->z;
-    qreal z2 = d2->z;
-    return z1 > z2;
+    if (f1 != f2)
+        return f2;
+    if (d1->z != d2->z)
+        return d1->z > d2->z;
+    return d1->siblingIndex > d2->siblingIndex;
 }
-
-/*!
-    \internal
-*/
-static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    return qt_closestLeaf(item2, item1);
-}
-
 
 static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
 {

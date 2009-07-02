@@ -375,6 +375,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 {
     needSortTopLevelItems = true;
+    item->d_ptr->siblingIndex = topLevelItems.size();
     topLevelItems.append(item);
 }
 
@@ -384,6 +385,10 @@ void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 {
     topLevelItems.removeOne(item);
+    // NB! Do not use topLevelItems.removeAt(item->d_ptr->siblingIndex) because
+    // the item is not guaranteed to be at the index after the list is sorted
+    // (see ensureSortedTopLevelItems()).
+    item->d_ptr->siblingIndex = -1;
 }
 
 /*!
@@ -1084,37 +1089,29 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::topLevelItemsInStackingOrder(const
                                                                            const QRectF &sceneRect)
 {
     if (indexMethod == QGraphicsScene::NoIndex || sceneRect.isNull()) {
-        if (needSortTopLevelItems) {
-            needSortTopLevelItems = false;
-            qStableSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
-        }
+        ensureSortedTopLevelItems();
         return topLevelItems;
     }
 
-    QList<QGraphicsItem *> tmp = index->estimateItems(sceneRect, Qt::SortOrder(-1),
-                                                      viewTransform ? *viewTransform : QTransform());
-    for (int i = 0; i < tmp.size(); ++i)
-        tmp.at(i)->topLevelItem()->d_ptr->itemDiscovered = 1;
-
-    // Sort if the toplevel list is unsorted.
-    if (needSortTopLevelItems) {
-        needSortTopLevelItems = false;
-        qStableSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
-    }
-
+    const QList<QGraphicsItem *> tmp = index->estimateItems(sceneRect, Qt::SortOrder(-1),
+                                                            viewTransform ? *viewTransform : QTransform());
+    // estimateItems returns a list of *all* items, but we are only interested
+    // in the top-levels (those that are within the rect themselves and those that
+    // have descendants within the rect).
+    // ### Look into how we can add this feature to the BSP.
     QList<QGraphicsItem *> tli;
-    for (int i = 0; i < topLevelItems.size(); ++i) {
-        // ### Investigate smarter ways. Looping through all top level
-        // items is not optimal. If the BSP tree is to have maximum
-        // effect, it should be possible to sort the subset of items
-        // quickly. We must use this approach for now, as it's the only
-        // current way to keep the stable sorting order (insertion order).
-        QGraphicsItem *item = topLevelItems.at(i);
-        if (item->d_ptr->itemDiscovered) {
-            item->d_ptr->itemDiscovered = 0;
-            tli << item;
+    for (int i = 0; i < tmp.size(); ++i) {
+        QGraphicsItem *topLevelItem = tmp.at(i)->topLevelItem();
+        if (!topLevelItem->d_ptr->itemDiscovered) {
+            tli << topLevelItem;
+            topLevelItem->d_ptr->itemDiscovered = 1;
         }
     }
+    // Reset discovered bit.
+    for (int i = 0; i < tli.size(); ++i)
+        tli.at(i)->d_ptr->itemDiscovered = 0;
+
+    qSort(tli.begin(), tli.end(), qt_notclosestLeaf);
     return tli;
 }
 
@@ -4283,10 +4280,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     int i = 0;
     if (itemHasChildren) {
-        if (item->d_ptr->needSortChildren) {
-            item->d_ptr->needSortChildren = 0;
-            qStableSort(item->d_ptr->children.begin(), item->d_ptr->children.end(), qt_notclosestLeaf);
-        }
+        item->d_ptr->ensureSortedChildren();
 
         if (itemClipsChildrenToShape) {
             painter->save();

@@ -4310,6 +4310,7 @@ void QGraphicsItemPrivate::resolveDepth(int parentDepth)
 void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 {
     needSortChildren = 1;
+    child->d_ptr->siblingIndex = children.size();
     children.append(child);
 }
 
@@ -4319,6 +4320,10 @@ void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 {
     children.removeOne(child);
+    // NB! Do not use children.removeAt(child->d_ptr->siblingIndex) because
+    // the child is not guaranteed to be at the index after the list is sorted.
+    // (see ensureSortedChildren()).
+    child->d_ptr->siblingIndex = -1;
 }
 
 /*!

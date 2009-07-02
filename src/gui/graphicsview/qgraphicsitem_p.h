@@ -126,6 +126,7 @@ public:
         parent(0),
         transformData(0),
         index(-1),
+        siblingIndex(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -386,6 +387,7 @@ public:
     }
 
     inline QTransform transformToParent() const;
+    inline void ensureSortedChildren();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -401,6 +403,7 @@ public:
     TransformData *transformData;
     QTransform sceneTransform;
     int index;
+    int siblingIndex;
     int depth;
 
     inline QGestureExtraData* extraGestures() const
@@ -517,6 +520,12 @@ struct QGraphicsItemPrivate::TransformData {
     }
 };
 
+/*!
+    \internal
+*/
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{ return qt_closestLeaf(item2, item1); }
+
 /*
    return the full transform of the item to the parent.  This include the position and all the transform data
 */
@@ -525,6 +534,14 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
     QTransform matrix;
     combineTransformToParent(&matrix);
     return matrix;
+}
+
+inline void QGraphicsItemPrivate::ensureSortedChildren()
+{
+    if (needSortChildren) {
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
+        needSortChildren = 0;
+    }
 }
 
 QT_END_NAMESPACE
