@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qmlcompiler_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include "qmlparser_p.h"
 #include "private/qmlscriptparser_p.h"
 #include <qmlpropertyvaluesource.h>

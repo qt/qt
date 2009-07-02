@@ -45,7 +45,7 @@
 #include "qmlstate.h"
 #include "qmlstategroup.h"
 #include "qmlstateoperations.h"
-#include "qfxperf.h"
+#include "private/qfxperf_p.h"
 #include "qfxlayouts.h"
 #include "qfxlayouts_p.h"
 

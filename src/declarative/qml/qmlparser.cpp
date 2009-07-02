@@ -48,7 +48,7 @@
 #include <QRectF>
 #include <private/qmlvme_p.h>
 #include <qmlbindablevalue.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <qml.h>
 #include "private/qmlcomponent_p.h"
 #include <qmlcomponent.h>

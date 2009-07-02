@@ -21,9 +21,9 @@ SOURCES += \
 
 HEADERS += \
            util/qfxview.h \
-           util/qfxperf.h \
+           util/qfxperf_p.h \
            util/qfxglobal.h \
-           util/qperformancelog.h \
+           util/qperformancelog_p.h \
            util/qmlconnection.h \
            util/qmlpackage.h \
            util/qmlscript.h \

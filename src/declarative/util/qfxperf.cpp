@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qfxperf.h"
+#include "private/qfxperf_p.h"
 
 QT_BEGIN_NAMESPACE
 

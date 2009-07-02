@@ -42,7 +42,7 @@
 #include "qmlmetaproperty.h"
 #include "qmlmetaproperty_p.h"
 #include <qml.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QStringList>
 #include <qmlbindablevalue.h>
 #include <qmlcontext.h>

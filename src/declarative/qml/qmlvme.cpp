@@ -40,14 +40,13 @@
 ****************************************************************************/
 
 #include "qmlvme_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include "private/qmldeclarativedata_p.h"
 #include <qml.h>
 #include <private/qmlcustomparser_p.h>
-#include <qperformancelog.h>
 #include <QStack>
 #include <QWidget>
 #include <private/qmlcompiledcomponent_p.h>

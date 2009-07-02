@@ -54,8 +54,8 @@
 #include "qmlbindablevalue.h"
 #include "qml.h"
 #include "qfxitem.h"
-#include "qperformancelog.h"
-#include "qfxperf.h"
+#include "private/qperformancelog_p.h"
+#include "private/qfxperf_p.h"
 
 #include "qfxview.h"
 #include <QtDeclarative/qmlengine.h>
