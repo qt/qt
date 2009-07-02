@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     QScriptEngine engine;
 //! [0a]
 
-#ifndef QT_NO_SCRIPTTOOLS
+#if 0 && defined(QT_NO_SCRIPTTOOLS)
     QScriptEngineDebugger debugger;
     debugger.attachTo(&engine);
     QMainWindow *debugWindow = debugger.standardWindow();
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     QScriptValue calc = ctor.construct(QScriptValueList() << scriptUi);
 //! [2]
 
-#ifndef QT_NO_SCRIPTTOOLS
+#if 0 && defined(QT_NO_SCRIPTTOOLS)
     QLineEdit *display = qFindChild<QLineEdit*>(ui, "display");
     QObject::connect(display, SIGNAL(returnPressed()),
                      debugWindow, SLOT(show()));
