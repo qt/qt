@@ -1254,7 +1254,15 @@ void QObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& prop
         if (prop.isScriptable()) {
             if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
                 || (index >= meta->propertyOffset())) {
-                QVariant v = eng->jscValueToVariant(value, prop.userType());
+                QVariant v;
+                if (prop.isEnumType() && value.isString()
+                    && !eng->hasDemarshalFunction(prop.userType())) {
+                    // give QMetaProperty::write() a chance to convert from
+                    // string to enum value
+                    v = qtStringFromJSCUString(value.toString(exec));
+                } else {
+                    v = eng->jscValueToVariant(value, prop.userType());
+                }
                 (void)prop.write(qobject, v);
                 return;
             }

@@ -807,11 +807,9 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     m_engine->evaluate("myObject.enumProperty = 2");
     QCOMPARE(m_myObject->enumProperty(), MyQObject::BazPolicy);
     m_engine->evaluate("myObject.enumProperty = 'BarPolicy'");
-    QEXPECT_FAIL("", "Doesn't work yet", Continue);
     QCOMPARE(m_myObject->enumProperty(), MyQObject::BarPolicy);
     m_engine->evaluate("myObject.enumProperty = 'ScoobyDoo'");
     // ### ouch! Shouldn't QMetaProperty::write() rather not change the value...?
-    QEXPECT_FAIL("", "Doesn't work yet", Continue);
     QCOMPARE(m_myObject->enumProperty(), (MyQObject::Policy)-1);
     // enum property with custom conversion
     qScriptRegisterMetaType<MyQObject::Policy>(m_engine, policyToScriptValue, policyFromScriptValue);
