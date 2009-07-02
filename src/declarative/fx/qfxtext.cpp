@@ -701,6 +701,21 @@ void QFxTextPrivate::checkImgCache()
     imgDirty = false;
 }
 
+bool QFxText::smoothTransform() const
+{
+    Q_D(const QFxText);
+    return d->smooth;
+}
+
+void QFxText::setSmoothTransform(bool s)
+{
+    Q_D(QFxText);
+    if (d->smooth == s)
+        return;
+    d->smooth = s;
+    update();
+}
+
 #if defined(QFX_RENDER_QPAINTER)
 void QFxText::paintContents(QPainter &p)
 {
@@ -708,6 +723,11 @@ void QFxText::paintContents(QPainter &p)
     d->checkImgCache();
     if (d->imgCache.isNull())
         return;
+
+    bool oldAA = p.testRenderHint(QPainter::Antialiasing);
+    bool oldSmooth = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    if (d->smooth)
+        p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
     int w = width();
     int h = height();
@@ -749,6 +769,11 @@ void QFxText::paintContents(QPainter &p)
     p.drawPixmap(x, y, d->imgCache);
     if (needClip)
         p.restore();
+
+    if (d->smooth) {
+        p.setRenderHint(QPainter::Antialiasing, oldAA);
+        p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+    }
 }
 
 #elif defined(QFX_RENDER_OPENGL2)
