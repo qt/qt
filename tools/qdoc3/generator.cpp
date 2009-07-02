@@ -276,7 +276,6 @@ bool Generator::generateText(const Text& text,
 }
 
 #ifdef QDOC_QML
-<<<<<<< HEAD:tools/qdoc3/generator.cpp
 /*!
   Extract sections of markup text surrounded by \e qmltext
   and \e endqmltext and output them.

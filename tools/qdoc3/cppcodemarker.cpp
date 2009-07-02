@@ -622,12 +622,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 		                insert(staticPrivateMembers,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Function) {
-<<<<<<< HEAD:tools/qdoc3/cppcodemarker.cpp
-		            insert(privateFunctions,*c,style,status);
-=======
                             if (!insertReimpFunc(privateFunctions,*c,status))
                                 insert(privateFunctions, *c, style, status);
->>>>>>> 6c9647f6673fd5738001c5bbe416b116442fbc41:tools/qdoc3/cppcodemarker.cpp
 		        }
                         else {
 		            insert(privateTypes,*c,style,status);
