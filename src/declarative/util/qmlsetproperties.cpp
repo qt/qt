@@ -308,17 +308,12 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
     for (int ii = 0; ii < d->properties.count(); ++ii) {
 
         QByteArray property = d->properties.at(ii).first;
-        QmlMetaProperty prop = d->property(property);
 
-        if (prop.isValid()) {
-            Action a;
+        Action a(d->object, QString::fromLatin1(property), 
+                 d->properties.at(ii).second);
+
+        if (a.property.isValid()) {
             a.restore = restoreEntryValues();
-            a.property = prop;
-            a.fromValue = a.property.read();
-            a.toValue = d->properties.at(ii).second;
-            a.specifiedObject = d->object;
-            a.specifiedProperty = QString::fromLatin1(property);
-
             list << a;
         }
     }

@@ -109,6 +109,7 @@ public:
       AST::UiProgram *UiProgram;
       AST::UiImportList *UiImportList;
       AST::UiImport *UiImport;
+      AST::UiParameterList *UiParameterList;
       AST::UiPublicMember *UiPublicMember;
       AST::UiObjectDefinition *UiObjectDefinition;
       AST::UiObjectInitializer *UiObjectInitializer;
@@ -197,9 +198,9 @@ protected:
 
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 54
+#define J_SCRIPT_REGEXPLITERAL_RULE1 59
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 55
+#define J_SCRIPT_REGEXPLITERAL_RULE2 60
 
 QT_END_NAMESPACE
 

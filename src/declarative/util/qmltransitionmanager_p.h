@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBASICSCRIPT_P_H
-#define QMLBASICSCRIPT_P_H
+#ifndef QMLTRANSITIONMANAGER_P_H
+#define QMLTRANSITIONMANAGER_P_H
 
 //
 //  W A R N I N G
@@ -53,99 +53,33 @@
 // We mean it.
 //
 
-#include <QtCore/QList>
-#include <QtCore/QByteArray>
-#include <QtCore/QVariant>
-#include <private/qmlparser_p.h>
-
-QT_BEGIN_HEADER
+#include <QtDeclarative/qmlstateoperations.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlRefCount;
-class QmlContext;
-class QmlBasicScriptPrivate;
-class QmlBasicScriptNodeCache;
-class QmlBasicScript
+class QmlStatePrivate;
+class QmlTransitionManagerPrivate;
+class QmlTransitionManager 
 {
 public:
-    QmlBasicScript();
-    QmlBasicScript(const char *, QmlRefCount * = 0);
-    ~QmlBasicScript();
+    QmlTransitionManager();
+    ~QmlTransitionManager();
 
-    // Always 4-byte aligned
-    const char *compileData() const;
-    unsigned int compileDataSize() const;
+    void transition(const QList<Action> &, QmlTransition *transition);
 
-    QByteArray expression() const;
-
-    struct Expression
-    {
-        QmlParser::Object *component;
-        QmlParser::Object *context;
-        QmlParser::Property *property;
-        QmlParser::Variant expression;
-        QHash<QString, QPair<QmlParser::Object *, int> > ids;
-    };
-
-    bool compile(const Expression &);
-    bool isValid() const;
-
-    void clear();
-
-    void dump();
-    void *newScriptState();
-    void deleteScriptState(void *);
-
-    enum CacheState { NoChange, Incremental, Reset };
-    QVariant run(QmlContext *, void *, CacheState *);
-
-    // Optimization opportunities
-    bool isSingleLoad() const;
-    QByteArray singleLoadTarget() const;
+    void cancel();
 
 private:
-    int flags;
-    QmlBasicScriptPrivate *d;
-    QmlRefCount *rc;
+    Q_DISABLE_COPY(QmlTransitionManager);
+    QmlTransitionManagerPrivate *d;
 
-    void clearCache(void *);
-    void guard(QmlBasicScriptNodeCache &);
-    bool valid(QmlBasicScriptNodeCache &, QObject *);
+    void complete();
+    void setState(QmlState *);
+
+    friend class QmlState;
+    friend class QmlTransitionPrivate;
 };
-
-class QmlContextPrivate;
-class QDebug;
-class QmlBasicScriptNodeCache
-{
-public:
-    QObject *object;
-    const QMetaObject *metaObject;
-    enum { Invalid,
-           Core, 
-           Attached, 
-           SignalProperty, 
-           Variant
-    } type;
-    union {
-        int core;
-        QObject *attached;
-        QmlContextPrivate *context;
-    };
-    int coreType;
-    int contextIndex;
-
-    bool isValid() const { return type != Invalid; }
-    bool isCore() const { return type == Core; }
-    bool isVariant() const { return type == Variant; }
-    void clear();
-    QVariant value(const char *) const;
-};
-
-QDebug operator<<(QDebug, const QmlBasicScriptNodeCache &);
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLBASICSCRIPT_P_H
+#endif // QMLTRANSITIONMANAGER_P_H
