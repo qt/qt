@@ -63,7 +63,7 @@
 #include <QtDeclarative/qmlanimation.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmltimelinevalueproxy.h>
+#include <private/qmltimeline_p.h>
 
 QT_BEGIN_NAMESPACE
 

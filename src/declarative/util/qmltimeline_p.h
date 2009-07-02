@@ -42,15 +42,22 @@
 #ifndef QMLTIMELINE_H
 #define QMLTIMELINE_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/QObject>
 #include <QtCore/QAbstractAnimation>
 #include <QtDeclarative/qfxglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
 
 class QEasingCurve;
 class QmlTimeLineValue;
@@ -183,8 +190,35 @@ private:
     QmlTimeLineObject *d2;
 };
 
-QT_END_NAMESPACE
+template<class T>
+class QmlTimeLineValueProxy : public QmlTimeLineValue
+{
+public:
+    QmlTimeLineValueProxy(T *cls, void (T::*func)(qreal), qreal v = 0.)
+    : QmlTimeLineValue(v), _class(cls), _setFunctionReal(func), _setFunctionInt(0)
+    {
+        Q_ASSERT(_class);
+    }
 
-QT_END_HEADER
+    QmlTimeLineValueProxy(T *cls, void (T::*func)(int), qreal v = 0.)
+    : QmlTimeLineValue(v), _class(cls), _setFunctionReal(0), _setFunctionInt(func)
+    {
+        Q_ASSERT(_class);
+    }
+
+    virtual void setValue(qreal v)
+    {
+        QmlTimeLineValue::setValue(v);
+        if (_setFunctionReal) (_class->*_setFunctionReal)(v);
+        else if (_setFunctionInt) (_class->*_setFunctionInt)((int)v);
+    }
+
+private:
+    T *_class;
+    void (T::*_setFunctionReal)(qreal);
+    void (T::*_setFunctionInt)(int);
+};
+
+QT_END_NAMESPACE
 
 #endif

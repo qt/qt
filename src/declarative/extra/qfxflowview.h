@@ -42,7 +42,7 @@
 #ifndef QFXFLOWVIEW_H
 #define QFXFLOWVIEW_H
 
-#include <QtDeclarative/QmlTimeLine>
+#include <private/qmltimeline_p.h>
 #include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER

@@ -58,7 +58,6 @@
 #include "qfxitem_p.h"
 #include "qfxvisualitemmodel.h"
 #include "qml.h"
-#include "qmltimelinevalueproxy.h"
 #include "private/qmlanimation_p.h"
 
 QT_BEGIN_NAMESPACE
