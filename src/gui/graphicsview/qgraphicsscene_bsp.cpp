@@ -154,17 +154,6 @@ QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect) const
     return tmp;
 }
 
-QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QPointF &pos) const
-{
-    QList<QGraphicsItem *> tmp;
-    findVisitor->foundItems = &tmp;
-    climbTree(findVisitor, pos);
-    // Reset discovery bits.
-    for (int i = 0; i < tmp.size(); ++i)
-        tmp.at(i)->d_ptr->itemDiscovered = 0;
-    return tmp;
-}
-
 int QGraphicsSceneBspTree::leafCount() const
 {
     return leafCnt;
@@ -238,36 +227,6 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
     } else {
         node->type = Node::Leaf;
         node->leafIndex = leafCnt++;
-    }
-}
-
-void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index) const
-{
-    if (nodes.isEmpty())
-        return;
-
-    const Node &node = nodes.at(index);
-    const int childIndex = firstChildIndex(index);
-
-    switch (node.type) {
-    case Node::Leaf: {
-        visitor->visit(const_cast<QList<QGraphicsItem*>*>(&leaves[node.leafIndex]));
-        break;
-    }
-    case Node::Vertical:
-        if (pos.x() < node.offset) {
-            climbTree(visitor, pos, childIndex);
-        } else {
-            climbTree(visitor, pos, childIndex + 1);
-        }
-        break;
-    case Node::Horizontal:
-        if (pos.y() < node.offset) {
-            climbTree(visitor, pos, childIndex);
-        } else {
-            climbTree(visitor, pos, childIndex + 1);
-        }
-        break;
     }
 }
 

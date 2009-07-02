@@ -93,7 +93,6 @@ public:
     void removeItems(const QSet<QGraphicsItem *> &items);
 
     QList<QGraphicsItem *> items(const QRectF &rect) const;
-    QList<QGraphicsItem *> items(const QPointF &pos) const;
     int leafCount() const;
 
     inline int firstChildIndex(int index) const
@@ -106,11 +105,9 @@ public:
 
 private:
     void initialize(const QRectF &rect, int depth, int index);
-    void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index = 0) const;
     void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index = 0) const;
 
     void findItems(QList<QGraphicsItem *> *foundItems, const QRectF &rect, int index);
-    void findItems(QList<QGraphicsItem *> *foundItems, const QPointF &pos, int index);
     QRectF rectForIndex(int index) const;
 
     QVector<Node> nodes;
