@@ -66,17 +66,18 @@ struct QObjectConnection
 
     void mark()
     {
-        Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-/*        if (senderWrapper && !senderWrapper->isMarked()) {
+        if (senderWrapper && !senderWrapper.marked()) {
             // see if the sender should be marked or not
-            if ((inst->ownership == QScriptEngine::ScriptOwnership)
-                || ((inst->ownership == QScriptEngine::AutoOwnership)
-                    && inst->value && !inst->value->parent())) {
-                senderWrapper.invalidate();
+            Q_ASSERT(JSC::asObject(senderWrapper)->inherits(&QObjectWrapperObject::info));
+            QObjectWrapperObject *inst = static_cast<QObjectWrapperObject*>(JSC::asObject(senderWrapper));
+            if ((inst->ownership() == QScriptEngine::ScriptOwnership)
+                || ((inst->ownership() == QScriptEngine::AutoOwnership)
+                    && inst->value() && !inst->value()->parent())) {
+                senderWrapper = JSC::JSValue();
             } else {
-                senderWrapper.mark(generation);
+                senderWrapper.mark();
             }
-            }*/
+        }
         if (receiver)
             receiver.mark();
         if (slot)
