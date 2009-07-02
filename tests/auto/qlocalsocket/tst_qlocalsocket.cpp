@@ -80,6 +80,8 @@ private slots:
     void sendData_data();
     void sendData();
 
+    void readBufferOverflow();
+
     void fullPath();
 
     void hitMaximumConnections_data();
@@ -529,6 +531,37 @@ void tst_QLocalSocket::sendData()
 
     QCOMPARE(server.hits.count(), (canListen ? 1 : 0));
     QCOMPARE(spy.count(), (canListen ? 1 : 0));
+}
+
+void tst_QLocalSocket::readBufferOverflow()
+{
+    const int readBufferSize = 128;
+    const int dataBufferSize = readBufferSize * 2;
+    const QString serverName = QLatin1String("myPreciousTestServer");
+    LocalServer server;
+    server.listen(serverName);
+    QVERIFY(server.isListening());
+
+    LocalSocket client;
+    client.setReadBufferSize(readBufferSize);
+    client.connectToServer(serverName);
+
+    bool timedOut = true;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+    QVERIFY(!timedOut);
+
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+    QVERIFY(server.hasPendingConnections());
+
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    char* buffer = (char*)qMalloc(dataBufferSize);
+    memset(buffer, 0, dataBufferSize);
+    serverSocket->write(buffer, dataBufferSize);
+    serverSocket->flush();
+    qFree(buffer);
+
+    QVERIFY(client.waitForReadyRead());
+    QCOMPARE(client.readAll().size(), dataBufferSize);
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected
