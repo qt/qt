@@ -194,6 +194,7 @@ public:
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
     void installSceneEventFilter(QGraphicsItem *watched, QGraphicsItem *filter);
     void removeSceneEventFilter(QGraphicsItem *watched, QGraphicsItem *filter);
+    bool filterDescendantEvent(QGraphicsItem *item, QEvent *event);
     bool filterEvent(QGraphicsItem *item, QEvent *event);
     bool sendEvent(QGraphicsItem *item, QEvent *event);
 
