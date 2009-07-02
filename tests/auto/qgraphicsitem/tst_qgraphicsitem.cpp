@@ -182,6 +182,8 @@ private slots:
     void handlesChildEvents();
     void handlesChildEvents2();
     void handlesChildEvents3();
+    void filtersChildEvents();
+    void filtersChildEvents2();
     void ensureVisible();
     void cursor();
     //void textControlGetterSetter();
@@ -3404,6 +3406,127 @@ void tst_QGraphicsItem::handlesChildEvents3()
     QCOMPARE(leaf->counter, 0);
     QCOMPARE(group1->counter, 0);
     QCOMPARE(group2->counter, 3);
+}
+
+
+class ChildEventFilterTester : public ChildEventTester
+{
+public:
+    ChildEventFilterTester(const QRectF &rect, QGraphicsItem *parent = 0)
+        : ChildEventTester(rect, parent), filter(QEvent::None)
+    { }
+
+    QEvent::Type filter;
+
+protected:
+    bool sceneEventFilter(QGraphicsItem *item, QEvent *event)
+    {
+        Q_UNUSED(item);
+        if (event->type() == filter) {
+            ++counter;
+            return true;
+        }
+        return false;
+    }
+};
+
+void tst_QGraphicsItem::filtersChildEvents()
+{
+    QGraphicsScene scene;
+    ChildEventFilterTester *root = new ChildEventFilterTester(QRectF(0, 0, 10, 10));
+    ChildEventFilterTester *filter = new ChildEventFilterTester(QRectF(10, 10, 10, 10), root);
+    ChildEventTester *child = new ChildEventTester(QRectF(20, 20, 10, 10), filter);
+
+    // setup filter
+    filter->setFiltersChildEvents(true);
+    filter->filter = QEvent::GraphicsSceneMousePress;
+
+    scene.addItem(root);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWait(1000);
+
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+
+    // send event to child
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setScenePos(QPointF(25, 25));//child->mapToScene(5, 5));
+    pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setScenePos(QPointF(25, 25));//child->mapToScene(5, 5));
+    releaseEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
+    QApplication::sendEvent(&scene, &pressEvent);
+    QApplication::sendEvent(&scene, &releaseEvent);
+
+    QCOMPARE(child->counter, 1);  // mouse release is not filtered
+    QCOMPARE(filter->counter, 1); // mouse press is filtered
+    QCOMPARE(root->counter, 0);
+
+    // add another filter
+    root->setFiltersChildEvents(true);
+    root->filter = QEvent::GraphicsSceneMouseRelease;
+
+    // send event to child
+    QApplication::sendEvent(&scene, &pressEvent);
+    QApplication::sendEvent(&scene, &releaseEvent);
+
+    QCOMPARE(child->counter, 1);
+    QCOMPARE(filter->counter, 2); // mouse press is filtered
+    QCOMPARE(root->counter, 1); // mouse release is filtered
+
+    // reparent to another sub-graph
+    ChildEventTester *parent = new ChildEventTester(QRectF(10, 10, 10, 10), root);
+    child->setParentItem(parent);
+
+    // send event to child
+    QApplication::sendEvent(&scene, &pressEvent);
+    QApplication::sendEvent(&scene, &releaseEvent);
+
+    QCOMPARE(child->counter, 2); // mouse press is _not_ filtered
+    QCOMPARE(parent->counter, 0);
+    QCOMPARE(filter->counter, 2);
+    QCOMPARE(root->counter, 2); // mouse release is filtered
+}
+
+void tst_QGraphicsItem::filtersChildEvents2()
+{
+    ChildEventFilterTester *root = new ChildEventFilterTester(QRectF(0, 0, 10, 10));
+    root->setFiltersChildEvents(true);
+    root->filter = QEvent::GraphicsSceneMousePress;
+    QVERIFY(root->filtersChildEvents());
+
+    ChildEventTester *child = new ChildEventTester(QRectF(0, 0, 10, 10), root);
+    QVERIFY(!child->filtersChildEvents());
+
+    ChildEventTester *child2 = new ChildEventTester(QRectF(0, 0, 10, 10));
+    ChildEventTester *child3 = new ChildEventTester(QRectF(0, 0, 10, 10), child2);
+    ChildEventTester *child4 = new ChildEventTester(QRectF(0, 0, 10, 10), child3);
+
+    child2->setParentItem(root);
+    QVERIFY(!child2->filtersChildEvents());
+    QVERIFY(!child3->filtersChildEvents());
+    QVERIFY(!child4->filtersChildEvents());
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    QMouseEvent event(QEvent::MouseButtonPress, view.mapFromScene(5, 5),
+                      view.viewport()->mapToGlobal(view.mapFromScene(5, 5)), Qt::LeftButton, 0, 0);
+    QApplication::sendEvent(view.viewport(), &event);
+
+    QCOMPARE(child->counter, 0);
+    QCOMPARE(child2->counter, 0);
+    QCOMPARE(child3->counter, 0);
+    QCOMPARE(child4->counter, 0);
+    QCOMPARE(root->counter, 1);
 }
 
 class CustomItem : public QGraphicsItem
