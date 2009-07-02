@@ -1892,8 +1892,11 @@ void QGraphicsSceneGestureEvent::acceptAll()
     setAccepted(true);
 }
 
-/*!
+/*! \fn void QGraphicsSceneGestureEvent::accept()
+  Calls QEvent::accept().
+*/
 
+/*!
   Sets the accept flag of the gesture specified by \a type.  This is
   equivalent to calling \l{QGestureEvent::gesture()} {gesture(type)}->
   \l{QGesture::accept()}{accept()}

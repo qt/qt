@@ -3628,6 +3628,10 @@ QSet<QString> QGestureEvent::cancelledGestures() const
     return m_cancelledGestures;
 }
 
+/*! \fn void QGestureEvent::accept()
+  Calls QEvent::accept().
+*/
+
 /*!
     Sets the accept flag of the all gestures inside the event object,
     the equivalent of calling \l{QEvent::accept()}{accept()} or

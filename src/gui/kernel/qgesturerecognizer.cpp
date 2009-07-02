@@ -97,8 +97,8 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
     This is a pure virtual function that needs to be implemented in
     subclasses.
 
-    Parses input \a event and returns the result, which specifies if
-    the event sequence is a gesture or not.
+    Parses input \a event and returns the result, which specifies 
+    whether the event sequence is a gesture or not.
 */
 
 /*! \fn QGesture* QGestureRecognizer::getGesture()
@@ -123,7 +123,8 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
 
     The gesture recognizer might emit the stateChanged() signal when
     the gesture state changes asynchronously, i.e. without any event
-    being filtered through filterEvent().
+    being filtered through filterEvent(). \a result specifies whether
+    the event sequence is a gesture or not.
 */
 
 QGestureRecognizerPrivate::QGestureRecognizerPrivate()
