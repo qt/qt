@@ -859,6 +859,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         sprite = component.createObject();
         if(sprite == 0){
             // Error Handling
+            print(component.errorsString());
         }else{
             sprite.parent = page;
             sprite.x = 200;
@@ -866,8 +867,8 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         }
     \endcode
 
-    If you want to just create an arbitrary string of QML, instead of an
-    existing qml component or qml file, consider the evalQML() function.
+    If you want to just create an arbitrary string of QML, instead of
+    loading a qml file, consider the evalQML() function.
     \sa QmlComponent::createObject(), QmlEngine::createQMLObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
@@ -878,6 +879,8 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     if(ctxt->argumentCount() != 1 || !activeEngine){
         c = new QmlComponent(activeEngine);
     }else{
+        //### This url needs to be resolved in the context that the function
+        //### is called - it can't be done here.
         QUrl url = QUrl(ctxt->argument(0).toString());
         c = new QmlComponent(activeEngine, url, activeEngine);
     }
