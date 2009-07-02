@@ -56,7 +56,6 @@ QGLCustomShader::QGLCustomShader(QGLShader *shader)
 
 QGLCustomShader::~QGLCustomShader()
 {
-    delete m_shader;
 }
 
 void QGLCustomShader::updateUniforms(QGLShaderProgram *)

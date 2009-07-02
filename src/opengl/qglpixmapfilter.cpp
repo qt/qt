@@ -57,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
+static QCache<QByteArray, QGLShader> shaderCache;
 
 void QGLPixmapFilterBase::bindTexture(const QPixmap &src) const
 {
@@ -321,9 +322,13 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     QGLCustomShader *customShader = const_cast<QGLPixmapBlurFilter *>(this);
 
     if (!shader()) {
-        QGLShader *blurShader = new QGLShader(QGLShader::FragmentShader);
-        blurShader->compile(generateBlurShader(radius(), quality() == Qt::SmoothTransformation));
-
+        const QByteArray blurSource = generateBlurShader(radius(), quality() == Qt::SmoothTransformation);
+        QGLShader *blurShader = shaderCache.object(blurSource);
+        if (!blurShader) {
+            blurShader = new QGLShader(QGLShader::FragmentShader);
+            blurShader->compile(blurSource);
+            shaderCache.insert(blurSource, blurShader);
+        }
         customShader->setShader(blurShader);
     }
 
@@ -404,6 +409,7 @@ QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur
     Q_ASSERT(radius >= 1);
 
     QByteArray source;
+    source.reserve(1000);
 
     source.append("uniform highp vec2      invTextureSize;\n");
 
