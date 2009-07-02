@@ -293,6 +293,7 @@ struct PropertyFlags {
                 && lowerCaseDiff == o.lowerCaseDiff
                 && upperCaseDiff == o.upperCaseDiff
                 && titleCaseDiff == o.titleCaseDiff
+                && caseFoldDiff == o.caseFoldDiff
                 && lowerCaseSpecial == o.lowerCaseSpecial
                 && upperCaseSpecial == o.upperCaseSpecial
                 && titleCaseSpecial == o.titleCaseSpecial

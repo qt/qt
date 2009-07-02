@@ -1111,7 +1111,7 @@ QVariant QODBCResult::data(int field)
             d->fieldCache[i] = qGetBinaryData(d->hStmt, i);
             break;
         case QVariant::String:
-            d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), true);
+            d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), d->unicode);
             break;
         case QVariant::Double:
             switch(numericalPrecisionPolicy()) {
