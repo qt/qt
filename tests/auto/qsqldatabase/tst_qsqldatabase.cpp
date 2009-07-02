@@ -1240,7 +1240,7 @@ void tst_QSqlDatabase::recordSQLServer()
         FieldDef("varchar(20)", QVariant::String, QString("Blah1")),
         FieldDef("bigint", QVariant::LongLong, 12345),
         FieldDef("int", QVariant::Int, 123456),
-        FieldDef("tinyint", QVariant::Int, 255),
+        FieldDef("tinyint", QVariant::UInt, 255),
 #ifdef QT3_SUPPORT
         FieldDef("image", QVariant::ByteArray, Q3CString("Blah1")),
 #endif
@@ -1355,11 +1355,13 @@ void tst_QSqlDatabase::bigIntField()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    QString drvName = db.driverName();
 
     QSqlQuery q(db);
     q.setForwardOnly(true);
+    if (drvName.startsWith("QOCI"))
+        q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
 
-    QString drvName = db.driverName();
     if (drvName.startsWith("QMYSQL")) {
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit bigint, t_u64bit bigint unsigned)"));
     } else if (drvName.startsWith("QPSQL")
@@ -1368,6 +1370,8 @@ void tst_QSqlDatabase::bigIntField()
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + "(id int, t_s64bit bigint, t_u64bit bigint)"));
     } else if (drvName.startsWith("QOCI")) {
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit int, t_u64bit int)"));
+    //} else if (drvName.startsWith("QIBASE")) {
+    //    QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit int64, t_u64bit int64)"));
     } else {
         QSKIP("no 64 bit integer support", SkipAll);
     }
@@ -1397,10 +1401,15 @@ void tst_QSqlDatabase::bigIntField()
     }
     QVERIFY(q.exec("select * from " + qTableName("qtest_bigint") + " order by id"));
     QVERIFY(q.next());
+    QCOMPARE(q.value(1).toDouble(), (double)ll);
     QCOMPARE(q.value(1).toLongLong(), ll);
+    if(drvName.startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle driver lacks support for unsigned int64 types", Continue);
     QCOMPARE(q.value(2).toULongLong(), ull);
     QVERIFY(q.next());
     QCOMPARE(q.value(1).toLongLong(), -ll);
+    if(drvName.startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle driver lacks support for unsigned int64 types", Continue);
     QCOMPARE(q.value(2).toULongLong(), ull);
 }
 

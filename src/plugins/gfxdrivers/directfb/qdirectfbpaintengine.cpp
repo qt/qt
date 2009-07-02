@@ -244,9 +244,6 @@ public:
     inline void updateClip();
     void systemStateChanged();
 
-    void begin(QPaintDevice *device);
-    void end();
-
     static IDirectFBSurface *getSurface(const QImage &img, bool *release);
 
 #ifdef QT_DIRECTFB_IMAGECACHE
@@ -299,7 +296,34 @@ QDirectFBPaintEngine::~QDirectFBPaintEngine()
 bool QDirectFBPaintEngine::begin(QPaintDevice *device)
 {
     Q_D(QDirectFBPaintEngine);
-    d->begin(device);
+    d->lastLockedHeight = -1;
+    if (device->devType() == QInternal::CustomRaster) {
+        d->dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
+    } else if (device->devType() == QInternal::Pixmap) {
+        QPixmapData *data = static_cast<QPixmap*>(device)->pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
+        QDirectFBPixmapData *dfbPixmapData = static_cast<QDirectFBPixmapData*>(data);
+        d->dfbDevice = static_cast<QDirectFBPaintDevice*>(dfbPixmapData);
+    }
+
+    if (d->dfbDevice)
+        d->surface = d->dfbDevice->directFBSurface();
+
+    if (!d->surface) {
+        qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
+               device->devType());
+    }
+    d->lockedMemory = 0;
+
+    d->surface->GetSize(d->surface, &d->fbWidth, &d->fbHeight);
+
+    d->setTransform(QTransform());
+    d->antialiased = false;
+    d->setOpacity(255);
+    d->setCompositionMode(state()->compositionMode());
+    d->dirtyClip = true;
+    d->setPen(state()->pen);
+
     const bool status = QRasterPaintEngine::begin(device);
 
     // XXX: QRasterPaintEngine::begin() resets the capabilities
@@ -311,7 +335,13 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
 bool QDirectFBPaintEngine::end()
 {
     Q_D(QDirectFBPaintEngine);
-    d->end();
+    d->unlock();
+    d->dfbDevice = 0;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
+    d->surface->ReleaseSource(d->surface);
+#endif
+    d->surface->SetClip(d->surface, NULL);
+    d->surface = 0;
     return QRasterPaintEngine::end();
 }
 
@@ -871,48 +901,6 @@ void QDirectFBPaintEnginePrivate::setTransform(const QTransform &m)
     } else {
         scale = NoScale;
     }
-}
-
-void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
-{
-    lastLockedHeight = -1;
-    if (device->devType() == QInternal::CustomRaster)
-        dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
-    else if (device->devType() == QInternal::Pixmap) {
-        QPixmapData *data = static_cast<QPixmap*>(device)->pixmapData();
-        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
-        QDirectFBPixmapData* dfbPixmapData = static_cast<QDirectFBPixmapData*>(data);
-        dfbDevice = static_cast<QDirectFBPaintDevice*>(dfbPixmapData);
-    }
-
-    if (dfbDevice)
-        surface = dfbDevice->directFBSurface();
-
-    if (!surface) {
-        qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
-               device->devType());
-    }
-    lockedMemory = 0;
-
-    surface->GetSize(surface, &fbWidth, &fbHeight);
-
-    setTransform(QTransform());
-    antialiased = false;
-    setOpacity(255);
-    setCompositionMode(q->state()->compositionMode());
-    dirtyClip = true;
-    setPen(q->state()->pen);
-}
-
-void QDirectFBPaintEnginePrivate::end()
-{
-    lockedMemory = 0;
-    dfbDevice = 0;
-#if (Q_DIRECTFB_VERSION >= 0x010000)
-    surface->ReleaseSource(surface);
-#endif
-    surface->SetClip(surface, NULL);
-    surface = 0;
 }
 
 void QDirectFBPaintEnginePrivate::setPen(const QPen &p)

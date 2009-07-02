@@ -255,8 +255,10 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSi
     case SQL_SMALLINT:
     case SQL_INTEGER:
     case SQL_BIT:
-    case SQL_TINYINT:
         type = isSigned ? QVariant::Int : QVariant::UInt;
+        break;
+    case SQL_TINYINT:
+        type = QVariant::UInt;
         break;
     case SQL_BIGINT:
         type = isSigned ? QVariant::LongLong : QVariant::ULongLong;
