@@ -839,7 +839,27 @@ bool QSslSocketBackendPrivate::startHandshake()
     if (!errors.isEmpty()) {
         sslErrors = errors;
         emit q->sslErrors(errors);
-        if (doVerifyPeer && !ignoreSslErrors) {
+
+        bool doEmitSslError;
+        if (!ignoreErrorsList.empty()) {
+            // check whether the errors we got are all in the list of expected errors
+            // (applies only if the method QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
+            // was called)
+            doEmitSslError = false;
+            for (int a = 0; a < errors.count(); a++) {
+                if (!ignoreErrorsList.contains(errors.at(a))) {
+                    doEmitSslError = true;
+                    break;
+                }
+            }
+        } else {
+            // if QSslSocket::ignoreSslErrors(const QList<QSslError> &errors) was not called and
+            // we get an SSL error, emit a signal unless we ignored all errors (by calling
+            // QSslSocket::ignoreSslErrors() )
+            doEmitSslError = !ignoreAllSslErrors;
+        }
+        // check whether we need to emit an SSL handshake error
+        if (doVerifyPeer && doEmitSslError) {
             q->setErrorString(sslErrors.first().errorString());
             q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
             emit q->error(QAbstractSocket::SslHandshakeFailedError);

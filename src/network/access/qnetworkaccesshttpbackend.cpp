@@ -294,7 +294,7 @@ public:
 QNetworkAccessHttpBackend::QNetworkAccessHttpBackend()
     : QNetworkAccessBackend(), httpReply(0), http(0), uploadDevice(0)
 #ifndef QT_NO_OPENSSL
-    , pendingSslConfiguration(0), pendingIgnoreSslErrors(false)
+    , pendingSslConfiguration(0), pendingIgnoreAllSslErrors(false)
 #endif
 {
 }
@@ -521,8 +521,9 @@ void QNetworkAccessHttpBackend::postRequest()
 #ifndef QT_NO_OPENSSL
     if (pendingSslConfiguration)
         httpReply->setSslConfiguration(*pendingSslConfiguration);
-    if (pendingIgnoreSslErrors)
+    if (pendingIgnoreAllSslErrors)
         httpReply->ignoreSslErrors();
+    httpReply->ignoreSslErrors(pendingIgnoreSslErrorsList);
 #endif
 
     connect(httpReply, SIGNAL(readyRead()), SLOT(replyReadyRead()));
@@ -883,7 +884,18 @@ void QNetworkAccessHttpBackend::ignoreSslErrors()
     if (httpReply)
         httpReply->ignoreSslErrors();
     else
-        pendingIgnoreSslErrors = true;
+        pendingIgnoreAllSslErrors = true;
+}
+
+void QNetworkAccessHttpBackend::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    if (httpReply) {
+        httpReply->ignoreSslErrors(errors);
+    } else {
+        // the pending list is set if QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
+        // is called before QNetworkAccessManager::get() (or post(), etc.)
+        pendingIgnoreSslErrorsList = errors;
+    }
 }
 
 void QNetworkAccessHttpBackend::fetchSslConfiguration(QSslConfiguration &config) const

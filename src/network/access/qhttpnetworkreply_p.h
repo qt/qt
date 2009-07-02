@@ -131,6 +131,7 @@ public:
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors();
+    void ignoreSslErrors(const QList<QSslError> &errors);
 
 Q_SIGNALS:
     void sslErrors(const QList<QSslError> &errors);

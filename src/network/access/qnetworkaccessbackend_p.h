@@ -118,6 +118,7 @@ public:
     virtual void downstreamReadyWrite();
     virtual void copyFinished(QIODevice *);
     virtual void ignoreSslErrors();
+    virtual void ignoreSslErrors(const QList<QSslError> &errors);
 
     virtual void fetchSslConfiguration(QSslConfiguration &configuration) const;
     virtual void setSslConfiguration(const QSslConfiguration &configuration);

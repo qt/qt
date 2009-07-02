@@ -659,6 +659,12 @@ void QNetworkReplyImpl::ignoreSslErrors()
         d->backend->ignoreSslErrors();
 }
 
+void QNetworkReplyImpl::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
+{
+    Q_D(QNetworkReplyImpl);
+    if (d->backend)
+        d->backend->ignoreSslErrors(errors);
+}
 #endif  // QT_NO_OPENSSL
 
 /*!

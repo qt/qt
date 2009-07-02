@@ -89,6 +89,7 @@ public:
     Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
     Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
     virtual void ignoreSslErrors();
+    Q_INVOKABLE virtual void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
 #endif
 
     Q_DECLARE_PRIVATE(QNetworkReplyImpl)
