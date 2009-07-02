@@ -245,6 +245,10 @@ tst_Suite::tst_Suite()
     addTestExclusion("debug-*", "not applicable");
     addTestExclusion("mirror-*", "not applicable");
 
+    addTestExclusion("array-concat", "Hangs on JSC backend");
+    addTestExclusion("array-splice", "Hangs on JSC backend");
+    addTestExclusion("sparse-array-reverse", "Hangs on JSC backend");
+
     addTestExclusion("string-case", "V8-specific behavior? (Doesn't pass on SpiderMonkey either)");
 
 #ifdef Q_OS_WINCE
