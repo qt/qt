@@ -20,19 +20,16 @@
 
 #include "config.h"
 
-
 #if ENABLE(XPATH)
 
 #include "JSXPathNSResolver.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSCustomXPathNSResolver.h"
 #include "JSXPathNSResolver.h"
 #include "KURL.h"
 #include "PlatformString.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2008, 2009 Google, Inc.
+ * Copyright (C) 2009 Kenneth Rohde Christiansen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,6 +32,8 @@
 #import <math.h>
 
 #import "BitmapImage.h"
+#import "ChromiumBridge.h"
+#import "ColorMac.h"
 #import "CSSStyleSelector.h"
 #import "CSSValueKeywords.h"
 #import "Element.h"
@@ -124,10 +127,15 @@ IntRect NSRectToIntRect(const NSRect & rect)
     return IntRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
-RenderTheme* theme()
+PassRefPtr<RenderTheme> RenderThemeChromiumMac::create()
 {
-    static RenderThemeChromiumMac* macTheme = new RenderThemeChromiumMac;
-    return macTheme;
+    return adoptRef(new RenderThemeChromiumMac);
+}
+
+PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
+{
+    static RenderTheme* rt = RenderThemeChromiumMac::create().releaseRef();
+    return rt;
 }
 
 RenderThemeChromiumMac::RenderThemeChromiumMac()
@@ -162,6 +170,14 @@ Color RenderThemeChromiumMac::activeListBoxSelectionBackgroundColor() const
 {
     NSColor* color = [[NSColor alternateSelectedControlColor] colorUsingColorSpaceName:NSDeviceRGBColorSpace];
     return Color(static_cast<int>(255.0 * [color redComponent]), static_cast<int>(255.0 * [color greenComponent]), static_cast<int>(255.0 * [color blueComponent]));
+}
+
+Color RenderThemeChromiumMac::focusRingColor() const
+{
+    if (ChromiumBridge::layoutTestMode())
+        return oldAquaFocusRingColor();
+
+    return systemColor(CSSValueWebkitFocusRingColor);
 }
 
 static FontWeight toFontWeight(NSInteger appKitFontWeight)
@@ -415,6 +431,9 @@ Color RenderThemeChromiumMac::systemColor(int cssValueId) const
         break;
     case CSSValueThreedlightshadow:
         color = convertNSColorToColor([NSColor controlLightHighlightColor]);
+        break;
+    case CSSValueWebkitFocusRingColor:
+        color = convertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
         break;
     case CSSValueWindow:
         color = convertNSColorToColor([NSColor windowBackgroundColor]);

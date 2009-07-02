@@ -142,6 +142,8 @@ public:
     void ensureMask(QVGPaintEngine *engine, int width, int height);
     void modifyMask
         (QVGPaintEngine *engine, VGMaskOperation op, const QRegion& region);
+    void modifyMask
+        (QVGPaintEngine *engine, VGMaskOperation op, const QRect& rect);
 #endif
 
     VGint maxScissorRects;  // Maximum scissor rectangles for clipping.
@@ -1320,11 +1322,11 @@ QPainterState *QVGPaintEngine::createState(QPainterState *orig) const
     if (!orig) {
         return new QVGPainterState();
     } else {
-        QVGPaintEnginePrivate *d =
-            static_cast<QVGPaintEnginePrivate *>(d_ptr);
+        Q_D(const QVGPaintEngine);
+        QVGPaintEnginePrivate *d2 = const_cast<QVGPaintEnginePrivate*>(d);
         QVGPainterState *origState = static_cast<QVGPainterState *>(orig);
-        origState->savedDirty = d->dirty;
-        d->dirty = 0;
+        origState->savedDirty = d2->dirty;
+        d2->dirty = 0;
         return new QVGPainterState(*origState);
     }
 }
@@ -1611,12 +1613,105 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
 void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 {
-    clip(QRegion(rect), op);
+    Q_D(QVGPaintEngine);
+
+    d->dirty |= QPaintEngine::DirtyClipRegion;
+
+    // If we have a non-simple transform, then use path-based clipping.
+    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
+        QPaintEngineEx::clip(rect, op);
+        return;
+    }
+
+    switch (op) {
+        case Qt::NoClip:
+        {
+            d->maskValid = false;
+            d->maskIsSet = true;
+            d->maskRect = QRect();
+            vgSeti(VG_MASKING, VG_FALSE);
+        }
+        break;
+
+        case Qt::ReplaceClip:
+        {
+            QRect r = d->transform.mapRect(rect);
+            if (isDefaultClipRect(r)) {
+                // Replacing the clip with a full-window region is the
+                // same as turning off clipping.
+                if (d->maskValid)
+                    vgSeti(VG_MASKING, VG_FALSE);
+                d->maskValid = false;
+                d->maskIsSet = true;
+                d->maskRect = QRect();
+            } else {
+                // Special case: if the intersection of the system
+                // clip and "r" is a single rectangle, then use the
+                // scissor for clipping.  We try to avoid allocating a
+                // QRegion copy on the heap for the test if we can.
+                QRegion clip = d->systemClip; // Reference-counted, no alloc.
+                QRect clipRect;
+                if (clip.numRects() == 1) {
+                    clipRect = clip.boundingRect().intersected(r);
+                } else if (clip.isEmpty()) {
+                    clipRect = r;
+                } else {
+                    clip = clip.intersect(r);
+                    if (clip.numRects() != 1) {
+                        d->maskValid = false;
+                        d->maskIsSet = false;
+                        d->maskRect = QRect();
+                        d->modifyMask(this, VG_FILL_MASK, r);
+                        break;
+                    }
+                    clipRect = clip.boundingRect();
+                }
+                d->maskValid = false;
+                d->maskIsSet = false;
+                d->maskRect = clipRect;
+                vgSeti(VG_MASKING, VG_FALSE);
+                updateScissor();
+            }
+        }
+        break;
+
+        case Qt::IntersectClip:
+        {
+            QRect r = d->transform.mapRect(rect);
+            if (d->maskIsSet && isDefaultClipRect(r)) {
+                // Intersecting a full-window clip with a full-window
+                // region is the same as turning off clipping.
+                if (d->maskValid)
+                    vgSeti(VG_MASKING, VG_FALSE);
+                d->maskValid = false;
+                d->maskIsSet = true;
+                d->maskRect = QRect();
+            } else {
+                d->modifyMask(this, VG_INTERSECT_MASK, r);
+            }
+        }
+        break;
+
+        case Qt::UniteClip:
+        {
+            // If we already have a full-window clip, then uniting a
+            // region with it will do nothing.  Otherwise union.
+            if (!(d->maskIsSet))
+                d->modifyMask(this, VG_UNION_MASK, d->transform.mapRect(rect));
+        }
+        break;
+    }
 }
 
 void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 {
     Q_D(QVGPaintEngine);
+
+    // Use the QRect case if the region consists of a single rectangle.
+    if (region.numRects() == 1) {
+        clip(region.boundingRect(), op);
+        return;
+    }
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
@@ -1656,10 +1751,10 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     clip = r;
                 else
                     clip = clip.intersect(r);
-                if (r.numRects() == 1) {
+                if (clip.numRects() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
-                    d->maskRect = r.boundingRect();
+                    d->maskRect = clip.boundingRect();
                     vgSeti(VG_MASKING, VG_FALSE);
                     updateScissor();
                 } else {
@@ -1707,10 +1802,60 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     }
 }
 
+#if !defined(QVG_NO_RENDER_TO_MASK)
+
+// Copied from qpathclipper.cpp.
+static bool qt_vg_pathToRect(const QPainterPath &path, QRectF *rect)
+{
+    if (path.elementCount() != 5)
+        return false;
+
+    const bool mightBeRect = path.elementAt(0).isMoveTo()
+        && path.elementAt(1).isLineTo()
+        && path.elementAt(2).isLineTo()
+        && path.elementAt(3).isLineTo()
+        && path.elementAt(4).isLineTo();
+
+    if (!mightBeRect)
+        return false;
+
+    const qreal x1 = path.elementAt(0).x;
+    const qreal y1 = path.elementAt(0).y;
+
+    const qreal x2 = path.elementAt(1).x;
+    const qreal y2 = path.elementAt(2).y;
+
+    if (path.elementAt(1).y != y1)
+        return false;
+
+    if (path.elementAt(2).x != x2)
+        return false;
+
+    if (path.elementAt(3).x != x1 || path.elementAt(3).y != y2)
+        return false;
+
+    if (path.elementAt(4).x != x1 || path.elementAt(4).y != y1)
+        return false;
+
+    if (rect)
+        *rect = QRectF(QPointF(x1, y1), QPointF(x2, y2));
+
+    return true;
+}
+
+#endif
+
 void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 {
 #if !defined(QVG_NO_RENDER_TO_MASK)
     Q_D(QVGPaintEngine);
+
+    // If the path is a simple rectangle, then use clip(QRect) instead.
+    QRectF simpleRect;
+    if (qt_vg_pathToRect(path, &simpleRect)) {
+        clip(simpleRect.toRect(), op);
+        return;
+    }
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
@@ -1765,7 +1910,7 @@ void QVGPaintEnginePrivate::ensureMask
         maskRect = QRect();
     } else {
         vgMask(VG_INVALID_HANDLE, VG_CLEAR_MASK, 0, 0, width, height);
-        if (!maskRect.isNull()) {
+        if (maskRect.isValid()) {
             vgMask(VG_INVALID_HANDLE, VG_FILL_MASK,
                    maskRect.x(), height - maskRect.y() - maskRect.height(),
                    maskRect.width(), maskRect.height());
@@ -1790,6 +1935,27 @@ void QVGPaintEnginePrivate::modifyMask
         vgMask(VG_INVALID_HANDLE, op,
                rects[i].x(), height - rects[i].y() - rects[i].height(),
                rects[i].width(), rects[i].height());
+    }
+
+    vgSeti(VG_MASKING, VG_TRUE);
+    maskValid = true;
+    maskIsSet = false;
+}
+
+void QVGPaintEnginePrivate::modifyMask
+        (QVGPaintEngine *engine, VGMaskOperation op, const QRect& rect)
+{
+    QPaintDevice *pdev = engine->paintDevice();
+    int width = pdev->width();
+    int height = pdev->height();
+
+    if (!maskValid)
+        ensureMask(engine, width, height);
+
+    if (rect.isValid()) {
+        vgMask(VG_INVALID_HANDLE, op,
+               rect.x(), height - rect.y() - rect.height(),
+               rect.width(), rect.height());
     }
 
     vgSeti(VG_MASKING, VG_TRUE);
@@ -1888,6 +2054,16 @@ bool QVGPaintEngine::isDefaultClipRegion(const QRegion& region)
     int height = pdev->height();
 
     QRect rect = region.boundingRect();
+    return (rect.x() == 0 && rect.y() == 0 &&
+            rect.width() == width && rect.height() == height);
+}
+
+bool QVGPaintEngine::isDefaultClipRect(const QRect& rect)
+{
+    QPaintDevice *pdev = paintDevice();
+    int width = pdev->width();
+    int height = pdev->height();
+
     return (rect.x() == 0 && rect.y() == 0 &&
             rect.width() == width && rect.height() == height);
 }

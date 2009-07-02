@@ -48,7 +48,7 @@
 #include "glbasicshaders.h"
 #endif
 
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include "qfxevents_p.h"
 #include <QTextLayout>
 #include <QTextLine>

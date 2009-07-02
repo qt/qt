@@ -20,7 +20,8 @@ HEADERS = qtest_global.h \
     qtestxunitstreamer.h \
     qtestxmlstreamer.h \
     qtestlightxmlstreamer.h \
-    qtestfilelogger.h
+    qtestfilelogger.h \
+    qtesttouch.h
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \
     qtesttable.cpp \

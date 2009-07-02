@@ -20,12 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorkerContext.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -39,8 +36,8 @@
 #include "WorkerContext.h"
 #include "WorkerLocation.h"
 #include "WorkerNavigator.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -122,7 +119,7 @@ JSWorkerContext::JSWorkerContext(PassRefPtr<Structure> structure, PassRefPtr<Wor
 
 bool JSWorkerContext::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    if (customGetOwnPropertySlot(exec, propertyName, slot))
+    if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSWorkerContext, Base>(exec, getJSWorkerContextTable(exec), this, propertyName, slot);
 }

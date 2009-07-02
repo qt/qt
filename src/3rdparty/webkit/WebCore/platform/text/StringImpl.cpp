@@ -486,6 +486,11 @@ uint64_t StringImpl::toUInt64Strict(bool* ok, int base)
     return charactersToUInt64Strict(m_data, m_length, ok, base);
 }
 
+intptr_t StringImpl::toIntPtrStrict(bool* ok, int base)
+{
+    return charactersToIntPtrStrict(m_data, m_length, ok, base);
+}
+
 int StringImpl::toInt(bool* ok)
 {
     return charactersToInt(m_data, m_length, ok);
@@ -504,6 +509,11 @@ int64_t StringImpl::toInt64(bool* ok)
 uint64_t StringImpl::toUInt64(bool* ok)
 {
     return charactersToUInt64(m_data, m_length, ok);
+}
+
+intptr_t StringImpl::toIntPtr(bool* ok)
+{
+    return charactersToIntPtr(m_data, m_length, ok);
 }
 
 double StringImpl::toDouble(bool* ok)
@@ -1026,7 +1036,7 @@ PassRefPtr<StringImpl> StringImpl::create(const char* string)
 #if USE(JSC)
 PassRefPtr<StringImpl> StringImpl::create(const JSC::UString& str)
 {
-    SharedUChar* sharedBuffer = const_cast<JSC::UString*>(&str)->rep()->baseString()->sharedBuffer();
+    SharedUChar* sharedBuffer = const_cast<JSC::UString*>(&str)->rep()->sharedBuffer();
     if (sharedBuffer) {
         PassRefPtr<StringImpl> impl = adoptRef(new StringImpl(const_cast<UChar*>(str.data()), str.size(), AdoptBuffer()));
         sharedBuffer->ref();
@@ -1038,7 +1048,7 @@ PassRefPtr<StringImpl> StringImpl::create(const JSC::UString& str)
 
 JSC::UString StringImpl::ustring()
 {
-    SharedUChar* sharedBuffer = StringImpl::sharedBuffer();
+    SharedUChar* sharedBuffer = this->sharedBuffer();
     if (sharedBuffer)
         return JSC::UString::Rep::create(const_cast<UChar*>(m_data), m_length, sharedBuffer);
 
@@ -1053,7 +1063,8 @@ PassRefPtr<StringImpl> StringImpl::createWithTerminatingNullCharacter(const Stri
 
 PassRefPtr<StringImpl> StringImpl::copy()
 {
-    return create(m_data, m_length);
+    // Using the constructor directly to make sure that per-thread empty string instance isn't returned.
+    return adoptRef(new StringImpl(m_data, m_length));
 }
 
 StringImpl::SharedUChar* StringImpl::sharedBuffer()

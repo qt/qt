@@ -305,8 +305,7 @@ public:
         }
 
         if (context->state() != QScriptContext::ExceptionState) {
-            QTextStream qout(stdout, QIODevice::WriteOnly);
-            qout << result << endl;
+            qDebug(qPrintable(result));
             context->setReturnValue(eng->undefinedValue());
         }
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY

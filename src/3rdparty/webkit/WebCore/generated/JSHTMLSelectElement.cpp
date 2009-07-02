@@ -19,12 +19,8 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLSelectElement.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "ExceptionCode.h"
 #include "HTMLFormElement.h"
 #include "HTMLOptionsCollection.h"
@@ -35,10 +31,11 @@
 #include "JSNode.h"
 #include "KURL.h"
 #include "Node.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

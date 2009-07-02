@@ -63,7 +63,7 @@ class QmlRefCount;
 class QmlVMEMetaObject : public QAbstractDynamicMetaObject
 {
 public:
-    QmlVMEMetaObject(QObject *, const QMetaObject *, QList<QString> *, int slotData, QmlRefCount * = 0);
+    QmlVMEMetaObject(QObject *, const QMetaObject *, QList<QString> *, int slotData, const QByteArray &aliasData, QmlRefCount * = 0);
     ~QmlVMEMetaObject();
 
 protected:
@@ -78,9 +78,20 @@ private:
     int slotCount;
     QVariant *data;
     QBitArray vTypes;
+    QBitArray aConnected;
     QList<QString> *slotData;
     int slotDataIdx;
     QAbstractDynamicMetaObject *parent;
+    QByteArray aliasData;
+    struct Aliases {
+        int aliasCount;
+        int propCount;
+        int signalOffset;
+    } *aliases;
+    struct AliasArray {
+        int contextIdx;
+        int propIdx;
+    } *aliasArray;
 };
 
 QT_END_NAMESPACE

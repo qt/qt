@@ -212,6 +212,7 @@ private slots:
     
     void task221955_selectedEditor();
     void task250754_fontChange();
+    void task200665_itemEntered();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1198,6 +1199,24 @@ void tst_QAbstractItemView::task250754_fontChange()
     
     qApp->setStyleSheet(app_css);
 }
+
+void tst_QAbstractItemView::task200665_itemEntered()
+{
+    //we test that view will emit entered
+    //when the scrollbar move but not the mouse itself
+    QStandardItemModel model(1000,1);
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(200);
+    QRect rect = view.visualRect(model.index(0,0));
+    QCursor::setPos( view.viewport()->mapToGlobal(rect.center()) );
+    QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
+    view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
+    QCOMPARE(spy.count(), 1);
+
+}
+
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

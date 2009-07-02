@@ -21,10 +21,10 @@
 #ifndef JSSVGFEDiffuseLightingElement_h
 #define JSSVGFEDiffuseLightingElement_h
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

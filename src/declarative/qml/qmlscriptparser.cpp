@@ -55,7 +55,7 @@
 #include <QCoreApplication>
 #include <QtDebug>
 
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -534,6 +534,12 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 
         bool typeFound = false;
         Object::DynamicProperty::Type type;
+
+        if (memberType == QLatin1String("alias")) {
+            type = Object::DynamicProperty::Alias;
+            typeFound = true;
+        }
+
         for(int ii = 0; !typeFound && ii < propTypeNameToTypesCount; ++ii) {
             if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) {
                 type = propTypeNameToTypes[ii].type;

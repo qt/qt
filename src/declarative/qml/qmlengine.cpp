@@ -57,7 +57,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include "qml.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QStack>
 #include "private/qmlbasicscript_p.h"
 #include "private/qmlcompiledcomponent_p.h"

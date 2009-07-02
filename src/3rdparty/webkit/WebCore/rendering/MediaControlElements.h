@@ -91,8 +91,9 @@ public:
     MediaControlInputElement(Document*, PseudoId, const String& type, HTMLMediaElement*, MediaControlElementType);
     void attachToParent(Element*);
     void update();
-    void updateStyle();
+    virtual void updateStyle();
     bool hitTest(const IntPoint& absPoint);
+    MediaControlElementType displayType() const { return m_displayType; }
 
 protected:
     virtual void updateDisplayType() { }
@@ -151,6 +152,7 @@ class MediaControlFullscreenButtonElement : public MediaControlInputElement {
 public:
     MediaControlFullscreenButtonElement(Document*, HTMLMediaElement*);
     virtual void defaultEventHandler(Event*);
+    virtual bool rendererIsNeeded(RenderStyle*);
 };
 
 // ----------------------------

@@ -973,15 +973,18 @@ void QGraphicsWidget::updateGeometry()
     deliver events related to state changes in the item. Because of this, it is
     very important that subclasses call the base implementation.
 
-    For example, QGraphicsWidget uses ItemVisibleChange to deliver \l Show and
-    \l Hide events, ItemPositionHasChanged to deliver \l Move events, and
-    ItemParentChange both to deliver \l ParentChange events, and for managing
-    the focus chain.
+    \a change specifies the type of change, and \a value is the new value.
+
+    For example, QGraphicsWidget uses ItemVisibleChange to deliver
+    \l{QEvent::Show} {Show} and \l{QEvent::Hide}{Hide} events,
+    ItemPositionHasChanged to deliver \l{QEvent::Move}{Move} events,
+    and ItemParentChange both to deliver \l{QEvent::ParentChange}
+    {ParentChange} events, and for managing the focus chain.
 
     QGraphicsWidget enables the ItemSendsGeometryChanges flag by default in
     order to track position changes.
 
-    \sa propertyChange()
+    \sa QGraphicsItem::itemChange()
 */
 QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &value)
 {
@@ -1213,7 +1216,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
 /*!
     \reimp
 
-    QGraphicsWidget handles the following events:
+    Handles the \a event.  QGraphicsWidget handles the following
+    events:
 
     \table   \o Event                 \o Usage
     \row     \o Polish

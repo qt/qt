@@ -16,8 +16,6 @@
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 2.1 as published by the Free Software
 ** Foundation and appearing in the file LICENSE.LGPL included in the
-What usually causes this mess is specifying a Z-order (raise/lower) widget or changing the tab order and then deleting the widget. Designer did not delete the widget from those settings, causing uic to report this when applying them. I believe we fixed that 4.5.
-
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.

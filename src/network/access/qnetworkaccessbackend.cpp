@@ -217,11 +217,6 @@ qint64 QNetworkAccessBackend::nextDownstreamBlockSize() const
     return reply->nextDownstreamBlockSize();
 }
 
-qint64 QNetworkAccessBackend::downstreamBytesToConsume() const
-{
-    return reply->writeBuffer.size();
-}
-
 void QNetworkAccessBackend::writeDownstreamData(const QByteArray &data)
 {
     reply->appendDownstreamData(data);

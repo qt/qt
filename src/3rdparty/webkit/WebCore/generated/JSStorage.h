@@ -21,6 +21,8 @@
 #ifndef JSStorage_h
 #define JSStorage_h
 
+#if ENABLE(DOM_STORAGE)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -37,7 +39,7 @@ public:
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
-    bool customPut(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
+    bool putDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -48,7 +50,6 @@ public:
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    bool customGetPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
     static JSC::JSValue getConstructor(JSC::ExecState*);
     Storage* impl() const { return m_impl.get(); }
 
@@ -89,5 +90,7 @@ JSC::JSValue jsStorageLength(JSC::ExecState*, const JSC::Identifier&, const JSC:
 JSC::JSValue jsStorageConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
 
 #endif

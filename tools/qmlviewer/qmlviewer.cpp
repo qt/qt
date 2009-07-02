@@ -18,7 +18,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include "qml.h"
-#include "qperformancelog.h"
+#include <private/qperformancelog_p.h>
 #include "qfxtestengine.h"
 #include "deviceskin.h"
 

@@ -1203,6 +1203,11 @@
     on Mac when using Carbon. This attribute has no effect on Cocoa.
     The attribute is off by default and can be enabled on a per-window basis.
 
+    \value WA_AcceptTouchEvents Allows touch events (see QTouchEvent)
+    to be sent to the widget. Must be set on all widgets that can
+    handle touch events. Without this attribute set, events from a
+    touch device will be sent as mouse events.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1232,6 +1237,7 @@
     \omitvalue WA_X11BypassTransientForHint
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
+    \omitvalue WA_WState_AcceptedTouchBeginEvent
 */
 
 /*! \typedef Qt::HANDLE
@@ -2691,3 +2697,52 @@
     \internal
 */
 
+/*! \enum Qt::GestureType
+    \since 4.6
+
+    This enum lists standard gestures.
+
+    \value UnknownGesture An unknown gesture. This enum value shouldn't be used.
+    \value TapGesture A single tap gesture.
+    \value DoubleTapGesture A double tap gesture.
+    \value TrippleTapGesture A tripple tap gesture.
+    \value TapAndHoldGesture A tap-and-hold (long tap) gesture.
+    \value PanGesture A pan gesture.
+    \value PinchGesture A pinch gesture.
+*/
+
+/*!
+    \enum Qt::GestureState
+    \since 4.6
+
+    This enum type describes the state of a gesture.
+
+    \omitvalue NoGesture
+    \value GestureStarted   A continuous gesture has started.
+    \value GestureUpdated   A gesture continiues.
+    \value GestureFinished  A gesture has finished.
+
+    \sa QGesture
+*/
+
+/*!
+    \enum Qt::DirectionType
+    \since 4.6
+
+    This enum type describes directions. This could be used by the
+    gesture recognizers.
+
+    \value NoDirection Non-specific direction.
+    \value LeftDownDirection
+    \value DownLeftDirection
+    \value DownDirection
+    \value RightDownDirection
+    \value DownRightDirection
+    \value LeftDirection
+    \value RightDirection
+    \value LeftUpDirection
+    \value UpLeftDirection
+    \value UpDirection
+    \value RightUpDirection
+    \value UpRightDirection
+*/

@@ -200,7 +200,7 @@ HRESULT QtCeGetClipboard(IDataObject** obj)
     if (clipData == 0) {
         clipData = GetClipboardData(CF_UNICODETEXT);
         if (clipData != 0)
-            clipText = QString::fromUtf16((unsigned short *)clipData);
+            clipText = QString::fromWCharArray((wchar_t *)clipData);
     } else {
         clipText = QString::fromLatin1((const char*)clipData);
     }
@@ -325,13 +325,7 @@ bool QClipboard::event(QEvent *e)
     }
 
     if (propagate && d->nextClipboardViewer) {
-        QT_WA({
-            SendMessage(d->nextClipboardViewer, m->message,
-                         m->wParam, m->lParam);
-        } , {
-            SendMessageA(d->nextClipboardViewer, m->message,
-                         m->wParam, m->lParam);
-        });
+        SendMessage(d->nextClipboardViewer, m->message, m->wParam, m->lParam);
     }
 
     return true;

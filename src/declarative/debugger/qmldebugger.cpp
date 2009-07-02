@@ -262,7 +262,7 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
         delete item;
         return false;
 
-    } else if(QmlBoundSignal *bs = qobject_cast<QmlBoundSignal *>(obj)) {
+    } else if(qobject_cast<QmlBoundSignal *>(obj)) {
         delete item;
         return false;
     } else {

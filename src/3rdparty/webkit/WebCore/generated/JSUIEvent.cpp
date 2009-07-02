@@ -19,17 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSUIEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMWindow.h"
 #include "JSDOMWindow.h"
 #include "UIEvent.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

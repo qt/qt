@@ -181,6 +181,7 @@ public:
         struct {
             int data;
             int slotData;
+            int aliasData;
         } storeMeta;
         struct {
             int value;

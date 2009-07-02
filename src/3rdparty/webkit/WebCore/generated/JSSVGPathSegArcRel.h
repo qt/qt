@@ -21,10 +21,10 @@
 #ifndef JSSVGPathSegArcRel_h
 #define JSSVGPathSegArcRel_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGPathSeg.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

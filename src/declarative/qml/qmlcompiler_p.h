@@ -118,6 +118,7 @@ private:
     int indexForLocation(const QmlParser::LocationSpan &);
 };
 
+class QMetaObjectBuilder;
 class Q_DECLARATIVE_EXPORT QmlCompiler 
 {
 public:
@@ -181,13 +182,19 @@ private:
                                  const QMetaProperty &prop, 
                                  QmlParser::Value *value);
 
-    bool compileDynamicMeta(QmlParser::Object *obj);
+    bool compileDynamicMeta(QmlParser::Object *obj, int preAlias = -1);
+    bool compileAlias(QMetaObjectBuilder &, 
+                      QByteArray &data,
+                      QmlParser::Object *obj, 
+                      const QmlParser::Object::DynamicProperty &);
     bool compileBinding(QmlParser::Value *, QmlParser::Property *prop,
                         const BindingContext &ctxt);
 
-    void finalizeComponent(int patch);
+    bool finalizeComponent(int patch);
     struct BindingReference;
     void finalizeBinding(const BindingReference &); 
+    struct AliasReference;
+    bool finalizeAlias(const AliasReference &);
 
     bool canConvert(int, QmlParser::Object *);
     QStringList deferredProperties(QmlParser::Object *);
@@ -197,6 +204,11 @@ private:
         QmlParser::Object *object;
         int instructionIdx;
         int idx;
+    };
+
+    struct AliasReference {
+        QmlParser::Object *object;
+        int instructionIdx;
     };
 
     struct BindingReference {
@@ -215,6 +227,7 @@ private:
         int savedObjects;
         int pushedProperties;
         QList<BindingReference> bindings;
+        QList<AliasReference> aliases;
         QmlParser::Object *root;
     };
     ComponentCompileState compileState;

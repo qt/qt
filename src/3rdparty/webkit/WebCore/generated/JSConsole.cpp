@@ -19,15 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSConsole.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Console.h"
 #include "ScriptCallStack.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

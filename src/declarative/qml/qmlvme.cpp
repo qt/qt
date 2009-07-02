@@ -40,14 +40,13 @@
 ****************************************************************************/
 
 #include "qmlvme_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include "private/qmldeclarativedata_p.h"
 #include <qml.h>
 #include <private/qmlcustomparser_p.h>
-#include <qperformancelog.h>
 #include <QStack>
 #include <QWidget>
 #include <private/qmlcompiledcomponent_p.h>
@@ -240,7 +239,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
         case QmlInstruction::StoreMetaObject:
             {
                 QObject *target = stack.top();
-                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
+                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, (instr.storeMeta.aliasData != -1)?datas.at(instr.storeMeta.aliasData):QByteArray(), comp);
             }
             break;
 

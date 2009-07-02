@@ -109,6 +109,7 @@
 #include "private/qabstractscrollarea_p.h"
 
 #include "private/qgraphicssystem_p.h"
+#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -126,6 +127,8 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
     qt_enable_backingstore = enable;
 }
 #endif
+
+QString qt_getStandardGestureTypeName(Qt::GestureType);
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
@@ -860,8 +863,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
     \o X11: This feature relies on the use of an X server that supports ARGB visuals
     and a compositing window manager.
-    \o Windows: This feature requires Windows 2000 or later. The widget needs to have
-    the Qt::FramelessWindowHint window flag set for the translucency to work.
+    \o Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
+    for the translucency to work.
     \endlist
 
 
@@ -7480,10 +7483,14 @@ bool QWidget::event(QEvent *event)
         case QEvent::MouseButtonRelease:
         case QEvent::MouseButtonDblClick:
         case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
         case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
+        case QEvent::Gesture:
             return false;
         default:
             break;
@@ -7879,6 +7886,46 @@ bool QWidget::event(QEvent *event)
         d->needWindowChange = false;
         break;
 #endif
+    case QEvent::Gesture:
+        event->ignore();
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
+        if (touchPoint.isPrimary())
+            break;
+
+        // fake a mouse event!
+        QEvent::Type eventType = QEvent::None;
+        switch (touchEvent->type()) {
+        case QEvent::TouchBegin:
+            eventType = QEvent::MouseButtonPress;
+            break;
+        case QEvent::TouchUpdate:
+            eventType = QEvent::MouseMove;
+            break;
+        case QEvent::TouchEnd:
+            eventType = QEvent::MouseButtonRelease;
+            break;
+        default:
+            Q_ASSERT(!true);
+            break;
+        }
+        if (eventType == QEvent::None)
+            break;
+
+        QMouseEvent mouseEvent(eventType,
+                               touchPoint.pos().toPoint(),
+                               touchPoint.screenPos().toPoint(),
+                               Qt::LeftButton,
+                               Qt::LeftButton,
+                               touchEvent->modifiers());
+        (void) QApplication::sendEvent(this, &mouseEvent);
+        break;
+    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -9887,6 +9934,12 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
 
         break;
+    case Qt::WA_AcceptTouchEvents:
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+        if (on)
+            d->registerTouchWindow();
+#endif
+        break;
     default:
         break;
     }
@@ -9917,8 +9970,8 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, Mac OS X, X11 platforms that
-  support the Composite extension, and Windows 2000 and later.
+  This feature is available on Embedded Linux, Mac OS X, Windows,
+  and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
 
@@ -10967,6 +11020,105 @@ QWindowSurface *QWidget::windowSurface() const
 #endif // Q_BACKINGSTORE_SUBSURFACES
 
     return bs ? bs->windowSurface : 0;
+}
+
+/*!
+    \since 4.6
+
+    Subscribes the widget to the specified \a gesture type.
+
+    Returns the id of the gesture.
+
+    \sa releaseGesture(), setGestureEnabled()
+*/
+int QWidget::grabGesture(const QString &gesture)
+{
+    Q_D(QWidget);
+    int id = d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
+    if (d->extra && d->extra->proxyWidget)
+        d->extra->proxyWidget->QGraphicsItem::d_ptr->grabGesture(id);
+    return id;
+}
+
+int QWidgetPrivate::grabGesture(int gestureId)
+{
+    gestures << gestureId;
+    ++qApp->d_func()->grabbedGestures[QGestureManager::instance()->gestureNameFromId(gestureId)];
+    return gestureId;
+}
+
+bool QWidgetPrivate::releaseGesture(int gestureId)
+{
+    QApplicationPrivate *qAppPriv = qApp->d_func();
+    if (gestures.contains(gestureId)) {
+        QString name = QGestureManager::instance()->gestureNameFromId(gestureId);
+        Q_ASSERT(qAppPriv->grabbedGestures[name] > 0);
+        --qAppPriv->grabbedGestures[name];
+        gestures.remove(gestureId);
+        return true;
+    }
+    return false;
+}
+
+bool QWidgetPrivate::hasGesture(const QString &name) const
+{
+    QGestureManager *gm = QGestureManager::instance();
+    QSet<int>::const_iterator it = gestures.begin(),
+                               e = gestures.end();
+    for (; it != e; ++it) {
+        if (gm->gestureNameFromId(*it) == name)
+            return true;
+    }
+    return false;
+}
+
+/*!
+    \since 4.6
+
+    Subscribes the widget to the specified \a gesture type.
+
+    Returns the id of the gesture.
+
+    \sa releaseGesture(), setGestureEnabled()
+*/
+int QWidget::grabGesture(Qt::GestureType gesture)
+{
+    return grabGesture(qt_getStandardGestureTypeName(gesture));
+}
+
+/*!
+    \since 4.6
+
+    Unsubscribes the widget from a gesture, which is specified by the
+    \a gestureId.
+
+    \sa grabGesture(), setGestureEnabled()
+*/
+void QWidget::releaseGesture(int gestureId)
+{
+    Q_D(QWidget);
+    if (d->releaseGesture(gestureId)) {
+        if (d->extra && d->extra->proxyWidget)
+            d->extra->proxyWidget->QGraphicsItem::d_ptr->releaseGesture(gestureId);
+        QGestureManager::instance()->releaseGestureId(gestureId);
+    }
+}
+
+/*!
+    \since 4.6
+
+    If \a enable is true, the gesture with the given \a gestureId is
+    enabled; otherwise the gesture is disabled.
+
+    The id of the gesture is returned by the grabGesture().
+
+    \sa grabGesture(), releaseGesture()
+*/
+void QWidget::setGestureEnabled(int gestureId, bool enable)
+{
+    Q_UNUSED(gestureId);
+    Q_UNUSED(enable);
+    //###
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

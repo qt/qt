@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSCanvasRenderingContext2D.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
@@ -37,10 +34,10 @@
 #include "KURL.h"
 #include "PlatformString.h"
 #include "TextMetrics.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -21,6 +21,8 @@
 #ifndef JSStorageEvent_h
 #define JSStorageEvent_h
 
+#if ENABLE(DOM_STORAGE)
+
 #include "JSEvent.h"
 
 namespace WebCore {
@@ -73,5 +75,7 @@ JSC::JSValue jsStorageEventStorageArea(JSC::ExecState*, const JSC::Identifier&, 
 JSC::JSValue jsStorageEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
 
 #endif

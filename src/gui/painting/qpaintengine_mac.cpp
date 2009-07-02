@@ -1381,8 +1381,13 @@ QCoreGraphicsPaintEngine::updateRenderHints(QPainter::RenderHints hints)
 {
     Q_D(QCoreGraphicsPaintEngine);
     CGContextSetShouldAntialias(d->hd, hints & QPainter::Antialiasing);
-    CGContextSetInterpolationQuality(d->hd, (hints & QPainter::SmoothPixmapTransform) ?
-                                     kCGInterpolationHigh : kCGInterpolationNone);
+    static const CGFloat ScaleFactor = qt_mac_get_scalefactor();
+    if (ScaleFactor > 1.) {
+        CGContextSetInterpolationQuality(d->hd, kCGInterpolationHigh);
+    } else {
+        CGContextSetInterpolationQuality(d->hd, (hints & QPainter::SmoothPixmapTransform) ?
+                                         kCGInterpolationHigh : kCGInterpolationNone);
+    }
     CGContextSetShouldSmoothFonts(d->hd, hints & QPainter::TextAntialiasing);
 }
 

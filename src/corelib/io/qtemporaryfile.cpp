@@ -341,6 +341,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     Q_D(QFSFileEngine);
     Q_ASSERT(!isReallyOpen());
 
+    openMode |= QIODevice::ReadWrite;
+
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
@@ -758,7 +760,6 @@ bool QTemporaryFile::open(OpenMode flags)
         }
     }
 
-    flags |= QIODevice::ReadWrite;
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
         return true;

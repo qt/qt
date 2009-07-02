@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSPluginArray.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "JSPlugin.h"
 #include "Plugin.h"
 #include "PluginArray.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -92,7 +92,7 @@ void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
 {
     if (pendingConnections.isEmpty())
         tcpServer.waitForNewConnection(msec, timedOut);
-    else
+    else if (timedOut)
         *timedOut = false;
 }
 

@@ -28,6 +28,7 @@
 
 #include "Frame.h"
 #include "FrameTree.h"
+#include "FrameView.h"
 #include "HistoryItem.h"
 #include "Page.h"
 #include "PageCache.h"
@@ -44,7 +45,7 @@ static void setNeedsReapplyStylesInAllFrames(Page* page)
 }
 
 #if USE(SAFARI_THEME)
-bool Settings::gShouldPaintNativeControls = false;
+bool Settings::gShouldPaintNativeControls = true;
 #endif
 
 Settings::Settings(Page* page)
@@ -103,6 +104,8 @@ Settings::Settings(Page* page)
     // FIXME: This should really be disabled by default as it makes platforms that don't support the feature download files
     // they can't use by. Leaving enabled for now to not change existing behavior.
     , m_downloadableBinaryFontsEnabled(true)
+    , m_xssAuditorEnabled(false)
+    , m_acceleratedCompositingEnabled(true)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -456,6 +459,20 @@ void Settings::setCaretBrowsingEnabled(bool caretBrowsingEnabled)
 void Settings::setDownloadableBinaryFontsEnabled(bool downloadableBinaryFontsEnabled)
 {
     m_downloadableBinaryFontsEnabled = downloadableBinaryFontsEnabled;
+}
+
+void Settings::setXSSAuditorEnabled(bool xssAuditorEnabled)
+{
+    m_xssAuditorEnabled = xssAuditorEnabled;
+}
+
+void Settings::setAcceleratedCompositingEnabled(bool enabled)
+{
+    if (m_acceleratedCompositingEnabled == enabled)
+        return;
+        
+    m_acceleratedCompositingEnabled = enabled;
+    setNeedsReapplyStylesInAllFrames(m_page);
 }
 
 } // namespace WebCore

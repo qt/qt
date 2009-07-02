@@ -51,7 +51,7 @@ class QmlFolderListModelPrivate : public QObjectPrivate
 public:
     QmlFolderListModelPrivate() : count(0) {
         folder = QDir::currentPath();
-        nameFilters << "*";
+        nameFilters << QLatin1String("*");
     }
 
     QDirModel model;
@@ -81,6 +81,7 @@ QmlFolderListModel::~QmlFolderListModel()
 
 QHash<int,QVariant> QmlFolderListModel::data(int index, const QList<int> &roles) const
 {
+    Q_UNUSED(roles);
     Q_D(const QmlFolderListModel);
     QHash<int,QVariant> folderData;
     QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);

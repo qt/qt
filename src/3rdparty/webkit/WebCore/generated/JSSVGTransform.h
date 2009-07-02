@@ -21,14 +21,14 @@
 #ifndef JSSVGTransform_h
 #define JSSVGTransform_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
+#include "SVGTransform.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "SVGTransform.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 

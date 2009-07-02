@@ -48,6 +48,7 @@ class RenderInline;
 class RenderBlock;
 class RenderFlow;
 class RenderLayer;
+class RenderTheme;
 class TransformState;
 class VisiblePosition;
 
@@ -136,6 +137,8 @@ public:
     // marked as anonymous in the constructor.
     RenderObject(Node*);
     virtual ~RenderObject();
+
+    RenderTheme* theme() const;
 
     virtual const char* renderName() const = 0;
 
@@ -273,6 +276,7 @@ public:
     virtual bool isTextControl() const { return false; }
     virtual bool isTextArea() const { return false; }
     virtual bool isTextField() const { return false; }
+    virtual bool isVideo() const { return false; }
     virtual bool isWidget() const { return false; }
 
     bool isRoot() const { return document()->documentElement() == m_node; }
@@ -955,12 +959,14 @@ inline void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, R
         last->scheduleRelayout();
 }
 
-inline void makeMatrixRenderable(TransformationMatrix& matrix)
+inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRendering)
 {
 #if !ENABLE(3D_RENDERING)
+    UNUSED_PARAM(has3DRendering);
     matrix.makeAffine();
 #else
-    UNUSED_PARAM(matrix);
+    if (!has3DRendering)
+        matrix.makeAffine();
 #endif
 }
 
