@@ -132,6 +132,10 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
     if ( !db.isValid() )
 	return;
     QSqlQuery q( db );
+    if (tst_Databases::isSqlServer(db)) {
+        QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
+    }
     // please never ever change this table; otherwise fix all tests ;)
     if ( tst_Databases::isMSAccess( db ) ) {
 	QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
