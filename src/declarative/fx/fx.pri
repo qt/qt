@@ -4,8 +4,6 @@ HEADERS += \
            fx/qfxblurfilter.h \
            fx/qfxcomponentinstance.h \
            fx/qfxcomponentinstance_p.h \
-           fx/qfxcontentwrapper.h \
-           fx/qfxcontentwrapper_p.h \
            fx/qfxevents_p.h \
            fx/qfxflickable.h \
            fx/qfxflickable_p.h \
@@ -51,7 +49,6 @@ SOURCES += \
            fx/qfxanchors.cpp \
            fx/qfxblurfilter.cpp \
            fx/qfxcomponentinstance.cpp \
-           fx/qfxcontentwrapper.cpp \
            fx/qfxevents.cpp \
            fx/qfxflickable.cpp \
            fx/qfxflipable.cpp \
