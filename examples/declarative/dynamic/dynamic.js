@@ -1,10 +1,10 @@
 var dynamicObject = null;
 var fourthBox = null;
-var component;
+var component = null;
 var started = false;
-function createWithEvalQml(p) {
-    return evalQml('Rect { color: "lightsteelblue"; width: 100;'
-            + 'height: 100; id: newRect}','DynPart.qml');
+function createQml(p) {
+    return createQmlObject('Rect { color: "steelblue"; width: 100;'
+            + 'height: 100; id: newRect }',p,'DynPart.qml');
 }
 
 function destroyDynamicObject() {
@@ -29,7 +29,7 @@ function instantCreateWithComponent() {//Like create, but assumes instant readyn
 }
 
 function finishCreation(){
-    if(component.isReady()){
+    if(component.isReady() && dynamicObject == null){
         dynamicObject = component.createObject();
         dynamicObject.parent = targetItem;
     }else if(component.isError()){
@@ -40,6 +40,9 @@ function finishCreation(){
 }
 
 function createWithComponent(){
+    if(component!=null){
+        return finishCreation();
+    }
     if(started!=false){
         finishCreation();//Remakes if destroyed
         return dynamicObject;

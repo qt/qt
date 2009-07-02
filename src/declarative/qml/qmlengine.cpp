@@ -194,8 +194,8 @@ void QmlEnginePrivate::init()
     //###needed for the other funcs, but should it be exposed?
     scriptEngine.globalObject().setProperty(QLatin1String("qmlEngine"),
             scriptEngine.newQObject(q));
-    scriptEngine.globalObject().setProperty(QLatin1String("evalQml"),
-            scriptEngine.newFunction(QmlEngine::createQMLObject, 1));
+    scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
+            scriptEngine.newFunction(QmlEngine::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEngine::createComponent, 1));
 }
@@ -844,8 +844,8 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
     \endcode
 
     If you want to just create an arbitrary string of QML, instead of
-    loading a qml file, consider the evalQML() function.
-    \sa QmlComponent::createObject(), QmlEngine::createQMLObject()
+    loading a qml file, consider the createQmlObject() function.
+    \sa QmlComponent::createObject(), QmlEngine::createQmlObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -855,21 +855,31 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     if(ctxt->argumentCount() != 1 || !activeEngine){
         c = new QmlComponent(activeEngine);
     }else{
-        //### This url needs to be resolved in the context that the function
-        //### is called - it can't be done here.
-        QUrl url = QUrl(ctxt->argument(0).toString());
+        QUrl url = QUrl(activeEngine->d_func()->currentExpression->context()
+                ->resolvedUrl(ctxt->argument(0).toString()));
+        if(!url.isValid()){
+            qDebug() << "Error A:" << url << activeEngine->activeContext() << QmlEngine::activeEngine() << activeEngine;
+            url = QUrl(ctxt->argument(0).toString());
+        }
         c = new QmlComponent(activeEngine, url, activeEngine);
     }
     return engine->newQObject(c);
 }
 
 /*!
-    Creates a new object from the specified string of qml. If a second argument
-    is provided, this is treated as the filepath that the qml came from.
+    Creates a new object from the specified string of QML. It requires a
+    second argument, which is the id of an existing QML object to use as
+    the new object's parent. If a third argument is provided, this is used
+    as the filepath that the qml came from.
+
+    Example (where targetItem is the id of an existing QML item):
+    \code
+    newObject = createQmlObject('Rect {color: "red"; width: 20; height: 20}',
+        targetItem, "dynamicSnippet1");
+    \endcode
 
     This function is intended for use inside QML only. It is intended to behave
-    similarly to eval, but for creating QML elements. Thus, it is called as
-    evalQml() in QtScript.
+    similarly to eval, but for creating QML elements.
 
     Returns the created object, or null if there is an error. In the case of an
     error, details of the error are output using qWarning().
@@ -878,27 +888,32 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     the QML loads new components. If you are trying to load a new component,
     for example from a QML file, consider the createComponent() function
     instead. 'New components' refers to external QML files that have not yet
-    been loaded, and so it is safe to use evalQml to load built-in components.
+    been loaded, and so it is safe to use createQmlObject to load built-in
+    components.
 
     \sa QmlEngine::createComponent()
 */
-QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *engine)
+QScriptValue QmlEngine::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
             engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
-    if(ctxt->argumentCount() < 1 || !activeEngine){
-        if(ctxt->argumentCount() < 1){
-            qWarning() << "createQMLObject requires a string argument.";
+    if(ctxt->argumentCount() < 2 || !activeEngine){
+        if(ctxt->argumentCount() < 2){
+            qWarning() << "createQmlObject requires two arguments, A QML string followed by an existing QML item id.";
         }else{
-            qWarning() << "createQMLObject cannot find engine.";
+            qWarning() << "createQmlObject cannot find engine.";
         }
         return engine->nullValue();
     }
 
     QString qml = ctxt->argument(0).toString();
     QUrl url;
-    if(ctxt->argumentCount() > 1)
-        url = QUrl(ctxt->argument(1).toString());
+    if(ctxt->argumentCount() > 2)
+        url = QUrl(ctxt->argument(2).toString());
+    QObject *parentArg = ctxt->argument(1).data().toQObject();
+    QmlContext *qmlCtxt = qmlContext(parentArg);
+    if(qmlCtxt)
+        qmlCtxt->activate();
     QmlComponent component(activeEngine, qml.toUtf8(), url);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
@@ -906,10 +921,14 @@ QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *eng
             qWarning() << error;
         }
 
+        if(qmlCtxt)
+            qmlCtxt->deactivate();
         return engine->nullValue();
     }
 
     QObject *obj = component.create();
+    if(qmlCtxt)
+        qmlCtxt->deactivate();
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         foreach (const QmlError &error, errors) {
@@ -920,6 +939,8 @@ QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *eng
     }
 
     if(obj){
+        obj->setParent(parentArg);
+        obj->setProperty("parent", QVariant::fromValue<QObject*>(parentArg));
         return qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();
