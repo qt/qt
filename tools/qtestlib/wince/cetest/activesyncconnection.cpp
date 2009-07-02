@@ -382,6 +382,7 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
         BYTE* output;
         IRAPIStream *stream;
         int returned = 0;
+        DWORD error = 0;
         HRESULT res = CeRapiInvoke(dllLocation.utf16(), functionName.utf16(), 0, 0, &outputSize, &output, &stream, 0);
         if (S_OK != res) {
             if (S_OK != CeGetLastError())
@@ -416,9 +417,18 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
             if (S_OK != stream->Read(&returned, sizeof(returned), &written)) {
                 qWarning("   Could not access return value of process");
             }
-            result = true;
-        }
+            if (S_OK != stream->Read(&error, sizeof(error), &written)) {
+                qWarning("   Could not access error code");
+            }
 
+            if (error) {
+                qWarning() << "Error on target:" << strwinerror(error);
+                result = false;
+            }
+            else {
+                result = true;
+            }
+        }
 
         if (returnValue)
             *returnValue = returned;
