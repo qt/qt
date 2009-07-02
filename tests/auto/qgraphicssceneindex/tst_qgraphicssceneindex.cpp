@@ -65,6 +65,7 @@ private slots:
     void movingItems_data();
     void movingItems();
     void connectedToSceneRectChanged();
+    void items();
 
 private:
     void common_data();
@@ -226,6 +227,44 @@ void tst_QGraphicsSceneIndex::connectedToSceneRectChanged()
 
     scene.setItemIndexMethod(QGraphicsScene::NoIndex); // QGraphicsSceneLinearIndex
     QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(const QRectF&))), 1);
+}
+
+void tst_QGraphicsSceneIndex::items()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item1 = scene.addRect(0, 0, 10, 10);
+    QGraphicsItem *item2 = scene.addRect(10, 10, 10, 10);
+    QCOMPARE(scene.items().size(), 2);
+
+    // Move from unindexed items into bsp tree.
+    QTest::qWait(50);
+    QCOMPARE(scene.items().size(), 2);
+
+    // Add untransformable item.
+    QGraphicsItem *item3 = new QGraphicsRectItem(QRectF(20, 20, 10, 10));
+    item3->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    scene.addItem(item3);
+    QCOMPARE(scene.items().size(), 3);
+
+    // Move from unindexed items into untransformable items.
+    QTest::qWait(50);
+    QCOMPARE(scene.items().size(), 3);
+
+    // Move from untransformable items into unindexed items.
+    item3->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
+    QCOMPARE(scene.items().size(), 3);
+    QTest::qWait(50);
+    QCOMPARE(scene.items().size(), 3);
+
+    // Make all items untransformable.
+    item1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    item2->setParentItem(item1);
+    item3->setParentItem(item2);
+    QCOMPARE(scene.items().size(), 3);
+
+    // Move from unindexed items into untransformable items.
+    QTest::qWait(50);
+    QCOMPARE(scene.items().size(), 3);
 }
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)
