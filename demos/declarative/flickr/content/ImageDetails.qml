@@ -29,7 +29,7 @@ Flipable {
 
         MediaButton {
             id: BackButton; x: 630; y: 370; text: "Back"
-            onClicked: { Container.closed.emit() }
+            onClicked: { Container.closed() }
         }
 
         MediaButton {

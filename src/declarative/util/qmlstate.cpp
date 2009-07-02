@@ -53,8 +53,21 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-Action::Action() : restore(true), actionDone(false), fromBinding(0), toBinding(0), event(0), specifiedObject(0)
+Action::Action() 
+: restore(true), actionDone(false), fromBinding(0), toBinding(0), event(0), 
+  specifiedObject(0)
 {
+}
+
+Action::Action(QObject *target, const QString &propertyName, 
+               const QVariant &value)
+: restore(true), actionDone(false), toValue(value), fromBinding(0), 
+  toBinding(0), event(0), specifiedObject(target), 
+  specifiedProperty(propertyName)
+{
+    property = QmlMetaProperty::createProperty(target, propertyName);
+    if (property.isValid())
+        fromValue = property.read();
 }
 
 ActionEvent::~ActionEvent()
@@ -108,6 +121,8 @@ QML_DEFINE_TYPE(QmlState,State)
 QmlState::QmlState(QObject *parent)
 : QObject(*(new QmlStatePrivate), parent)
 {
+    Q_D(QmlState);
+    d->transitionManager.setState(this);
 }
 
 QmlState::~QmlState()
@@ -234,22 +249,9 @@ QmlState &QmlState::operator<<(QmlStateOperation *op)
     return *this;
 }
 
-void QmlStatePrivate::applyBindings()
-{
-    foreach(const Action &action, bindingsList) {
-        if (action.toBinding) {
-            action.property.setBinding(action.toBinding);
-            action.toBinding->forceUpdate();
-        }
-    }
-}
-
 void QmlStatePrivate::complete()
 {
     Q_Q(QmlState);
-
-    //apply bindings (now that all transitions are complete)
-    applyBindings();
 
     for (int ii = 0; ii < reverting.count(); ++ii) {
         for (int jj = 0; jj < revertList.count(); ++jj) {
@@ -261,13 +263,6 @@ void QmlStatePrivate::complete()
     }
     reverting.clear();
 
-    for (int ii = 0; ii < completeList.count(); ++ii) {
-        const QmlMetaProperty &prop = completeList.at(ii).property;
-        prop.write(completeList.at(ii).value);
-    }
-
-    completeList.clear();
-    transition = 0;
     emit q->completed();
 }
 
@@ -312,10 +307,7 @@ void QmlState::setStateGroup(QmlStateGroup *group)
 void QmlState::cancel()
 {
     Q_D(QmlState);
-    if (d->transition) {
-        d->transition->stop();  //XXX this could potentially trigger a complete in rare circumstances
-        d->transition = 0;
-    }
+    d->transitionManager.cancel();
 }
 
 void Action::deleteFromBinding() 
@@ -336,7 +328,6 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         revert->cancel();
     d->revertList.clear();
     d->reverting.clear();
-    d->bindingsList.clear();
 
     if (revert) {
         QmlStatePrivate *revertPrivate = 
@@ -421,108 +412,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         }
     }
 
-    // Determine which actions are binding changes.
-    foreach(const Action &action, applyList) {
-        if (action.toBinding) {
-            d->bindingsList << action;
-            if (action.fromBinding)
-                action.property.setBinding(0); // Disable current binding
-        } else if (action.fromBinding) {
-            action.property.setBinding(0); // Disable current binding
-        }
-    }
-
-    // Animated transitions need both the start and the end value for
-    // each property change.  In the presence of bindings, the end values
-    // are non-trivial to calculate.  As a "best effort" attempt, we first
-    // apply all the property and binding changes, then read all the actual
-    // final values, then roll back the changes and proceed as normal.
-    //
-    // This doesn't catch everything, and it might be a little fragile in
-    // some cases - but whatcha going to do?
-
-    if (!d->bindingsList.isEmpty()) {
-
-        // Apply all the property and binding changes
-        foreach(const Action &action, applyList) {
-            if (action.toBinding) {
-                action.property.setBinding(action.toBinding);
-                action.toBinding->forceUpdate();
-            } else if (!action.event) {
-                action.property.write(action.toValue);
-            }
-        }
-
-        // Read all the end values for binding changes
-        for (int ii = 0; ii < applyList.size(); ++ii) {
-            Action *action = &applyList[ii];
-            if (action->event)
-                continue;
-
-            const QmlMetaProperty &prop = action->property;
-            if (action->toBinding) 
-                action->toValue = prop.read();
-        }
-
-        // Revert back to the original values
-        foreach(const Action &action, applyList) {
-            if (action.event)
-                continue;
-
-            if (action.toBinding)
-                action.property.setBinding(0);
-
-            action.property.write(action.fromValue);
-        }
-    }
-
-
-    d->completeList.clear();
-
-    if (trans) {
-        QList<QmlMetaProperty> touched;
-        d->transition = trans;
-        trans->prepare(applyList, touched, this);
-
-        // Modify the action list to remove actions handled in the transition
-        for (int ii = 0; ii < applyList.count(); ++ii) {
-            const Action &action = applyList.at(ii);
-
-            if (action.event) {
-
-                if (action.actionDone) {
-                    applyList.removeAt(ii);
-                    --ii;
-                }
-
-            } else {
-
-                if (touched.contains(action.property)) {
-                    if (action.toValue != action.fromValue) 
-                        d->completeList << SimpleAction(action, 
-                                                        SimpleAction::EndState);
-
-                    applyList.removeAt(ii);
-                    --ii;
-                }
-
-            }
-        }
-    }
-
-    // Any actions remaining have not been handled by the transition and should
-    // be applied immediately.  We skip applying transitions, as they are all
-    // applied at the end in applyBindings() to avoid any nastiness mid 
-    // transition
-    foreach(const Action &action, applyList) {
-        if (action.event) {
-            action.event->execute();
-        } else {
-            action.property.write(action.toValue);
-        }
-    }
-    if (!trans)
-        d->applyBindings(); //### merge into above foreach?
+    d->transitionManager.transition(applyList, trans);
 }
 
 QML_DEFINE_NOCREATE_TYPE(QmlStateOperation)
