@@ -980,6 +980,14 @@ bool QObjectWrapperObject::getOwnPropertySlot(JSC::ExecState *exec,
         return false;
     }
 
+    {
+        QHash<QByteArray, JSC::JSValue>::const_iterator it = data->cachedMembers.constFind(name);
+        if (it != data->cachedMembers.constEnd()) {
+            slot.setValue(it.value());
+            return true;
+        }
+    }
+
     const QScriptEngine::QObjectWrapOptions &opt = data->options;
     const QMetaObject *meta = qobject->metaObject();
     QScriptEnginePrivate *eng = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
@@ -996,6 +1004,7 @@ bool QObjectWrapperObject::getOwnPropertySlot(JSC::ExecState *exec,
                         &exec->globalData(), exec->dynamicGlobalObject()->functionStructure(),
                         propertyName);
                     slot.setValue(fun);
+                    data->cachedMembers.insert(name, fun);
                     return true;
                 }
             }
@@ -1038,6 +1047,7 @@ bool QObjectWrapperObject::getOwnPropertySlot(JSC::ExecState *exec,
                 &exec->globalData(), exec->dynamicGlobalObject()->functionStructure(),
                 propertyName);
             slot.setValue(fun);
+            data->cachedMembers.insert(name, fun);
             return true;
         }
     }
@@ -1081,7 +1091,7 @@ void QObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& prop
             if (hasMethodAccess(method, index, opt)) {
                 if (!(opt & QScriptEngine::ExcludeSuperClassMethods)
                     || (index >= meta->methodOffset())) {
-                    Q_ASSERT(0);
+                    data->cachedMembers.insert(name, value);
                     return;
                 }
             }
@@ -1108,6 +1118,17 @@ void QObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& prop
         return;
     }
 
+    const int offset = (opt & QScriptEngine::ExcludeSuperClassMethods)
+                       ? meta->methodOffset() : 0;
+    for (index = meta->methodCount() - 1; index >= offset; --index) {
+        QMetaMethod method = meta->method(index);
+        if (hasMethodAccess(method, index, opt)
+            && (methodName(method) == name)) {
+            data->cachedMembers.insert(name, value);
+            return;
+        }
+    }
+
     JSC::JSObject::put(exec, propertyName, value, slot);
 }
 
@@ -1121,6 +1142,14 @@ bool QObjectWrapperObject::deleteProperty(JSC::ExecState *exec,
                           .arg(QString::fromLatin1(name));
         JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
         return false;
+    }
+
+    {
+        QHash<QByteArray, JSC::JSValue>::iterator it = data->cachedMembers.find(name);
+        if (it != data->cachedMembers.end()) {
+            data->cachedMembers.erase(it);
+            return true;
+        }
     }
 
     int index = qobject->dynamicPropertyNames().indexOf(name);
@@ -1254,6 +1283,15 @@ void QObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyN
     }
 
     JSC::JSObject::getPropertyNames(exec, propertyNames);
+}
+
+void QObjectWrapperObject::mark()
+{
+    QHash<QByteArray, JSC::JSValue>::const_iterator it;
+    for (it = data->cachedMembers.constBegin(); it != data->cachedMembers.constEnd(); ++it)
+        JSC::asObject(it.value())->mark();
+
+    JSC::JSObject::mark();
 }
 
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec, JSC::JSObject*,

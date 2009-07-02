@@ -859,7 +859,6 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QScriptValue slot = m_engine->evaluate("myObject.mySlot");
         QVERIFY(slot.isFunction());
         QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
-        QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
         QVERIFY(sameSlot.strictlyEquals(slot));
         sameSlot = m_engine->evaluate("myObject[mySlot()]");
         QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
@@ -1673,7 +1672,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(yetAnotherObject, 'func')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject, 'mySlot')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(yetAnotherObject, 'func')").isUndefined());
-    QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(myObject, 'mySlot')").isUndefined());
 
     // check that emitting signals from script works
@@ -1683,7 +1681,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->resetQtFunctionInvoked();
     QCOMPARE(m_engine->evaluate("myObject.mySignal()").isUndefined(), true);
     QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
-    QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(myObject.mySlot)").isUndefined());
 
     // one argument

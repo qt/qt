@@ -53,6 +53,8 @@ public:
         QScriptEngine::ValueOwnership ownership;
         QScriptEngine::QObjectWrapOptions options;
 
+        QHash<QByteArray, JSC::JSValue> cachedMembers;
+
         Data(QObject *o, QScriptEngine::ValueOwnership own,
              QScriptEngine::QObjectWrapOptions opt)
             : value(o), ownership(own), options(opt) {}
@@ -74,6 +76,7 @@ public:
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void mark();
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
