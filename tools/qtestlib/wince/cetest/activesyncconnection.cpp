@@ -113,6 +113,8 @@ bool ActiveSyncConnection::copyFileToDevice(const QString &localSource, const QS
                 CeCloseHandle(deviceHandle);
                 return true;
             }
+        } else {
+            qWarning("Could not open %s: %s", qPrintable(localSource), qPrintable(file.errorString()));
         }
         return false;
     }
@@ -120,7 +122,7 @@ bool ActiveSyncConnection::copyFileToDevice(const QString &localSource, const QS
     deleteFile(deviceDest);
     HANDLE deviceHandle = CeCreateFile(deviceDest.utf16(), GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
     if (deviceHandle == INVALID_HANDLE_VALUE) {
-        debugOutput(QString::fromLatin1("  Could not create target file"), 2);
+        qWarning("Could not create %s: %s", qPrintable(deviceDest), strwinerror(CeGetLastError()).constData());
         return false;
     }
 
@@ -144,7 +146,7 @@ bool ActiveSyncConnection::copyFileToDevice(const QString &localSource, const QS
         if (toWrite == 0)
             break;
         if (!CeWriteFile(deviceHandle, data.data() , toWrite, &written, NULL)) {
-            debugOutput(QString::fromLatin1("  Could not write File"), 2);
+            qWarning("Could not write to %s: %s", qPrintable(deviceDest), strwinerror(CeGetLastError()).constData());
             return false;
         }
         currentPos += written;
