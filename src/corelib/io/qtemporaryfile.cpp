@@ -61,7 +61,7 @@
 #include <ctype.h>
 
 #if defined(Q_OS_UNIX)
-# include "private/qcore_unix_p.h"
+# include "private/qcore_unix_p.h"      // overrides QT_OPEN
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -211,9 +211,9 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
             if ((*doopen =
                 QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
 #  else // CE
-            // this is Unix
+            // this is Unix or older MSVC
             if ((*doopen =
-                qt_safe_open(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
+                QT_OPEN(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
 #  endif
 #  ifdef QT_LARGEFILE_SUPPORT
                            |QT_OPEN_LARGEFILE
