@@ -191,26 +191,13 @@ public:
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
 
     bool sortCacheEnabled; // for compatibility
-    QList<QGraphicsItem *> topLevelItemsInStackingOrder(const QTransform *const, const QRectF&);
 
     void drawItemHelper(QGraphicsItem *item, QPainter *painter,
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
 
-    inline void drawItems(QPainter *painter, const QTransform *const viewTransform,
-                          QRegion *exposedRegion, QWidget *widget)
-    {
-        QRectF exposedSceneRect;
-        if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
-            exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
-            if (viewTransform)
-                exposedSceneRect = viewTransform->inverted().mapRect(exposedSceneRect);
-        }
-        const QList<QGraphicsItem *> tli = topLevelItemsInStackingOrder(viewTransform, exposedSceneRect);
-        for (int i = 0; i < tli.size(); ++i)
-            drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
-        return;
-    }
+    void drawItems(QPainter *painter, const QTransform *const viewTransform,
+                   QRegion *exposedRegion, QWidget *widget);
 
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform *const,
                               QRegion *exposedRegion, QWidget *widget, qreal parentOpacity = qreal(1.0));

@@ -79,11 +79,10 @@ public:
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const
     { Q_UNUSED(order); return m_items; }
 
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const
     {
         Q_UNUSED(rect);
         Q_UNUSED(order);
-        Q_UNUSED(deviceTransform);
         return m_items;
     }
 

@@ -97,10 +97,9 @@ public:
                                          Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
     virtual QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode,
                                          Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    virtual QList<QGraphicsItem *> estimateItems(const QPointF &point,
-                                                 Qt::SortOrder order, const QTransform &deviceTransform) const;
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect,
-                                                 Qt::SortOrder order, const QTransform &deviceTransform) const = 0;
+    virtual QList<QGraphicsItem *> estimateItems(const QPointF &point, Qt::SortOrder order) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const = 0;
+    virtual QList<QGraphicsItem *> estimateTopLevelItems(const QRectF &, Qt::SortOrder order) const;
 
 protected Q_SLOTS:
     virtual void updateSceneRect(const QRectF &rect);
@@ -154,7 +153,8 @@ inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphi
                                                      QList<QGraphicsItem *> *items, const QTransform &viewTransform,
                                                      Qt::ItemSelectionMode mode, Qt::SortOrder order) const
 {
-    const QList<QGraphicsItem *> tli = scene->d_func()->topLevelItemsInStackingOrder(&viewTransform, rect);
+    Q_Q(const QGraphicsSceneIndex);
+    const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::DescendingOrder);
     const QTransform identity;
     for (int i = 0; i < tli.size(); ++i)
         recursive_items_helper(tli.at(i), rect, intersector, items, identity, viewTransform, mode, order);

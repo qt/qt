@@ -482,12 +482,25 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::
 /*!
     This virtual function return an estimation of items at position \a point.
     This method return a list sorted using \a order.
-    \a deviceTransform is the transformation apply to the view.
 */
-QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, Qt::SortOrder order,
-                                                          const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, Qt::SortOrder order) const
 {
-    return estimateItems(QRectF(point, QSize(1,1)), order, deviceTransform);
+    return estimateItems(QRectF(point, QSize(1, 1)), order);
+}
+
+QList<QGraphicsItem *> QGraphicsSceneIndex::estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const
+{
+    Q_D(const QGraphicsSceneIndex);
+    Q_UNUSED(rect);
+    QGraphicsScenePrivate *scened = d->scene->d_func();
+    scened->ensureSortedTopLevelItems();
+    if (order == Qt::AscendingOrder) {
+        QList<QGraphicsItem *> sorted;
+        for (int i = scened->topLevelItems.size() - 1; i >= 0; --i)
+            sorted << scened->topLevelItems.at(i);
+        return sorted;
+    }
+    return scened->topLevelItems;
 }
 
 /*!

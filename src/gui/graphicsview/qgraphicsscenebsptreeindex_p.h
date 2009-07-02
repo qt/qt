@@ -82,8 +82,8 @@ public:
     QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
     ~QGraphicsSceneBspTreeIndex();
 
-    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
-
+    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const;
+    QList<QGraphicsItem *> estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const;
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const;
 
     int bspTreeDepth();
@@ -145,6 +145,7 @@ public:
     void invalidateSortCache();
     void addItem(QGraphicsItem *item, bool recursive = false);
     void removeItem(QGraphicsItem *item, bool recursive = false, bool moveToUnindexedItems = false);
+    QList<QGraphicsItem *> estimateItems(const QRectF &, Qt::SortOrder, bool b = false);
 
     static void climbTree(QGraphicsItem *item, int *stackingOrder);
     static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
@@ -159,7 +160,8 @@ public:
         return item1->d_ptr->globalStackingOrder >= item2->d_ptr->globalStackingOrder;
     }
 
-    static void sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order, bool cached);
+    static void sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order,
+                          bool cached, bool onlyTopLevelItems = false);
 };
 
 

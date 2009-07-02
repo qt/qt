@@ -30,13 +30,10 @@
 
 
 /*!
-    \fn virtual QList<QGraphicsItem *> QGraphicsSceneLinearIndex::estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
+    \fn virtual QList<QGraphicsItem *> QGraphicsSceneLinearIndex::estimateItems(const QRectF &rect, Qt::SortOrder order) const;
 
     Returns an estimation visible items that are either inside or
     intersect with the specified \a rect and return a list sorted using \a order.
-
-    \a deviceTransform is the transformation apply to the view.
-
 */
 
 /*!

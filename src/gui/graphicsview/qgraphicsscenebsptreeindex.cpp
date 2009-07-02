@@ -372,6 +372,32 @@ void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool rec
     }
 }
 
+QList<QGraphicsItem *> QGraphicsSceneBspTreeIndexPrivate::estimateItems(const QRectF &rect, Qt::SortOrder order,
+                                                                        bool onlyTopLevelItems)
+{
+    Q_Q(QGraphicsSceneBspTreeIndex);
+    if (onlyTopLevelItems && rect.isNull())
+        return q->QGraphicsSceneIndex::estimateTopLevelItems(rect, order);
+
+    purgeRemovedItems();
+    _q_updateSortCache();
+    Q_ASSERT(unindexedItems.isEmpty());
+
+    QList<QGraphicsItem *> rectItems = bsp.items(rect, onlyTopLevelItems);
+    if (onlyTopLevelItems) {
+        for (int i = 0; i < untransformableItems.size(); ++i) {
+            QGraphicsItem *item = untransformableItems.at(i);
+            if (!item->d_ptr->parent)
+                rectItems << item;
+        }
+    } else {
+        rectItems += untransformableItems;
+    }
+
+    sortItems(&rectItems, order, sortCacheEnabled, onlyTopLevelItems);
+    return rectItems;
+}
+
 /*!
     Returns true if \a item1 is on top of \a item2.
 
@@ -442,8 +468,19 @@ bool QGraphicsSceneBspTreeIndexPrivate::closestItemLast_withoutCache(const QGrap
     \internal
 */
 void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order,
-                                      bool sortCacheEnabled)
+                                                  bool sortCacheEnabled, bool onlyTopLevelItems)
 {
+    if (order == Qt::SortOrder(-1))
+        return;
+
+    if (onlyTopLevelItems) {
+        if (order == Qt::AscendingOrder)
+            qSort(itemList->begin(), itemList->end(), qt_closestLeaf);
+        else if (order == Qt::DescendingOrder)
+            qSort(itemList->begin(), itemList->end(), qt_notclosestLeaf);
+        return;
+    }
+
     if (sortCacheEnabled) {
         if (order == Qt::AscendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemFirst_withCache);
@@ -548,36 +585,17 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
     \a deviceTransform is the transformation apply to the view.
 
 */
-QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &rect, Qt::SortOrder order,
-                                                                 const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &rect, Qt::SortOrder order) const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
-    const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->purgeRemovedItems();
-    const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->_q_updateSortCache();
-
-    // ### Handle items that ignore transformations
-    Q_UNUSED(deviceTransform);
-
-    QList<QGraphicsItem *> rectItems = d->bsp.items(rect);
-
-    // Fill in with any unindexed items
-    for (int i = 0; i < d->unindexedItems.size(); ++i) {
-        if (QGraphicsItem *item = d->unindexedItems.at(i)) {
-            if (item->d_ptr->visible
-                && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
-                QRectF boundingRect = item->sceneBoundingRect();
-                if (QRectF_intersects(boundingRect, rect))
-                    rectItems << item;
-            }
-        }
-    }
-
-    rectItems += d->untransformableItems;
-    d->sortItems(&rectItems, order, d->sortCacheEnabled);
-
-    return rectItems;
+    return const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->estimateItems(rect, order);
 }
 
+QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const
+{
+    Q_D(const QGraphicsSceneBspTreeIndex);
+    return const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->estimateItems(rect, order, /*onlyTopLevels=*/true);
+}
 
 /*!
     \fn QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const;

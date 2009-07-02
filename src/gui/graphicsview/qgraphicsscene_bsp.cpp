@@ -70,12 +70,15 @@ class QGraphicsSceneFindItemBspTreeVisitor : public QGraphicsSceneBspTreeVisitor
 {
 public:
     QList<QGraphicsItem *> *foundItems;
+    bool onlyTopLevelItems;
 
     void visit(QList<QGraphicsItem *> *items)
     {
         for (int i = 0; i < items->size(); ++i) {
             QGraphicsItem *item = items->at(i);
-            if (!item->d_func()->itemDiscovered && item->isVisible()) {
+            if (onlyTopLevelItems && item->d_ptr->parent)
+                item = item->topLevelItem();
+            if (!item->d_func()->itemDiscovered && item->d_ptr->visible) {
                 item->d_func()->itemDiscovered = 1;
                 foundItems->prepend(item);
             }
@@ -143,10 +146,11 @@ void QGraphicsSceneBspTree::removeItems(const QSet<QGraphicsItem *> &items)
     }
 }
 
-QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect) const
+QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect, bool onlyTopLevelItems) const
 {
     QList<QGraphicsItem *> tmp;
     findVisitor->foundItems = &tmp;
+    findVisitor->onlyTopLevelItems = onlyTopLevelItems;
     climbTree(findVisitor, rect);
     // Reset discovery bits.
     for (int i = 0; i < tmp.size(); ++i)

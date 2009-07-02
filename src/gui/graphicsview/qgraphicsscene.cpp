@@ -1085,36 +1085,6 @@ QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item)
     return 0;
 }
 
-QList<QGraphicsItem *> QGraphicsScenePrivate::topLevelItemsInStackingOrder(const QTransform *const viewTransform,
-                                                                           const QRectF &sceneRect)
-{
-    if (indexMethod == QGraphicsScene::NoIndex || sceneRect.isNull()) {
-        ensureSortedTopLevelItems();
-        return topLevelItems;
-    }
-
-    const QList<QGraphicsItem *> tmp = index->estimateItems(sceneRect, Qt::SortOrder(-1),
-                                                            viewTransform ? *viewTransform : QTransform());
-    // estimateItems returns a list of *all* items, but we are only interested
-    // in the top-levels (those that are within the rect themselves and those that
-    // have descendants within the rect).
-    // ### Look into how we can add this feature to the BSP.
-    QList<QGraphicsItem *> tli;
-    for (int i = 0; i < tmp.size(); ++i) {
-        QGraphicsItem *topLevelItem = tmp.at(i)->topLevelItem();
-        if (!topLevelItem->d_ptr->itemDiscovered) {
-            tli << topLevelItem;
-            topLevelItem->d_ptr->itemDiscovered = 1;
-        }
-    }
-    // Reset discovered bit.
-    for (int i = 0; i < tli.size(); ++i)
-        tli.at(i)->d_ptr->itemDiscovered = 0;
-
-    qSort(tli.begin(), tli.end(), qt_notclosestLeaf);
-    return tli;
-}
-
 /*!
     \internal
 
@@ -1759,7 +1729,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     // Does not support ItemIgnoresTransformations.
     QList<QGraphicsItem *> tmp;
-    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::AscendingOrder, QTransform())) {
+    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::AscendingOrder)) {
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
             tmp << itemInVicinity;
     }
@@ -4207,6 +4177,20 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         painter->setWorldTransform(restoreTransform);
         return;
     }
+}
+
+void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const viewTransform,
+                                      QRegion *exposedRegion, QWidget *widget)
+{
+    QRectF exposedSceneRect;
+    if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
+        exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
+        if (viewTransform)
+            exposedSceneRect = viewTransform->inverted().mapRect(exposedSceneRect);
+    }
+    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::DescendingOrder);
+    for (int i = 0; i < tli.size(); ++i)
+        drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
 }
 
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
