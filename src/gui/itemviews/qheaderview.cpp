@@ -2540,7 +2540,7 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
     if (opt.icon.isNull())
         opt.icon = qvariant_cast<QPixmap>(variant);
     QSize size = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
-    if (isSortIndicatorShown() && sortIndicatorSection() == logicalIndex) {
+    if (isSortIndicatorShown()) {
         int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, &opt, this);
         if (d->orientation == Qt::Horizontal)
             size.rwidth() += size.height() + margin;
