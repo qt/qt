@@ -1802,10 +1802,60 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     }
 }
 
+#if !defined(QVG_NO_RENDER_TO_MASK)
+
+// Copied from qpathclipper.cpp.
+static bool qt_vg_pathToRect(const QPainterPath &path, QRectF *rect)
+{
+    if (path.elementCount() != 5)
+        return false;
+
+    const bool mightBeRect = path.elementAt(0).isMoveTo()
+        && path.elementAt(1).isLineTo()
+        && path.elementAt(2).isLineTo()
+        && path.elementAt(3).isLineTo()
+        && path.elementAt(4).isLineTo();
+
+    if (!mightBeRect)
+        return false;
+
+    const qreal x1 = path.elementAt(0).x;
+    const qreal y1 = path.elementAt(0).y;
+
+    const qreal x2 = path.elementAt(1).x;
+    const qreal y2 = path.elementAt(2).y;
+
+    if (path.elementAt(1).y != y1)
+        return false;
+
+    if (path.elementAt(2).x != x2)
+        return false;
+
+    if (path.elementAt(3).x != x1 || path.elementAt(3).y != y2)
+        return false;
+
+    if (path.elementAt(4).x != x1 || path.elementAt(4).y != y1)
+        return false;
+
+    if (rect)
+        *rect = QRectF(QPointF(x1, y1), QPointF(x2, y2));
+
+    return true;
+}
+
+#endif
+
 void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 {
 #if !defined(QVG_NO_RENDER_TO_MASK)
     Q_D(QVGPaintEngine);
+
+    // If the path is a simple rectangle, then use clip(QRect) instead.
+    QRectF simpleRect;
+    if (qt_vg_pathToRect(path, &simpleRect)) {
+        clip(simpleRect.toRect(), op);
+        return;
+    }
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
