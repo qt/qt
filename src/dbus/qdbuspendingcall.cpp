@@ -410,6 +410,7 @@ bool QDBusPendingCall::setReplyCallback(QObject *target, const char *member)
 #endif
 
 /*!
+    \since 4.6
     Creates a QDBusPendingCall object based on the error condition
     \a error. The resulting pending call object will be in the
     "finished" state and QDBusPendingReply::isError() will return true.
@@ -422,6 +423,7 @@ QDBusPendingCall QDBusPendingCall::fromError(const QDBusError &error)
 }
 
 /*!
+    \since 4.6
     Creates a QDBusPendingCall object based on the message \a msg.
     The message must be of type QDBusMessage::ErrorMessage or
     QDBusMessage::ReplyMessage (that is, a message that is typical
