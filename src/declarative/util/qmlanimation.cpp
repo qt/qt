@@ -97,13 +97,11 @@ QEasingCurve stringToCurve(const QString &curve)
     if (normalizedCurve.startsWith(QLatin1String("ease")))
         normalizedCurve = normalizedCurve.mid(4);
 
-    //XXX optimize?
-    int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
-    QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
+    static int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
+    static QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
 
     int value = me.keyToValue(normalizedCurve.toLatin1().constData());
     if (value < 0) {
-        //XXX print line number
         qWarning("QEasingCurve: Unknown easing curve '%s'",
                  curve.toLatin1().constData());
         value = 0;
@@ -130,7 +128,6 @@ QEasingCurve stringToCurve(const QString &curve)
                 return easingCurve;
             }
 
-            //XXX optimize
             if (propName == QLatin1String("amplitude")) {
                 easingCurve.setAmplitude(propValue);
             } else if (propName == QLatin1String("period")) {
@@ -698,15 +695,6 @@ void QmlPauseAnimation::setDuration(int duration)
     emit durationChanged(duration);
 }
 
-void QmlPauseAnimation::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlPauseAnimation);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
-}
-
 QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 {
     Q_D(QmlPauseAnimation);
@@ -721,6 +709,10 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
     \code
     ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
     \endcode
+
+    When used in a transition, ColorAnimation will by default animate
+    all properties of type color that are changing. If a property or properties
+    are explicity set for the animation, then those will be used instead.
 */
 /*!
     \internal
@@ -740,6 +732,7 @@ QmlColorAnimation::QmlColorAnimation(QObject *parent)
     d->init();
     d->interpolatorType = QMetaType::QColor;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
+    d->defaultToInterpolatorType = true;
 }
 
 QmlColorAnimation::~QmlColorAnimation()
@@ -1359,17 +1352,9 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
             d->animations.at(i)->setTarget(d->userProperty);
    }
 
-    //XXX removing and readding isn't ideal; we do it to get around the problem mentioned below.
-    for (int i = d->ag->animationCount()-1; i >= 0; --i)
-        d->ag->takeAnimationAt(i);
-
     for (int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
         d->animations.at(ii)->transition(actions, modified, direction);
-        d->ag->addAnimation(d->animations.at(ii)->qtAnimation());
     }
-
-    //XXX changing direction means all the animations play in reverse, while we only want the ordering reversed.
-    //d->ag->setDirection(direction == Backward ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
 }
 
 QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation)
@@ -1809,8 +1794,11 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         int interpolatorType;       //for Number/ColorAnimation
         int prevInterpolatorType;   //for generic
         QVariantAnimation::Interpolator interpolator;
+        bool reverse;
         void setValue(qreal v)
         {
+            if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
+                v = 1 - v;
             QmlTimeLineValue::setValue(v);
             for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
@@ -1845,8 +1833,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
-    /* ### we used to select properties of name 'color' by default for color animations
-    props << QLatin1String("color");*/
+    bool useType = (props.isEmpty() && d->defaultToInterpolatorType) ? true : false;
 
     if (d->userProperty.isValid() && props.isEmpty() && !target()) {
         props.append(d->userProperty.value.name());
@@ -1856,6 +1843,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     PropertyUpdater *data = new PropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
+    data->reverse = direction == Backward ? true : false;
 
     QSet<QObject *> objs;
     for (int ii = 0; ii < actions.count(); ++ii) {
@@ -1869,7 +1857,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
         if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
-           (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
+           (props.contains(propertyName) || (!same && props.contains(sPropertyName))
+               || (useType && action.property.propertyType() == d->interpolatorType)) &&
            (!target() || target() == obj || (!same && target() == sObj))) {
             objs.insert(obj);
             Action myAction = action;

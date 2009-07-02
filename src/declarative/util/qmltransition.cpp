@@ -177,6 +177,7 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
     }
 
     d->endState = endState;
+    d->group->setDirection(d->reversed ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
     d->group->start();
 }
 

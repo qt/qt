@@ -139,6 +139,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \o
 \list
+\o \l Scale
 \o \l Rotation
 \o \l Squish
 \o \l Rotation3D

@@ -93,9 +93,6 @@ public:
 
     QList<QmlError> errors() const;
 
-    QList<int> automaticSemicolonOffsets() const { return _automaticSemicolonOffsets; }
-    void addAutomaticSemicolonOffset(int offset) { _automaticSemicolonOffsets.append(offset); }
-
 // ### private:
     int findOrCreateTypeId(const QString &name);
     void setTree(QmlParser::Object *tree);
@@ -114,7 +111,6 @@ public:
     QStringList _typeNames;
     QString _scriptFile;
     QmlScriptParserJsASTData *data;
-    QList<int> _automaticSemicolonOffsets;
 };
 
 QT_END_NAMESPACE

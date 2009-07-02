@@ -79,8 +79,6 @@ public:
 
     QmlDomObject rootObject() const;
 
-    QList<int> automaticSemicolonOffsets() const;
-
 private:
     QSharedDataPointer<QmlDomDocumentPrivate> d;
 };

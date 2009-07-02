@@ -178,8 +178,6 @@ protected:
     virtual bool visit(AST::UiArrayBinding *node);
     virtual bool visit(AST::UiSourceElement *node);
 
-    virtual bool visit(AST::ExpressionStatement *node);
-
     void accept(AST::Node *node);
 
     QString asString(AST::UiQualifiedId *node) const;
@@ -669,14 +667,6 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     return true;
 }
 
-bool ProcessAST::visit(AST::ExpressionStatement *node)
-{
-    if (!node->semicolonToken.isValid())
-        _parser->addAutomaticSemicolonOffset(node->semicolonToken.offset);
-
-    return true;
-}
-
 static QList<int> collectCommas(AST::UiArrayMemberList *members)
 {
     QList<int> commas;
@@ -880,7 +870,6 @@ void QmlScriptParser::clear()
     _nameSpacePaths.clear();
     _typeNames.clear();
     _errors.clear();
-    _automaticSemicolonOffsets.clear();
 
     if (data) {
         delete data;

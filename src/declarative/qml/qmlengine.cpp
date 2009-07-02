@@ -842,7 +842,9 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         }
     \endcode
 
-    \sa QmlComponent::createObject()
+    If you want to just create an arbitrary string of QML, instead of an
+    existing qml component or qml file, consider the evalQML() function.
+    \sa QmlComponent::createObject(), QmlEngine::createQMLObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -868,6 +870,14 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
 
     Returns the created object, or null if there is an error. In the case of an
     error, details of the error are output using qWarning().
+
+    Note that this function returns immediately, and therefore may not work if
+    the QML loads new components. If you are trying to load a new component,
+    for example from a QML file, consider the createComponent() function
+    instead. 'New components' refers to external QML files that have not yet
+    been loaded, and so it is safe to use evalQml to load built-in components.
+
+    \sa QmlEngine::createComponent()
 */
 QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
