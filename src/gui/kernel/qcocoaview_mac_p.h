@@ -105,8 +105,6 @@ Q_GUI_EXPORT
 - (QWidget *)qt_qwidget;
 - (BOOL)qt_leftButtonIsRightButton;
 - (void)qt_setLeftButtonIsRightButton:(BOOL)isSwapped;
-- (NSView *)viewUnderTransparentForMouseView:(NSView *)mouseView widget:(QWidget *)widgetToGetMouse
-                             withWindowPoint:(NSPoint)windowPoint;
 + (DnDParams*)currentMouseEvent;
 
 @end
