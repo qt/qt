@@ -144,7 +144,7 @@ namespace QmlParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date, Alias };
 
             bool isDefaultProperty;
             Type type;

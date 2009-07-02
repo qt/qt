@@ -240,7 +240,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
         case QmlInstruction::StoreMetaObject:
             {
                 QObject *target = stack.top();
-                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
+                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, (instr.storeMeta.aliasData != -1)?datas.at(instr.storeMeta.aliasData):QByteArray(), comp);
             }
             break;
 

@@ -47,6 +47,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qdebug.h>
 #include <qmlexpression.h>
+#include <private/qmlcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,8 +55,10 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    const QMetaObject *other, 
                                    QList<QString> *strData,
                                    int slotData,
+                                   const QByteArray &alias,
                                    QmlRefCount *rc)
-: object(obj), ref(rc), slotData(strData), slotDataIdx(slotData), parent(0)
+: object(obj), ref(rc), slotData(strData), slotDataIdx(slotData), parent(0),
+  aliasData(alias), aliases(0), aliasArray(0)
 {
     if (ref)
         ref->addref();
@@ -68,13 +71,20 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
         parent = static_cast<QAbstractDynamicMetaObject*>(op->metaObject);
     op->metaObject = this;
 
+    if (!aliasData.isEmpty()) {
+        aliases = (Aliases *)aliasData.constData();
+        aliasArray = (AliasArray *)(aliasData.constData() + 3 * sizeof(int));
+        aConnected.resize(aliases->aliasCount);
+    }
+
     baseProp = propertyOffset();
     baseSig = methodOffset();
-    data = new QVariant[propertyCount() - baseProp];
-    vTypes.resize(propertyCount() - baseProp);
+    int propCount = propertyCount() - (aliases?aliases->aliasCount:0);
+    data = new QVariant[propCount - baseProp];
+    vTypes.resize(propCount - baseProp);
 
     // ### Optimize
-    for (int ii = baseProp; ii < propertyCount(); ++ii) {
+    for (int ii = baseProp; ii < propCount; ++ii) {
         QMetaProperty prop = property(ii);
         if ((int)prop.type() != -1) {
             data[ii - baseProp] = QVariant((QVariant::Type)prop.userType());
@@ -117,7 +127,34 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
             int propId = id - baseProp;
             bool needActivate = false;
 
-            if (vTypes.testBit(propId)) {
+            if (aliases && propId >= aliases->propCount) {
+                QmlContext *ctxt = qmlContext(object);
+
+                if (!ctxt) return -1;
+                int aliasId = propId - aliases->propCount;
+                AliasArray *d = aliasArray + aliasId;
+                QmlContextPrivate *ctxtPriv = 
+                    (QmlContextPrivate *)QObjectPrivate::get(ctxt);
+
+                QObject *target = *(QObject **)ctxtPriv->propertyValues[d->contextIdx].data();
+                if (!target) return -1;
+
+                if (c == QMetaObject::ReadProperty && 
+                    !aConnected.testBit(aliasId)) {
+
+                    int mySigIdx = baseSig + aliasId + aliases->signalOffset;
+                    QMetaObject::connect(ctxt, d->contextIdx + ctxtPriv->notifyIndex, object, mySigIdx);
+
+                    QMetaProperty prop = target->metaObject()->property(d->propIdx);
+                    if (prop.hasNotifySignal())
+                        QMetaObject::connect(target, prop.notifySignalIndex(), 
+                                             object, mySigIdx);
+                    aConnected.setBit(aliasId);
+
+                }
+                return QMetaObject::metacall(target, c, d->propIdx, a);
+
+            } else if (vTypes.testBit(propId)) {
                 if (c == QMetaObject::ReadProperty) {
                     *reinterpret_cast<QVariant *>(a[0]) = data[propId];
                 } else if (c == QMetaObject::WriteProperty) {
@@ -168,7 +205,10 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
             return id;
         } 
     } else if(c == QMetaObject::InvokeMetaMethod) {
-        if (id >= baseSig && (baseSlot == -1 || id < baseSlot)) {
+        if (id >= baseSig && (aliases && id >= baseSig + aliases->signalOffset)) {
+            QMetaObject::activate(object, id, a);
+            return id;
+        } else if (id >= baseSig && (baseSlot == -1 || id < baseSlot)) {
             QMetaObject::activate(object, id, a);
             return id;
         } else if (id >= baseSlot && id < (baseSlot + slotCount)) {
