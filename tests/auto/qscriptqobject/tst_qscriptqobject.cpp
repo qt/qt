@@ -596,7 +596,6 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     {
         QScriptValue mobj = m_engine->globalObject().property("myObject");
         QVERIFY(!(mobj.propertyFlags("intProperty") & QScriptValue::ReadOnly));
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::Undeletable);
         QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::PropertyGetter);
@@ -611,6 +610,13 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::SkipInEnumeration));
         QEXPECT_FAIL("", "Flags are wrong", Continue);
         QVERIFY(mobj.propertyFlags("mySlot") & QScriptValue::QObjectMember);
+
+        // signature-based property
+        QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::ReadOnly));
+        QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::Undeletable));
+        QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::SkipInEnumeration));
+        QEXPECT_FAIL("", "Flags are wrong", Continue);
+        QVERIFY(mobj.propertyFlags("mySlot()") & QScriptValue::QObjectMember);
     }
 
     // property change in C++ should be reflected in script
@@ -790,7 +796,6 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     QCOMPARE(m_myObject->readOnlyProperty(), 987);
     {
         QScriptValue mobj = m_engine->globalObject().property("myObject");
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QCOMPARE(mobj.propertyFlags("readOnlyProperty") & QScriptValue::ReadOnly,
                  QScriptValue::ReadOnly);
     }
@@ -859,6 +864,9 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
         QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
         QVERIFY(sameSlot.strictlyEquals(slot));
+        sameSlot = m_engine->evaluate("myObject[mySlot()]");
+        QEXPECT_FAIL("", "Slot wrappers aren't persistent yet", Continue);
+        QVERIFY(sameSlot.strictlyEquals(slot));
     }
 }
 
@@ -900,6 +908,8 @@ void tst_QScriptExtQObject::getSetDynamicProperty()
 
 void tst_QScriptExtQObject::getSetChildren()
 {
+    QScriptValue mobj = m_engine->evaluate("myObject");
+
     // initially the object does not have the child
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, false)), true);
@@ -909,6 +919,17 @@ void tst_QScriptExtQObject::getSetChildren()
     child->setObjectName("child");
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
+
+    QVERIFY(mobj.propertyFlags("child") & QScriptValue::ReadOnly);
+    QVERIFY(mobj.propertyFlags("child") & QScriptValue::Undeletable);
+    QVERIFY(mobj.propertyFlags("child") & QScriptValue::SkipInEnumeration);
+    QVERIFY(!(mobj.propertyFlags("child") & QScriptValue::QObjectMember));
+
+    {
+        QScriptValue scriptChild = m_engine->evaluate("myObject.child");
+        QVERIFY(scriptChild.isQObject());
+        QCOMPARE(scriptChild.toQObject(), (QObject*)child);
+    }
 
     // add a grandchild
     MyQObject *grandChild = new MyQObject(child);

@@ -142,6 +142,12 @@ static inline QByteArray methodName(const QMetaMethod &method)
     return signature.left(signature.indexOf('('));
 }
 
+static unsigned flagsForMetaProperty(const QMetaProperty &prop)
+{
+    return (JSC::DontDelete
+            | (!prop.isWritable() ? unsigned(JSC::ReadOnly) : unsigned(0)));
+}
+
 static int indexOfMetaEnum(const QMetaObject *meta, const QByteArray &str)
 {
     QByteArray scope;
@@ -1116,6 +1122,74 @@ bool QObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
                                                  const JSC::Identifier &propertyName,
                                                  unsigned &attributes) const
 {
+    // ### try to avoid duplicating logic from getOwnPropertySlot()
+    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QObject *qobject = data->value;
+    if (!qobject)
+        return false;
+
+    const QScriptEngine::QObjectWrapOptions &opt = data->options;
+    const QMetaObject *meta = qobject->metaObject();
+    QScriptEnginePrivate *eng = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    int index = -1;
+    if (name.contains('(')) {
+        QByteArray normalized = QMetaObject::normalizedSignature(name);
+        if (-1 != (index = meta->indexOfMethod(normalized))) {
+            QMetaMethod method = meta->method(index);
+            if (hasMethodAccess(method, index, opt)) {
+                if (!(opt & QScriptEngine::ExcludeSuperClassMethods)
+                    || (index >= meta->methodOffset())) {
+                    attributes = 0;
+                    if (opt & QScriptEngine::SkipMethodsInEnumeration)
+                        attributes |= JSC::DontEnum;
+                    return true;
+                }
+            }
+        }
+    }
+
+    index = meta->indexOfProperty(name);
+    if (index != -1) {
+        QMetaProperty prop = meta->property(index);
+        if (prop.isScriptable()) {
+            if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
+                || (index >= meta->propertyOffset())) {
+                attributes = flagsForMetaProperty(prop);
+                return true;
+            }
+        }
+    }
+
+    index = qobject->dynamicPropertyNames().indexOf(name);
+    if (index != -1) {
+        attributes = 0;
+        return true;
+    }
+
+    const int offset = (opt & QScriptEngine::ExcludeSuperClassMethods)
+                       ? meta->methodOffset() : 0;
+    for (index = meta->methodCount() - 1; index >= offset; --index) {
+        QMetaMethod method = meta->method(index);
+        if (hasMethodAccess(method, index, opt)
+            && (methodName(method) == name)) {
+            attributes = 0;
+            if (opt & QScriptEngine::SkipMethodsInEnumeration)
+                attributes |= JSC::DontEnum;
+            return true;
+        }
+    }
+
+    if (!(opt & QScriptEngine::ExcludeChildObjects)) {
+        QList<QObject*> children = qobject->children();
+        for (index = 0; index < children.count(); ++index) {
+            QObject *child = children.at(index);
+            if (child->objectName() == qtStringFromJSCUString(propertyName.ustring())) {
+                attributes = JSC::ReadOnly | JSC::DontDelete | JSC::DontEnum;
+                return true;
+            }
+        }
+    }
+
     return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
