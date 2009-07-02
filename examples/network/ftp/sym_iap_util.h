@@ -43,8 +43,18 @@
 
 #include <es_sock.h>
 #include <es_enum.h>
+#include <commdbconnpref.h>
+
 #include <sys/socket.h>
 #include <net/if.h>
+
+_LIT(KIapNameSetting, "IAP\\Name");             // text - mandatory
+_LIT(KIapDialogPref, "IAP\\DialogPref");        // TUnit32 - optional
+_LIT(KIapService, "IAP\\IAPService");           // TUnit32 - mandatory
+_LIT(KIapServiceType, "IAP\\IAPServiceType");   // text - mandatory
+_LIT(KIapBearer, "IAP\\IAPBearer");             // TUint32 - optional
+_LIT(KIapBearerType, "IAP\\IAPBearerType");     // text - optional
+_LIT(KIapNetwork, "IAP\\IAPNetwork");           // TUint32 - optional
 
 QString qt_TDesC2QStringL(const TDesC& aDescriptor) 
 {
@@ -58,7 +68,9 @@ QString qt_TDesC2QStringL(const TDesC& aDescriptor)
 static void qt_SetDefaultIapL() 
 {
     TUint count;
+    TBool activeLanConnectionFound = EFalse;
     TRequestStatus status;
+    TCommDbConnPref prefs;
 
     RSocketServ serv;
     CleanupClosePushL(serv);
@@ -71,41 +83,56 @@ static void qt_SetDefaultIapL()
 
     TConnectionInfoBuf connInfo;
 
-    _LIT(KIapNameSetting, "IAP\\Name");
-    TBuf8<256> iap8Name;
+    TBuf8<256> iapName;
+    TBuf8<256> iapServiceType;
 
     if (conn.EnumerateConnections(count) == KErrNone) {
         if(count > 0) {
             for (TUint i = 1; i <= count; i++) {
-                // Note: GetConnectionInfo expects 1-based index.
+                // we will loop all active connections
+                // if we find one of the LAN type - will use it silently
+                // if not prompt thet user as other types
+                /// are more likely to be charged :(
                 if (conn.GetConnectionInfo(i, connInfo) == KErrNone) {
                     if (conn.Attach(connInfo, RConnection::EAttachTypeNormal) == KErrNone) {
-                        conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name);
-                        break;
+                        conn.GetDesSetting(TPtrC(KIapNameSetting), iapName);
+                        conn.GetDesSetting(TPtrC(KIapServiceType), iapServiceType);
+                        if(iapServiceType.Find(_L8("LANService")) != KErrNotFound) {
+                            activeLanConnectionFound = ETrue;
+                            break;
+                        }
+                        // close & reopen from previous attach
+                        conn.Close();
+                        User::LeaveIfError(conn.Open(serv));
                     }
                 }
             }
-        } else {
-            /*
-             * no active connections yet
-             * use IAP dialog to select one
-             */
-            User::LeaveIfError(conn.Start());
-            User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name));
         }
-
-        iap8Name.ZeroTerminate();
-
-        conn.Stop();
-
-        struct ifreq ifReq;
-        strcpy(ifReq.ifr_name, (char*)iap8Name.Ptr());
-
-        User::LeaveIfError(setdefaultif(&ifReq));
-
-        conn.Close();
-        serv.Close();
     }
+
+    if (!activeLanConnectionFound) {
+        /*
+         * no active LAN connections yet
+         * offer IAP dialog to user
+         */
+        conn.Close(); // might be opened after attach
+        User::LeaveIfError(conn.Open(serv));
+        prefs.SetDialogPreference( ECommDbDialogPrefPrompt );
+        User::LeaveIfError(conn.Start(prefs));
+        User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iapName));
+    }
+
+    iapName.ZeroTerminate();
+
+    conn.Stop();
+
+    struct ifreq ifReq;
+    strcpy(ifReq.ifr_name, (char*)iapName.Ptr());
+
+    User::LeaveIfError(setdefaultif(&ifReq));
+
+    conn.Close();
+    serv.Close();
 
     CleanupStack::PopAndDestroy(&conn);
     CleanupStack::PopAndDestroy(&serv);
