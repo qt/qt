@@ -564,11 +564,15 @@ extern "C" {
             [self removeTrackingArea:t];
         }
     }
+
+    // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
+    // only be turned on if mouseTracking, hover is on or a tool tip is set.
+    // Unfortunately, Qt will send "tooltip" events on mouse moves, so we need to
+    // turn it on in ALL case. That means EVERY QCocoaView gets to pay the cost of
+    // mouse moves delivered to it (Apple recommends keeping it OFF because there
+    // is a performance hit). So it goes.
     NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
-                                 | NSTrackingInVisibleRect;
-    if (qwidget->hasMouseTracking() || !qwidgetprivate->toolTip.isEmpty()
-        || qwidget->testAttribute(Qt::WA_Hover))
-        trackingOptions |= NSTrackingMouseMoved;
+                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved;
     NSTrackingArea *ta = [[NSTrackingArea alloc] initWithRect:NSMakeRect(0, 0,
                                                                          qwidget->width(),
                                                                          qwidget->height())
