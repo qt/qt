@@ -19,17 +19,13 @@
 */
 
 #include "config.h"
-
 #include "JSProcessingInstruction.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSStyleSheet.h"
 #include "KURL.h"
 #include "ProcessingInstruction.h"
 #include "StyleSheet.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

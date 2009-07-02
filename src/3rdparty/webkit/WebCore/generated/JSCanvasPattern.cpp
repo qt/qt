@@ -19,13 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSCanvasPattern.h"
 
-#include <wtf/GetPtr.h>
-
 #include "CanvasPattern.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

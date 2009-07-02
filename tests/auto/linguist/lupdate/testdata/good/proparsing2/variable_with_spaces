@@ -1,0 +1,4 @@
+QString func()
+{
+    return QLineEdit::tr("variable with spaces");
+}

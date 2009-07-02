@@ -21,8 +21,9 @@
 #ifndef JSHTMLOptionElement_h
 #define JSHTMLOptionElement_h
 
-#include "JSHTMLElement.h"
 #include "HTMLOptionElement.h"
+#include "JSHTMLElement.h"
+
 namespace WebCore {
 
 class HTMLOptionElement;

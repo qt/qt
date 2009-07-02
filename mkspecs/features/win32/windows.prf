@@ -6,8 +6,8 @@ contains(TEMPLATE, ".*app"){
 
     qt:for(entryLib, $$list($$unique(QMAKE_LIBS_QT_ENTRY))) {
         isEqual(entryLib, -lqtmain): {
-            CONFIG(debug, debug|release): QMAKE_LIBS += $${entryLib}d
-            else: QMAKE_LIBS += $${entryLib}
+            CONFIG(debug, debug|release): QMAKE_LIBS += $${entryLib}$${QT_LIBINFIX}d
+            else: QMAKE_LIBS += $${entryLib}$${QT_LIBINFIX}
         } else {
             QMAKE_LIBS += $${entryLib}
         }

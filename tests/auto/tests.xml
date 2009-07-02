@@ -9,6 +9,9 @@
         <Test name="exceptionsafety" location="tests/auto/exceptionsafety/tst_exceptionsafety" />
         <Test name="headers" location="tests/auto/headers/tst_headers" />
         <Test name="languagechange" location="tests/auto/languagechange/tst_languagechange" />
+        <Test name="lrelease" location="tests/auto/linguist/lrelease/tst_lrelease" />
+        <Test name="lconvert" location="tests/auto/linguist/lconvert/tst_convert" />
+        <Test name="lupdate" location="tests/auto/linguist/lupdate/tst_lupdate" />
         <Test name="macgui" location="tests/auto/macgui/tst_macgui" platforms="macx-g++" />
         <Test name="mediaobject" location="tests/auto/mediaobject/tst_mediaobject" />
         <Test name="moc" location="tests/auto/moc/tst_moc" />
@@ -412,6 +415,9 @@
             <Test id="exceptionsafety" />
             <Test id="headers" />
             <Test id="languagechange" />
+            <Test id="lrelease" />
+            <Test id="lconvert" />
+            <Test id="lupdate" />
             <Test id="macgui" />
             <Test id="mediaobject" />
             <Test id="moc" />

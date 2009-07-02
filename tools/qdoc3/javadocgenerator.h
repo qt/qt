@@ -68,7 +68,7 @@ protected:
     void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     void generateFakeNode( const FakeNode *fake, CodeMarker *marker );
 
-    void generateText( const Text& text, const Node *relative, CodeMarker *marker );
+    bool generateText( const Text& text, const Node *relative, CodeMarker *marker );
     void generateBody( const Node *node, CodeMarker *marker );
     void generateAlsoList( const Node *node, CodeMarker *marker );
 

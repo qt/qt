@@ -91,6 +91,7 @@ void setJSClipboardDropEffect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsClipboardEffectAllowed(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSClipboardEffectAllowed(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsClipboardTypes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardFiles(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsClipboardConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore

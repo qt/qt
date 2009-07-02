@@ -132,7 +132,12 @@ static void cleanupCocoaWindowDelegate()
         qwidget->setAttribute(Qt::WA_PendingResizeEvent, true);
     } else {
         QResizeEvent qre(newSize, oldSize);
-        qt_sendSpontaneousEvent(qwidget, &qre);
+        if (qwidget->testAttribute(Qt::WA_PendingResizeEvent)) {
+            qwidget->setAttribute(Qt::WA_PendingResizeEvent, false);
+            QApplication::sendEvent(qwidget, &qre);
+        } else {
+            qt_sendSpontaneousEvent(qwidget, &qre);
+        }
     }
 }
 

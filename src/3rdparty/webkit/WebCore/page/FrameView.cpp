@@ -6,6 +6,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  *           (C) 2006 Graham Dennis (graham.dennis@gmail.com)
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -228,6 +229,30 @@ void FrameView::init()
     }
 }
 
+void FrameView::detachCustomScrollbars()
+{
+    if (!m_frame)
+        return;
+
+    Document* document = m_frame->document();
+    if (!document)
+        return;
+
+    Element* body = document->body();
+    if (!body)
+        return;
+
+    RenderBox* renderBox = body->renderBox();
+
+    Scrollbar* horizontalBar = horizontalScrollbar();
+    if (horizontalBar && horizontalBar->isCustomScrollbar() && reinterpret_cast<RenderScrollbar*>(horizontalBar)->owningRenderer() == renderBox)
+        setHasHorizontalScrollbar(false);
+
+    Scrollbar* verticalBar = verticalScrollbar();
+    if (verticalBar && verticalBar->isCustomScrollbar() && reinterpret_cast<RenderScrollbar*>(verticalBar)->owningRenderer() == renderBox)
+        setHasVerticalScrollbar(false);
+}
+
 void FrameView::clear()
 {
     setCanBlitOnScroll(true);
@@ -395,6 +420,11 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
 void FrameView::updateCompositingLayers(CompositingUpdate updateType)
 {
     RenderView* view = m_frame->contentRenderer();
+    if (view && view->compositor()) {
+        // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
+        view->compositor()->cacheAcceleratedCompositingEnabledFlag();
+    }
+    
     if (!view || !view->usesCompositing())
         return;
 
@@ -1296,10 +1326,10 @@ void FrameView::updateControlTints()
     // to define when controls get the tint and to call this function when that changes.
     
     // Optimize the common case where we bring a window to the front while it's still empty.
-    if (!m_frame || m_frame->loader()->url().isEmpty()) 
+    if (!m_frame || m_frame->loader()->url().isEmpty())
         return;
-    
-    if (theme()->supportsControlTints() && m_frame->contentRenderer()) {
+
+    if (m_frame->contentRenderer() && m_frame->contentRenderer()->theme()->supportsControlTints()) {
         if (needsLayout())
             layout();
         PlatformGraphicsContext* const noContext = 0;

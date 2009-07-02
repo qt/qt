@@ -64,11 +64,7 @@ class QWaitConditionEvent
 public:
     inline QWaitConditionEvent() : priority(0), wokenUp(false)
     {
-        QT_WA ({
-            event = CreateEvent(NULL, TRUE, FALSE, NULL);
-        }, {
-            event = CreateEventA(NULL, TRUE, FALSE, NULL);
-        });
+        event = CreateEvent(NULL, TRUE, FALSE, NULL);
     }
     inline ~QWaitConditionEvent() { CloseHandle(event); }
     int priority;

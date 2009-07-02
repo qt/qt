@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSWheelEvent.h"
 
-#include <wtf/GetPtr.h>
-
 #include "WheelEvent.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

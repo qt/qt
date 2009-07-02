@@ -65,7 +65,9 @@ public:
     
     virtual bool isVideo() const { return false; }
     virtual bool hasVideo() const { return false; }
-    
+
+    virtual bool supportsFullscreen() const { return false; }
+
     void scheduleLoad();
     
     virtual void defaultEventHandler(Event*);
@@ -108,6 +110,8 @@ public:
     void setDefaultPlaybackRate(float);
     float playbackRate() const;
     void setPlaybackRate(float);
+    bool webkitPreservesPitch() const;
+    void setWebkitPreservesPitch(bool);
     PassRefPtr<TimeRanges> played() const;
     PassRefPtr<TimeRanges> seekable() const;
     bool ended() const;
@@ -131,6 +135,8 @@ public:
 
     bool canPlay() const;
 
+    float percentLoaded() const;
+
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     void setNeedWidgetUpdate(bool needWidgetUpdate) { m_needWidgetUpdate = needWidgetUpdate; }
     void deliverNotification(MediaPlayerProxyNotificationType notification);
@@ -138,6 +144,8 @@ public:
     String initialURL();
     virtual void finishParsingChildren();
 #endif
+
+    bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
 
 protected:
     float getTimeOffsetAttribute(const QualifiedName&, float valueOnError) const;
@@ -150,16 +158,20 @@ protected:
     void setReadyState(MediaPlayer::ReadyState);
     void setNetworkState(MediaPlayer::NetworkState);
     
-private: // MediaPlayerObserver
+private: // MediaPlayerClient
     virtual void mediaPlayerNetworkStateChanged(MediaPlayer*);
     virtual void mediaPlayerReadyStateChanged(MediaPlayer*);
     virtual void mediaPlayerTimeChanged(MediaPlayer*);
-    virtual void mediaPlayerRepaint(MediaPlayer*);
     virtual void mediaPlayerVolumeChanged(MediaPlayer*);
     virtual void mediaPlayerDurationChanged(MediaPlayer*);
     virtual void mediaPlayerRateChanged(MediaPlayer*);
-    virtual void mediaPlayerSizeChanged(MediaPlayer*);
     virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*);
+    virtual void mediaPlayerRepaint(MediaPlayer*);
+    virtual void mediaPlayerSizeChanged(MediaPlayer*);
+#if USE(ACCELERATED_COMPOSITING)
+    virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*);
+    virtual GraphicsLayer* mediaPlayerGraphicsLayer(MediaPlayer*);
+#endif
 
 private:
     void loadTimerFired(Timer<HTMLMediaElement>*);
@@ -228,6 +240,7 @@ protected:
     
     float m_playbackRate;
     float m_defaultPlaybackRate;
+    bool m_webkitPreservesPitch;
     NetworkState m_networkState;
     ReadyState m_readyState;
     String m_currentSrc;

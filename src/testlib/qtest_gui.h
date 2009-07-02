@@ -46,6 +46,7 @@
 #include <QtTest/qtest.h>
 #include <QtTest/qtestevent.h>
 #include <QtTest/qtestmouse.h>
+#include <QtTest/qtesttouch.h>
 #include <QtTest/qtestkeyboard.h>
 
 #include <QtGui/qicon.h>

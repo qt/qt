@@ -591,6 +591,7 @@ CFG_OPENGL=auto
 CFG_OPENVG=no
 CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=no
+CFG_OPENVG_ON_OPENGL=no
 CFG_EGL=no
 CFG_EGL_GLES_INCLUDES=no
 CFG_SSE=auto
@@ -4473,7 +4474,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ;;
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                if [ "$PLATFORM_MAC" != "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_odbc" = "auto" ]; then
                         CFG_SQL_odbc=plugin
                     fi
@@ -5565,11 +5566,22 @@ if [ "$CFG_OPENVG" != "no" ]; then
         if [ "$CFG_OPENVG" = "auto" ]; then
             CFG_OPENVG=yes
         fi
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG openvg_on_opengl" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        if [ "$CFG_OPENVG" = "auto" ]; then
+            CFG_OPENVG=yes
+        fi
+        CFG_OPENVG_ON_OPENGL=yes
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG lower_case_includes" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG (lc includes)" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
         if [ "$CFG_OPENVG" = "auto" ]; then
             CFG_OPENVG=yes
         fi
         CFG_OPENVG_LC_INCLUDES=yes
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG openvg_on_opengl lower_case_includes" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG (lc includes)" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        if [ "$CFG_OPENVG" = "auto" ]; then
+            CFG_OPENVG=yes
+        fi
+        CFG_OPENVG_LC_INCLUDES=yes
+        CFG_OPENVG_ON_OPENGL=yes
     else
         if [ "$CFG_OPENVG" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "$CFG_OPENVG was specified for OpenVG but cannot be enabled due to functionality tests!"
@@ -5728,6 +5740,9 @@ else
     QT_CONFIG="$QT_CONFIG openvg"
     if [ "$CFG_OPENVG_LC_INCLUDES" = "yes" ]; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LOWER_CASE_VG_INCLUDES"
+    fi
+    if [ "$CFG_OPENVG_ON_OPENGL" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG openvg_on_opengl"
     fi
     if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG shivavg"

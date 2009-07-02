@@ -43,7 +43,7 @@
   cppcodemarker.cpp
 */
 
-#include <QtCore>
+#include <qdebug.h>
 #include "atom.h"
 #include "cppcodemarker.h"
 #include "node.h"
@@ -449,6 +449,21 @@ QString CppCodeMarker::functionEndRegExp(const QString& /* funcName */)
     return "^\\}$";
 }
 
+#if 0
+	    FastSection privateReimpFuncs(classe,
+                                          "Private Reimplemented Functions",
+                                          "private reimplemented function",
+                                          "private reimplemented functions");
+	    FastSection protectedReimpFuncs(classe,
+                                            "Protected Reimplemented Functions",
+                                            "protected reimplemented function",
+                                            "protected reimplemented functions");
+	    FastSection publicReimpFuncs(classe,
+                                         "Public Reimplemented Functions",
+                                         "public reimplemented function",
+                                         "public reimplemented functions");
+#endif
+
 QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                        SynopsisStyle style,
                                        Status status)
@@ -463,14 +478,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                          "Private Functions",
                                          "private function",
 				         "private functions");
-	    FastSection privateSlots(classe,
-                                     "Private Slots",
-                                     "private slot",
-                                     "private slots");
-	    FastSection privateTypes(classe,
-                                     "Private Types",
-                                     "private type",
-                                     "private types");
+	    FastSection privateSlots(classe, "Private Slots", "private slot", "private slots");
+	    FastSection privateTypes(classe, "Private Types", "private type", "private types");
 	    FastSection protectedFunctions(classe,
                                            "Protected Functions",
                                            "protected function",
@@ -490,27 +499,15 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 	    FastSection publicFunctions(classe,
                                         "Public Functions",
                                         "public function",
-				        "public functions");
-	    FastSection publicSignals(classe,
-                                      "Signals",
-                                      "signal",
-                                      "signals");
-	    FastSection publicSlots(classe,
-                                    "Public Slots",
-                                    "public slot",
-                                    "public slots");
-	    FastSection publicTypes(classe,
-                                    "Public Types",
-                                    "public type",
-                                    "public types");
+                                        "public functions");
+	    FastSection publicSignals(classe, "Signals", "signal", "signals");
+	    FastSection publicSlots(classe, "Public Slots", "public slot", "public slots");
+	    FastSection publicTypes(classe, "Public Types", "public type", "public types");
 	    FastSection publicVariables(classe,
                                         "Public Variables",
                                         "public type",
                                         "public variables");
-	    FastSection properties(classe,
-                                   "Properties",
-                                   "property",
-                                   "properties");
+	    FastSection properties(classe, "Properties", "property", "properties");
 	    FastSection relatedNonMembers(classe,
                                           "Related Non-Members",
                                           "related non-member",
@@ -587,7 +584,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                 insert(publicVariables, *c, style, status);
 		        }
                         else if ((*c)->type() == Node::Function) {
-                            insert(publicFunctions, *c, style, status);
+                            if (!insertReimpFunc(publicFunctions,*c,status))
+                                insert(publicFunctions, *c, style, status);
 		        }
                         else {
 		            insert(publicTypes, *c, style, status);
@@ -607,7 +605,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                 insert(protectedVariables,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Function) {
-		            insert(protectedFunctions, *c, style, status);
+                            if (!insertReimpFunc(protectedFunctions,*c,status))
+                                insert(protectedFunctions, *c, style, status);
 		        }
                         else {
 		            insert(protectedTypes, *c, style, status);
@@ -623,7 +622,12 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 		                insert(staticPrivateMembers,*c,style,status);
 		        }
                         else if ((*c)->type() == Node::Function) {
+<<<<<<< HEAD:tools/qdoc3/cppcodemarker.cpp
 		            insert(privateFunctions,*c,style,status);
+=======
+                            if (!insertReimpFunc(privateFunctions,*c,status))
+                                insert(privateFunctions, *c, style, status);
+>>>>>>> 6c9647f6673fd5738001c5bbe416b116442fbc41:tools/qdoc3/cppcodemarker.cpp
 		        }
                         else {
 		            insert(privateTypes,*c,style,status);

@@ -54,6 +54,7 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qset.h"
 #include "qpixmapcache.h"
 #include "qgraphicsview_p.h"
 
@@ -92,6 +93,12 @@ public:
     void purge();
 };
 
+class QGestureExtraData
+{
+public:
+    QSet<int> gestures;
+};
+
 class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
@@ -101,7 +108,8 @@ public:
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
-        ExtraBoundingRegionGranularity
+        ExtraBoundingRegionGranularity,
+        ExtraGestures
     };
 
     enum AncestorFlag {
@@ -153,6 +161,8 @@ public:
         isObject(0),
         ignoreVisible(0),
         ignoreOpacity(0),
+        acceptTouchEvents(0),
+        acceptedTouchBeginEvent(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -174,7 +184,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
-    
+
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
@@ -243,7 +253,7 @@ public:
             }
         }
     }
-    
+
     struct ExtraStruct {
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
@@ -255,7 +265,7 @@ public:
         bool operator<(Extra extra) const
         { return type < extra; }
     };
-    
+
     QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
@@ -384,7 +394,31 @@ public:
     int index;
     int depth;
 
-    // Packed 32 bits
+    inline QGestureExtraData* extraGestures() const
+    {
+        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
+        if (!c) {
+            QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
+            c = new QGestureExtraData;
+            that->setExtra(ExtraGestures, qVariantFromValue<void *>(c));
+        }
+        return c;
+    }
+    QGestureExtraData* maybeExtraGestures() const
+    {
+        return (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
+    }
+    inline void removeExtraGestures()
+    {
+        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
+        delete c;
+        unsetExtra(ExtraGestures);
+    }
+    bool hasGesture(const QString &gesture) const;
+    void grabGesture(int id);
+    bool releaseGesture(int id);
+
+    // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -401,8 +435,8 @@ public:
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
     quint32 isWidget : 1;
-    quint32 dirty : 1;    
-    quint32 dirtyChildren : 1;    
+    quint32 dirty : 1;
+    quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
@@ -421,7 +455,9 @@ public:
     quint32 isObject : 1;
     quint32 ignoreVisible : 1;
     quint32 ignoreOpacity : 1;
-    quint32 unused : 12; // feel free to use
+    quint32 acceptTouchEvents : 1;
+    quint32 acceptedTouchBeginEvent : 1;
+    quint32 unused : 10; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

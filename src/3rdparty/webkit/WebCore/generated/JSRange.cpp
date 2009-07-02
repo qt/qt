@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSRange.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DocumentFragment.h"
 #include "JSDocumentFragment.h"
@@ -31,10 +28,10 @@
 #include "KURL.h"
 #include "Node.h"
 #include "Range.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

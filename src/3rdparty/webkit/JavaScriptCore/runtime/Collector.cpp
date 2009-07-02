@@ -1,7 +1,6 @@
 /*
  *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Eric Seidel <eric@webkit.org>
- *  Copyright (C) 2008 Torch Mobile, Inc.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -28,6 +27,7 @@
 #include "Interpreter.h"
 #include "JSGlobalObject.h"
 #include "JSLock.h"
+#include "JSONObject.h"
 #include "JSString.h"
 #include "JSValue.h"
 #include "Nodes.h"
@@ -409,54 +409,68 @@ void* Heap::allocateNumber(size_t s)
     return heapAllocate<NumberHeap>(s);
 }
 
-#if PLATFORM(WIN_CE)
-// Return the number of bytes that are writable starting at p.
-// The pointer p is assumed to be page aligned.
-static inline DWORD numberOfWritableBytes(void* p)
+#if PLATFORM(WINCE)
+void* g_stackBase = 0;
+
+inline bool isPageWritable(void* page)
 {
-    MEMORY_BASIC_INFORMATION buf;
-    DWORD result = VirtualQuery(p, &buf, sizeof(buf));
-    ASSERT(result == sizeof(buf));
-    DWORD protect = (buf.Protect & ~(PAGE_GUARD | PAGE_NOCACHE));
+    MEMORY_BASIC_INFORMATION memoryInformation;
+    DWORD result = VirtualQuery(page, &memoryInformation, sizeof(memoryInformation));
 
-    // check if the page is writable
-    if (protect != PAGE_READWRITE && protect != PAGE_WRITECOPY &&
-        protect != PAGE_EXECUTE_READWRITE && protect != PAGE_EXECUTE_WRITECOPY)
-        return 0;
+    // return false on error, including ptr outside memory
+    if (result != sizeof(memoryInformation))
+        return false;
 
-    if (buf.State != MEM_COMMIT)
-        return 0;
-
-    return buf.RegionSize;
+    DWORD protect = memoryInformation.Protect & ~(PAGE_GUARD | PAGE_NOCACHE);
+    return protect == PAGE_READWRITE
+        || protect == PAGE_WRITECOPY
+        || protect == PAGE_EXECUTE_READWRITE
+        || protect == PAGE_EXECUTE_WRITECOPY;
 }
 
-static DWORD systemPageSize()
- {
-    SYSTEM_INFO sysInfo;
-    GetSystemInfo(&sysInfo);
-    return sysInfo.dwPageSize;
-}
-
-static inline void* currentThreadStackBaseWinCE()
+static void* getStackBase(void* previousFrame)
 {
-    static DWORD pageSize = systemPageSize();
-    int dummy;
-    void* sp = &dummy;
-    char* alignedStackPtr = reinterpret_cast<char*>((DWORD)sp & ~(pageSize - 1));
-    DWORD size = 0;
-    while (size = numberOfWritableBytes(alignedStackPtr))
-        alignedStackPtr += size;
-    return alignedStackPtr;
+    // find the address of this stack frame by taking the address of a local variable
+    bool isGrowingDownward;
+    void* thisFrame = (void*)(&isGrowingDownward);
+
+    isGrowingDownward = previousFrame < &thisFrame;
+    static DWORD pageSize = 0;
+    if (!pageSize) {
+        SYSTEM_INFO systemInfo;
+        GetSystemInfo(&systemInfo);
+        pageSize = systemInfo.dwPageSize;
+    }
+
+    // scan all of memory starting from this frame, and return the last writeable page found
+    register char* currentPage = (char*)((DWORD)thisFrame & ~(pageSize - 1));
+    if (isGrowingDownward) {
+        while (currentPage > 0) {
+            // check for underflow
+            if (currentPage >= (char*)pageSize)
+                currentPage -= pageSize;
+            else
+                currentPage = 0;
+            if (!isPageWritable(currentPage))
+                return currentPage + pageSize;
+        }
+        return 0;
+    } else {
+        while (true) {
+            // guaranteed to complete because isPageWritable returns false at end of memory
+            currentPage += pageSize;
+            if (!isPageWritable(currentPage))
+                return currentPage;
+        }
+    }
 }
-#endif // PLATFORM(WIN_CE)
+#endif
 
 static inline void* currentThreadStackBase()
 {
 #if PLATFORM(DARWIN)
     pthread_t thread = pthread_self();
     return pthread_get_stackaddr_np(thread);
-#elif PLATFORM(WIN_CE)
-    return currentThreadStackBaseWinCE();
 #elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(MSVC)
     // offset 0x18 from the FS segment register gives a pointer to
     // the thread information block for the current thread
@@ -560,6 +574,13 @@ static inline void* currentThreadStackBase()
     }
     return static_cast<char*>(stackBase) + stackSize;
 #endif
+#elif PLATFORM(WINCE)
+    if (g_stackBase)
+        return g_stackBase;
+    else {
+        int dummy;
+        return getStackBase(&dummy);
+    }
 #else
 #error Need a way to get the stack base on this platform
 #endif
@@ -1094,6 +1115,8 @@ bool Heap::collect()
     m_globalData->smallStrings.mark();
     if (m_globalData->scopeNodeBeingReparsed)
         m_globalData->scopeNodeBeingReparsed->mark();
+    if (m_globalData->firstStringifierToMark)
+        JSONObject::markStringifiers(m_globalData->firstStringifierToMark);
 
     JAVASCRIPTCORE_GC_MARKED();
 

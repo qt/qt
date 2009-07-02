@@ -1039,6 +1039,25 @@ bool QXmlQuery::setFocus(QIODevice *document)
 }
 
 /*!
+  This function behaves identically to calling the setFocus() overload with a
+  QIODevice whose content is \a focus encoded as UTF-8. That is, \a focus is
+  treated as if it contained an XML document.
+
+  Returns the same result as the overload.
+
+  \overload
+  \since 4.6
+ */
+bool QXmlQuery::setFocus(const QString &focus)
+{
+    QBuffer device;
+    device.setData(focus.toUtf8());
+    device.open(QIODevice::ReadOnly);
+
+    return setFocusHelper(this, &device);
+}
+
+/*!
   Returns a value indicating what this QXmlQuery is being used for.
   The default is QXmlQuery::XQuery10, which means the QXmlQuery is
   being used for running XQuery and XPath queries. QXmlQuery::XSLT20

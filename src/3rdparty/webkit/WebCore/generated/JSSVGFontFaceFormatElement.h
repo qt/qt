@@ -21,10 +21,10 @@
 #ifndef JSSVGFontFaceFormatElement_h
 #define JSSVGFontFaceFormatElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

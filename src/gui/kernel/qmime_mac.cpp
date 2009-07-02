@@ -502,6 +502,8 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
 
 #ifdef Q_WS_MAC32
 
+// This can be removed once 10.6 is the minimum (or we have to require 64-bit) whichever comes first.
+
 #include <QuickTime/QuickTime.h>
 #include <qlibrary.h>
 
@@ -1099,7 +1101,10 @@ void QMacPasteboardMime::initialize()
         //standard types that we wrap
         new QMacPasteboardMimeTiff;
 #ifdef Q_WS_MAC32
-        new QMacPasteboardMimePict;
+        // 10.6 does automatic synthesis to and from PICT to standard image types (like TIFF),
+        // so don't bother doing it ourselves, especially since it's not available in 64-bit.
+        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+            new QMacPasteboardMimePict;
 #endif
         new QMacPasteboardMimeUnicodeText;
         new QMacPasteboardMimePlainText;

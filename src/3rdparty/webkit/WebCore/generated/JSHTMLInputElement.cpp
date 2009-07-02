@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLInputElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "FileList.h"
 #include "HTMLFormElement.h"
@@ -30,10 +27,10 @@
 #include "JSFileList.h"
 #include "JSHTMLFormElement.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

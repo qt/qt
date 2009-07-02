@@ -21,10 +21,10 @@
 #ifndef JSSVGPathSegLinetoHorizontalRel_h
 #define JSSVGPathSegLinetoHorizontalRel_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGPathSeg.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

@@ -21,10 +21,10 @@
 #ifndef JSSVGZoomEvent_h
 #define JSSVGZoomEvent_h
 
-
 #if ENABLE(SVG)
 
 #include "JSUIEvent.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

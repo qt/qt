@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<context>
+    <name>B</name>
+    <message>
+        <location filename="main.cpp" line="17"/>
+        <source>Bla</source>
+        <comment>::B</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>C</name>
+    <message>
+        <location filename="main.cpp" line="24"/>
+        <source>Bla</source>
+        <comment>::C</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>nsB::B</name>
+    <message>
+        <location filename="main.cpp" line="37"/>
+        <source>Bla</source>
+        <comment>nsB::B</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>nsB::C</name>
+    <message>
+        <location filename="main.cpp" line="43"/>
+        <source>Bla</source>
+        <comment>nsB::C</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>

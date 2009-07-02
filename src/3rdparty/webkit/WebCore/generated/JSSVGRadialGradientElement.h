@@ -21,10 +21,10 @@
 #ifndef JSSVGRadialGradientElement_h
 #define JSSVGRadialGradientElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGGradientElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

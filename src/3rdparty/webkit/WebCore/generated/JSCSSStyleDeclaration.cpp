@@ -19,12 +19,8 @@
 */
 
 #include "config.h"
-
 #include "JSCSSStyleDeclaration.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "AtomicString.h"
 #include "CSSRule.h"
 #include "CSSStyleDeclaration.h"
@@ -33,9 +29,10 @@
 #include "JSCSSStyleDeclarationCustom.h"
 #include "JSCSSValue.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -207,7 +204,7 @@ JSValue jsCSSStyleDeclarationConstructor(ExecState* exec, const Identifier&, con
 }
 void JSCSSStyleDeclaration::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     lookupPut<JSCSSStyleDeclaration, Base>(exec, propertyName, value, &JSCSSStyleDeclarationTable, this, slot);
 }

@@ -175,13 +175,14 @@ private slots:
     void emptyTableNavigate();
 
 #ifdef NOT_READY_YET
-    void task_217003_data() { generic_data(); }
-    void task_217003();
     void task_229811();
     void task_229811_data() { generic_data(); }
     void task_234422_data() {  generic_data(); }
     void task_234422();
 #endif
+    void task_217003_data() { generic_data(); }
+    void task_217003();
+
     void task_250026_data() { generic_data("QODBC"); }
     void task_250026();
     void task_205701_data() { generic_data("QMYSQL"); }
@@ -300,9 +301,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
 
     tablenames <<  qTableName( "qtest_lockedtable" );
 
-#ifdef NOT_READY_YET
     tablenames <<  qTableName( "Planet" );
-#endif
+    
     tablenames << qTableName( "task_250026" );
     tablenames << qTableName( "task_234422" );
 
@@ -2616,7 +2616,6 @@ void tst_QSqlQuery::emptyTableNavigate()
     }
 }
 
-#ifdef NOT_READY_YET
 void tst_QSqlQuery::task_217003()
 {
     QFETCH( QString, dbName );
@@ -2643,7 +2642,6 @@ void tst_QSqlQuery::task_217003()
     QVERIFY_SQL( q, seek( 1 ) );
     QCOMPARE( q.value( 0 ).toString(), QString( "Venus" ) );
 }
-#endif
 
 void tst_QSqlQuery::task_250026()
 {

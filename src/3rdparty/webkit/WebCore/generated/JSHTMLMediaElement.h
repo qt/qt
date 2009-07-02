@@ -21,7 +21,6 @@
 #ifndef JSHTMLMediaElement_h
 #define JSHTMLMediaElement_h
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLElement.h"
@@ -103,6 +102,8 @@ JSC::JSValue jsHTMLMediaElementVolume(JSC::ExecState*, const JSC::Identifier&, c
 void setJSHTMLMediaElementVolume(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLMediaElementMuted(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLMediaElementMuted(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLMediaElementWebkitPreservesPitch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLMediaElementWebkitPreservesPitch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLMediaElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 

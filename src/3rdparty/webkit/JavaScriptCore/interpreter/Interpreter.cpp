@@ -76,7 +76,7 @@ namespace JSC {
 static ALWAYS_INLINE unsigned bytecodeOffsetForPC(CallFrame* callFrame, CodeBlock* codeBlock, void* pc)
 {
 #if ENABLE(JIT)
-    return codeBlock->getBytecodeIndex(callFrame, pc);
+    return codeBlock->getBytecodeIndex(callFrame, ReturnAddressPtr(pc));
 #else
     UNUSED_PARAM(callFrame);
     return static_cast<Instruction*>(pc) - codeBlock->instructions().begin();
@@ -350,7 +350,7 @@ NEVER_INLINE JSValue Interpreter::callEval(CallFrame* callFrame, RegisterFile* r
 
     UString programSource = asString(program)->value();
 
-    LiteralParser preparser(callFrame, programSource);
+    LiteralParser preparser(callFrame, programSource, LiteralParser::NonStrictJSON);
     if (JSValue parsedObject = preparser.tryLiteralParse())
         return parsedObject;
     
@@ -970,12 +970,18 @@ NEVER_INLINE void Interpreter::tryCachePutByID(CallFrame* callFrame, CodeBlock* 
         return;
     }
 
+    StructureChain* protoChain = structure->prototypeChain(callFrame);
+    if (!protoChain->isCacheable()) {
+        vPC[0] = getOpcode(op_put_by_id_generic);
+        return;
+    }
+
     // Structure transition, cache transition info
     if (slot.type() == PutPropertySlot::NewProperty) {
         vPC[0] = getOpcode(op_put_by_id_transition);
         vPC[4] = structure->previousID();
         vPC[5] = structure;
-        vPC[6] = structure->prototypeChain(callFrame);
+        vPC[6] = protoChain;
         vPC[7] = slot.cachedOffset();
         codeBlock->refStructures(vPC);
         return;
@@ -1077,9 +1083,15 @@ NEVER_INLINE void Interpreter::tryCacheGetByID(CallFrame* callFrame, CodeBlock* 
         return;
     }
 
+    StructureChain* protoChain = structure->prototypeChain(callFrame);
+    if (!protoChain->isCacheable()) {
+        vPC[0] = getOpcode(op_get_by_id_generic);
+        return;
+    }
+
     vPC[0] = getOpcode(op_get_by_id_chain);
     vPC[4] = structure;
-    vPC[5] = structure->prototypeChain(callFrame);
+    vPC[5] = protoChain;
     vPC[6] = count;
     vPC[7] = slot.cachedOffset();
     codeBlock->refStructures(vPC);

@@ -76,6 +76,7 @@ include(pcre/pcre.pri)
 
 LUT_FILES += \
     runtime/DatePrototype.cpp \
+    runtime/JSONObject.cpp \
     runtime/NumberConstructor.cpp \
     runtime/StringPrototype.cpp \
     runtime/ArrayPrototype.cpp \
@@ -117,6 +118,7 @@ SOURCES += \
     runtime/JSVariableObject.cpp \
     runtime/JSActivation.cpp \
     runtime/JSNotAnObject.cpp \
+    runtime/JSONObject.cpp \
     runtime/LiteralParser.cpp \
     runtime/TimeoutChecker.cpp \
     bytecode/CodeBlock.cpp \
@@ -159,8 +161,8 @@ SOURCES += \
     runtime/ConstructData.cpp \
     wtf/CurrentTime.cpp \
     runtime/DateConstructor.cpp \
+    runtime/DateConversion.cpp \
     runtime/DateInstance.cpp \
-    runtime/DateMath.cpp \
     runtime/DatePrototype.cpp \
     debugger/Debugger.cpp \
     debugger/DebuggerCallFrame.cpp \
@@ -225,6 +227,7 @@ SOURCES += \
     profiler/ProfileNode.cpp \
     profiler/Profiler.cpp \
     profiler/TreeProfile.cpp \
+    wtf/DateMath.cpp \
     wtf/FastMalloc.cpp \
     wtf/Threading.cpp \
     wtf/qt/MainThreadQt.cpp

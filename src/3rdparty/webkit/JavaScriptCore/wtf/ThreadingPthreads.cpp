@@ -183,7 +183,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
 
 void setThreadNameInternal(const char* threadName)
 {
-#if PLATFORM(DARWIN) && !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+#if PLATFORM(DARWIN) && !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
     pthread_setname_np(threadName);
 #else
     UNUSED_PARAM(threadName);
@@ -264,6 +264,61 @@ bool Mutex::tryLock()
 void Mutex::unlock()
 {
     int result = pthread_mutex_unlock(&m_mutex);
+    ASSERT_UNUSED(result, !result);
+}
+
+
+ReadWriteLock::ReadWriteLock()
+{
+    pthread_rwlock_init(&m_readWriteLock, NULL);
+}
+
+ReadWriteLock::~ReadWriteLock()
+{
+    pthread_rwlock_destroy(&m_readWriteLock);
+}
+
+void ReadWriteLock::readLock()
+{
+    int result = pthread_rwlock_rdlock(&m_readWriteLock);
+    ASSERT_UNUSED(result, !result);
+}
+
+bool ReadWriteLock::tryReadLock()
+{
+    int result = pthread_rwlock_tryrdlock(&m_readWriteLock);
+
+    if (result == 0)
+        return true;
+    if (result == EBUSY || result == EAGAIN)
+        return false;
+
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+void ReadWriteLock::writeLock()
+{
+    int result = pthread_rwlock_wrlock(&m_readWriteLock);
+    ASSERT_UNUSED(result, !result);
+}
+
+bool ReadWriteLock::tryWriteLock()
+{
+    int result = pthread_rwlock_trywrlock(&m_readWriteLock);
+
+    if (result == 0)
+        return true;
+    if (result == EBUSY || result == EAGAIN)
+        return false;
+
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+void ReadWriteLock::unlock()
+{
+    int result = pthread_rwlock_unlock(&m_readWriteLock);
     ASSERT_UNUSED(result, !result);
 }
 
