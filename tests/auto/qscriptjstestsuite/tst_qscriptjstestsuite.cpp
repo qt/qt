@@ -409,8 +409,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma/String/15.5.4.12-4.js", "var s = new String( String.fromCharCode(1117) ); s.toUpperCase().charCodeAt(0)", fromCharCodeMessage);
     addExpectedFailure("ecma/String/15.5.4.12-5.js", "var s = new String( String.fromCharCode(1415) ); s.toUpperCase().charCodeAt(0)", fromCharCodeMessage);
 
-    addExpectedFailure("ecma/String/15.5.4.6-2.js", "function f() { return this; }; function g() { var h = f; return h(); }; g().toString()", willFixInNextReleaseMessage);
-
     addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "- \"-0x123456789abcde8\"", willFixInNextReleaseMessage);
 
     addExpectedFailure("ecma/extensions/15.1.2.1-1.js", "var PROPS = ''; for ( p in eval ) { PROPS += p }; PROPS", willFixInNextReleaseMessage);
@@ -423,9 +421,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma/GlobalObject/15.1.2.5-1.js", "var MYPROPS=''; for ( var p in unescape ) { MYPROPS+= p }; MYPROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.6.js", "var MYPROPS=''; for ( var p in isNaN ) { MYPROPS+= p }; MYPROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.7.js", "var MYPROPS=''; for ( p in isFinite ) { MYPROPS+= p }; MYPROPS", willFixInNextReleaseMessage);
-
-    addExpectedFailure("ecma/Statements/12.6.3-12.js", "var result=''; for ( aVar in this ) { if (aVar == 'aVar') {return a failure}; result", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma/String/15.5.4.6-2.js", "var d = new Date(0); d.indexOf = String.prototype.indexOf; d.getTimezoneOffset()>0 ? d.indexOf('31') : d.indexOf('01')", willFixInNextReleaseMessage);
 
     // qstrtod() has problems parsing reaaaaally big numbers -- they come out as NaN rather than Infinity or Number.MAX_VALUE
     addSkip("ecma/TypeConversion/9.3.1-3.js", "parseInt(s1,10) == 1.7976931348623157e+308 || parseInt(s1,10) == Infinity", brokenOnSomePlatformsMessage);
@@ -444,11 +439,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_2/RegExp/multiline-001.js", "/.*[y]$/m.exec(ivory-billed\ndowny\nhairy\nacorn\nyellow-bellied sapsucker\nnorthern flicker\npileated\n)", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_2/RegExp/multiline-001.js", "/.*[d]$/m.exec(ivory-billed\ndowny\nhairy\nacorn\nyellow-bellied sapsucker\nnorthern flicker\npileated\n)", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_2/String/match-002.js", "//.toString()", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/String/match-002.js", "( Boston, Mass. 02134 ).match(/([d]{5})([- ]?[d]{4})?$/)[2]", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/String/match-002.js", "( Boston, MA 02134 ).match(re = /([d]{5})([- ]?[d]{4})?$/; re.lastIndex =0)[2]", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/String/match-002.js", "( Boston, MA 02134 ).match(re = /([d]{5})([- ]?[d]{4})?$/; re.lastIndex = 16)[2]", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/String/match-002.js", "( Boston, MA 02134 ).match(re = /([d]{5})([- ]?[d]{4})?$/; re.lastIndex = 11)[2]", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/String/match-002.js", "( Boston, MA 02134 ).match(re = /([d]{5})([- ]?[d]{4})?$/; re.lastIndex = 111)[2]", willFixInNextReleaseMessage);
 
 #if defined(Q_WS_WIN)
     addExpectedFailure(QRegExp(), "VAR1 = 0; VAR2= Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
@@ -477,15 +467,8 @@ tst_Suite::tst_Suite()
     addExpectedFailure(QRegExp(), "Math.atan2(-Infinity, -Infinity)", willFixInNextReleaseMessage);
 #endif
 
-    addExpectedFailure("ecma_3/Array/15.4.4.11-01.js", "Array.sort should not eat exceptions", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Array/15.4.4.3-1.js", "Testing Array.prototype.toLocaleString() -", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Array/15.4.5.1-01.js", "15.4.5.1 - array.length coverage", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/ExecutionContexts/10.1.4-1.js", "Expected to be able to delete x", willFixInNextReleaseMessage);
-
-    addExpectedFailure("ecma_3/extensions/regress-220367-002.js", "Section 1 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/extensions/regress-220367-002.js", "Section 2 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/extensions/regress-220367-002.js", "Section 3 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/extensions/regress-220367-002.js", "Section 4 of test - ", willFixInNextReleaseMessage);
 
     addExpectedFailure("ecma_3/extensions/regress-228087-002.js",
                        "Section 1 of test - \nregexp = /{1.*}/g\n"
@@ -551,30 +534,12 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/extensions/regress-274152.js", "Do not ignore unicode format-control characters: 8", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/extensions/regress-368516.js", "Treat unicode BOM characters as whitespace: 0", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/extensions/regress-368516.js", "Treat unicode BOM characters as whitespace: 1", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/arguments-001.js", "Section 3 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-131964.js", "Section 3 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-131964.js", "Section 4 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-137181.js", "Section 2 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section A of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section B of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section C of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section D of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section E of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section F of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section G of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-85880.js", "Section H of test", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Function/regress-94506.js", "Section 3 of test", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/FunExpr/fe-001-n.js", "Previous statement should have thrown a ReferenceError", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/FunExpr/fe-002.js", "Inner function statement should not have been called.", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/LexicalConventions/7.9.1.js", "Automatic Semicolon insertion in postfix expressions: expr\n++", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/LexicalConventions/7.9.1.js", "Automatic Semicolon insertion in postfix expressions: expr\n--", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/LexicalConventions/7.9.1.js", "Automatic Semicolon insertion in postfix expressions: (x\n)-- y", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/LexicalConventions/7.9.1.js", "Automatic Semicolon insertion in postfix expressions: (x)-- y", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Number/15.7.4.2-01.js", "3.3.toString.length should be 1", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Number/15.7.4.6-1.js", "Section A of test: no error intended!", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Number/15.7.4.7-2.js", "num.toPrecision(undefined) should equal num.toString()", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Object/8.6.1-01.js", "In strict mode, setting a read-only property should generate a warning: Throw if STRICT and WERROR is enabled", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Object/8.6.2.6-001.js", "Section 1 of test - ", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.8.2 >", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.8.4 >=", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/15.10.2-1.js", "Section 5 of test - \nregexp = /(aa|aabaac|ba|b|c)*/\nstring = 'aabaac'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"aaba\", \"ba\"]\nActual: [\"aabaac\", \"aabaac\"]\n", willFixInNextReleaseMessage);
@@ -585,7 +550,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/RegExp/15.10.2-1.js", "Section 11 of test - \nregexp = /(?=(a+))a*b\\1/\nstring = 'baaabac'\nERROR !!! match arrays have different lengths:\nExpect: [\"aba\", \"a\"]\nActual: [\"aaab\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/15.10.2-1.js", "Section 12 of test - \nregexp = /(.*?)a(?!(a+)b\\2c)\\2(.*)/\nstring = 'baaabaac'\nERROR !!! regexp FAILED to match anything !!!\nExpect: baaabaac,ba,,abaac\nActual: null\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/15.10.2-1.js", "Section 13 of test - \nregexp = /(?=(a+))/\nstring = 'baaabac'\nERROR !!! match arrays have different lengths:\nExpect: [\"\", \"aaa\"]\nActual: [\"\"]\n", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/15.10.2.12.js", "15.10.2.12 - CharacterClassEscape d", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 34 of test - \nregexp = /a]/\nstring = 'a]'\nERROR !!! regexp FAILED to match anything !!!\nExpect: a]\nActual: null\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 66 of test - \nregexp = /a.+?c/\nstring = 'abcabc'\nERROR !!! regexp FAILED to match anything !!!\nExpect: abc\nActual: null\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/perlstress-001.js", "Section 94 of test - \nregexp = /^a(bc+|b[eh])g|.h$/\nstring = 'abh'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"bh\", , ]\nActual: [\"bh\", \"\"]\n", willFixInNextReleaseMessage);
@@ -662,25 +626,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/RegExp/regress-165353.js", "Section 1 of test - \nregexp = /^([a-z]+)*[a-z]$/\nstring = 'a'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"a\", , ]\nActual: [\"a\", \"\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-169497.js", "Section 1 of test - \nregexp = /<body.*>((.*\\n?)*?)<\\/body>/i\nstring = '<html>\\n<body onXXX=\"alert(event.type);\">\\n<p>Kibology for all</p>\\n<p>All for Kibology</p>\\n</body>\\n</html>'\nERROR !!! regexp FAILED to match anything !!!\nExpect: <body onXXX=\"alert(event.type);\">\n<p>Kibology for all</p>\n<p>All for Kibology</p>\n</body>,\n<p>Kibology for all</p>\n<p>All for Kibology</p>\n,<p>All for Kibology</p>\n\nActual: null\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-187133.js", "Section 5 of test - \nregexp = /(?!a|b)|c/\nstring = 'bc'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"\"]\nActual: [\"c\"]\n", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 1 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 2 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 3 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 4 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 5 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 6 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 9 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 10 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 11 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 12 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 28 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 29 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 30 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 31 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 32 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 33 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 34 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 35 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-188206.js", "Section 36 of test - ", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-191479.js", "Section 1 of test - \nregexp = /(\\d|\\d\\s){2,}/\nstring = '12 3 45'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"12\", \"2\"]\nActual: [\"12 3 45\", \"5\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-191479.js", "Section 3 of test - \nregexp = /(\\d|\\d\\s)+/\nstring = '12 3 45'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"12\", \"2\"]\nActual: [\"12 3 45\", \"5\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-191479.js", "Section 8 of test - \nregexp = /(\\d|\\d\\s){2,}?/\nstring = '12 3 45'\nERROR !!! regexp FAILED to match anything !!!\nExpect: 12,2\nActual: null\n", willFixInNextReleaseMessage);
@@ -698,12 +643,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/RegExp/regress-216591.js", "Section 2 of test - \nregexp = /\\{(([a-z0-9\\-_]+?\\.)+?)([a-z0-9\\-_]+?)\\}/gi\nstring = 'a {result.data.DATA} b'\nERROR !!! match arrays have different lengths:\nExpect: [\"{result.data.DATA}\"]\nActual: []\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-220367-001.js", "Section 1 of test - \nregexp = /(a)|(b)/\nstring = 'a'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"a\", \"a\", , ]\nActual: [\"a\", \"a\", \"\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-220367-001.js", "Section 2 of test - \nregexp = /(a)|(b)/\nstring = 'b'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"b\", , \"b\"]\nActual: [\"b\", \"\", \"b\"]\n", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-223273.js", "Section 1 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-223273.js", "Section 2 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-223273.js", "Section 3 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-223273.js", "Section 4 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-223273.js", "Section 11 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-223273.js", "Section 12 of test - ", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-223535.js", "Section 2 of test - \nregexp = /|a/\nstring = 'a'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"\"]\nActual: [\"a\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-223535.js", "Section 6 of test - \nregexp = /(|a)/\nstring = 'a'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"\", \"\"]\nActual: [\"a\", \"a\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-223535.js", "Section 7 of test - \nregexp = /(|a|)/\nstring = 'a'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"\", \"\"]\nActual: [\"a\", \"a\"]\n", willFixInNextReleaseMessage);
@@ -714,7 +653,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/RegExp/regress-225289.js", "Section 10 of test - \nregexp = /((?:a|[^a])*)/g\nstring = 'a'\nERROR !!! match arrays have different lengths:\nExpect: [\"a\", \"\"]\nActual: [\"a\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-225289.js", "Section 11 of test - \nregexp = /((?:a|[^a])*)/g\nstring = ''\nERROR !!! match arrays have different lengths:\nExpect: [\"\"]\nActual: []\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-225289.js", "Section 12 of test - \nregexp = /((?:a|[^a])*)/g\nstring = '()'\nERROR !!! match arrays have different lengths:\nExpect: [\"()\", \"\"]\nActual: [\"()\"]\n", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/RegExp/regress-309840.js", "Treat / in a literal regexp class as valid", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-31316.js", "Section 1 of test - \nregexp = /<([^\\/<>][^<>]*[^\\/])>|<([^\\/<>])>/\nstring = '<p>Some<br />test</p>'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"<p>\", , \"p\"]\nActual: [\"<p>\", \"\", \"p\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-330684.js", "Do not hang on RegExp", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-375711.js", "Do not assert with /[Q-b]/i.exec(\"\"): /[q-b]/.exec(\"\")", willFixInNextReleaseMessage);
@@ -738,42 +676,10 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/RegExp/regress-85721.js", "Section 2 of test - \nregexp = /<sql:connection id=\"([^\\r\\n]*?)\">\\s*<sql:url>\\s*([^\\r\\n]*?)\\s*<\\/sql:url>\\s*<sql:driver>\\s*([^\\r\\n]*?)\\s*<\\/sql:driver>\\s*(\\s*<sql:userId>\\s*([^\\r\\n]*?)\\s*<\\/sql:userId>\\s*)?\\s*(\\s*<sql:password>\\s*([^\\r\\n]*?)\\s*<\\/sql:password>\\s*)?\\s*<\\/sql:connection>/\nstring = '<sql:connection id=\"conn1\"> <sql:url>www.m.com</sql:url> <sql:driver>drive.class</sql:driver>\\n<sql:userId>foo</sql:userId> <sql:password>goo</sql:password> </sql:connection>'\nERROR !!! regexp FAILED to match anything !!!\nExpect: <sql:connection id=\"conn1\"> <sql:url>www.m.com</sql:url> <sql:driver>drive.class</sql:driver>\n<sql:userId>foo</sql:userId> <sql:password>goo</sql:password> </sql:connection>,conn1,www.m.com,drive.class,<sql:userId>foo</sql:userId> ,foo,<sql:password>goo</sql:password> ,goo\nActual: null\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-87231.js", "Section 3 of test - \nregexp = /^(A)?(A.*)$/\nstring = 'A'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"A\", , \"A\"]\nActual: [\"A\", \"\", \"A\"]\n", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/RegExp/regress-87231.js", "Section 6 of test - \nregexp = /(A)?(A.*)/\nstring = 'zxcasd;fl\\  ^AaaAAaaaf;lrlrzs'\nERROR !!! regexp failed to give expected match array:\nExpect: [\"AaaAAaaaf;lrlrzs\", , \"AaaAAaaaf;lrlrzs\"]\nActual: [\"AaaAAaaaf;lrlrzs\", \"\", \"AaaAAaaaf;lrlrzs\"]\n", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/Statements/regress-226517.js", "Section 1 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 14", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 20", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 24", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 27", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 28", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 29", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 30", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 31", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 32", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 33", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 34", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 35", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 36", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 37", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 39", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 56", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 58", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 59", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 60", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 62", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 64", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 65", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 66", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 67", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 68", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 69", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.14.js", "15.5.4.14 - String.prototype.split(/()/)", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-104375.js", "Section 1 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-104375.js", "Section 2 of test - ", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-304376.js", "String.prototype should be readonly and permanent", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-392378.js", "Regular Expression Non-participating Capture Groups are inaccurate in edge cases: \"y\".split(/(x)?y/)", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-392378.js", "Regular Expression Non-participating Capture Groups are inaccurate in edge cases: \"y\".split(/(x)?y/)", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-392378.js", "Regular Expression Non-participating Capture Groups are inaccurate in edge cases: \"y\".replace(/(x)?\\1y/, function($0, $1){ return String($1); })", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-392378.js", "Regular Expression Non-participating Capture Groups are inaccurate in edge cases: \"y\".replace(/(x)?y/, function($0, $1){ return String($1); })", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/String/regress-392378.js", "Regular Expression Non-participating Capture Groups are inaccurate in edge cases: \"y\".replace(/(x)?y/, function($0, $1){ return $1; })", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Unicode/regress-352044-01.js", "issues with Unicode escape sequences in JavaScript source code", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Unicode/uc-001.js", "Unicode format-control character test (Category Cf.)", willFixInNextReleaseMessage);
 
