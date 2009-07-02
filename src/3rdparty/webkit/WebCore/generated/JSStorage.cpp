@@ -20,18 +20,18 @@
 
 #include "config.h"
 
-#include "JSStorage.h"
+#if ENABLE(DOM_STORAGE)
 
-#include <wtf/GetPtr.h>
+#include "JSStorage.h"
 
 #include "AtomicString.h"
 #include "JSStorageCustom.h"
 #include "KURL.h"
 #include "Storage.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -169,16 +169,9 @@ JSValue jsStorageConstructor(ExecState* exec, const Identifier&, const PropertyS
 }
 void JSStorage::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     Base::put(exec, propertyName, value, slot);
-}
-
-void JSStorage::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
-{
-    if (customGetPropertyNames(exec, propertyNames))
-        return;
-     Base::getPropertyNames(exec, propertyNames);
 }
 
 JSValue JSStorage::getConstructor(ExecState* exec)
@@ -267,3 +260,5 @@ Storage* toStorage(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(DOM_STORAGE)

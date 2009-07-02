@@ -174,9 +174,9 @@ public:
     void moveToolBar(QToolBar *toolbar, int pos); 
 
     QList<int> gapIndex(const QPoint &pos) const;
-    bool insertGap(QList<int> path, QLayoutItem *item);
+    bool insertGap(const QList<int> &path, QLayoutItem *item);
     void clear();
-    QRect itemRect(QList<int> path) const;
+    QRect itemRect(const QList<int> &path) const;
     QRect appendLineDropRect() const;
 
     QRect rect;
@@ -194,11 +194,11 @@ public:
     };
 
     QRect rect;
-    QMainWindow *mainWindow;
+    const QMainWindow *mainWindow;
     QToolBarAreaLayoutInfo docks[4];
     bool visible;
 
-    QToolBarAreaLayout(QMainWindow *win);
+    QToolBarAreaLayout(const QMainWindow *win);
 
     QRect fitLayout();
 
@@ -230,14 +230,14 @@ public:
     QList<int> indexOf(QWidget *toolBar) const;
     QList<int> gapIndex(const QPoint &pos) const;
     QList<int> currentGapIndex() const;
-    bool insertGap(QList<int> path, QLayoutItem *item);
-    void remove(QList<int> path);
+    bool insertGap(const QList<int> &path, QLayoutItem *item);
+    void remove(const QList<int> &path);
     void remove(QLayoutItem *item);
     void clear();
-    QToolBarAreaLayoutItem &item(QList<int> path);
-    QRect itemRect(QList<int> path) const;
-    QLayoutItem *plug(QList<int> path);
-    QLayoutItem *unplug(QList<int> path, QToolBarAreaLayout *other);
+    QToolBarAreaLayoutItem &item(const QList<int> &path);
+    QRect itemRect(const QList<int> &path) const;
+    QLayoutItem *plug(const QList<int> &path);
+    QLayoutItem *unplug(const QList<int> &path, QToolBarAreaLayout *other);
 
     void saveState(QDataStream &stream) const;
     bool restoreState(QDataStream &stream, const QList<QToolBar*> &toolBars, uchar tmarker, bool pre43, bool testing = false);

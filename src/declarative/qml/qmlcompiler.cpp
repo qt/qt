@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qmlcompiler_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include "qmlparser_p.h"
 #include "private/qmlscriptparser_p.h"
 #include <qmlpropertyvaluesource.h>
@@ -1451,7 +1451,14 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
 
     for (int ii = 0; ii < obj->dynamicSignals.count(); ++ii) {
         const Object::DynamicSignal &s = obj->dynamicSignals.at(ii);
-        builder.addSignal(s.name + "()");
+        QByteArray sig(s.name + "(");
+        for (int jj = 0; jj < s.parameterTypes.count(); ++jj) {
+            if (jj) sig.append(",");
+            sig.append(s.parameterTypes.at(jj));
+        }
+        sig.append(")");
+        QMetaMethodBuilder b = builder.addSignal(sig);
+        b.setParameterNames(s.parameterNames);
     }
 
     int slotStart = obj->dynamicSlots.isEmpty()?-1:output->primitives.count();

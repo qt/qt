@@ -55,7 +55,7 @@
 #include <QCoreApplication>
 #include <QtDebug>
 
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -177,8 +177,6 @@ protected:
     virtual bool visit(AST::UiScriptBinding *node);
     virtual bool visit(AST::UiArrayBinding *node);
     virtual bool visit(AST::UiSourceElement *node);
-
-    virtual bool visit(AST::ExpressionStatement *node);
 
     void accept(AST::Node *node);
 
@@ -481,34 +479,58 @@ bool ProcessAST::visit(AST::UiImport *node)
 
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
+    const struct TypeNameToType {
+        const char *name;
+        Object::DynamicProperty::Type type;
+        const char *qtName;
+    } propTypeNameToTypes[] = {
+        { "int", Object::DynamicProperty::Int, "int" },
+        { "bool", Object::DynamicProperty::Bool, "bool" },
+        { "double", Object::DynamicProperty::Real, "double" },
+        { "real", Object::DynamicProperty::Real, "qreal" },
+        { "string", Object::DynamicProperty::String, "QString" },
+        { "url", Object::DynamicProperty::Url, "QUrl" },
+        { "color", Object::DynamicProperty::Color, "QColor" },
+        { "date", Object::DynamicProperty::Date, "QDate" },
+        { "var", Object::DynamicProperty::Variant, "QVariant" },
+        { "variant", Object::DynamicProperty::Variant, "QVariant" }
+    };
+    const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
+                                         sizeof(propTypeNameToTypes[0]);
+
     if(node->type == AST::UiPublicMember::Signal) {
         const QString name = node->name->asString();
 
         Object::DynamicSignal signal;
         signal.name = name.toUtf8();
 
+        AST::UiParameterList *p = node->parameters;
+        while (p) {
+            const QString memberType = p->type->asString();
+            const char *qtType = 0;
+            for(int ii = 0; !qtType && ii < propTypeNameToTypesCount; ++ii) {
+                if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) 
+                    qtType = propTypeNameToTypes[ii].qtName;
+            }
+
+            if (!qtType) {
+                QmlError error;
+                error.setDescription(QCoreApplication::translate("QmlParser","Expected parameter type"));
+                error.setLine(node->typeToken.startLine);
+                error.setColumn(node->typeToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+
+            signal.parameterTypes << qtType;
+            signal.parameterNames << p->name->asString().toUtf8();
+            p = p->finish();
+        }
+
         _stateStack.top().object->dynamicSignals << signal;
     } else {
         const QString memberType = node->memberType->asString();
         const QString name = node->name->asString();
-
-        const struct TypeNameToType {
-            const char *name;
-            Object::DynamicProperty::Type type;
-        } propTypeNameToTypes[] = {
-            { "int", Object::DynamicProperty::Int },
-            { "bool", Object::DynamicProperty::Bool },
-            { "double", Object::DynamicProperty::Real },
-            { "real", Object::DynamicProperty::Real },
-            { "string", Object::DynamicProperty::String },
-            { "url", Object::DynamicProperty::Url },
-            { "color", Object::DynamicProperty::Color },
-            { "date", Object::DynamicProperty::Date },
-            { "var", Object::DynamicProperty::Variant },
-            { "variant", Object::DynamicProperty::Variant }
-        };
-        const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
-                                             sizeof(propTypeNameToTypes[0]);
 
         bool typeFound = false;
         Object::DynamicProperty::Type type;
@@ -641,14 +663,6 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     while (propertyCount--)
         _stateStack.pop();
-
-    return true;
-}
-
-bool ProcessAST::visit(AST::ExpressionStatement *node)
-{
-    if (!node->semicolonToken.isValid())
-        _parser->addAutomaticSemicolonOffset(node->semicolonToken.offset);
 
     return true;
 }
@@ -856,7 +870,6 @@ void QmlScriptParser::clear()
     _nameSpacePaths.clear();
     _typeNames.clear();
     _errors.clear();
-    _automaticSemicolonOffsets.clear();
 
     if (data) {
         delete data;

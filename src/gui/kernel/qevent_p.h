@@ -44,6 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qdatetime.h>
+#include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,6 +94,35 @@ protected:
     bool timeSet:1;
     QDateTime time;
     friend class QMouseEvent;
+};
+
+class QTouchEventTouchPointPrivate
+{
+public:
+    inline QTouchEventTouchPointPrivate(int id)
+        : ref(1),
+          id(id),
+          state(Qt::TouchPointReleased),
+          pressure(qreal(-1.))
+    { }
+
+    inline QTouchEventTouchPointPrivate *detach()
+    {
+        QTouchEventTouchPointPrivate *d = new QTouchEventTouchPointPrivate(*this);
+        d->ref = 1;
+        if (!this->ref.deref())
+            delete this;
+        return d;
+    }
+
+    QAtomicInt ref;
+    int id;
+    Qt::TouchPointStates state;
+    QRectF rect, sceneRect, screenRect;
+    QPointF normalizedPos,
+            startPos, startScenePos, startScreenPos, startNormalizedPos,
+            lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
+    qreal pressure;
 };
 
 QT_END_NAMESPACE

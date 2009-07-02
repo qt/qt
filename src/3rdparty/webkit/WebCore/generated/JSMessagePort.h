@@ -50,7 +50,6 @@ public:
     static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom functions
-    JSC::JSValue startConversation(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
     MessagePort* impl() const { return m_impl.get(); }
@@ -79,7 +78,6 @@ public:
 // Functions
 
 JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionPostMessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionStartConversation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionStart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionClose(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -87,11 +85,8 @@ JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionRemoveEventListener(JSC
 JSC::JSValue JSC_HOST_CALL jsMessagePortPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsMessagePortActive(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsMessagePortOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSMessagePortOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsMessagePortOnclose(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSMessagePortOnclose(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsMessagePortConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore

@@ -194,8 +194,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         d->imports += QUrl(td->data.imports().at(i).uri);
     }
 
-    d->automaticSemicolonOffsets = td->data.automaticSemicolonOffsets();
-
     if (td->data.tree()) {
         if (compilerDump()) {
             qWarning() << "-AST------------------------------------------------------------------------------";
@@ -251,14 +249,6 @@ QmlDomObject QmlDomDocument::rootObject() const
     rv.d->object = d->root;
     if (rv.d->object) rv.d->object->addref();
     return rv;
-}
-
-QList<int> QmlDomDocument::automaticSemicolonOffsets() const
-{
-    if (d)
-        return d->automaticSemicolonOffsets;
-    else
-        return QList<int>();
 }
 
 QmlDomPropertyPrivate::QmlDomPropertyPrivate()

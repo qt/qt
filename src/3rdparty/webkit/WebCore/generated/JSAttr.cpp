@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSAttr.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Attr.h"
 #include "CSSMutableStyleDeclaration.h"
@@ -31,8 +28,7 @@
 #include "JSCSSStyleDeclaration.h"
 #include "JSElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

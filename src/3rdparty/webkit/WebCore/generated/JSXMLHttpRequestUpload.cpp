@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSXMLHttpRequestUpload.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -31,9 +28,8 @@
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "XMLHttpRequestUpload.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

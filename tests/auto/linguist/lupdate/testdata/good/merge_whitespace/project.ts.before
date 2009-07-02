@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS><TS version="1.1">
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="7"/>
+        <source>
+newline at the start</source>
+        <translation>
+NEWLINE AT THE START</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="8"/>
+        <source>newline at the end
+</source>
+        <translation>NEWLINE AT THE END
+</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="9"/>
+        <source>newline and space at the end
+ </source>
+        <translation>NEWLINE AND SPACE AT THE END
+ </translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="10"/>
+        <source>space and newline at the end 
+</source>
+        <translation>SPACE AND NEWLINE AT THE END 
+</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="11"/>
+        <source><byte value="x9"/>Tab at the start and newline at the end
+</source>
+        <translation><byte value="x9"/>TAB AT THE START AND NEWLINE AT THE END
+</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="12"/>
+        <source>
+<byte value="x9"/>newline and tab at the start</source>
+        <translation>
+<byte value="x9"/>NEWLINE AND TAB AT THE START</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="13"/>
+        <source> <byte value="x9"/>space and tab at the start</source>
+        <translation> <byte value="x9"/>SPACE AND TAB AT THE START</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="14"/>
+        <source> space_first</source>
+        <translation> SPACE_FIRST</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="15"/>
+        <source>space_last </source>
+        <translation>SPACE_LAST </translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="21"/>
+        <source>carriage return and line feed last<byte value="xd"/>
+</source>
+        <translation type="unfinished">CARRIAGE RETURN AND LINE FEED LAST<byte value="xd"/>
+</translation>
+    </message>
+</context>
+</TS>

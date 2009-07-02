@@ -15,7 +15,7 @@ Item {
     MouseRegion {
         id: MouseRegion
         anchors.fill: Image
-        onClicked: { Container.clicked.emit(); }
+        onClicked: { Container.clicked(); }
     }
     Text {
         font.bold: true

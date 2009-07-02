@@ -45,7 +45,7 @@
 #include "qmlstate.h"
 #include "qmlstategroup.h"
 #include "qmlstateoperations.h"
-#include "qfxperf.h"
+#include "private/qfxperf_p.h"
 #include "qfxlayouts.h"
 #include "qfxlayouts_p.h"
 
@@ -310,9 +310,6 @@ void QFxBaseLayout::preLayout()
         d->_ep = true;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
-    if (d->stateGroup) {
-        delete d->stateGroup; d->stateGroup = 0;
-    }
     QSet<QFxItem *> allItems;
     for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
         QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
@@ -388,32 +385,29 @@ void QFxBaseLayout::preLayout()
 }
 
 //###This should be considered to move more centrally, as it seems useful
-void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& changes,
-        QFxItem* target, QmlTransition* trans)
+void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlTransition* trans)
 {
     Q_D(QFxBaseLayout);
     if (!trans||!target)//TODO: if !trans, just apply changes
         return;
     setLayoutItem(target);
-    if (d->stateGroup)
-        delete d->stateGroup;
-    d->stateGroup = new QmlStateGroup(this);
 
-    QmlState *state = new QmlState;
-    *(d->stateGroup->statesProperty()) << state;
+    QmlStateOperation::ActionList actions;
+
     for (int ii=0; ii<changes.size(); ++ii){
-            QmlSetProperty *sp = new QmlSetProperty(state);
-            sp->setObject(target);
-            QVariant val = changes[ii].second;
-            if (d->_margin &&
-                    (changes[ii].first == QLatin1String("x") || changes[ii].first == QLatin1String("y"))){
+
+        QVariant val = changes[ii].second;
+        if (d->_margin &&
+            (changes[ii].first == QLatin1String("x") || 
+             changes[ii].first == QLatin1String("y"))) {
                 val = QVariant(val.toInt() + d->_margin);
-            }
-            sp->setValue(val);
-            sp->setProperty(changes[ii].first);
-            *state << sp;
+        }
+
+        actions << Action(target, changes[ii].first, val);
+
     }
-    state->apply(d->stateGroup, trans, 0);
+
+    d->transitionManager.transition(actions, trans);
     d->_animated << target;
 }
 

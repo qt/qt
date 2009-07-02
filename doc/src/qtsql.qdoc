@@ -212,6 +212,9 @@
     QVariant::toString() and QVariant::toInt() to convert
     variants to QString and \c int.
 
+    For an overview of the recommended types used with Qt supported
+    Databases, please refer to \l {QtSql Module - Recommended use of data types}{this table}.
+
     You can iterate back and forth using QSqlQuery::next(),
     QSqlQuery::previous(), QSqlQuery::first(), QSqlQuery::last(), and
     QSqlQuery::seek(). The current row index is returned by

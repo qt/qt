@@ -2,13 +2,6 @@
 # Qt documentation build
 #####################################################################
 
-win32 {
-    QT_WINCONFIG = release/
-    !CONFIG(release, debug|release) {
-        QT_WINCONFIG = debug/
-    }
-}
-
 DOCS_GENERATION_DEFINES = -Dopensourceedition
 GENERATOR = $$QT_BUILD_TREE/bin/qhelpgenerator
 
@@ -21,9 +14,9 @@ win32:!win32-g++ {
 }
 
 $$unixstyle {
-    QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QT_BUILD_TREE/tools/qdoc3/$${QT_WINCONFIG}qdoc3 $$DOCS_GENERATION_DEFINES
+    QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QT_BUILD_TREE/tools/qdoc3/qdoc3 $$DOCS_GENERATION_DEFINES 
 } else {
-    QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QT_BUILD_TREE/tools/qdoc3/$${QT_WINCONFIG}qdoc3.exe $$DOCS_GENERATION_DEFINES
+    QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QT_BUILD_TREE/tools/qdoc3/qdoc3.exe $$DOCS_GENERATION_DEFINES
     QDOC = $$replace(QDOC, "/", "\\")
 }
 macx {

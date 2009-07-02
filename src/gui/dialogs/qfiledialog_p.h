@@ -187,8 +187,7 @@ public:
 #ifndef Q_OS_WINCE
         DWORD maxLength;
         QString drive = path.left(3);
-        if (QT_WA_INLINE(::GetVolumeInformationW(reinterpret_cast<const WCHAR *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0),
-            ::GetVolumeInformationA(drive.toLocal8Bit().constData(), NULL, 0, NULL, &maxLength, NULL, NULL, 0)) == FALSE)
+        if (::GetVolumeInformation(reinterpret_cast<const wchar_t *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0) == FALSE)
             return -1;
         return maxLength;
 #else

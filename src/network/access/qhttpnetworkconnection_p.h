@@ -242,7 +242,8 @@ public:
 #ifndef QT_NO_OPENSSL
         bool ignoreSSLErrors;
 #endif
-        Channel() :state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false), reconnectAttempts(2),
+        Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
+            lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
             authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
             , ignoreSSLErrors(false)
@@ -254,9 +255,15 @@ public:
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
-    void appendData(QHttpNetworkReply &reply, const QByteArray &fragment, bool compressed);
-    qint64 bytesAvailable(const QHttpNetworkReply &reply, bool compressed = false) const;
-    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize, bool compressed);
+    void appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
+    void appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment);
+
+    qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
+    qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
+    qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
+
+    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize);
+
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
     void allDone(QAbstractSocket *socket, QHttpNetworkReply *reply);

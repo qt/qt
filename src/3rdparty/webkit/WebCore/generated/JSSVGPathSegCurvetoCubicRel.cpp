@@ -20,17 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGPathSegCurvetoCubicRel.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGPathSegCurvetoCubic.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

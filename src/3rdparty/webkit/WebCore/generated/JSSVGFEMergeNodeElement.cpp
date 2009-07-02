@@ -20,17 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(FILTERS)
 
-#include "SVGElement.h"
 #include "JSSVGFEMergeNodeElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedString.h"
 #include "SVGFEMergeNodeElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

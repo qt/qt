@@ -45,7 +45,7 @@
 #include <qmlcontext.h>
 #include <qmlinfo.h>
 #include <QVariant>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QtCore/qdebug.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);

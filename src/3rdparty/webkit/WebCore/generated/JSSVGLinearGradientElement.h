@@ -21,10 +21,10 @@
 #ifndef JSSVGLinearGradientElement_h
 #define JSSVGLinearGradientElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGGradientElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

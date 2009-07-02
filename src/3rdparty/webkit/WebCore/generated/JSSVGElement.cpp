@@ -20,21 +20,17 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGElement.h"
 #include "JSSVGSVGElement.h"
 #include "KURL.h"
 #include "SVGElement.h"
 #include "SVGSVGElement.h"
-
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

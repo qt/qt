@@ -56,6 +56,6 @@ String *QStringToString(const QString &qstring)
 QString StringToQString(String *string)
 {
     const wchar_t __pin *chars = PtrToStringChars(string);
-    return QString::fromUtf16((const ushort *)chars);
+    return QString::fromWCharArray(chars);
 }
 //! [1]

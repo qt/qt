@@ -20,17 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAnimatedLengthList.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGLengthList.h"
 #include "SVGLengthList.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

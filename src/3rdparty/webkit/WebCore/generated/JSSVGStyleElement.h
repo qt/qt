@@ -21,10 +21,10 @@
 #ifndef JSSVGStyleElement_h
 #define JSSVGStyleElement_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

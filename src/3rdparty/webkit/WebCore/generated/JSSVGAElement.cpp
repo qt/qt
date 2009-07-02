@@ -20,13 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
@@ -44,9 +40,9 @@
 #include "SVGAElement.h"
 #include "SVGElement.h"
 #include "SVGStringList.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

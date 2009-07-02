@@ -22,9 +22,9 @@
 #define JSNodeList_h
 
 #include "JSDOMBinding.h"
+#include <runtime/CallData.h>
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include <runtime/CallData.h>
 
 namespace WebCore {
 

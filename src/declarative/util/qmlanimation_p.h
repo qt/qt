@@ -63,7 +63,7 @@
 #include <QtDeclarative/qmlanimation.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmltimelinevalueproxy.h>
+#include <private/qmltimeline_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -319,7 +319,8 @@ class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
 public:
     QmlPropertyAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      interpolatorType(0), interpolator(0), va(0), value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
+      defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
+      value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
 
     void init();
 
@@ -335,6 +336,7 @@ public:
     bool fromSourced;
     bool fromIsDefined;
     bool toIsDefined;
+    bool defaultToInterpolatorType;
     int interpolatorType;
     QVariantAnimation::Interpolator interpolator;
 

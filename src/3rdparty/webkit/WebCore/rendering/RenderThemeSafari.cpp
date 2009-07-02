@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007, 2008 Apple Inc.
+ * Copyright (C) 2009 Kenneth Rohde Christiansen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -65,13 +66,22 @@ enum {
     leftPadding
 };
 
-RenderTheme* theme()
+PassRefPtr<RenderTheme> RenderThemeSafari::create()
 {
-    static RenderThemeSafari safariTheme;
-    static RenderThemeWin windowsTheme;
+    return adoptRef(new RenderThemeSafari);
+}
+
+PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
+{
+    static RenderTheme* safariTheme = RenderThemeSafari::create().releaseRef();
+    static RenderTheme* windowsTheme = RenderThemeWin::create().releaseRef();
+
+    // FIXME: This is called before Settings has been initialized by WebKit, so will return a
+    // potentially wrong answer the very first time it's called (see
+    // <https://bugs.webkit.org/show_bug.cgi?id=26493>).
     if (Settings::shouldPaintNativeControls())
-        return &windowsTheme;
-    return &safariTheme;
+        return windowsTheme; // keep the reference of one.
+    return safariTheme; // keep the reference of one.
 }
 
 #if !defined(NDEBUG) && defined(USE_DEBUG_SAFARI_THEME)
@@ -84,6 +94,17 @@ SOFT_LINK(SafariTheme, paintThemePart, void, __stdcall, (ThemePart part, CGConte
 #if defined(SAFARI_THEME_VERSION) && SAFARI_THEME_VERSION >= 2
 SOFT_LINK(SafariTheme, STPaintProgressIndicator, void, APIENTRY, (ProgressIndicatorType type, CGContextRef context, const CGRect& rect, NSControlSize size, ThemeControlState state, float value), (type, context, rect, size, state, value))
 #endif
+SOFT_LINK_OPTIONAL(SafariTheme, STCopyThemeColor, CGColorRef, APIENTRY, (unsigned color, SafariTheme::ThemeControlState));
+
+static const unsigned stFocusRingColorID = 4;
+
+static const unsigned aquaFocusRingColor = 0xFF7DADD9;
+
+static RGBA32 makeRGBAFromCGColor(CGColorRef color)
+{
+    const CGFloat* components = CGColorGetComponents(color);
+    return makeRGBA(255 * components[0], 255 * components[1], 255 * components[2], 255 * components[3]);
+}
 
 ThemeControlState RenderThemeSafari::determineState(RenderObject* o) const
 {
@@ -137,6 +158,22 @@ Color RenderThemeSafari::activeListBoxSelectionBackgroundColor() const
 {
     // FIXME: This should probably just be a darker version of the platformActiveSelectionBackgroundColor
     return Color(56, 117, 215);
+}
+
+Color RenderThemeSafari::focusRingColor() const
+{
+    static Color focusRingColor;
+
+    if (!focusRingColor.isValid()) {
+        if (STCopyThemeColorPtr()) {
+            RetainPtr<CGColorRef> color(AdoptCF, STCopyThemeColorPtr()(stFocusRingColorID, SafariTheme::ActiveState));
+            focusRingColor = makeRGBAFromCGColor(color.get());
+        }
+        if (!focusRingColor.isValid())
+            focusRingColor = aquaFocusRingColor;
+    }
+
+    return focusRingColor;
 }
 
 static float systemFontSizeForControlSize(NSControlSize controlSize)

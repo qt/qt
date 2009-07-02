@@ -26,39 +26,78 @@
 #include "config.h"
 #include "StorageArea.h"
 
-#include "CString.h"
+#if ENABLE(DOM_STORAGE)
+
+#include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "Page.h"
+#include "PageGroup.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "StorageEvent.h"
+#include "StorageAreaSync.h"
 #include "StorageMap.h"
+#include "StorageSyncManager.h"
 
 namespace WebCore {
 
-StorageArea::StorageArea(SecurityOrigin* origin)
-    : m_securityOrigin(origin)
-    , m_storageMap(StorageMap::create())
+PassRefPtr<StorageArea> StorageArea::create(StorageType storageType, SecurityOrigin* origin, PassRefPtr<StorageSyncManager> syncManager)
 {
+    return adoptRef(new StorageArea(storageType, origin, syncManager));
+}
+
+StorageArea::StorageArea(StorageType storageType, SecurityOrigin* origin, PassRefPtr<StorageSyncManager> syncManager)
+    : m_storageType(storageType)
+    , m_securityOrigin(origin)
+    , m_storageMap(StorageMap::create())
+    , m_storageSyncManager(syncManager)
+#ifndef NDEBUG
+    , m_isShutdown(false)
+#endif
+{
+    ASSERT(m_securityOrigin);
+    ASSERT(m_storageMap);
+
+    // FIXME: If there's no backing storage for LocalStorage, the default WebKit behavior should be that of private browsing,
+    // not silently ignoring it.  https://bugs.webkit.org/show_bug.cgi?id=25894
+    if (m_storageSyncManager) {
+        m_storageAreaSync = StorageAreaSync::create(m_storageSyncManager, this);
+        ASSERT(m_storageAreaSync);
+    }
+}
+
+PassRefPtr<StorageArea> StorageArea::copy(SecurityOrigin* origin)
+{
+    ASSERT(!m_isShutdown);
+    return adoptRef(new StorageArea(origin, this));
 }
 
 StorageArea::StorageArea(SecurityOrigin* origin, StorageArea* area)
-    : m_securityOrigin(origin)
+    : m_storageType(area->m_storageType)
+    , m_securityOrigin(origin)
     , m_storageMap(area->m_storageMap)
+    , m_storageSyncManager(area->m_storageSyncManager)
+#ifndef NDEBUG
+    , m_isShutdown(area->m_isShutdown)
+#endif
 {
+    ASSERT(m_securityOrigin);
+    ASSERT(m_storageMap);
+    ASSERT(!m_isShutdown);
 }
 
-StorageArea::~StorageArea()
+unsigned StorageArea::length() const
 {
-}
-
-unsigned StorageArea::internalLength() const
-{
+    ASSERT(!m_isShutdown);
     return m_storageMap->length();
 }
 
-String StorageArea::internalKey(unsigned index, ExceptionCode& ec) const
+String StorageArea::key(unsigned index, ExceptionCode& ec) const
 {
+    ASSERT(!m_isShutdown);
+    blockUntilImportComplete();
+    
     String key;
     
     if (!m_storageMap->key(index, key)) {
@@ -69,14 +108,19 @@ String StorageArea::internalKey(unsigned index, ExceptionCode& ec) const
     return key;
 }
 
-String StorageArea::internalGetItem(const String& key) const
+String StorageArea::getItem(const String& key) const
 {
+    ASSERT(!m_isShutdown);
+    blockUntilImportComplete();
+    
     return m_storageMap->getItem(key);
 }
 
-void StorageArea::internalSetItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
+void StorageArea::setItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
 {
+    ASSERT(!m_isShutdown);
     ASSERT(!value.isNull());
+    blockUntilImportComplete();
     
     if (frame->page()->settings()->privateBrowsingEnabled()) {
         ec = QUOTA_EXCEEDED_ERR;
@@ -97,12 +141,18 @@ void StorageArea::internalSetItem(const String& key, const String& value, Except
         m_storageMap = newMap.release();
 
     // Only notify the client if an item was actually changed
-    if (oldValue != value)
-        itemChanged(key, oldValue, value, frame);
+    if (oldValue != value) {
+        if (m_storageAreaSync)
+            m_storageAreaSync->scheduleItemForSync(key, value);
+        dispatchStorageEvent(key, oldValue, value, frame);
+    }
 }
 
-void StorageArea::internalRemoveItem(const String& key, Frame* frame)
+void StorageArea::removeItem(const String& key, Frame* frame)
 {
+    ASSERT(!m_isShutdown);
+    blockUntilImportComplete();
+    
     if (frame->page()->settings()->privateBrowsingEnabled())
         return;
 
@@ -112,28 +162,95 @@ void StorageArea::internalRemoveItem(const String& key, Frame* frame)
         m_storageMap = newMap.release();
 
     // Only notify the client if an item was actually removed
-    if (!oldValue.isNull())
-        itemRemoved(key, oldValue, frame);
+    if (!oldValue.isNull()) {
+        if (m_storageAreaSync)
+            m_storageAreaSync->scheduleItemForSync(key, String());
+        dispatchStorageEvent(key, oldValue, String(), frame);
+    }
 }
 
-void StorageArea::internalClear(Frame* frame)
+void StorageArea::clear(Frame* frame)
 {
+    ASSERT(!m_isShutdown);
+    blockUntilImportComplete();
+    
     if (frame->page()->settings()->privateBrowsingEnabled())
         return;
     
     m_storageMap = StorageMap::create();
     
-    areaCleared(frame);
+    if (m_storageAreaSync)
+        m_storageAreaSync->scheduleClear();
+    dispatchStorageEvent(String(), String(), String(), frame);
 }
 
-bool StorageArea::internalContains(const String& key) const
+bool StorageArea::contains(const String& key) const
 {
+    ASSERT(!m_isShutdown);
+    blockUntilImportComplete();
+    
     return m_storageMap->contains(key);
 }
 
 void StorageArea::importItem(const String& key, const String& value)
 {
+    ASSERT(!m_isShutdown);
     m_storageMap->importItem(key, value);
 }
 
+void StorageArea::close()
+{
+    if (m_storageAreaSync)
+        m_storageAreaSync->scheduleFinalSync();
+
+#ifndef NDEBUG
+    m_isShutdown = true;
+#endif
 }
+
+void StorageArea::blockUntilImportComplete() const
+{
+    if (m_storageAreaSync)
+        m_storageAreaSync->blockUntilImportComplete();
+}
+
+void StorageArea::dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame)
+{
+    // We need to copy all relevant frames from every page to a vector since sending the event to one frame might mutate the frame tree
+    // of any given page in the group or mutate the page group itself.
+    Vector<RefPtr<Frame> > frames;
+
+    // FIXME: When can this occur?
+    Page* page = sourceFrame->page();
+    if (!page)
+        return;
+
+    if (m_storageType == SessionStorage) {
+        // Send events only to our page.
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+            if (frame->document()->securityOrigin()->equal(securityOrigin()))
+                frames.append(frame);
+        }
+        
+        for (unsigned i = 0; i < frames.size(); ++i)
+            frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key, oldValue, newValue, sourceFrame->document()->documentURI(), sourceFrame->domWindow(), frames[i]->domWindow()->sessionStorage()));
+    } else {
+        // Send events to every page.
+        const HashSet<Page*>& pages = page->group().pages();
+        HashSet<Page*>::const_iterator end = pages.end();
+        for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
+            for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+                if (frame->document()->securityOrigin()->equal(securityOrigin()))
+                    frames.append(frame);
+            }
+        }
+        
+        for (unsigned i = 0; i < frames.size(); ++i)
+            frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key, oldValue, newValue, sourceFrame->document()->documentURI(), sourceFrame->domWindow(), frames[i]->domWindow()->localStorage()));
+    }        
+}
+
+}
+
+#endif // ENABLE(DOM_STORAGE)
+

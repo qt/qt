@@ -45,7 +45,7 @@
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
 #include <QStack>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <private/qmlrefcount_p.h>
 #include <private/qmljsast_p.h>
 #include <private/qmljsengine_p.h>
@@ -136,9 +136,6 @@ QDebug operator<<(QDebug lhs, const QmlBasicScriptNodeCache &rhs)
         break;
     case QmlBasicScriptNodeCache::Attached: 
         lhs << "Attached" << rhs.object << rhs.attached;
-        break;
-    case QmlBasicScriptNodeCache::Signal: 
-        lhs << "Signal" << rhs.object << rhs.core;
         break;
     case QmlBasicScriptNodeCache::SignalProperty: 
         lhs << "SignalProperty" << rhs.object << rhs.core;
@@ -275,10 +272,6 @@ QVariant QmlBasicScriptNodeCache::value(const char *) const
         break;
     case Attached:
         return qVariantFromValue(static_cast<QObject *>(attached));
-        break;
-    case Signal:
-        // XXX
-        Q_ASSERT(!"Not implemented");
         break;
     case SignalProperty:
         break;

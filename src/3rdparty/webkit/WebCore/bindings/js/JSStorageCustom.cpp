@@ -64,17 +64,17 @@ bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return true;
 }
 
-bool JSStorage::customGetPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSStorage::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     ExceptionCode ec;
     unsigned length = m_impl->length();
     for (unsigned i = 0; i < length; ++i)
         propertyNames.add(Identifier(exec, m_impl->key(i, ec)));
         
-    return false;
+    Base::getPropertyNames(exec, propertyNames);
 }
 
-bool JSStorage::customPut(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot&)
+bool JSStorage::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot&)
 {
     // Only perform the custom put if the object doesn't have a native property by this name.
     // Since hasProperty() would end up calling canGetItemsForName() and be fooled, we need to check

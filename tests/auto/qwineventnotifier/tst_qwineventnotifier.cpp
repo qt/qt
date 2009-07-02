@@ -110,12 +110,9 @@ void tst_QWinEventNotifier::simple_timerSet()
 
 void tst_QWinEventNotifier::simple()
 {
-    QT_WA({
-	simpleHEvent = CreateEventW(0, TRUE, FALSE, 0);
-    }, {
-	simpleHEvent = CreateEventA(0, TRUE, FALSE, 0);
-    });
+    simpleHEvent = CreateEvent(0, TRUE, FALSE, 0);
     QVERIFY(simpleHEvent);
+
     QWinEventNotifier n(simpleHEvent);
     QObject::connect(&n, SIGNAL(activated(HANDLE)), this, SLOT(simple_activated()));
     simpleActivated = false;

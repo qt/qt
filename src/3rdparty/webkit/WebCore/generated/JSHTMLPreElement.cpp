@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLPreElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLPreElement.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

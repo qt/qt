@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSTextMetrics.h"
 
-#include <wtf/GetPtr.h>
-
 #include "TextMetrics.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -58,7 +58,7 @@
 #include <QtCore/QString>
 #include <QtDeclarative/qfxlayouts.h>
 #include <QtDeclarative/qmlstate.h>
-
+#include <private/qmltransitionmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 class QFxBaseLayoutPrivate : public QFxItemPrivate
@@ -69,7 +69,7 @@ public:
     QFxBaseLayoutPrivate()
         : _ep(false), _componentComplete(false), _spacing(0),
         _margin(0), aut(QFxBaseLayout::None), moveTransition(0), addTransition(0),
-        removeTransition(0), _layoutItem(0), stateGroup(0), _movingItem(0)
+        removeTransition(0), _layoutItem(0), _movingItem(0)
     {
     }
 
@@ -92,7 +92,8 @@ public:
     QSet<QFxItem *> _newItems;
     QSet<QFxItem *> _animated;
     QFxItem *_layoutItem;
-    QmlStateGroup *stateGroup;
+    QmlTransitionManager transitionManager;
+//    QmlStateGroup *stateGroup;
     QFxItem *_movingItem;
 };
 

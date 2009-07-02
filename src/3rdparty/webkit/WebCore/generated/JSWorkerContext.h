@@ -21,7 +21,6 @@
 #ifndef JSWorkerContext_h
 #define JSWorkerContext_h
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorkerContextBase.h"
@@ -35,7 +34,7 @@ class JSWorkerContext : public JSWorkerContextBase {
 public:
     JSWorkerContext(PassRefPtr<JSC::Structure>, PassRefPtr<WorkerContext>);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    bool customGetOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

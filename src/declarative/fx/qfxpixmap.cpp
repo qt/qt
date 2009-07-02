@@ -43,7 +43,7 @@
 #include <QHash>
 #include <QNetworkReply>
 #include <QPixmapCache>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QFile>
 

@@ -43,10 +43,14 @@
 #include "JSHTMLCanvasElement.h"
 #include "JSHTMLTableCaptionElement.h"
 #include "JSHTMLTableColElement.h"
+#include "JSHTMLDataGridElement.h"
+#include "JSHTMLDataGridCellElement.h"
+#include "JSHTMLDataGridColElement.h"
 #include "JSHTMLModElement.h"
 #include "JSHTMLDirectoryElement.h"
 #include "JSHTMLDivElement.h"
 #include "JSHTMLDListElement.h"
+#include "JSHTMLDataGridRowElement.h"
 #include "JSHTMLEmbedElement.h"
 #include "JSHTMLFieldSetElement.h"
 #include "JSHTMLFontElement.h"
@@ -106,10 +110,14 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLTableCaptionElement.h"
 #include "HTMLTableColElement.h"
+#include "HTMLDataGridElement.h"
+#include "HTMLDataGridCellElement.h"
+#include "HTMLDataGridColElement.h"
 #include "HTMLModElement.h"
 #include "HTMLDirectoryElement.h"
 #include "HTMLDivElement.h"
 #include "HTMLDListElement.h"
+#include "HTMLDataGridRowElement.h"
 #include "HTMLEmbedElement.h"
 #include "HTMLFieldSetElement.h"
 #include "HTMLFontElement.h"
@@ -235,6 +243,21 @@ static JSNode* createHTMLTableColElementWrapper(ExecState* exec, PassRefPtr<HTML
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableColElement, element.get());
 }
 
+static JSNode* createHTMLDataGridElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridElement, element.get());
+}
+
+static JSNode* createHTMLDataGridCellElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridCellElement, element.get());
+}
+
+static JSNode* createHTMLDataGridColElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridColElement, element.get());
+}
+
 static JSNode* createHTMLModElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLModElement, element.get());
@@ -253,6 +276,11 @@ static JSNode* createHTMLDivElementWrapper(ExecState* exec, PassRefPtr<HTMLEleme
 static JSNode* createHTMLDListElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLDListElement, element.get());
+}
+
+static JSNode* createHTMLDataGridRowElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridRowElement, element.get());
 }
 
 static JSNode* createHTMLEmbedElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
@@ -498,10 +526,14 @@ JSNode* createJSHTMLWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
        map.set(captionTag.localName().impl(), createHTMLTableCaptionElementWrapper);
        map.set(colTag.localName().impl(), createHTMLTableColElementWrapper);
        map.set(colgroupTag.localName().impl(), createHTMLTableColElementWrapper);
+       map.set(datagridTag.localName().impl(), createHTMLDataGridElementWrapper);
+       map.set(dcellTag.localName().impl(), createHTMLDataGridCellElementWrapper);
+       map.set(dcolTag.localName().impl(), createHTMLDataGridColElementWrapper);
        map.set(delTag.localName().impl(), createHTMLModElementWrapper);
        map.set(dirTag.localName().impl(), createHTMLDirectoryElementWrapper);
        map.set(divTag.localName().impl(), createHTMLDivElementWrapper);
        map.set(dlTag.localName().impl(), createHTMLDListElementWrapper);
+       map.set(drowTag.localName().impl(), createHTMLDataGridRowElementWrapper);
        map.set(embedTag.localName().impl(), createHTMLEmbedElementWrapper);
        map.set(fieldsetTag.localName().impl(), createHTMLFieldSetElementWrapper);
        map.set(fontTag.localName().impl(), createHTMLFontElementWrapper);

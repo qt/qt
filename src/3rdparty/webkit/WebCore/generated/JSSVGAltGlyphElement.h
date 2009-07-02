@@ -21,10 +21,10 @@
 #ifndef JSSVGAltGlyphElement_h
 #define JSSVGAltGlyphElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
 #include "JSSVGTextPositioningElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

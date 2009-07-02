@@ -147,7 +147,7 @@ namespace QT_NAMESPACE {}
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
-     WIN32    - Win32 (Windows 95/98/ME and Windows NT/2000/XP)
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      WINCE    - WinCE (Windows CE 5.0)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -385,6 +385,9 @@ namespace QT_NAMESPACE {}
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+#    define Q_ALIGNOF(type)   __alignof(type)
+#    define Q_DECL_ALIGN(n)   __declspec(align(n))
+
 /* Visual C++.Net issues for _MSC_VER >= 1300 */
 #  if _MSC_VER >= 1300
 #    define Q_CC_MSVC_NET
@@ -471,6 +474,11 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_USING_KEYWORD
 #    define QT_NO_STL_WCHAR
 #  endif
+#  if __GNUC__ >= 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
+#    define Q_ALIGNOF(type)   __alignof__(type)
+#    define Q_TYPEOF(expr)    __typeof__(expr)
+#    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#  endif
 /* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
 #  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
 #    define Q_WRONG_SB_CTYPE_MACROS
@@ -524,6 +532,11 @@ namespace QT_NAMESPACE {}
 #    define Q_OUTOFLINE_TEMPLATE inline
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
+#  elif __xlC__ >= 0x0600
+#    define Q_ALIGNOF(type)     __alignof__(type)
+#    define Q_TYPEOF(expr)      __typeof__(expr)
+#    define Q_DECL_ALIGN(n)     __attribute__((__aligned__(n)))
+#    define Q_PACKED            __attribute__((__packed__))
 #  endif
 
 /* Older versions of DEC C++ do not define __EDG__ or __EDG - observed
@@ -647,6 +660,13 @@ namespace QT_NAMESPACE {}
 #    if __SUNPRO_CC < 0x570
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 #    endif
+   /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
+#    if __SUNPRO_CC >= 0x590
+#      define Q_ALIGNOF(type)   __alignof__(type)
+#      define Q_TYPEOF(expr)    __typeof__(expr)
+#      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
 #    endif
@@ -676,8 +696,17 @@ namespace QT_NAMESPACE {}
 #  if defined(__HP_aCC) || __cplusplus >= 199707L
 #    define Q_NO_TEMPLATE_FRIENDS
 #    define Q_CC_HPACC
-#    ifdef QT_ARCH_PARISC
+#    if __HP_aCC-0 < 060000
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+#      define Q_DECL_EXPORT     __declspec(dllexport)
+#      define Q_DECL_IMPORT     __declspec(dllimport)
+#    endif
+#    if __HP_aCC-0 >= 061200
+#      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
+#    endif
+#    if __HP_aCC-0 >= 062000
+#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
 #    define Q_CC_HP
@@ -1395,21 +1424,13 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
-inline QT3_SUPPORT bool qt_winUnicode() { return !(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based); }
+inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#ifdef Q_OS_WINCE
-#define QT_WA(uni, ansi) uni
-#define QT_WA_INLINE(uni, ansi) (uni)
-#elif defined(UNICODE)
-#define QT_WA(uni, ansi) if (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)) { uni } else { ansi }
+#define QT_WA(unicode, ansi) unicode
+#define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#define QT_WA_INLINE(uni, ansi) (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based) ? uni : ansi)
-#else
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) ansi
-#endif
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE

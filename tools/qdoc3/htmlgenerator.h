@@ -161,6 +161,10 @@ class HtmlGenerator : public PageGenerator
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 #endif
 #ifdef QDOC_NAME_ALIGNMENT
+    void generateSection(const NodeList& nl,
+                         const Node *relative,
+                         CodeMarker *marker,
+                         CodeMarker::SynopsisStyle style);
     void generateSynopsis(const Node *node, 
                           const Node *relative, 
                           CodeMarker *marker,

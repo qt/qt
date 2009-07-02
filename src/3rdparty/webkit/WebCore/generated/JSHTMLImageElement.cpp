@@ -19,16 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLImageElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLImageElement.h"
+#include "HTMLNames.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -149,28 +147,28 @@ JSValue jsHTMLImageElementName(ExecState* exec, const Identifier&, const Propert
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->name());
+    return jsString(exec, imp->getAttribute(HTMLNames::nameAttr));
 }
 
 JSValue jsHTMLImageElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->align());
+    return jsString(exec, imp->getAttribute(HTMLNames::alignAttr));
 }
 
 JSValue jsHTMLImageElementAlt(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->alt());
+    return jsString(exec, imp->getAttribute(HTMLNames::altAttr));
 }
 
 JSValue jsHTMLImageElementBorder(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->border());
+    return jsString(exec, imp->getAttribute(HTMLNames::borderAttr));
 }
 
 JSValue jsHTMLImageElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,21 +196,21 @@ JSValue jsHTMLImageElementLongDesc(ExecState* exec, const Identifier&, const Pro
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->longDesc());
+    return jsString(exec, imp->getURLAttribute(HTMLNames::longdescAttr));
 }
 
 JSValue jsHTMLImageElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->src());
+    return jsString(exec, imp->getURLAttribute(HTMLNames::srcAttr));
 }
 
 JSValue jsHTMLImageElementUseMap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->useMap());
+    return jsString(exec, imp->getAttribute(HTMLNames::usemapAttr));
 }
 
 JSValue jsHTMLImageElementVspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -240,7 +238,7 @@ JSValue jsHTMLImageElementLowsrc(ExecState* exec, const Identifier&, const Prope
 {
     UNUSED_PARAM(exec);
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->lowsrc());
+    return jsString(exec, imp->getURLAttribute(HTMLNames::lowsrcAttr));
 }
 
 JSValue jsHTMLImageElementNaturalHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -283,25 +281,25 @@ void JSHTMLImageElement::put(ExecState* exec, const Identifier& propertyName, JS
 void setJSHTMLImageElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setName(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::nameAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setAlign(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::alignAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementAlt(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setAlt(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::altAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementBorder(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setBorder(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::borderAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -325,19 +323,19 @@ void setJSHTMLImageElementIsMap(ExecState* exec, JSObject* thisObject, JSValue v
 void setJSHTMLImageElementLongDesc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setLongDesc(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::longdescAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setSrc(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::srcAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementUseMap(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setUseMap(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::usemapAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLImageElementVspace(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -355,7 +353,7 @@ void setJSHTMLImageElementWidth(ExecState* exec, JSObject* thisObject, JSValue v
 void setJSHTMLImageElementLowsrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLImageElement* imp = static_cast<HTMLImageElement*>(static_cast<JSHTMLImageElement*>(thisObject)->impl());
-    imp->setLowsrc(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::lowsrcAttr, valueToStringWithNullCheck(exec, value));
 }
 
 JSValue JSHTMLImageElement::getConstructor(ExecState* exec)

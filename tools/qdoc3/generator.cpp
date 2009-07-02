@@ -44,7 +44,7 @@
 */
 #include <QtCore>
 #include <qdir.h>
-
+#include <qdebug.h>
 #include "codemarker.h"
 #include "config.h"
 #include "doc.h"
@@ -257,7 +257,7 @@ void Generator::generateFakeNode(const FakeNode * /* fake */,
 {
 }
 
-void Generator::generateText(const Text& text,
+bool Generator::generateText(const Text& text,
                              const Node *relative,
                              CodeMarker *marker)
 {
@@ -270,7 +270,9 @@ void Generator::generateText(const Text& text,
                          true,
                          numAtoms);
         endText(relative, marker);
+        return true;
     }
+    return false;
 }
 
 #ifdef QDOC_QML
@@ -278,36 +280,30 @@ void Generator::generateText(const Text& text,
   Extract sections of markup text surrounded by \e qmltext
   and \e endqmltext and output them.
  */
-void Generator::generateQmlText(const Text& text,
+bool Generator::generateQmlText(const Text& text,
                                 const Node *relative,
                                 CodeMarker *marker,
                                 const QString& qmlName)
 {
-    if (text.firstAtom() != 0) {
-        startText(relative, marker);
-        const Atom *atom = text.firstAtom();
-        while (atom) {
-            if (atom->type() != Atom::QmlText) {
-                atom = atom->next();
-            }
-            else {
-                int n = 0;
-                atom = atom->next();
-                while (atom && (atom->type() != Atom::EndQmlText)) {
-                    if (atom->string() == relative->name()) {
-                        Atom renamed(*atom);
-                        renamed.setString(qmlName);
-                        n = 1 + generateAtom(&renamed, relative, marker);
-                    }
-                    else
-                        n = 1 + generateAtom(atom, relative, marker);
-                    while (n-- > 0)
-                        atom = atom->next();
-                }
+    const Atom* atom = text.firstAtom();
+    if (atom == 0)
+        return false;
+
+    startText(relative, marker);
+    while (atom) {
+        if (atom->type() != Atom::QmlText)
+            atom = atom->next();
+        else {
+            atom = atom->next();
+            while (atom && (atom->type() != Atom::EndQmlText)) {
+                int n = 1 + generateAtom(atom, relative, marker);
+                while (n-- > 0)
+                    atom = atom->next();
             }
         }
-        endText(relative, marker);
     }
+    endText(relative, marker);
+    return true;
 }
 #endif
 
@@ -331,12 +327,20 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
 
     if (node->doc().isEmpty()) {
-        if (!quiet) // ### might be unnecessary
+        if (!quiet && !node->isReimp()) // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'")
                             .arg(marker->plainFullName(node)));
     }
     else {
-        generateText(node->doc().body(), node, marker);
+        if (node->type() == Node::Function) {
+            const FunctionNode *func = static_cast<const FunctionNode *>(node);
+            if (func->reimplementedFrom() != 0)
+                generateReimplementedFrom(func, marker);
+        }
+        
+        if (!generateText(node->doc().body(), node, marker))
+            if (node->isReimp())
+                return;
 
         if (node->type() == Node::Enum) {
             const EnumNode *enume = (const EnumNode *) node;
@@ -374,7 +378,6 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
         else if (node->type() == Node::Function) {
             const FunctionNode *func = static_cast<const FunctionNode *>(node);
-
             QSet<QString> definedParams;
             QList<Parameter>::ConstIterator p = func->parameters().begin();
             while (p != func->parameters().end()) {
@@ -420,7 +423,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                                 }
                             }
                         }
-                        if (needWarning)
+                        if (needWarning && !func->isReimp())
                             node->doc().location().warning(
                                 tr("Undocumented parameter '%1' in %2")
                                 .arg(*a).arg(marker->plainFullName(node)));
@@ -435,9 +438,11 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                 if (!body.contains("return", Qt::CaseInsensitive))
                     node->doc().location().warning(tr("Undocumented return value"));
             }
-
+#if 0
+            // Now we put this at the top, before the other text.
             if (func->reimplementedFrom() != 0)
                 generateReimplementedFrom(func, marker);
+#endif            
         }
     }
 
@@ -935,7 +940,8 @@ void Generator::generateReimplementedFrom(const FunctionNode *func,
             from->parent()->access() != Node::Private) {
             Text text;
             text << Atom::ParaLeft << "Reimplemented from ";
-            appendFullName(text, from->parent(), func, marker, from);
+            QString fullName =  from->parent()->name() + "::" + from->name() + "()";
+            appendFullName(text, from->parent(), fullName, from);
             text << "." << Atom::ParaRight;
             generateText(text, func, marker);
         }
@@ -1013,6 +1019,19 @@ void Generator::appendFullName(Text& text,
     text << Atom(Atom::LinkNode, CodeMarker::stringForNode(actualNode))
          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
          << Atom(Atom::String, marker->plainFullName(apparentNode, relative))
+         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+}
+
+void Generator::appendFullName(Text& text,
+                               const Node *apparentNode,
+                               const QString& fullName,
+                               const Node *actualNode)
+{
+    if (actualNode == 0)
+        actualNode = apparentNode;
+    text << Atom(Atom::LinkNode, CodeMarker::stringForNode(actualNode))
+         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+         << Atom(Atom::String, fullName)
          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
 }
 
