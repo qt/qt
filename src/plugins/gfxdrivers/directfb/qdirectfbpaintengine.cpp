@@ -81,7 +81,7 @@ template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                int scale, bool matrixRotShear, bool simplePen,
-                               bool dfbHandledClip,
+                               bool dfbHandledClip, bool unsupportedCompositionMode,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three)
@@ -98,7 +98,8 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     dbg << "scale" << scale
         << "matrixRotShear" << matrixRotShear
         << "simplePen" << simplePen
-        << "dfbHandledClip" << dfbHandledClip;
+        << "dfbHandledClip" << dfbHandledClip
+        << "unsupportedCompositionMode" << unsupportedCompositionMode;
 
     const T1 *t1 = ptr(one);
     const T2 *t2 = ptr(two);
@@ -124,6 +125,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->unsupportedCompositionMode, \
                            #one, one, #two, two, #three, three);        \
     if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
         return;
@@ -138,6 +140,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->unsupportedCompositionMode, \
                            #one, one, #two, two, #three, three);
 #else
 #define RASTERFALLBACK(op, one, two, three)
