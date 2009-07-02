@@ -55,6 +55,7 @@ QT_MODULE(Declarative)
 
 class QmlAbstractAnimation;
 class QmlTransitionPrivate;
+class QmlTransitionManager;
 class Q_DECLARATIVE_EXPORT QmlTransition : public QObject
 {
     Q_OBJECT
@@ -83,7 +84,7 @@ public:
 
     void prepare(QmlStateOperation::ActionList &actions,
                  QList<QmlMetaProperty> &after,
-                 QmlState *endState);
+                 QmlTransitionManager *end);
 
     void setReversed(bool r);
     void stop();

@@ -56,6 +56,7 @@
 #include <QtDeclarative/qmlstate.h>
 #include <private/qobject_p.h>
 #include <private/qmlanimation_p.h>
+#include <private/qmltransitionmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,24 +91,23 @@ class QmlStatePrivate : public QObjectPrivate
 
 public:
     QmlStatePrivate()
-    : when(0), transition(0), inState(false), group(0) {}
+    : when(0), inState(false), group(0) {}
 
     typedef QList<SimpleAction> SimpleActionList;
 
     QString name;
     QmlBindableValue *when;
     QmlConcreteList<QmlStateOperation *> operations;
-    QmlTransition *transition;
+
+    QmlTransitionManager transitionManager;
+
     SimpleActionList revertList;
     QList<QmlMetaProperty> reverting;
-    SimpleActionList completeList;
-    QmlStateOperation::ActionList bindingsList;
     QString extends;
     mutable bool inState;
     QmlStateGroup *group;
 
     QmlStateOperation::ActionList generateActionList(QmlStateGroup *) const;
-    void applyBindings();
     void complete();
 };
 

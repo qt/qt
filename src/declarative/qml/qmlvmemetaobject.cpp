@@ -168,7 +168,10 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
             return id;
         } 
     } else if(c == QMetaObject::InvokeMetaMethod) {
-        if(id >= baseSlot && id < (baseSlot + slotCount)) {
+        if (id >= baseSig && (baseSlot == -1 || id < baseSlot)) {
+            QMetaObject::activate(object, id, a);
+            return id;
+        } else if (id >= baseSlot && id < (baseSlot + slotCount)) {
             int idx = id - baseSlot + slotDataIdx;
             QmlContext *ctxt = qmlContext(object);
             QmlExpression expr(ctxt, slotData->at(idx), object);
