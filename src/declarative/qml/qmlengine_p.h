@@ -161,7 +161,6 @@ public:
     mutable QNetworkAccessManager *networkAccessManager;
 
     QmlCompositeTypeManager typeManager;
-    QMap<QString,QString> nameSpacePaths;
 
     mutable quint32 uniqueId;
     quint32 getUniqueId() const {

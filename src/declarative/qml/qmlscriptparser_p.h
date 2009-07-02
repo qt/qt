@@ -72,9 +72,12 @@ public:
     class Import
     {
     public:
-        Import() {}
+        Import() : version_major(0), version_minor(0) {}
 
         QString uri;
+        QString prefix;
+        int version_major;
+        int version_minor;
         QmlParser::LocationSpan location;
     };
 
@@ -83,7 +86,6 @@ public:
 
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
 
-    QMap<QString,QString> nameSpacePaths() const;
     QStringList types() const;
 
     QmlParser::Object *tree() const;
@@ -100,12 +102,9 @@ public:
     void setScriptFile(const QString &filename) {_scriptFile = filename; }
     QString scriptFile() const { return _scriptFile; }
 
-    void addNamespacePath(const QString &path);
-
 // ### private:
     QList<QmlError> _errors;
 
-    QMap<QString,QString> _nameSpacePaths;
     QmlParser::Object *root;
     QList<Import> _imports;
     QStringList _typeNames;

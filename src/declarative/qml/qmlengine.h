@@ -42,6 +42,7 @@
 #ifndef QMLENGINE_H
 #define QMLENGINE_H
 
+#include <QtCore/qurl.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qmap.h>
 #include <QtScript/qscriptvalue.h>
@@ -54,6 +55,7 @@ QT_MODULE(Declarative)
 
 class QmlComponent;
 class QmlEnginePrivate;
+class QmlImportsPrivate;
 class QmlExpression;
 class QmlContext;
 class QUrl;
@@ -74,13 +76,18 @@ public:
 
     void clearComponentCache();
 
-    void setNameSpacePaths(const QMap<QString,QString>& map);
-    void addNameSpacePaths(const QMap<QString,QString>& map);
-    void addNameSpacePath(const QString&,const QString&);
-    QMap<QString,QString> nameSpacePaths() const;
-    QUrl componentUrl(const QUrl& src, const QUrl& baseUrl) const;
-
-    QList<QUrl> componentSearchPath(const QByteArray &qml, const QUrl &url) const;
+    struct Imports {
+        Imports();
+        ~Imports();
+        void setBaseUrl(const QUrl& url);
+        QUrl baseUrl() const { return base; }
+    private:
+        friend class QmlEngine;
+        QUrl base;
+        QmlImportsPrivate *d;
+    };
+    void addImport(Imports*, const QString& uri, const QString& prefix, int version_major, int version_minor) const;
+    QUrl resolveType(const Imports&, const QString& type) const;
 
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;

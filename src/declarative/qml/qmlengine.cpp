@@ -483,132 +483,6 @@ QmlContext *QmlEngine::activeContext()
 }
 
 /*!
-    Sets the mappings from namespace URIs to URL to \a map.
-
-    \sa nameSpacePaths()
-*/
-void QmlEngine::setNameSpacePaths(const QMap<QString,QString>& map)
-{
-    Q_D(QmlEngine);
-    d->nameSpacePaths = map;
-}
-
-/*!
-    Adds mappings (given by \a map) from namespace URIs to URL.
-
-    \sa nameSpacePaths()
-*/
-void QmlEngine::addNameSpacePaths(const QMap<QString,QString>& map)
-{
-    Q_D(QmlEngine);
-    d->nameSpacePaths.unite(map);
-}
-
-/*!
-    Adds a mapping from namespace URI \a ns to URL \a path.
-
-    \sa nameSpacePaths()
-*/
-void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
-{
-    Q_D(QmlEngine);
-    d->nameSpacePaths.insertMulti(ns,path);
-}
-
-/*!
-    Returns the mapping from namespace URIs to URLs.
-
-    Currently, only the empty namespace is supported
-    (i.e. types cannot be qualified with a namespace).
-
-    The QML \c import statement can be used to import a directory of
-    components into the empty namespace.
-
-    \qml
-    import "MyModuleDirectory"
-    \endqml
-
-    This is also possible from C++:
-
-    \code
-        engine->addNameSpacePath("","file:///opt/abcdef");
-    \endcode
-
-    \sa componentUrl()
-*/
-QMap<QString,QString> QmlEngine::nameSpacePaths() const
-{
-    Q_D(const QmlEngine);
-    return d->nameSpacePaths;
-}
-
-/*!
-    Returns the URL for the component source \a src, as mapped
-    by the nameSpacePaths(), resolved relative to \a baseUrl.
-
-    \sa nameSpacePaths()
-*/
-QUrl QmlEngine::componentUrl(const QUrl& src, const QUrl& baseUrl) const
-{
-    Q_D(const QmlEngine);
-
-    // Find the most-specific namespace matching src.
-    // For files, multiple paths can be given, the first found is used.
-    QUrl r;
-    QMap<QString, QString>::const_iterator i = d->nameSpacePaths.constBegin();
-    QString rns=QLatin1String(":"); // ns of r, if file found, initial an imposible namespace
-    QString srcstring = src.toString();
-    while (i != d->nameSpacePaths.constEnd()) {
-        QString ns = i.key();
-        QString path = i.value();
-        if (ns != rns) {
-            if (srcstring.startsWith(ns) && (ns.length()==0 || srcstring[ns.length()]==QLatin1Char('/'))) {
-                QString file = ns.length()==0 ? srcstring : srcstring.mid(ns.length()+1);
-                QUrl cr = baseUrl.resolved(QUrl(path + QLatin1String("/") + file));
-                QString lf = cr.toLocalFile();
-                if (lf.isEmpty() || QFile::exists(lf)) {
-                    r = cr;
-                    rns = ns;
-                }
-            }
-        }
-        ++i;
-    }
-    if (r.isEmpty())
-        r = baseUrl.resolved(src);
-    return r;
-}
-
-/*!
-  Returns the list of base urls the engine browses to find sub-components.
-
-  The search path consists of the base of the \a url, and, in the case of local files,
-  the directories imported using the "import" statement in \a qml.
-  */
-QList<QUrl> QmlEngine::componentSearchPath(const QByteArray &qml, const QUrl &url) const
-{
-    QList<QUrl> searchPath;
-
-    searchPath << url.resolved(QUrl(QLatin1String(".")));
-
-    if (QFileInfo(url.toLocalFile()).exists()) {
-        QmlScriptParser parser;
-        if (parser.parse(qml, url)) {
-            for (int i = 0; i < parser.imports().size(); ++i) {
-                QUrl importUrl = QUrl(parser.imports().at(i).uri);
-                if (importUrl.isRelative()) {
-                    searchPath << url.resolved(importUrl);
-                } else {
-                    searchPath << importUrl;
-                }
-            }
-        }
-    }
-
-    return searchPath;
-}
-
-/*!
     Sets the common QNetworkAccessManager, \a network, used by all QML elements instantiated
     by this engine.
 
@@ -1698,6 +1572,82 @@ QVariant QmlExpressionLog::result() const
 void QmlExpressionLog::setResult(const QVariant &r)
 {
     m_result = r;
+}
+
+class QmlImportsPrivate {
+public:
+    void add(const QString& uri, const QString& prefix, int version_major, int version_minor)
+    {
+        TypeSet *s = set.value(prefix);
+        if (!s)
+            set.insert(prefix,(s=new TypeSet));
+        QString url = uri;
+        s->urls.append(url);
+        s->vmaj.append(version_major);
+        s->vmin.append(version_minor);
+    }
+
+    QUrl find(const QString& base, const QString& type)
+    {
+        TypeSet *s = 0;
+        int dot = type.indexOf(QLatin1Char('.'));
+        if (dot >= 0) {
+            while (!s) {
+                s = set.value(type.left(dot));
+                int ndot = type.indexOf(QLatin1Char('.'),dot+1);
+                if (ndot > 0)
+                    dot = ndot;
+                else
+                    break;
+            }
+        } else {
+            s = set.value("");
+        }
+        QString unqtype = type.mid(dot+1);
+        QUrl baseUrl(base);
+        if (s) {
+            for (int i=0; i<s->urls.count(); ++i) {
+                QUrl url = baseUrl.resolved(QUrl(s->urls.at(i) +"/"+ unqtype + QLatin1String(".qml")));
+                // XXX search non-files too! (eg. zip files, see QT-524)
+                QFileInfo f(url.toLocalFile());
+                if (f.exists())
+                    return url;
+            }
+        }
+        return baseUrl.resolved(QUrl(type + QLatin1String(".qml")));
+    }
+
+private:
+    struct TypeSet {
+        QStringList urls;
+        QList<int> vmaj;
+        QList<int> vmin;
+    };
+    QHash<QString,TypeSet* > set;
+};
+
+QmlEngine::Imports::Imports() :
+    d(new QmlImportsPrivate)
+{
+}
+
+QmlEngine::Imports::~Imports()
+{
+}
+
+void QmlEngine::Imports::setBaseUrl(const QUrl& url)
+{
+    base = url;
+}
+
+void QmlEngine::addImport(Imports* imports, const QString& uri, const QString& prefix, int version_major, int version_minor) const
+{
+    imports->d->add(uri,prefix,version_major,version_minor);
+}
+
+QUrl QmlEngine::resolveType(const Imports& imports, const QString& type) const
+{
+    return imports.d->find(imports.base,type);
 }
 
 QT_END_NAMESPACE

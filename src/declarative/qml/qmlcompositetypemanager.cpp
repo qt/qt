@@ -88,7 +88,7 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
             component = new QmlComponent(engine, cc, -1, -1, 0);
         } else {
             component = new QmlComponent(engine, 0);
-            component->d_func()->url = QUrl(url);
+            component->d_func()->url = imports.baseUrl();
             component->d_func()->errors = errors;
         }
 
@@ -103,8 +103,8 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
     if (status == Complete && !compiledComponent) {
 
         compiledComponent = new QmlCompiledComponent;
-        compiledComponent->url = QUrl(url);
-        compiledComponent->name = url.toLatin1(); // ###
+        compiledComponent->url = imports.baseUrl();
+        compiledComponent->name = compiledComponent->url.toString().toLatin1(); // ###
 
         QmlCompiler compiler;
         if (!compiler.compile(engine, this, compiledComponent)) {
@@ -143,7 +143,7 @@ QmlCompositeTypeData *QmlCompositeTypeManager::get(const QUrl &url)
     if (!unit) {
         unit = new QmlCompositeTypeData;
         unit->status = QmlCompositeTypeData::Waiting;
-        unit->url = url.toString();
+        unit->imports.setBaseUrl(url);
         components.insert(url.toString(), unit);
 
         loadSource(unit);
@@ -158,7 +158,7 @@ QmlCompositeTypeManager::getImmediate(const QByteArray &data, const QUrl &url)
 {
     QmlCompositeTypeData *unit = new QmlCompositeTypeData;
     unit->status = QmlCompositeTypeData::Waiting;
-    unit->url = url.toString();
+    unit->imports.setBaseUrl(url);
     setData(unit, data, url);
     return unit;
 }
@@ -209,7 +209,7 @@ void QmlCompositeTypeManager::replyFinished()
 
 void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
 {
-    QUrl url(unit->url);
+    QUrl url(unit->imports.baseUrl());
 
     if (url.scheme() == QLatin1String("file")) {
 
@@ -250,8 +250,9 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
         doComplete(unit);
 
     } else {
-
-        engine->addNameSpacePaths(unit->data.nameSpacePaths());
+        foreach (QmlScriptParser::Import imp, unit->data.imports()) {
+            engine->addImport(&unit->imports, imp.uri, imp.prefix, imp.version_major, imp.version_minor);
+        }
         compile(unit);
 
     }
@@ -319,13 +320,13 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             continue;
         }
 
-        QUrl url = engine->componentUrl(QUrl(QLatin1String(type + ".qml")), QUrl(unit->url));
+        QUrl url = engine->resolveType(unit->imports, QString(type));
         QmlCompositeTypeData *urlUnit = components.value(url.toString());
 
         if (!urlUnit) {
             urlUnit = new QmlCompositeTypeData;
             urlUnit->status = QmlCompositeTypeData::Waiting;
-            urlUnit->url = url.toString();
+            urlUnit->imports.setBaseUrl(url);
             components.insert(url.toString(), urlUnit);
 
             loadSource(urlUnit);
@@ -338,7 +339,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             unit->status = QmlCompositeTypeData::Error;
             {
                 QmlError error;
-                error.setUrl(QUrl(unit->url));
+                error.setUrl(unit->imports.baseUrl());
                 error.setDescription(tr("Type %1 unavailable").arg(QLatin1String(type)));
                 unit->errors << error;
             }

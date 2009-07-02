@@ -463,7 +463,6 @@ bool ProcessAST::visit(AST::UiProgram *node)
 bool ProcessAST::visit(AST::UiImport *node)
 {
     QString fileName = node->fileName->asString();
-    _parser->addNamespacePath(fileName);
 
     AST::SourceLocation startLoc = node->importToken;
     AST::SourceLocation endLoc = node->semicolonToken;
@@ -471,6 +470,10 @@ bool ProcessAST::visit(AST::UiImport *node)
     QmlScriptParser::Import import;
     import.location = location(startLoc, endLoc);
     import.uri = fileName;
+    // XXX not used yet...
+    import.prefix = "";
+    import.version_major = 0;
+    import.version_minor = 0;
 
     _parser->_imports << import;
 
@@ -836,11 +839,6 @@ bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     return _errors.isEmpty();
 }
 
-QMap<QString,QString> QmlScriptParser::nameSpacePaths() const
-{
-    return _nameSpacePaths;
-}
-
 QStringList QmlScriptParser::types() const
 {
     return _typeNames;
@@ -867,7 +865,6 @@ void QmlScriptParser::clear()
         root->release();
         root = 0;
     }
-    _nameSpacePaths.clear();
     _typeNames.clear();
     _errors.clear();
 
@@ -894,11 +891,6 @@ void QmlScriptParser::setTree(Object *tree)
     Q_ASSERT(! root);
 
     root = tree;
-}
-
-void QmlScriptParser::addNamespacePath(const QString &path)
-{
-    _nameSpacePaths.insertMulti(QString(), path);
 }
 
 QT_END_NAMESPACE

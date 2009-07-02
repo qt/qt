@@ -77,7 +77,6 @@ public:
 
     static QmlContext *activeContext();
 
-    QUrl resolvedUri(const QUrl &);
     QUrl resolvedUrl(const QUrl &);
 
     void setBaseUrl(const QUrl &);

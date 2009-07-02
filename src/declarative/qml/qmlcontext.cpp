@@ -449,35 +449,6 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 }
 
 /*!
-    Resolves the component URI \a src relative to the URL of the
-    containing component, and according to the
-    \l {QmlEngine::nameSpacePaths()} {namespace paths} of the
-    context's engine, returning the resolved URL.
-
-    \sa QmlEngine::componentUrl(), setBaseUrl()
-*/
-QUrl QmlContext::resolvedUri(const QUrl &src)
-{
-    QmlContext *ctxt = this;
-    if (src.isRelative()) {
-        if (ctxt) {
-            while(ctxt) {
-                if (ctxt->d_func()->url.isValid())
-                    break;
-                else
-                    ctxt = ctxt->parentContext();
-            }
-
-            if (ctxt)
-                return ctxt->d_func()->engine->componentUrl(src, ctxt->d_func()->url);
-        }
-        return QUrl();
-    } else {
-        return ctxt->d_func()->engine->componentUrl(src, QUrl());
-    }
-}
-
-/*!
     Explicitly sets the url both resolveUri() and resolveUrl() will
     use for relative references to \a baseUrl.
 
