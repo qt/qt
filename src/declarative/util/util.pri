@@ -9,6 +9,7 @@ SOURCES += \
            util/qmlfont.cpp \
            util/qmlfollow.cpp \
            util/qmlstate.cpp\
+           util/qmltransitionmanager.cpp \
            util/qmlstateoperations.cpp \
            util/qmlsetproperties.cpp \
            util/qmlstategroup.cpp \
@@ -35,6 +36,7 @@ HEADERS += \
            util/qmlstateoperations.h \
            util/qmlsetproperties.h \
            util/qmlstate_p.h\
+           util/qmltransitionmanager_p.h \
            util/qmlstategroup.h \
            util/qmltransition.h \
            util/qmllistmodel.h\

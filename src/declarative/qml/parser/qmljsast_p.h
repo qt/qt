@@ -209,6 +209,7 @@ public:
         Kind_UiObjectMemberList,
         Kind_UiArrayMemberList,
         Kind_UiProgram,
+        Kind_UiParameterList,
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
         Kind_UiScriptBinding,
@@ -2351,6 +2352,42 @@ public:
     SourceLocation rbraceToken;
 };
 
+class UiParameterList: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiParameterList)
+
+    UiParameterList(NameId *t, NameId *n):
+        type (t), name (n), next (this)
+        { kind = K; }
+
+    UiParameterList(UiParameterList *previous, NameId *t, NameId *n):
+        type (t), name (n)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    virtual ~UiParameterList() {}
+
+    virtual void accept0(Visitor *) {}
+
+    inline UiParameterList *finish ()
+    {
+        UiParameterList *front = next;
+        next = 0;
+        return front;
+    }
+
+// attributes
+    NameId *type;
+    NameId *name;
+    UiParameterList *next;
+    SourceLocation commaToken;
+    SourceLocation identifierToken;
+};
+
 class UiPublicMember: public UiObjectMember
 {
 public:
@@ -2358,13 +2395,13 @@ public:
 
     UiPublicMember(NameId *memberType,
                    NameId *name)
-        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false)
+        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false), parameters(0)
     { kind = K; }
 
     UiPublicMember(NameId *memberType,
                    NameId *name,
                    ExpressionNode *expression)
-        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false)
+        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false), parameters(0)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
@@ -2388,6 +2425,7 @@ public:
     NameId *name;
     ExpressionNode *expression;
     bool isDefaultMember;
+    UiParameterList *parameters;
     SourceLocation defaultToken;
     SourceLocation propertyToken;
     SourceLocation typeToken;

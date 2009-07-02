@@ -59,6 +59,7 @@ class Action
 {
 public:
     Action();
+    Action(QObject *, const QString &, const QVariant &);
 
     bool restore:1;
     bool actionDone:1;

@@ -1,51 +1,54 @@
-var sprite = null;
+var dynamicObject = null;
+var fourthBox = null;
 var component;
 var started = false;
-function make(p) {
+function createWithEvalQml(p) {
     return evalQml('Rect { color: "lightsteelblue"; width: 100;'
             + 'height: 100; id: newRect}','DynPart.qml');
 }
 
-function death() {
-    if(!(sprite==null)){
-        sprite.destroy();
-        sprite = null;
+function destroyDynamicObject() {
+    if(!(dynamicObject==null)){
+        dynamicObject.destroy();
+        dynamicObject = null;
     }
 }
 
-function spawn() {//Like create, but assumes instant readyness
-    if(sprite!=null)//Already made
+function instantCreateWithComponent() {//Like create, but assumes instant readyness
+    if(dynamicObject!=null)//Already made
         return null;
     component = createComponent("dynamic.qml");
-    sprite = component.createObject();
-    if(sprite == null){
-        print("err");
+    dynamicObject = component.createObject();
+    if(dynamicObject == null){
+        print("error creating component");
     }else{
-        sprite.parent = targetItem;
-        return sprite;
+        dynamicObject.parent = targetItem;
+        return dynamicObject;
     }
     return null;
 }
 
 function finishCreation(){
     if(component.isReady()){
-        sprite = component.createObject();
-        sprite.parent = targetItem;
+        dynamicObject = component.createObject();
+        dynamicObject.parent = targetItem;
     }else if(component.isError()){
-        sprite = null;
+        dynamicObject = null;
+        print("error creating component");
+        print(component.errorsString());
     }
 }
 
-function create(){
+function createWithComponent(){
     if(started!=false){
         finishCreation();//Remakes if destroyed
-        return sprite;
+        return dynamicObject;
     }
     started = true;
     component = createComponent("dynamic.qml");
     finishCreation();
-    if(sprite != null){
-        return sprite;
+    if(dynamicObject != null){
+        return dynamicObject;
     }
     component.statusChanged.connect(finishCreation);
     return null;

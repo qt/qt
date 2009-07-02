@@ -58,7 +58,7 @@ Rect {
         opacity: 0
         MouseRegion {
             anchors.fill: parent
-            onClicked: { toggle(); removeButton.confirmed.emit() }
+            onClicked: { toggle(); removeButton.confirmed() }
         }
     }
     Text {

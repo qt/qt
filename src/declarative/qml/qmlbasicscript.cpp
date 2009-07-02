@@ -137,9 +137,6 @@ QDebug operator<<(QDebug lhs, const QmlBasicScriptNodeCache &rhs)
     case QmlBasicScriptNodeCache::Attached: 
         lhs << "Attached" << rhs.object << rhs.attached;
         break;
-    case QmlBasicScriptNodeCache::Signal: 
-        lhs << "Signal" << rhs.object << rhs.core;
-        break;
     case QmlBasicScriptNodeCache::SignalProperty: 
         lhs << "SignalProperty" << rhs.object << rhs.core;
         break;
@@ -275,10 +272,6 @@ QVariant QmlBasicScriptNodeCache::value(const char *) const
         break;
     case Attached:
         return qVariantFromValue(static_cast<QObject *>(attached));
-        break;
-    case Signal:
-        // XXX
-        Q_ASSERT(!"Not implemented");
         break;
     case SignalProperty:
         break;

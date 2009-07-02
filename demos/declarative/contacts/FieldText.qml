@@ -20,7 +20,7 @@ Rect {
                 fieldText.text = textEdit.text;
                 fieldText.state='';
                 contacts.mouseGrabbed=false;
-                fieldText.confirmed.emit();
+                fieldText.confirmed();
             }
             function reset() {
                 textEdit.text = fieldText.text;

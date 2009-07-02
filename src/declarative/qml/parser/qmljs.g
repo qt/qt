@@ -254,6 +254,7 @@ public:
       AST::UiProgram *UiProgram;
       AST::UiImportList *UiImportList;
       AST::UiImport *UiImport;
+      AST::UiParameterList *UiParameterList;
       AST::UiPublicMember *UiPublicMember;
       AST::UiObjectDefinition *UiObjectDefinition;
       AST::UiObjectInitializer *UiObjectInitializer;
@@ -705,6 +706,52 @@ case $rule_number: {
 ./
 
 UiPropertyType: T_IDENTIFIER ;
+
+UiParameterListOpt: ;
+/.
+case $rule_number: {
+  sym(1).Node = 0;
+} break;
+./
+
+UiParameterListOpt: UiParameterList ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(1).UiParameterList->finish ();
+} break;
+./
+
+UiParameterList: UiPropertyType JsIdentifier ;
+/.
+case $rule_number: {
+  AST::UiParameterList *node = makeAstNode<AST::UiParameterList> (driver->nodePool(), sym(1).sval, sym(2).sval);
+  node->identifierToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+UiParameterList: UiParameterList T_COMMA UiPropertyType JsIdentifier ;
+/.
+case $rule_number: {
+  AST::UiParameterList *node = makeAstNode<AST::UiParameterList> (driver->nodePool(), sym(1).UiParameterList, sym(3).sval, sym(4).sval);
+  node->commaToken = loc(2);
+  node->identifierToken = loc(4);
+  sym(1).Node = node;
+} break;
+./
+
+UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
+    node->type = AST::UiPublicMember::Signal;
+    node->propertyToken = loc(1);
+    node->typeToken = loc(2);
+    node->identifierToken = loc(3);
+    node->parameters = sym(4).UiParameterList;
+    sym(1).Node = node;
+}   break;
+./
 
 UiObjectMember: T_SIGNAL T_IDENTIFIER ;
 /.

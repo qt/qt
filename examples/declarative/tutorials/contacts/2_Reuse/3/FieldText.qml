@@ -18,7 +18,7 @@ Rect {
             function confirm() {
                 fieldText.text = textEdit.text;
                 fieldText.state='';
-                fieldText.confirmed.emit();
+                fieldText.confirmed();
             }
             function reset() {
                 textEdit.text = fieldText.text;

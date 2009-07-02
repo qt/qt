@@ -82,14 +82,6 @@ DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 
 QML_DEFINE_TYPE(QObject,Object)
 
-static QScriptValue qmlMetaProperty_emit(QScriptContext *ctx, QScriptEngine *engine)
-{
-    QmlMetaProperty mp = qscriptvalue_cast<QmlMetaProperty>(ctx->thisObject());
-    if (mp.type() & QmlMetaProperty::Signal)
-        mp.emitSignal();
-    return engine->nullValue();
-}
-
 struct StaticQtMetaObject : public QObject
 {
     static const QMetaObject *get()
@@ -143,11 +135,6 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentBindContext(0), currentExpression(0), q(e),
   rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
-    QScriptValue proto = scriptEngine.newObject();
-    proto.setProperty(QLatin1String("emit"), 
-                      scriptEngine.newFunction(qmlMetaProperty_emit));
-    scriptEngine.setDefaultPrototype(qMetaTypeId<QmlMetaProperty>(), proto);
-
     QScriptValue qtObject = scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 }
@@ -278,22 +265,18 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
         if (!prop.isValid())
             return QScriptValue();
 
-        if (prop.type() & QmlMetaProperty::Signal) {
-            return scriptEngine.newVariant(qVariantFromValue(prop));
+        QVariant var = prop.read();
+        if (prop.needsChangedNotifier())
+            capturedProperties << CapturedProperty(prop);
+        QObject *varobj = QmlMetaType::toQObject(var);
+        if (!varobj)
+            varobj = qvariant_cast<QObject *>(var);
+        if (varobj) {
+            return scriptEngine.newObject(objectClass, scriptEngine.newVariant(QVariant::fromValue(varobj)));
         } else {
-            QVariant var = prop.read();
-            if (prop.needsChangedNotifier())
-                capturedProperties << CapturedProperty(prop);
-            QObject *varobj = QmlMetaType::toQObject(var);
-            if (!varobj)
-                varobj = qvariant_cast<QObject *>(var);
-            if (varobj) {
-                return scriptEngine.newObject(objectClass, scriptEngine.newVariant(QVariant::fromValue(varobj)));
-            } else {
-                if (var.type() == QVariant::Bool)
-                    return QScriptValue(&scriptEngine, var.toBool());
-                return scriptEngine.newVariant(var);
-            }
+            if (var.type() == QVariant::Bool)
+                return QScriptValue(&scriptEngine, var.toBool());
+            return scriptEngine.newVariant(var);
         }
     }
 
@@ -355,13 +338,6 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::SignalProperty;
-        cache.core = prop.coreIndex();
-        return true;
-
-    } else if (prop.type() & QmlMetaProperty::Signal) {
-
-        cache.object = obj;
-        cache.type = QmlBasicScriptNodeCache::Signal;
         cache.core = prop.coreIndex();
         return true;
 
@@ -859,6 +835,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         sprite = component.createObject();
         if(sprite == 0){
             // Error Handling
+            print(component.errorsString());
         }else{
             sprite.parent = page;
             sprite.x = 200;
@@ -866,7 +843,9 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         }
     \endcode
 
-    \sa QmlComponent::createObject()
+    If you want to just create an arbitrary string of QML, instead of
+    loading a qml file, consider the evalQML() function.
+    \sa QmlComponent::createObject(), QmlEngine::createQMLObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -876,6 +855,8 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     if(ctxt->argumentCount() != 1 || !activeEngine){
         c = new QmlComponent(activeEngine);
     }else{
+        //### This url needs to be resolved in the context that the function
+        //### is called - it can't be done here.
         QUrl url = QUrl(ctxt->argument(0).toString());
         c = new QmlComponent(activeEngine, url, activeEngine);
     }
@@ -892,6 +873,14 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
 
     Returns the created object, or null if there is an error. In the case of an
     error, details of the error are output using qWarning().
+
+    Note that this function returns immediately, and therefore may not work if
+    the QML loads new components. If you are trying to load a new component,
+    for example from a QML file, consider the createComponent() function
+    instead. 'New components' refers to external QML files that have not yet
+    been loaded, and so it is safe to use evalQml to load built-in components.
+
+    \sa QmlEngine::createComponent()
 */
 QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *engine)
 {

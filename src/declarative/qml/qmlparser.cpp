@@ -123,7 +123,8 @@ QmlParser::Object::DynamicSignal::DynamicSignal()
 }
 
 QmlParser::Object::DynamicSignal::DynamicSignal(const DynamicSignal &o)
-: name(o.name)
+: name(o.name), parameterTypes(o.parameterTypes), 
+  parameterNames(o.parameterNames)
 {
 }
 

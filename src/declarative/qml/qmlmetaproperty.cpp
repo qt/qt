@@ -243,15 +243,6 @@ void QmlMetaProperty::initProperty(QObject *obj, const QString &name)
     }
     if (!d->name.isEmpty())
         d->type = Property;
-
-    if (d->type == Invalid) {
-        int sig = findSignal(obj, name.toLatin1());
-        if (sig != -1) {
-            d->signal = obj->metaObject()->method(sig);
-            d->type = Signal;
-            d->coreIdx = sig;
-        } 
-    }
 }
 
 /*!
@@ -284,7 +275,6 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
   \value Invalid The property is invalid.
   \value Property The property is a regular Qt property.
   \value SignalProperty The property is a signal property.
-  \value Signal The property is a signal.
   \value Default The property is the default property.
   \value Attached The property is an attached property.
 */
@@ -581,26 +571,6 @@ QmlBindableValue *QmlMetaProperty::setBinding(QmlBindableValue *binding) const
     }
 
     return 0;
-}
-
-/*! \internal */
-int QmlMetaProperty::findSignal(const QObject *obj, const char *name)
-{
-    const QMetaObject *mo = obj->metaObject();
-    int methods = mo->methodCount();
-    for (int ii = 0; ii < methods; ++ii) {
-        QMetaMethod method = mo->method(ii);
-        if (method.methodType() != QMetaMethod::Signal)
-            continue;
-
-        QByteArray methodName = method.signature();
-        int idx = methodName.indexOf('(');
-        methodName = methodName.left(idx);
-
-        if (methodName == name) 
-            return ii;
-    }
-    return -1;
 }
 
 void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
@@ -958,17 +928,6 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
     }
 }
 
-/*! \internal */
-void QmlMetaProperty::emitSignal()
-{
-    if (type() & Signal) {
-        if (d->signal.parameterTypes().isEmpty())
-            d->object->metaObject()->activate(d->object, d->coreIdx, 0);
-        else
-            qWarning() << "QmlMetaProperty: Cannot emit signal with parameters";
-    }
-}
-
 /*!
     Return the Qt metaobject index of the property.
 */
@@ -1019,7 +978,7 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj)
         d->name = QLatin1String(p.name());
         d->propType = p.propertyType;
         d->coreIdx = id;
-    } else if (d->type & SignalProperty || d->type & Signal) {
+    } else if (d->type & SignalProperty) {
         d->signal = obj->metaObject()->method(id);
         d->coreIdx = id;
     } 
