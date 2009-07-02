@@ -68,6 +68,7 @@ struct DnDParams
     NSEvent *theEvent;
     NSPoint localPoint;
     NSDragOperation performedAction;
+    NSPoint activeDragEnterPos;
 };
 
 QT_END_NAMESPACE
@@ -85,6 +86,7 @@ Q_GUI_EXPORT
     int composingLength;
     bool sendKeyEvents;
     QStringList *currentCustomTypes;
+    NSInteger dragEnterSequence;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
 - (void) finishInitWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;

@@ -288,11 +288,18 @@ extern "C" {
 { 
     if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
         return NSDragOperationNone;
+    NSPoint windowPoint = [sender draggingLocation];
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // pass the drag enter event to the view underneath.
+        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+        if (candidateView && candidateView != self)
+            return [candidateView draggingEntered:sender];
+    }
+    dragEnterSequence = [sender draggingSequenceNumber];
     [self addDropData:sender];
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
         mimeData = QDragManager::self()->dragPrivate()->data;
-    NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrag(localPoint.x, localPoint.y);
@@ -316,6 +323,9 @@ extern "C" {
         [self removeDropData];
         return NSDragOperationNone;
     } else {
+        // save the mouse position, used by draggingExited handler.
+        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        dndParams->activeDragEnterPos = windowPoint;
         // send a drag move event immediately after a drag enter event (as per documentation).
         QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
         qDMEvent.setDropAction(qDEEvent.dropAction());
@@ -336,11 +346,22 @@ extern "C" {
 
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
 {
-    // drag enter event was rejected, so ignore the move event. 
+    NSPoint windowPoint = [sender draggingLocation];
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // pass the drag move event to the view underneath.
+        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+        if (candidateView && candidateView != self)
+            return [candidateView draggingUpdated:sender];
+    }
+    // in cases like QFocusFrame, the view under the mouse might
+    // not have received the drag enter. Generate a synthetic
+    // drag enter event for that view.
+    if (dragEnterSequence != [sender draggingSequenceNumber])
+        [self draggingEntered:sender];
+    // drag enter event was rejected, so ignore the move event.
     if (dropData == 0)
         return NSDragOperationNone;
     // return last value, if we are still in the answerRect.
-    NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     NSDragOperation nsActions = [sender draggingSourceOperationMask];
@@ -379,21 +400,34 @@ extern "C" {
 
 - (void)draggingExited:(id < NSDraggingInfo >)sender
 {
-    Q_UNUSED(sender)
-    // drag enter event was rejected, so ignore the move event. 
+    dragEnterSequence = -1;
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // try sending the leave event to the last view which accepted drag enter.
+        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        NSView *candidateView = [[[self window] contentView] hitTest:dndParams->activeDragEnterPos];
+        if (candidateView && candidateView != self)
+            return [candidateView draggingExited:sender];
+    }
+    // drag enter event was rejected, so ignore the move event.
     if (dropData) {
         QDragLeaveEvent de;
         QApplication::sendEvent(qwidget, &de);
         [self removeDropData];
     }
-
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
+    NSPoint windowPoint = [sender draggingLocation];
+    dragEnterSequence = -1;
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // pass the drop event to the view underneath.
+        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+        if (candidateView && candidateView != self)
+            return [candidateView performDragOperation:sender];
+    }
     [self addDropData:sender];
 
-    NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrop(localPoint.x, localPoint.y);
@@ -688,7 +722,6 @@ extern "C" {
             }
             if (!lowerView) // Low as we can be at this point.
                 candidateView = viewForDescent;
-
             // Try to go deeper, will also exit out of the loop, if we found the point.
             viewForDescent = lowerView;
             lowerView = nil;
