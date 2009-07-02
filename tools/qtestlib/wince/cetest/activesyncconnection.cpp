@@ -422,7 +422,7 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
             }
 
             if (error) {
-                qWarning() << "Error on target:" << strwinerror(error);
+                qWarning("Error on target: %s", strwinerror(error).constData());
                 result = false;
             }
             else {
