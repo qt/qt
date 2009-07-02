@@ -1208,6 +1208,9 @@
     handle touch events. Without this attribute set, events from a
     touch device will be sent as mouse events.
 
+    \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
+    touch events to be sent to the widget. 
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
