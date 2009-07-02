@@ -43,7 +43,7 @@
 
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_kqueue_p.h"
-#include "qcore_unix_p.h"
+#include "private/qcore_unix_p.h"
 
 #include <qdebug.h>
 #include <qfile.h>
