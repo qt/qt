@@ -58,6 +58,7 @@ class QmlEnginePrivate;
 class QmlImportsPrivate;
 class QmlExpression;
 class QmlContext;
+class QmlType;
 class QUrl;
 class QScriptEngine;
 class QScriptContext;
@@ -88,6 +89,7 @@ public:
     };
     void addImport(Imports*, const QString& uri, const QString& prefix, int version_major, int version_minor) const;
     QUrl resolveType(const Imports&, const QString& type) const;
+    QmlType* resolveBuiltInType(const Imports& imports, const QByteArray& type) const;
 
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;

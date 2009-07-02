@@ -1578,9 +1578,14 @@ class QmlImportsPrivate {
 public:
     void add(const QString& uri, const QString& prefix, int version_major, int version_minor)
     {
-        TypeSet *s = set.value(prefix);
-        if (!s)
-            set.insert(prefix,(s=new TypeSet));
+        TypeSet *s;
+        if (prefix.isEmpty()) {
+            s = &unqualifiedset;
+        } else {
+            s = set.value(prefix);
+            if (!s)
+                set.insert(prefix,(s=new TypeSet));
+        }
         QString url = uri;
         s->urls.append(url);
         s->vmaj.append(version_major);
@@ -1601,13 +1606,13 @@ public:
                     break;
             }
         } else {
-            s = set.value("");
+            s = &unqualifiedset;
         }
-        QString unqtype = type.mid(dot+1);
+        QString unqualifiedtype = type.mid(dot+1);
         QUrl baseUrl(base);
         if (s) {
             for (int i=0; i<s->urls.count(); ++i) {
-                QUrl url = baseUrl.resolved(QUrl(s->urls.at(i) +"/"+ unqtype + QLatin1String(".qml")));
+                QUrl url = baseUrl.resolved(QUrl(s->urls.at(i) +QLatin1String("/")+ unqualifiedtype + QLatin1String(".qml")));
                 // XXX search non-files too! (eg. zip files, see QT-524)
                 QFileInfo f(url.toLocalFile());
                 if (f.exists())
@@ -1617,12 +1622,40 @@ public:
         return baseUrl.resolved(QUrl(type + QLatin1String(".qml")));
     }
 
+    QmlType *findBuiltin(const QString& base, const QByteArray& type)
+    {
+        // XXX import only have one space of imports!
+        TypeSet *s = 0;
+        int dot = type.indexOf('.');
+        if (dot >= 0) {
+            while (!s) {
+                s = set.value(QString::fromLatin1(type.left(dot)));
+                int ndot = type.indexOf('.',dot+1);
+                if (ndot > 0)
+                    dot = ndot;
+                else
+                    break;
+            }
+        } else {
+            s = &unqualifiedset;
+        }
+        QByteArray unqualifiedtype = dot < 0 ? type : type.mid(dot+1); // common-case opt (QString::mid works fine, but slower)
+        if (s) {
+            for (int i=0; i<s->urls.count(); ++i) {
+                QmlType *t = QmlMetaType::qmlType(s->urls.at(i).toLatin1()+"/"+unqualifiedtype);
+                if (t) return t;
+            }
+        }
+        return QmlMetaType::qmlType(type);
+    }
+
 private:
     struct TypeSet {
         QStringList urls;
         QList<int> vmaj;
         QList<int> vmin;
     };
+    TypeSet unqualifiedset;
     QHash<QString,TypeSet* > set;
 };
 
@@ -1649,5 +1682,11 @@ QUrl QmlEngine::resolveType(const Imports& imports, const QString& type) const
 {
     return imports.d->find(imports.base,type);
 }
+
+QmlType* QmlEngine::resolveBuiltInType(const Imports& imports, const QByteArray& type) const
+{
+    return imports.d->findBuiltin(imports.base,type);
+}
+
 
 QT_END_NAMESPACE

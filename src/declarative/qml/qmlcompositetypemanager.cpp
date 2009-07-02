@@ -314,7 +314,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             continue;
         }
 
-        ref.type = QmlMetaType::qmlType(type);
+        ref.type = engine->resolveBuiltInType(unit->imports, type);
         if (ref.type) {
             unit->types << ref;
             continue;
