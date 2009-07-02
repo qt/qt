@@ -116,7 +116,6 @@ private:
     static QByteArray generateBlurShader(int radius, bool gaussianBlur);
 
     mutable QGLShader *m_shader;
-    mutable QGLFramebufferObject *m_fbo;
 
     mutable QSize m_textureSize;
 
@@ -310,13 +309,11 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
 }
 
 QGLPixmapBlurFilter::QGLPixmapBlurFilter()
-    : m_fbo(0)
 {
 }
 
 QGLPixmapBlurFilter::~QGLPixmapBlurFilter()
 {
-    delete m_fbo;
 }
 
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
@@ -328,15 +325,20 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
         blurShader->compile(generateBlurShader(radius(), quality() == Qt::SmoothTransformation));
 
         customShader->setShader(blurShader);
-
-        m_fbo = new QGLFramebufferObject(src.size());
-
-        glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    QGLFramebufferObjectFormat format;
+    format.setInternalFormat(src.hasAlphaChannel() ? GL_RGBA : GL_RGB);
+    QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(src.size(), format);
+
+    if (!fbo)
+        return false;
+
+    glBindTexture(GL_TEXTURE_2D, fbo->texture());
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
     QGLEngineShaderManager *manager = engine->shaderManager();
@@ -351,17 +353,19 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     m_textureSize = src.size();
 
     // first pass, to fbo
-    m_fbo->bind();
+    fbo->bind();
     manager->setCustomShader(customShader);
     engine->drawPixmap(src.rect(), src, src.rect());
-    m_fbo->release();
+    fbo->release();
 
     // second pass, to widget
     m_program->setUniformValue("delta", 0.0, 1.0);
-    engine->drawTexture(src.rect().translated(pos.x(), pos.y()), m_fbo->texture(), src.size(), src.rect());
+    engine->drawTexture(src.rect().translated(pos.x(), pos.y()), fbo->texture(), src.size(), src.rect());
     manager->setCustomShader(0);
 
     painter->restore();
+
+    qgl_fbo_pool()->release(fbo);
 
     return true;
 }
