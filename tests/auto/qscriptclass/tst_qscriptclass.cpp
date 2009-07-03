@@ -764,6 +764,7 @@ void tst_QScriptClass::extension()
             QScriptValueList args;
             args << QScriptValue(&eng, 4) << QScriptValue(&eng, 5);
             QScriptValue ret = obj.call(obj, args);
+            QVERIFY(ret.isNumber());
             QCOMPARE(ret.toNumber(), qsreal(15));
         }
 

@@ -52,6 +52,10 @@ Q_DECLARE_METATYPE(QObjectList)
 #endif
 Q_DECLARE_METATYPE(QList<int>)
 
+// ### move
+Q_DECLARE_METATYPE(QScriptContext*)
+Q_DECLARE_METATYPE(QScriptValueList)
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -384,6 +388,45 @@ void ClassObject::getPropertyNames(JSC::ExecState *exec,
 {
     qWarning("Enumeration of custom script objects not implemented");
     JSC::JSObject::getPropertyNames(exec, propertyNames);
+}
+
+JSC::CallType ClassObject::getCallData(JSC::CallData &callData)
+{
+    if (!data->scriptClass->supportsExtension(QScriptClass::Callable))
+        return JSC::CallTypeNone;
+    callData.native.function = call;
+    return JSC::CallTypeHost;
+}
+
+JSC::JSValue JSC_HOST_CALL ClassObject::call(JSC::ExecState *exec, JSC::JSObject *callee,
+                                             JSC::JSValue thisValue, const JSC::ArgList &args)
+{
+    if (!callee->isObject(&ClassObject::info))
+        return throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
+    ClassObject *obj =  static_cast<ClassObject*>(callee);
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptContext *previousContext = eng_p->currentContext;
+    QScriptContextPrivate ctx_p(callee, thisValue, args,
+                                /*calledAsConstructor=*/false,
+                                previousContext, eng_p);
+    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
+    eng_p->currentContext = ctx;
+    QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
+    QVariant result = obj->scriptClass()->extension(QScriptClass::Callable, qVariantFromValue(ctx));
+    eng_p->currentContext = previousContext;
+    delete ctx;
+    return eng_p->jscValueFromVariant(result);
+}
+
+bool ClassObject::hasInstance(JSC::ExecState *exec, JSC::JSValue value, JSC::JSValue proto)
+{
+    if (!scriptClass()->supportsExtension(QScriptClass::HasInstance))
+        return JSC::JSObject::hasInstance(exec, value, proto);
+    QScriptValueList args;
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    args << eng_p->scriptValueFromJSCValue(value) << eng_p->scriptValueFromJSCValue(proto);
+    QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
+    return result.toBool();
 }
 
 const JSC::ClassInfo* ClassObject::classInfo() const

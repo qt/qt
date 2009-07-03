@@ -210,12 +210,18 @@ public:
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
 
+    virtual JSC::CallType getCallData(JSC::CallData&);
+    static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,
+                                           JSC::JSValue, const JSC::ArgList&);
+
+    virtual bool hasInstance(JSC::ExecState*, JSC::JSValue value, JSC::JSValue proto);
+
     virtual const JSC::ClassInfo* classInfo() const;
     static const JSC::ClassInfo info;
 
     static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::ImplementsHasInstance));
     }
 
     QScriptClass *scriptClass() const;
