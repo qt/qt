@@ -2825,13 +2825,11 @@ void tst_QScriptEngine::stringObjects()
     {
         QScriptValue obj = QScriptValue(&eng, str).toObject();
         QCOMPARE(obj.property("length").toInt32(), str.length());
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QCOMPARE(obj.propertyFlags("length"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration | QScriptValue::ReadOnly));
         for (int i = 0; i < str.length(); ++i) {
             QString pname = QString::number(i);
             QVERIFY(obj.property(pname).isString());
             QCOMPARE(obj.property(pname).toString(), QString(str.at(i)));
-            QEXPECT_FAIL("", "Flags are wrong", Continue);
             QCOMPARE(obj.propertyFlags(pname), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::ReadOnly));
             obj.setProperty(pname, QScriptValue());
             obj.setProperty(pname, QScriptValue(&eng, 123));
@@ -2872,7 +2870,6 @@ void tst_QScriptEngine::stringObjects()
 
         QScriptValue ret5 = eng.evaluate("delete s[0]");
         QVERIFY(ret5.isBoolean());
-        QEXPECT_FAIL("", "JSC is wrong", Continue);
         QVERIFY(!ret5.toBoolean());
 
         QScriptValue ret6 = eng.evaluate("delete s[-1]");
