@@ -522,12 +522,9 @@ int QHeaderView::length() const
 QSize QHeaderView::sizeHint() const
 {
     Q_D(const QHeaderView);
-    if (count() < 1)
-        return QSize(0, 0);
     if (d->cachedSizeHint.isValid())
         return d->cachedSizeHint;
-    int width = 0;
-    int height = 0;
+    d->cachedSizeHint = QSize(0, 0);
     d->executePostedLayout();
 
     // get size hint for the first n sections
@@ -537,8 +534,7 @@ QSize QHeaderView::sizeHint() const
             continue;
         checked++;
         QSize hint = sectionSizeFromContents(i);
-        width = qMax(hint.width(), width);
-        height = qMax(hint.height(), height);
+        d->cachedSizeHint = d->cachedSizeHint.expandedTo(hint);
     }
     // get size hint for the last n sections
     i = qMax(i, d->sectionCount - 100 );
@@ -547,10 +543,8 @@ QSize QHeaderView::sizeHint() const
             continue;
         checked++;
         QSize hint = sectionSizeFromContents(j);
-        width = qMax(hint.width(), width);
-        height = qMax(hint.height(), height);
+        d->cachedSizeHint = d->cachedSizeHint.expandedTo(hint);
     }
-    d->cachedSizeHint = QSize(width, height);
     return d->cachedSizeHint;
 }
 
