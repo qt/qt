@@ -32,7 +32,7 @@ Backend::Backend(QObject *parent)
 
     setProperty("identifier",     QLatin1String("mmf"));
     setProperty("backendName",    QLatin1String("MMF"));
-    setProperty("backendComment", QLatin1String("MMF Backend"));
+    setProperty("backendComment", QLatin1String("Backend using Nokia's S60 Multimedia Framework Architecture (MMF)."));
     setProperty("backendVersion", QLatin1String("0.1"));
     setProperty("backendWebsite", QLatin1String("http://www.qtsoftware.com/"));
 }
