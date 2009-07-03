@@ -55,6 +55,7 @@ private slots:
     void translate();
     void mixedcodecs();
     void compressed();
+    void idbased();
     void dupes();
 
 private:
@@ -189,6 +190,18 @@ void tst_lrelease::compressed()
     QCOMPARE(QCoreApplication::translate("Action2", "Component Name"), QString::fromAscii("translation in second context"));
     QCOMPARE(QCoreApplication::translate("Action3", "Component Name"), QString::fromAscii("translation in third context"));
 
+}
+
+void tst_lrelease::idbased()
+{
+    QVERIFY(!QProcess::execute("lrelease -idbased testdata/idbased.ts"));
+
+    QTranslator translator;
+    QVERIFY(translator.load("testdata/idbased.qm"));
+    qApp->installTranslator(&translator);
+
+    QCOMPARE(qtTrId("test_id"), QString::fromAscii("This is a test string."));
+    QCOMPARE(qtTrId("untranslated_id"), QString::fromAscii("This has no translation."));
 }
 
 void tst_lrelease::dupes()

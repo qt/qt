@@ -175,3 +175,15 @@ class TestingTake17 : QObject {
         tr("even more cool");
     }
 };
+
+
+
+
+//: again an extra comment, this time for id-based NOOP
+//% "This is supposed\tto be quoted \" newline\n"
+//% "backslashed \\ stuff."
+QT_TRID_NOOP("this_a_id")
+
+//~ some thing
+//% "This needs to be here. Really."
+QString test = qtTrId("this_another_id", n);

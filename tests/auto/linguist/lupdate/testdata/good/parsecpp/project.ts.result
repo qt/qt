@@ -2,6 +2,24 @@
 <!DOCTYPE TS>
 <TS version="2.0">
 <context>
+    <name></name>
+    <message id="this_a_id">
+        <location filename="main.cpp" line="185"/>
+        <source>This is supposed	to be quoted &quot; newline
+backslashed \ stuff.</source>
+        <extracomment>again an extra comment, this time for id-based NOOP</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="this_another_id" numerus="yes">
+        <location filename="main.cpp" line="189"/>
+        <source>This needs to be here. Really.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+        <extra-some>thing</extra-some>
+    </message>
+</context>
+<context>
     <name>Dialog2</name>
     <message numerus="yes">
         <location filename="main.cpp" line="29"/>

@@ -70,6 +70,8 @@ static void printUsage()
         "format into the 'compiled' .qm format used by QTranslator objects.\n\n"
         "Options:\n"
         "    -help  Display this information and exit\n"
+        "    -idbased\n"
+        "           Use IDs instead of source strings for message keying\n"
         "    -compress\n"
         "           Compress the .qm files\n"
         "    -nounfinished\n"
@@ -99,7 +101,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
 
 static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     bool verbose, bool ignoreUnfinished,
-    bool removeIdentical, TranslatorSaveMode mode)
+    bool removeIdentical, bool idBased, TranslatorSaveMode mode)
 {
     Translator::reportDuplicates(tor.resolveDuplicates(), qmFileName, verbose);
 
@@ -121,6 +123,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     ConversionData cd;
     cd.m_verbose = verbose;
     cd.m_ignoreUnfinished = ignoreUnfinished;
+    cd.m_idBased = idBased;
     cd.m_saveMode = mode;
     bool ok = tor.release(&file, cd);
     file.close();
@@ -136,7 +139,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
 }
 
 static bool releaseTsFile(const QString& tsFileName, bool verbose,
-    bool ignoreUnfinished, bool removeIdentical, TranslatorSaveMode mode)
+    bool ignoreUnfinished, bool removeIdentical, bool idBased, TranslatorSaveMode mode)
 {
     Translator tor;
     if (!loadTsFile(tor, tsFileName, verbose))
@@ -151,7 +154,7 @@ static bool releaseTsFile(const QString& tsFileName, bool verbose,
     }
     qmFileName += QLatin1String(".qm");
 
-    return releaseTranslator(tor, qmFileName, verbose, ignoreUnfinished, removeIdentical, mode);
+    return releaseTranslator(tor, qmFileName, verbose, ignoreUnfinished, removeIdentical, idBased, mode);
 }
 
 int main(int argc, char **argv)
@@ -164,6 +167,7 @@ int main(int argc, char **argv)
 
     bool verbose = true; // the default is true starting with Qt 4.2
     bool ignoreUnfinished = false;
+    bool idBased = false;
     // the default mode is SaveEverything starting with Qt 4.2
     TranslatorSaveMode mode = SaveEverything;
     bool removeIdentical = false;
@@ -174,6 +178,9 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; ++i) {
         if (args[i] == QLatin1String("-compress")) {
             mode = SaveStripped;
+            continue;
+        } else if (args[i] == QLatin1String("-idbased")) {
+            idBased = true;
             continue;
         } else if (args[i] == QLatin1String("-nocompress")) {
             mode = SaveEverything;
@@ -232,7 +239,7 @@ int main(int argc, char **argv)
                              qPrintable(args[i]));
                 } else {
                     foreach (const QString &trans, translations)
-                        if (!releaseTsFile(trans, verbose, ignoreUnfinished, removeIdentical, mode))
+                        if (!releaseTsFile(trans, verbose, ignoreUnfinished, removeIdentical, idBased, mode))
                             return 1;
                 }
             } else {
@@ -243,7 +250,7 @@ int main(int argc, char **argv)
             }
         } else {
             if (outputFile.isEmpty()) {
-                if (!releaseTsFile(args[i], verbose, ignoreUnfinished, removeIdentical, mode))
+                if (!releaseTsFile(args[i], verbose, ignoreUnfinished, removeIdentical, idBased, mode))
                     return 1;
             } else {
                 if (!loadTsFile(tor, args[i], verbose))
@@ -254,7 +261,7 @@ int main(int argc, char **argv)
 
     if (!outputFile.isEmpty())
         return releaseTranslator(tor, outputFile, verbose, ignoreUnfinished,
-                                 removeIdentical, mode) ? 0 : 1;
+                                 removeIdentical, idBased, mode) ? 0 : 1;
 
     return 0;
 }
