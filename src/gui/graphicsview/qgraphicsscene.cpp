@@ -414,9 +414,22 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
 {
     processDirtyItemsEmitted = false;
 
+    if (updateAll) {
+        Q_ASSERT(calledEmitUpdated);
+        // No need for further processing (except resetting the dirty states).
+        // The growingItemsBoundingRect is updated in _q_emitUpdated.
+        for (int i = 0; i < topLevelItems.size(); ++i)
+            resetDirtyItem(topLevelItems.at(i), /*recursive=*/true);
+        return;
+    }
+
     const bool wasPendingSceneUpdate = calledEmitUpdated;
     const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
-    processDirtyItemsRecursive(0);
+
+    // Process items recursively.
+    for (int i = 0; i < topLevelItems.size(); ++i)
+        processDirtyItemsRecursive(topLevelItems.at(i));
+
     dirtyGrowingItemsBoundingRect = false;
     if (!hasSceneRect && oldGrowingItemsBoundingRect != growingItemsBoundingRect)
         emit q_func()->sceneRectChanged(growingItemsBoundingRect);
@@ -4416,48 +4429,67 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                                                        qreal parentOpacity)
 {
     Q_Q(QGraphicsScene);
+    Q_ASSERT(item);
+    Q_ASSERT(!updateAll);
 
-    bool wasDirtyParentViewBoundingRects = false;
-    bool wasDirtyParentSceneTransform = false;
-    qreal opacity = parentOpacity;
+    if (!item->d_ptr->dirty && !item->d_ptr->dirtyChildren) {
+        resetDirtyItem(item);
+        return;
+    }
 
-    if (item) {
-        wasDirtyParentViewBoundingRects = item->d_ptr->paintedViewBoundingRectsNeedRepaint;
-        opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-        const bool itemIsHidden = !item->d_ptr->ignoreVisible && !item->d_ptr->visible;
-        const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity && opacity == 0.0;
+    const bool itemIsHidden = !item->d_ptr->ignoreVisible && !item->d_ptr->visible;
+    if (itemIsHidden) {
+        resetDirtyItem(item, /*recursive=*/true);
+        return;
+    }
 
-        if (item->d_ptr->dirtySceneTransform && !itemIsHidden && !item->d_ptr->itemIsUntransformable()
-            && !(itemIsFullyTransparent && item->d_ptr->childrenCombineOpacity())) {
-            // Calculate the full scene transform for this item.
-            item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                                              : QTransform();
-            item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
-            item->d_ptr->dirtySceneTransform = 0;
-            wasDirtyParentSceneTransform = true;
-        }
+    const bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+    if (!itemHasContents && !itemHasChildren) {
+        resetDirtyItem(item);
+        return; // Item has neither contents nor children!(?)
+    }
 
-        if (itemIsHidden || itemIsFullyTransparent || (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)) {
-            // Make sure we don't process invisible items or items with no content.
-            item->d_ptr->dirty = 0;
+    const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
+    const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity && opacity < 0.0001;
+    if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity())) {
+        resetDirtyItem(item, /*recursive=*/itemHasChildren);
+        return;
+    }
+
+    bool wasDirtyParentSceneTransform = item->d_ptr->dirtySceneTransform;
+    const bool itemIsUntransformable = item->d_ptr->itemIsUntransformable();
+    if (wasDirtyParentSceneTransform && !itemIsUntransformable) {
+        // Calculate the full scene transform for this item.
+        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
+                                                          : QTransform();
+        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
+        item->d_ptr->dirtySceneTransform = 0;
+    }
+
+    const bool wasDirtyParentViewBoundingRects = item->d_ptr->paintedViewBoundingRectsNeedRepaint;
+    if (itemIsFullyTransparent || !itemHasContents || dirtyAncestorContainsChildren) {
+        // Make sure we don't process invisible items or items with no content.
+        item->d_ptr->dirty = 0;
+        item->d_ptr->fullUpdatePending = 0;
+        // Might have a dirty view bounding rect otherwise.
+        if (itemIsFullyTransparent || !itemHasContents)
             item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
-        }
+    }
 
-        if (item->d_ptr->geometryChanged) {
-            // Update growingItemsBoundingRect.
-            if (!hasSceneRect && !itemIsHidden)
-                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
-            item->d_ptr->geometryChanged = 0;
-        }
+    if (item->d_ptr->geometryChanged) {
+        // Update growingItemsBoundingRect.
+        if (!hasSceneRect)
+            growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
+        item->d_ptr->geometryChanged = 0;
     }
 
     // Process item.
-    if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
+    if (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
-        const bool untransformableItem = item->d_ptr->itemIsUntransformable();
         const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
 
-        if (useCompatUpdate && !untransformableItem && qFuzzyIsNull(item->boundingRegionGranularity())) {
+        if (useCompatUpdate && !itemIsUntransformable && qFuzzyIsNull(item->boundingRegionGranularity())) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
@@ -4484,7 +4516,6 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
                 QRect &paintedViewBoundingRect = item->d_ptr->paintedViewBoundingRects[viewPrivate->viewport];
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
-                    wasDirtyParentViewBoundingRects = true;
                     paintedViewBoundingRect.translate(viewPrivate->dirtyScrollOffset);
                     if (!viewPrivate->updateRect(paintedViewBoundingRect))
                         paintedViewBoundingRect = QRect();
@@ -4506,7 +4537,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     continue; // Discard updates outside the bounding rect.
 
                 bool valid = false;
-                if (untransformableItem) {
+                if (itemIsUntransformable) {
                     valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect,
                                          item->deviceTransform(view->viewportTransform()));
                 } else if (!view->isTransformed()) {
@@ -4522,18 +4553,17 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         }
     }
 
-    // Process root items / children.
-    if (!item || item->d_ptr->dirtyChildren) {
-        QList<QGraphicsItem *> *children = item ? &item->d_ptr->children : &topLevelItems;
-        const bool allChildrenDirty = item && item->d_ptr->allChildrenDirty;
+    // Process children.
+    if (itemHasChildren && item->d_ptr->dirtyChildren) {
         if (!dirtyAncestorContainsChildren) {
-            dirtyAncestorContainsChildren = item && item->d_ptr->fullUpdatePending
+            dirtyAncestorContainsChildren = item->d_ptr->fullUpdatePending
                                             && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
         }
-        const bool parentIgnoresVisible = item && item->d_ptr->ignoreVisible;
-        const bool parentIgnoresOpacity = item && item->d_ptr->ignoreOpacity;
-        for (int i = 0; i < children->size(); ++i) {
-            QGraphicsItem *child = children->at(i);
+        const bool allChildrenDirty = item->d_ptr->allChildrenDirty;
+        const bool parentIgnoresVisible = item->d_ptr->ignoreVisible;
+        const bool parentIgnoresOpacity = item->d_ptr->ignoreOpacity;
+        for (int i = 0; i < item->d_ptr->children.size(); ++i) {
+            QGraphicsItem *child = item->d_ptr->children.at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (wasDirtyParentViewBoundingRects)
@@ -4542,36 +4572,19 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 child->d_ptr->ignoreVisible = 1;
             if (parentIgnoresOpacity)
                 child->d_ptr->ignoreOpacity = 1;
-
             if (allChildrenDirty) {
                 child->d_ptr->dirty = 1;
                 child->d_ptr->fullUpdatePending = 1;
                 child->d_ptr->dirtyChildren = 1;
                 child->d_ptr->allChildrenDirty = 1;
-            } else if (!child->d_ptr->dirty && !child->d_ptr->dirtyChildren) {
-                resetDirtyItem(child);
-                continue;
             }
-
-            if (dirtyAncestorContainsChildren || updateAll) {
-                // No need to process this child's dirty rect, hence reset the dirty state.
-                // However, we have to continue the recursion because it might have a dirty
-                // view bounding rect that needs repaint. We also have to reset the dirty
-                // state of its descendants.
-                child->d_ptr->dirty = 0;
-                child->d_ptr->fullUpdatePending = 0;
-                if (updateAll)
-                    child->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
-            }
-
             processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();
     }
 
-    if (item)
-        resetDirtyItem(item);
+    resetDirtyItem(item);
 }
 
 /*!

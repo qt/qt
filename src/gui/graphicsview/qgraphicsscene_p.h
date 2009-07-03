@@ -207,18 +207,24 @@ public:
     void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
                                     qreal parentOpacity = qreal(1.0));
 
-    inline void resetDirtyItem(QGraphicsItem *item)
+    inline void resetDirtyItem(QGraphicsItem *item, bool recursive = false)
     {
         Q_ASSERT(item);
         item->d_ptr->dirty = 0;
         item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
         item->d_ptr->geometryChanged = 0;
+        if (!item->d_ptr->dirtyChildren)
+            recursive = false;
         item->d_ptr->dirtyChildren = 0;
         item->d_ptr->needsRepaint = QRectF();
         item->d_ptr->allChildrenDirty = 0;
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+        if (recursive) {
+            for (int i = 0; i < item->d_ptr->children.size(); ++i)
+                resetDirtyItem(item->d_ptr->children.at(i), recursive);
+        }
     }
 
     inline void ensureSortedTopLevelItems()
