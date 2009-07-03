@@ -58,10 +58,6 @@ QT_BEGIN_NAMESPACE
 
 static const char MagicComment[] = "TRANSLATOR ";
 
-static const int yyIdentMaxLen = 128;
-static const int yyCommentMaxLen = 65536;
-static const int yyStringMaxLen = 65536;
-
 #define STRINGIFY_INTERNAL(x) #x
 #define STRINGIFY(x) STRINGIFY_INTERNAL(x)
 #define STRING(s) static QString str##s(QLatin1String(STRINGIFY(s)))
@@ -668,14 +664,9 @@ uint CppParser::getToken()
                         yyCh = getChar();
                         if (yyCh == EOF || yyCh == '\n')
                             break;
-                        if (yyString.size() < yyStringMaxLen) {
-                            yyString.append(QLatin1Char('\\'));
-                            yyString.append(yyCh);
-                        }
-                    } else {
-                        if (yyString.size() < yyStringMaxLen)
-                            yyString.append(yyCh);
+                        yyString.append(QLatin1Char('\\'));
                     }
+                    yyString.append(yyCh);
                     yyCh = getChar();
                 }
 
