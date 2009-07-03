@@ -72,6 +72,10 @@ bool StringObject::deleteProperty(ExecState* exec, const Identifier& propertyNam
 {
     if (propertyName == exec->propertyNames().length)
         return false;
+    bool isStrictUInt32;
+    unsigned i = propertyName.toStrictUInt32(&isStrictUInt32);
+    if (isStrictUInt32 && internalValue()->canGetIndex(i))
+        return false;
     return JSObject::deleteProperty(exec, propertyName);
 }
 
@@ -81,6 +85,13 @@ void StringObject::getPropertyNames(ExecState* exec, PropertyNameArray& property
     for (int i = 0; i < size; ++i)
         propertyNames.add(Identifier(exec, UString::from(i)));
     return JSObject::getPropertyNames(exec, propertyNames);
+}
+
+bool StringObject::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
+{
+    if (internalValue()->getStringPropertyAttributes(exec, propertyName, attributes))
+        return true;
+    return JSObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
 UString StringObject::toString(ExecState*) const
