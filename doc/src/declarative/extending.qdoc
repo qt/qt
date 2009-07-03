@@ -1,0 +1,348 @@
+/*!
+\page qml-extending-types.html
+\title Extending types from QML
+
+Many of the elements available for use in QML are implemented in 
+\l {QML for C++ Programmers}{C++}.  These types are know as "core types".  QML 
+allows programmers to build new, fully functional elements without using C++.  
+Existing core types can be extended, and new types defined entirely in the QML 
+language.
+
+\tableofcontents
+
+\section1 Adding new properties
+
+New properties can be added to an existing type.  These new properties are 
+available for use within QML, and also appear as regular Qt properties on the
+C++ object, accessible through the regular property access mechanisms.
+
+Like all properties in QML, custom properties are typed.  The type is used to 
+define the property's behavior, and also determines the C++ type of the created
+Qt property.  The following table shows the list of types available when 
+declaring a new property, and the corresponding C++ type.
+
+\table
+\header \o QML Type Name \o C++ Type Name 
+\row \o int \o int 
+\row \o bool \o bool 
+\row \o double \o double
+\row \o real \o double
+\row \o string \o QString
+\row \o url \o QUrl
+\row \o color \o QColor
+\row \o date \o QDate
+\row \o var \o QVariant
+\row \o variant \o QVariant
+\endtable
+
+QML supports two methods for adding a new property to a type - a new property
+definition, and a property alias.
+
+\section2 Property definitions
+
+Property definitions add a new property to an existing type.  The storage of the
+property is managed by QML.  The defined property may be read, written and bound
+to and from.
+
+The syntax for defining a new property is:
+\code
+    [default] property <type> <name>[: defaultValue]
+\endcode
+
+This declaration may appear anywhere within a type body, but it is customary to
+include it at the top.  Attempting to declare two properties with the same name
+in the same type block is an error.  However, a new property may reuse the name
+of an existing property on the type.  This should be done with caution, as the
+existing property will be hidden, and become inaccessible.
+
+The <type> must be one of the QML type names shown in the above table.  
+Additionally, an optional default value of the property can be provided.  The
+default value is a convenient shortcut, but is behaviorally identical to doing
+it in two steps, like this:
+
+\code
+    // Use default value
+    property int myProperty: 10
+
+    // Longer, but behaviorally identical
+    property int myProperty
+    myProperty: 10
+\endcode
+
+If specified, the optional "default" attribute marks the new property as the
+types default property, overriding any existing default property.  Using the
+default attribute twice in the same type block is an error.
+
+The following example shows how to declare a new "innerColor" property that
+controls the color of the inner rectangle.
+
+\code
+    Rect {
+        property color innerColor: "black"
+
+        color: "red"; width: 100; height: 100
+        Rect {
+            anchors.centeredIn: parent
+            width: parent.width - 10
+            height: parent.height - 10
+            color: innerColor
+        }
+    }
+\endcode
+
+\section2 Property aliases
+
+Property aliases are a more advanced form of property declaration.  Unlike a
+property definition, that allocates a new, unique storage space for the 
+property, a property alias connects the newly declared property (called the 
+aliasing property) to an existing property (the aliased property).  Read 
+operations on the aliasing property act as read operations on the aliased 
+property, and write operations on the aliasing property as write operations on
+the aliased property.
+
+A property alias declaration looks a lot like a property definition:
+\code
+    [default] property alias <name>: <alias reference>
+\endcode
+
+As the aliasing property has the same type as the aliased property, an explicit
+type is omitted, and the special "alias" keyword is used.  Instead of a default
+value, a property alias includes a compulsary alias reference.  The alias 
+reference is used to locate the aliased property.  While similar to a property
+binding, the alias reference syntax is highly restricted.
+
+An alias reference takes the form
+\code
+    <Id>.<property>
+\endcode
+where <Id> must refer to an object id within the same component as the type
+declaring the alias, and <property> refers to a property on this object.  The
+alias reference syntax may become more flexibly in future releases.
+
+Here is the property definition example rewritten to use property aliases.
+\code
+Rect {
+    property alias innerColor: InnerRect.color
+
+    color: "red"; width: 100; height: 100
+    Rect {
+        id: InnerRect
+        anchors.centeredIn: parent
+        width: parent.width - 10
+        height: parent.height - 10
+        color: "black"
+    }
+}
+\endcode
+
+Aliases are most useful when \l {Defining new Components}.  Consequently
+they have several apparent limitations that only make sense in this context.
+
+Aliases are only activated once the component specifying them is completed.  The
+most obvious consequence of this is that the component itself cannot generally
+use the aliased property directly.  For example, this will not work:
+
+\code
+    // Does NOT work
+    property alias innerColor: InnerRect.color
+    innerColor: "black"
+\endcode
+
+This behavior is required to allow type developers to redefine the behavior 
+of existing property names while continuing to use the existing behavior within
+the type they are building, something that is not possible with property 
+definitions.  In the example used so far, this could allows the developer to fix
+the external rectangle's color as "red" and redefine the "color" property to 
+refer to the inner rectangle, like this:
+
+\code
+Rect {
+    property alias color: InnerRect.color
+
+    color: "red"; width: 100; height: 100
+    Rect {
+        id: InnerRect
+        anchors.centeredIn: parent
+        width: parent.width - 10
+        height: parent.height - 10
+        color: "black"
+    }
+}
+\endcode
+
+Users of this type would not be able to affect the color of the red rectangle,
+but would find using the "color" property, rather than the strange new 
+"innerColor" property, much more familiar.
+
+A second, much less significant, consequence of the delayed activation of 
+aliases is that an alias reference cannot refer to another aliasing property
+declared within the same component.  This will not work:
+
+\code
+    // Does NOT work
+    id: Root
+    property alias innerColor: InnerRect.color
+    property alias innerColor2: Root.innerColor
+\endcode
+
+From outside the component, aliasing properties appear as regular Qt properties
+and consequently can be used in alias references.
+
+\section1 Adding new signals
+
+New signals can be added to an existing type.  These new signals are available 
+for use within QML, and also appear as regular Qt signals on the C++ object that
+can be used in Qt signal/slot connections.
+
+The syntax for defining a new signal is:
+\code
+signal <name>[([<type> <parameter name>[, ...]])]
+\endcode
+
+This declaration may appear anywhere within a type body, but it is customary to
+include it at the top.  Attempting to declare two signals or methods with the 
+same name in the same type block is an error.  However, a new signal may reuse 
+the name of an existing signal on the type.  This should be done with caution, 
+as the existing signal may be hidden and become inaccessible.
+
+The options for parameter types are the same as for property types (see
+\l {Adding new properties}.  If this signal has no parameters, the parameter
+list may be omitted entirely.
+
+Here are three examples of signal declarations:
+\code
+    Item {
+        signal clicked
+        signal hovered()
+        signal performAction(string action, var actionArgument)
+    }
+\endcode
+
+\section1 Adding new methods
+
+New methods can be added to an existing type.  These new methods are available 
+for use within QML, and also appear as regular Qt slots on the C++ object that
+can be used in Qt signal/slot connections.
+
+\code
+function <name>([<parameter name>[, ...]]) { <body> }
+\endcode
+
+This declaration may appear anywhere within a type body, but it is customary to
+include it at the top.  Attempting to declare two methods or signals with the 
+same name in the same type block is an error.  However, a new method may reuse
+the name of an existing method on the type.  This should be done with caution, 
+as the existing method may be hidden and become inaccessible.
+
+Methods parameters are not typed.  In C++ these parameters are of type QVariant.
+The body of the method is written in JavaScript and may access the parameters by
+name.
+
+This example adds a new method that behaves like a child:
+\code
+Item {
+    function say(text) {
+        print("You said " + text);
+    }
+}
+\endcode
+
+\section1 Defining new Components
+
+A component is a reusable type with a well-defined interface built entirely in 
+QML.  Components appear as regular QML elements, and can be used interchangably
+with core types.  Components allow developers to create new types to be reused
+in other projects without the use of C++.  Components can also help to reduce 
+duplication inside one project by limiting the need for large numbers of 
+copy-and-pasted blocks.
+
+Any snippet of QML code can become a component, just by placing it in the file 
+"<Name>.qml" where <Name> is the new element name, and begins with an uppercase
+letter.  These QML files automatically become available as new QML element types
+to other QML components and applications in the same directory.
+
+For example, here we show how a component named "Box" is defined and used 
+multiple times by an application.
+
+\table
+\row
+\o application.qml 
+\code
+Rect {
+    width: 100; height: 400;
+    Box { x: 0; y: 0 }
+    Box { x: 0; y: 150 }
+    Box { x: 0; y: 300 }
+}
+\endcode
+\o Box.qml
+\code
+Rect {
+    width: 100; height: 100; 
+    color: "blue"
+}
+\endcode
+\endtable
+
+Components may be collected into \l {Modules of Components} that gives the 
+developer more freedom than just putting files in the same directory.
+
+\section2 Building reusable components
+
+A component type built to be reused by others must have a well defined 
+interface.  In QML, an interface consists of a defined collection of 
+properties, signals and methods.  Users of a component have access to all the
+properties, signals and methods defined on the root element of the component.
+
+In the component example above, the root element of the "Box" component is a
+Rect.  As the Rect type has a "color" property, this property is accessible to
+users of the Box component.  For example, the application.qml can be modified
+to show three different colored boxes like this:
+\code
+Rect {
+    width: 100; height: 400;
+    Box { x: 0; y: 0; color: "red"; }
+    Box { x: 0; y: 150; color: "yellow";  }
+    Box { x: 0; y: 300; color: "green"; }
+}
+\endcode
+
+As expected, adding additional properties to the root element of Box, makes them
+available externally.  Here we add a "text" property:
+
+\table
+\row
+\o application.qml 
+\code
+Rect {
+    width: 100; height: 400;
+    Box { x: 0; y: 0; color: "red"; text: "stop" }
+    Box { x: 0; y: 150; color: "yellow"; text: "slow" }
+    Box { x: 0; y: 300; color: "green"; text: "go" }
+}
+\endcode
+\o Box.qml
+\code
+Rect {
+    property alias text: MyText.text
+    width: 100; height: 100; 
+    color: "blue"
+    Text {
+        id: MyText
+        anchors.centeredIn: parent
+    }        
+}
+\endcode
+\endtable
+
+Methods and signals may be added in the same way.
+
+As all external methods, signals and properties are accessible to external 
+users, developers should ensure that setting these properties does not have 
+any undesirable side-effects.  For most resiliance, root level properties should
+only be used for literal default values.  When a root level property must be
+used inside the component - such as the children property - property aliases
+can be used to redirect this property to a "safe" location for external users.
+Try to think of the root level properties as being "owned" by the components 
+user, rather than the component itself.
+*/

@@ -122,6 +122,12 @@
     editable property for (checkable) buttons. Note that QItemDelegate
     gets and sets a widget's \c USER property.
 
+    \o The presence of the \c CONSTANT attibute indicates that the property 
+    value is constant.  For a given object instance, the READ method of a 
+    constant property must return the same value every time it is called.  This
+    constant value may be different for different instances of the object.  A
+    constant property cannot have a WRTE method or a NOTIFY signal.
+
     \endlist
 
     The \c READ, \c WRITE, and \c RESET functions can be inherited.

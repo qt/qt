@@ -39,53 +39,100 @@
 **
 ****************************************************************************/
 
-#ifndef QFXCONTENTWRAPPER_H
-#define QFXCONTENTWRAPPER_H
+#ifndef QMLEXPRESSION_P_H
+#define QMLEXPRESSION_P_H
 
-#include <QtDeclarative/qfxitem.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qmlbasicscript_p.h"
+#include "qmlexpression.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QFxContentWrapperPrivate;
-class Q_DECLARATIVE_EXPORT QFxContentWrapper : public QFxItem
+class QmlExpression;
+class QString;
+class QmlExpressionLog;
+class QmlExpressionBindProxy;
+class QmlExpressionPrivate
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QList<QFxItem *>* content READ content DESIGNABLE false)
-    Q_CLASSINFO("DefaultProperty", "content")
 public:
-    QFxContentWrapper(QFxItem *parent=0);
+    QmlExpressionPrivate(QmlExpression *);
+    QmlExpressionPrivate(QmlExpression *, const QString &expr);
+    QmlExpressionPrivate(QmlExpression *, void *expr, QmlRefCount *rc);
+    ~QmlExpressionPrivate();
 
-    QList<QFxItem *> *content();
+    QmlExpression *q;
+    QmlContext *ctxt;
+    QString expression;
+    QmlBasicScript sse;
+    void *sseData;
+    QmlExpressionBindProxy *proxy;
+    QObject *me;
+    bool trackChange;
 
-private:
-    void create();
-    QFxItem *findContent(QList<QSimpleCanvasItem *> &nodes);
+    QUrl fileName;
+    int line;
 
-protected:
-    void componentComplete();
-    QFxContentWrapper(QFxContentWrapperPrivate &dd, QFxItem *parent);
+    quint32 id;
 
-private:
-    Q_DECLARE_PRIVATE(QFxContentWrapper)
+    void addLog(const QmlExpressionLog &);
+    QList<QmlExpressionLog> *log;
+
+    QVariant evalSSE(QmlBasicScript::CacheState &cacheState);
+    QVariant evalQtScript();
 };
 
-class Q_DECLARATIVE_EXPORT QFxContent : public QFxItem
+class QmlExpressionBindProxy : public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    QFxContent(QFxItem *parent=0) : QFxItem(parent) {}
+    QmlExpressionBindProxy(QmlExpression *be)
+    :e(be) { }
+
+private:
+    QmlExpression *e;
+
+private Q_SLOTS:
+    void changed() { e->valueChanged(); }
+};
+
+class QmlExpressionLog
+{
+public:
+    QmlExpressionLog();
+    QmlExpressionLog(const QmlExpressionLog &);
+    ~QmlExpressionLog();
+
+    QmlExpressionLog &operator=(const QmlExpressionLog &);
+
+    void setTime(quint32);
+    quint32 time() const;
+
+    QString expression() const;
+    void setExpression(const QString &);
+
+    QStringList warnings() const;
+    void addWarning(const QString &);
+
+    QVariant result() const;
+    void setResult(const QVariant &);
+
+private:
+    quint32 m_time;
+    QString m_expression;
+    QVariant m_result;
+    QStringList m_warnings;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxContentWrapper)
-QML_DECLARE_TYPE(QFxContent)
-
-QT_END_HEADER
-
-#endif // QFXCONTENTWRAPPER_H
+#endif // QMLEXPRESSION_P_H

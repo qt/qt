@@ -83,14 +83,19 @@ void Rewriter::moveTextBefore(const AST::SourceLocation &firstLoc,
                               const AST::SourceLocation &lastLoc,
                               const AST::SourceLocation &loc)
 {
-    textWriter.move(firstLoc.offset, lastLoc.offset + lastLoc.length - firstLoc.offset, loc.offset);
+    move(firstLoc.offset, lastLoc.offset + lastLoc.length - firstLoc.offset, loc.offset);
 }
 
 void Rewriter::moveTextAfter(const AST::SourceLocation &firstLoc,
                              const AST::SourceLocation &lastLoc,
                              const AST::SourceLocation &loc)
 {
-    textWriter.move(firstLoc.offset, lastLoc.offset + lastLoc.length - firstLoc.offset, loc.offset + loc.length);
+    move(firstLoc.offset, lastLoc.offset + lastLoc.length - firstLoc.offset, loc.offset + loc.length);
+}
+
+void Rewriter::move(int pos, int length, int to)
+{
+    textWriter.move(pos, length, to);
 }
 
 QT_END_NAMESPACE

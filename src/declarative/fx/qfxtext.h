@@ -60,7 +60,7 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_ENUMS(TextStyle)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QmlFont *font READ font)
+    Q_PROPERTY(QmlFont *font READ font CONSTANT)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(TextStyle style READ style WRITE setStyle)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)

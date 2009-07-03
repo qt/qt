@@ -59,11 +59,45 @@
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
+
+struct QmlVMEMetaData
+{
+    short propertyCount;
+    short aliasCount;
+    short signalCount;
+    short methodCount;
+
+    struct AliasData {
+        int contextIdx;
+        int propertyIdx;
+    };
+    
+    struct PropertyData {
+        int propertyType;
+    };
+
+    struct MethodData {
+        int parameterCount;
+    };
+
+    PropertyData *propertyData() const {
+        return (PropertyData *)(((const char *)this) + sizeof(QmlVMEMetaData));
+    }
+
+    AliasData *aliasData() const {
+        return (AliasData *)(propertyData() + propertyCount);
+    }
+
+    MethodData *methodData() const {
+        return (MethodData *)(aliasData() + propertyCount);
+    }
+};
+
 class QmlRefCount;
 class QmlVMEMetaObject : public QAbstractDynamicMetaObject
 {
 public:
-    QmlVMEMetaObject(QObject *, const QMetaObject *, QList<QString> *, int slotData, const QByteArray &aliasData, QmlRefCount * = 0);
+    QmlVMEMetaObject(QObject *, const QMetaObject *, QList<QString> *, int slotData, const QmlVMEMetaData *data, QmlRefCount * = 0);
     ~QmlVMEMetaObject();
 
 protected:
@@ -72,26 +106,19 @@ protected:
 private:
     QObject *object;
     QmlRefCount *ref;
-    int baseProp;
-    int baseSig;
-    int baseSlot;
-    int slotCount;
+
+    const QmlVMEMetaData *metaData;
+    int propOffset;
+    int methodOffset;
+
     QVariant *data;
-    QBitArray vTypes;
     QBitArray aConnected;
+
     QList<QString> *slotData;
     int slotDataIdx;
+
     QAbstractDynamicMetaObject *parent;
-    QByteArray aliasData;
-    struct Aliases {
-        int aliasCount;
-        int propCount;
-        int signalOffset;
-    } *aliases;
-    struct AliasArray {
-        int contextIdx;
-        int propIdx;
-    } *aliasArray;
+
 };
 
 QT_END_NAMESPACE

@@ -133,7 +133,7 @@ QmlParser::Object::DynamicSlot::DynamicSlot()
 }
 
 QmlParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
-: name(o.name), body(o.body)
+: name(o.name), body(o.body), parameterNames(o.parameterNames)
 {
 }
 

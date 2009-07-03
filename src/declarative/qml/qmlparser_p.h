@@ -166,6 +166,7 @@ namespace QmlParser
 
             QByteArray name;
             QString body;
+            QList<QByteArray> parameterNames;
         };
 
         // The list of dynamic properties

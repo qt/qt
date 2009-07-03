@@ -63,6 +63,7 @@
 #include <private/qmlcontext_p.h>
 #include <private/qmlcomponent_p.h>
 #include "parser/qmljsast_p.h"
+#include <private/qmlvmemetaobject_p.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -1406,6 +1407,8 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj, int preAlias)
         obj->dynamicSlots.isEmpty())
         return true;
 
+    QByteArray dynamicData(sizeof(QmlVMEMetaData), (char)0);
+
     QMetaObjectBuilder builder;
     if (obj->metatype)
         builder.setClassName(QByteArray(obj->metatype->className()) + "QML");
@@ -1420,39 +1423,63 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj, int preAlias)
             builder.addClassInfo("DefaultProperty", p.name);
 
         QByteArray type;
+        int propertyType;
         switch(p.type) {
         case Object::DynamicProperty::Alias:
             hasAlias = true;
             continue;
             break;
         case Object::DynamicProperty::Variant:
+            propertyType = -1;
             type = "QVariant";
             break;
         case Object::DynamicProperty::Int:
+            propertyType = QVariant::Int;
             type = "int";
             break;
         case Object::DynamicProperty::Bool:
+            propertyType = QVariant::Bool;
             type = "bool";
             break;
         case Object::DynamicProperty::Real:
+            propertyType = QVariant::Double;
             type = "double";
             break;
         case Object::DynamicProperty::String:
+            propertyType = QVariant::String;
             type = "QString";
             break;
         case Object::DynamicProperty::Url:
+            propertyType = QVariant::Url;
             type = "QUrl";
             break;
         case Object::DynamicProperty::Color:
+            propertyType = QVariant::Color;
             type = "QColor";
             break;
         case Object::DynamicProperty::Date:
+            propertyType = QVariant::Date;
             type = "QDate";
             break;
         }
 
+        ((QmlVMEMetaData *)dynamicData.data())->propertyCount++;
+        QmlVMEMetaData::PropertyData propertyData = { propertyType };
+        dynamicData.append((char *)&propertyData, sizeof(propertyData));
+
         builder.addSignal(p.name + "Changed()");
         builder.addProperty(p.name, type, ii);
+    }
+
+    if (preAlias != -1) {
+        for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
+            const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
+
+            if (p.type == Object::DynamicProperty::Alias) {
+                ((QmlVMEMetaData *)dynamicData.data())->aliasCount++;
+                compileAlias(builder, dynamicData, obj, p);
+            }
+        }
     }
 
     for (int ii = 0; ii < obj->dynamicSignals.count(); ++ii) {
@@ -1465,36 +1492,28 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj, int preAlias)
         sig.append(")");
         QMetaMethodBuilder b = builder.addSignal(sig);
         b.setParameterNames(s.parameterNames);
+        ((QmlVMEMetaData *)dynamicData.data())->signalCount++;
     }
 
     int slotStart = obj->dynamicSlots.isEmpty()?-1:output->primitives.count();
 
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
         const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
-        builder.addSlot(s.name + "()");
+        QByteArray sig(s.name + "(");
+        for (int jj = 0; jj < s.parameterNames.count(); ++jj) {
+            if (jj) sig.append(",");
+            sig.append("QVariant");
+        }
+        sig.append(")");
+        QMetaMethodBuilder b = builder.addSlot(sig);
+        b.setParameterNames(s.parameterNames);
+
+        ((QmlVMEMetaData *)dynamicData.data())->methodCount++;
+        QmlVMEMetaData::MethodData methodData = { s.parameterNames.count() };
+        dynamicData.append((char *)&methodData, sizeof(methodData));
 
         if (preAlias == -1)
             output->primitives << s.body;
-    }
-
-    QByteArray aliasData;
-    if (preAlias != -1) {
-        int dynProperties = 0;
-        QByteArray data;
-        int propCount = builder.propertyCount();
-        int signalCount = builder.methodCount();
-        for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
-            const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
-
-            if (p.type == Object::DynamicProperty::Alias) {
-                dynProperties++;
-                compileAlias(builder, data, obj, p);
-            }
-        }
-        aliasData.append((const char *)&dynProperties, sizeof(int));
-        aliasData.append((const char *)&propCount, sizeof(int));
-        aliasData.append((const char *)&signalCount, sizeof(int));
-        aliasData.append(data);
     }
 
     if (obj->metatype)
@@ -1506,7 +1525,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj, int preAlias)
     if (preAlias != -1) {
         QmlInstruction &store = output->bytecode[preAlias];
 
-        store.storeMeta.aliasData = output->indexForByteArray(aliasData);
+        store.storeMeta.aliasData = output->indexForByteArray(dynamicData);
         qFree(output->synthesizedMetaObjects.at(store.storeMeta.data));
         output->synthesizedMetaObjects[store.storeMeta.data] = obj->extObjectData;
 
@@ -1516,7 +1535,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj, int preAlias)
         store.type = QmlInstruction::StoreMetaObject;
         store.storeMeta.data = output->synthesizedMetaObjects.count() - 1;
         store.storeMeta.slotData = slotStart;
-        store.storeMeta.aliasData = -1;
+        store.storeMeta.aliasData = output->indexForByteArray(dynamicData);
         store.line = obj->location.start.line;
         output->bytecode << store;
 

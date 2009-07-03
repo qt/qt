@@ -882,7 +882,8 @@ bool QmlMetaProperty::hasChangedNotifier() const
 */
 bool QmlMetaProperty::needsChangedNotifier() const
 {
-    return type() & Property && !(type() & Attached);
+    return type() & Property && !(type() & Attached) && 
+           !property().isConstant();
 }
 
 /*!

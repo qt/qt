@@ -160,7 +160,8 @@ enum PropertyFlags  {
     User = 0x00100000,
     ResolveUser = 0x00200000,
     Notify = 0x00400000,
-    Dynamic = 0x00800000
+    Dynamic = 0x00800000,
+    Constant = 0x00000400
 };
 
 enum MethodFlags  {
@@ -2476,6 +2477,20 @@ bool QMetaProperty::isDynamic() const
         return false;
     int flags = mobj->d.data[handle + 2];
     return flags & Dynamic;
+}
+
+/*!
+    Returns true if the property is constant; otherwise returns false.
+
+    A property is constant if the \c{Q_PROPERTY()}'s \c CONSTANT attribute
+    is set.
+*/
+bool QMetaProperty::isConstant() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Constant;
 }
 
 /*!
