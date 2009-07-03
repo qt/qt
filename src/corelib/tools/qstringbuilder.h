@@ -206,7 +206,7 @@ template <> struct QConcatenable<const char *>
 template <> struct QConcatenable<QByteArray>
 {
     typedef QByteArray type;
-    static int size(const QByteArray &ba) { qstrnlen(ba.constData(), ba.size()); }
+    static int size(const QByteArray &ba) { return qstrnlen(ba.constData(), ba.size()); }
     static inline void appendTo(const QByteArray &ba, QChar *&out)
     {
         const char *data = ba.constData();
