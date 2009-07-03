@@ -2,6 +2,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlinstruction.cpp \
     qml/qmlvmemetaobject.cpp \
     qml/qmlengine.cpp \
+    qml/qmlexpression.cpp \
     qml/qmlbindablevalue.cpp \
     qml/qmlmetaproperty.cpp \
     qml/qmlcomponent.cpp \
@@ -45,6 +46,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlvme_p.h \
     qml/qmlcompiler_p.h \
     qml/qmlengine_p.h \
+    qml/qmlexpression_p.h \
     qml/qmlprivate.h \
     qml/qmldom.h \
     qml/qmldom_p.h \

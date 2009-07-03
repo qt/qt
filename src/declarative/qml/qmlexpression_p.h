@@ -39,79 +39,100 @@
 **
 ****************************************************************************/
 
-#ifndef QMLEXPRESSION_H
-#define QMLEXPRESSION_H
+#ifndef QMLEXPRESSION_P_H
+#define QMLEXPRESSION_P_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qmlbasicscript_p.h"
+#include "qmlexpression.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
+class QmlExpression;
 class QString;
-class QmlRefCount;
-class QmlEngine;
-class QmlContext;
-class QmlExpressionPrivate;
-class QmlBasicScript;
-class Q_DECLARATIVE_EXPORT QmlExpression 
+class QmlExpressionLog;
+class QmlExpressionBindProxy;
+class QmlExpressionPrivate
 {
 public:
-    QmlExpression();
-    QmlExpression(QmlContext *, const QString &, QObject *);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me);
-    virtual ~QmlExpression();
+    QmlExpressionPrivate(QmlExpression *);
+    QmlExpressionPrivate(QmlExpression *, const QString &expr);
+    QmlExpressionPrivate(QmlExpression *, void *expr, QmlRefCount *rc);
+    ~QmlExpressionPrivate();
 
-    QmlEngine *engine() const;
-    QmlContext *context() const;
+    QmlExpression *q;
+    QmlContext *ctxt;
+    QString expression;
+    QmlBasicScript sse;
+    void *sseData;
+    QmlExpressionBindProxy *proxy;
+    QObject *me;
+    bool trackChange;
 
-    QString expression() const;
-    void clearExpression();
-    virtual void setExpression(const QString &);
-    QVariant value();
-    bool isConstant() const;
+    QUrl fileName;
+    int line;
 
-    bool trackChange() const;
-    void setTrackChange(bool);
+    quint32 id;
 
-    void setSourceLocation(const QUrl &fileName, int line);
+    void addLog(const QmlExpressionLog &);
+    QList<QmlExpressionLog> *log;
 
-    QObject *scopeObject() const;
-
-    quint32 id() const;
-protected:
-    virtual void valueChanged();
-
-private:
-    friend class QmlExpressionBindProxy;
-    friend class QmlDebugger;
-    friend class QmlContext;
-    QmlExpressionPrivate *d;
+    QVariant evalSSE(QmlBasicScript::CacheState &cacheState);
+    QVariant evalQtScript();
 };
 
-// LK: can't we merge with QmlExpression????
-class Q_DECLARATIVE_EXPORT QmlExpressionObject : public QObject, 
-                                                 public QmlExpression
+class QmlExpressionBindProxy : public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    QmlExpressionObject(QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, const QString &, QObject *scope, QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, void *, QmlRefCount *, QObject *);
+    QmlExpressionBindProxy(QmlExpression *be)
+    :e(be) { }
 
-public Q_SLOTS:
-    QVariant value();
+private:
+    QmlExpression *e;
 
-Q_SIGNALS:
-    void valueChanged();
+private Q_SLOTS:
+    void changed() { e->valueChanged(); }
+};
+
+class QmlExpressionLog
+{
+public:
+    QmlExpressionLog();
+    QmlExpressionLog(const QmlExpressionLog &);
+    ~QmlExpressionLog();
+
+    QmlExpressionLog &operator=(const QmlExpressionLog &);
+
+    void setTime(quint32);
+    quint32 time() const;
+
+    QString expression() const;
+    void setExpression(const QString &);
+
+    QStringList warnings() const;
+    void addWarning(const QString &);
+
+    QVariant result() const;
+    void setResult(const QVariant &);
+
+private:
+    quint32 m_time;
+    QString m_expression;
+    QVariant m_result;
+    QStringList m_warnings;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLEXPRESSION_H
-
+#endif // QMLEXPRESSION_P_H

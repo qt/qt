@@ -104,6 +104,7 @@ private:
     friend class QmlContext;
     friend class QmlContextPrivate;
     friend class QmlExpression;
+    friend class QmlExpressionPrivate;
     friend class QmlBasicScript;
     friend class QmlVME;
     friend class QmlComponent;
