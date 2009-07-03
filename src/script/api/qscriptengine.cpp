@@ -1960,6 +1960,8 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 */
 QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 {
+    if (!hasUncaughtException())
+        return QStringList();
     qWarning("QScriptEngine::uncaughtExceptionBacktrace() not implemented");
 // ### implement me
     // how do we get a bt with JSC?
