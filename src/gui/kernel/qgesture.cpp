@@ -187,11 +187,18 @@ bool QGesture::eventFilter(QObject *receiver, QEvent *event)
 
     \brief The current state of the gesture.
 */
+
+/*!
+  Returns the gesture recognition state.
+ */
 Qt::GestureState QGesture::state() const
 {
     return d_func()->state;
 }
 
+/*!
+  Sets this gesture's recognition state to \a state.
+ */
 void QGesture::setState(Qt::GestureState state)
 {
     d_func()->state = state;

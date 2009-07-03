@@ -342,7 +342,7 @@
 /*!
     \fn QSharedPointer<X> QSharedPointer::objectCast() const
 
-    Performs a \ref qobject_cast from this pointer's type to \tt X and
+    Performs a \l qobject_cast() from this pointer's type to \tt X and
     returns a QSharedPointer that shares the reference. If this
     function is used to up-cast, then QSharedPointer will perform a \tt
     qobject_cast, which means that if the object being pointed by this
@@ -739,7 +739,7 @@
     \relates QSharedPointer
 
     Returns a shared pointer to the pointer held by \a other, using a
-    \ref qobject_cast to type \tt X to obtain an internal pointer of the
+    \l qobject_cast() to type \tt X to obtain an internal pointer of the
     appropriate type. If the \tt qobject_cast fails, the object
     returned will be null.
 
@@ -756,7 +756,7 @@
     \relates QWeakPointer
 
     Returns a shared pointer to the pointer held by \a other, using a
-    \ref qobject_cast to type \tt X to obtain an internal pointer of the
+    \l qobject_cast() to type \tt X to obtain an internal pointer of the
     appropriate type. If the \tt qobject_cast fails, the object
     returned will be null.
 

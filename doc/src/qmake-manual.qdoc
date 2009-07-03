@@ -1037,8 +1037,9 @@
         (see \l{LibDepend}{Library Dependencies} for more info).
      \endtable
 
-    Please note that \c create_prl is required when \i {building} a static library,
-    while \c link_prl is required when \i {using} a static library.
+    Please note that \c create_prl is required when \e {building} a
+    static library, while \c link_prl is required when \e {using} a
+    static library.
 
     On Windows (or if Qt is configured with \c{-debug_and_release}, adding the
     \c build_all option to the \c CONFIG variable makes this rule the default

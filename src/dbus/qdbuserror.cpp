@@ -225,8 +225,16 @@ static inline QDBusError::ErrorType get(const char *name)
     \value UnknownInterface     The interface is not known
     \value InternalError        An internal error occurred
                                 (\c com.trolltech.QtDBus.Error.InternalError)
-    \value UnknownObject        The remote object could not be found.
 
+    \value InvalidObjectPath    The object path provided is invalid.
+
+    \value InvalidService       The service requested is invalid.
+
+    \value InvalidMember        The member is invalid.
+
+    \value InvalidInterface     The interface is invalid.
+
+    \value UnknownObject        The remote object could not be found.
 */
 
 /*!
