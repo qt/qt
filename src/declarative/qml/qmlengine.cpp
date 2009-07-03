@@ -208,7 +208,7 @@ QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
 }
 
 QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
-: object(p.object()), notifyIndex(p.property().notifySignalIndex())
+: object(p.object()), coreIndex(p.coreIndex()), notifyIndex(p.property().notifySignalIndex())
 {
 }
 
@@ -357,7 +357,7 @@ bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &
             cache.type = QmlBasicScriptNodeCache::Variant;
             cache.context = context;
             cache.contextIndex = *iter;
-            capturedProperties << CapturedProperty(context->q_ptr, *iter + context->notifyIndex);
+            capturedProperties << CapturedProperty(context->q_ptr, -1, *iter + context->notifyIndex);
             return true;
         }
 
@@ -1008,7 +1008,7 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
         } else {
             rv = scriptEngine->newVariant(value);
         }
-        engine->d_func()->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, index + bindContext->d_func()->notifyIndex);
+        engine->d_func()->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, -1, index + bindContext->d_func()->notifyIndex);
         return rv;
     }
     default:

@@ -103,11 +103,12 @@ public:
     QScriptValue propertyObject(const QScriptString &propName, QObject *, uint id = 0);
 
     struct CapturedProperty {
-        CapturedProperty(QObject *o, int n)
-            : object(o), notifyIndex(n) {}
+        CapturedProperty(QObject *o, int c, int n)
+            : object(o), coreIndex(c), notifyIndex(n) {}
         CapturedProperty(const QmlMetaProperty &);
 
         QObject *object;
+        int coreIndex;
         int notifyIndex;
     };
     QPODVector<CapturedProperty> capturedProperties;

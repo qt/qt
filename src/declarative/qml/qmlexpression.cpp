@@ -357,21 +357,41 @@ QVariant QmlExpression::value()
                         QMetaObject::connect(prop.object, prop.notifyIndex,
                                              d->proxy, changedIndex);
                     } else {
-                        // ### FIXME
-                        //QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
-                        //log.addWarning(warn);
+                        const QMetaObject *metaObj = prop.object->metaObject();
+                        QMetaProperty metaProp = 
+                            metaObj->property(prop.coreIndex);
+
+                        QString warn = QLatin1String("Expression depends on non-NOTIFYable property: ") + 
+                                       QLatin1String(metaObj->className()) + 
+                                       QLatin1String("::") + 
+                                       QLatin1String(metaProp.name());
+                        log.addWarning(warn);
                     }
                 }
                 d->addLog(log);
 
             } else {
+                bool outputWarningHeader = false;
                 for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
                     const QmlEnginePrivate::CapturedProperty &prop =
                         ep->capturedProperties.at(ii);
 
-                    if (prop.notifyIndex != -1) 
+                    if (prop.notifyIndex != -1) {
                         QMetaObject::connect(prop.object, prop.notifyIndex,
                                              d->proxy, changedIndex);
+                    } else {
+                        if (!outputWarningHeader) {
+                            outputWarningHeader = true;
+                            qWarning() << "QmlExpression: Expression" << expression() << "depends on non-NOTIFYable properties:";
+                        }
+
+                        const QMetaObject *metaObj = prop.object->metaObject();
+                        QMetaProperty metaProp = 
+                            metaObj->property(prop.coreIndex);
+
+                        qWarning().nospace() << "    " << metaObj->className() 
+                                             << "::" << metaProp.name();
+                    }
                 }
             }
         } else {
