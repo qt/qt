@@ -525,10 +525,13 @@ static void init_symbian(const QMap<QString, QStringList>& vars)
     if (isForSymbian_value != isForSymbian_NOT_SET)
         return;
 
-    QString spec = QFileInfo(Option::mkfile::qmakespec).fileName();
-    if (spec.startsWith("symbian-abld", Qt::CaseInsensitive)) {
+    QString spec = QDir::fromNativeSeparators(QFileInfo(Option::mkfile::qmakespec).canonicalFilePath());
+    int pos = spec.lastIndexOf('/');
+    pos = spec.lastIndexOf('/', pos - 1);
+    spec = spec.mid(pos + 1);
+    if (spec.endsWith("symbian-abld", Qt::CaseInsensitive)) {
         isForSymbian_value = isForSymbian_ABLD;
-    } else if (spec.startsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
+    } else if (spec.endsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
         isForSymbian_value = isForSymbian_SBSV2;
     } else if (spec.startsWith("symbian/", Qt::CaseInsensitive)) {
         isForSymbian_value = isForSymbian_MAKEFILE;
