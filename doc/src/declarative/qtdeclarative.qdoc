@@ -68,15 +68,15 @@
     \o \l {qmlforcpp}{QML For C++ Programmers}
     \endlist
 
-    Core Features:
+    Core QML Features:
     \list
     \o \l {binding}{Data Binding}
     \o \l {anchor-layout}{Layout Anchors}
     \o \l {qmlanimation}{Animation}
     \o \l {qmleffects}{Visual Effects}
-    \o \l {components}{Components}
     \o \l {qmlmodules}{Modules}
     \o \l {qmlfocus}{Keyboard Focus}
+    \o \l {Extending types from QML}
     \endlist
 
     QML Reference:
