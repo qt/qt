@@ -1310,7 +1310,19 @@ bool QObjectWrapperObject::deleteProperty(JSC::ExecState *exec,
         }
     }
 
-    int index = qobject->dynamicPropertyNames().indexOf(name);
+    const QScriptEngine::QObjectWrapOptions &opt = data->options;
+    const QMetaObject *meta = qobject->metaObject();
+    int index = meta->indexOfProperty(name);
+    if (index != -1) {
+        QMetaProperty prop = meta->property(index);
+        if (prop.isScriptable() &&
+            (!(opt & QScriptEngine::ExcludeSuperClassProperties)
+             || (index >= meta->propertyOffset()))) {
+                return false;
+        }
+    }
+
+    index = qobject->dynamicPropertyNames().indexOf(name);
     if (index != -1) {
         (void)qobject->setProperty(name, QVariant());
         return true;
