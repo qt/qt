@@ -242,6 +242,7 @@
 #include <QtGui/qtooltip.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/qgesture.h>
+#include <QtGui/qinputcontext.h>
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11
@@ -3175,6 +3176,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
+
+    d->updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -3450,6 +3453,8 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
+
+    d->updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -3504,6 +3509,17 @@ void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReas
         d->lastFocusItem = d->focusItem;
         d->focusItem = 0;
         d->sendEvent(d->lastFocusItem, &event);
+
+        if (d->lastFocusItem
+            && (d->lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+            // Reset any visible preedit text
+            QInputMethodEvent imEvent;
+            d->sendEvent(d->lastFocusItem, &imEvent);
+
+            // Close any external input method panel
+            for (int i = 0; i < d->views.size(); ++i)
+                d->views.at(i)->inputContext()->reset();
+        }
     }
 
     if (item) {
@@ -3516,6 +3532,8 @@ void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReas
         QFocusEvent event(QEvent::FocusIn, focusReason);
         d->sendEvent(item, &event);
     }
+
+    d->updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -3699,7 +3717,7 @@ void QGraphicsScene::setForegroundBrush(const QBrush &brush)
 QVariant QGraphicsScene::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     Q_D(const QGraphicsScene);
-    if (!d->focusItem)
+    if (!d->focusItem || !(d->focusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod))
         return QVariant();
     const QTransform matrix = d->focusItem->sceneTransform();
     QVariant value = d->focusItem->inputMethodQuery(query);
@@ -4662,16 +4680,16 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
     subclass to receive input method events for the scene.
 
     The default implementation forwards the event to the focusItem().
-    If no item currently has focus, this function does nothing.
+    If no item currently has focus or the current focus item does not
+    accept input methods, this function does nothing.
 
     \sa QGraphicsItem::inputMethodEvent()
 */
 void QGraphicsScene::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QGraphicsScene);
-    if (!d->focusItem)
-        return;
-    d->sendEvent(d->focusItem, event);
+    if (d->focusItem && (d->focusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod))
+        d->sendEvent(d->focusItem, event);
 }
 
 /*!
@@ -6128,6 +6146,11 @@ void QGraphicsScenePrivate::enableTouchEventsOnViews()
         view->viewport()->setAttribute(Qt::WA_AcceptTouchEvents, true);
 }
 
+void QGraphicsScenePrivate::updateInputMethodSensitivityInViews()
+{
+    for (int i = 0; i < views.size(); ++i)
+        views.at(i)->d_func()->updateInputMethodSensitivity();
+}
 
 QT_END_NAMESPACE
 

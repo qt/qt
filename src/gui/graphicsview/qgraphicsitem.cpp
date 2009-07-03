@@ -323,6 +323,10 @@
     performance reasons, these notifications are disabled by default. You must
     enable this flag to receive notifications for position and transform
     changes. This flag was introduced in Qt 4.6.
+
+    \value ItemAcceptsInputMethod The item supports input methods typically
+    used for Asian languages.
+    This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -1484,6 +1488,12 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
             d_ptr->parent->d_ptr->needSortChildren = 1;
         else if (d_ptr->scene)
             d_ptr->scene->d_func()->needSortTopLevelItems = 1;
+    }
+
+    if ((flags & ItemAcceptsInputMethod) != (oldFlags & ItemAcceptsInputMethod)) {
+        // Update input method sensitivity in any views.
+        if (d_ptr->scene)
+            d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
     }
 
     if (d_ptr->scene) {
@@ -9839,6 +9849,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemSendsGeometryChanges:
         str = "ItemSendsGeometryChanges";
+        break;
+    case QGraphicsItem::ItemAcceptsInputMethod:
+        str = "ItemAcceptsInputMethod";
         break;
     }
     debug << str;

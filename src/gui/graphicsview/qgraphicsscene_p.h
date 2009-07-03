@@ -316,6 +316,8 @@ public:
     bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
+
+    void updateInputMethodSensitivityInViews();
 };
 
 QT_END_NAMESPACE

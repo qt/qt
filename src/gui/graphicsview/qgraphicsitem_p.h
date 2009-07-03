@@ -415,7 +415,7 @@ public:
     quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 12;
+    quint32 flags : 13;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
@@ -426,7 +426,7 @@ public:
     quint32 ignoreOpacity : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
-    quint32 unused : 10; // feel free to use
+    quint32 unused : 9; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

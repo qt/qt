@@ -98,7 +98,8 @@ public:
         ItemStacksBehindParent = 0x100,
         ItemUsesExtendedStyleOption = 0x200,
         ItemHasNoContents = 0x400,
-        ItemSendsGeometryChanges = 0x800
+        ItemSendsGeometryChanges = 0x800,
+        ItemAcceptsInputMethod = 0x1000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
