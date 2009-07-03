@@ -190,6 +190,7 @@ public:
     bool isEditable(const QObject *obj = 0) const;
     bool isUser(const QObject *obj = 0) const;
     bool isDynamic() const;
+    bool isConstant() const;
 
     bool isFlagType() const;
     bool isEnumType() const;
