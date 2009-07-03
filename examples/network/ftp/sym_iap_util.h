@@ -44,10 +44,15 @@
 // Symbian
 #include <es_sock.h>
 #include <es_enum.h>
+#include <commdbconnpref.h>
 
 // OpenC
 #include <sys/socket.h>
 #include <net/if.h>
+
+//Qt
+#include <QSettings>
+#include <QStringList>
 
 _LIT(KIapNameSetting, "IAP\\Name");             // text - mandatory
 _LIT(KIapDialogPref, "IAP\\DialogPref");        // TUnit32 - optional
@@ -56,6 +61,48 @@ _LIT(KIapServiceType, "IAP\\IAPServiceType");   // text - mandatory
 _LIT(KIapBearer, "IAP\\IAPBearer");             // TUint32 - optional
 _LIT(KIapBearerType, "IAP\\IAPBearerType");     // text - optional
 _LIT(KIapNetwork, "IAP\\IAPNetwork");           // TUint32 - optional
+
+const QLatin1String qtOrganization("Trolltech");
+const QLatin1String qtModule("QtNetwork");
+const QLatin1String qtIapGroup("IAP");
+const QLatin1String namesArray("Names");
+const QLatin1String nameRecord("Name");
+
+
+void clearIapNamesSettings(QSettings &settings) {
+    settings.beginGroup(qtModule);
+        settings.beginGroup(qtIapGroup);
+           settings.remove(namesArray);
+        settings.endGroup();
+    settings.endGroup();
+}
+
+void writeIapNamesSettings(QSettings &settings, const QStringList& iapNames) {
+    clearIapNamesSettings(settings);
+    settings.beginGroup(qtModule);
+        settings.beginGroup(qtIapGroup);
+            settings.beginWriteArray(namesArray);
+            for (int index = 0; index < iapNames.size(); ++index) {
+                settings.setArrayIndex(index);
+                settings.setValue(nameRecord, iapNames.at(index));
+            }
+            settings.endArray();
+        settings.endGroup();
+    settings.endGroup();
+}
+
+void readIapNamesSettings(QSettings &settings, QStringList& iapNames) {
+    settings.beginGroup(qtModule);
+        settings.beginGroup(qtIapGroup);
+            int last = settings.beginReadArray(namesArray);
+            for (int index = 0; index < last; ++index) {
+                settings.setArrayIndex(index);
+                iapNames.append(settings.value(nameRecord).toString());
+            }
+            settings.endArray();
+        settings.endGroup();
+    settings.endGroup();
+}
 
 QString qt_TDesC2QStringL(const TDesC& aDescriptor) 
 {
@@ -68,6 +115,12 @@ QString qt_TDesC2QStringL(const TDesC& aDescriptor)
 
 static void qt_SetDefaultIapL() 
 {
+    // settings @ /c/data/.config/Trolltech.com
+    QSettings settings(QSettings::UserScope, qtOrganization);
+    // populate iap name list
+    QStringList iapNames;
+    readIapNamesSettings(settings, iapNames);
+
     TUint count;
     TBool activeLanConnectionFound = EFalse;
 
@@ -114,15 +167,39 @@ static void qt_SetDefaultIapL()
          * no active LAN connections yet
          * offer IAP dialog to user
          */
+        TCommDbConnPref prefs;
         conn.Close(); // might be opened after attach
         User::LeaveIfError(conn.Open(serv));
-        User::LeaveIfError(conn.Start());
-        User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iapName));
+        prefs.SetDialogPreference( ECommDbDialogPrefPrompt );
+        User::LeaveIfError(conn.Start(prefs));
+        conn.GetDesSetting(TPtrC(KIapNameSetting), iapName);
+        conn.GetDesSetting(TPtrC(KIapServiceType), iapServiceType);
     }
 
-    iapName.ZeroTerminate();
-
+    // for some reason makes
+    // setting default more stable
     conn.Stop();
+
+    // just in case ...
+    iapName.ZeroTerminate();
+    iapServiceType.ZeroTerminate();
+
+    QString iapNameValue((char*)iapName.Ptr());
+    QString iapServiceTypeValue((char*)iapServiceType.Ptr());
+
+    // save IAP name for latere user
+    // but only if (W)LAN service type
+    // and is not already in QSettings
+    if(iapServiceTypeValue.contains(QString("LANService"))) {
+        if(iapNames.contains(iapNameValue) && iapNames.first() == iapNameValue) {
+            // no need to update
+        } else {
+            // new selection alway on top
+            iapNames.removeAll(iapNameValue);
+            iapNames.prepend(iapNameValue);
+            writeIapNamesSettings(settings, iapNames);
+        }
+    }
 
     struct ifreq ifReq;
     strcpy(ifReq.ifr_name, (char*)iapName.Ptr());
