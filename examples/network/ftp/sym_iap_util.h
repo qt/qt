@@ -41,10 +41,11 @@
 #ifndef QSYM_IAP_UTIL_H
 #define QSYM_IAP_UTIL_H
 
+// Symbian
 #include <es_sock.h>
 #include <es_enum.h>
-#include <commdbconnpref.h>
 
+// OpenC
 #include <sys/socket.h>
 #include <net/if.h>
 
@@ -69,8 +70,6 @@ static void qt_SetDefaultIapL()
 {
     TUint count;
     TBool activeLanConnectionFound = EFalse;
-    TRequestStatus status;
-    TCommDbConnPref prefs;
 
     RSocketServ serv;
     CleanupClosePushL(serv);
@@ -117,8 +116,7 @@ static void qt_SetDefaultIapL()
          */
         conn.Close(); // might be opened after attach
         User::LeaveIfError(conn.Open(serv));
-        prefs.SetDialogPreference( ECommDbDialogPrefPrompt );
-        User::LeaveIfError(conn.Start(prefs));
+        User::LeaveIfError(conn.Start());
         User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iapName));
     }
 
@@ -130,9 +128,6 @@ static void qt_SetDefaultIapL()
     strcpy(ifReq.ifr_name, (char*)iapName.Ptr());
 
     User::LeaveIfError(setdefaultif(&ifReq));
-
-    conn.Close();
-    serv.Close();
 
     CleanupStack::PopAndDestroy(&conn);
     CleanupStack::PopAndDestroy(&serv);
