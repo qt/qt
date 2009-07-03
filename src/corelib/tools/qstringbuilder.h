@@ -69,7 +69,7 @@ private:
 };
 
 
-template <typename T> class QConcatenable {};
+template <typename T> struct QConcatenable {};
 
 template <typename A, typename B>
 class QStringBuilder
