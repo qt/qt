@@ -1369,6 +1369,14 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         // Set dropWidget to zero, so qt_mac_dnd_event
                         // doesn't get called a second time below:
                         dropWidget = 0;
+                    } else if (ekind == kEventControlDragLeave) {
+                        dropWidget = QDragManager::self()->currentTarget();
+                        if (dropWidget) {
+                            dropWidget->d_func()->qt_mac_dnd_event(kEventControlDragLeave, drag);
+                        }
+                        // Set dropWidget to zero, so qt_mac_dnd_event
+                        // doesn't get called a second time below:
+                        dropWidget = 0;
                     }
                 }
             }

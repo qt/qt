@@ -1145,6 +1145,10 @@ bool QToolBar::event(QEvent *event)
         if (d->mouseReleaseEvent(static_cast<QMouseEvent*>(event)))
             return true;
         break;
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+        // there's nothing special to do here and we don't want to update the whole widget
+        return true;
     case QEvent::HoverMove: {
 #ifndef QT_NO_CURSOR
         QHoverEvent *e = static_cast<QHoverEvent*>(event);
