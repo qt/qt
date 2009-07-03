@@ -77,19 +77,27 @@ bool Backend::startConnectionChange(QSet<QObject *>)
     return false;
 }
 
-bool Backend::connectNodes(QObject *, QObject *)
+bool Backend::connectNodes(QObject *source, QObject *target)
 {
-    return false;
+    MediaObject *const mo = qobject_cast<MediaObject *>(source);
+    AudioOutput *const ao = qobject_cast<AudioOutput *>(target);
+
+    if(!mo || !ao)
+        return false;
+
+    ao->setMediaObject(mo);
+
+    return true;
 }
 
 bool Backend::disconnectNodes(QObject *, QObject *)
 {
-    return false;
+    return true;
 }
 
 bool Backend::endConnectionChange(QSet<QObject *>)
 {
-    return false;
+    return true;
 }
 
 QStringList Backend::availableMimeTypes() const

@@ -31,9 +31,12 @@ namespace Phonon
 {
     namespace MMF
     {
+        class AudioOutput;
+
         class MediaObject : public QObject
                           , public MediaObjectInterface
                           , public MDrmAudioPlayerCallback
+                          , public MAudioLoadingObserver
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -64,22 +67,38 @@ namespace Phonon
             // MAudioLoadingObserver
             virtual void MaloLoadingComplete();
             virtual void MaloLoadingStarted();
-            
+
             // MDrmAudioPlayerCallback
             virtual void MdapcInitComplete(TInt aError,
-                                            const TTimeIntervalMicroSeconds &aDuration);
+                                           const TTimeIntervalMicroSeconds &aDuration);
             virtual void MdapcPlayComplete(TInt aError);
 
         Q_SIGNALS:
             void totalTimeChanged();
+            void stateChanged(Phonon::State oldState,
+                              Phonon::State newState);
+
+            void finished();
 
         private:
+            friend class AudioOutput;
             static inline qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
             static inline TTimeIntervalMicroSeconds toMicroSeconds(qint64 ms);
 
+            /**
+             * Changes state() to \a newState, and emits stateChanged().
+             */
+            inline void transitTo(Phonon::State newState);
+
             CDrmPlayerUtility * m_player;
-            mutable ErrorType   m_error;
-            mutable State       m_state;
+            ErrorType           m_error;
+
+            /**
+             * Never update this state by assigning to it. Call transitTo().
+             */
+            State               m_state;
+            MediaSource         m_mediaSource;
+            MediaSource         m_nextSource;
         };
     }
 }

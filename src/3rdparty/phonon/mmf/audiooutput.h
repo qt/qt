@@ -26,7 +26,26 @@ namespace Phonon
     namespace MMF
     {
         class Backend;
+        class MediaObject;
 
+        /**
+         * @short AudioOutputInterface42 implementation for MMF.
+         *
+         * Implements the AudioOutputInterface42 for Symbian/S60's MMF
+         * framework.
+         *
+         * This class has a very small role, we simply access CDrmPlayerUtility
+         * in MediaObject::m_player and forward everything there.
+         *
+         * \section volume Volume
+         *
+         * Phonon's concept on volume is from 0.0 to 1.0, and from 1< it does
+         * voltage multiplication. CDrmPlayerUtility goes from 1 to
+         * CDrmPlayerUtility::MaxVolume(). We apply some basic math to convert
+         * between the two.
+         *
+         * @author Frans Englich<frans.englich@nokia.com>
+         */
         class AudioOutput : public QObject
                           , public AudioOutputInterface42
         {
@@ -37,8 +56,26 @@ namespace Phonon
             virtual void setVolume(qreal);
 
             virtual int outputDevice() const;
+
+            /**
+             * Has no effect.
+             */
             virtual bool setOutputDevice(int);
+
+            /**
+             * Has no effect.
+             */
             virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
+
+            void setMediaObject(MediaObject *mo);
+
+        Q_SIGNALS:
+            void volumeChanged(qreal newVolume);
+
+        private:
+            MediaObject *   m_mediaObject;
+            qreal           m_volume;
+            TInt            m_maxVolume;
         };
     }
 }

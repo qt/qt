@@ -16,12 +16,17 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <DrmAudioSamplePlayer.h>
+
+#include "mediaobject.h"
 #include "audiooutput.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-AudioOutput::AudioOutput(Backend *, QObject *parent)
+AudioOutput::AudioOutput(Backend *, QObject *parent) : m_mediaObject(0)
+                                                     , m_volume(0)
+                                                     , m_maxVolume(-1)
 {
     setParent(parent);
 }
@@ -31,8 +36,19 @@ qreal AudioOutput::volume() const
     return 0;
 }
 
-void AudioOutput::setVolume(qreal)
+void AudioOutput::setVolume(qreal newVolume)
 {
+    if(!m_mediaObject)
+        return;
+
+    Q_ASSERT(m_mediaObject->m_player);
+
+    if (newVolume == m_volume)
+        return;
+
+    m_volume = newVolume;
+    m_mediaObject->m_player->SetVolume(newVolume * m_maxVolume);
+    emit volumeChanged(m_volume);
 }
 
 int AudioOutput::outputDevice() const
@@ -48,5 +64,23 @@ bool AudioOutput::setOutputDevice(int)
 bool AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
 {
     return true;
+}
+
+void AudioOutput::setMediaObject(MediaObject *mo)
+{
+    Q_ASSERT(m_mediaObject);
+    m_mediaObject = mo;
+
+    Q_ASSERT(m_mediaObject->m_player);
+    m_maxVolume = m_mediaObject->m_player->MaxVolume();
+
+    TInt mmfVolume = 0;
+    const TInt errorCode = m_mediaObject->m_player->GetVolume(mmfVolume);
+
+    if(errorCode == KErrNone)
+        return;
+
+    m_volume = mmfVolume / m_maxVolume;
+    emit volumeChanged(m_volume);
 }
 

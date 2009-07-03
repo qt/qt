@@ -16,6 +16,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <QUrl>
+#include <private/qcore_symbian_p.h>
+
 #include "mediaobject.h"
 
 using namespace Phonon;
@@ -27,6 +30,8 @@ MediaObject::MediaObject(QObject *parent) : m_player(0)
 {
     Q_UNUSED(parent);
     m_player = CDrmPlayerUtility::NewL(*this, 0, EMdaPriorityPreferenceNone);
+
+    m_player->RegisterForAudioLoadingNotification(*this);
 }
 
 MediaObject::~MediaObject()
@@ -36,19 +41,19 @@ MediaObject::~MediaObject()
 
 void MediaObject::play()
 {
-    m_state = PlayingState;
+    transitTo(PlayingState);
     m_player->Play();
 }
 
 void MediaObject::pause()
 {
-    m_state = PausedState;
+    transitTo(PausedState);
     m_player->Pause();
 }
 
 void MediaObject::stop()
 {
-    m_state = StoppedState;
+    transitTo(StoppedState);
     m_player->Stop();
 }
 
@@ -85,15 +90,10 @@ qint64 MediaObject::currentTime() const
     if(retcode == KErrNone)
         return toMilliSeconds(m_player->Duration());
     else {
-        m_state = ErrorState;
-        m_error = NormalError;
+        // TODO Should we enter/emit error state? Tricky
+        // since we're in a const function.
         return -1;
     }
-}
-
-Phonon::State MediaObject::state() const
-{
-    return m_state;
 }
 
 QString MediaObject::errorString() const
@@ -123,22 +123,47 @@ qint64 MediaObject::totalTime() const
 
 MediaSource MediaObject::source() const
 {
-    return MediaSource();
+    return m_mediaSource;
 }
 
 void MediaObject::setSource(const MediaSource &source)
 {
     stop();
-    m_state = LoadingState;
+    m_mediaSource = source;
 
-    Q_UNUSED(source);
-    // TODO
+    switch(m_mediaSource.type())
+    {
+        case MediaSource::LocalFile:
+        {
+            const QHBufC filename(source.fileName());
+            m_player->OpenFileL(*filename);
+            break;
+        }
+        case MediaSource::Url:
+        {
+            const QHBufC filename(source.url().toString());
+            m_player->OpenUrlL(*filename);
+            break;
+        }
+        case MediaSource::Invalid:
+        /* Fallthrough. */
+        case MediaSource::Disc:
+        /* Fallthrough. */
+        case MediaSource::Stream:
+        /* Fallthrough. */
+        case MediaSource::Empty:
+        {
+            transitTo(ErrorState);
+            return;
+        }
+    }
 
-    emit totalTimeChanged();
+    transitTo(LoadingState);
 }
 
 void MediaObject::setNextSource(const MediaSource &source)
 {
+    m_nextSource = source;
     Q_UNUSED(source);
 }
 
@@ -162,23 +187,52 @@ void MediaObject::setTransitionTime(qint32)
 
 void MediaObject::MaloLoadingComplete()
 {
-    m_state = StoppedState;
+    transitTo(StoppedState);
 }
 
 void MediaObject::MaloLoadingStarted()
 {
-    m_state = LoadingState;
+    transitTo(LoadingState);
 }
 
 void MediaObject::MdapcInitComplete(TInt aError,
-                                    const TTimeIntervalMicroSeconds &aDuration)
+                                    const TTimeIntervalMicroSeconds &)
 {
-    Q_UNUSED(aError);
-    Q_UNUSED(aDuration);
+    if(aError == KErrNone) {
+        m_error = NormalError;
+        m_state = ErrorState;
+    }
+
+    emit totalTimeChanged();
+    transitTo(StoppedState);
 }
 
 void MediaObject::MdapcPlayComplete(TInt aError)
 {
-    Q_UNUSED(aError);
+    if(aError == KErrNone) {
+        if(m_nextSource.type() == MediaSource::Empty) {
+            emit finished();
+        } else {
+            setSource(m_nextSource);
+            m_nextSource = MediaSource();
+        }
+
+        transitTo(StoppedState);
+    }
+    else {
+        m_error = NormalError;
+        transitTo(ErrorState);
+    }
+}
+
+void MediaObject::transitTo(Phonon::State newState)
+{
+    emit stateChanged(m_state, newState);
+    m_state = newState;
+}
+
+Phonon::State MediaObject::state() const
+{
+    return m_state;
 }
 
