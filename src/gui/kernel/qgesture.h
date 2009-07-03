@@ -93,7 +93,7 @@ protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
     bool eventFilter(QObject*, QEvent*);
 
-signals:
+Q_SIGNALS:
     void started();
     void triggered();
     void finished();
