@@ -188,7 +188,7 @@ private slots:
     void oci_fieldLength_data() { generic_data("QOCI"); }
     void oci_fieldLength();
 
-    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE3"); }
+    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE"); }
     void sqlite_bindAndFetchUInt();
 
     void sqlStatementUseIsNull_189093_data() { generic_data(); }
@@ -1526,6 +1526,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QString field1Name = QString("fIeLdNaMe");
     QString field2Name = QString("ZuLu");
 
+    q.exec(QString("DROP SCHEMA \"%1\" CASCADE").arg(schemaName));
     QString createSchema = QString("CREATE SCHEMA \"%1\"").arg(schemaName);
     QVERIFY_SQL(q, exec(createSchema));
     QString createTable = QString("CREATE TABLE \"%1\".\"%2\" (\"%3\" int PRIMARY KEY, \"%4\" varchar(20))").arg(schemaName).arg(tableName).arg(field1Name).arg(field2Name);
@@ -1681,6 +1682,8 @@ void tst_QSqlDatabase::precisionPolicy()
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
     QVERIFY_SQL(q, exec(query));
+    if(db.driverName().startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle fails to move to next when data columns are oversize", Abort);
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).type(), QVariant::Invalid);
 }
@@ -2262,6 +2265,10 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    if (db.driverName().startsWith("QSQLITE2")) { 
+        QSKIP("SQLite3 specific test", SkipSingle); 
+        return; 
+    }
 
     QSqlQuery q(db);
     QString tableName = qTableName("uint_test");
