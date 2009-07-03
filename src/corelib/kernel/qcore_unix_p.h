@@ -71,7 +71,7 @@ struct sockaddr;
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
+#if defined(Q_OS_LINUX) && defined(O_CLOEXEC) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
 // Linux supports thread-safe FD_CLOEXEC
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 1
 
