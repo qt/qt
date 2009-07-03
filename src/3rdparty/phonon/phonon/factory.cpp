@@ -131,7 +131,23 @@ bool FactoryPrivate::createBackend()
                 pDebug() << Q_FUNC_INFO << dir.absolutePath() << "does not exist";
                 continue;
             }
-            foreach (const QString &pluginName, dir.entryList(QDir::Files)) {
+
+            QStringList plugins(dir.entryList(QDir::Files));
+
+#ifdef Q_OS_SYMBIAN
+            /* On Symbian OS we might have two plugins, one which uses Symbian
+             * MMF framework("mmf"), and one which uses Real Networks's
+             * Helix("hxphonon"). We prefer the latter because it's more
+             * sophisticated, so we make sure the Helix backend is attempted
+             * to be loaded first, and the MMF backend is used for backup. */
+            {
+                const int helix = plugins.indexof(QLatin1String("hxphonon"));
+                if (helix != -1)
+                    plugins.move(helix, 0);
+            }
+#endif
+
+            foreach (const QString &pluginName, plugins) {
                 QPluginLoader pluginLoader(libPath + pluginName);
                 if (!pluginLoader.load()) {
                     pDebug() << Q_FUNC_INFO << "  load failed:"
