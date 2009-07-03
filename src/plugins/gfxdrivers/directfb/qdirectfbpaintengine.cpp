@@ -1062,6 +1062,8 @@ void QDirectFBPaintEnginePrivate::blit(const QRectF &dest, IDirectFBSurface *s, 
 {
     const QRect sr = src.toRect();
     const QRect dr = transform.mapRect(dest).toRect();
+    if (dr.isEmpty())
+        return;
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
     DFBResult result;
 
