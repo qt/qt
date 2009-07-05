@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -108,7 +108,7 @@ int qt_wince__getdrive( void )
     return 1;
 }
 
-int qt_wince__waccess( const WCHAR *path, int pmode )
+int qt_wince__waccess( const wchar_t *path, int pmode )
 {
     DWORD res = GetFileAttributes( path );
     if ( 0xFFFFFFFF == res )
@@ -118,7 +118,7 @@ int qt_wince__waccess( const WCHAR *path, int pmode )
         return -1;
 
     if ( (pmode & X_OK) && !(res & FILE_ATTRIBUTE_DIRECTORY) ) {
-        QString file = QString::fromUtf16(reinterpret_cast<const ushort *> (path));
+        QString file = QString::fromWCharArray(path);
         if ( !(file.endsWith(QString::fromLatin1(".exe")) ||
            file.endsWith(QString::fromLatin1(".com"))) )
         return -1;
@@ -130,12 +130,12 @@ int qt_wince__waccess( const WCHAR *path, int pmode )
 int qt_wince_open( const char *filename, int oflag, int pmode )
 {
     QString fn( QString::fromLatin1(filename) );
-    return _wopen( (WCHAR*)fn.utf16(), oflag, pmode );
+    return _wopen( (wchar_t*)fn.utf16(), oflag, pmode );
 }
 
-int qt_wince__wopen( const WCHAR *filename, int oflag, int /*pmode*/ )
+int qt_wince__wopen( const wchar_t *filename, int oflag, int /*pmode*/ )
 {
-    WCHAR *flag;
+    wchar_t *flag;
 
     if ( oflag & _O_APPEND ) {
         if ( oflag & _O_WRONLY ) {
@@ -290,7 +290,7 @@ bool qt_wince__chmod(const char *file, int mode)
     return _wchmod( reinterpret_cast<const wchar_t *> (QString::fromLatin1(file).utf16()), mode);
 }
 
-bool qt_wince__wchmod(const WCHAR *file, int mode)
+bool qt_wince__wchmod(const wchar_t *file, int mode)
 {
     // ### Does not work properly, what about just adding one property?
     if(mode&_S_IWRITE) {

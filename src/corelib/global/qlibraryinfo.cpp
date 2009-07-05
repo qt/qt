@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -483,20 +483,19 @@ QLibraryInfo::location(LibraryLocation loc)
 
 QT_END_NAMESPACE
 
-#if defined(Q_CC_GNU) && defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(QT_BOOTSTRAPPED)
-
+#if defined(Q_CC_GNU) && defined(ELF_INTERPRETER)
 #  include <stdio.h>
 #  include <stdlib.h>
 
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
-    = "/lib/ld-linux.so.2";
+    = ELF_INTERPRETER;
 
 extern "C"
-void qt_core_init_boilerplate()
+void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_VERSION_STR "\n"
            "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
-           "Contact: Qt Software Information (qt-info@nokia.com)\n"
+           "Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "\n"
            "Build key:           " QT_BUILD_KEY "\n"
            "Installation prefix: %s\n"

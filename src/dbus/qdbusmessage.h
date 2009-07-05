@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -87,8 +87,9 @@ public:
     QDBusMessage createErrorReply(const QString name, const QString &msg) const;
     inline QDBusMessage createErrorReply(const QDBusError &err) const
     { return createErrorReply(err.name(), err.message()); }
-    inline QDBusMessage createErrorReply(QDBusError::ErrorType type, const QString &msg) const;
+    QDBusMessage createErrorReply(QDBusError::ErrorType type, const QString &msg) const;
 
+    // there are no setters; if this changes, see qdbusmessage_p.h
     QString service() const;
     QString path() const;
     QString interface() const;
@@ -112,9 +113,6 @@ private:
     friend class QDBusMessagePrivate;
     QDBusMessagePrivate *d_ptr;
 };
-
-inline QDBusMessage QDBusMessage::createErrorReply(QDBusError::ErrorType atype, const QString &amsg) const
-{ return createErrorReply(QDBusError::errorString(atype), amsg); }
 
 #ifndef QT_NO_DEBUG_STREAM
 QDBUS_EXPORT QDebug operator<<(QDebug, const QDBusMessage &);

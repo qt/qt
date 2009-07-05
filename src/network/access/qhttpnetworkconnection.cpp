@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -113,12 +113,15 @@ void QHttpNetworkConnectionPrivate::connectSignals(QAbstractSocket *socket)
 
 #ifndef QT_NO_OPENSSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
-    QObject::connect(sslSocket, SIGNAL(encrypted()),
-                     q, SLOT(_q_encrypted()),
-                     Qt::DirectConnection);
-    QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
-               q, SLOT(_q_sslErrors(const QList<QSslError>&)),
-               Qt::DirectConnection);
+    if (sslSocket) {
+        // won't be a sslSocket if encrypt is false
+        QObject::connect(sslSocket, SIGNAL(encrypted()),
+                         q, SLOT(_q_encrypted()),
+                         Qt::DirectConnection);
+        QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
+                         q, SLOT(_q_sslErrors(const QList<QSslError>&)),
+                         Qt::DirectConnection);
+    }
 #endif
 }
 
@@ -126,10 +129,14 @@ void QHttpNetworkConnectionPrivate::init()
 {
     for (int i = 0; i < channelCount; ++i) {
 #ifndef QT_NO_OPENSSL
-        channels[i].socket = new QSslSocket;
+        if (encrypt)
+            channels[i].socket = new QSslSocket;
+        else
+            channels[i].socket = new QTcpSocket;
 #else
         channels[i].socket = new QTcpSocket;
 #endif
+
         connectSignals(channels[i].socket);
     }
 }
@@ -139,7 +146,9 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
     for (int i = 0; i < channelCount; ++i)
         if (channels[i].socket == socket)
             return i;
-    return -1;
+
+    qFatal("Called with unknown socket object.");
+    return 0;
 }
 
 bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
@@ -167,30 +176,43 @@ bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) con
 }
 
 
-void QHttpNetworkConnectionPrivate::appendData(QHttpNetworkReply &reply, const QByteArray &fragment, bool compressed)
+void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
 {
-    QByteArray *ba = (compressed) ? &reply.d_func()->compressedData : &reply.d_func()->responseData;
-    ba->append(fragment);
-    return;
+    char *dst = reply.d_func()->responseData.reserve(fragment.size());
+    qMemCopy(dst, fragment.constData(), fragment.size());
 }
 
-qint64 QHttpNetworkConnectionPrivate::bytesAvailable(const QHttpNetworkReply &reply, bool compressed) const
+void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
 {
-    const QByteArray *ba = (compressed) ? &reply.d_func()->compressedData : &reply.d_func()->responseData;
-    return ba->size();
+    reply.d_func()->compressedData.append(fragment);
 }
 
-qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize, bool compressed)
+qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
-    QByteArray *ba = (compressed) ? &reply.d_func()->compressedData : &reply.d_func()->responseData;
-    if (maxSize == -1 || maxSize >= ba->size()) {
+    return reply.d_func()->responseData.size();
+}
+
+qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const
+{
+    return reply.d_func()->responseData.nextDataBlockSize();
+}
+
+qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetworkReply &reply) const
+{
+    return reply.d_func()->compressedData.size();
+}
+
+qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize)
+{
+    QRingBuffer *rb = &reply.d_func()->responseData;
+    if (maxSize == -1 || maxSize >= rb->size()) {
         // read the whole data
-        data = *ba;
-        ba->clear();
+        data = rb->readAll();
+        rb->clear();
     } else {
         // read only the requested length
-        data = ba->mid(0, maxSize);
-        ba->remove(0, maxSize);
+        data.resize(maxSize);
+        rb->read(data.data(), maxSize);
     }
     return data.size();
 }
@@ -404,8 +426,9 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
 #ifndef QT_NO_OPENSSL
         QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
-        while ((sslSocket->encryptedBytesToWrite() + sslSocket->bytesToWrite()) <= socketBufferFill
-               && channels[i].bytesTotal != channels[i].written)
+        // if it is really an ssl socket, check more than just bytesToWrite()
+        while ((socket->bytesToWrite() + (sslSocket ? sslSocket->encryptedBytesToWrite() : 0))
+                <= socketBufferFill && channels[i].bytesTotal != channels[i].written)
 #else
         while (socket->bytesToWrite() <= socketBufferFill
                && channels[i].bytesTotal != channels[i].written)
@@ -516,12 +539,14 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
     Q_ASSERT(socket);
     Q_ASSERT(reply);
 
-    qint64 total = bytesAvailable(*reply, true);
+    qint64 total = compressedBytesAvailable(*reply);
     if (total >= CHUNK || dataComplete) {
         int i = indexOf(socket);
          // uncompress the data
         QByteArray content, inflated;
-        read(*reply, content, -1, true);
+        content = reply->d_func()->compressedData;
+        reply->d_func()->compressedData.clear();
+
         int ret = Z_OK;
         if (content.size())
             ret = reply->d_func()->gunzipBodyPartially(content, inflated);
@@ -529,7 +554,7 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
         if (ret >= retCheck) {
             if (inflated.size()) {
                 reply->d_func()->totalProgress += inflated.size();
-                appendData(*reply, inflated, false);
+                appendUncompressedData(*reply, inflated);
                 if (shouldEmitSignals(reply)) {
                     emit reply->readyRead();
                     // make sure that the reply is valid
@@ -574,7 +599,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                 // try to reconnect/resend before sending an error.
                 if (channels[i].reconnectAttempts-- > 0) {
                     resendCurrentRequest(socket);
-                } else {
+                } else if (reply) {
                     reply->d_func()->errorString = errorDetail(QNetworkReply::RemoteHostClosedError, socket);
                     emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
                     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
@@ -626,32 +651,58 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             }
             break;
         case QHttpNetworkReplyPrivate::ReadingDataState: {
-            QBuffer fragment;
-            fragment.open(QIODevice::WriteOnly);
-            bytes = reply->d_func()->readBody(socket, &fragment);
-            if (bytes) {
-                appendData(*reply, fragment.data(), reply->d_func()->autoDecompress);
-                if (!reply->d_func()->autoDecompress) {
-                    reply->d_func()->totalProgress += fragment.size();
-                    if (shouldEmitSignals(reply)) {
-                        emit reply->readyRead();
-                        // make sure that the reply is valid
-                        if (channels[i].reply != reply)
-                            return;
-                        // emit dataReadProgress signal (signal is currently not connected
-                        // to the rest of QNAM) since readProgress of the
-                        // QNonContiguousByteDevice is used
-                        emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
-                        // make sure that the reply is valid
-                        if (channels[i].reply != reply)
-                            return;
+            if (!reply->d_func()->isChunked() && !reply->d_func()->autoDecompress
+                && reply->d_func()->bodyLength > 0) {
+                // bulk files like images should fulfill these properties and
+                // we can therefore save on memory copying
+                bytes = reply->d_func()->readBodyFast(socket, &reply->d_func()->responseData);
+                reply->d_func()->totalProgress += bytes;
+                if (shouldEmitSignals(reply)) {
+                    emit reply->readyRead();
+                    // make sure that the reply is valid
+                    if (channels[i].reply != reply)
+                        return;
+                    emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                    // make sure that the reply is valid
+                    if (channels[i].reply != reply)
+                        return;
+                }
+            }
+            else
+            {
+                // use the traditional slower reading (for compressed encoding, chunked encoding,
+                // no content-length etc)
+                QBuffer fragment;
+                fragment.open(QIODevice::WriteOnly);
+                bytes = reply->d_func()->readBody(socket, &fragment);
+                if (bytes) {
+                    if (reply->d_func()->autoDecompress)
+                        appendCompressedData(*reply, fragment.data());
+                    else
+                        appendUncompressedData(*reply, fragment.data());
+
+                    if (!reply->d_func()->autoDecompress) {
+                        reply->d_func()->totalProgress += fragment.size();
+                        if (shouldEmitSignals(reply)) {
+                            emit reply->readyRead();
+                            // make sure that the reply is valid
+                            if (channels[i].reply != reply)
+                                return;
+                            // emit dataReadProgress signal (signal is currently not connected
+                            // to the rest of QNAM) since readProgress of the
+                            // QNonContiguousByteDevice is used
+                            emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                            // make sure that the reply is valid
+                            if (channels[i].reply != reply)
+                                return;
+                        }
                     }
-                }
 #ifndef QT_NO_COMPRESS
-                else if (!expand(socket, reply, false)) { // expand a chunk if possible
-                    return; // ### expand failed
-                }
+                    else if (!expand(socket, reply, false)) { // expand a chunk if possible
+                        return; // ### expand failed
+                    }
 #endif
+                }
             }
             if (reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState)
                 break;
@@ -866,6 +917,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
     Q_ASSERT(socket);
 
     int i = indexOf(socket);
+
     if (channels[i].authMehtod != QAuthenticatorPrivate::None) {
         if (!(channels[i].authMehtod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 401)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
@@ -1012,7 +1064,8 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
-            closeChannel(i);
+            if (reply->d_func()->connectionCloseEnabled())
+                closeChannel(i);
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
         }
@@ -1339,7 +1392,8 @@ void QHttpNetworkConnectionPrivate::_q_encrypted()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
-    channels[indexOf(socket)].state = IdleState;
+    int i = indexOf(socket);
+    channels[i].state = IdleState;
     sendRequest(socket);
 }
 
@@ -1355,6 +1409,9 @@ void QHttpNetworkConnectionPrivate::_q_sslErrors(const QList<QSslError> &errors)
 
 QSslConfiguration QHttpNetworkConnectionPrivate::sslConfiguration(const QHttpNetworkReply &reply) const
 {
+    if (!encrypt)
+        return QSslConfiguration();
+
     for (int i = 0; i < channelCount; ++i)
         if (channels[i].reply == &reply)
             return static_cast<QSslSocket *>(channels[0].socket)->sslConfiguration();
@@ -1364,6 +1421,9 @@ QSslConfiguration QHttpNetworkConnectionPrivate::sslConfiguration(const QHttpNet
 void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config)
 {
     Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
     // set the config on all channels
     for (int i = 0; i < d->channelCount; ++i)
         static_cast<QSslSocket *>(d->channels[i].socket)->setSslConfiguration(config);
@@ -1372,6 +1432,9 @@ void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config
 void QHttpNetworkConnection::ignoreSslErrors(int channel)
 {
     Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
     if (channel == -1) { // ignore for all channels
         for (int i = 0; i < d->channelCount; ++i) {
             static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors();

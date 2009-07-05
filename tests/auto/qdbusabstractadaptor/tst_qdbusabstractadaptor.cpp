@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -609,18 +609,21 @@ void tst_QDBusAbstractAdaptor::methodCalls()
     QVERIFY(con.isConnected());
 
     //QDBusInterface emptycon.baseService(), "/", QString());
-    QDBusInterface if1(con.baseService(), "/", "local.Interface1", con);
-    QDBusInterface if2(con.baseService(), "/", "local.Interface2", con);
-    QDBusInterface if3(con.baseService(), "/", "local.Interface3", con);
-    QDBusInterface if4(con.baseService(), "/", "local.Interface4", con);
 
-    // must fail: no object
-    //QCOMPARE(empty->call("method").type(), QDBusMessage::ErrorMessage);
-    QCOMPARE(if1.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ErrorMessage);
+    {
+        // must fail: no object
+        QDBusInterface if1(con.baseService(), "/", "local.Interface1", con);
+        QCOMPARE(if1.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ErrorMessage);
+    }
 
     QFETCH(int, nInterfaces);
     MyObject obj(nInterfaces);
     con.registerObject("/", &obj);
+
+    QDBusInterface if1(con.baseService(), "/", "local.Interface1", con);
+    QDBusInterface if2(con.baseService(), "/", "local.Interface2", con);
+    QDBusInterface if3(con.baseService(), "/", "local.Interface3", con);
+    QDBusInterface if4(con.baseService(), "/", "local.Interface4", con);
 
     // must fail: no such method
     QCOMPARE(if1.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ErrorMessage);
@@ -670,10 +673,10 @@ void tst_QDBusAbstractAdaptor::methodCallScriptable()
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
 
-    QDBusInterface if2(con.baseService(), "/", "local.Interface2", con);
-
     MyObject obj(2);
     con.registerObject("/", &obj);
+
+    QDBusInterface if2(con.baseService(), "/", "local.Interface2", con);
 
     QCOMPARE(if2.call(QDBus::BlockWithGui,"scriptableMethod").type(), QDBusMessage::ReplyMessage);
     QCOMPARE(slotSpy, "void Interface2::scriptableMethod()");

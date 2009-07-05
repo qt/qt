@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -655,7 +655,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 #ifdef Q_WS_WIN
         if (ti.fontEngine->type() == QFontEngine::Win) {
             QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
-            size = fe->tm.w.tmHeight;
+            size = fe->tm.tmHeight;
         }
 #endif
         int synthesized = ti.fontEngine->synthesized();

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtXml module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2403,7 +2403,7 @@ events are reported.
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 void QXmlDefaultHandler::setDocumentLocator(QXmlLocator*)
 {
@@ -2412,7 +2412,7 @@ void QXmlDefaultHandler::setDocumentLocator(QXmlLocator*)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::startDocument()
 {
@@ -2422,7 +2422,7 @@ bool QXmlDefaultHandler::startDocument()
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::endDocument()
 {
@@ -2432,7 +2432,7 @@ bool QXmlDefaultHandler::endDocument()
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::startPrefixMapping(const QString&, const QString&)
 {
@@ -2442,7 +2442,7 @@ bool QXmlDefaultHandler::startPrefixMapping(const QString&, const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::endPrefixMapping(const QString&)
 {
@@ -2452,7 +2452,7 @@ bool QXmlDefaultHandler::endPrefixMapping(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::startElement(const QString&, const QString&,
         const QString&, const QXmlAttributes&)
@@ -2463,7 +2463,7 @@ bool QXmlDefaultHandler::startElement(const QString&, const QString&,
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::endElement(const QString&, const QString&,
         const QString&)
@@ -2474,7 +2474,7 @@ bool QXmlDefaultHandler::endElement(const QString&, const QString&,
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::characters(const QString&)
 {
@@ -2484,7 +2484,7 @@ bool QXmlDefaultHandler::characters(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::ignorableWhitespace(const QString&)
 {
@@ -2494,7 +2494,7 @@ bool QXmlDefaultHandler::ignorableWhitespace(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::processingInstruction(const QString&,
         const QString&)
@@ -2505,7 +2505,7 @@ bool QXmlDefaultHandler::processingInstruction(const QString&,
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::skippedEntity(const QString&)
 {
@@ -2515,7 +2515,7 @@ bool QXmlDefaultHandler::skippedEntity(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::warning(const QXmlParseException&)
 {
@@ -2525,7 +2525,7 @@ bool QXmlDefaultHandler::warning(const QXmlParseException&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::error(const QXmlParseException&)
 {
@@ -2535,7 +2535,7 @@ bool QXmlDefaultHandler::error(const QXmlParseException&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::fatalError(const QXmlParseException&)
 {
@@ -2545,7 +2545,7 @@ bool QXmlDefaultHandler::fatalError(const QXmlParseException&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::notationDecl(const QString&, const QString&,
         const QString&)
@@ -2556,7 +2556,7 @@ bool QXmlDefaultHandler::notationDecl(const QString&, const QString&,
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::unparsedEntityDecl(const QString&, const QString&,
         const QString&, const QString&)
@@ -2590,7 +2590,7 @@ QString QXmlDefaultHandler::errorString() const
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::startDTD(const QString&, const QString&, const QString&)
 {
@@ -2600,7 +2600,7 @@ bool QXmlDefaultHandler::startDTD(const QString&, const QString&, const QString&
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::endDTD()
 {
@@ -2610,7 +2610,7 @@ bool QXmlDefaultHandler::endDTD()
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::startEntity(const QString&)
 {
@@ -2620,7 +2620,7 @@ bool QXmlDefaultHandler::startEntity(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::endEntity(const QString&)
 {
@@ -2630,7 +2630,7 @@ bool QXmlDefaultHandler::endEntity(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::startCDATA()
 {
@@ -2640,7 +2640,7 @@ bool QXmlDefaultHandler::startCDATA()
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::endCDATA()
 {
@@ -2650,7 +2650,7 @@ bool QXmlDefaultHandler::endCDATA()
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::comment(const QString&)
 {
@@ -2660,7 +2660,7 @@ bool QXmlDefaultHandler::comment(const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::attributeDecl(const QString&, const QString&, const QString&, const QString&, const QString&)
 {
@@ -2670,7 +2670,7 @@ bool QXmlDefaultHandler::attributeDecl(const QString&, const QString&, const QSt
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::internalEntityDecl(const QString&, const QString&)
 {
@@ -2680,7 +2680,7 @@ bool QXmlDefaultHandler::internalEntityDecl(const QString&, const QString&)
 /*!
     \reimp
 
-    Does nothing.
+    This reimplementation does nothing.
 */
 bool QXmlDefaultHandler::externalEntityDecl(const QString&, const QString&, const QString&)
 {

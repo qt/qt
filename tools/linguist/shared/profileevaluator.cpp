@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1949,9 +1949,9 @@ QStringList ProFileEvaluator::Private::values(const QString &variableName,
             ret = QLatin1String("Windows");
         } else if (type == QLatin1String("name")) {
             DWORD name_length = 1024;
-            TCHAR name[1024];
+            wchar_t name[1024];
             if (GetComputerName(name, &name_length))
-                ret = QString::fromUtf16((ushort*)name, name_length);
+                ret = QString::fromWCharArray(name);
         } else if (type == QLatin1String("version") || type == QLatin1String("version_string")) {
             QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
             if (type == QLatin1String("version"))

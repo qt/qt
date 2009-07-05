@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,10 +72,6 @@ int qt_wince_GetDIBits(HDC, HBITMAP, uint, uint, void*, LPBITMAPINFO, uint);
 
 // QWidget
 #define SW_SHOWMINIMIZED SW_MINIMIZE
-
-// QPaintEngine
-bool qt_wince_TextOutW(HDC, int, int, LPWSTR, UINT);
-#define TextOutW(a,b,c,d,e) qt_wince_TextOutW(a,b,c,d,e)
 
 // QRegion
 #define ALTERNATE 0
@@ -128,7 +124,7 @@ typedef struct tagTTPOLYCURVE
 #define TT_PRIM_CSPLINE 3
 #define ANSI_VAR_FONT 12
 
-HINSTANCE qt_wince_ShellExecute(HWND hwnd, LPCTSTR operation, LPCTSTR file, LPCTSTR params, LPCTSTR dir, int showCmd);
+HINSTANCE qt_wince_ShellExecute(HWND hwnd, LPCWSTR operation, LPCWSTR file, LPCWSTR params, LPCWSTR dir, int showCmd);
 #define ShellExecute(a,b,c,d,e,f) qt_wince_ShellExecute(a,b,c,d,e,f)
 
 
@@ -150,8 +146,6 @@ HWND qt_wince_SetClipboardViewer(
 // Graphics ---------------------------------------------------------
 COLORREF qt_wince_PALETTEINDEX( WORD wPaletteIndex );
 #define PALETTEINDEX(a) qt_wince_PALETTEINDEX(a)
-BOOL qt_wince_TextOut( HDC hdc, int nXStart, int nYStart, LPCTSTR lpString, int cbString );
-#define TextOut(a,b,c,d,e) qt_wince_TextOut(a,b,c,d,e)
 
 #endif // Q_OS_WINCE
 #endif // QGUIFUNCTIONS_WCE_H

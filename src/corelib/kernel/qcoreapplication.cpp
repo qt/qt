@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -643,8 +643,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 /*!
   Sends \a event to \a receiver: \a {receiver}->event(\a event).
   Returns the value that is returned from the receiver's event
-  handler. Note that this function is called for all events send to
-  any object is all threads.
+  handler. Note that this function is called for all events sent to
+  any object in any thread.
 
   For certain types of events (e.g. mouse and key events),
   the event will be propagated to the receiver's parent and so on up to
@@ -1741,21 +1741,8 @@ QString QCoreApplication::applicationFilePath()
     if (!d->cachedApplicationFilePath.isNull())
         return d->cachedApplicationFilePath;
 
-#if defined( Q_WS_WIN )
-    QFileInfo filePath;
-    QT_WA({
-        wchar_t module_name[MAX_PATH+1];
-        GetModuleFileNameW(0, module_name, MAX_PATH);
-        module_name[MAX_PATH] = 0;
-        filePath = QString::fromUtf16((ushort *)module_name);
-    }, {
-        char module_name[MAX_PATH+1];
-        GetModuleFileNameA(0, module_name, MAX_PATH);
-        module_name[MAX_PATH] = 0;
-        filePath = QString::fromLocal8Bit(module_name);
-    });
-
-    d->cachedApplicationFilePath = filePath.filePath();
+#if defined(Q_WS_WIN)
+    d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
 #elif defined(Q_WS_MAC)
     QString qAppFileName_str = qAppFileName();
@@ -1902,13 +1889,13 @@ QStringList QCoreApplication::arguments()
         return list;
     }
 #ifdef Q_OS_WIN
-    QString cmdline = QT_WA_INLINE(QString::fromUtf16((unsigned short *)GetCommandLineW()), QString::fromLocal8Bit(GetCommandLineA()));
+    QString cmdline = QString::fromWCharArray(GetCommandLine());
 
 #if defined(Q_OS_WINCE)
     wchar_t tempFilename[MAX_PATH+1];
-    if (GetModuleFileNameW(0, tempFilename, MAX_PATH)) {
+    if (GetModuleFileName(0, tempFilename, MAX_PATH)) {
         tempFilename[MAX_PATH] = 0;
-        cmdline.prepend(QLatin1Char('\"') + QString::fromUtf16((unsigned short *)tempFilename) + QLatin1String("\" "));
+        cmdline.prepend(QLatin1Char('\"') + QString::fromWCharArray(tempFilename) + QLatin1String("\" "));
     }
 #endif // Q_OS_WINCE
 

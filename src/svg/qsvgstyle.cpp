@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,12 +81,12 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false)
+    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false), m_gradientResolved (true)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false)
+    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false), m_gradientResolved (true)
 {
 }
 
@@ -107,6 +107,9 @@ static void recursivelySetFill(QSvgNode *node, Qt::FillRule f)
     if (node->type() == QSvgNode::PATH) {
         QSvgPath *path = static_cast<QSvgPath*>(node);
         path->qpath()->setFillRule(f);
+    } else if (node->type() == QSvgNode::POLYGON) {
+        QSvgPolygon *polygon = static_cast<QSvgPolygon*>(node);
+        polygon->setFillRule(f);
     } else if (node->type() == QSvgNode::G) {
         QList<QSvgNode*> renderers = static_cast<QSvgG*>(node)->renderers();
         foreach(QSvgNode *n, renderers) {
@@ -192,14 +195,18 @@ void QSvgFontStyle::revert(QPainter *p, QSvgExtraStates &)
 }
 
 QSvgStrokeStyle::QSvgStrokeStyle(const QPen &pen)
-    : m_stroke(pen)
+    : m_stroke(pen), m_strokePresent(true)
 {
 }
 
 void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
 {
     m_oldStroke = p->pen();
-    p->setPen(m_stroke);
+    if (!m_strokePresent || !m_stroke.widthF() || !m_stroke.color().alphaF()) {
+        p->setPen(Qt::NoPen);
+    } else {
+        p->setPen(m_stroke);
+    }
 }
 
 void QSvgStrokeStyle::revert(QPainter *p, QSvgExtraStates &)

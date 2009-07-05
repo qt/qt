@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 #include "messagemodel.h"
 
 #include <QtCore/QLocale>
+#include <QtCore/QTimer>
 
 #include <QtGui/QFrame>
 #include <QtGui/QScrollArea>
@@ -58,11 +59,12 @@ class QTextEdit;
 class MessageEditor;
 class FormatTextEdit;
 class FormWidget;
+class FormMultiWidget;
 
 struct MessageEditorData {
     QWidget *container;
     FormWidget *transCommentText;
-    QList<FormWidget*> transTexts;
+    QList<FormMultiWidget *> transTexts;
     QString invariantForm;
     QString firstForm;
     float fontSize;
@@ -108,8 +110,10 @@ public slots:
     void beginFromSource();
     void setEditorFocus();
     void setTranslation(int latestModel, const QString &translation);
+    void setLenghtVariants(bool on);
 
 private slots:
+    void editorCreated(QTextEdit *);
     void selectionChanged(QTextEdit *);
     void resetHoverSelection();
     void emitTranslationChanged(QTextEdit *);
@@ -120,6 +124,7 @@ private slots:
     void messageModelDeleted(int model);
     void allModelsDeleted();
     void setTargetLanguage(int model);
+    void reallyFixTabOrder();
 
 private:
     void setupEditorPage();
@@ -141,6 +146,7 @@ private:
     void updateUndoRedo();
     void updateCanCutCopy();
     void addPluralForm(int model, const QString &label, bool writable);
+    void fixTabOrder();
     QPalette paletteForModel(int model) const;
 
     MultiDataModel *m_dataModel;
@@ -148,6 +154,8 @@ private:
     MultiDataIndex m_currentIndex;
     int m_currentModel;
     int m_currentNumerus;
+
+    bool m_lengthVariants;
 
     bool m_undoAvail;
     bool m_redoAvail;
@@ -163,6 +171,8 @@ private:
     FormWidget *m_pluralSource;
     FormWidget *m_commentText;
     QList<MessageEditorData> m_editors;
+
+    QTimer m_tabOrderTimer;
 };
 
 QT_END_NAMESPACE

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,7 +74,7 @@ class BookmarkDialog : public QDialog
     Q_OBJECT
 
 public:
-    BookmarkDialog(BookmarkManager *manager, const QString &title, 
+    BookmarkDialog(BookmarkManager *manager, const QString &title,
         const QString &url, QWidget *parent = 0);
     ~BookmarkDialog();
 
@@ -86,8 +86,8 @@ private slots:
     void textChanged(const QString& string);
     void selectBookmarkFolder(const QString &folderName);
     void customContextMenuRequested(const QPoint &point);
-    void currentChanged(const QModelIndex& current, const QModelIndex& previous);
-    
+    void currentChanged(const QModelIndex& current);
+
 private:
     bool eventFilter(QObject *object, QEvent *e);
 
@@ -177,27 +177,37 @@ public:
     QStringList bookmarkFolders() const;
     QModelIndex addNewFolder(const QModelIndex& index);
     void removeBookmarkItem(QTreeView *treeView, const QModelIndex& index);
-    void showBookmarkDialog(QWidget* parent, const QString &name, const QString &url);
-    void addNewBookmark(const QModelIndex& index, const QString &name, const QString &url);
+    void showBookmarkDialog(QWidget* parent, const QString &name,
+        const QString &url);
+    void addNewBookmark(const QModelIndex& index, const QString &name,
+        const QString &url);
     void setupBookmarkModels();
+
+    void fillBookmarkMenu(QMenu *menu);
+    QUrl urlForAction(QAction* action) const;
+
+signals:
+    void bookmarksChanged();
 
 private slots:
     void itemChanged(QStandardItem *item);
 
-private:    
+private:
     QString uniqueFolderName() const;
     void removeBookmarkFolderItems(QStandardItem *item);
     void readBookmarksRecursive(const QStandardItem *item, QDataStream &stream,
         const qint32 depth) const;
+    void fillBookmarkMenu(QMenu *menu, QStandardItem *root);
 
 private:
     QString oldText;
     QIcon folderIcon;
-    
+
     BookmarkModel *treeModel;
     BookmarkModel *listModel;
     QStandardItem *renameItem;
     QHelpEngineCore *helpEngine;
+    QMap<QAction*, QModelIndex> map;
 };
 
 QT_END_NAMESPACE

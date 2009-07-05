@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,7 @@
 
 /*!
     \class QLatin1Literal
+    \internal
     \reentrant
     \since 4.6
 
@@ -70,49 +71,44 @@
     NULL char.
 */
 
-/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[N])
+/*! \fn QLatin1Literal::QLatin1Literal(const char str)
  
-    Constructs a new literal from the given \a string.
+    Constructs a new literal from the string \a str.
 */
 
-/*! \fn char *QLatin1Literal::data() const
+/*! \fn const char *QLatin1Literal::data() const
  
     Returns a pointer to the first character of the string literal.
     The string literal is terminated by a NUL character.
 */
 
-/*! \fn QLatin1Literal::operator QString() const
- 
-    Converts the \c QLatin1Literal into a \c QString object.
-*/
-
-
-
 /*!
     \class QStringBuilder
+    \internal
     \reentrant
     \since 4.6
 
-    \brief The QStringBuilder class is a template class that provides a facility to build
-    up QStrings from smaller chunks.
+    \brief The QStringBuilder class is a template class that provides a facility to build up QStrings from smaller chunks.
 
     \ingroup tools
     \ingroup shared
     \ingroup text
     \mainclass
 
-    When creating strings from smaller chunks, typically \c QString::operator+()
-    is used, resulting in \e{n - 1} reallocations when operating on \e{n} chunks.
+    To build a QString by multiple concatenations, QString::operator+()
+    is typically used. This causes \e{n - 1} reallocations when building
+    a string from \e{n} chunks.
 
-    QStringBuilder uses expression templates to collect the individual parts,
-    compute the total size, allocate memory for the resulting QString object,
-    and copy the contents of the chunks into the result.
+    QStringBuilder uses expression templates to collect the individual
+    chunks, compute the total size, allocate the required amount of
+    memory for the final QString object, and copy the chunks into the
+    allocated memory.
 
-    The QStringBuilder class is not to be used explicitly in user code.
-    Instances of the class are created as return values of the operator%()
-    function, acting on objects of type \c QString, \c QLatin1String,
-    \c QLatin1Literal, \c \QStringRef, \c QChar, \c QCharRef,
-    \c QLatin1Char, and \c char.
+    The QStringBuilder class is not to be used explicitly in user
+    code.  Instances of the class are created as return values of the
+    operator%() function, acting on objects of type QString,
+    QLatin1String, QLatin1Literal, QStringRef, QChar, QCharRef,
+    QLatin1Char, and \c char.
 
     Concatenating strings with operator%() generally yields better
     performance then using \c QString::operator+() on the same chunks
@@ -122,7 +118,11 @@
     \sa QLatin1Literal, QString
 */
 
-/* \fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
+/*! \fn QStringBuilder::QStringBuilder(const A &a, const B &b)
+  Constructs a QStringBuilder from \a a and \a b.
+ */
+
+/* \fn QStringBuilder::operator%(const A &a, const B &b)
 
     Returns a \c QStringBuilder object that is converted to a QString object
     when assigned to a variable of QString type or passed to a function that
@@ -133,3 +133,13 @@
     \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
 */
 
+/*! \fn QByteArray QStringBuilder::toLatin1() const
+  Returns a Latin-1 representation of the string as a QByteArray.  The
+  returned byte array is undefined if the string contains non-Latin1
+  characters.
+ */
+
+/*! \fn QStringBuilder::operator QString() const
+ 
+    Converts the \c QLatin1Literal into a \c QString object.
+*/

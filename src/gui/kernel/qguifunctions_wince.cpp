@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -215,13 +215,7 @@ int qt_wince_GetDIBits(HDC /*hdc*/ , HBITMAP hSourceBitmap, uint, uint, LPVOID l
     return ret;
 }
 
-bool qt_wince_TextOutW(HDC hdc, int x, int y, LPWSTR lpString, UINT c)
-{
-    return ExtTextOutW(hdc, x, y, 0, NULL, lpString, c, NULL);
-}
-
-
-HINSTANCE qt_wince_ShellExecute(HWND hwnd, LPCTSTR, LPCTSTR file, LPCTSTR params, LPCTSTR dir, int showCmd)
+HINSTANCE qt_wince_ShellExecute(HWND hwnd, LPCWSTR, LPCWSTR file, LPCWSTR params, LPCWSTR dir, int showCmd)
 {
     SHELLEXECUTEINFO info;
     info.hwnd = hwnd;
@@ -253,17 +247,11 @@ COLORREF qt_wince_PALETTEINDEX( WORD /*wPaletteIndex*/)
     return 0;
 }
 
-BOOL qt_wince_TextOut( HDC hdc, int nXStart, int nYStart, LPCTSTR lpString, int cbString )
-{
-    return ExtTextOut( hdc, nXStart, nYStart - 16, 0, NULL, lpString, cbString, NULL );
-}
-
 // Internal Qt -----------------------------------------------------
 bool qt_wince_is_platform(const QString &platformString) {
-    TCHAR tszPlatform[64];
-    if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
-                             sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
-      if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
+    wchar_t tszPlatform[64];
+    if (SystemParametersInfo(SPI_GETPLATFORMTYPE, sizeof(tszPlatform) / sizeof(wchar_t), tszPlatform, 0))
+        if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
             return true;
     return false;
 }
@@ -316,8 +304,8 @@ void qt_wince_maximize(QWidget *widget)
 
 void qt_wince_minimize(HWND hwnd) {
 
-    uint exstyle = GetWindowLongW(hwnd, GWL_EXSTYLE);
-    uint style = GetWindowLongW(hwnd, GWL_STYLE);
+    uint exstyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    uint style = GetWindowLong(hwnd, GWL_STYLE);
     RECT rect;
     RECT crect = {0,0,0,0};
     GetWindowRect(hwnd, &rect);

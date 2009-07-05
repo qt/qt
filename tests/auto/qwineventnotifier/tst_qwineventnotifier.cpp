@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -110,12 +110,9 @@ void tst_QWinEventNotifier::simple_timerSet()
 
 void tst_QWinEventNotifier::simple()
 {
-    QT_WA({
-	simpleHEvent = CreateEventW(0, TRUE, FALSE, 0);
-    }, {
-	simpleHEvent = CreateEventA(0, TRUE, FALSE, 0);
-    });
+    simpleHEvent = CreateEvent(0, TRUE, FALSE, 0);
     QVERIFY(simpleHEvent);
+
     QWinEventNotifier n(simpleHEvent);
     QObject::connect(&n, SIGNAL(activated(HANDLE)), this, SLOT(simple_activated()));
     simpleActivated = false;

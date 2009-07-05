@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,7 @@
 #include "qfile.h"
 #include "qtextstream.h"
 #include "qstringlist.h"
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -107,7 +108,7 @@ public:
     {
         if (fd != f) {
             f = fd;
-            close(fd);
+            QT_CLOSE(fd);
         }
     }
 
@@ -170,7 +171,7 @@ public:
         }
         static const uchar initseq[] = { 243, 200, 243, 100, 243, 80 };
         static const uchar query[] = { 0xf2 };
-        if (write(fd, initseq, sizeof(initseq))!=sizeof(initseq)) {
+        if (QT_WRITE(fd, initseq, sizeof(initseq))!=sizeof(initseq)) {
             badness = 100;
             return;
         }
@@ -180,12 +181,12 @@ public:
             perror("QWSPcMouseSubHandler_intellimouse: post-init tcflush");
 #endif
         }
-        if (write(fd, query, sizeof(query))!=sizeof(query)) {
+        if (QT_WRITE(fd, query, sizeof(query))!=sizeof(query)) {
             badness = 100;
             return;
         }
         usleep(10000);
-        n = read(fd, reply, 20);
+        n = QT_READ(fd, reply, 20);
         if (n > 0) {
             goodness = 10;
             switch (reply[n-1]) {
@@ -256,13 +257,13 @@ public:
             perror("QWSPcMouseSubHandler_mouseman: initial tcflush");
 #endif
         }
-        write(fd,"",1);
+        QT_WRITE(fd,"",1);
         usleep(50000);
-        write(fd,"@EeI!",5);
+        QT_WRITE(fd,"@EeI!",5);
         usleep(10000);
         static const char ibuf[] = { 246, 244 };
-        write(fd,ibuf,1);
-        write(fd,ibuf+1,1);
+        QT_WRITE(fd,ibuf,1);
+        QT_WRITE(fd,ibuf+1,1);
         if (tcflush(fd,TCIOFLUSH) == -1) {
 #ifdef QWS_MOUSE_DEBUG
             perror("QWSPcMouseSubHandler_mouseman: tcflush");
@@ -271,7 +272,7 @@ public:
         usleep(10000);
 
         char buf[100];
-        while (read(fd, buf, 100) > 0) { }  // eat unwanted replies
+        while (QT_READ(fd, buf, 100) > 0) { }  // eat unwanted replies
     }
 
     int tryData()
@@ -350,7 +351,7 @@ private:
 
         for (int n = 0; n < 4; n++) {
             setflags(CSTOPB | speed[n]);
-            write(fd, "*q", 2);
+            QT_WRITE(fd, "*q", 2);
             usleep(10000);
         }
     }
@@ -369,7 +370,7 @@ public:
     {
         setflags(B1200|CS8|CSTOPB);
         // 60Hz
-        if (write(fd, "R", 1)!=1) {
+        if (QT_WRITE(fd, "R", 1)!=1) {
             badness = 100;
             return;
         }
@@ -418,7 +419,7 @@ public:
     {
         setflags(B1200|CS7);
         // 60Hz
-        if (write(fd, "R", 1)!=1) {
+        if (QT_WRITE(fd, "R", 1)!=1) {
             badness = 100;
             return;
         }
@@ -648,25 +649,25 @@ void QWSPcMouseHandlerPrivate::openDevices()
         if (drv == QLatin1String("intellimouse")) {
             if (dev.isEmpty())
                 dev = "/dev/psaux";
-            fd = open(dev, O_RDWR | O_NDELAY);
+            fd = QT_OPEN(dev, O_RDWR | O_NDELAY);
             if (fd >= 0)
                 sub[nsub++] = new QWSPcMouseSubHandler_intellimouse(fd);
         } else if (drv == QLatin1String("microsoft")) {
             if (dev.isEmpty())
                 dev = "/dev/ttyS0";
-            fd = open(dev, O_RDWR | O_NDELAY);
+            fd = QT_OPEN(dev, O_RDWR | O_NDELAY);
             if (fd >= 0)
                 sub[nsub++] = new QWSPcMouseSubHandler_ms(fd);
         } else if (drv == QLatin1String("mousesystems")) {
             if (dev.isEmpty())
                 dev = "/dev/ttyS0";
-            fd = open(dev, O_RDWR | O_NDELAY);
+            fd = QT_OPEN(dev, O_RDWR | O_NDELAY);
             if (fd >= 0)
                 sub[nsub++] = new QWSPcMouseSubHandler_mousesystems(fd);
         } else if (drv == QLatin1String("mouseman")) {
             if (dev.isEmpty())
                 dev = "/dev/psaux";
-            fd = open(dev, O_RDWR | O_NDELAY);
+            fd = QT_OPEN(dev, O_RDWR | O_NDELAY);
             if (fd >= 0)
                 sub[nsub++] = new QWSPcMouseSubHandler_mouseman(fd);
         }
@@ -677,12 +678,12 @@ void QWSPcMouseHandlerPrivate::openDevices()
                       dev.constData(), strerror(errno));
     } else {
         // Try automatically
-        fd = open("/dev/psaux", O_RDWR | O_NDELAY);
+        fd = QT_OPEN("/dev/psaux", O_RDWR | O_NDELAY);
         if (fd >= 0) {
             sub[nsub++] = new QWSPcMouseSubHandler_intellimouse(fd);
             notify(fd);
         }
-        fd = open("/dev/input/mice", O_RDWR | O_NDELAY);
+        fd = QT_OPEN("/dev/input/mice", O_RDWR | O_NDELAY);
         if (fd >= 0) {
             sub[nsub++] = new QWSPcMouseSubHandler_intellimouse(fd);
             notify(fd);
@@ -694,7 +695,7 @@ void QWSPcMouseHandlerPrivate::openDevices()
 #if 0
         const char fn[4][11] = { "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3" };
         for (int ch = 0; ch < 4; ++ch) {
-            fd = open(fn[ch], O_RDWR | O_NDELAY);
+            fd = QT_OPEN(fn[ch], O_RDWR | O_NDELAY);
             if (fd >= 0) {
                 //sub[nsub++] = new QWSPcMouseSubHandler_intellimouse(fd);
                 sub[nsub++] = new QWSPcMouseSubHandler_mousesystems(fd);

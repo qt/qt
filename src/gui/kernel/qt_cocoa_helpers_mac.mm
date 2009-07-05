@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -894,50 +894,6 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
     QPoint qlocalPoint(localPoint.x, localPoint.y);
 
-    if (widgetToGetMouse->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // Simulate passing the event through since Cocoa doesn't do that for us.
-        // Start by building a tree up.
-        NSView *candidateView = [theView viewUnderTransparentForMouseView:tmpView
-                                                       widget:widgetToGetMouse
-                                                       withWindowPoint:windowPoint];
-        if (candidateView != nil) {
-            // Fast-track our views, since dispatching trough the normal ways
-            // would just end up going through here anyway.
-            if ([candidateView isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-                return qt_mac_handleMouseEvent(candidateView, theEvent, eventType, button);
-            } else {
-                switch (eventType) {
-                default:
-                    qWarning("not handled! %d", eventType);
-                    break;
-                case QEvent::MouseMove:
-                    [candidateView mouseMoved:theEvent];
-                    break;
-                case QEvent::MouseButtonPress:
-                    if (button == Qt::LeftButton)
-                        [candidateView mouseDown:theEvent];
-                    else if (button == Qt::RightButton)
-                        [candidateView rightMouseDown:theEvent];
-                    else
-                        [candidateView otherMouseDown:theEvent];
-                    break;
-                case QEvent::MouseButtonRelease:
-                    if (button == Qt::LeftButton)
-                        [candidateView mouseUp:theEvent];
-                    else if (button == Qt::RightButton)
-                        [candidateView rightMouseUp:theEvent];
-                    else
-                        [candidateView otherMouseUp:theEvent];
-                    break;
-                }
-                return true; // We've done the dispatching, no need go further.
-            }
-        }
-        // Nothing below me return false
-        return false;
-    }
-
-
     EventRef carbonEvent = static_cast<EventRef>(const_cast<void *>([theEvent eventRef]));
     if (qt_mac_sendMacEventToWidget(widgetToGetMouse, carbonEvent))
         return true;
@@ -1164,6 +1120,15 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     CGContextRef context = (CGContextRef)[[NSGraphicsContext graphicsContextWithWindow:qt_mac_window_for(widget)] graphicsPort];
 #endif
     return context;
+}
+
+CGFloat qt_mac_get_scalefactor()
+{
+#ifndef QT_MAC_USE_COCOA
+    return HIGetScaleFactor();
+#else
+    return [[NSScreen mainScreen] userSpaceScaleFactor];
+#endif
 }
 
 QT_END_NAMESPACE

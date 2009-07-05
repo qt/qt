@@ -19,16 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLBodyElement.h"
 
-#include <wtf/GetPtr.h>
-
+#include "EventListener.h"
+#include "Frame.h"
 #include "HTMLBodyElement.h"
+#include "JSDOMGlobalObject.h"
+#include "JSEventListener.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -38,7 +38,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLBodyElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLBodyElementTableValues[8] =
+static const HashTableValue JSHTMLBodyElementTableValues[15] =
 {
     { "aLink", DontDelete, (intptr_t)jsHTMLBodyElementALink, (intptr_t)setJSHTMLBodyElementALink },
     { "background", DontDelete, (intptr_t)jsHTMLBodyElementBackground, (intptr_t)setJSHTMLBodyElementBackground },
@@ -46,15 +46,22 @@ static const HashTableValue JSHTMLBodyElementTableValues[8] =
     { "link", DontDelete, (intptr_t)jsHTMLBodyElementLink, (intptr_t)setJSHTMLBodyElementLink },
     { "text", DontDelete, (intptr_t)jsHTMLBodyElementText, (intptr_t)setJSHTMLBodyElementText },
     { "vLink", DontDelete, (intptr_t)jsHTMLBodyElementVLink, (intptr_t)setJSHTMLBodyElementVLink },
+    { "onbeforeunload", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnbeforeunload, (intptr_t)setJSHTMLBodyElementOnbeforeunload },
+    { "onmessage", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnmessage, (intptr_t)setJSHTMLBodyElementOnmessage },
+    { "onoffline", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnoffline, (intptr_t)setJSHTMLBodyElementOnoffline },
+    { "ononline", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnonline, (intptr_t)setJSHTMLBodyElementOnonline },
+    { "onresize", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnresize, (intptr_t)setJSHTMLBodyElementOnresize },
+    { "onstorage", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnstorage, (intptr_t)setJSHTMLBodyElementOnstorage },
+    { "onunload", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnunload, (intptr_t)setJSHTMLBodyElementOnunload },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLBodyElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static const HashTable JSHTMLBodyElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 31, JSHTMLBodyElementTableValues, 0 };
+    { 63, JSHTMLBodyElementTableValues, 0 };
 #else
-    { 17, 15, JSHTMLBodyElementTableValues, 0 };
+    { 34, 31, JSHTMLBodyElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -175,6 +182,83 @@ JSValue jsHTMLBodyElementVLink(ExecState* exec, const Identifier&, const Propert
     return jsString(exec, imp->vLink());
 }
 
+JSValue jsHTMLBodyElementOnbeforeunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onbeforeunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmessage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnoffline(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onoffline()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnonline(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->ononline()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onresize()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnstorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onstorage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
 JSValue jsHTMLBodyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->getConstructor(exec);
@@ -218,6 +302,76 @@ void setJSHTMLBodyElementVLink(ExecState* exec, JSObject* thisObject, JSValue va
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setVLink(valueToStringWithNullCheck(exec, value));
+}
+
+void setJSHTMLBodyElementOnbeforeunload(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnbeforeunload(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnoffline(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnoffline(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnonline(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnonline(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnresize(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnresize(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnstorage(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnstorage(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnunload(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnunload(globalObject->createJSAttributeEventListener(value));
 }
 
 JSValue JSHTMLBodyElement::getConstructor(ExecState* exec)

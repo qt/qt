@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -391,6 +391,13 @@ void WriteInitialization::LayoutDefaultHandler::acceptLayoutFunction(DomLayoutFu
     }
 }
 
+static inline void writeContentsMargins(const QString &indent, const QString &objectName, int value, QTextStream &str)
+{
+     QString contentsMargins;
+     QTextStream(&contentsMargins) << value << ", " << value << ", " << value << ", " << value;
+     writeSetter(indent, objectName, QLatin1String("setContentsMargins"), contentsMargins, str);
+ }
+
 void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QString &indent, const QString &objectName,
                                                               const DomPropertyMap &properties, const QString &propertyName, const QString &setter,
                                                               int defaultStyleValue, bool suppressDefault, QTextStream &str) const
@@ -408,7 +415,11 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
                              && value == defaultStyleValue);
             if (ifndefMac)
                 str << "#ifndef Q_OS_MAC\n";
-            writeSetter(indent, objectName, setter, value, str);
+            if (p == Margin) { // Use setContentsMargins for numeric values
+                writeContentsMargins(indent, objectName, value, str);
+            } else {
+                writeSetter(indent, objectName, setter, value, str);
+            }
             if (ifndefMac)
                 str << "#endif\n";
             return;
@@ -416,13 +427,18 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
     }
     if (suppressDefault)
         return;
-    // get default
+    // get default.
     if (m_state[p] & HasDefaultFunction) {
+        // Do not use setContentsMargins to avoid repetitive evaluations.
         writeSetter(indent, objectName, setter, m_functions[p], str);
         return;
     }
     if (m_state[p] & HasDefaultValue) {
-        writeSetter(indent, objectName, setter, m_defaultValues[p], str);
+        if (p == Margin) { // Use setContentsMargins for numeric values
+            writeContentsMargins(indent, objectName, m_defaultValues[p], str);
+        } else {
+            writeSetter(indent, objectName, setter, m_defaultValues[p], str);
+        }
     }
     return;
 }

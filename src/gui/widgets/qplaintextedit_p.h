@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,6 +72,7 @@ class QMimeData;
 
 class QPlainTextEdit;
 class ExtraArea;
+class QPanGesture;
 
 class QPlainTextEditControl : public QTextControl
 {
@@ -173,6 +174,10 @@ public:
     void _q_cursorPositionChanged();
 
     void _q_modificationChanged(bool);
+
+    void _q_gestureTriggered();
+    int originalOffsetY;
+    QPanGesture *panGesture;
 };
 
 QT_END_NAMESPACE

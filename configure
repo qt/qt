@@ -3,7 +3,7 @@
 # Configures to build the Qt library
 #
 # Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-# Contact: Qt Software Information (qt-info@nokia.com)
+# Contact: Nokia Corporation (qt-info@nokia.com)
 #
 # This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
@@ -311,7 +311,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are using an old license file."
             echo
-            echo "Please install the license file supplied by Qt Software,"
+            echo "Please install the license file supplied by Nokia,"
             echo "or install the Qt Open Source Edition if you intend to"
             echo "develop free software."
             exit 1
@@ -588,6 +588,12 @@ CFG_XRANDR=runtime
 CFG_XRENDER=auto
 CFG_MITSHM=auto
 CFG_OPENGL=auto
+CFG_OPENVG=no
+CFG_OPENVG_LC_INCLUDES=no
+CFG_OPENVG_SHIVA=no
+CFG_OPENVG_ON_OPENGL=no
+CFG_EGL=no
+CFG_EGL_GLES_INCLUDES=no
 CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_QWS_FREETYPE=auto
@@ -888,6 +894,16 @@ while [ "$#" -gt 0 ]; do
             VAL=$1
         fi
 	;;
+    -openvg)
+        VAR=openvg
+        # this option may or may not be followed by an argument
+        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
+            VAL=yes
+        else
+            shift;
+            VAL=$1
+        fi
+	;;
     -hostprefix)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         # this option may or may not be followed by an argument
@@ -1128,6 +1144,13 @@ while [ "$#" -gt 0 ]; do
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
             [ "$VAL" = "es1cl" ] || [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    openvg)
+        if [ "$VAL" = "auto" ] || [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_OPENVG="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3480,7 +3503,12 @@ Qt/X11 only:
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
                          OpenGL ES 1.x Common profile, 1.x Common Lite profile
                          or 2.x APIs instead. On X11, the EGL API will be used
-                         to manage GL contexts in the case of OpenGL ES.
+                         to manage GL contexts in the case of OpenGL ES
+
+     -no-openvg ........ Do not support OpenVG.
+ +   -openvg ........... Enable OpenVG support.
+                         Requires EGL support, typically supplied by an OpenGL
+                         or other graphics implementation.
 
  $SMN  -no-sm ............. Do not support X Session Management.
  $SMY  -sm ................ Support X Session Management, links in -lSM -lICE.
@@ -4127,11 +4155,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             done
         fi
         if [ "$PLATFORM_MAC" = "yes" ]; then
-            if [ "$PLATFORM" = "macx-icc" ]; then
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
-	    else
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.3" >> "$mkfile"
-	    fi
+            echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
@@ -4435,7 +4459,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ;;
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                if [ "$PLATFORM_MAC" != "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_odbc" = "auto" ]; then
                         CFG_SQL_odbc=plugin
                     fi
@@ -4685,6 +4709,27 @@ if [ "$PLATFORM_MAC" = "yes" -a ! -z "$QT_NAMESPACE" ]; then
 fi
 
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
+
+    # detect EGL support
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
+        CFG_EGL=yes
+        CFG_EGL_GLES_INCLUDES=no
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
+        CFG_EGL=yes
+        CFG_EGL_GLES_INCLUDES=yes
+    fi
+    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ] && [ "$PLATFORM_X11" = "yes" ]; then
+        echo "The EGL functionality test failed!"
+        echo " EGL is required for OpenGL ES on X11 to manage contexts & surfaces."
+        echo " You might need to modify the include and library search paths by editing"
+        echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
+        echo " ${XQMAKESPEC}."
+        exit 1
+    fi
+
+
     # auto-detect Glib support
     if [ "$CFG_GLIB" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
@@ -4814,8 +4859,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-	    echo " ${XQMAKESPEC}."
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
             exit 1
         fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
@@ -4824,8 +4869,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-	    echo " ${XQMAKESPEC}."
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
             exit 1
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
@@ -4834,8 +4879,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-	    echo " ${XQMAKESPEC}."
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
             exit 1
         fi
     elif [ "$CFG_OPENGL" = "desktop" ]; then
@@ -4844,8 +4889,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-	    echo " ${XQMAKESPEC}."
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
             exit 1
         fi
         case "$PLATFORM" in
@@ -5500,6 +5545,44 @@ if [ "$CFG_OPENSSL" != "no" ]; then
     fi
 fi
 
+# detect OpenVG support
+if [ "$CFG_OPENVG" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        if [ "$CFG_OPENVG" = "auto" ]; then
+            CFG_OPENVG=yes
+        fi
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG openvg_on_opengl" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        if [ "$CFG_OPENVG" = "auto" ]; then
+            CFG_OPENVG=yes
+        fi
+        CFG_OPENVG_ON_OPENGL=yes
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG lower_case_includes" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG (lc includes)" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        if [ "$CFG_OPENVG" = "auto" ]; then
+            CFG_OPENVG=yes
+        fi
+        CFG_OPENVG_LC_INCLUDES=yes
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG openvg_on_opengl lower_case_includes" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG (lc includes)" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        if [ "$CFG_OPENVG" = "auto" ]; then
+            CFG_OPENVG=yes
+        fi
+        CFG_OPENVG_LC_INCLUDES=yes
+        CFG_OPENVG_ON_OPENGL=yes
+    else
+        if [ "$CFG_OPENVG" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "$CFG_OPENVG was specified for OpenVG but cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_OPENVG=no
+        fi
+    fi
+    if [ "$CFG_OPENVG" == "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/shivavg" "ShivaVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+        CFG_OPENVG_SHIVA=yes
+    fi
+fi
+
 if [ "$CFG_PTMALLOC" != "no" ]; then
     # build ptmalloc, copy .a file to lib/
     echo "Building ptmalloc. Please wait..."
@@ -5597,13 +5680,9 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
 	CFG_QT3SUPPORT="no"
 	;;
-    macx-icc,*)
-	# Intel CC, Carbon
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
-	;;
     macx*,no)
 	# gcc, Carbon
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.3
+	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
 	;;
 esac
 
@@ -5627,6 +5706,33 @@ if [ "$CFG_ACCESSIBILITY" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ACCESSIBILITY"
 else
     QT_CONFIG="$QT_CONFIG accessibility"
+fi
+
+# enable egl
+if [ "$CFG_EGL" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
+else
+    QT_CONFIG="$QT_CONFIG egl"
+    if [ "$CFG_EGL_GLES_INCLUDES" = "yes" ]; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GLES_EGL"
+    fi
+fi
+
+# enable openvg
+if [ "$CFG_OPENVG" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENVG"
+else
+    QT_CONFIG="$QT_CONFIG openvg"
+    if [ "$CFG_OPENVG_LC_INCLUDES" = "yes" ]; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LOWER_CASE_VG_INCLUDES"
+    fi
+    if [ "$CFG_OPENVG_ON_OPENGL" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG openvg_on_opengl"
+    fi
+    if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG shivavg"
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SHIVAVG"
+    fi
 fi
 
 # enable opengl
@@ -6053,7 +6159,7 @@ fi
 
 # On Mac, set the minimum deployment target for the different architechtures 
 # using the Xarch compiler option when supported (10.5 and up).  On 10.4 the
-# deployment version is set to 10.3 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
+# deployment version is set to 10.4 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
 # env. variable. "-cocoa" on the command line means Cocoa is used in 32-bit mode also,
 # in this case fall back on QMAKE_MACOSX_DEPLOYMENT_TARGET which will be set to 10.5.
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] && [ "$COMMANDLINE_MAC_COCOA" != "yes" ]; then
@@ -6064,10 +6170,10 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] && [ "$COMMANDLIN
         QMakeVar add QMAKE_OBJECTIVE_CFLAGS_X86 "-arch i386 -Xarch_i386 -mmacosx-version-min=10.4"
     fi
     if echo "$CFG_MAC_ARCHS" | grep '\<ppc\>' > /dev/null 2>&1; then
-        QMakeVar add QMAKE_CFLAGS "-Xarch_ppc -mmacosx-version-min=10.3"
-        QMakeVar add QMAKE_CXXFLAGS "-Xarch_ppc -mmacosx-version-min=10.3"
-        QMakeVar add QMAKE_LFLAGS "-Xarch_ppc -mmacosx-version-min=10.3"
-        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_PPC "-arch ppc -Xarch_ppc -mmacosx-version-min=10.3"
+        QMakeVar add QMAKE_CFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
+        QMakeVar add QMAKE_CXXFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
+        QMakeVar add QMAKE_LFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
+        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_PPC "-arch ppc -Xarch_ppc -mmacosx-version-min=10.4"
     fi
     if echo "$CFG_MAC_ARCHS" | grep '\<x86_64\>' > /dev/null 2>&1; then
         QMakeVar add QMAKE_CFLAGS "-Xarch_x86_64 -mmacosx-version-min=10.5"
@@ -6971,6 +7077,20 @@ elif [ "$CFG_OPENGL" = "es2" ]; then
 else
     echo "OpenGL support ...... no"
 fi
+if [ "$CFG_EGL" != "no" ]; then
+    if [ "$CFG_EGL_GLES_INCLUDES" != "no" ]; then
+        echo "EGL support ......... yes <GLES/egl.h>"
+    else
+        echo "EGL support ......... yes <EGL/egl.h>"
+    fi
+fi
+if [ "$CFG_OPENVG" ]; then
+    if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
+        echo "OpenVG support ...... ShivaVG"
+    else
+        echo "OpenVG support ...... $CFG_OPENVG"
+    fi
+fi
 if [ "$PLATFORM_X11" = "yes" ]; then
     echo "NAS sound support ... $CFG_NAS"
     echo "XShape support ...... $CFG_XSHAPE"
@@ -7071,9 +7191,9 @@ BEGIN {
 
 FNR == 1 {
     if ( input_file ) {
-  if ( ! target_file )
-      target_file = third
-  print input_file >target_file
+        if ( ! target_file )
+            target_file = third
+        print input_file >target_file
     }
 
     matched_target = 0
@@ -7084,32 +7204,32 @@ FNR == 1 {
 
 /^(TARGET.*=)/ {
     if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
-  target_file = first
+        target_file = first
         matched_target = 1
     }
 }
 
 matched_target == 0 && /^(TEMPLATE.*=)/ {
     if ( \$3 == "subdirs" )
-  target_file = second
+        target_file = second
     else if ( \$3 == "lib" )
-  template_lib = 1
+        template_lib = 1
     else
-  target_file = third
+        target_file = third
 }
 
 matched_target == 0 && template_lib == 1 && /^(CONFIG.*=)/ {
     if ( \$0 ~ /plugin/ )
         target_file = third
     else
-  target_file = second
+        target_file = second
 }
 
 END {
     if ( input_file ) {
-  if ( ! target_file )
-      target_file = third
-  print input_file >>target_file
+        if ( ! target_file )
+            target_file = third
+        print input_file >>target_file
     }
 }
 

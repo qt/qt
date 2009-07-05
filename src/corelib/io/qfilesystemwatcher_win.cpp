@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,9 +56,7 @@ QT_BEGIN_NAMESPACE
 QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine()
     : msg(0)
 {
-    HANDLE h = QT_WA_INLINE(CreateEventW(0, false, false, 0),
-                                CreateEventA(0, false, false, 0));
-    if (h != INVALID_HANDLE_VALUE) {
+    if (HANDLE h = CreateEvent(0, false, false, 0)) {
         handles.reserve(MAXIMUM_WAIT_OBJECTS);
         handles.append(h);
     }
@@ -216,13 +214,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             const QString effectiveAbsolutePath =
                 isDir ? (absolutePath + QLatin1Char('/')) : absolutePath;
 
-            QT_WA({
-                    handle.handle = FindFirstChangeNotificationW((TCHAR *) QDir::toNativeSeparators(effectiveAbsolutePath).utf16(),
-                                                      false, flags);
-            },{
-                    handle.handle = FindFirstChangeNotificationA(QDir::toNativeSeparators(effectiveAbsolutePath).toLocal8Bit(),
-                                                      false, flags);
-            })
+            handle.handle = FindFirstChangeNotification((wchar_t*) QDir::toNativeSeparators(effectiveAbsolutePath).utf16(), false, flags);
             handle.flags = flags;
             if (handle.handle == INVALID_HANDLE_VALUE)
                 continue;

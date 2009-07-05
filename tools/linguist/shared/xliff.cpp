@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -303,6 +303,8 @@ static void writeTransUnits(QTextStream &ts, const TranslatorMessage &msg, const
         QString translation;
         if (transit != transend) {
             translation = *transit;
+            translation.replace(QChar(Translator::BinaryVariantSeparator),
+                                QChar(Translator::TextVariantSeparator));
             ++transit;
             puttrans = true;
         }
@@ -598,8 +600,11 @@ bool XLIFFHandler::endElement(const QString &namespaceURI, const QString& localN
             m_sources.append(accum);
         }
     } else if (localName == QLatin1String("target")) {
-        if (popContext(XC_restype_translation))
+        if (popContext(XC_restype_translation)) {
+            accum.replace(QChar(Translator::TextVariantSeparator),
+                          QChar(Translator::BinaryVariantSeparator));
             m_translations.append(accum);
+        }
     } else if (localName == QLatin1String("context-group")) {
         if (popContext(XC_context_group)) {
             m_refs.append(TranslatorMessage::Reference(

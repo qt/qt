@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,19 +66,14 @@ static void resolveLibs()
     if (!done) {
         done = true;
 
-        HINSTANCE iphlpapiHnd;
-        QT_WA({
-                iphlpapiHnd = LoadLibraryW(L"iphlpapi");
-            }, {
-                iphlpapiHnd = LoadLibraryA("iphlpapi");
-            });
+        HINSTANCE iphlpapiHnd = LoadLibrary(L"iphlpapi");
         if (iphlpapiHnd == NULL)
-            return;             // failed to load, probably Windows 95
+            return;
 
 #if defined(Q_OS_WINCE)
-        ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddressW(iphlpapiHnd, L"GetAdaptersInfo");
-        ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddressW(iphlpapiHnd, L"GetAdaptersAddresses");
-        ptrGetNetworkParams = (PtrGetNetworkParams)GetProcAddressW(iphlpapiHnd, L"GetNetworkParams");
+        ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddress(iphlpapiHnd, L"GetAdaptersInfo");
+        ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddress(iphlpapiHnd, L"GetAdaptersAddresses");
+        ptrGetNetworkParams = (PtrGetNetworkParams)GetProcAddress(iphlpapiHnd, L"GetNetworkParams");
 #else
         ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddress(iphlpapiHnd, "GetAdaptersInfo");
         ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddress(iphlpapiHnd, "GetAdaptersAddresses");

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,8 +62,7 @@ QString QLatin1Codec::convertToUnicode(const char *chars, int len, ConverterStat
 QByteArray QLatin1Codec::convertFromUnicode(const QChar *ch, int len, ConverterState *state) const
 {
     const char replacement = (state && state->flags & ConvertInvalidToNull) ? 0 : '?';
-    QByteArray r;
-    r.resize(len);
+    QByteArray r(len, Qt::Uninitialized);
     char *d = r.data();
     int invalid = 0;
     for (int i = 0; i < len; ++i) {
@@ -151,8 +150,7 @@ QString QLatin15Codec::convertToUnicode(const char* chars, int len, ConverterSta
 QByteArray QLatin15Codec::convertFromUnicode(const QChar *in, int length, ConverterState *state) const
 {
     const char replacement = (state && state->flags & ConvertInvalidToNull) ? 0 : '?';
-    QByteArray r;
-    r.resize(length);
+    QByteArray r(length, Qt::Uninitialized);
     char *d = r.data();
     int invalid = 0;
     for (int i = 0; i < length; ++i) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,7 +126,7 @@ public:
   mode in which it accepts input from the user. The
   evaluationResumed() signal is emitted when script evaluation is
   resumed, i.e, when execution control is given back to the script
-  engine.
+  engine. The state() function returns the debugger's current state.
 
   When calling QScriptEngine::evaluate() it is useful to pass a
   descriptive script name (file name) as second argument, as this is
@@ -224,6 +224,16 @@ public:
     \value FindNextInScriptAction Finds next occurrence in the CodeWidget.
     \value FindPreviousInScriptAction Finds previous occurrence in the CodeWidget.
     \value GoToLineAction Shows the "Go to Line" dialog.
+*/
+
+/*!
+    \enum QScriptEngineDebugger::DebuggerState
+    \since 4.6
+
+    This enum specifies the current state of the debugger.
+
+    \value RunningState   The debugger is running.  (Script evaluation is allowed.)
+    \value SuspendedState The debugger has suspended script evaluation.
 */
 
 class QScriptEngineDebuggerPrivate
@@ -387,6 +397,20 @@ void QScriptEngineDebugger::detach()
 }
 
 /*!
+  \since 4.6
+
+  Returns the current state of the debugger.
+
+  \sa evaluationResumed()
+  \sa evaluationSuspended()
+*/
+QScriptEngineDebugger::DebuggerState QScriptEngineDebugger::state() const
+{
+    Q_D(const QScriptEngineDebugger);
+    return !d->debugger || !d->debugger->isInteractive() ? SuspendedState : RunningState;
+}
+
+/*!
 
     Returns a pointer to the instance of the specified standard \a
     widget. The widgets available are defined by the DebuggerWidget
@@ -410,7 +434,7 @@ QWidget *QScriptEngineDebugger::widget(DebuggerWidget widget) const
 {
     Q_D(const QScriptEngineDebugger);
     const_cast<QScriptEngineDebuggerPrivate*>(d)->createDebugger();
-    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(widget));
+    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(static_cast<int>(widget)));
 }
 
 /*!
@@ -434,7 +458,7 @@ QAction *QScriptEngineDebugger::action(DebuggerAction action) const
     Q_D(const QScriptEngineDebugger);
     QScriptEngineDebugger *that = const_cast<QScriptEngineDebugger*>(this);
     that->d_func()->createDebugger();
-    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(action), that);
+    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(static_cast<int>(action)), that);
 }
 
 /*!

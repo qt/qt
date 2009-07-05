@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -201,8 +201,8 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     if (licenseFeatures == '5') //Floating
         dictionary["METERED LICENSE"] = "true";
 
-    if (!CopyFileA(QDir::toNativeSeparators(fromLicenseFile).toLocal8Bit(),
-        QDir::toNativeSeparators(toLicenseFile).toLocal8Bit(), FALSE)) {
+    if (!CopyFile((wchar_t*)QDir::toNativeSeparators(fromLicenseFile).utf16(),
+        (wchar_t*)QDir::toNativeSeparators(toLicenseFile).utf16(), FALSE)) {
         cout << "Failed to copy license file (" << fromLicenseFile << ")";
         dictionary["DONE"] = "error";
         return;

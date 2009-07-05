@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,52 +75,60 @@ public:
     \ingroup basicwidgets
     \mainclass
 
-    A QCheckBox is an option button that can be switched on (checked)
-    or off (unchecked). Checkboxes are typically used to represent
-    features in an application that can be enabled or disabled without
-    affecting others, but different types of behavior can be
-    implemented.
+    A QCheckBox is an option button that can be switched on (checked) or off
+    (unchecked). Checkboxes are typically used to represent features in an
+    application that can be enabled or disabled without affecting others, but
+    different types of behavior can be implemented. For example, a
+    QButtonGroup can be used to group check buttons logically, allowing
+    exclusive checkboxes. However, QButtonGroup does not provide any visual
+    representation.
 
-    A QButtonGroup can be used to group check buttons visually.
+    The image below further illustrates the differences between exclusive and
+    non-exclusive checkboxes.
+
+    \table
+    \row \o \inlineimage checkboxes-exclusive.png
+         \o \inlineimage checkboxes-non-exclusive.png
+    \endtable
 
     Whenever a checkbox is checked or cleared it emits the signal
-    stateChanged(). Connect to this signal if you want to trigger an
-    action each time the checkbox changes state. You can use
-    isChecked() to query whether or not a checkbox is checked.
+    stateChanged(). Connect to this signal if you want to trigger an action
+    each time the checkbox changes state. You can use isChecked() to query
+    whether or not a checkbox is checked.
 
-    In addition to the usual checked and unchecked states, QCheckBox
-    optionally provides a third state to indicate "no change". This
-    is useful whenever you need to give the user the option of neither
-    checking nor unchecking a checkbox. If you need this third state,
-    enable it with setTristate(), and use checkState() to query the current
-    toggle state.
+    In addition to the usual checked and unchecked states, QCheckBox optionally
+    provides a third state to indicate "no change". This is useful whenever you
+    need to give the user the option of neither checking nor unchecking a
+    checkbox. If you need this third state, enable it with setTristate(), and
+    use checkState() to query the current toggle state.
 
-    Just like QPushButton, a checkbox displays text, and optionally a
-    small icon. The icon is set with setIcon(). The text can be set in
-    the constructor or with setText(). A shortcut key can be specified
-    by preceding the preferred character with an ampersand. For
-    example:
+    Just like QPushButton, a checkbox displays text, and optionally a small
+    icon. The icon is set with setIcon(). The text can be set in the
+    constructor or with setText(). A shortcut key can be specified by preceding
+    the preferred character with an ampersand. For example:
 
     \snippet doc/src/snippets/code/src_gui_widgets_qcheckbox.cpp 0
 
-    In this example the shortcut is \e{Alt+A}. See the \l
-    {QShortcut#mnemonic}{QShortcut} documentation for details (to
-    display an actual ampersand, use '&&').
+    In this example the shortcut is \e{Alt+A}. See the \l{QShortcut#mnemonic}
+    {QShortcut} documentation for details (to display an actual ampersand,
+    use '&&').
 
-    Important inherited functions: text(), setText(), text(),
-    pixmap(), setPixmap(), accel(), setAccel(), isToggleButton(),
-    setDown(), isDown(), isOn(), checkState(), autoRepeat(),
-    isExclusiveToggle(), group(), setAutoRepeat(), toggle(),
-    pressed(), released(), clicked(), toggled(), checkState(), and
-    stateChanged().
+    Important inherited functions: text(), setText(), text(), pixmap(),
+    setPixmap(), accel(), setAccel(), isToggleButton(), setDown(), isDown(),
+    isOn(), checkState(), autoRepeat(), isExclusiveToggle(), group(),
+    setAutoRepeat(), toggle(), pressed(), released(), clicked(), toggled(),
+    checkState(), and stateChanged().
 
     \table 100%
-    \row \o \inlineimage macintosh-checkbox.png Screenshot of a Macintosh style checkbox
-         \o A checkbox shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \o \inlineimage windows-checkbox.png Screenshot of a Windows XP style checkbox
-         \o A checkbox shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \o \inlineimage plastique-checkbox.png Screenshot of a Plastique style checkbox
-         \o A checkbox shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row
+        \o \inlineimage macintosh-checkbox.png Screenshot of a Macintosh style checkbox
+        \o A checkbox shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \row
+        \o \inlineimage windows-checkbox.png Screenshot of a Windows XP style checkbox
+        \o A checkbox shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row
+        \o \inlineimage plastique-checkbox.png Screenshot of a Plastique style checkbox
+        \o A checkbox shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \endtable
 
     \sa QAbstractButton, QRadioButton, {fowler}{GUI Design Handbook: Check Box}
@@ -138,8 +146,8 @@ public:
 /*!
     \fn void QCheckBox::stateChanged(int state)
 
-    This signal is emitted whenever the check box's state changes,
-    i.e. whenever the user checks or unchecks it.
+    This signal is emitted whenever the check box's state changes, i.e.
+    whenever the user checks or unchecks it.
 
     \a state contains the check box's new Qt::CheckState.
 */
@@ -161,9 +169,9 @@ void QCheckBoxPrivate::init()
 }
 
 /*!
-    Initialize \a option with the values from this QCheckBox. This method is useful
-    for subclasses when they need a QStyleOptionButton, but don't want to fill
-    in all the information themselves.
+    Initializes \a option with the values from this QCheckBox. This method is
+    useful for subclasses that require a QStyleOptionButton, but do not want
+    to fill in all the information themselves.
 
     \sa QStyleOption::initFrom()
 */
@@ -193,7 +201,7 @@ void QCheckBox::initStyleOption(QStyleOptionButton *option) const
 /*!
     Constructs a checkbox with the given \a parent, but with no text.
 
-    The \a parent argument is passed on to the QAbstractButton constructor.
+    \a parent is passed on to the QAbstractButton constructor.
 */
 
 QCheckBox::QCheckBox(QWidget *parent)
@@ -206,7 +214,7 @@ QCheckBox::QCheckBox(QWidget *parent)
 /*!
     Constructs a checkbox with the given \a parent and \a text.
 
-    The \a parent argument is passed on to the QAbstractButton constructor.
+    \a parent is passed on to the QAbstractButton constructor.
 */
 
 QCheckBox::QCheckBox(const QString &text, QWidget *parent)
@@ -231,10 +239,8 @@ bool QCheckBox::isTristate() const
 
 
 /*!
-    Returns the check box's check state.
-    If you do not need tristate support, you can also
-    use \l QAbstractButton::isChecked() which returns
-    a boolean.
+    Returns the check box's check state. If you do not need tristate support,
+    you can also  use \l QAbstractButton::isChecked() which returns a boolean.
 
     \sa setCheckState() Qt::CheckState
 */
@@ -247,10 +253,9 @@ Qt::CheckState QCheckBox::checkState() const
 }
 
 /*!
-    Sets the check box's check state to \a state.
-    If you do not need tristate support, you can also
-    use \l QAbstractButton::setChecked() which takes
-    a boolean.
+    Sets the check box's check state to \a state. If you do not need tristate
+    support, you can also use \l QAbstractButton::setChecked() which takes a
+    boolean.
 
     \sa checkState() Qt::CheckState
 */
@@ -274,7 +279,8 @@ void QCheckBox::setCheckState(Qt::CheckState state)
 }
 
 
-/*!\reimp
+/*!
+    \reimp
 */
 QSize QCheckBox::sizeHint() const
 {
@@ -294,7 +300,8 @@ QSize QCheckBox::sizeHint() const
     return d->sizeHint;
 }
 
-/*!\reimp
+/*!
+    \reimp
 */
 void QCheckBox::paintEvent(QPaintEvent *)
 {
@@ -325,7 +332,9 @@ void QCheckBox::mouseMoveEvent(QMouseEvent *e)
 }
 
 
-/*!\reimp*/
+/*!
+    \reimp
+*/
 bool QCheckBox::hitButton(const QPoint &pos) const
 {
     QStyleOptionButton opt;
@@ -333,7 +342,9 @@ bool QCheckBox::hitButton(const QPoint &pos) const
     return style()->subElementRect(QStyle::SE_CheckBoxClickRect, &opt, this).contains(pos);
 }
 
-/*!\reimp*/
+/*!
+    \reimp
+*/
 void QCheckBox::checkStateSet()
 {
     Q_D(QCheckBox);
@@ -345,7 +356,9 @@ void QCheckBox::checkStateSet()
     }
 }
 
-/*!\reimp*/
+/*!
+    \reimp
+*/
 void QCheckBox::nextCheckState()
 {
     Q_D(QCheckBox);

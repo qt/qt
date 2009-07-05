@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -135,9 +135,9 @@ static inline QStringList qWinCmdArgs(QString cmdLine) // not const-ref: this mi
     QStringList args;
 
     int argc = 0;
-    QVector<ushort*> argv = qWinCmdLine<ushort>((ushort*)cmdLine.utf16(), cmdLine.length(), argc);
+    QVector<wchar_t*> argv = qWinCmdLine<wchar_t>((wchar_t *)cmdLine.utf16(), cmdLine.length(), argc);
     for (int a = 0; a < argc; ++a) {
-        args << QString::fromUtf16(argv[a]);
+        args << QString::fromWCharArray(argv[a]);
     }
 
     return args;
@@ -147,10 +147,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
     Q_UNUSED(argc)
     Q_UNUSED(argv)
-    QString cmdLine = QT_WA_INLINE(
-        QString::fromUtf16((unsigned short*)GetCommandLineW()),
-        QString::fromLocal8Bit(GetCommandLineA())
-    );
+    QString cmdLine = QString::fromWCharArray(GetCommandLine());
     return qWinCmdArgs(cmdLine);
 }
 

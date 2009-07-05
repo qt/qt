@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -106,16 +106,11 @@ HANDLE QSharedMemoryPrivate::handle()
             return false;
         }
 #ifndef Q_OS_WINCE
-    QT_WA({
-            hand = OpenFileMappingW(FILE_MAP_ALL_ACCESS, false, (TCHAR*)safeKey.utf16());
-        }, {
-            hand = OpenFileMappingA(FILE_MAP_ALL_ACCESS, false, safeKey.toLocal8Bit().constData());
-        });
+        hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)safeKey.utf16());
 #else
         // This works for opening a mapping too, but always opens it with read/write access in
         // attach as it seems.
-        hand = CreateFileMappingW(INVALID_HANDLE_VALUE,
-               0, PAGE_READWRITE, 0, 0, (TCHAR*)safeKey.utf16());
+        hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, 0, (wchar_t*)safeKey.utf16());
 #endif
         if (!hand) {
             setErrorString(function);
@@ -148,13 +143,7 @@ bool QSharedMemoryPrivate::create(int size)
     }
 
     // Create the file mapping.
-    QT_WA( {
-        hand = CreateFileMappingW(INVALID_HANDLE_VALUE,
-               0, PAGE_READWRITE, 0, size, (TCHAR*)safeKey.utf16());
-    }, {
-        hand = CreateFileMappingA(INVALID_HANDLE_VALUE,
-               0, PAGE_READWRITE, 0, size, safeKey.toLocal8Bit().constData());
-    } );
+    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)safeKey.utf16());
     setErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -317,54 +317,50 @@ void QCursorData::update()
         phand_bits, phandm_bits
     };
 
-    unsigned short *sh;
+    wchar_t *sh = 0;
     switch (cshape) {                        // map to windows cursor
     case Qt::ArrowCursor:
-        sh = (unsigned short*)IDC_ARROW;
+        sh = IDC_ARROW;
         break;
     case Qt::UpArrowCursor:
-        sh = (unsigned short*)IDC_UPARROW;
+        sh = IDC_UPARROW;
         break;
     case Qt::CrossCursor:
-        sh = (unsigned short*)IDC_CROSS;
+        sh = IDC_CROSS;
         break;
     case Qt::WaitCursor:
-        sh = (unsigned short*)IDC_WAIT;
+        sh = IDC_WAIT;
         break;
     case Qt::IBeamCursor:
-        sh = (unsigned short*)IDC_IBEAM;
+        sh = IDC_IBEAM;
         break;
     case Qt::SizeVerCursor:
-        sh = (unsigned short*)IDC_SIZENS;
+        sh = IDC_SIZENS;
         break;
     case Qt::SizeHorCursor:
-        sh = (unsigned short*)IDC_SIZEWE;
+        sh = IDC_SIZEWE;
         break;
     case Qt::SizeBDiagCursor:
-        sh = (unsigned short*)IDC_SIZENESW;
+        sh = IDC_SIZENESW;
         break;
     case Qt::SizeFDiagCursor:
-        sh = (unsigned short*)IDC_SIZENWSE;
+        sh = IDC_SIZENWSE;
         break;
     case Qt::SizeAllCursor:
-        sh = (unsigned short*)IDC_SIZEALL;
+        sh = IDC_SIZEALL;
         break;
     case Qt::ForbiddenCursor:
-        sh = (unsigned short*)IDC_NO;
+        sh = IDC_NO;
         break;
     case Qt::WhatsThisCursor:
-        sh = (unsigned short*)IDC_HELP;
+        sh = IDC_HELP;
         break;
     case Qt::BusyCursor:
-        sh = (unsigned short*)IDC_APPSTARTING;
+        sh = IDC_APPSTARTING;
         break;
     case Qt::PointingHandCursor:
-        if ((QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) > QSysInfo::WV_95 ||
-            (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based) > QSysInfo::WV_NT) {
-            sh = (unsigned short*)IDC_HAND;
-            break;
-        }
-        // fall through
+        sh = IDC_HAND;
+        break;
     case Qt::BlankCursor:
     case Qt::SplitVCursor:
     case Qt::SplitHCursor:
@@ -480,13 +476,7 @@ void QCursorData::update()
         qWarning("QCursor::update: Invalid cursor shape %d", cshape);
         return;
     }
-    // ### From MSDN:
-    // ### LoadCursor has been superseded by the LoadImage function.
-    QT_WA({
-        hcurs = LoadCursorW(0, reinterpret_cast<const TCHAR *>(sh));
-    } , {
-        hcurs = LoadCursorA(0, reinterpret_cast<const char*>(sh));
-    });
+    hcurs = (HCURSOR)LoadImage(0, sh, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 }
 
 QT_END_NAMESPACE

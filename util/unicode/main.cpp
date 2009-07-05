@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the utils of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -293,6 +293,7 @@ struct PropertyFlags {
                 && lowerCaseDiff == o.lowerCaseDiff
                 && upperCaseDiff == o.upperCaseDiff
                 && titleCaseDiff == o.titleCaseDiff
+                && caseFoldDiff == o.caseFoldDiff
                 && lowerCaseSpecial == o.lowerCaseSpecial
                 && upperCaseSpecial == o.upperCaseSpecial
                 && titleCaseSpecial == o.titleCaseSpecial
@@ -1910,6 +1911,8 @@ static QByteArray createPropertyInfo()
     out += "    // 0x" + QByteArray::number(BMP_END, 16);
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             if (!((i*BMP_BLOCKSIZE) % 0x1000))
                 out += "\n";
             out += "\n    ";
@@ -1917,9 +1920,13 @@ static QByteArray createPropertyInfo()
         out += QByteArray::number(blockMap.at(i) + blockMap.size());
         out += ", ";
     }
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n\n    // 0x" + QByteArray::number(BMP_END, 16) + " - 0x" + QByteArray::number(SMP_END, 16) + "\n";;
     for (int i = BMP_END/BMP_BLOCKSIZE; i < blockMap.size(); ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             if (!(i % (0x10000/SMP_BLOCKSIZE)))
                 out += "\n";
             out += "\n    ";
@@ -1927,14 +1934,21 @@ static QByteArray createPropertyInfo()
         out += QByteArray::number(blockMap.at(i) + blockMap.size());
         out += ", ";
     }
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n";
     // write the data
     for (int i = 0; i < blocks.size(); ++i) {
+        if (out.endsWith(' '))
+            out.chop(1);
         out += "\n";
         const PropertyBlock &b = blocks.at(i);
         for (int j = 0; j < b.properties.size(); ++j) {
-            if (!(j % 8))
+            if (!(j % 8)) {
+                if (out.endsWith(' '))
+                    out.chop(1);
                 out += "\n    ";
+            }
             out += QByteArray::number(b.properties.at(j));
             out += ", ";
         }
@@ -1947,6 +1961,8 @@ static QByteArray createPropertyInfo()
     Q_ASSERT(maxTitleCaseDiff < (1<<14));
     Q_ASSERT(maxCaseFoldDiff < (1<<14));
 
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n};\n\n"
 
            "#define GET_PROP_INDEX(ucs4) \\\n"
@@ -2036,13 +2052,13 @@ static QByteArray createPropertyInfo()
            "    return uc_properties + index;\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT const QUnicodeTables::Properties *QUnicodeTables::properties(uint ucs4)\n"
+           "Q_CORE_EXPORT const QUnicodeTables::Properties * QT_FASTCALL QUnicodeTables::properties(uint ucs4)\n"
            "{\n"
            "    int index = GET_PROP_INDEX(ucs4);\n"
            "    return uc_properties + index;\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT const QUnicodeTables::Properties *QUnicodeTables::properties(ushort ucs2)\n"
+           "Q_CORE_EXPORT const QUnicodeTables::Properties * QT_FASTCALL QUnicodeTables::properties(ushort ucs2)\n"
            "{\n"
            "    int index = GET_PROP_INDEX_UCS2(ucs2);\n"
            "    return uc_properties + index;\n"
@@ -2203,6 +2219,8 @@ static QByteArray createCompositionInfo()
     out += "    // 0 - 0x" + QByteArray::number(BMP_END, 16);
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             if (!((i*BMP_BLOCKSIZE) % 0x1000))
                 out += "\n";
             out += "\n    ";
@@ -2210,9 +2228,13 @@ static QByteArray createCompositionInfo()
         out += QByteArray::number(blockMap.at(i) + blockMap.size());
         out += ", ";
     }
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n\n    // 0x" + QByteArray::number(BMP_END, 16) + " - 0x" + QByteArray::number(SMP_END, 16) + "\n";;
     for (int i = BMP_END/BMP_BLOCKSIZE; i < blockMap.size(); ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             if (!(i % (0x10000/SMP_BLOCKSIZE)))
                 out += "\n";
             out += "\n    ";
@@ -2220,19 +2242,28 @@ static QByteArray createCompositionInfo()
         out += QByteArray::number(blockMap.at(i) + blockMap.size());
         out += ", ";
     }
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n";
     // write the data
     for (int i = 0; i < blocks.size(); ++i) {
+        if (out.endsWith(' '))
+            out.chop(1);
         out += "\n";
         const DecompositionBlock &b = blocks.at(i);
         for (int j = 0; j < b.decompositionPositions.size(); ++j) {
-            if (!(j % 8))
+            if (!(j % 8)) {
+                if (out.endsWith(' '))
+                    out.chop(1);
                 out += "\n    ";
+            }
             out += "0x" + QByteArray::number(b.decompositionPositions.at(j), 16);
             out += ", ";
         }
     }
 
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n};\n\n"
 
            "#define GET_DECOMPOSITION_INDEX(ucs4) \\\n"
@@ -2249,12 +2280,16 @@ static QByteArray createCompositionInfo()
 
     for (int i = 0; i < decompositions.size(); ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             out += "\n    ";
         }
         out += "0x" + QByteArray::number(decompositions.at(i), 16);
         out += ", ";
     }
 
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n};\n\n";
 
     return out;
@@ -2327,6 +2362,8 @@ static QByteArray createLigatureInfo()
     out += "    // 0 - 0x" + QByteArray::number(BMP_END, 16);
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             if (!((i*BMP_BLOCKSIZE) % 0x1000))
                 out += "\n";
             out += "\n    ";
@@ -2334,18 +2371,27 @@ static QByteArray createLigatureInfo()
         out += QByteArray::number(blockMap.at(i) + blockMap.size());
         out += ", ";
     }
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n";
     // write the data
     for (int i = 0; i < blocks.size(); ++i) {
+        if (out.endsWith(' '))
+            out.chop(1);
         out += "\n";
         const DecompositionBlock &b = blocks.at(i);
         for (int j = 0; j < b.decompositionPositions.size(); ++j) {
-            if (!(j % 8))
+            if (!(j % 8)) {
+                if (out.endsWith(' '))
+                    out.chop(1);
                 out += "\n    ";
+            }
             out += "0x" + QByteArray::number(b.decompositionPositions.at(j), 16);
             out += ", ";
         }
     }
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n};\n\n"
 
            "#define GET_LIGATURE_INDEX(u2) "
@@ -2357,12 +2403,16 @@ static QByteArray createLigatureInfo()
 
     for (int i = 0; i < ligatures.size(); ++i) {
         if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
             out += "\n    ";
         }
         out += "0x" + QByteArray::number(ligatures.at(i), 16);
         out += ", ";
     }
 
+    if (out.endsWith(' '))
+        out.chop(1);
     out += "\n};\n\n";
 
     return out;
@@ -2419,18 +2469,46 @@ int main(int, char **)
         "/****************************************************************************\n"
         "**\n"
         "** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
+        "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
         "**\n"
-        "** This file is part of the $MODULE$ of the Qt Toolkit.\n"
+        "** This file is part of the QtCore module of the Qt Toolkit.\n"
         "**\n"
-        "** $TROLLTECH_DUAL_LICENSE$\n"
+        "** $QT_BEGIN_LICENSE:LGPL$\n"
+        "** No Commercial Usage\n"
+        "** This file contains pre-release code and may not be distributed.\n"
+        "** You may use this file in accordance with the terms and conditions\n"
+        "** contained in the either Technology Preview License Agreement or the\n"
+        "** Beta Release License Agreement.\n"
         "**\n"
-        "** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE\n"
-        "** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.\n"
+        "** GNU Lesser General Public License Usage\n"
+        "** Alternatively, this file may be used under the terms of the GNU Lesser\n"
+        "** General Public License version 2.1 as published by the Free Software\n"
+        "** Foundation and appearing in the file LICENSE.LGPL included in the\n"
+        "** packaging of this file.  Please review the following information to\n"
+        "** ensure the GNU Lesser General Public License version 2.1 requirements\n"
+        "** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.\n"
+        "**\n"
+        "** In addition, as a special exception, Nokia gives you certain\n"
+        "** additional rights. These rights are described in the Nokia Qt LGPL\n"
+        "** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this\n"
+        "** package.\n"
+        "**\n"
+        "** GNU General Public License Usage\n"
+        "** Alternatively, this file may be used under the terms of the GNU\n"
+        "** General Public License version 3.0 as published by the Free Software\n"
+        "** Foundation and appearing in the file LICENSE.GPL included in the\n"
+        "** packaging of this file.  Please review the following information to\n"
+        "** ensure the GNU General Public License version 3.0 requirements will be\n"
+        "** met: http://www.gnu.org/copyleft/gpl.html.\n"
+        "**\n"
+        "** If you are unsure which license is appropriate for your use, please\n"
+        "** contact the sales department at http://www.qtsoftware.com/contact.\n"
+        "** $QT_END_LICENSE$\n"
         "**\n"
         "****************************************************************************/\n\n"
 
         "/* This file is autogenerated from the Unicode 5.0 database. Do not edit */\n\n";
-    
+
     QByteArray warning =
         "//\n"
         "//  W A R N I N G\n"

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,13 +64,6 @@ QT_BEGIN_NAMESPACE
 #define Q_ULW_ALPHA               0x00000002 // copied from ULW_ALPHA in winuser.h
 #define Q_AC_SRC_ALPHA            0x00000001 // copied from AC_SRC_ALPHA in winuser.h
 
-struct Q_BLENDFUNCTION {
-  BYTE     BlendOp;
-  BYTE     BlendFlags;
-  BYTE     SourceConstantAlpha;
-  BYTE     AlphaFormat;
-};
-
 struct Q_UPDATELAYEREDWINDOWINFO {
     DWORD cbSize;
     HDC hdcDst;
@@ -79,12 +72,16 @@ struct Q_UPDATELAYEREDWINDOWINFO {
     HDC hdcSrc;
     const POINT *pptSrc;
     COLORREF crKey;
-    const Q_BLENDFUNCTION *pblend;
+    const BLENDFUNCTION *pblend;
     DWORD dwFlags;
     const RECT *prcDirty;
 };
 
+typedef BOOL (WINAPI *PtrUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, const POINT *pptDst,
+             const SIZE *psize, HDC hdcSrc, const POINT *pptSrc, COLORREF crKey,
+             const BLENDFUNCTION *pblend, DWORD dwflags);
 typedef BOOL (WINAPI *PtrUpdateLayeredWindowIndirect)(HWND hwnd, const Q_UPDATELAYEREDWINDOWINFO *pULWInfo);
+extern PtrUpdateLayeredWindow ptrUpdateLayeredWindow;
 extern PtrUpdateLayeredWindowIndirect ptrUpdateLayeredWindowIndirect;
 #endif
 

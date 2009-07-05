@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,8 +96,6 @@ static int qt_gl_pixmap_serial = 0;
 
 QGLPixmapData::QGLPixmapData(PixelType type)
     : QPixmapData(type, OpenGLClass)
-    , m_width(0)
-    , m_height(0)
     , m_renderFbo(0)
     , m_textureId(0)
     , m_engine(0)
@@ -114,13 +112,16 @@ QGLPixmapData::~QGLPixmapData()
     QGLWidget *shareWidget = qt_gl_share_widget();
     if (!shareWidget)
         return;
-    QGLShareContextScope ctx(shareWidget->context());
-    glDeleteTextures(1, &m_textureId);
+
+    if (m_textureId) {
+        QGLShareContextScope ctx(shareWidget->context());
+        glDeleteTextures(1, &m_textureId);
+    }
 }
 
 bool QGLPixmapData::isValid() const
 {
-    return m_width > 0 && m_height > 0;
+    return w > 0 && h > 0;
 }
 
 bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
@@ -134,7 +135,7 @@ bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
 
 void QGLPixmapData::resize(int width, int height)
 {
-    if (width == m_width && height == m_height)
+    if (width == w && height == h)
         return;
 
     if (width <= 0 || height <= 0) {
@@ -142,8 +143,10 @@ void QGLPixmapData::resize(int width, int height)
         height = 0;
     }
 
-    m_width = width;
-    m_height = height;
+    w = width;
+    h = height;
+    is_null = (w <= 0 || h <= 0);
+    d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
 
     if (m_textureId) {
         QGLShareContextScope ctx(qt_gl_share_widget()->context());
@@ -173,7 +176,7 @@ void QGLPixmapData::ensureCreated() const
         glGenTextures(1, &m_textureId);
         glBindTexture(target, m_textureId);
         GLenum format = m_hasAlpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(target, 0, format, m_width, m_height, 0,
+        glTexImage2D(target, 0, format, w, h, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, 0);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -183,7 +186,7 @@ void QGLPixmapData::ensureCreated() const
         const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, format);
 
         glBindTexture(target, m_textureId);
-        glTexSubImage2D(target, 0, 0, 0, m_width, m_height, format,
+        glTexSubImage2D(target, 0, 0, 0, w, h, format,
                         GL_UNSIGNED_BYTE, tx.bits());
 
         if (useFramebufferObjects())
@@ -199,7 +202,7 @@ QGLFramebufferObject *QGLPixmapData::fbo() const
 void QGLPixmapData::fromImage(const QImage &image,
                               Qt::ImageConversionFlags)
 {
-    if (image.size() == QSize(m_width, m_height))
+    if (image.size() == QSize(w, h))
         setSerialNumber(++qt_gl_pixmap_serial);
     resize(image.width(), image.height());
 
@@ -215,6 +218,10 @@ void QGLPixmapData::fromImage(const QImage &image,
     m_hasFillColor = false;
 
     m_hasAlpha = image.hasAlphaChannel();
+    w = image.width();
+    h = image.height();
+    is_null = (w <= 0 || h <= 0);
+    d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
 
     if (m_textureId) {
         QGLShareContextScope ctx(qt_gl_share_widget()->context());
@@ -247,8 +254,15 @@ void QGLPixmapData::fill(const QColor &color)
     if (!isValid())
         return;
 
-    if (!m_textureId)
+    bool hasAlpha = color.alpha() != 255;
+    if (hasAlpha && !m_hasAlpha) {
+        if (m_textureId) {
+            glDeleteTextures(1, &m_textureId);
+            m_textureId = 0;
+            m_dirty = true;
+        }
         m_hasAlpha = color.alpha() != 255;
+    }
 
     if (useFramebufferObjects()) {
         m_source = QImage();
@@ -269,7 +283,7 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
 {
     QImage img;
     if (pixelType() == BitmapType) {
-        img = QImage(m_width, m_height, QImage::Format_MonoLSB);
+        img = QImage(w, h, QImage::Format_MonoLSB);
         img.setNumColors(2);
         img.setColor(0, QColor(Qt::color0).rgba());
         img.setColor(1, QColor(Qt::color1).rgba());
@@ -280,7 +294,7 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
         else
             img.fill(1);
     } else {
-        img = QImage(m_width, m_height,
+        img = QImage(w, h,
                 m_hasAlpha
                 ? QImage::Format_ARGB32_Premultiplied
                 : QImage::Format_RGB32);
@@ -307,7 +321,7 @@ QImage QGLPixmapData::toImage() const
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
-    return qt_gl_read_texture(QSize(m_width, m_height), true, true);
+    return qt_gl_read_texture(QSize(w, h), true, true);
 }
 
 struct TextureBuffer
@@ -339,9 +353,9 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
         GL_TEXTURE_2D, m_textureId, 0);
 
     const int x0 = 0;
-    const int x1 = m_width;
+    const int x1 = w;
     const int y0 = 0;
-    const int y1 = m_height;
+    const int y1 = h;
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
 
@@ -421,15 +435,15 @@ QPaintEngine* QGLPixmapData::paintEngine() const
             textureBufferStack << createTextureBuffer(size());
         } else {
             QSize sz = textureBufferStack.at(currentTextureBuffer).fbo->size();
-            if (sz.width() < m_width || sz.height() < m_height) {
-                if (sz.width() < m_width)
-                    sz.setWidth(qMax(m_width, qRound(sz.width() * 1.5)));
-                if (sz.height() < m_height)
-                    sz.setHeight(qMax(m_height, qRound(sz.height() * 1.5)));
+            if (sz.width() < w || sz.height() < h) {
+                if (sz.width() < w)
+                    sz.setWidth(qMax(w, qRound(sz.width() * 1.5)));
+                if (sz.height() < h)
+                    sz.setHeight(qMax(h, qRound(sz.height() * 1.5)));
 
                 // wasting too much space?
-                if (sz.width() * sz.height() > m_width * m_height * 2.5)
-                    sz = QSize(m_width, m_height);
+                if (sz.width() * sz.height() > w * h * 2.5)
+                    sz = QSize(w, h);
 
                 delete textureBufferStack.at(currentTextureBuffer).fbo;
                 textureBufferStack[currentTextureBuffer] =
@@ -467,7 +481,7 @@ GLuint QGLPixmapData::bind(bool copyBack) const
     } else {
         if (m_hasFillColor) {
             m_dirty = true;
-            m_source = QImage(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
+            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
             m_source.fill(PREMUL(m_fillColor.rgba()));
             m_hasFillColor = false;
         }
@@ -490,22 +504,22 @@ extern int qt_defaultDpiY();
 
 int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
-    if (m_width == 0)
+    if (w == 0)
         return 0;
 
     switch (metric) {
     case QPaintDevice::PdmWidth:
-        return m_width;
+        return w;
     case QPaintDevice::PdmHeight:
-        return m_height;
+        return h;
     case QPaintDevice::PdmNumColors:
         return 0;
     case QPaintDevice::PdmDepth:
-        return pixelType() == QPixmapData::PixmapType ? 32 : 1;
+        return d;
     case QPaintDevice::PdmWidthMM:
-        return qRound(m_width * 25.4 / qt_defaultDpiX());
+        return qRound(w * 25.4 / qt_defaultDpiX());
     case QPaintDevice::PdmHeightMM:
-        return qRound(m_height * 25.4 / qt_defaultDpiY());
+        return qRound(h * 25.4 / qt_defaultDpiY());
     case QPaintDevice::PdmDpiX:
     case QPaintDevice::PdmPhysicalDpiX:
         return qt_defaultDpiX();

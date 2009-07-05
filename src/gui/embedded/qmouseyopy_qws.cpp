@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,6 +46,7 @@
 #include "qsocketnotifier.h"
 #include "qapplication.h"
 #include "qscreen_qws.h"
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -103,7 +104,7 @@ void QWSYopyMouseHandler::suspend()
 QWSYopyMouseHandlerPrivate::QWSYopyMouseHandlerPrivate(QWSYopyMouseHandler *h)
     : handler(h)
 {
-    if ((mouseFD = open("/dev/ts", O_RDONLY)) < 0) {
+    if ((mouseFD = QT_OPEN("/dev/ts", O_RDONLY)) < 0) {
         qWarning("Cannot open /dev/ts (%s)", strerror(errno));
         return;
     } else {
@@ -118,7 +119,7 @@ QWSYopyMouseHandlerPrivate::QWSYopyMouseHandlerPrivate(QWSYopyMouseHandler *h)
 QWSYopyMouseHandlerPrivate::~QWSYopyMouseHandlerPrivate()
 {
     if (mouseFD >= 0)
-        close(mouseFD);
+        QT_CLOSE(mouseFD);
 }
 
 #define YOPY_XPOS(d) (d[1]&0x3FF)
@@ -156,7 +157,7 @@ void QWSYopyMouseHandlerPrivate::readMouseData()
 
     int ret;
 
-    ret=read(mouseFD,&yopDat,sizeof(yopDat));
+    ret=QT_READ(mouseFD,&yopDat,sizeof(yopDat));
 
     if(ret) {
         data.status= (YOPY_PRES(yopDat)) ? 1 : 0;

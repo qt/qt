@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -66,7 +66,7 @@ extern bool qAxActivity;
 extern HANDLE qAxInstance;
 extern bool qAxIsServer;
 extern bool qAxOutProcServer;
-extern char qAxModuleFilename[MAX_PATH];
+extern wchar_t qAxModuleFilename[MAX_PATH];
 extern QString qAxInit();
 extern void qAxCleanup();
 extern HRESULT UpdateRegistry(BOOL bRegister);
@@ -105,7 +105,7 @@ static DWORD WINAPI MonitorProc(void* pv)
 static bool StartMonitor()
 {
     dwThreadID = GetCurrentThreadId();
-    hEventShutdown = CreateEventA(0, false, false, 0);
+    hEventShutdown = CreateEvent(0, false, false, 0);
     if (hEventShutdown == 0)
         return false;
     DWORD dwThreadID;
@@ -203,17 +203,10 @@ EXTERN_C int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR,
     QT_USE_NAMESPACE 
 
     qAxOutProcServer = true;
-    GetModuleFileNameA(0, qAxModuleFilename, MAX_PATH-1);
+    GetModuleFileName(0, qAxModuleFilename, MAX_PATH);
     qAxInstance = hInstance;
 
-    QByteArray cmdParam;
-    QT_WA({
-        LPTSTR cmdline = GetCommandLineW();
-        cmdParam = QString::fromUtf16((const ushort *)cmdline).toLocal8Bit();
-    }, {
-        cmdParam = GetCommandLineA();
-    });
-    
+    QByteArray cmdParam = QString::fromWCharArray(GetCommandLine()).toLocal8Bit();
     QList<QByteArray> cmds = cmdParam.split(' ');
     QByteArray unprocessed;
 

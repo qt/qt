@@ -39,20 +39,20 @@ namespace WebCore {
 
 static JSValue nonCachingStaticReplaceFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
 {
-    return new (exec) PrototypeFunction(exec, 1, propertyName, jsLocationPrototypeFunctionReplace);
+    return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 1, propertyName, jsLocationPrototypeFunctionReplace);
 }
 
 static JSValue nonCachingStaticReloadFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
 {
-    return new (exec) PrototypeFunction(exec, 0, propertyName, jsLocationPrototypeFunctionReload);
+    return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 0, propertyName, jsLocationPrototypeFunctionReload);
 }
 
 static JSValue nonCachingStaticAssignFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
 {
-    return new (exec) PrototypeFunction(exec, 1, propertyName, jsLocationPrototypeFunctionAssign);
+    return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 1, propertyName, jsLocationPrototypeFunctionAssign);
 }
 
-bool JSLocation::customGetOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+bool JSLocation::getOwnPropertySlotDelegate(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     Frame* frame = impl()->frame();
     if (!frame) {
@@ -61,7 +61,7 @@ bool JSLocation::customGetOwnPropertySlot(ExecState* exec, const Identifier& pro
     }
 
     // When accessing Location cross-domain, functions are always the native built-in ones.
-    // See JSDOMWindow::customGetOwnPropertySlot for additional details.
+    // See JSDOMWindow::getOwnPropertySlotDelegate for additional details.
 
     // Our custom code is only needed to implement the Window cross-domain scheme, so if access is
     // allowed, return false so the normal lookup will take place.
@@ -93,7 +93,7 @@ bool JSLocation::customGetOwnPropertySlot(ExecState* exec, const Identifier& pro
     return true;
 }
 
-bool JSLocation::customPut(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
+bool JSLocation::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     Frame* frame = impl()->frame();
     if (!frame)
@@ -128,12 +128,12 @@ bool JSLocation::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return Base::deleteProperty(exec, propertyName);
 }
 
-bool JSLocation::customGetPropertyNames(ExecState* exec, PropertyNameArray&)
+void JSLocation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     // Only allow the location object to enumerated by frames in the same origin.
     if (!allowsAccessFromFrame(exec, impl()->frame()))
-        return true;
-    return false;
+        return;
+    Base::getPropertyNames(exec, propertyNames);
 }
 
 void JSLocation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction)
@@ -311,7 +311,7 @@ JSValue JSLocation::toString(ExecState* exec, const ArgList&)
     return jsString(exec, impl()->toString());
 }
 
-bool JSLocationPrototype::customPut(ExecState* exec, const Identifier& propertyName, JSValue, PutPropertySlot&)
+bool JSLocationPrototype::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue, PutPropertySlot&)
 {
     return (propertyName == exec->propertyNames().toString || propertyName == exec->propertyNames().valueOf);
 }

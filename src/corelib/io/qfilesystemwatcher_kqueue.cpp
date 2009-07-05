@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,7 @@
 
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_kqueue_p.h"
+#include "private/qcore_unix_p.h"
 
 #include <qdebug.h>
 #include <qfile.h>
@@ -124,9 +125,9 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
         QString path = it.next();
         int fd;
 #if defined(O_EVTONLY)
-        fd = ::open(QFile::encodeName(path), O_EVTONLY);
+        fd = qt_safe_open(QFile::encodeName(path), O_EVTONLY);
 #else
-        fd = ::open(QFile::encodeName(path), O_RDONLY);
+        fd = qt_safe_open(QFile::encodeName(path), O_RDONLY);
 #endif
         if (fd == -1) {
             perror("QKqueueFileSystemWatcherEngine::addPaths: open");

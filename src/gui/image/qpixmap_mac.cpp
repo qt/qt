@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -119,14 +119,9 @@ CGImageRef qt_mac_image_to_cgimage(const QImage &image)
         CGDataProviderCreateWithData(0, image.bits(), image.bytesPerLine() * image.height(),
                                      0);
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     uint cgflags = kCGImageAlphaPremultipliedFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-    CGImageAlphaInfo cgflags = kCGImageAlphaPremultipliedFirst;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
 
     CGImageRef cgImage = CGImageCreate(image.width(), image.height(), bitsPerColor, bitsPerPixel,
@@ -168,7 +163,7 @@ static inline QRgb qt_conv16ToRgb(ushort c) {
 QSet<QMacPixmapData*> QMacPixmapData::validDataPointers;
 
 QMacPixmapData::QMacPixmapData(PixelType type)
-    : QPixmapData(type, MacClass), w(0), h(0), d(0), has_alpha(0), has_mask(0),
+    : QPixmapData(type, MacClass), has_alpha(0), has_mask(0),
       uninit(true), pixels(0), pixelsToFree(0), bytesPerRow(0),
       cg_data(0), cg_dataBeingReleased(0), cg_mask(0),
 #ifndef QT_MAC_NO_QUICKDRAW
@@ -188,11 +183,13 @@ void QMacPixmapData::resize(int width, int height)
 
     w = width;
     h = height;
+    is_null = (w <= 0 || h <= 0);
     d = (pixelType() == BitmapType ? 1 : 32);
     bool make_null = w <= 0 || h <= 0;                // create null pixmap
     if (make_null || d == 0) {
         w = 0;
         h = 0;
+        is_null = true;
         d = 0;
         if (!make_null)
             qWarning("Qt: QPixmap: Invalid pixmap parameters");
@@ -231,6 +228,7 @@ void QMacPixmapData::fromImage(const QImage &img,
 
     w = img.width();
     h = img.height();
+    is_null = (w <= 0 || h <= 0);
     d = (pixelType() == BitmapType ? 1 : img.depth());
 
     QImage image = img;
@@ -642,14 +640,9 @@ void QMacPixmapData::macCreateCGImageRef()
                                                               pixels, bytesPerRow * h,
                                                               qt_mac_cgimage_data_free);
     validDataPointers.insert(this);
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     uint cgflags = kCGImageAlphaPremultipliedFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
-#endif
-#else
-    CGImageAlphaInfo cgflags = kCGImageAlphaPremultipliedFirst;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
     cg_data = CGImageCreate(w, h, 8, 32, bytesPerRow, colorspace,
                             cgflags, provider, 0, 0, kCGRenderingIntentDefault);
@@ -890,38 +883,6 @@ static void qt_mac_grabDisplayRect(CGDirectDisplayID display, const QRect &displ
     ptrCGLDestroyContext(glContextObj); // and destroy the context
 }
 
-static CGImageRef qt_mac_createImageFromBitmapContext(CGContextRef c)
-{
-    void *rasterData = CGBitmapContextGetData(c);
-    const int width = CGBitmapContextGetBytesPerRow(c),
-             height = CGBitmapContextGetHeight(c);
-    size_t imageDataSize = width*height;
-
-    if(!rasterData)
-        return 0;
-
-    // Create the data provider from the image data, using
-    // the image releaser function releaseBitmapContextImageData.
-    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(0, rasterData,
-                                                                  imageDataSize,
-                                                                  qt_mac_cgimage_data_free);
-
-    if(!dataProvider)
-        return 0;
-
-    uint bitmapInfo = 0;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-    if(CGBitmapContextGetBitmapInfo)
-        bitmapInfo = CGBitmapContextGetBitmapInfo(c);
-    else
-#endif
-        bitmapInfo = CGBitmapContextGetAlphaInfo(c);
-    return CGImageCreate(width, height, CGBitmapContextGetBitsPerComponent(c),
-                         CGBitmapContextGetBitsPerPixel(c), CGBitmapContextGetBytesPerRow(c),
-                         CGBitmapContextGetColorSpace(c), bitmapInfo, dataProvider,
-                         0, true, kCGRenderingIntentDefault);
-}
-
 // Returns a pixmap containing the screen contents at rect.
 static QPixmap qt_mac_grabScreenRect(const QRect &rect)
 {
@@ -955,19 +916,8 @@ static QPixmap qt_mac_grabScreenRect(const QRect &rect)
                                                          rect.height(), 8, bytewidth,
                                         QCoreGraphicsPaintEngine::macGenericColorSpace(),
                                         kCGImageAlphaNoneSkipFirst);
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CGImageRef> image = CGBitmapContextCreateImage(bitmap);
-        return QPixmap::fromMacCGImageRef(image);
-    } else
-#endif
-    {
-        QCFType<CGImageRef> image = qt_mac_createImageFromBitmapContext(bitmap);
-        if (!image)
-            return QPixmap();
-        return QPixmap::fromMacCGImageRef(image);
-    }
+    QCFType<CGImageRef> image = CGBitmapContextCreateImage(bitmap);
+    return QPixmap::fromMacCGImageRef(image);
 }
 
 #ifndef QT_MAC_USE_COCOA // no QuickDraw in 64-bit mode
@@ -1040,18 +990,12 @@ Qt::HANDLE QPixmap::macQDHandle() const
         SetRect(&rect, 0, 0, d->w, d->h);
         unsigned long qdformat = k32ARGBPixelFormat;
         GWorldFlags qdflags = 0;
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            //we play such games so we can use the same buffer in CG as QD this
-            //makes our merge much simpler, at some point the hacks will go away
-            //because QD will be removed, but until that day this keeps them coexisting
-            if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
-                qdformat = k32BGRAPixelFormat;
-#if 0
-            qdflags |= kNativeEndianPixMap;
-#endif
-        }
-#endif
+        //we play such games so we can use the same buffer in CG as QD this
+        //makes our merge much simpler, at some point the hacks will go away
+        //because QD will be removed, but until that day this keeps them coexisting
+        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+            qdformat = k32BGRAPixelFormat;
+
         if(NewGWorldFromPtr(&d->qd_data, qdformat, &rect, 0, 0, qdflags,
                             (char*)d->pixels, d->bytesPerRow) != noErr)
             qWarning("Qt: internal: QPixmap::init error (%d %d %d %d)", rect.left, rect.top, rect.right, rect.bottom);

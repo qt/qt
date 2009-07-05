@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,6 +54,7 @@
 #include <qsocketnotifier.h>
 #include <qapplication.h>
 #include <qtimer.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +65,7 @@ QVFbMouseHandler::QVFbMouseHandler(const QString &driver, const QString &device)
     if (device.isEmpty())
         mouseDev = QLatin1String("/dev/vmouse");
 
-    mouseFD = open(mouseDev.toLatin1().constData(), O_RDWR | O_NDELAY);
+    mouseFD = QT_OPEN(mouseDev.toLatin1().constData(), O_RDWR | O_NDELAY);
     if (mouseFD == -1) {
         perror("QVFbMouseHandler::QVFbMouseHandler");
         qWarning("QVFbMouseHander: Unable to open device %s",
@@ -74,7 +75,7 @@ QVFbMouseHandler::QVFbMouseHandler(const QString &driver, const QString &device)
 
     // Clear pending input
     char buf[2];
-    while (read(mouseFD, buf, 1) > 0) { }
+    while (QT_READ(mouseFD, buf, 1) > 0) { }
 
     mouseIdx = 0;
 
@@ -85,7 +86,7 @@ QVFbMouseHandler::QVFbMouseHandler(const QString &driver, const QString &device)
 QVFbMouseHandler::~QVFbMouseHandler()
 {
     if (mouseFD >= 0)
-        close(mouseFD);
+        QT_CLOSE(mouseFD);
 }
 
 void QVFbMouseHandler::resume()
@@ -102,7 +103,7 @@ void QVFbMouseHandler::readMouseData()
 {
     int n;
     do {
-        n = read(mouseFD, mouseBuf+mouseIdx, mouseBufSize-mouseIdx);
+        n = QT_READ(mouseFD, mouseBuf+mouseIdx, mouseBufSize-mouseIdx);
         if (n > 0)
             mouseIdx += n;
     } while (n > 0);

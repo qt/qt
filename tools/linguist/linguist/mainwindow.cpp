@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,6 +82,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPrintDialog>
+#include <QPrinter>
 #include <QProcess>
 #include <QRegExp>
 #include <QSettings>
@@ -257,6 +258,7 @@ bool FocusWatcher::eventFilter(QObject *, QEvent *event)
 MainWindow::MainWindow()
     : QMainWindow(0, Qt::Window),
       m_assistantProcess(0),
+      m_printer(0),
       m_findMatchCase(Qt::CaseInsensitive),
       m_findIgnoreAccelerators(true),
       m_findWhere(DataModel::NoLocation),
@@ -480,6 +482,10 @@ MainWindow::MainWindow()
     readConfig();
     m_statistics = 0;
 
+    connect(m_ui.actionLenghtVariants, SIGNAL(toggled(bool)),
+            m_messageEditor, SLOT(setLenghtVariants(bool)));
+    m_messageEditor->setLenghtVariants(m_ui.actionLenghtVariants->isChecked());
+
     m_focusWatcher = new FocusWatcher(m_messageEditor, this);
     m_contextView->installEventFilter(m_focusWatcher);
     m_messageView->installEventFilter(m_focusWatcher);
@@ -499,6 +505,7 @@ MainWindow::~MainWindow()
     qDeleteAll(m_phraseBooks);
     delete m_dataModel;
     delete m_statistics;
+    delete m_printer;
 }
 
 void MainWindow::modelCountChanged()
@@ -866,15 +873,22 @@ void MainWindow::releaseAll()
             releaseInternal(i);
 }
 
+QPrinter *MainWindow::printer()
+{
+    if (!m_printer)
+        m_printer = new QPrinter;
+    return m_printer;
+}
+
 void MainWindow::print()
 {
     int pageNum = 0;
-    QPrintDialog dlg(&m_printer, this);
+    QPrintDialog dlg(printer(), this);
     if (dlg.exec()) {
         QApplication::setOverrideCursor(Qt::WaitCursor);
-        m_printer.setDocName(m_dataModel->condensedSrcFileNames(true));
+        printer()->setDocName(m_dataModel->condensedSrcFileNames(true));
         statusBar()->showMessage(tr("Printing..."));
-        PrintOut pout(&m_printer);
+        PrintOut pout(printer());
 
         for (int i = 0; i < m_dataModel->contextCount(); ++i) {
             MultiContextItem *mc = m_dataModel->multiContextItem(i);
@@ -1225,11 +1239,11 @@ void MainWindow::printPhraseBook(QAction *action)
 
     int pageNum = 0;
 
-    QPrintDialog dlg(&m_printer, this);
+    QPrintDialog dlg(printer(), this);
     if (dlg.exec()) {
-        m_printer.setDocName(phraseBook->fileName());
+        printer()->setDocName(phraseBook->fileName());
         statusBar()->showMessage(tr("Printing..."));
-        PrintOut pout(&m_printer);
+        PrintOut pout(printer());
         pout.setRule(PrintOut::ThinRule);
         foreach (const Phrase *p, phraseBook->phrases()) {
             pout.setGuide(p->source());
@@ -2358,6 +2372,13 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
             }
             QStringList translations = m->translations();
 
+            // Truncated variants are permitted to be "denormalized"
+            for (int i = 0; i < translations.count(); ++i) {
+                int sep = translations.at(i).indexOf(QChar(Translator::BinaryVariantSeparator));
+                if (sep >= 0)
+                    translations[i].truncate(sep);
+            }
+
             if (m_ui.actionAccelerators->isChecked()) {
                 bool sk = !QKeySequence::mnemonic(source).isEmpty();
                 bool tk = true;
@@ -2500,6 +2521,8 @@ void MainWindow::readConfig()
         config.value(settingPath("Validators/PhraseMatch"), true).toBool());
     m_ui.actionPlaceMarkerMatches->setChecked(
         config.value(settingPath("Validators/PlaceMarkers"), true).toBool());
+    m_ui.actionLenghtVariants->setChecked(
+        config.value(settingPath("Options/LengthVariants"), false).toBool());
 
     recentFiles().readConfig();
 
@@ -2524,6 +2547,8 @@ void MainWindow::writeConfig()
         m_ui.actionPhraseMatches->isChecked());
     config.setValue(settingPath("Validators/PlaceMarkers"),
         m_ui.actionPlaceMarkerMatches->isChecked());
+    config.setValue(settingPath("Options/LengthVariants"),
+        m_ui.actionLenghtVariants->isChecked());
     config.setValue(settingPath("MainWindowState"),
         saveState());
     recentFiles().writeConfig();

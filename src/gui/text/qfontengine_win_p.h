@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -80,7 +80,7 @@ public:
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                          QPainterPath *path, QTextItem::RenderFlags flags);
 
-    HGDIOBJ selectDesignFont(QFixed *) const;
+    HGDIOBJ selectDesignFont() const;
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t g) { return boundingBox(g, QTransform()); }
@@ -109,18 +109,14 @@ public:
     int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs, bool mirrored) const;
     void getCMap();
 
-    QString        _name;
-    HFONT        hfont;
+    QString     _name;
+    HFONT       hfont;
     LOGFONT     logfont;
-    uint        stockFont   : 1;
-    uint        useTextOutA : 1;
-    uint        ttf         : 1;
+    uint        stockFont  : 1;
+    uint        ttf        : 1;
     uint        hasOutline : 1;
-    union {
-        TEXTMETRICW        w;
-        TEXTMETRICA        a;
-    } tm;
-    int                lw;
+    TEXTMETRIC  tm;
+    int         lw;
     const unsigned char *cmap;
     QByteArray cmapTable;
     mutable qreal lbearing;

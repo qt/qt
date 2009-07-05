@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,10 +50,6 @@
 #include <qvarlengtharray.h>
 #include <qvector.h>
 #include <QDebug>
-
-#ifndef UNICODE
-#define UNICODE
-#endif
 
 #if defined(Q_CC_BOR)
 // DB2's sqlsystm.h (included through sqlcli1.h) defines the SQL_BIGINT_TYPE
@@ -111,22 +107,14 @@ public:
 
 static QString qFromTChar(SQLTCHAR* str)
 {
-#ifdef UNICODE
     return QString::fromUtf16(str);
-#else
-    return QString::fromLocal8Bit((const char*) str);
-#endif
 }
 
 // dangerous!! (but fast). Don't use in functions that
 // require out parameters!
 static SQLTCHAR* qToTChar(const QString& str)
 {
-#ifdef UNICODE
     return (SQLTCHAR*)str.utf16();
-#else
-    return (unsigned char*) str.ascii();
-#endif
 }
 
 static QString qWarnDB2Handle(int handleType, SQLHANDLE handle)
@@ -347,12 +335,8 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool& is
 
     while (true) {
         r = SQLGetData(hStmt,
-                        column+1,
-#ifdef UNICODE
+                        column + 1,
                         SQL_C_WCHAR,
-#else
-                        SQL_C_CHAR,
-#endif
                         (SQLPOINTER)buf,
                         colSize * sizeof(SQLTCHAR),
                         &lengthIndicator);
@@ -740,7 +724,6 @@ bool QDB2Result::exec()
                                       ind);
                 break; }
             case QVariant::String:
-#ifdef UNICODE
             {
                 QString str(values.at(i).toString());
                 if (*ind != SQL_NULL_DATA)
@@ -774,8 +757,6 @@ bool QDB2Result::exec()
                 }
                 break;
             }
-#endif
-            // fall through
             default: {
                 QByteArray ba = values.at(i).toString().toAscii();
                 int len = ba.length() + 1;
@@ -849,12 +830,9 @@ bool QDB2Result::exec()
             case QVariant::ByteArray:
                 break;
             case QVariant::String:
-#ifdef UNICODE
                 if (bindValueType(i) & QSql::Out)
                     values[i] = QString::fromUtf16((ushort*)tmpStorage.takeFirst().constData());
                 break;
-#endif
-                // fall through
             default: {
                 values[i] = QString::fromAscii(tmpStorage.takeFirst().constData());
                 break; }
@@ -1043,26 +1021,22 @@ QVariant QDB2Result::data(int field)
         case QVariant::Double:
             {
             QString value=qGetStringData(d->hStmt, field, info.length() + 1, isNull);
-            bool ok=false;
-            switch(d->precisionPolicy) {
+            switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
-                    v = new QVariant(value.toInt(&ok));
+                    v = new QVariant(qGetIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionInt64:
-                    v = new QVariant(value.toLongLong(&ok));
+                    v = new QVariant(qGetBigIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionDouble:
-                    v = new QVariant(value.toDouble(&ok));
+                    v = new QVariant(qGetDoubleData(d->hStmt, field, isNull));
                     break;
                 case QSql::HighPrecision:
                 default:
                     // length + 1 for the comma
-                    v = new QVariant(value);
-                    ok = true;
+                    v = new QVariant(qGetStringData(d->hStmt, field, info.length() + 1, isNull));
                     break;
             }
-            if(!ok)
-                v = new QVariant();
             break;
             }
         case QVariant::String:
@@ -1145,6 +1119,10 @@ void QDB2Result::virtual_hook(int id, void *data)
     case QSqlResult::NextResult:
         Q_ASSERT(data);
         *static_cast<bool*>(data) = nextResult();
+        break;
+    case QSqlResult::DetachFromResultSet:
+        if (d->hStmt)
+            SQLCloseCursor(d->hStmt);
         break;
     default:
         QSqlResult::virtual_hook(id, data);
@@ -1531,7 +1509,6 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case BatchOperations:
         case LastInsertId:
         case SimpleLocking:
-        case LowPrecisionNumbers:
         case EventNotifications:
             return false;
         case BLOB:
@@ -1539,15 +1516,11 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case MultipleResultSets:
         case PreparedQueries:
         case PositionalPlaceholders:
+        case LowPrecisionNumbers:
+        case FinishQuery:
             return true;
         case Unicode:
-        // this is the query that shows the codepage for the types:
-        // select typename, codepage from syscat.datatypes
-#ifdef UNICODE
             return true;
-#else
-            return false;
-#endif
     }
     return false;
 }

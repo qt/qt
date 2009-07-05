@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2242,53 +2242,31 @@ typedef struct {
 typedef DWORD (WINAPI *GNP)( PFIXED_INFO, PULONG );
 
 // ### FIXME: this code is duplicated in qfiledialog.cpp
-static QString getWindowsRegString( HKEY key, const QString &subKey )
+static QString getWindowsRegString(HKEY key, const QString &subKey)
 {
     QString s;
-    QT_WA( {
-	char buf[1024];
-	DWORD bsz = sizeof(buf);
-	int r = RegQueryValueEx( key, (TCHAR*)subKey.ucs2(), 0, 0, (LPBYTE)buf, &bsz );
-	if ( r == ERROR_SUCCESS ) {
-	    s = QString::fromUcs2( (unsigned short *)buf );
-	} else if ( r == ERROR_MORE_DATA ) {
-	    char *ptr = new char[bsz+1];
-	    r = RegQueryValueEx( key, (TCHAR*)subKey.ucs2(), 0, 0, (LPBYTE)ptr, &bsz );
-	    if ( r == ERROR_SUCCESS )
-		s = QLatin1String(ptr);
-	    delete [] ptr;
-	}
-    } , {
-	char buf[512];
-	DWORD bsz = sizeof(buf);
-	int r = RegQueryValueExA( key, subKey.local8Bit(), 0, 0, (LPBYTE)buf, &bsz );
-	if ( r == ERROR_SUCCESS ) {
-	    s = QLatin1String(buf);
-	} else if ( r == ERROR_MORE_DATA ) {
-	    char *ptr = new char[bsz+1];
-	    r = RegQueryValueExA( key, subKey.local8Bit(), 0, 0, (LPBYTE)ptr, &bsz );
-	    if ( r == ERROR_SUCCESS )
-		s = QLatin1String(ptr);
-	    delete [] ptr;
-	}
-    } );
+
+    wchar_t buf[1024];
+    DWORD bsz = sizeof(buf) / sizeof(wchar_t);
+    int r = RegQueryValueEx(key, (wchar_t*)subKey.utf16(), 0, 0, (LPBYTE)buf, &bsz);
+    if (r == ERROR_SUCCESS) {
+        s = QString::fromWCharArray(buf);
+    } else if (r == ERROR_MORE_DATA) {
+        char *ptr = new char[bsz+1];
+        r = RegQueryValueEx(key, (wchar_t*)subKey.utf16(), 0, 0, (LPBYTE)ptr, &bsz);
+        if (r == ERROR_SUCCESS)
+            s = QLatin1String(ptr);
+        delete [] ptr;
+    }
+
     return s;
 }
 
 static bool getDnsParamsFromRegistry( const QString &path,
-	QString *domainName, QString *nameServer, QString *searchList )
+    QString *domainName, QString *nameServer, QString *searchList )
 {
     HKEY k;
-    int r;
-    QT_WA( {
-	r = RegOpenKeyEx( HKEY_LOCAL_MACHINE,
-			  (TCHAR*)path.ucs2(),
-			  0, KEY_READ, &k );
-    } , {
-	r = RegOpenKeyExA( HKEY_LOCAL_MACHINE,
-			   path.latin1(),
-			   0, KEY_READ, &k );
-    } );
+    int r = RegOpenKeyEx( HKEY_LOCAL_MACHINE, (wchar_t*)path.utf16(), 0, KEY_READ, &k );
 
     if ( r == ERROR_SUCCESS ) {
 	*domainName = getWindowsRegString( k, QLatin1String("DhcpDomain") );
@@ -2321,14 +2299,10 @@ void Q3Dns::doResInit()
     bool gotNetworkParams = false;
     // try the API call GetNetworkParams() first and use registry lookup only
     // as a fallback
-#ifdef Q_OS_WINCE
-    HINSTANCE hinstLib = LoadLibraryW( L"iphlpapi" );
-#else
-    HINSTANCE hinstLib = LoadLibraryA( "iphlpapi" );
-#endif
+    HINSTANCE hinstLib = LoadLibrary( L"iphlpapi" );
     if ( hinstLib != 0 ) {
 #ifdef Q_OS_WINCE
-	GNP getNetworkParams = (GNP) GetProcAddressW( hinstLib, L"GetNetworkParams" );
+	GNP getNetworkParams = (GNP) GetProcAddress( hinstLib, L"GetNetworkParams" );
 #else
 	GNP getNetworkParams = (GNP) GetProcAddress( hinstLib, "GetNetworkParams" );
 #endif
@@ -2362,13 +2336,7 @@ void Q3Dns::doResInit()
 	if ( getDnsParamsFromRegistry(
 	    QLatin1String("System\\CurrentControlSet\\Services\\Tcpip\\Parameters"),
 		    &domainName, &nameServer, &searchList )) {
-	    // for NT
 	    separator = ' ';
-	} else if ( getDnsParamsFromRegistry(
-	    QLatin1String("System\\CurrentControlSet\\Services\\VxD\\MSTCP"),
-		    &domainName, &nameServer, &searchList )) {
-	    // for Windows 98
-	    separator = ',';
 	} else {
 	    // Could not access the TCP/IP parameters
 	    domainName = QLatin1String("");

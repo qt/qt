@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,7 @@
 #include "qscreen_qws.h"
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -144,7 +145,7 @@ QWSVr41xxMouseHandlerPrivate::QWSVr41xxMouseHandlerPrivate(QWSVr41xxMouseHandler
     else
         dev = options.first();
 
-    if ((mouseFD = open(dev.toLocal8Bit().constData(), O_RDONLY)) < 0) {
+    if ((mouseFD = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY)) < 0) {
         qWarning("Cannot open %s (%s)", qPrintable(dev), strerror(errno));
         return;
     }
@@ -167,7 +168,7 @@ QWSVr41xxMouseHandlerPrivate::QWSVr41xxMouseHandlerPrivate(QWSVr41xxMouseHandler
 QWSVr41xxMouseHandlerPrivate::~QWSVr41xxMouseHandlerPrivate()
 {
     if (mouseFD >= 0)
-        close(mouseFD);
+        QT_CLOSE(mouseFD);
 }
 
 void QWSVr41xxMouseHandlerPrivate::suspend()
@@ -190,9 +191,9 @@ void QWSVr41xxMouseHandlerPrivate::sendRelease()
 
 bool QWSVr41xxMouseHandlerPrivate::getSample()
 {
-    const int n = read(mouseFD,
-                       reinterpret_cast<uchar*>(currSample) + currLength,
-                       sizeof(currSample) - currLength);
+    const int n = QT_READ(mouseFD,
+                          reinterpret_cast<uchar*>(currSample) + currLength,
+                          sizeof(currSample) - currLength);
 
     if (n > 0)
         currLength += n;

@@ -110,6 +110,11 @@ static BYTE* endPaint;
 
 HDC WINAPI PluginView::hookedBeginPaint(HWND hWnd, PAINTSTRUCT* lpPaint)
 {
+#if (COMPILER(MINGW))
+    Q_UNUSED(hWnd)
+    Q_UNUSED(lpPaint)
+    return 0;
+#else     
     PluginView* pluginView = reinterpret_cast<PluginView*>(GetProp(hWnd, kWebPluginViewProperty));
     if (pluginView && pluginView->m_wmPrintHDC) {
         // We're secretly handling WM_PRINTCLIENT, so set up the PAINTSTRUCT so
@@ -125,10 +130,16 @@ HDC WINAPI PluginView::hookedBeginPaint(HWND hWnd, PAINTSTRUCT* lpPaint)
     __asm   push    lpPaint
     __asm   push    hWnd
     __asm   call    beginPaint
+#endif
 }
 
 BOOL WINAPI PluginView::hookedEndPaint(HWND hWnd, const PAINTSTRUCT* lpPaint)
 {
+#if (COMPILER(MINGW))
+    Q_UNUSED(hWnd)
+    Q_UNUSED(lpPaint)
+    return FALSE;
+#else      
     PluginView* pluginView = reinterpret_cast<PluginView*>(GetProp(hWnd, kWebPluginViewProperty));
     if (pluginView && pluginView->m_wmPrintHDC) {
         // We're secretly handling WM_PRINTCLIENT, so we don't have to do any
@@ -141,8 +152,10 @@ BOOL WINAPI PluginView::hookedEndPaint(HWND hWnd, const PAINTSTRUCT* lpPaint)
     __asm   push    lpPaint
     __asm   push    hWnd
     __asm   call    endPaint
+#endif      
 }
 
+#if (!COMPILER(MINGW))
 static void hook(const char* module, const char* proc, unsigned& sysCallID, BYTE*& pProc, const void* pNewProc)
 {
     // See <http://www.fengyuan.com/article/wmprint.html> for an explanation of
@@ -183,6 +196,7 @@ static void setUpOffscreenPaintingHooks(HDC (WINAPI*hookedBeginPaint)(HWND, PAIN
     hook("user32.dll", "BeginPaint", beginPaintSysCall, beginPaint, hookedBeginPaint);
     hook("user32.dll", "EndPaint", endPaintSysCall, endPaint, hookedEndPaint);
 }
+#endif
 
 static bool registerPluginView()
 {
@@ -926,8 +940,9 @@ void PluginView::init()
 
     if (m_isWindowed) {
         registerPluginView();
+#if (!COMPILER(MINGW))       
         setUpOffscreenPaintingHooks(hookedBeginPaint, hookedEndPaint);
-
+#endif
         DWORD flags = WS_CHILD;
         if (isSelfVisible())
             flags |= WS_VISIBLE;

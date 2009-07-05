@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -190,9 +190,9 @@ public:
     static void registerFileFormat(const FileFormat &format);
     static QList<FileFormat> &registeredFileFormats();
 
-    enum VariantSeparators {
-        DefaultVariantSeparator = 0x2762, // some weird character nobody ever heard of :-D
-        InternalVariantSeparator = 0x9c // unicode "STRING TERMINATOR"
+    enum {
+        TextVariantSeparator = 0x2762, // some weird character nobody ever heard of :-D
+        BinaryVariantSeparator = 0x9c // unicode "STRING TERMINATOR"
     };
 
 private:

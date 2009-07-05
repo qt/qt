@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -988,6 +988,7 @@ void Ui3Reader::createProperties(const QDomElement &n, QList<DomProperty*> *prop
     QString objectName;
 
     bool wordWrapFound = false;
+    bool wordWrapPropertyFound = false;
 
     for (QDomElement e=n.firstChild().toElement(); !e.isNull(); e = e.nextSibling().toElement()) {
         if (e.tagName().toLower() == QLatin1String("property")) {
@@ -1099,13 +1100,15 @@ void Ui3Reader::createProperties(const QDomElement &n, QList<DomProperty*> *prop
 
             name = prop->attributeName(); // sync the name
 
-            if (className == QLatin1String("QLabel") && name == QLatin1String("alignment")) {
-                QString v = prop->elementSet();
-
-                if (v.contains(QRegExp(QLatin1String("\\bWordBreak\\b"))))
-                    wordWrapFound = true;
+            if (className == QLatin1String("QLabel")) {
+                if (name == QLatin1String("alignment")) {
+                    const QString v = prop->elementSet();
+                    if (v.contains(QRegExp(QLatin1String("\\bWordBreak\\b"))))
+                        wordWrapFound = true;
+                } else if (name == QLatin1String("wordWrap")) {
+                    wordWrapPropertyFound = true;
+                }
             }
-
 
             // resolve the flags and enumerator
             if (prop->kind() == DomProperty::Set) {
@@ -1164,7 +1167,7 @@ void Ui3Reader::createProperties(const QDomElement &n, QList<DomProperty*> *prop
             }
         }
     }
-    if (className == QLatin1String("QLabel")) {
+    if (className == QLatin1String("QLabel") && !wordWrapPropertyFound) {
         DomProperty *wordWrap = new DomProperty();
         wordWrap->setAttributeName(QLatin1String("wordWrap"));
         if (wordWrapFound)

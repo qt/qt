@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -436,7 +436,7 @@ QScriptValueImpl Function::method_connect(QScriptContextPrivate *context, QScrip
             QLatin1String("Function.prototype.connect: target is not a function"));
     }
 
-    bool ok = eng->scriptConnect(self, receiver, slot);
+    bool ok = eng->scriptConnect(self, receiver, slot, Qt::AutoConnection);
     if (!ok) {
         return context->throwError(
             QString::fromLatin1("Function.prototype.connect: failed to connect to %0::%1")

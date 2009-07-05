@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -323,6 +323,10 @@
     performance reasons, these notifications are disabled by default. You must
     enable this flag to receive notifications for position and transform
     changes. This flag was introduced in Qt 4.6.
+
+    \value ItemAcceptsInputMethod The item supports input methods typically
+    used for Asian languages.
+    This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -797,7 +801,7 @@ QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
 void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransform *viewTransform) const
 {
     // COMBINE
-    if (itemIsUntransformable() && viewTransform) {
+    if (viewTransform && itemIsUntransformable()) {
         *x = q_ptr->deviceTransform(*viewTransform);
     } else {
         if (transformData)
@@ -819,7 +823,7 @@ void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransf
 void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTransform *viewTransform) const
 {
     // COMBINE
-    if (itemIsUntransformable() && viewTransform) {
+    if (viewTransform && itemIsUntransformable()) {
         *x = q_ptr->deviceTransform(*viewTransform);
     } else {
         x->translate(pos.x(), pos.y());
@@ -989,7 +993,8 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
         bool hasPos = !childd->pos.isNull();
         if (hasPos || childd->transformData) {
             // COMBINE
-            QTransform matrix = childd->transformToParent() * *x;
+            QTransform matrix = childd->transformToParent();
+            matrix *= *x;
             *rect |= matrix.mapRect(child->boundingRect());
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(&matrix, rect);
@@ -1483,6 +1488,12 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
             d_ptr->parent->d_ptr->needSortChildren = 1;
         else if (d_ptr->scene)
             d_ptr->scene->d_func()->needSortTopLevelItems = 1;
+    }
+
+    if ((flags & ItemAcceptsInputMethod) != (oldFlags & ItemAcceptsInputMethod)) {
+        // Update input method sensitivity in any views.
+        if (d_ptr->scene)
+            d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
     }
 
     if (d_ptr->scene) {
@@ -2279,6 +2290,36 @@ void QGraphicsItem::setAcceptHoverEvents(bool enabled)
 void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
 {
     setAcceptHoverEvents(enabled);
+}
+
+/*! \since 4.6
+
+    Returns true if an item accepts touch events (QTouchEvent); otherwise, returns false. By
+    default, items do not accept touch events.
+
+    \sa setAcceptTouchEvents()
+*/
+bool QGraphicsItem::acceptTouchEvents() const
+{
+    return d_ptr->acceptTouchEvents;
+}
+
+/*!
+    \since 4.6
+
+    If \a enabled is true, this item will accept touch events;
+    otherwise, it will ignore them. By default, items do not accept
+    touch events.
+*/
+void QGraphicsItem::setAcceptTouchEvents(bool enabled)
+{
+    if (d_ptr->acceptTouchEvents == quint32(enabled))
+        return;
+    d_ptr->acceptTouchEvents = quint32(enabled);
+    if (d_ptr->acceptTouchEvents && d_ptr->scene && d_ptr->scene->d_func()->allItemsIgnoreTouchEvents) {
+        d_ptr->scene->d_func()->allItemsIgnoreTouchEvents = false;
+        d_ptr->scene->d_func()->enableTouchEventsOnViews();
+    }
 }
 
 /*!
@@ -3204,8 +3245,7 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     QPointF mappedPoint = (untransformedAncestor->sceneTransform() * viewportTransform).map(QPointF(0, 0));
 
     // COMBINE
-    QTransform matrix;
-    matrix.translate(mappedPoint.x(), mappedPoint.y());
+    QTransform matrix = QTransform::fromTranslate(mappedPoint.x(), mappedPoint.y());
     if (untransformedAncestor->d_ptr->transformData)
         matrix = untransformedAncestor->d_ptr->transformData->computedFullTransform(&matrix);
 
@@ -3303,9 +3343,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     bool cousins = other != commonAncestor && this != commonAncestor;
     if (cousins) {
         bool good = false;
-        QTransform thisToScene;
-        QTransform otherToScene;
-        thisToScene = itemTransform(commonAncestor, &good);
+        QTransform thisToScene = itemTransform(commonAncestor, &good);
+        QTransform otherToScene(Qt::Uninitialized);
         if (good)
             otherToScene = other->itemTransform(commonAncestor, &good);
         if (!good) {
@@ -4150,8 +4189,7 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
     p.end();
 
     // Transform QRegion back to device space
-    QTransform unscale;
-    unscale.scale(1 / granularity, 1 / granularity);
+    QTransform unscale = QTransform::fromScale(1 / granularity, 1 / granularity);
     QRegion r;
     QBitmap colorMask = QBitmap::fromImage(mask.createMaskFromColor(0));
     foreach (const QRect &rect, QRegion( colorMask ).rects()) {
@@ -9811,6 +9849,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemSendsGeometryChanges:
         str = "ItemSendsGeometryChanges";
+        break;
+    case QGraphicsItem::ItemAcceptsInputMethod:
+        str = "ItemAcceptsInputMethod";
         break;
     }
     debug << str;

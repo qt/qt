@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1586,9 +1586,12 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
                 } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
                         && (fld.typ == QVariant::LongLong)) {
                     qint64 qll = 0;
-                    OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
+                    int r = OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
                                    OCI_NUMBER_SIGNED, &qll);
-                    v[index + i] = qll;
+                    if(r == OCI_SUCCESS)
+                        v[index + i] = qll;
+                    else
+                        v[index + i] = QVariant();
                     break;
                 } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
                         && (fld.typ == QVariant::Int)) {
@@ -1899,7 +1902,7 @@ void QOCIResult::virtual_hook(int id, void *data)
         QOCICols::execBatch(d, boundValues(), *reinterpret_cast<bool *>(data));
         break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 

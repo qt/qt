@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -507,45 +507,7 @@ static void updateLastSize(Q3FileDialog *that)
     lastHeight = that->height() - extHeight;
 }
 
-// Don't remove the lines below!
-//
-// resolving the W methods manually is needed, because Windows 95 doesn't include
-// these methods in Shell32.lib (not even stubs!), so you'd get an unresolved symbol
-// when Qt calls getEsistingDirectory(), etc.
 #if defined(Q_WS_WIN)
-
-typedef UINT (WINAPI *PtrExtractIconEx)(LPCTSTR,int,HICON*,HICON*,UINT);
-static PtrExtractIconEx ptrExtractIconEx = 0;
-
-static void resolveLibs()
-{
-#ifndef Q_OS_WINCE
-    static bool triedResolve = false;
-
-    if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        // protect initialization
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        // check triedResolve again, since another thread may have already
-        // done the initialization
-        if (triedResolve) {
-            // another thread did initialize the security function pointers,
-            // so we shouldn't do it again.
-            return;
-        }
-#endif
-        triedResolve = true;
-        if (qt_winUnicode()) {
-            QLibrary lib(QLatin1String("shell32"));
-            ptrExtractIconEx = (PtrExtractIconEx) lib.resolve("ExtractIconExW");
-        }
-    }
-#endif
-}
-#ifdef Q_OS_WINCE
-#define PtrExtractIconEx ExtractIconEx
-#endif
-
 class QWindowsIconProvider : public Q3FileIconProvider
 {
 public:
@@ -2566,11 +2528,7 @@ void Q3FileDialog::init()
     d->modeButtons->insert(d->previewInfo);
 
     d->previewContents = new QToolButton(this, "preview info view");
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
-    if ((qWinVersion() & Qt::WV_NT_based) > Qt::WV_NT)
-#else
     if (!qstrcmp(style()->className(), "QWindowsStyle"))
-#endif
     {
         d->goBack->setAutoRaise(true);
         d->cdToParent->setAutoRaise(true);
@@ -4878,33 +4836,20 @@ Q3FileIconProvider * Q3FileDialog::iconProvider()
 static QString getWindowsRegString(HKEY key, const QString &subKey)
 {
     QString s;
-    QT_WA({
-        char buf[1024];
-        DWORD bsz = sizeof(buf);
-        int r = RegQueryValueEx(key, (TCHAR*)subKey.ucs2(), 0, 0, (LPBYTE)buf, &bsz);
-        if (r == ERROR_SUCCESS) {
-            s = QString::fromUcs2((unsigned short *)buf);
-        } else if (r == ERROR_MORE_DATA) {
-            char *ptr = new char[bsz+1];
-            r = RegQueryValueEx(key, (TCHAR*)subKey.ucs2(), 0, 0, (LPBYTE)ptr, &bsz);
-            if (r == ERROR_SUCCESS)
-                s = QLatin1String(ptr);
-            delete [] ptr;
-        }
-    } , {
-        char buf[512];
-        DWORD bsz = sizeof(buf);
-        int r = RegQueryValueExA(key, subKey.local8Bit(), 0, 0, (LPBYTE)buf, &bsz);
-        if (r == ERROR_SUCCESS) {
-            s = QLatin1String(buf);
-        } else if (r == ERROR_MORE_DATA) {
-            char *ptr = new char[bsz+1];
-            r = RegQueryValueExA(key, subKey.local8Bit(), 0, 0, (LPBYTE)ptr, &bsz);
-            if (r == ERROR_SUCCESS)
-                s = QLatin1String(ptr);
-            delete [] ptr;
-        }
-    });
+
+    wchar_t buf[1024];
+    DWORD bsz = sizeof(buf) / sizeof(wchar_t);
+    int r = RegQueryValueEx(key, (wchar_t*)subKey.utf16(), 0, 0, (LPBYTE)buf, &bsz);
+    if (r == ERROR_SUCCESS) {
+        s = QString::fromWCharArray(buf);
+    } else if (r == ERROR_MORE_DATA) {
+        char *ptr = new char[bsz+1];
+        r = RegQueryValueEx(key, (wchar_t*)subKey.utf16(), 0, 0, (LPBYTE)ptr, &bsz);
+        if (r == ERROR_SUCCESS)
+            s = QLatin1String(ptr);
+        delete [] ptr;
+    }
+
     return s;
 }
 
@@ -4925,22 +4870,13 @@ QWindowsIconProvider::QWindowsIconProvider(QObject *parent, const char *name)
 
     HKEY k;
     HICON si;
-    int r;
     QString s;
     UINT res = 0;
 
     // ---------- get default folder pixmap
     const wchar_t iconFolder[] = L"folder\\DefaultIcon"; // workaround for Borland
-    QT_WA({
-        r = RegOpenKeyEx(HKEY_CLASSES_ROOT,
-                           iconFolder,
-                           0, KEY_READ, &k);
-    } , {
-        r = RegOpenKeyExA(HKEY_CLASSES_ROOT,
-                           "folder\\DefaultIcon",
-                           0, KEY_READ, &k);
-    });
-    resolveLibs();
+    int r = RegOpenKeyEx(HKEY_CLASSES_ROOT, iconFolder, 0, KEY_READ, &k);
+
     if (r == ERROR_SUCCESS) {
         s = getWindowsRegString(k, QString());
         RegCloseKey(k);
@@ -4948,21 +4884,7 @@ QWindowsIconProvider::QWindowsIconProvider(QObject *parent, const char *name)
         QStringList lst = QStringList::split(QLatin1String(","), s);
 
         if (lst.count() >= 2) { // don't just assume that lst has two entries
-#ifndef Q_OS_WINCE
-            QT_WA({
-                res = ptrExtractIconEx((TCHAR*)lst[0].simplifyWhiteSpace().ucs2(),
-                                       lst[1].simplifyWhiteSpace().toInt(),
-                                       0, &si, 1);
-            } , {
-                res = ExtractIconExA(lst[0].simplifyWhiteSpace().local8Bit(),
-                                     lst[1].simplifyWhiteSpace().toInt(),
-                                     0, &si, 1);
-            });
-#else
-            res = (UINT)ExtractIconEx((TCHAR*)lst[0].simplifyWhiteSpace().ucs2(),
-                                        lst[1].simplifyWhiteSpace().toInt(),
-                                        0, &si, 1);
-#endif
+            res = ExtractIconEx((wchar_t*)lst[0].simplifyWhiteSpace().utf16(), lst[1].simplifyWhiteSpace().toInt(), 0, &si, 1);
         }
 
         if (res) {
@@ -4978,18 +4900,7 @@ QWindowsIconProvider::QWindowsIconProvider(QObject *parent, const char *name)
     }
 
     //------------------------------- get default file pixmap
-#ifndef Q_OS_WINCE
-    QT_WA({
-        res = ptrExtractIconEx(L"shell32.dll",
-                                 0, 0, &si, 1);
-    } , {
-        res = ExtractIconExA("shell32.dll",
-                                 0, 0, &si, 1);
-    });
-#else
-        res = (UINT)ExtractIconEx(L"shell32.dll",
-                                    0, 0, &si, 1);
-#endif
+    res = ExtractIconEx(L"shell32.dll", 0, 0, &si, 1);
 
     if (res) {
         defaultFile  = fromHICON(si);
@@ -5002,16 +4913,9 @@ QWindowsIconProvider::QWindowsIconProvider(QObject *parent, const char *name)
 
     //------------------------------- get default exe pixmap
 #ifndef Q_OS_WINCE
-    QT_WA({
-        res = ptrExtractIconEx(L"shell32.dll",
-                              2, 0, &si, 1);
-    } , {
-        res = ExtractIconExA("shell32.dll",
-                          2, 0, &si, 1);
-    });
+    res = ExtractIconEx(L"shell32.dll", 2, 0, &si, 1);
 #else
-        res = (UINT)ExtractIconEx(L"ceshell.dll",
-                                    10, 0, &si, 1);
+    res = ExtractIconEx(L"ceshell.dll", 10, 0, &si, 1);
 #endif
 
     if (res) {
@@ -5050,14 +4954,7 @@ const QPixmap * QWindowsIconProvider::pixmap(const QFileInfo &fi)
             return &(*it);
 
         HKEY k, k2;
-        int r;
-        QT_WA({
-            r = RegOpenKeyEx(HKEY_CLASSES_ROOT, (TCHAR*)ext.ucs2(),
-                              0, KEY_READ, &k);
-        } , {
-            r = RegOpenKeyExA(HKEY_CLASSES_ROOT, ext.local8Bit(),
-                               0, KEY_READ, &k);
-        });
+        int r = RegOpenKeyEx(HKEY_CLASSES_ROOT, (wchar_t*)ext.utf16(), 0, KEY_READ, &k);
         QString s;
         if (r == ERROR_SUCCESS) {
             s = getWindowsRegString(k, QString());
@@ -5068,13 +4965,8 @@ const QPixmap * QWindowsIconProvider::pixmap(const QFileInfo &fi)
         }
         RegCloseKey(k);
 
-        QT_WA({
-            r = RegOpenKeyEx(HKEY_CLASSES_ROOT, (TCHAR*)QString(s + QLatin1String("\\DefaultIcon")).ucs2(),
-                               0, KEY_READ, &k2);
-        } , {
-            r = RegOpenKeyExA(HKEY_CLASSES_ROOT, QString(s + QLatin1String("\\DefaultIcon")).local8Bit() ,
-                               0, KEY_READ, &k2);
-        });
+        r = RegOpenKeyEx(HKEY_CLASSES_ROOT, (wchar_t*)QString(s + QLatin1String("\\DefaultIcon")).utf16(),
+                         0, KEY_READ, &k2);
         if (r == ERROR_SUCCESS) {
             s = getWindowsRegString(k2, QString());
         } else {
@@ -5104,19 +4996,7 @@ const QPixmap * QWindowsIconProvider::pixmap(const QFileInfo &fi)
                 if (filepath[0] == QLatin1Char('"') && filepath[(int)filepath.length()-1] == QLatin1Char('"'))
                     filepath = filepath.mid(1, filepath.length()-2);
 
-                resolveLibs();
-#ifndef Q_OS_WINCE
-                QT_WA({
-                    res = ptrExtractIconEx((TCHAR*)filepath.ucs2(), lst[1].stripWhiteSpace().toInt(),
-                        0, &si, 1);
-                } , {
-                    res = ExtractIconExA(filepath.local8Bit(), lst[1].stripWhiteSpace().toInt(),
-                        0, &si, 1);
-                });
-#else
-                res = (UINT)ExtractIconEx((TCHAR*)filepath.ucs2(), lst[1].stripWhiteSpace().toInt(),
-                    0, &si, 1);
-#endif
+                res = ExtractIconEx((wchar_t*)filepath.utf16(), lst[1].stripWhiteSpace().toInt(), 0, &si, 1);
             }
         }
         if (res) {
@@ -5133,32 +5013,9 @@ const QPixmap * QWindowsIconProvider::pixmap(const QFileInfo &fi)
         HICON si;
         UINT res = 0;
         if (!fi.absFilePath().isEmpty()) {
-#ifndef Q_OS_WINCE
-            QT_WA({
-                res = ptrExtractIconEx((TCHAR*)fi.absFilePath().ucs2(), -1,
-                                      0, 0, 1);
-            } , {
-                res = ExtractIconExA(fi.absFilePath().local8Bit(), -1,
-                                      0, 0, 1);
-            });
-
-            if (res) {
-                QT_WA({
-                    res = ptrExtractIconEx((TCHAR*)fi.absFilePath().ucs2(), res - 1,
-                                          0, &si, 1);
-                } , {
-                    res = ExtractIconExA(fi.absFilePath().local8Bit(), res - 1,
-                                          0, &si, 1);
-                });
-            }
-#else
-                res = (UINT)ExtractIconEx((TCHAR*)fi.absFilePath().ucs2(), -1,
-                                            0, 0, 1);
-                if (res)
-                    res = (UINT)ExtractIconEx((TCHAR*)fi.absFilePath().ucs2(), res - 1,
-                                                0, &si, 1);
-#endif
-
+            res = ExtractIconEx((wchar_t*)fi.absFilePath().utf16(), -1, 0, 0, 1);
+            if (res)
+                res = ExtractIconEx((wchar_t*)fi.absFilePath().utf16(), res - 1, 0, &si, 1);
         }
 
         if (res) {
@@ -5760,13 +5617,8 @@ void Q3FileDialog::insertEntry(const Q3ValueList<QUrlInfo> &lst, Q3NetworkOperat
                 if (!file.endsWith(QLatin1Char('/')))
                     file.append(QLatin1Char('/'));
                 file += inf.name();
-                QT_WA({
-                    if (GetFileAttributesW((TCHAR*)file.ucs2()) & FILE_ATTRIBUTE_HIDDEN)
-                        continue;
-                } , {
-                    if (GetFileAttributesA(file.local8Bit()) & FILE_ATTRIBUTE_HIDDEN)
-                        continue;
-                });
+                if (GetFileAttributes((wchar_t*)file.utf16()) & FILE_ATTRIBUTE_HIDDEN)
+                    continue;
             } else {
                 if (inf.name() != QLatin1String("..") && inf.name()[0] == QLatin1Char('.'))
                     continue;

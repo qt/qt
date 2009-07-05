@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -355,8 +355,7 @@ QEventDispatcherWin32Private::QEventDispatcherWin32Private()
 {
     resolveTimerAPI();
 
-    wakeUpNotifier.setHandle(QT_WA_INLINE(CreateEventW(0, FALSE, FALSE, 0),
-                                          CreateEventA(0, FALSE, FALSE, 0)));
+    wakeUpNotifier.setHandle(CreateEvent(0, FALSE, FALSE, 0));
     if (!wakeUpNotifier.handle())
         qWarning("QEventDispatcher: Creating QEventDispatcherWin32Private wakeup event failed");
 }
@@ -367,13 +366,8 @@ QEventDispatcherWin32Private::~QEventDispatcherWin32Private()
     CloseHandle(wakeUpNotifier.handle());
     if (internalHwnd)
         DestroyWindow(internalHwnd);
-    QByteArray className = "QEventDispatcherWin32_Internal_Widget" + QByteArray::number(quintptr(qt_internal_proc));
-#if !defined(Q_OS_WINCE)
-    UnregisterClassA(className.constData(), qWinAppInst());
-#else
-    UnregisterClassW(reinterpret_cast<const wchar_t *> (QString::fromLatin1(className.constData()).utf16())
-                     , qWinAppInst());
-#endif
+    QString className = QLatin1String("QEventDispatcherWin32_Internal_Widget") + QString::number(quintptr(qt_internal_proc));
+    UnregisterClass((wchar_t*)className.utf16(), qWinAppInst());
 }
 
 void QEventDispatcherWin32Private::activateEventNotifier(QWinEventNotifier * wen)
@@ -382,18 +376,24 @@ void QEventDispatcherWin32Private::activateEventNotifier(QWinEventNotifier * wen
     QCoreApplication::sendEvent(wen, &event);
 }
 
-
+// ### Qt 5: remove
 Q_CORE_EXPORT bool winPeekMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
                      UINT wMsgFilterMax, UINT wRemoveMsg)
 {
-    QT_WA({ return PeekMessage(msg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg); } ,
-          { return PeekMessageA(msg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg); });
+    return PeekMessage(msg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 }
 
+// ### Qt 5: remove
 Q_CORE_EXPORT bool winPostMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    QT_WA({ return PostMessage(hWnd, msg, wParam, lParam); } ,
-          { return PostMessageA(hWnd, msg, wParam, lParam); });
+    return PostMessage(hWnd, msg, wParam, lParam);
+}
+
+// ### Qt 5: remove
+Q_CORE_EXPORT bool winGetMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
+                     UINT wMsgFilterMax)
+{
+    return GetMessage(msg, hWnd, wMsgFilterMin, wMsgFilterMax);
 }
 
 // This function is called by a workerthread
@@ -443,10 +443,10 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 
     #ifdef GWLP_USERDATA
             QEventDispatcherWin32 *eventDispatcher =
-                (QEventDispatcherWin32 *) GetWindowLongPtrA(hwnd, GWLP_USERDATA);
+                (QEventDispatcherWin32 *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     #else
             QEventDispatcherWin32 *eventDispatcher =
-                (QEventDispatcherWin32 *) GetWindowLongA(hwnd, GWL_USERDATA);
+                (QEventDispatcherWin32 *) GetWindowLong(hwnd, GWL_USERDATA);
     #endif
             if (eventDispatcher) {
                 QEventDispatcherWin32Private *d = eventDispatcher->d_func();
@@ -494,54 +494,35 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 
 static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatcher)
 {
-    HINSTANCE hi = qWinAppInst();
-#if defined(Q_OS_WINCE)
+    // make sure that multiple Qt's can coexist in the same process
+    QString className = QLatin1String("QEventDispatcherWin32_Internal_Widget") + QString::number(quintptr(qt_internal_proc));
+
     WNDCLASS wc;
-#else
-    WNDCLASSA wc;
-#endif
     wc.style = 0;
     wc.lpfnWndProc = qt_internal_proc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
-    wc.hInstance = hi;
+    wc.hInstance = qWinAppInst();
     wc.hIcon = 0;
     wc.hCursor = 0;
     wc.hbrBackground = 0;
     wc.lpszMenuName = NULL;
+    wc.lpszClassName = reinterpret_cast<const wchar_t *> (className.utf16());
 
-    // make sure that multiple Qt's can coexist in the same process
-    QByteArray className = "QEventDispatcherWin32_Internal_Widget" + QByteArray::number(quintptr(qt_internal_proc));
-#if defined(Q_OS_WINCE)
-    QString tmp = QString::fromLatin1(className.data());
-    wc.lpszClassName = reinterpret_cast<const wchar_t *> (tmp.utf16());
     RegisterClass(&wc);
     HWND wnd = CreateWindow(wc.lpszClassName,  // classname
-                             wc.lpszClassName,  // window name
-                             0,                 // style
-                             0, 0, 0, 0,        // geometry
-                             0,                 // parent
-                             0,                 // menu handle
-                             hi,                // application
-                             0);                // windows creation data.
-#else
-    wc.lpszClassName = className.constData();
-    RegisterClassA(&wc);
-    HWND wnd = CreateWindowA(wc.lpszClassName,  // classname
-                             wc.lpszClassName,  // window name
-                             0,                 // style
-                             0, 0, 0, 0,        // geometry
-                             0,                 // parent
-                             0,                 // menu handle
-                             hi,                // application
-                             0);                // windows creation data.
-#endif
-
+                            wc.lpszClassName,  // window name
+                            0,                 // style
+                            0, 0, 0, 0,        // geometry
+                            0,                 // parent
+                            0,                 // menu handle
+                            qWinAppInst(),     // application
+                            0);                // windows creation data.
 
 #ifdef GWLP_USERDATA
-    SetWindowLongPtrA(wnd, GWLP_USERDATA, (LONG_PTR)eventDispatcher);
+    SetWindowLongPtr(wnd, GWLP_USERDATA, (LONG_PTR)eventDispatcher);
 #else
-    SetWindowLongA(wnd, GWL_USERDATA, (LONG)eventDispatcher);
+    SetWindowLong(wnd, GWL_USERDATA, (LONG)eventDispatcher);
 #endif
 
     if (!wnd) {
@@ -690,7 +671,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 haveMessage = true;
                 msg = d->queuedSocketEvents.takeFirst();
             } else {
-                haveMessage = winPeekMessage(&msg, 0, 0, 0, PM_REMOVE);
+                haveMessage = PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
                 if (haveMessage && (flags & QEventLoop::ExcludeUserInputEvents)
                     && ((msg.message >= WM_KEYFIRST
                          && msg.message <= WM_KEYLAST)
@@ -738,11 +719,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
                 if (!filterEvent(&msg)) {
                     TranslateMessage(&msg);
-                    QT_WA({
-                        DispatchMessage(&msg);
-                    } , {
-                        DispatchMessageA(&msg);
-                    });
+                    DispatchMessage(&msg);
                 }
             } else if (waitRet >= WAIT_OBJECT_0 && waitRet < WAIT_OBJECT_0 + nCount) {
                 d->activateEventNotifier(d->winEventNotifierList.at(waitRet - WAIT_OBJECT_0));
@@ -781,7 +758,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 bool QEventDispatcherWin32::hasPendingEvents()
 {
     MSG msg;
-    return qGlobalPostedEventsCount() || winPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+    return qGlobalPostedEventsCount() || PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
 }
 
 void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)

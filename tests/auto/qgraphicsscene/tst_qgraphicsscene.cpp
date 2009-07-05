@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -141,7 +141,7 @@ protected:
     }
 };
 
-class EventSpy : public QObject
+class EventSpy : public QGraphicsWidget
 {
     Q_OBJECT
 public:
@@ -151,10 +151,25 @@ public:
         watched->installEventFilter(this);
     }
 
+    EventSpy(QGraphicsScene *scene, QGraphicsItem *watched, QEvent::Type type)
+        : _count(0), spied(type)
+    {
+        scene->addItem(this);
+        watched->installSceneEventFilter(this);
+    }
+
     int count() const { return _count; }
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event)
+    {
+        Q_UNUSED(watched);
+        if (event->type() == spied)
+            ++_count;
+        return false;
+    }
+
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     {
         Q_UNUSED(watched);
         if (event->type() == spied)
@@ -236,6 +251,9 @@ private slots:
     void changedSignal();
     void stickyFocus_data();
     void stickyFocus();
+    void sendEvent();
+    void inputMethod_data();
+    void inputMethod();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -3585,6 +3603,73 @@ void tst_QGraphicsScene::stickyFocus()
     qApp->sendEvent(&scene, &event);
 
     QCOMPARE(text->hasFocus(), sticky);
+}
+
+void tst_QGraphicsScene::sendEvent()
+{
+    QGraphicsScene scene;
+    QGraphicsTextItem *item = scene.addText(QString());
+    EventSpy *spy = new EventSpy(&scene, item, QEvent::User);
+    QCOMPARE(spy->count(), 0);
+    QEvent event(QEvent::User);
+    scene.sendEvent(item, &event);
+    QCOMPARE(spy->count(), 1);
+}
+
+void tst_QGraphicsScene::inputMethod_data()
+{
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<bool>("callFocusItem");
+    QTest::newRow("0") << 0 << false;
+    QTest::newRow("1") << (int)QGraphicsItem::ItemAcceptsInputMethod << false;
+    QTest::newRow("2") << (int)QGraphicsItem::ItemIsFocusable << false;
+    QTest::newRow("3") <<
+        (int)(QGraphicsItem::ItemAcceptsInputMethod|QGraphicsItem::ItemIsFocusable) << true;
+}
+
+class InputMethodTester : public QGraphicsRectItem
+{
+    void inputMethodEvent(QInputMethodEvent *) { ++eventCalls; }
+    QVariant inputMethodQuery(Qt::InputMethodQuery) const { ++queryCalls; return QVariant(); }
+public:
+    int eventCalls;
+    mutable int queryCalls;
+};
+
+void tst_QGraphicsScene::inputMethod()
+{
+    QFETCH(int, flags);
+    QFETCH(bool, callFocusItem);
+
+    InputMethodTester *item = new InputMethodTester;
+    item->setFlags((QGraphicsItem::GraphicsItemFlags)flags);
+
+    QGraphicsScene scene;
+    scene.addItem(item);
+    QInputMethodEvent event;
+
+    scene.setFocusItem(item);
+    QCOMPARE(!!(item->flags() & QGraphicsItem::ItemIsFocusable), scene.focusItem() == item);
+
+    item->eventCalls = 0;
+    qApp->sendEvent(&scene, &event);
+    QCOMPARE(item->eventCalls, callFocusItem ? 1 : 0);
+
+    item->queryCalls = 0;
+    scene.inputMethodQuery((Qt::InputMethodQuery)0);
+    QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0);
+
+    scene.setFocusItem(0);
+    QCOMPARE(item->eventCalls, callFocusItem ? 2 : 0); // verify correct delivery of "reset" event
+    QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected
+
+    item->eventCalls = 0;
+    qApp->sendEvent(&scene, &event);
+    QCOMPARE(item->eventCalls, 0);
+
+    item->queryCalls = 0;
+    scene.inputMethodQuery((Qt::InputMethodQuery)0);
+    QCOMPARE(item->queryCalls, 0);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

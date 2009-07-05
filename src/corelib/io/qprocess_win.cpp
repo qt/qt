@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,7 @@
 #include <private/qthread_p.h>
 #include <qdebug.h>
 
-#include "private/qfsfileengine_p.h" // for longFileName and win95FileName
+#include "private/qfsfileengine_p.h" // for longFileName
 
 
 #ifndef QT_NO_PROCESS
@@ -122,25 +122,15 @@ bool QProcessPrivate::createChannel(Channel &channel)
         if (&channel == &stdinChannel) {
             // try to open in read-only mode
             channel.pipe[1] = INVALID_Q_PIPE;
-            QT_WA({
-                channel.pipe[0] =
-                    CreateFileW((TCHAR*)QFSFileEnginePrivate::longFileName(channel.file).utf16(),
-                                GENERIC_READ,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                &secAtt,
-                                OPEN_EXISTING,
-                                FILE_ATTRIBUTE_NORMAL,
-                                NULL);
-            }, {
-                channel.pipe[0] =
-                    CreateFileA(QFSFileEnginePrivate::win95Name(channel.file),
-                                GENERIC_READ,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                &secAtt,
-                                OPEN_EXISTING,
-                                FILE_ATTRIBUTE_NORMAL,
-                                NULL);
-            });
+            channel.pipe[0] =
+                CreateFile((const wchar_t*)QFSFileEnginePrivate::longFileName(channel.file).utf16(),
+                           GENERIC_READ,
+                           FILE_SHARE_READ | FILE_SHARE_WRITE,
+                           &secAtt,
+                           OPEN_EXISTING,
+                           FILE_ATTRIBUTE_NORMAL,
+                           NULL);
+
             if (channel.pipe[0] != INVALID_Q_PIPE)
                 return true;
 
@@ -148,31 +138,15 @@ bool QProcessPrivate::createChannel(Channel &channel)
         } else {
             // open in write mode
             channel.pipe[0] = INVALID_Q_PIPE;
-            DWORD creation;
-            if (channel.append)
-                creation = OPEN_ALWAYS;
-            else
-                creation = CREATE_ALWAYS;
+            channel.pipe[1] =
+                CreateFile((const wchar_t *)QFSFileEnginePrivate::longFileName(channel.file).utf16(),
+                           GENERIC_WRITE,
+                           FILE_SHARE_READ | FILE_SHARE_WRITE,
+                           &secAtt,
+                           channel.append ? OPEN_ALWAYS : CREATE_ALWAYS,
+                           FILE_ATTRIBUTE_NORMAL,
+                           NULL);
 
-            QT_WA({
-                channel.pipe[1] =
-                    CreateFileW((TCHAR*)QFSFileEnginePrivate::longFileName(channel.file).utf16(),
-                                GENERIC_WRITE,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                &secAtt,
-                                creation,
-                                FILE_ATTRIBUTE_NORMAL,
-                                NULL);
-            }, {
-                channel.pipe[1] =
-                    CreateFileA(QFSFileEnginePrivate::win95Name(channel.file),
-                                GENERIC_WRITE,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                &secAtt,
-                                creation,
-                                FILE_ATTRIBUTE_NORMAL,
-                                NULL);
-            });
             if (channel.pipe[1] != INVALID_Q_PIPE) {
                 if (channel.append) {
                     SetFilePointer(channel.pipe[1], 0, NULL, FILE_END);
@@ -327,56 +301,37 @@ static QByteArray qt_create_environment(const QHash<QString, QString> *environme
         int pos = 0;
         QHash<QString, QString>::ConstIterator it = copy.constBegin(),
                                               end = copy.constEnd();
-#ifdef UNICODE
-        if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
-            static const TCHAR equal = L'=';
-            static const TCHAR nul = L'\0';
 
-            for ( ; it != end; ++it) {
-                uint tmpSize = sizeof(TCHAR) * (it.key().length() + it.value().length() + 2);
-                // ignore empty strings
-                if (tmpSize == sizeof(TCHAR)*2)
-                    continue;
-                envlist.resize(envlist.size() + tmpSize);
+        static const wchar_t equal = L'=';
+        static const wchar_t nul = L'\0';
 
-                tmpSize = it.key().length() * sizeof(TCHAR);
-                memcpy(envlist.data()+pos, it.key().utf16(), tmpSize);
-                pos += tmpSize;
+        for ( ; it != end; ++it) {
+            uint tmpSize = sizeof(wchar_t) * (it.key().length() + it.value().length() + 2);
+            // ignore empty strings
+            if (tmpSize == sizeof(wchar_t) * 2)
+                continue;
+            envlist.resize(envlist.size() + tmpSize);
 
-                memcpy(envlist.data()+pos, &equal, sizeof(TCHAR));
-                pos += sizeof(TCHAR);
+            tmpSize = it.key().length() * sizeof(wchar_t);
+            memcpy(envlist.data()+pos, it.key().utf16(), tmpSize);
+            pos += tmpSize;
 
-                tmpSize = it.value().length() * sizeof(TCHAR);
-                memcpy(envlist.data()+pos, it.value().utf16(), tmpSize);
-                pos += tmpSize;
+            memcpy(envlist.data()+pos, &equal, sizeof(wchar_t));
+            pos += sizeof(wchar_t);
 
-                memcpy(envlist.data()+pos, &nul, sizeof(TCHAR));
-                pos += sizeof(TCHAR);
-            }
-            // add the 2 terminating 0 (actually 4, just to be on the safe side)
-            envlist.resize( envlist.size()+4 );
-            envlist[pos++] = 0;
-            envlist[pos++] = 0;
-            envlist[pos++] = 0;
-            envlist[pos++] = 0;
-        } else
-#endif // UNICODE
-        {
-            for ( ; it != end; it++) {
-                QByteArray tmp = it.key().toLocal8Bit();
-                tmp.append('=');
-                tmp.append(it.value().toLocal8Bit());
+            tmpSize = it.value().length() * sizeof(wchar_t);
+            memcpy(envlist.data()+pos, it.value().utf16(), tmpSize);
+            pos += tmpSize;
 
-                uint tmpSize = tmp.length() + 1;
-                envlist.resize(envlist.size() + tmpSize);
-                memcpy(envlist.data()+pos, tmp.data(), tmpSize);
-                pos += tmpSize;
-            }
-            // add the terminating 0 (actually 2, just to be on the safe side)
-            envlist.resize(envlist.size()+2);
-            envlist[pos++] = 0;
-            envlist[pos++] = 0;
+            memcpy(envlist.data()+pos, &nul, sizeof(wchar_t));
+            pos += sizeof(wchar_t);
         }
+        // add the 2 terminating 0 (actually 4, just to be on the safe side)
+        envlist.resize( envlist.size()+4 );
+        envlist[pos++] = 0;
+        envlist[pos++] = 0;
+        envlist[pos++] = 0;
+        envlist[pos++] = 0;
     }
     return envlist;
 }
@@ -417,58 +372,33 @@ void QProcessPrivate::startProcess()
     qDebug("   pass environment : %s", environment.isEmpty() ? "no" : "yes");
 #endif
 
-    DWORD dwCreationFlags = 0;
-    if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based))
-        dwCreationFlags |= CREATE_NO_WINDOW;
+    DWORD dwCreationFlags = CREATE_NO_WINDOW;
 
-#ifdef UNICODE
-    if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
 #if defined(Q_OS_WINCE)
         QString fullPathProgram = program;
         if (!QDir::isAbsolutePath(fullPathProgram))
             fullPathProgram = QFileInfo(fullPathProgram).absoluteFilePath();
         fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
-        success = CreateProcessW((WCHAR*)fullPathProgram.utf16(),
-                                 (WCHAR*)args.utf16(),
-                                 0, 0, false, 0, 0, 0, 0, pid);
+        success = CreateProcess((wchar_t*)fullPathProgram.utf16(),
+                                (wchar_t*)args.utf16(),
+                                0, 0, false, 0, 0, 0, 0, pid);
 #else
         dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
         STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
 	                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                         (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                         0, 0, 0,
-                                         STARTF_USESTDHANDLES,
-                                         0, 0, 0,
-                                         stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
+                                   (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+                                   0, 0, 0,
+                                   STARTF_USESTDHANDLES,
+                                   0, 0, 0,
+                                   stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
         };
-        success = CreateProcessW(0, (WCHAR*)args.utf16(),
-                                 0, 0, TRUE, dwCreationFlags,
-                                 environment ? envlist.data() : 0,
-                                 workingDirectory.isEmpty() ? 0
-                                    : (WCHAR*)QDir::toNativeSeparators(workingDirectory).utf16(),
-                                 &startupInfo, pid);
-#endif
-    } else
-#endif // UNICODE
-    {
-#ifndef Q_OS_WINCE
-	    STARTUPINFOA startupInfo = { sizeof( STARTUPINFOA ), 0, 0, 0,
-                                         (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                         (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                         0, 0, 0,
-                                         STARTF_USESTDHANDLES,
-                                         0, 0, 0,
-                                         stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
-	    };
+        success = CreateProcess(0, (wchar_t*)args.utf16(),
+                                0, 0, TRUE, dwCreationFlags,
+                                environment ? envlist.data() : 0,
+                                workingDirectory.isEmpty() ? 0
+                                    : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
+                                &startupInfo, pid);
 
-	    success = CreateProcessA(0, args.toLocal8Bit().data(),
-                                     0, 0, TRUE, dwCreationFlags, environment ? envlist.data() : 0,
-                                     workingDirectory.isEmpty() ? 0
-                                        : QDir::toNativeSeparators(workingDirectory).toLocal8Bit().data(),
-                                     &startupInfo, pid);
-#endif // Q_OS_WINCE
-    }
-#ifndef Q_OS_WINCE
     if (stdinChannel.pipe[0] != INVALID_Q_PIPE) {
         CloseHandle(stdinChannel.pipe[0]);
         stdinChannel.pipe[0] = INVALID_Q_PIPE;
@@ -508,7 +438,7 @@ void QProcessPrivate::startProcess()
     }
 
     // give the process a chance to start ...
-    Sleep(SLEEPMIN*2);
+    Sleep(SLEEPMIN * 2);
     _q_startupNotification();
 }
 
@@ -882,42 +812,25 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
     PROCESS_INFORMATION pinfo;
 
-#ifdef UNICODE
-    if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
 #if defined(Q_OS_WINCE)
         QString fullPathProgram = program;
         if (!QDir::isAbsolutePath(fullPathProgram))
             fullPathProgram.prepend(QDir::currentPath().append(QLatin1Char('/')));
         fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
-        success = CreateProcessW((WCHAR*)fullPathProgram.utf16(),
-                                 (WCHAR*)args.utf16(),
-                                 0, 0, false, CREATE_NEW_CONSOLE, 0, 0, 0, &pinfo);
+        success = CreateProcess((wchar_t*)fullPathProgram.utf16(),
+                                (wchar_t*)args.utf16(),
+                                0, 0, false, CREATE_NEW_CONSOLE, 0, 0, 0, &pinfo);
 #else
         STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
                                      (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
                                      (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                    };
-        success = CreateProcessW(0, (WCHAR*)args.utf16(),
-                                 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 
-                                 workingDir.isEmpty() ? (const WCHAR *)0 : (const WCHAR *)workingDir.utf16(),
-                                 &startupInfo, &pinfo);
-#endif
-    } else
-#endif // UNICODE
-    {
-#ifndef Q_OS_WINCE
-       STARTUPINFOA startupInfo = { sizeof( STARTUPINFOA ), 0, 0, 0,
-                                     (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                     (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                                  };
-       success = CreateProcessA(0, args.toLocal8Bit().data(),
-                                0, 0, FALSE, CREATE_NEW_CONSOLE, 0,
-                                workingDir.isEmpty() ? (LPCSTR)0 : workingDir.toLocal8Bit().constData(),
+        success = CreateProcess(0, (wchar_t*)args.utf16(),
+                                0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0,
+                                workingDir.isEmpty() ? 0 : (wchar_t*)workingDir.utf16(),
                                 &startupInfo, &pinfo);
 #endif // Q_OS_WINCE
-    }
 
     if (success) {
         CloseHandle(pinfo.hThread);

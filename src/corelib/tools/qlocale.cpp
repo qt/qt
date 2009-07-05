@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -185,8 +185,7 @@ static QString languageToCode(QLocale::Language language)
 
     const unsigned char *c = language_code_list + 3*(uint(language));
 
-    QString code;
-    code.resize(c[2] == 0 ? 2 : 3);
+    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -201,8 +200,7 @@ static QString countryToCode(QLocale::Country country)
     if (country == QLocale::AnyCountry)
         return QString();
 
-    QString code;
-    code.resize(2);
+    QString code(2, Qt::Uninitialized);
     const unsigned char *c = country_code_list + 2*(uint(country));
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -388,15 +386,8 @@ static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
 
 static QString getWinLocaleInfo(LCTYPE type)
 {
-    int cnt = 0;
-
     LCID id = GetUserDefaultLCID();
-
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type, 0, 0)*2;
-    } , {
-        cnt = GetLocaleInfoA(id, type, 0, 0);
-    });
+    int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", (int)type);
@@ -405,27 +396,14 @@ static QString getWinLocaleInfo(LCTYPE type)
 
     QByteArray buff(cnt, 0);
 
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type,
-                                reinterpret_cast<wchar_t*>(buff.data()),
-                                buff.size()/2);
-    } , {
-        cnt = GetLocaleInfoA(id, type,
-                                buff.data(), buff.size());
-    });
+    cnt = GetLocaleInfo(id, type, reinterpret_cast<wchar_t*>(buff.data()), buff.size() / 2);
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", (int)type);
         return QString();
     }
 
-    QString result;
-    QT_WA({
-        result = QString::fromUtf16(reinterpret_cast<ushort*>(buff.data()));
-    } , {
-        result = QString::fromLocal8Bit(buff.data());
-    });
-    return result;
+    return QString::fromWCharArray(reinterpret_cast<const wchar_t *>(buff.data()));
 }
 
 QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
@@ -447,20 +425,19 @@ QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
         }
     }
 
-    if (QSysInfo::WindowsVersion == QSysInfo::WV_95
-        || (QSysInfo::WindowsVersion & QSysInfo::WV_CE_based)) {
-        result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
-    } else {
-        if (id == LOCALE_USER_DEFAULT)
-            id = GetUserDefaultLCID();
-        QString resultuage = winIso639LangName(id);
-        QString country = winIso3116CtryName(id);
-        result = resultuage.toLatin1();
-        if (!country.isEmpty()) {
-            result += '_';
-            result += country.toLatin1();
-        }
+#if defined(Q_OS_WINCE)
+    result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
+#else
+    if (id == LOCALE_USER_DEFAULT)
+        id = GetUserDefaultLCID();
+    QString resultuage = winIso639LangName(id);
+    QString country = winIso3116CtryName(id);
+    result = resultuage.toLatin1();
+    if (!country.isEmpty()) {
+        result += '_';
+        result += country.toLatin1();
     }
+#endif
 
     return result;
 }
@@ -546,15 +523,9 @@ static QString winDateToString(const QDate &date, DWORD flags)
 
     LCID id = GetUserDefaultLCID();
 
-    QT_WA({
-        TCHAR buf[255];
-        if (GetDateFormatW(id, flags, &st, 0, buf, 255))
-            return QString::fromUtf16((ushort*)buf);
-    } , {
-        char buf[255];
-        if (GetDateFormatA(id, flags, &st, 0, (char*)&buf, 255))
-            return QString::fromLocal8Bit(buf);
-    });
+    wchar_t buf[255];
+    if (GetDateFormat(id, flags, &st, 0, buf, 255))
+        return QString::fromWCharArray(buf);
 
     return QString();
 }
@@ -571,15 +542,9 @@ static QString winTimeToString(const QTime &time)
     DWORD flags = 0;
     LCID id = GetUserDefaultLCID();
 
-    QT_WA({
-        TCHAR buf[255];
-        if (GetTimeFormatW(id, flags, &st, 0, buf, 255))
-            return QString::fromUtf16((ushort*)buf);
-    } , {
-        char buf[255];
-        if (GetTimeFormatA(id, flags, &st, 0, (char*)&buf, 255))
-            return QString::fromLocal8Bit(buf);
-    });
+    wchar_t buf[255];
+    if (GetTimeFormat(id, flags, &st, 0, buf, 255))
+        return QString::fromWCharArray(buf);
 
     return QString();
 }
@@ -628,12 +593,10 @@ static QString winMonthName(int month, bool short_format)
 static QLocale::MeasurementSystem winSystemMeasurementSystem()
 {
     LCID id = GetUserDefaultLCID();
-    TCHAR output[2];
+    wchar_t output[2];
 
     if (GetLocaleInfo(id, LOCALE_IMEASURE, output, 2)) {
-        QString iMeasure = QT_WA_INLINE(
-                QString::fromUtf16(reinterpret_cast<ushort*>(output)),
-                QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
+        QString iMeasure = QString::fromWCharArray(output);
         if (iMeasure == QLatin1String("1")) {
             return QLocale::ImperialSystem;
         }
@@ -645,12 +608,10 @@ static QLocale::MeasurementSystem winSystemMeasurementSystem()
 static QString winSystemAMText()
 {
     LCID id = GetUserDefaultLCID();
-    TCHAR output[15]; // maximum length including  terminating zero character for Win2003+
+    wchar_t output[15]; // maximum length including  terminating zero character for Win2003+
 
     if (GetLocaleInfo(id, LOCALE_S1159, output, 15)) {
-        return QT_WA_INLINE(
-                QString::fromUtf16(reinterpret_cast<ushort*>(output)),
-                QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
+        return QString::fromWCharArray(output);
     }
 
     return QString();
@@ -659,12 +620,10 @@ static QString winSystemAMText()
 static QString winSystemPMText()
 {
     LCID id = GetUserDefaultLCID();
-    TCHAR output[15]; // maximum length including  terminating zero character for Win2003+
+    wchar_t output[15]; // maximum length including  terminating zero character for Win2003+
 
     if (GetLocaleInfo(id, LOCALE_S2359, output, 15)) {
-        return QT_WA_INLINE(
-                QString::fromUtf16(reinterpret_cast<ushort*>(output)),
-                QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
+        return QString::fromWCharArray(output);
     }
 
     return QString();
@@ -767,9 +726,6 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     }
     return QVariant();
 }
-
-/* Win95 doesn't have a function to return the ISO lang/country name of the user's locale.
-   Instead it can return a "Windows code". This maps windows codes to ISO country names. */
 
 struct WindowsToISOListElt {
     ushort windows_code;
@@ -926,15 +882,9 @@ static QString winIso639LangName(LCID id)
     // Windows returns the wrong ISO639 for some languages, we need to detect them here using
     // the language code
     QString lang_code;
-    QT_WA({
-        TCHAR out[256];
-        if (GetLocaleInfoW(id, LOCALE_ILANGUAGE, out, 255))
-            lang_code = QString::fromUtf16((ushort*)out);
-    } , {
-        char out[256];
-        if (GetLocaleInfoA(id, LOCALE_ILANGUAGE, out, 255))
-            lang_code = QString::fromLocal8Bit(out);
-    });
+    wchar_t out[256];
+    if (GetLocaleInfo(id, LOCALE_ILANGUAGE, out, 255))
+        lang_code = QString::fromWCharArray(out);
 
     if (!lang_code.isEmpty()) {
         const char *endptr;
@@ -956,15 +906,8 @@ static QString winIso639LangName(LCID id)
         return result;
 
     // not one of the problematic languages - do the usual lookup
-    QT_WA({
-        TCHAR out[256];
-        if (GetLocaleInfoW(id, LOCALE_SISO639LANGNAME , out, 255))
-            result = QString::fromUtf16((ushort*)out);
-    } , {
-        char out[256];
-        if (GetLocaleInfoA(id, LOCALE_SISO639LANGNAME, out, 255))
-            result = QString::fromLocal8Bit(out);
-    });
+    if (GetLocaleInfo(id, LOCALE_SISO639LANGNAME , out, 255))
+        result = QString::fromWCharArray(out);
 
     return result;
 }
@@ -973,15 +916,9 @@ static QString winIso3116CtryName(LCID id)
 {
     QString result;
 
-    QT_WA({
-        TCHAR out[256];
-        if (GetLocaleInfoW(id, LOCALE_SISO3166CTRYNAME, out, 255))
-            result = QString::fromUtf16((ushort*)out);
-    } , {
-        char out[256];
-        if (GetLocaleInfoA(id, LOCALE_SISO3166CTRYNAME, out, 255))
-            result = QString::fromLocal8Bit(out);
-    });
+    wchar_t out[256];
+    if (GetLocaleInfo(id, LOCALE_SISO3166CTRYNAME, out, 255))
+        result = QString::fromWCharArray(out);
 
     return result;
 }
@@ -1013,21 +950,17 @@ static QString macMonthName(int month, bool short_format)
     if (month < 0 || month > 11)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values
-            = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                      short_format ? kCFDateFormatterShortMonthSymbols
-                                                   : kCFDateFormatterMonthSymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values
+        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                  short_format ? kCFDateFormatterShortMonthSymbols
+                                               : kCFDateFormatterMonthSymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -1037,20 +970,16 @@ static QString macDayName(int day, bool short_format)
     if (day < 1 || day > 7)
         return QString();
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        QCFType<CFDateFormatterRef> formatter
-            = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                    kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-        QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                                short_format ? kCFDateFormatterShortWeekdaySymbols
-                                                             : kCFDateFormatterWeekdaySymbols));
-        if (values != 0) {
-            CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
-            return QCFString::toQString(cfstring);
-        }
+    QCFType<CFDateFormatterRef> formatter
+        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
+                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
+    QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
+                                            short_format ? kCFDateFormatterShortWeekdaySymbols
+                                                         : kCFDateFormatterWeekdaySymbols));
+    if (values != 0) {
+        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
+        return QCFString::toQString(cfstring);
     }
-#endif
     return QString();
 }
 
@@ -2699,7 +2628,7 @@ static QString timeZone()
     DWORD res = GetTimeZoneInformation(&info);
     if (res == TIME_ZONE_ID_UNKNOWN)
         return QString();
-    return QString::fromUtf16(reinterpret_cast<const ushort *> (info.StandardName));
+    return QString::fromWCharArray(info.StandardName);
 #elif defined(Q_OS_WIN)
     _tzset();
 # if defined(_MSC_VER) && _MSC_VER >= 1400

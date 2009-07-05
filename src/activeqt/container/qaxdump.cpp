@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -66,8 +66,8 @@ QString qax_docuFromName(ITypeInfo *typeInfo, const QString &name)
         BSTR docStringBstr, helpFileBstr;
         ulong helpContext;
         HRESULT hres = typeInfo->GetDocumentation(memId, 0, &docStringBstr, &helpContext, &helpFileBstr);
-        QString docString = QString::fromUtf16((const ushort *)docStringBstr);
-        QString helpFile = QString::fromUtf16((const ushort *)helpFileBstr);
+        QString docString = QString::fromWCharArray(docStringBstr);
+        QString helpFile = QString::fromWCharArray(helpFileBstr);
         SysFreeString(docStringBstr);
         SysFreeString(helpFileBstr);
         if (hres == S_OK) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,7 @@
 #include "qlocalserver_p.h"
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
+#include "qnet_unix_p.h"
 
 #ifndef QT_NO_LOCALSERVER
 
@@ -88,7 +89,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     serverName = requestedServerName;
 
     // create the unix socket
-    listenSocket = qSocket(PF_UNIX, SOCK_STREAM, 0);
+    listenSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0);
     if (-1 == listenSocket) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
@@ -107,7 +108,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
              fullServerName.toLatin1().size() + 1);
 
     // bind
-    if(-1 == qBind(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
+    if(-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
         setError(QLatin1String("QLocalServer::listen"));
         // if address is in use already, just close the socket, but do not delete the file
         if(errno == EADDRINUSE)
@@ -120,7 +121,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
 
     // listen for connections
-    if (-1 == qListen(listenSocket, 50)) {
+    if (-1 == qt_safe_listen(listenSocket, 50)) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
         listenSocket = -1;
@@ -172,7 +173,7 @@ void QLocalServerPrivate::_q_onNewConnection()
 
     ::sockaddr_un addr;
     QT_SOCKLEN_T length = sizeof(sockaddr_un);
-    int connectedSocket = qAccept(listenSocket, (sockaddr *)&addr, &length);
+    int connectedSocket = qt_safe_accept(listenSocket, (sockaddr *)&addr, &length);
     if(-1 == connectedSocket) {
         setError(QLatin1String("QLocalSocket::activated"));
         closeServer();

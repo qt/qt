@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,52 @@ private slots:
     void sizeHint();
     void sizeConstraints();
     void setGeometry();
+    void setStyleShouldChangeSpacing();
 };
+
+class CustomLayoutStyle : public QWindowsStyle
+{
+    Q_OBJECT
+public:
+    CustomLayoutStyle() : QWindowsStyle()
+    {
+        hspacing = 5;
+        vspacing = 10;
+    }
+
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
+                            const QWidget * widget = 0 ) const;
+
+    int hspacing;
+    int vspacing;
+};
+
+int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
+                                   const QWidget * widget /*= 0*/ ) const
+{
+    switch (metric) {
+        case PM_LayoutLeftMargin:
+            return 0;
+        break;
+        case PM_LayoutTopMargin:
+            return 3;
+        break;
+        case PM_LayoutRightMargin:
+            return 6;
+        break;
+        case PM_LayoutBottomMargin:
+            return 9;
+        break;
+        case PM_LayoutHorizontalSpacing:
+            return hspacing;
+        case PM_LayoutVerticalSpacing:
+            return vspacing;
+        break;
+        default:
+            break;
+    }
+    return QWindowsStyle::pixelMetric(metric, option, widget);
+}
 
 
 tst_QBoxLayout::tst_QBoxLayout()
@@ -163,12 +208,44 @@ void tst_QBoxLayout::setGeometry()
     lay->addLayout(lay2);
     w.setLayout(lay);
     w.show();
-    
+
     QRect newGeom(0, 0, 70, 70);
     lay2->setGeometry(newGeom);
     QApplication::processEvents();
     QVERIFY2(newGeom.contains(dial->geometry()), "dial->geometry() should be smaller and within newGeom");
 }
+
+void tst_QBoxLayout::setStyleShouldChangeSpacing()
+{
+
+    QWidget *window = new QWidget;
+    QHBoxLayout *hbox = new QHBoxLayout(window);
+    QPushButton *pb1 = new QPushButton(tr("The spacing between this"));
+    QPushButton *pb2 = new QPushButton(tr("and this button should depend on the style of the parent widget"));;
+    hbox->addWidget(pb1);
+    hbox->addWidget(pb2);
+    CustomLayoutStyle *style1 = new CustomLayoutStyle;
+    style1->hspacing = 6;
+    window->setStyle(style1);
+    window->show();
+
+    QTest::qWait(100);
+    int spacing = pb2->geometry().left() - pb1->geometry().right() - 1;
+    QCOMPARE(spacing, 6);
+
+    CustomLayoutStyle *style2 = new CustomLayoutStyle();
+    style2->hspacing = 10;
+    window->setStyle(style2);
+    QTest::qWait(100);
+    spacing = pb2->geometry().left() - pb1->geometry().right() - 1;
+    QEXPECT_FAIL("", "Fix for next minor release", Continue);
+    QCOMPARE(spacing, 10);
+
+    delete window;
+    delete style1;
+    delete style2;
+}
+
 
 QTEST_MAIN(tst_QBoxLayout)
 #include "tst_qboxlayout.moc"

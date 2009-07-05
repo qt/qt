@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -243,10 +243,10 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 
     //Get the small icon
 #ifndef Q_OS_WINCE
-    val = SHGetFileInfo((const WCHAR *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
+    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
                         sizeof(SHFILEINFO), SHGFI_ICON|SHGFI_SMALLICON|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS);
 #else
-    val = SHGetFileInfo((const WCHAR *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
+    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
                         sizeof(SHFILEINFO), SHGFI_SMALLICON|SHGFI_SYSICONINDEX);
 #endif
     if (val) {
@@ -282,10 +282,10 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 
     //Get the big icon
 #ifndef Q_OS_WINCE
-    val = SHGetFileInfo((const WCHAR *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
+    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
                         sizeof(SHFILEINFO), SHGFI_ICON|SHGFI_LARGEICON|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS);
 #else
-    val = SHGetFileInfo((const WCHAR *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
+    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
                         sizeof(SHFILEINFO), SHGFI_LARGEICON|SHGFI_SYSICONINDEX);
 #endif
     if (val) {
@@ -357,9 +357,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
     if (info.isRoot())
 #if defined (Q_WS_WIN) && !defined(Q_WS_WINCE)
     {
-        uint type = DRIVE_UNKNOWN;
-        QT_WA({ type = GetDriveTypeW((wchar_t *)info.absoluteFilePath().utf16()); },
-        { type = GetDriveTypeA(info.absoluteFilePath().toLocal8Bit()); });
+        UINT type = GetDriveType((wchar_t *)info.absoluteFilePath().utf16());
 
         switch (type) {
         case DRIVE_REMOVABLE:

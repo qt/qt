@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -173,6 +173,7 @@ private slots:
     void sceneBoundingRect();
     void childrenBoundingRect();
     void childrenBoundingRectTransformed();
+    void childrenBoundingRect2();
     void group();
     void setGroup();
     void nestedGroups();
@@ -229,6 +230,7 @@ private slots:
     void moveItem();
     void sorting_data();
     void sorting();
+    void itemHasNoContents();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -2994,6 +2996,16 @@ void tst_QGraphicsItem::childrenBoundingRectTransformed()
     QCOMPARE(rect->childrenBoundingRect(), QRectF(-100, 75, 275, 250));
 }
 
+void tst_QGraphicsItem::childrenBoundingRect2()
+{
+    QGraphicsItemGroup box;
+    QGraphicsLineItem l1(0, 0, 100, 0, &box);
+    QGraphicsLineItem l2(100, 0, 100, 100, &box);
+    QGraphicsLineItem l3(0, 0, 0, 100, &box);
+    // Make sure lines (zero with/height) are included in the childrenBoundingRect.
+    QCOMPARE(box.childrenBoundingRect(), QRectF(0, 0, 100, 100));
+}
+
 void tst_QGraphicsItem::group()
 {
     QGraphicsScene scene;
@@ -3951,7 +3963,7 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.size(), changeCount);
         QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemFlagsChange);
         QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemFlagsHaveChanged);
-        QVariant expectedFlags = qVariantFromValue<quint32>(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
+        QVariant expectedFlags = qVariantFromValue<quint32>(QGraphicsItem::GraphicsItemFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges));
         QCOMPARE(tester.values.at(tester.values.size() - 2), expectedFlags);
         QCOMPARE(tester.values.at(tester.values.size() - 1), qVariantFromValue<quint32>(QGraphicsItem::ItemIsSelectable));
     }
@@ -7029,6 +7041,32 @@ void tst_QGraphicsItem::sorting()
                  << grid[2][0] << grid[2][1] << grid[2][2] << grid[2][3]
                  << grid[3][0] << grid[3][1] << grid[3][2] << grid[3][3]
                  << item1 << item2);
+}
+
+void tst_QGraphicsItem::itemHasNoContents()
+{
+    PainterItem *item1 = new PainterItem;
+    PainterItem *item2 = new PainterItem;
+    item2->setParentItem(item1);
+    item2->setPos(50, 50);
+    item1->setFlag(QGraphicsItem::ItemHasNoContents);
+    item1->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QGraphicsScene scene;
+    scene.addItem(item1);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    _paintedItems.clear();
+
+    view.viewport()->repaint();
+
+    QCOMPARE(_paintedItems, QList<QGraphicsItem *>() << item2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

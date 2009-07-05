@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,10 @@
 #include <time.h>
 #include <ctype.h>
 
+#if defined(Q_OS_UNIX)
+# include "private/qcore_unix_p.h"      // overrides QT_OPEN
+#endif
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 # include <process.h>
 # if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -71,7 +75,6 @@
 #  include <types.h>
 #  include "qfunctions_wince.h"
 #endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -208,8 +211,9 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
             if ((*doopen =
                 QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
 #  else // CE
+            // this is Unix or older MSVC
             if ((*doopen =
-                open(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
+                QT_OPEN(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
 #  endif
 #  ifdef QT_LARGEFILE_SUPPORT
                            |QT_OPEN_LARGEFILE
@@ -219,18 +223,9 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 #  elif defined(Q_OS_WIN)
                            |O_BINARY
 #  endif
-#  ifdef O_CLOEXEC
-                           // supported on Linux >= 2.6.23; avoids one extra system call
-                           // and avoids a race condition: if another thread forks, we could
-                           // end up leaking a file descriptor...
-                           |O_CLOEXEC
-#  endif
                      , 0600)) >= 0)
 #endif // WIN && !CE
             {
-#if defined(Q_OS_UNIX) && !defined(O_CLOEXEC)
-                fcntl(*doopen, F_SETFD, FD_CLOEXEC);
-#endif
                 return 1;
             }
             if (errno != EEXIST)
@@ -340,6 +335,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
     Q_ASSERT(!isReallyOpen());
+
+    openMode |= QIODevice::ReadWrite;
 
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
@@ -758,7 +755,6 @@ bool QTemporaryFile::open(OpenMode flags)
         }
     }
 
-    flags |= QIODevice::ReadWrite;
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
         return true;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -169,18 +169,8 @@ public:
     void readDevmode(HGLOBAL globalDevmode);
     void readDevnames(HGLOBAL globalDevnames);
 
-    inline DEVMODEW *devModeW() const { return (DEVMODEW*) devMode; }
-    inline DEVMODEA *devModeA() const { return (DEVMODEA*) devMode; }
-
-    inline PRINTER_INFO_2W *pInfoW() { return (PRINTER_INFO_2W*) pInfo; };
-    inline PRINTER_INFO_2A *pInfoA() { return (PRINTER_INFO_2A*) pInfo; };
-
     inline bool resetDC() {
-        QT_WA( {
-            hdc = ResetDCW(hdc, devModeW());
-        }, {
-            hdc = ResetDCA(hdc, devModeA());
-        } );
+        hdc = ResetDC(hdc, devMode);
         return hdc != 0;
     }
 
@@ -202,8 +192,8 @@ public:
     HANDLE hPrinter;
 
     HGLOBAL globalDevMode;
-    void *devMode;
-    void *pInfo;
+    DEVMODE *devMode;
+    PRINTER_INFO_2 *pInfo;
     HGLOBAL hMem;
 
     HDC hdc;

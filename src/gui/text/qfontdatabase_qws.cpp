@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,7 @@
 #endif
 #include "qfontengine_qpf_p.h"
 #include "private/qfactoryloader_p.h"
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
 #include "qabstractfontengine_qws.h"
 #include "qabstractfontengine_p.h"
 #include <qdatetime.h>
@@ -128,7 +129,7 @@ void QFontDatabasePrivate::addQPF2File(const QByteArray &file)
     struct stat st;
     if (stat(file.constData(), &st))
         return;
-    int f = ::open(file, O_RDONLY, 0);
+    int f = QT_OPEN(file, O_RDONLY, 0);
     if (f < 0)
         return;
     const uchar *data = (const uchar *)mmap(0, st.st_size, PROT_READ, MAP_SHARED, f, 0);
@@ -176,7 +177,7 @@ void QFontDatabasePrivate::addQPF2File(const QByteArray &file)
 #endif
     }
 #ifndef QT_FONTS_ARE_RESOURCES
-    ::close(f);
+    QT_CLOSE(f);
 #endif
 }
 #endif

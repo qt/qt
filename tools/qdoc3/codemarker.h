@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,6 +61,7 @@ struct Section
     QString singularMember;
     QString pluralMember;
     NodeList members;
+    NodeList reimpMembers;
     QList<QPair<ClassNode *, int> > inherited;
 
     Section() { }
@@ -79,6 +80,7 @@ struct FastSection
     QString singularMember;
     QString pluralMember;
     QMap<QString, Node *> memberMap;
+    QMap<QString, Node *> reimpMemberMap;
     QList<QPair<ClassNode *, int> > inherited;
 
     FastSection(const InnerNode *innerNode0, 
@@ -89,6 +91,11 @@ struct FastSection
           name(name0), 
           singularMember(singularMember0),
 	  pluralMember(pluralMember0) { }
+    bool isEmpty() const { 
+        return (memberMap.isEmpty() && inherited.isEmpty() && 
+                reimpMemberMap.isEmpty()); 
+    }
+
 };
 
 class CodeMarker
@@ -150,6 +157,7 @@ class CodeMarker
                 Node *node, 
                 SynopsisStyle style, 
                 Status status);
+    bool insertReimpFunc(FastSection& fs, Node* node, Status status);
     void append(QList<Section>& sectionList, const FastSection& fastSection);
 
  private:

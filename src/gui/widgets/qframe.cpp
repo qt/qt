@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -135,7 +135,7 @@ inline void QFramePrivate::init()
     \value VLine  QFrame draws a vertical line that frames nothing
     (useful as separator)
     \value WinPanel draws a rectangular panel that can be raised or
-    sunken like those in Windows 95. Specifying this shape sets
+    sunken like those in Windows 2000. Specifying this shape sets
     the line width to 2 pixels. WinPanel is provided for compatibility.
     For GUI style independence we recommend using StyledPanel instead.
 

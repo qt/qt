@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -36,11 +36,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 
 #include <ocidl.h>
 #include <olectl.h>
@@ -123,7 +118,7 @@ static QFont IFontToQFont(IFont *f)
     f->get_Strikethrough(&strike);
     f->get_Underline(&underline);
     f->get_Weight(&weight);
-    QFont font(QString::fromUtf16((const ushort *)name), size.Lo/9750, weight / 97, italic);
+    QFont font(QString::fromWCharArray(name), size.Lo/9750, weight / 97, italic);
     font.setBold(bold);
     font.setStrikeOut(strike);
     font.setUnderline(underline);
@@ -925,10 +920,10 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
     QVariant var;
     switch(arg.vt) {
     case VT_BSTR:
-        var = QString::fromUtf16((const ushort *)arg.bstrVal);
+        var = QString::fromWCharArray(arg.bstrVal);
         break;
     case VT_BSTR|VT_BYREF:
-        var = QString::fromUtf16((const ushort *)*arg.pbstrVal);
+        var = QString::fromWCharArray(*arg.pbstrVal);
         break;
     case VT_BOOL:
         var = QVariant((bool)arg.boolVal);
@@ -1245,7 +1240,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
             for (long i = lBound; i <= uBound; ++i) {
                 BSTR bstr;
                 SafeArrayGetElement(array, &i, &bstr);
-                strings << QString::fromUtf16((const ushort *)bstr);
+                strings << QString::fromWCharArray(bstr);
                 SysFreeString(bstr);
             }
             

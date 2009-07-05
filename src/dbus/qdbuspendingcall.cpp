@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -408,6 +408,44 @@ bool QDBusPendingCall::setReplyCallback(QObject *target, const char *member)
     return d->setReplyCallback(target, member);
 }
 #endif
+
+/*!
+    \since 4.6
+    Creates a QDBusPendingCall object based on the error condition
+    \a error. The resulting pending call object will be in the
+    "finished" state and QDBusPendingReply::isError() will return true.
+
+    \sa fromCompletedCall()
+*/
+QDBusPendingCall QDBusPendingCall::fromError(const QDBusError &error)
+{
+    return fromCompletedCall(QDBusMessage::createError(error));
+}
+
+/*!
+    \since 4.6
+    Creates a QDBusPendingCall object based on the message \a msg.
+    The message must be of type QDBusMessage::ErrorMessage or
+    QDBusMessage::ReplyMessage (that is, a message that is typical
+    of a completed call).
+
+    This function is useful for code that requires simulating a pending
+    call, but that has already finished.
+
+    \sa fromError()
+*/
+QDBusPendingCall QDBusPendingCall::fromCompletedCall(const QDBusMessage &msg)
+{
+    QDBusPendingCallPrivate *d = 0;
+    if (msg.type() == QDBusMessage::ErrorMessage ||
+        msg.type() == QDBusMessage::ReplyMessage) {
+        d = new QDBusPendingCallPrivate;
+        d->replyMessage = msg;
+        d->connection = 0;
+    }
+
+    return QDBusPendingCall(d);
+}
 
 
 class QDBusPendingCallWatcherPrivate: public QObjectPrivate

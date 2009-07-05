@@ -21,8 +21,9 @@
 #ifndef JSHTMLTableCaptionElement_h
 #define JSHTMLTableCaptionElement_h
 
-#include "JSHTMLElement.h"
 #include "HTMLTableCaptionElement.h"
+#include "JSHTMLElement.h"
+
 namespace WebCore {
 
 class HTMLTableCaptionElement;

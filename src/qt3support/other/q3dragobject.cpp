@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -191,8 +191,7 @@ Q3DragObject::~Q3DragObject()
     Set the pixmap, \a pm, to display while dragging the object. The
     platform-specific implementation will use this where it can - so
     provide a small masked pixmap, and do not assume that the user
-    will actually see it. For example, cursors on Windows 95 are of
-    limited size.
+    will actually see it.
 
     The \a hotspot is the point on (or off) the pixmap that should be
     under the cursor as it is dragged. It is relative to the top-left
@@ -553,10 +552,6 @@ QTextCodec* qt_findcharset(const QByteArray& mimetype)
         i = cs.indexOf(';');
         if (i >= 0)
             cs = cs.left(i);
-        // win98 often has charset=utf16, and we need to get the correct codec for
-        // it to be able to get Unicode text drops.
-        if (cs == "utf16")
-            cs = "ISO-10646-UCS-2";
         // May return 0 if unknown charset
         return QTextCodec::codecForName(cs);
     }

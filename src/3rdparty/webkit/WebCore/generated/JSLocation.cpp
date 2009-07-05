@@ -19,17 +19,14 @@
 */
 
 #include "config.h"
-
 #include "JSLocation.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSLocationCustom.h"
 #include "KURL.h"
 #include "Location.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
@@ -91,7 +88,7 @@ bool JSLocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 void JSLocationPrototype::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     Base::put(exec, propertyName, value, slot);
 }
@@ -116,7 +113,7 @@ JSObject* JSLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 
 bool JSLocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    if (customGetOwnPropertySlot(exec, propertyName, slot))
+    if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSLocation, Base>(exec, &JSLocationTable, this, propertyName, slot);
 }
@@ -179,7 +176,7 @@ JSValue jsLocationHash(ExecState* exec, const Identifier&, const PropertySlot& s
 
 void JSLocation::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
-    if (customPut(exec, propertyName, value, slot))
+    if (putDelegate(exec, propertyName, value, slot))
         return;
     lookupPut<JSLocation, Base>(exec, propertyName, value, &JSLocationTable, this, slot);
 }
@@ -222,13 +219,6 @@ void setJSLocationSearch(ExecState* exec, JSObject* thisObject, JSValue value)
 void setJSLocationHash(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setHash(exec, value);
-}
-
-void JSLocation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
-{
-    if (customGetPropertyNames(exec, propertyNames))
-        return;
-     Base::getPropertyNames(exec, propertyNames);
 }
 
 JSValue JSC_HOST_CALL jsLocationPrototypeFunctionAssign(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

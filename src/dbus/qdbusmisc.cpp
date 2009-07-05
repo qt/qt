@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,19 +34,21 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <string.h>
 
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmetaobject.h>
 
 #include "qdbusutil_p.h"
 #include "qdbusconnection_p.h"
 #include "qdbusmetatype_p.h"
+#include "qdbusabstractadaptor_p.h" // for QCLASSINFO_DBUS_*
 
 QT_BEGIN_NAMESPACE
 
@@ -71,6 +73,51 @@ int qDBusNameToTypeId(const char *name)
     if (id == QVariant::UserType)
         id = QMetaType::type(name);
     return id;
+}
+
+QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
+{
+    QString interface;
+
+    int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
+    if (idx >= mo->classInfoOffset()) {
+        interface = QLatin1String(mo->classInfo(idx).value());
+    } else {
+        interface = QLatin1String(mo->className());
+        interface.replace(QLatin1String("::"), QLatin1String("."));
+
+        if (interface.startsWith(QLatin1String("QDBus"))) {
+            interface.prepend(QLatin1String("com.trolltech.QtDBus."));
+        } else if (interface.startsWith(QLatin1Char('Q')) &&
+                   interface.length() >= 2 && interface.at(1).isUpper()) {
+            // assume it's Qt
+            interface.prepend(QLatin1String("com.trolltech.Qt."));
+        } else if (!QCoreApplication::instance()||
+                   QCoreApplication::instance()->applicationName().isEmpty()) {
+            interface.prepend(QLatin1String("local."));
+         } else {
+            interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
+            QStringList domainName =
+                QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
+                                                                         QString::SkipEmptyParts);
+            if (domainName.isEmpty())
+                 interface.prepend(QLatin1String("local."));
+            else
+                for (int i = 0; i < domainName.count(); ++i)
+                    interface.prepend(QLatin1Char('.')).prepend(domainName.at(i));
+         }
+     }
+
+    return interface;
+}
+
+bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
+{
+    const QMetaObject *mo = obj->metaObject();
+    for ( ; mo != &QObject::staticMetaObject; mo = mo->superClass())
+        if (interface_name == qDBusInterfaceFromMetaObject(mo))
+            return true;
+    return false;
 }
 
 // calculates the metatypes for the method

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,11 +79,7 @@ void QFSFileEngineIteratorPlatformSpecificData::saveCurrentFileName()
         it->currentEntry = uncShares.at(uncShareIndex - 1);
     } else {
         // Local directory
-        QT_WA({
-            it->currentEntry = QString::fromUtf16((unsigned short *)findData.cFileName);
-        } , {
-            it->currentEntry = QString::fromLocal8Bit((const char *)findData.cFileName);
-        });
+        it->currentEntry = QString::fromWCharArray(findData.cFileName);
     }
 }
 
@@ -97,17 +93,10 @@ void QFSFileEngineIterator::advance()
     if (platform->uncFallback) {
         ++platform->uncShareIndex;
     } else if (platform->findFileHandle != INVALID_HANDLE_VALUE) {
-        QT_WA({
-            if (!FindNextFile(platform->findFileHandle, &platform->findData)) {
-                platform->done = true;        
-                FindClose(platform->findFileHandle);
-            }
-        } , {
-            if (!FindNextFileA(platform->findFileHandle, (WIN32_FIND_DATAA *)&platform->findData)) {
-                platform->done = true;
-                FindClose(platform->findFileHandle);
-            }
-        });
+        if (!FindNextFile(platform->findFileHandle, &platform->findData)) {
+            platform->done = true;
+            FindClose(platform->findFileHandle);
+        }
     }
 }
 
@@ -141,15 +130,8 @@ bool QFSFileEngineIterator::hasNext() const
             path.append(QLatin1Char('/'));
         path.append(QLatin1String("*.*"));
 
-        QT_WA({
-            QString fileName = QFSFileEnginePrivate::longFileName(path);
-            platform->findFileHandle = FindFirstFileW((TCHAR *)fileName.utf16(),
-                                                      &platform->findData);
-        }, {
-            // Cast is safe, since char is at end of WIN32_FIND_DATA
-            platform->findFileHandle = FindFirstFileA(QFSFileEnginePrivate::win95Name(path),
-                                                      (WIN32_FIND_DATAA*)&platform->findData);
-        });
+        QString fileName = QFSFileEnginePrivate::longFileName(path);
+        platform->findFileHandle = FindFirstFile((const wchar_t *)fileName.utf16(), &platform->findData);
 
         if (platform->findFileHandle == INVALID_HANDLE_VALUE) {
             if (path.startsWith(QLatin1String("//"))) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -226,7 +226,9 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
                                         text);
     }
 #if defined(Q_WS_WIN)
-    if ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_2000) {
+    if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
+        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+    {
         BOOL shadow;
         SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
         shadowWidth = shadow ? 0 : 6;
@@ -302,7 +304,9 @@ void QWhatsThat::paintEvent(QPaintEvent*)
 {
     bool drawShadow = true;
 #if defined(Q_WS_WIN)
-    if ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_2000) {
+    if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
+        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+    {
         BOOL shadow;
         SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
         drawShadow = !shadow;

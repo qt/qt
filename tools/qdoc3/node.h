@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -123,6 +123,7 @@ class Node
     void setTemplateStuff(const QString &templateStuff) { tpl = templateStuff; }
 
     virtual bool isInnerNode() const = 0;
+    virtual bool isReimp() const { return false; }
     Type type() const { return typ; }
     InnerNode *parent() const { return par; }
     InnerNode *relates() const { return rel; }
@@ -444,6 +445,7 @@ class FunctionNode : public LeafNode
     void setConst(bool conste) { con = conste; }
     void setStatic(bool statique) { sta = statique; }
     void setOverload(bool overlode);
+    void setReimp(bool r);
     void addParameter(const Parameter& parameter);
     inline void setParameters(const QList<Parameter>& parameters);
     void borrowParameterNames(const FunctionNode *source);
@@ -458,6 +460,7 @@ class FunctionNode : public LeafNode
     bool isConst() const { return con; }
     bool isStatic() const { return sta; }
     bool isOverload() const { return ove; }
+    bool isReimp() const { return reimp; }
     int overloadNumber() const;
     int numOverloads() const;
     const QList<Parameter>& parameters() const { return params; }
@@ -483,6 +486,7 @@ class FunctionNode : public LeafNode
     bool con : 1;
     bool sta : 1;
     bool ove : 1;
+    bool reimp: 1; 
     QList<Parameter> params;
     const FunctionNode *rf;
     const PropertyNode *ap;

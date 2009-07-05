@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,15 +45,10 @@
 #include "qfont.h"
 #include "qwidget.h"
 #include "qapplication.h"
-#include "qlibrary.h"
 #include "qevent.h"
 #include "qtextformat.h"
 
 //#define Q_IME_DEBUG
-
-/* Active Input method support on Win95/98/NT */
-#include <objbase.h>
-#include <initguid.h>
 
 #ifdef Q_IME_DEBUG
 #include "qdebug.h"
@@ -218,25 +213,6 @@ static DWORD WM_MSIME_MOUSE = 0;
 QWinInputContext::QWinInputContext(QObject *parent)
     : QInputContext(parent), recursionGuard(false)
 {
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_2000) {
-        // try to get the Active IMM COM object on Win95/98/NT, where english versions don't
-        // support the regular Windows input methods.
-        if (CoCreateInstance(CLSID_CActiveIMM, NULL, CLSCTX_INPROC_SERVER,
-            IID_IActiveIMMApp, (LPVOID *)&aimm) != S_OK) {
-            aimm = 0;
-        }
-        if (aimm && (aimm->QueryInterface(IID_IActiveIMMMessagePumpOwner, (LPVOID *)&aimmpump) != S_OK ||
-                        aimm->Activate(true) != S_OK)) {
-            aimm->Release();
-            aimm = 0;
-            if (aimmpump)
-                aimmpump->Release();
-            aimmpump = 0;
-        }
-        if (aimmpump)
-            aimmpump->Start();
-    }
-
 #ifndef Q_WS_WINCE
     QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
     if (ver & QSysInfo::WV_NT_based  && ver >= QSysInfo::WV_VISTA) {
@@ -262,25 +238,21 @@ QWinInputContext::QWinInputContext(QObject *parent)
             delete []lpList;
         }
     } else {
-	    // figure out whether a RTL language is installed
-    	typedef BOOL(WINAPI *PtrIsValidLanguageGroup)(DWORD,DWORD);
-    	PtrIsValidLanguageGroup isValidLanguageGroup = (PtrIsValidLanguageGroup)QLibrary::resolve(QLatin1String("kernel32"), "IsValidLanguageGroup");
-    	if (isValidLanguageGroup) {
-        	qt_use_rtl_extensions = isValidLanguageGroup(LGRPID_ARABIC, LGRPID_INSTALLED)
-	            	                 || isValidLanguageGroup(LGRPID_HEBREW, LGRPID_INSTALLED);
-    	}
-    	qt_use_rtl_extensions |= IsValidLocale(MAKELCID(MAKELANGID(LANG_ARABIC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
-        	                  || IsValidLocale(MAKELCID(MAKELANGID(LANG_HEBREW, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
+        // figure out whether a RTL language is installed
+        qt_use_rtl_extensions = IsValidLanguageGroup(LGRPID_ARABIC, LGRPID_INSTALLED)
+                                || IsValidLanguageGroup(LGRPID_HEBREW, LGRPID_INSTALLED)
+                                || IsValidLocale(MAKELCID(MAKELANGID(LANG_ARABIC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
+                                || IsValidLocale(MAKELCID(MAKELANGID(LANG_HEBREW, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
 #ifdef LANG_SYRIAC
-            	              || IsValidLocale(MAKELCID(MAKELANGID(LANG_SYRIAC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
+                                || IsValidLocale(MAKELCID(MAKELANGID(LANG_SYRIAC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
 #endif
-                	          || IsValidLocale(MAKELCID(MAKELANGID(LANG_FARSI, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED);
+                                || IsValidLocale(MAKELCID(MAKELANGID(LANG_FARSI, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED);
     }
 #else
     qt_use_rtl_extensions = false;
 #endif
 
-    WM_MSIME_MOUSE = QT_WA_INLINE(RegisterWindowMessage(L"MSIMEMouseOperation"), RegisterWindowMessageA("MSIMEMouseOperation"));
+    WM_MSIME_MOUSE = RegisterWindowMessage(L"MSIMEMouseOperation");
 }
 
 QWinInputContext::~QWinInputContext()
@@ -337,26 +309,13 @@ static void notifyIME(HIMC imc, DWORD dwAction, DWORD dwIndex, DWORD dwValue)
         ImmNotifyIME(imc, dwAction, dwIndex, dwValue);
 }
 
-static LONG getCompositionString(HIMC himc, DWORD dwIndex, LPVOID lpbuf, DWORD dBufLen, bool *unicode = 0)
+static LONG getCompositionString(HIMC himc, DWORD dwIndex, LPVOID lpbuf, DWORD dBufLen)
 {
     LONG len = 0;
-    if (unicode)
-        *unicode = true;
     if (aimm)
         aimm->GetCompositionStringW(himc, dwIndex, dBufLen, &len, lpbuf);
     else
-    {
-        if(QSysInfo::WindowsVersion != QSysInfo::WV_95) {
-            len = ImmGetCompositionStringW(himc, dwIndex, lpbuf, dBufLen);
-        }
-#if !defined(Q_WS_WINCE)
-        else {
-            len = ImmGetCompositionStringA(himc, dwIndex, lpbuf, dBufLen);
-            if (unicode)
-                *unicode = false;
-        }
-#endif
-    }
+        len = ImmGetCompositionString(himc, dwIndex, lpbuf, dBufLen);
     return len;
 }
 
@@ -367,29 +326,28 @@ static int getCursorPosition(HIMC himc)
 
 static QString getString(HIMC himc, DWORD dwindex, int *selStart = 0, int *selLength = 0)
 {
-    static char *buffer = 0;
+    static wchar_t *buffer = 0;
     static int buflen = 0;
 
     int len = getCompositionString(himc, dwindex, 0, 0) + 1;
     if (!buffer || len > buflen) {
         delete [] buffer;
         buflen = qMin(len, 256);
-        buffer = new char[buflen];
+        buffer = new wchar_t[buflen];
     }
 
-    bool unicode = true;
-    len = getCompositionString(himc, dwindex, buffer, buflen, &unicode);
+    len = getCompositionString(himc, dwindex, buffer, buflen * sizeof(wchar_t));
 
     if (selStart) {
-        static char *attrbuffer = 0;
+        static wchar_t *attrbuffer = 0;
         static int attrbuflen = 0;
         int attrlen = getCompositionString(himc, dwindex, 0, 0) + 1;
         if (!attrbuffer || attrlen> attrbuflen) {
             delete [] attrbuffer;
             attrbuflen = qMin(attrlen, 256);
-            attrbuffer = new char[attrbuflen];
+            attrbuffer = new wchar_t[attrbuflen];
         }
-        attrlen = getCompositionString(himc, GCS_COMPATTR, attrbuffer, attrbuflen);
+        attrlen = getCompositionString(himc, GCS_COMPATTR, attrbuffer, attrbuflen * sizeof(wchar_t));
         *selStart = attrlen+1;
         *selLength = -1;
         for (int i = 0; i < attrlen; i++) {
@@ -403,18 +361,8 @@ static QString getString(HIMC himc, DWORD dwindex, int *selStart = 0, int *selLe
 
     if (len <= 0)
         return QString();
-    if (unicode) {
-        return QString((QChar *)buffer, len/sizeof(QChar));
-    }
-    else {
-        buffer[len] = 0;
-        WCHAR *wc = new WCHAR[len+1];
-        int l = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-            buffer, len, wc, len+1);
-        QString res = QString((QChar *)wc, l);
-        delete [] wc;
-        return res;
-    }
+
+    return QString((QChar*)buffer, len / sizeof(QChar));
 }
 
 void QWinInputContext::TranslateMessage(const MSG *msg)
@@ -428,11 +376,7 @@ LRESULT QWinInputContext::DefWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
     LRESULT retval;
     if (!aimm || aimm->OnDefWindowProc(hwnd, msg, wParam, lParam, &retval) != S_OK)
     {
-        QT_WA({
-            retval = ::DefWindowProc(hwnd, msg, wParam, lParam);
-        } , {
-            retval = ::DefWindowProcA(hwnd,msg, wParam, lParam);
-        });
+        retval = ::DefWindowProc(hwnd, msg, wParam, lParam);
     }
     return retval;
 }
@@ -454,21 +398,13 @@ void QWinInputContext::update()
     HFONT hf;
     hf = f.handle();
 
-    QT_WA({
-        LOGFONT lf;
-        if (GetObject(hf, sizeof(lf), &lf))
-            if (aimm)
-                aimm->SetCompositionFontW(imc, &lf);
-            else
-                ImmSetCompositionFont(imc, &lf);
-    } , {
-        LOGFONTA lf;
-        if (GetObjectA(hf, sizeof(lf), &lf))
-            if (aimm)
-                aimm->SetCompositionFontA(imc, &lf);
-            else
-                ImmSetCompositionFontA(imc, &lf);
-    });
+    LOGFONT lf;
+    if (GetObject(hf, sizeof(lf), &lf)) {
+        if (aimm)
+            aimm->SetCompositionFontW(imc, &lf);
+        else
+            ImmSetCompositionFont(imc, &lf);
+    }
 
     QRect r = w->inputMethodQuery(Qt::ImMicroFocus).toRect();
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -175,8 +175,8 @@ typedef int mode_t;
 extern int errno;
 
 int     qt_wince__getdrive( void );
-int     qt_wince__waccess( const WCHAR *path, int pmode );
-int     qt_wince__wopen( const WCHAR *filename, int oflag, int pmode );
+int     qt_wince__waccess( const wchar_t *path, int pmode );
+int     qt_wince__wopen( const wchar_t *filename, int oflag, int pmode );
 long    qt_wince__lseek( int handle, long offset, int origin );
 int     qt_wince__read( int handle, void *buffer, unsigned int count );
 int     qt_wince__write( int handle, const void *buffer, unsigned int count );
@@ -204,7 +204,7 @@ int qt_wince_SetErrorMode(int);
 #endif
 
 bool qt_wince__chmod(const char *file, int mode);
-bool qt_wince__wchmod(const WCHAR *file, int mode);
+bool qt_wince__wchmod(const wchar_t *file, int mode);
 
 #pragma warning(disable: 4273)
 HANDLE qt_wince_CreateFileA(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);

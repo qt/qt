@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -971,15 +971,18 @@ void QGraphicsWidget::updateGeometry()
     deliver events related to state changes in the item. Because of this, it is
     very important that subclasses call the base implementation.
 
-    For example, QGraphicsWidget uses ItemVisibleChange to deliver \l Show and
-    \l Hide events, ItemPositionHasChanged to deliver \l Move events, and
-    ItemParentChange both to deliver \l ParentChange events, and for managing
-    the focus chain.
+    \a change specifies the type of change, and \a value is the new value.
+
+    For example, QGraphicsWidget uses ItemVisibleChange to deliver
+    \l{QEvent::Show} {Show} and \l{QEvent::Hide}{Hide} events,
+    ItemPositionHasChanged to deliver \l{QEvent::Move}{Move} events,
+    and ItemParentChange both to deliver \l{QEvent::ParentChange}
+    {ParentChange} events, and for managing the focus chain.
 
     QGraphicsWidget enables the ItemSendsGeometryChanges flag by default in
     order to track position changes.
 
-    \sa propertyChange()
+    \sa QGraphicsItem::itemChange()
 */
 QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &value)
 {
@@ -1211,7 +1214,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
 /*!
     \reimp
 
-    QGraphicsWidget handles the following events:
+    Handles the \a event.  QGraphicsWidget handles the following
+    events:
 
     \table   \o Event                 \o Usage
     \row     \o Polish

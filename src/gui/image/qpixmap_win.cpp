@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -179,13 +179,7 @@ QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
     BITMAP bitmap_info;
     memset(&bitmap_info, 0, sizeof(BITMAP));
 
-    int res;
-    QT_WA({
-            res = GetObjectW(bitmap, sizeof(BITMAP), &bitmap_info);
-        } , {
-              res = GetObjectA(bitmap, sizeof(BITMAP), &bitmap_info);
-          });
-
+    int res = GetObject(bitmap, sizeof(BITMAP), &bitmap_info);
     if (!res) {
         qErrnoWarning("QPixmap::fromWinHBITMAP(), failed to get bitmap info");
         return QPixmap();
@@ -417,9 +411,9 @@ QPixmap convertHIconToPixmap( const HICON icon, bool large)
 QPixmap loadIconFromShell32( int resourceId, int size )
 {
 #ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary((const wchar_t *) QString::fromLatin1("ceshell.dll").utf16());
+    HMODULE hmod = LoadLibrary(L"ceshell.dll");
 #else
-    HMODULE hmod = LoadLibraryA("shell32.dll");
+    HMODULE hmod = LoadLibrary(L"shell32.dll");
 #endif
     if( hmod ) {
         HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);

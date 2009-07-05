@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -147,7 +147,7 @@ namespace QT_NAMESPACE {}
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
-     WIN32    - Win32 (Windows 95/98/ME and Windows NT/2000/XP)
+     WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      WINCE    - WinCE (Windows CE 5.0)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -279,6 +279,10 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA)
+#error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
+#endif
+
 #if defined(Q_OS_MSDOS) || defined(Q_OS_OS2) || defined(Q_OS_WIN)
 #  undef Q_OS_UNIX
 #elif !defined(Q_OS_UNIX)
@@ -381,6 +385,9 @@ namespace QT_NAMESPACE {}
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+#    define Q_ALIGNOF(type)   __alignof(type)
+#    define Q_DECL_ALIGN(n)   __declspec(align(n))
+
 /* Visual C++.Net issues for _MSC_VER >= 1300 */
 #  if _MSC_VER >= 1300
 #    define Q_CC_MSVC_NET
@@ -467,6 +474,11 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_USING_KEYWORD
 #    define QT_NO_STL_WCHAR
 #  endif
+#  if __GNUC__ >= 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
+#    define Q_ALIGNOF(type)   __alignof__(type)
+#    define Q_TYPEOF(expr)    __typeof__(expr)
+#    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#  endif
 /* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
 #  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
 #    define Q_WRONG_SB_CTYPE_MACROS
@@ -520,6 +532,11 @@ namespace QT_NAMESPACE {}
 #    define Q_OUTOFLINE_TEMPLATE inline
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
+#  elif __xlC__ >= 0x0600
+#    define Q_ALIGNOF(type)     __alignof__(type)
+#    define Q_TYPEOF(expr)      __typeof__(expr)
+#    define Q_DECL_ALIGN(n)     __attribute__((__aligned__(n)))
+#    define Q_PACKED            __attribute__((__packed__))
 #  endif
 
 /* Older versions of DEC C++ do not define __EDG__ or __EDG - observed
@@ -643,6 +660,13 @@ namespace QT_NAMESPACE {}
 #    if __SUNPRO_CC < 0x570
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 #    endif
+   /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
+#    if __SUNPRO_CC >= 0x590
+#      define Q_ALIGNOF(type)   __alignof__(type)
+#      define Q_TYPEOF(expr)    __typeof__(expr)
+#      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
 #    endif
@@ -672,8 +696,17 @@ namespace QT_NAMESPACE {}
 #  if defined(__HP_aCC) || __cplusplus >= 199707L
 #    define Q_NO_TEMPLATE_FRIENDS
 #    define Q_CC_HPACC
-#    ifdef QT_ARCH_PARISC
+#    if __HP_aCC-0 < 060000
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+#      define Q_DECL_EXPORT     __declspec(dllexport)
+#      define Q_DECL_IMPORT     __declspec(dllimport)
+#    endif
+#    if __HP_aCC-0 >= 061200
+#      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
+#    endif
+#    if __HP_aCC-0 >= 062000
+#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
 #    define Q_CC_HP
@@ -1143,6 +1176,11 @@ class QDataStream;
 #    else
 #      define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_OPENVG_LIB)
+#      define Q_OPENVG_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_OPENVG_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_XML_LIB)
 #      define Q_XML_EXPORT Q_DECL_EXPORT
 #    else
@@ -1182,6 +1220,7 @@ class QDataStream;
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
+#    define Q_OPENVG_EXPORT Q_DECL_IMPORT
 #    define Q_XML_EXPORT Q_DECL_IMPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
 #    define Q_SCRIPT_EXPORT Q_DECL_IMPORT
@@ -1207,6 +1246,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
+#    define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    define Q_XML_EXPORT Q_DECL_EXPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
 #    define Q_SCRIPT_EXPORT Q_DECL_EXPORT
@@ -1376,21 +1416,13 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
-inline QT3_SUPPORT bool qt_winUnicode() { return !(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based); }
+inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#ifdef Q_OS_WINCE
-#define QT_WA(uni, ansi) uni
-#define QT_WA_INLINE(uni, ansi) (uni)
-#elif defined(UNICODE)
-#define QT_WA(uni, ansi) if (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based)) { uni } else { ansi }
+#define QT_WA(unicode, ansi) unicode
+#define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#define QT_WA_INLINE(uni, ansi) (!(QSysInfo::windowsVersion() & QSysInfo::WV_DOS_based) ? uni : ansi)
-#else
-#define QT_WA(uni, ansi) ansi
-#define QT_WA_INLINE(uni, ansi) ansi
-#endif
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
@@ -2252,6 +2284,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define QT_MODULE_TEST                 0x04000
 #define QT_MODULE_DBUS                 0x08000
 #define QT_MODULE_SCRIPTTOOLS          0x10000
+#define QT_MODULE_OPENVG               0x20000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2271,6 +2304,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_GUI \
                                  | QT_MODULE_NETWORK \
                                  | QT_MODULE_OPENGL \
+                                 | QT_MODULE_OPENVG \
                                  | QT_MODULE_SQL \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
@@ -2313,6 +2347,9 @@ QT_LICENSED_MODULE(Network)
 #endif
 #if (QT_EDITION & QT_MODULE_OPENGL)
 QT_LICENSED_MODULE(OpenGL)
+#endif
+#if (QT_EDITION & QT_MODULE_OPENVG)
+QT_LICENSED_MODULE(OpenVG)
 #endif
 #if (QT_EDITION & QT_MODULE_SQL)
 QT_LICENSED_MODULE(Sql)

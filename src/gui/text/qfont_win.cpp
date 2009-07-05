@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,15 +34,10 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-// the miscrosoft platform SDK says that the Unicode versions of
-// TextOut and GetTextExtentsPoint32 are supported on all platforms, so we use them
-// exclusively to simplify code, save a lot of conversions into the local encoding
-// and have generally better unicode support :)
 
 #include "qfont.h"
 #include "qfont_p.h"
@@ -67,8 +62,7 @@ extern HDC   shared_dc();                // common dc for all fonts
 // ### maybe move to qapplication_win
 QFont qt_LOGFONTtoQFont(LOGFONT& lf, bool /*scale*/)
 {
-    QString family = QT_WA_INLINE(QString::fromUtf16((ushort*)lf.lfFaceName),
-                                   QString::fromLocal8Bit((char*)lf.lfFaceName));
+    QString family = QString::fromWCharArray(lf.lfFaceName);
     QFont qf(family);
     qf.setItalic(lf.lfItalic);
     if (lf.lfWeight != FW_DONTCARE) {

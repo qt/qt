@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -140,7 +140,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
-    d->eglContext->setApi(QEglContext::OpenGL);
+    d->eglContext->setApi(QEgl::OpenGL);
     if (!d->eglContext->openDisplay(device())) {
         delete d->eglContext;
         d->eglContext = 0;
@@ -151,7 +151,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     QEglProperties configProps;
     qt_egl_add_platform_config(configProps, device());
     qt_egl_set_format(configProps, devType, d->glFormat);
-    configProps.setRenderableType(QEglContext::OpenGL);
+    configProps.setRenderableType(QEgl::OpenGL);
 
     // Search for a matching configuration, reducing the complexity
     // each time until we get something that matches.

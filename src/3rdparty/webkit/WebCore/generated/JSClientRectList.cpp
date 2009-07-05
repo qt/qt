@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSClientRectList.h"
 
-#include <wtf/GetPtr.h>
-
-#include <runtime/PropertyNameArray.h>
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "ExceptionCode.h"
 #include "JSClientRect.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

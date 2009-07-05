@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -522,31 +522,29 @@ int QHeaderView::length() const
 QSize QHeaderView::sizeHint() const
 {
     Q_D(const QHeaderView);
-    if (count() < 1)
-        return QSize(0, 0);
     if (d->cachedSizeHint.isValid())
         return d->cachedSizeHint;
-    int width = 0;
-    int height = 0;
+    d->cachedSizeHint = QSize(0, 0);
+    d->executePostedLayout();
+
     // get size hint for the first n sections
-    int c = qMin(count(), 100);
-    for (int i = 0; i < c; ++i) {
+    int i = 0;
+    for (int checked = 0; checked < 100 && i < d->sectionCount; ++i) {
         if (isSectionHidden(i))
             continue;
+        checked++;
         QSize hint = sectionSizeFromContents(i);
-        width = qMax(hint.width(), width);
-        height = qMax(hint.height(), height);
+        d->cachedSizeHint = d->cachedSizeHint.expandedTo(hint);
     }
     // get size hint for the last n sections
-    c = qMax(count() - 100, c);
-    for (int j = count() - 1; j >= c; --j) {
+    i = qMax(i, d->sectionCount - 100 );
+    for (int j = d->sectionCount - 1, checked = 0; j > i && checked < 100; --j) {
         if (isSectionHidden(j))
             continue;
+        checked++;
         QSize hint = sectionSizeFromContents(j);
-        width = qMax(hint.width(), width);
-        height = qMax(hint.height(), height);
+        d->cachedSizeHint = d->cachedSizeHint.expandedTo(hint);
     }
-    d->cachedSizeHint = QSize(width, height);
     return d->cachedSizeHint;
 }
 
@@ -2540,7 +2538,7 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
     if (opt.icon.isNull())
         opt.icon = qvariant_cast<QPixmap>(variant);
     QSize size = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
-    if (isSortIndicatorShown() && sortIndicatorSection() == logicalIndex) {
+    if (isSortIndicatorShown()) {
         int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, &opt, this);
         if (d->orientation == Qt::Horizontal)
             size.rwidth() += size.height() + margin;

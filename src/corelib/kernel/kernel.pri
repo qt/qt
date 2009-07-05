@@ -88,10 +88,12 @@ mac {
 
 unix {
 	SOURCES += \
+                kernel/qcore_unix.cpp \
                 kernel/qcrashhandler.cpp \
                 kernel/qsharedmemory_unix.cpp \
                 kernel/qsystemsemaphore_unix.cpp
 	HEADERS += \
+                kernel/qcore_unix_p.h \
 		kernel/qcrashhandler_p.h
 
         contains(QT_CONFIG, glib) {

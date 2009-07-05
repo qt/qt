@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -146,26 +146,14 @@ QString Environment::readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     QString rSubkeyPath = keyPath(rSubkey);
 
     HKEY handle = 0;
-    LONG res;
-    QT_WA( {
-        res = RegOpenKeyExW(parentHandle, (WCHAR*)rSubkeyPath.utf16(),
-                            0, KEY_READ, &handle);
-    } , {
-        res = RegOpenKeyExA(parentHandle, rSubkeyPath.toLocal8Bit(),
-                            0, KEY_READ, &handle);
-    } );
-
+    LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0, KEY_READ, &handle);
     if (res != ERROR_SUCCESS)
         return QString();
 
     // get the size and type of the value
     DWORD dataType;
     DWORD dataSize;
-    QT_WA( {
-        res = RegQueryValueExW(handle, (WCHAR*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
-    }, {
-        res = RegQueryValueExA(handle, rSubkeyName.toLocal8Bit(), 0, &dataType, 0, &dataSize);
-    } );
+    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
     if (res != ERROR_SUCCESS) {
         RegCloseKey(handle);
         return QString();
@@ -173,13 +161,8 @@ QString Environment::readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 
     // get the value
     QByteArray data(dataSize, 0);
-    QT_WA( {
-        res = RegQueryValueExW(handle, (WCHAR*)rSubkeyName.utf16(), 0, 0,
-                               reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    }, {
-        res = RegQueryValueExA(handle, rSubkeyName.toLocal8Bit(), 0, 0,
-                               reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    } );
+    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, 0,
+                           reinterpret_cast<unsigned char*>(data.data()), &dataSize);
     if (res != ERROR_SUCCESS) {
         RegCloseKey(handle);
         return QString();
@@ -189,11 +172,7 @@ QString Environment::readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     switch (dataType) {
         case REG_EXPAND_SZ:
         case REG_SZ: {
-            QT_WA( {
-                result = QString::fromUtf16(((const ushort*)data.constData()));
-            }, {
-                result = QString::fromLatin1(data.constData());
-            } );
+            result = QString::fromWCharArray(((const wchar_t *)data.constData()));
             break;
         }
 
@@ -201,29 +180,20 @@ QString Environment::readRegistryKey(HKEY parentHandle, const QString &rSubkey)
             QStringList l;
             int i = 0;
             for (;;) {
-                QString s;
-                QT_WA( {
-                    s = QString::fromUtf16((const ushort*)data.constData() + i);
-                }, {
-                    s = QString::fromLatin1(data.constData() + i);
-                } );
+                QString s = QString::fromWCharArray((const wchar_t *)data.constData() + i);
                 i += s.length() + 1;
 
                 if (s.isEmpty())
                     break;
                 l.append(s);
             }
-	    result = l.join(", ");
+            result = l.join(", ");
             break;
         }
 
         case REG_NONE:
         case REG_BINARY: {
-            QT_WA( {
-                result = QString::fromUtf16((const ushort*)data.constData(), data.size()/2);
-            }, {
-                result = QString::fromLatin1(data.constData(), data.size());
-            } );
+            result = QString::fromWCharArray((const wchar_t *)data.constData(), data.size() / 2);
             break;
         }
 
@@ -232,7 +202,7 @@ QString Environment::readRegistryKey(HKEY parentHandle, const QString &rSubkey)
             Q_ASSERT(data.size() == sizeof(int));
             int i;
             memcpy((char*)&i, data.constData(), sizeof(int));
-	    result = QString::number(i);
+            result = QString::number(i);
             break;
         }
 
@@ -350,29 +320,14 @@ bool Environment::detectExecutable(const QString &executable)
     PROCESS_INFORMATION procInfo;
     memset(&procInfo, 0, sizeof(procInfo));
 
-    bool couldExecute;
-    QT_WA({
-        // Unicode version
-        STARTUPINFOW startInfo;
-        memset(&startInfo, 0, sizeof(startInfo));
-        startInfo.cb = sizeof(startInfo);
+    STARTUPINFO startInfo;
+    memset(&startInfo, 0, sizeof(startInfo));
+    startInfo.cb = sizeof(startInfo);
 
-        couldExecute = CreateProcessW(0, (WCHAR*)executable.utf16(),
+    bool couldExecute = CreateProcess(0, (wchar_t*)executable.utf16(),
                                       0, 0, false,
                                       CREATE_NO_WINDOW | CREATE_SUSPENDED,
                                       0, 0, &startInfo, &procInfo);
-
-    }, {
-        // Ansi version
-        STARTUPINFOA startInfo;
-        memset(&startInfo, 0, sizeof(startInfo));
-        startInfo.cb = sizeof(startInfo);
-
-        couldExecute = CreateProcessA(0, executable.toLocal8Bit().data(),
-                                      0, 0, false,
-                                      CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                                      0, 0, &startInfo, &procInfo);
-    })
 
     if (couldExecute) {
         CloseHandle(procInfo.hThread);
@@ -421,61 +376,38 @@ static QString qt_create_commandline(const QString &program, const QStringList &
 }
 
 /*!
-    Creates a QByteArray of the \a environment in either UNICODE or
-    ansi representation.
+    Creates a QByteArray of the \a environment.
 */
 static QByteArray qt_create_environment(const QStringList &environment)
 {
     QByteArray envlist;
-    if (!environment.isEmpty()) {
-	int pos = 0;
-	// add PATH if necessary (for DLL loading)
-	QByteArray path = qgetenv("PATH");
-        QT_WA({
-	    if (environment.filter(QRegExp("^PATH=",Qt::CaseInsensitive)).isEmpty()
-                && !path.isNull()) {
-                QString tmp = QString(QLatin1String("PATH=%1")).arg(QString::fromLocal8Bit(path));
-                uint tmpSize = sizeof(TCHAR) * (tmp.length()+1);
-                envlist.resize(envlist.size() + tmpSize );
-                memcpy(envlist.data()+pos, tmp.utf16(), tmpSize);
-                pos += tmpSize;
-	    }
-	    // add the user environment
-	    for (QStringList::ConstIterator it = environment.begin(); it != environment.end(); it++ ) {
-                QString tmp = *it;
-                uint tmpSize = sizeof(TCHAR) * (tmp.length()+1);
-                envlist.resize(envlist.size() + tmpSize);
-                memcpy(envlist.data()+pos, tmp.utf16(), tmpSize);
-                pos += tmpSize;
-	    }
-	    // add the 2 terminating 0 (actually 4, just to be on the safe side)
-	    envlist.resize( envlist.size()+4 );
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-	    envlist[pos++] = 0;
-        }, {
-            if (environment.filter(QRegExp("^PATH=",Qt::CaseInsensitive)).isEmpty() && !path.isNull()) {
-                QByteArray tmp = QString("PATH=%1").arg(QString::fromLocal8Bit(path)).toLocal8Bit();
-                uint tmpSize = tmp.length() + 1;
-                envlist.resize(envlist.size() + tmpSize);
-                memcpy(envlist.data()+pos, tmp.data(), tmpSize);
-                pos += tmpSize;
-            }
-            // add the user environment
-            for (QStringList::ConstIterator it = environment.begin(); it != environment.end(); it++) {
-                QByteArray tmp = (*it).toLocal8Bit();
-                uint tmpSize = tmp.length() + 1;
-                envlist.resize(envlist.size() + tmpSize);
-                memcpy(envlist.data()+pos, tmp.data(), tmpSize);
-                pos += tmpSize;
-            }
-            // add the terminating 0 (actually 2, just to be on the safe side)
-            envlist.resize(envlist.size()+2);
-            envlist[pos++] = 0;
-            envlist[pos++] = 0;
-        })
+    if (environment.isEmpty())
+        return envlist;
+
+    int pos = 0;
+    // add PATH if necessary (for DLL loading)
+    QByteArray path = qgetenv("PATH");
+    if (environment.filter(QRegExp("^PATH=",Qt::CaseInsensitive)).isEmpty() && !path.isNull()) {
+            QString tmp = QString(QLatin1String("PATH=%1")).arg(QString::fromLocal8Bit(path));
+            uint tmpSize = sizeof(wchar_t) * (tmp.length() + 1);
+            envlist.resize(envlist.size() + tmpSize);
+            memcpy(envlist.data() + pos, tmp.utf16(), tmpSize);
+            pos += tmpSize;
     }
+    // add the user environment
+    for (QStringList::ConstIterator it = environment.begin(); it != environment.end(); it++ ) {
+            QString tmp = *it;
+            uint tmpSize = sizeof(wchar_t) * (tmp.length() + 1);
+            envlist.resize(envlist.size() + tmpSize);
+            memcpy(envlist.data() + pos, tmp.utf16(), tmpSize);
+            pos += tmpSize;
+    }
+    // add the 2 terminating 0 (actually 4, just to be on the safe side)
+    envlist.resize(envlist.size() + 4);
+    envlist[pos++] = 0;
+    envlist[pos++] = 0;
+    envlist[pos++] = 0;
+    envlist[pos++] = 0;
 
     return envlist;
 }
@@ -501,46 +433,24 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
     qDebug() << "   " << additionalEnv;
     qDebug() << "   " << removeEnv;
 #endif
-// GetEnvironmentStrings is defined to GetEnvironmentStringsW when
-// UNICODE is defined. We cannot use that, since we need to
-// destinguish between unicode and ansi versions of the functions.
-#if defined(UNICODE) && defined(GetEnvironmentStrings)
-#undef GetEnvironmentStrings
-#endif
-
     // Create the full environment from the current environment and
     // the additionalEnv strings, then remove all variables defined
     // in removeEnv
     QMap<QString, QString> fullEnvMap;
-    QT_WA({
-        LPWSTR envStrings = GetEnvironmentStringsW();
-        if (envStrings) {
-            int strLen = 0;
-            for (LPWSTR envString = envStrings; *(envString); envString += strLen + 1) {
-                strLen = wcslen(envString);
-                QString str = QString((const QChar*)envString, strLen);
-                if (!str.startsWith("=")) { // These are added by the system
-                    int sepIndex = str.indexOf('=');
-                    fullEnvMap.insert(str.left(sepIndex).toUpper(), str.mid(sepIndex +1));
-                }
+    LPWSTR envStrings = GetEnvironmentStrings();
+    if (envStrings) {
+        int strLen = 0;
+        for (LPWSTR envString = envStrings; *(envString); envString += strLen + 1) {
+            strLen = wcslen(envString);
+            QString str = QString((const QChar*)envString, strLen);
+            if (!str.startsWith("=")) { // These are added by the system
+                int sepIndex = str.indexOf('=');
+                fullEnvMap.insert(str.left(sepIndex).toUpper(), str.mid(sepIndex +1));
             }
         }
-        FreeEnvironmentStringsW(envStrings);
-    }, {
-        LPSTR envStrings = GetEnvironmentStrings();
-        if (envStrings) {
-            int strLen = 0;
-            for (LPSTR envString = envStrings; *(envString); envString += strLen + 1) {
-                strLen = strlen(envString);
-                QString str = QLatin1String(envString);
-                if (!str.startsWith("=")) { // These are added by the system
-                    int sepIndex = str.indexOf('=');
-                    fullEnvMap.insert(str.left(sepIndex).toUpper(), str.mid(sepIndex +1));
-                }
-            }
-        }
-        FreeEnvironmentStringsA(envStrings);
-    })
+    }
+    FreeEnvironmentStrings(envStrings);
+
     // Add additionalEnv variables
     for (int i = 0; i < additionalEnv.count(); ++i) {
         const QString &str = additionalEnv.at(i);
@@ -569,28 +479,14 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
     PROCESS_INFORMATION procInfo;
     memset(&procInfo, 0, sizeof(procInfo));
 
-    bool couldExecute;
-    QT_WA({
-        // Unicode version
-        STARTUPINFOW startInfo;
-        memset(&startInfo, 0, sizeof(startInfo));
-        startInfo.cb = sizeof(startInfo);
+    STARTUPINFO startInfo;
+    memset(&startInfo, 0, sizeof(startInfo));
+    startInfo.cb = sizeof(startInfo);
 
-        couldExecute = CreateProcessW(0, (WCHAR*)args.utf16(),
+    bool couldExecute = CreateProcess(0, (wchar_t*)args.utf16(),
                                       0, 0, true, CREATE_UNICODE_ENVIRONMENT,
                                       envlist.isEmpty() ? 0 : envlist.data(),
                                       0, &startInfo, &procInfo);
-    }, {
-        // Ansi version
-        STARTUPINFOA startInfo;
-        memset(&startInfo, 0, sizeof(startInfo));
-        startInfo.cb = sizeof(startInfo);
-
-        couldExecute = CreateProcessA(0, args.toLocal8Bit().data(),
-                                      0, 0, true, 0,
-                                      envlist.isEmpty() ? 0 : envlist.data(),
-                                      0, &startInfo, &procInfo);
-    })
 
     if (couldExecute) {
         WaitForSingleObject(procInfo.hProcess, INFINITE);
@@ -654,7 +550,7 @@ bool Environment::cpdir(const QString &srcDir, const QString &destDir)
 #endif
 	    QFile::remove(destFile);
             intermediate = QFile::copy(entry.absoluteFilePath(), destFile);
-            SetFileAttributesA(destFile.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL);
+            SetFileAttributes((wchar_t*)destFile.utf16(), FILE_ATTRIBUTE_NORMAL);
         }
 	if(!intermediate) {
 	    qDebug() << "cpdir: Failure for " << entry.fileName() << entry.isDir();

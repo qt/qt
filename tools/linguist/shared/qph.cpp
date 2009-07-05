@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -99,6 +99,8 @@ bool QPHReader::read(Translator &translator)
             else if (m_currentField == DefinitionField)
                 m_currentDefinition += text();
         } else if (isEndElement() && name() == QLatin1String("phrase")) {
+            m_currentTarget.replace(QChar(Translator::TextVariantSeparator),
+                                    QChar(Translator::BinaryVariantSeparator));
             TranslatorMessage msg;
             msg.setSourceText(m_currentSource);
             msg.setTranslation(m_currentTarget);
@@ -159,7 +161,10 @@ static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData
     foreach (const TranslatorMessage &msg, translator.messages()) {
         t << "<phrase>\n";
         t << "    <source>" << protect(msg.sourceText()) << "</source>\n";
-        t << "    <target>" << protect(msg.translations().join(QLatin1String("@")))
+        QString str = msg.translations().join(QLatin1String("@"));
+        str.replace(QChar(Translator::BinaryVariantSeparator),
+                    QChar(Translator::TextVariantSeparator));
+        t << "    <target>" << protect(str)
             << "</target>\n";
         if (!msg.context().isEmpty() || !msg.comment().isEmpty())
             t << "    <definition>" << msg.context() << msg.comment()

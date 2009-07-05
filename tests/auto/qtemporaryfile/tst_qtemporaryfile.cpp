@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -88,6 +88,7 @@ private slots:
     void rename();
     void renameFdLeak();
     void reOpenThroughQFile();
+    void keepOpenMode();
 
 public:
 };
@@ -437,6 +438,38 @@ void tst_QTemporaryFile::reOpenThroughQFile()
     file.close();
     QVERIFY(file.open());
     QCOMPARE(file.readAll(), data);
+}
+
+void tst_QTemporaryFile::keepOpenMode()
+{
+    QByteArray data("abcdefghij");
+
+    {
+        QTemporaryFile file;
+        QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+        QVERIFY(QIODevice::WriteOnly == file.openMode());
+
+        QCOMPARE(file.write(data), (qint64)data.size());
+        file.close();
+
+        QVERIFY(((QFile &)file).open(QIODevice::ReadOnly));
+        QVERIFY(QIODevice::ReadOnly == file.openMode());
+        QCOMPARE(file.readAll(), data);
+    }
+
+    {
+        QTemporaryFile file;
+        QVERIFY(file.open());
+        QCOMPARE(file.write(data), (qint64)data.size());
+        QVERIFY(file.rename("temporary-file.txt"));
+
+        QVERIFY(((QFile &)file).open(QIODevice::ReadOnly));
+        QVERIFY(QIODevice::ReadOnly == file.openMode());
+        QCOMPARE(file.readAll(), data);
+
+        QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+        QVERIFY(QIODevice::WriteOnly == file.openMode());
+    }
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

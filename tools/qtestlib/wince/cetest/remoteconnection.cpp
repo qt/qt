@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,12 +34,44 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "remoteconnection.h"
+
+QByteArray strwinerror(DWORD errorcode)
+{
+    QByteArray out(512, 0);
+
+    DWORD ok = FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        0,
+        errorcode,
+        0,
+        out.data(),
+        out.size(),
+        0
+    );
+
+    if (!ok) {
+        qsnprintf(out.data(), out.size(),
+            "(error %d; additionally, error %d while looking up error string)",
+            (int)errorcode, (int)GetLastError());
+    }
+    else {
+        out.resize(qstrlen(out.constData()));
+        if (out.endsWith("\r\n"))
+            out.chop(2);
+
+        /* Append error number to error message for good measure */
+        out.append(" (");
+        out.append(QByteArray::number((int)errorcode));
+        out.append(")");
+    }
+    return out;
+}
 
 AbstractRemoteConnection::AbstractRemoteConnection()
 {

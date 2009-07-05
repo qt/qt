@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@
 #include "qtoolbar.h"
 #include "QtGui/qaction.h"
 #include "private/qwidget_p.h"
+#include <QtCore/qbasictimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +71,7 @@ class QToolBarPrivate : public QWidgetPrivate
 
 public:
     inline QToolBarPrivate()
-        : explicitIconSize(false), explicitToolButtonStyle(false), movable(false),
+        : explicitIconSize(false), explicitToolButtonStyle(false), movable(true), floatable(true),
           allowedAreas(Qt::AllToolBarAreas), orientation(Qt::Horizontal),
           toolButtonStyle(Qt::ToolButtonIconOnly),
           layout(0), state(0)
@@ -84,16 +85,15 @@ public:
     void _q_toggleView(bool b);
     void _q_updateIconSize(const QSize &sz);
     void _q_updateToolButtonStyle(Qt::ToolButtonStyle style);
-    void _q_waitForPopup();
 
     bool explicitIconSize;
     bool explicitToolButtonStyle;
     bool movable;
+    bool floatable;
     Qt::ToolBarAreas allowedAreas;
     Qt::Orientation orientation;
     Qt::ToolButtonStyle toolButtonStyle;
     QSize iconSize;
-    bool floatable;
 
     QAction *toggleViewAction;
 
@@ -125,7 +125,7 @@ public:
     void unplug(const QRect &r);
     void plug(const QRect &r);
 
-    QTimer *waitForPopupTimer;
+    QBasicTimer waitForPopupTimer;
 };
 
 #endif // QT_NO_TOOLBAR

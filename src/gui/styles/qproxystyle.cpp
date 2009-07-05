@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,23 +54,23 @@ QT_BEGIN_NAMESPACE
     \class QProxyStyle
 
     \brief The QProxyStyle class is a convenience class that simplifies
-    the overriding of QStyle elements.
+    dynamically overriding QStyle elements.
 
     \since 4.6
 
     A QProxyStyle wraps a QStyle (usually the default system style) for the
-    purpose of overriding the painting or other specific behavior of the
-    wrapped style.
+    purpose of dynamically overriding painting or other specific style behavior.
 
-    Below is an example that overrides the shortcut underline
-    behavior on all platforms:
+    The following example shows how to override the shortcut underline
+    behavior on any platform:
 
-    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 0
+    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 1
 
-    Warning: Although Qt's internal styles should respect this hint,
-    there is no guarantee that it will work for all styles. It would
-    not work on a Mac, for example, because menus are handled by the
-    operating system on the Mac.
+    Warning: The \l {QCommonStyle} {common styles} provided by Qt will
+    respect this hint, because they call QStyle::proxy(), but there is
+    no guarantee that QStyle::proxy() will be called for user defined
+    or system controlled styles. It would not work on a Mac, for
+    example, where menus are handled by the operating system.
 
     \sa QStyle
 */
@@ -93,7 +93,7 @@ void QProxyStylePrivate::ensureBaseStyle() const
                 baseStyle = 0;
             }
         }
-    } 
+    }
 
     if (!baseStyle) // Use application desktop style
         baseStyle = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
@@ -368,15 +368,18 @@ bool QProxyStyle::event(QEvent *e)
     return d->baseStyle->event(e);
 }
 
-/*! 
+/*!
   Returns an icon for the given \a standardIcon.
 
   Reimplement this slot to provide your own icons in a QStyle
-  subclass; because of binary compatibility constraints, the
-  standardIcon() function (introduced in Qt 4.1) is not
-  virtual. Instead, standardIcon() will dynamically detect and call \e
-  this slot.  The default implementation simply calls the
-  standardPixmap() function with the given parameters.
+  subclass. The \a option argument can be used to pass extra
+  information required to find the appropriate icon. The \a widget
+  argument is optional and can also be used to help find the icon.
+
+  \note Because of binary compatibility constraints, standardIcon()
+  introduced in Qt 4.1 is not virtual. Therefore it must dynamically
+  detect and call \e this slot.  This default implementation simply
+  calls standardIcon() with the given parameters.
 
   \sa standardIcon()
  */

@@ -3,7 +3,7 @@
  <comment>*********************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -36,7 +36,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 *********************************************************************</comment>
@@ -269,7 +269,7 @@
        <item row="1" column="0" >
         <widget class="QLineEdit" name="termsEdit" >
          <property name="toolTip" >
-          <string>Enter searchword(s).</string>
+          <string>Enter searchword(s)</string>
          </property>
          <property name="whatsThis" >
           <string>&lt;b>Enter search word(s).&lt;/b>&lt;p>Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.&lt;/p></string>
@@ -307,7 +307,7 @@
          <item>
           <widget class="QPushButton" name="helpButton" >
            <property name="toolTip" >
-            <string>Display the help page.</string>
+            <string>Display the help page</string>
            </property>
            <property name="whatsThis" >
             <string>Display the help page for the full text search.</string>
@@ -336,7 +336,7 @@
          <item>
           <widget class="QPushButton" name="searchButton" >
            <property name="toolTip" >
-            <string>Start searching.</string>
+            <string>Start searching</string>
            </property>
            <property name="whatsThis" >
             <string>Pressing this button starts the search.</string>

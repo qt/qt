@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1037,33 +1037,16 @@ static QString windowsConfigPath(int type)
     // This only happens when bootstrapping qmake.
 #ifndef Q_OS_WINCE
     QLibrary library(QLatin1String("shell32"));
-    QT_WA( {
-        typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPTSTR, int, BOOL);
-        GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
-        if (SHGetSpecialFolderPath) {
-            TCHAR path[MAX_PATH];
-            SHGetSpecialFolderPath(0, path, type, FALSE);
-            result = QString::fromUtf16((ushort*)path);
-        }
-    } , {
-        typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, char*, int, BOOL);
-        GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathA");
-        if (SHGetSpecialFolderPath) {
-            char path[MAX_PATH];
-            SHGetSpecialFolderPath(0, path, type, FALSE);
-            result = QString::fromLocal8Bit(path);
-        }
-    } );
 #else
     QLibrary library(QLatin1String("coredll"));
-    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPTSTR, int, BOOL);
-    GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPath");
+#endif // Q_OS_WINCE
+    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
+    GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
     if (SHGetSpecialFolderPath) {
         wchar_t path[MAX_PATH];
         SHGetSpecialFolderPath(0, path, type, FALSE);
-        result = QString::fromUtf16((ushort*)path);
+        result = QString::fromWCharArray(path);
     }
-#endif // Q_OS_WINCE
 
 #endif // QT_NO_QOBJECT
 
@@ -1459,11 +1442,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
             QString writeSemName = QLatin1String("QSettingsWriteSem ");
             writeSemName.append(file.fileName());
 
-            QT_WA( {
-                writeSemaphore = CreateSemaphoreW(0, 1, 1, reinterpret_cast<const wchar_t *>(writeSemName.utf16()));
-            } , {
-                writeSemaphore = CreateSemaphoreA(0, 1, 1, writeSemName.toLocal8Bit());
-            } );
+            writeSemaphore = CreateSemaphore(0, 1, 1, reinterpret_cast<const wchar_t *>(writeSemName.utf16()));
 
             if (writeSemaphore) {
                 WaitForSingleObject(writeSemaphore, INFINITE);
@@ -1479,11 +1458,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         QString readSemName(QLatin1String("QSettingsReadSem "));
         readSemName.append(file.fileName());
 
-        QT_WA( {
-            readSemaphore = CreateSemaphoreW(0, FileLockSemMax, FileLockSemMax, reinterpret_cast<const wchar_t *>(readSemName.utf16()));
-        } , {
-            readSemaphore = CreateSemaphoreA(0, FileLockSemMax, FileLockSemMax, readSemName.toLocal8Bit());
-        } );
+        readSemaphore = CreateSemaphore(0, FileLockSemMax, FileLockSemMax, reinterpret_cast<const wchar_t *>(readSemName.utf16()));
 
         if (readSemaphore) {
             for (int i = 0; i < numReadLocks; ++i)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -300,6 +300,8 @@ public:
 extern int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes);
 extern int qDBusNameToTypeId(const char *name);
 extern bool qDBusCheckAsyncTag(const char *tag);
+extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);
+extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
 
 // in qdbusinternalfilters.cpp
 extern QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node);
@@ -309,9 +311,6 @@ extern QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNod
                                      const QDBusMessage &msg);
 extern QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                         const QDBusMessage &msg);
-
-// in qdbusxmlgenerator.cpp
-extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
 
 QT_END_NAMESPACE
 

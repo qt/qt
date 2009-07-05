@@ -654,7 +654,7 @@ QVariant QWebElement::evaluateScript(const QString& scriptSource)
         return QVariant();
 
     JSC::ScopeChain& scopeChain = state->dynamicGlobalObject()->globalScopeChain();
-    JSC::UString script((const ushort*)scriptSource.data(), scriptSource.length());
+    JSC::UString script((const UChar*)scriptSource.data(), scriptSource.length());
     JSC::Completion completion = JSC::evaluate(state, scopeChain, JSC::makeSource(script), thisValue);
     if ((completion.complType() != JSC::ReturnValue) && (completion.complType() != JSC::Normal))
         return QVariant();
@@ -1046,10 +1046,10 @@ QString QWebElement::computedStyleProperty(const QString &name) const
 */
 QStringList QWebElement::classes() const
 {
-    if (!hasAttribute("class"))
+    if (!hasAttribute(QLatin1String("class")))
         return QStringList();
 
-    QStringList classes =  attribute("class").simplified().split(' ', QString::SkipEmptyParts);
+    QStringList classes =  attribute(QLatin1String("class")).simplified().split(QLatin1Char(' '), QString::SkipEmptyParts);
 #if QT_VERSION >= 0x040500
     classes.removeDuplicates();
 #else
@@ -1089,8 +1089,8 @@ void QWebElement::addClass(const QString &name)
     QStringList list = classes();
     if (!list.contains(name)) {
         list.append(name);
-        QString value = list.join(" ");
-        setAttribute("class", value);
+        QString value = list.join(QLatin1String(" "));
+        setAttribute(QLatin1String("class"), value);
     }
 }
 
@@ -1102,8 +1102,8 @@ void QWebElement::removeClass(const QString &name)
     QStringList list = classes();
     if (list.contains(name)) {
         list.removeAll(name);
-        QString value = list.join(" ");
-        setAttribute("class", value);
+        QString value = list.join(QLatin1String(" "));
+        setAttribute(QLatin1String("class"), value);
     }
 }
 
@@ -1119,8 +1119,8 @@ void QWebElement::toggleClass(const QString &name)
     else
         list.append(name);
 
-    QString value = list.join(" ");
-    setAttribute("class", value);
+    QString value = list.join(QLatin1String(" "));
+    setAttribute(QLatin1String("class"), value);
 }
 
 /*!

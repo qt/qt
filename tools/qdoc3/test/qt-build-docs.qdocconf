@@ -29,7 +29,6 @@ qhp.Qt.indexRoot           =
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = classic.css \
                              images/qt-logo.png \
-                             images/trolltech-logo \
                              images/taskmenuextension-example.png \
                              images/coloreditorfactoryimage.png \
                              images/dynamiclayouts-example.png \

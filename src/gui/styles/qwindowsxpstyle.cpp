@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -161,8 +161,7 @@ HTHEME XPThemeData::handle()
         htheme = QWindowsXPStylePrivate::handleMap->operator[](name);
 
     if (!htheme) {
-        htheme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget),
-                                (TCHAR*)name.utf16());
+        htheme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), (wchar_t*)name.utf16());
         if (htheme) {
             if (!QWindowsXPStylePrivate::handleMap)
                 QWindowsXPStylePrivate::handleMap = new QMap<QString, HTHEME>;
@@ -1547,11 +1546,11 @@ case PE_Frame:
             if (widget) {
                 bool useGradient = true;
                 const int maxlength = 256;
-                WCHAR themeFileName[maxlength];
-                WCHAR themeColor[maxlength];
+                wchar_t themeFileName[maxlength];
+                wchar_t themeColor[maxlength];
                 // Due to a a scaling issue with the XP Silver theme, tab gradients are not used with it
                 if (pGetCurrentThemeName(themeFileName, maxlength, themeColor, maxlength, NULL, 0) == S_OK) {
-                    WCHAR* offset;
+                    wchar_t *offset = 0;
                     if ((offset = wcsrchr(themeFileName, QChar(QLatin1Char('\\')).unicode())) != NULL) {
                         offset++;
                         if (!lstrcmp(offset, L"Luna.msstyles") && !lstrcmp(offset, L"Metallic")) {
@@ -3235,7 +3234,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
         break;
 
     case PM_SplitterWidth:
-        res = qMax(5, QApplication::globalStrut().width());
+        res = qMax(int(QStyleHelper::dpiScaled(5.)), QApplication::globalStrut().width());
         break;
 
     case PM_IndicatorWidth:
@@ -3245,7 +3244,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
             if (theme.isValid()) {
                 SIZE size;
                 pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = (pm == PM_IndicatorWidth ? size.cx+2 : res = size.cy+2);
+                res = (pm == PM_IndicatorWidth ? size.cx : res = size.cy);
             }
         }
         break;
@@ -3257,7 +3256,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
             if (theme.isValid()) {
                 SIZE size;
                 pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = (pm == PM_ExclusiveIndicatorWidth ? size.cx+2 : res = size.cy+2);
+                res = (pm == PM_ExclusiveIndicatorWidth ? size.cx : res = size.cy);
             }
         }
         break;
@@ -3329,7 +3328,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
 
 #ifndef QT_NO_TOOLBAR
     case PM_ToolBarHandleExtent:
-        res = 8;
+        res = int(QStyleHelper::dpiScaled(8.));
         break;
 
 #endif // QT_NO_TOOLBAR
@@ -3344,10 +3343,10 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
     }
     break;
     case PM_DockWidgetSeparatorExtent:
-        res = 4;
+        res = int(QStyleHelper::dpiScaled(4.));
         break;
     case PM_DockWidgetTitleMargin:
-        res = 4;
+        res = int(QStyleHelper::dpiScaled(4.));
         break;
 
     case PM_ButtonShiftHorizontal:
@@ -3356,6 +3355,10 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
             res = 1;
         else
             res = 0;
+        break;
+
+    case PM_ButtonDefaultIndicator:
+        res = 0;
         break;
 
     default:

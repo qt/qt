@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,6 +126,37 @@ void QAbstractItemViewPrivate::init()
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
 }
+
+void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index)
+{
+    //we take a persistent model index because the model might change by emitting signals
+    Q_Q(QAbstractItemView);
+    if (viewportEnteredNeeded || enteredIndex != index) {
+        viewportEnteredNeeded = false;
+
+        if (index.isValid()) {
+            emit q->entered(index);
+#ifndef QT_NO_STATUSTIP
+            QString statustip = model->data(index, Qt::StatusTipRole).toString();
+            if (parent && !statustip.isEmpty()) {
+                QStatusTipEvent tip(statustip);
+                QApplication::sendEvent(parent, &tip);
+            }
+#endif
+        } else {
+#ifndef QT_NO_STATUSTIP
+            if (parent) {
+                QString emptyString;
+                QStatusTipEvent tip( emptyString );
+                QApplication::sendEvent(parent, &tip);
+            }
+#endif
+            emit q->viewportEntered();
+        }
+        enteredIndex = index;
+    }
+}
+
 
 /*!
     \class QAbstractItemView
@@ -1557,7 +1588,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     }
 #endif // QT_NO_DRAGANDDROP
 
-    QModelIndex index = indexAt(bottomRight);
+    QPersistentModelIndex index = indexAt(bottomRight);
     QModelIndex buddy = d->model->buddy(d->pressedIndex);
     if ((state() == EditingState && d->hasEditor(buddy))
         || edit(index, NoEditTriggers, event))
@@ -1568,33 +1599,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     else
         topLeft = bottomRight;
 
-    if (d->viewportEnteredNeeded || d->enteredIndex != index) {
-        d->viewportEnteredNeeded = false;
-
-        // signal handlers may change the model
-        QPersistentModelIndex persistent = index;
-        if (persistent.isValid()) {
-            emit entered(persistent);
-#ifndef QT_NO_STATUSTIP
-            QString statustip = d->model->data(persistent, Qt::StatusTipRole).toString();
-            if (parent() && !statustip.isEmpty()) {
-                QStatusTipEvent tip(statustip);
-                QApplication::sendEvent(parent(), &tip);
-            }
-#endif
-        } else {
-#ifndef QT_NO_STATUSTIP
-            if (parent()) {
-                QString emptyString;
-                QStatusTipEvent tip(emptyString);
-                QApplication::sendEvent(parent(), &tip);
-            }
-#endif
-            emit viewportEntered();
-        }
-        d->enteredIndex = persistent;
-        index = persistent;
-    }
+    d->checkMouseMove(index);
 
 #ifndef QT_NO_DRAGANDDROP
     if (index.isValid()
@@ -1613,14 +1618,13 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 
         // Do the normalize ourselves, since QRect::normalized() is flawed
         QRect selectionRect = QRect(topLeft, bottomRight);
-        QPersistentModelIndex persistent = index;
         setSelection(selectionRect, command);
 
         // set at the end because it might scroll the view
-        if (persistent.isValid()
-            && (persistent != d->selectionModel->currentIndex())
-            && d->isIndexEnabled(persistent))
-            d->selectionModel->setCurrentIndex(persistent, QItemSelectionModel::NoUpdate);
+        if (index.isValid()
+            && (index != d->selectionModel->currentIndex())
+            && d->isIndexEnabled(index))
+            d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
     }
 }
 
@@ -2422,6 +2426,7 @@ void QAbstractItemView::verticalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (verticalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
+    d->checkMouseMove(viewport()->mapFromGlobal(QCursor::pos()));
 }
 
 /*!
@@ -2432,6 +2437,7 @@ void QAbstractItemView::horizontalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (horizontalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
+    d->checkMouseMove(viewport()->mapFromGlobal(QCursor::pos()));
 }
 
 /*!
@@ -2902,8 +2908,14 @@ void QAbstractItemView::scrollToBottom()
 void QAbstractItemView::update(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    if (index.isValid())
-        d->viewport->update(visualRect(index));
+    if (index.isValid()) {
+        const QRect rect = visualRect(index);
+        //this test is important for peformance reason
+        //For example in dataChanged we simply update all the cells without checking
+        //it can be a major bottleneck to update rects that aren't even part of the viewport
+        if (d->viewport->geometry().intersects(rect))
+            d->viewport->update(rect);
+    }
 }
 
 /*!

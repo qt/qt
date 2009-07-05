@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -36,10 +36,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef UNICODE
-#define UNICODE
-#endif
 
 #include "qaxscript.h"
 
@@ -194,7 +190,7 @@ HRESULT WINAPI QAxScriptSite::GetItemInfo(LPCOLESTR pstrName, DWORD mask, IUnkno
     else if (mask & SCRIPTINFO_ITYPEINFO)
         return E_POINTER;
     
-    QAxBase *object = script->findObject(QString::fromUtf16((const ushort*)pstrName));
+    QAxBase *object = script->findObject(QString::fromWCharArray(pstrName));
     if (!object)
         return TYPE_E_ELEMENTNOTFOUND;
     
@@ -236,9 +232,9 @@ HRESULT WINAPI QAxScriptSite::OnScriptTerminate(const VARIANT *result, const EXC
         emit script->finished(VARIANTToQVariant(*result, 0));
     if (exception)
         emit script->finished(exception->wCode, 
-        QString::fromUtf16((const ushort*)exception->bstrSource),
-        QString::fromUtf16((const ushort*)exception->bstrDescription),
-        QString::fromUtf16((const ushort*)exception->bstrHelpFile)
+        QString::fromWCharArray(exception->bstrSource),
+        QString::fromWCharArray(exception->bstrDescription),
+        QString::fromWCharArray(exception->bstrHelpFile)
 			    );
     return S_OK;
 }
@@ -287,14 +283,14 @@ HRESULT WINAPI QAxScriptSite::OnScriptError(IActiveScriptError *error)
     error->GetSourcePosition(&context, &lineNumber, &charPos);
     HRESULT hres = error->GetSourceLineText(&bstrLineText);
     if (hres == S_OK) {
-        lineText = QString::fromUtf16((const ushort*)bstrLineText);
+        lineText = QString::fromWCharArray(bstrLineText);
         SysFreeString(bstrLineText);
     }
     SysFreeString(exception.bstrSource);
     SysFreeString(exception.bstrDescription);
     SysFreeString(exception.bstrHelpFile);
 
-    emit script->error(exception.wCode, QString::fromUtf16((const ushort*)exception.bstrDescription), lineNumber, lineText);
+    emit script->error(exception.wCode, QString::fromWCharArray(exception.bstrDescription), lineNumber, lineText);
     
     return S_OK;
 }
@@ -463,7 +459,7 @@ bool QAxScriptEngine::initialize(IUnknown **ptr)
         return false;
     
     CLSID clsid;
-    HRESULT hres = CLSIDFromProgID((WCHAR*)script_language.utf16(), &clsid);
+    HRESULT hres = CLSIDFromProgID((wchar_t*)script_language.utf16(), &clsid);
     if(FAILED(hres))
         return false;
     
@@ -609,7 +605,7 @@ void QAxScriptEngine::addItem(const QString &name)
     if (!engine)
         return;
     
-    engine->AddNamedItem((WCHAR*)name.utf16(), SCRIPTITEM_ISSOURCE|SCRIPTITEM_ISVISIBLE);
+    engine->AddNamedItem((wchar_t*)name.utf16(), SCRIPTITEM_ISSOURCE|SCRIPTITEM_ISVISIBLE);
 #endif
 }
 
@@ -1173,7 +1169,7 @@ bool QAxScriptManager::registerEngine(const QString &name, const QString &extens
         return false;
     
     CLSID clsid;
-    HRESULT hres = CLSIDFromProgID((WCHAR*)name.utf16(), &clsid);
+    HRESULT hres = CLSIDFromProgID((wchar_t*)name.utf16(), &clsid);
     if (hres != S_OK)
         return false;
     

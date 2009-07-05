@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include "qsocketnotifier.h"
 
 #include "qapplication.h"
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -119,9 +120,9 @@ QWSBusMouseHandlerPrivate::QWSBusMouseHandlerPrivate(QWSBusMouseHandler *h,
         mouseDev = QLatin1String("/dev/mouse");
     obstate = -1;
     mouseFD = -1;
-    mouseFD = open(mouseDev.toLocal8Bit(), O_RDWR | O_NDELAY);
+    mouseFD = QT_OPEN(mouseDev.toLocal8Bit(), O_RDWR | O_NDELAY);
     if (mouseFD < 0)
-        mouseFD = open(mouseDev.toLocal8Bit(), O_RDONLY | O_NDELAY);
+        mouseFD = QT_OPEN(mouseDev.toLocal8Bit(), O_RDONLY | O_NDELAY);
     if (mouseFD < 0)
         qDebug("Cannot open %s (%s)", qPrintable(mouseDev), strerror(errno));
 
@@ -130,7 +131,7 @@ QWSBusMouseHandlerPrivate::QWSBusMouseHandlerPrivate(QWSBusMouseHandler *h,
     usleep(50000);
 
     char buf[100];                                // busmouse driver will not read if bufsize < 3,  YYD
-    while (read(mouseFD, buf, 100) > 0) { }  // eat unwanted replies
+    while (QT_READ(mouseFD, buf, 100) > 0) { }  // eat unwanted replies
 
     mouseIdx = 0;
 
@@ -142,7 +143,7 @@ QWSBusMouseHandlerPrivate::~QWSBusMouseHandlerPrivate()
 {
     if (mouseFD >= 0) {
         tcflush(mouseFD,TCIFLUSH);            // yyd.
-        close(mouseFD);
+        QT_CLOSE(mouseFD);
     }
 }
 
@@ -167,7 +168,7 @@ void QWSBusMouseHandlerPrivate::readMouseData()
     for (;;) {
         if (mouseBufSize - mouseIdx < 3)
             break;
-        n = read(mouseFD, mouseBuf+mouseIdx, 3);
+        n = QT_READ(mouseFD, mouseBuf+mouseIdx, 3);
         if (n != 3)
             break;
         mouseIdx += 3;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -91,6 +91,10 @@ org.freedesktop.DBus.Error.InvalidSignature
 org.freedesktop.DBus.Error.UnknownInterface
 com.trolltech.QtDBus.Error.InternalError
 org.freedesktop.DBus.Error.UnknownObject
+com.trolltech.QtDBus.Error.InvalidService
+com.trolltech.QtDBus.Error.InvalidObjectPath
+com.trolltech.QtDBus.Error.InvalidInterface
+com.trolltech.QtDBus.Error.InvalidMember
 */
 
 // in the same order as KnownErrors!
@@ -116,12 +120,17 @@ static const char errorMessages_string[] =
     "org.freedesktop.DBus.Error.UnknownInterface\0"
     "com.trolltech.QtDBus.Error.InternalError\0"
     "org.freedesktop.DBus.Error.UnknownObject\0"
+    "com.trolltech.QtDBus.Error.InvalidService\0"
+    "com.trolltech.QtDBus.Error.InvalidObjectPath\0"
+    "com.trolltech.QtDBus.Error.InvalidInterface\0"
+    "com.trolltech.QtDBus.Error.InvalidMember\0"
     "\0";
 
 static const int errorMessages_indices[] = {
        0,    6,   40,   76,  118,  153,  191,  231,
      273,  313,  349,  384,  421,  461,  501,  540,
-     581,  617,  661,  705,  746,    0
+     581,  617,  661,  705,  746,  787,  829,  874,
+     918,    0
 };
 
 static const int errorMessages_count = sizeof errorMessages_indices /
@@ -216,8 +225,16 @@ static inline QDBusError::ErrorType get(const char *name)
     \value UnknownInterface     The interface is not known
     \value InternalError        An internal error occurred
                                 (\c com.trolltech.QtDBus.Error.InternalError)
-    \value UnknownObject        The remote object could not be found.
 
+    \value InvalidObjectPath    The object path provided is invalid.
+
+    \value InvalidService       The service requested is invalid.
+
+    \value InvalidMember        The member is invalid.
+
+    \value InvalidInterface     The interface is invalid.
+
+    \value UnknownObject        The remote object could not be found.
 */
 
 /*!

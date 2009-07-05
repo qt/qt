@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -103,9 +103,8 @@ QT_BEGIN_NAMESPACE
 
     Note that QTimer's accuracy depends on the underlying operating
     system and hardware. Most platforms support an accuracy of
-    1 millisecond, but Windows 98 supports only 55. If Qt is
-    unable to deliver the requested number of timer clicks, it will
-    silently discard some.
+    1 millisecond. If Qt is unable to deliver the requested number of
+    timer clicks, it will silently discard some.
 
     An alternative to using QTimer is to call QObject::startTimer()
     for your object and reimplement the QObject::timerEvent() event

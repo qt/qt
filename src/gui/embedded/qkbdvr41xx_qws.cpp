@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@
 #include <errno.h>
 
 #include <qsocketnotifier.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 QT_BEGIN_NAMESPACE
 
@@ -95,7 +96,7 @@ QWSVr41xxKbPrivate::QWSVr41xxKbPrivate(QWSVr41xxKeyboardHandler *h, const QStrin
     buttonFD = -1;
     notifier = 0;
 
-    buttonFD = open(terminalName.toLatin1().constData(), O_RDWR | O_NDELAY, 0);;
+    buttonFD = QT_OPEN(terminalName.toLatin1().constData(), O_RDWR | O_NDELAY, 0);;
     if (buttonFD < 0) {
         qWarning("Cannot open %s\n", qPrintable(terminalName));
         return;
@@ -115,7 +116,7 @@ QWSVr41xxKbPrivate::QWSVr41xxKbPrivate(QWSVr41xxKeyboardHandler *h, const QStrin
 QWSVr41xxKbPrivate::~QWSVr41xxKbPrivate()
 {
     if (buttonFD > 0) {
-        ::close(buttonFD);
+        QT_CLOSE(buttonFD);
         buttonFD = -1;
     }
     delete notifier;
@@ -127,7 +128,7 @@ void QWSVr41xxKbPrivate::readKeyboardData()
 {
     int n = 0;
     do {
-        n  = read(buttonFD, kbdBuffer+kbdIdx, kbdBufferLen - kbdIdx);
+        n  = QT_READ(buttonFD, kbdBuffer+kbdIdx, kbdBufferLen - kbdIdx);
         if (n > 0)
             kbdIdx += n;
     } while (n > 0);

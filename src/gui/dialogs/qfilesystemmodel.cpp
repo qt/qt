@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -296,22 +296,14 @@ static QString qt_GetLongPathName(const QString &strShortPath)
 #else
                 QString longSection = QDir::toNativeSeparators(section);
 #endif
-                QT_WA({
-                    WIN32_FIND_DATAW findData;
-                    h = ::FindFirstFileW((wchar_t *)longSection.utf16(), &findData);
-                    if (h != INVALID_HANDLE_VALUE)
-                        longPath.append(QString::fromUtf16((ushort*)findData.cFileName));
-                    } , {
-                    WIN32_FIND_DATAA findData;
-                    h = ::FindFirstFileA(section.toLocal8Bit(), &findData);
-                    if (h != INVALID_HANDLE_VALUE)
-                        longPath.append(QString::fromLocal8Bit(findData.cFileName));
-                });
-                if (h == INVALID_HANDLE_VALUE) {
+                WIN32_FIND_DATA findData;
+                h = ::FindFirstFile((wchar_t*)longSection.utf16(), &findData);
+                if (h != INVALID_HANDLE_VALUE) {
+                    longPath.append(QString::fromWCharArray(findData.cFileName));
+                    ::FindClose(h);
+                } else {
                     longPath.append(section);
                     break;
-                } else {
-                    ::FindClose(h);
                 }
             }
             if (it != constEnd)

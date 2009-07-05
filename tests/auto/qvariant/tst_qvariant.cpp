@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -255,6 +255,7 @@ private slots:
     void convertByteArrayToBool() const;
     void convertByteArrayToBool_data() const;
     void toIntFromQString() const;
+    void task256984_setValue();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -2966,6 +2967,22 @@ void tst_QVariant::toIntFromQString() const
     QCOMPARE(v.toInt(&ok), 10);
     QVERIFY(ok);
 }
+
+void tst_QVariant::task256984_setValue()
+{
+    QTransform t; //we just take a value so that we're sure that it will be shared
+    QVariant v1 = t;
+    QVERIFY( v1.isDetached() );
+    QVariant v2 = v1;
+    QVERIFY( !v1.isDetached() );
+    QVERIFY( !v2.isDetached() );
+
+    qVariantSetValue(v2, 3); //set an integer value
+    
+    QVERIFY( v1.isDetached() );
+    QVERIFY( v2.isDetached() );
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

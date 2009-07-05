@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,6 +59,8 @@
 #include <fcntl.h>
 #include <time.h>
 
+#include "private/qcore_unix_p.h"
+
 #ifdef QT_LINUXBASE
 
 /* LSB doesn't standardize these */
@@ -80,7 +82,7 @@ static void (*qfswd_old_sigio_handler)(int) = 0;
 static void (*qfswd_old_sigio_action)(int, siginfo_t *, void *) = 0;
 static void qfswd_sigio_monitor(int signum, siginfo_t *i, void *v)
 {
-    ::write(qfswd_fileChanged_pipe[1], &i->si_fd, sizeof(int));
+    qt_safe_write(qfswd_fileChanged_pipe[1], reinterpret_cast<char*>(&i->si_fd), sizeof(int));
 
     if (qfswd_old_sigio_handler && qfswd_old_sigio_handler != SIG_IGN)
         qfswd_old_sigio_handler(signum);
@@ -121,9 +123,7 @@ QDnotifySignalThread::QDnotifySignalThread()
 {
     moveToThread(this);
 
-    ::pipe(qfswd_fileChanged_pipe);
-    ::fcntl(qfswd_fileChanged_pipe[0], F_SETFL,
-            ::fcntl(qfswd_fileChanged_pipe[0], F_GETFL) | O_NONBLOCK);
+    qt_safe_pipe(qfswd_fileChanged_pipe, O_NONBLOCK);
 
     struct sigaction oldAction;
     struct sigaction action;
@@ -181,7 +181,7 @@ void QDnotifySignalThread::run()
 void QDnotifySignalThread::readFromDnotify()
 {
     int fd;
-    int readrv = ::read(qfswd_fileChanged_pipe[0], &fd,sizeof(int));
+    int readrv = qt_safe_read(qfswd_fileChanged_pipe[0], reinterpret_cast<char*>(&fd), sizeof(int));
     // Only expect EAGAIN or EINTR.  Other errors are assumed to be impossible.
     if(readrv != -1) {
         Q_ASSERT(readrv == sizeof(int));
@@ -207,9 +207,9 @@ QDnotifyFileSystemWatcherEngine::~QDnotifyFileSystemWatcherEngine()
     for(QHash<int, Directory>::ConstIterator iter = fdToDirectory.constBegin();
             iter != fdToDirectory.constEnd();
             ++iter) {
-        ::close(iter->fd);
+        qt_safe_close(iter->fd);
         if(iter->parentFd)
-            ::close(iter->parentFd);
+            qt_safe_close(iter->parentFd);
     }
 }
 
@@ -353,7 +353,7 @@ QStringList QDnotifyFileSystemWatcherEngine::removePaths(const QStringList &path
 
         if(!directory.isMonitored && directory.files.isEmpty()) {
             // No longer needed
-            ::close(directory.fd);
+            qt_safe_close(directory.fd);
             pathToFD.remove(directory.path);
             fdToDirectory.remove(fd);
         }
@@ -419,9 +419,9 @@ void QDnotifyFileSystemWatcherEngine::refresh(int fd)
     }
 
     if(!directory.isMonitored && directory.files.isEmpty()) {
-        ::close(directory.fd);
+        qt_safe_close(directory.fd);
         if(directory.parentFd) {
-            ::close(directory.parentFd);
+            qt_safe_close(directory.parentFd);
             parentToFD.remove(directory.parentFd);
         }
         fdToDirectory.erase(iter);

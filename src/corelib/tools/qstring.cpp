@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -169,7 +169,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
 // Unicode case-insensitive comparison
 static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
 {
-    if (a == b)
+    if (a == b && alen == blen)
         return 0;
     int l = qMin(alen, blen);
     while (l-- && *a == *b)
@@ -663,6 +663,74 @@ const QString::Null QString::null = { };
     formats, the \e precision represents the maximum number of
     significant digits (trailing zeroes are omitted).
 
+    \section1 More Efficient String Construction 
+
+    Using the QString \c{'+'} operator, it is easy to construct a
+    complex string from multiple substrings. You will often write code
+    like this:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 0
+
+    There is nothing wrong with either of these string constructions,
+    but there are a few hidden inefficiencies. Beginning with Qt 4.6,
+    you can eliminate them.
+
+    First, multiple uses of the \c{'+'} operator usually means
+    multiple memory allocations. When concatenating \e{n} substrings,
+    where \e{n > 2}, there can be as many as \e{n - 1} calls to the
+    memory allocator.
+
+    Second, QLatin1String does not store its length internally but
+    calls qstrlen() when it needs to know its length.
+
+    In 4.6, an internal template class \c{QStringBuilder} has been
+    added along with a few helper functions. This class is marked
+    internal and does not appear in the documentation, because you
+    aren't meant to instantiate it in your code. Its use will be
+    automatic, as described below. The class is found in
+    \c {src/corelib/tools/qstringbuilder.cpp} if you want to have a
+    look at it.
+
+    \c{QStringBuilder} uses expression templates and reimplements the
+    \c{'%'} operator so that when you use \c{'%'} for string
+    concatenation instead of \c{'+'}, multiple substring
+    concatenations will be postponed until the final result is about
+    to be assigned to a QString. At this point, the amount of memory
+    required for the final result is known. The memory allocator is
+    then called \e{once} to get the required space, and the substrings
+    are copied into it one by one.
+
+    \c{QLatin1Literal} is a second internal class that can replace
+    QLatin1String, which can't be changed for compatibility reasons.
+    \c{QLatin1Literal} stores its length, thereby saving time when
+    \c{QStringBuilder} computes the amount of memory required for the
+    final string.
+
+    Additional efficiency is gained by inlining and reduced reference
+    counting (the QString created from a \c{QStringBuilder} typically
+    has a ref count of 1, whereas QString::append() needs an extra
+    test).
+
+    There are three ways you can access this improved method of string
+    construction. The straightforward way is to include
+    \c{QStringBuilder} wherever you want to use it, and use the
+    \c{'%'} operator instead of \c{'+'} when concatenating strings:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 5
+
+    A more global approach is to include this define:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 3
+
+    and use \c{'%'} instead of \c{'+'} for string concatenation
+    everywhere. The third approach, which is the most convenient but
+    not entirely source compatible, is to include two defines:
+
+    \snippet doc/src/snippets/qstring/stringbuilder.cpp 4
+
+    and the \c{'+'} will automatically be performed as the
+    \c{QStringBuilder} \c{'%'} everywhere.
+
     \sa fromRawData(), QChar, QLatin1String, QByteArray, QStringRef
 */
 
@@ -944,14 +1012,13 @@ QString::QString(int size, QChar ch)
     }
 }
 
-/*!
-    Constructs a string of the given \a size without initializing the
-    characters. This is only used in \c QStringBuilder::toString().
+/*! \fn QString::QString(int size, Qt::Initialization)
+  \internal
 
-    \internal
+  Constructs a string of the given \a size without initializing the
+  characters. This is only used in \c QStringBuilder::toString().
 */
-
-QString::QString(int size, Uninitialized)
+QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
     d->ref = 1;
@@ -3647,13 +3714,13 @@ QByteArray qt_winQString2MB(const QChar *ch, int uclen)
     BOOL used_def;
     QByteArray mb(4096, 0);
     int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)ch, uclen,
+    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
                 mb.data(), mb.size()-1, 0, &used_def)))
     {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
             mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const WCHAR*)ch, uclen,
+                                (const wchar_t*)ch, uclen,
                                 0, 0, 0, &used_def));
                 // and try again...
         } else {
@@ -3674,9 +3741,9 @@ QString qt_winMB2QString(const char *mb, int mblen)
     if (!mb || !mblen)
         return QString();
     const int wclen_auto = 4096;
-    WCHAR wc_auto[wclen_auto];
+    wchar_t wc_auto[wclen_auto];
     int wclen = wclen_auto;
-    WCHAR *wc = wc_auto;
+    wchar_t *wc = wc_auto;
     int len;
     while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                 mb, mblen, wc, wclen)))
@@ -3689,7 +3756,7 @@ QString qt_winMB2QString(const char *mb, int mblen)
             } else {
                 wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
-                wc = new WCHAR[wclen];
+                wc = new wchar_t[wclen];
                 // and try again...
             }
         } else {
@@ -3732,11 +3799,6 @@ QString QString::fromLocal8Bit(const char *str, int size)
         return QString();
     if (size == 0 || (!*str && size < 0))
         return QLatin1String("");
-#if defined(Q_OS_WIN32)
-    if(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        return qt_winMB2QString(str, size);
-    }
-#endif
 #if !defined(QT_NO_TEXTCODEC)
     if (size < 0)
         size = qstrlen(str);
@@ -3781,8 +3843,7 @@ QString QString::fromUtf8(const char *str, int size)
     if (size < 0)
         size = qstrlen(str);
 
-    QString result;
-    result.resize(size); // worst case
+    QString result(size, Qt::Uninitialized); // worst case
     ushort *qch = result.d->data;
     uint uc = 0;
     uint min_uc = 0;
@@ -3897,8 +3958,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
             ++size;
     }
 
-    QString s;
-    s.resize(size*2); // worst case
+    QString s(size * 2, Qt::Uninitialized); // worst case
     ushort *uc = s.d->data;
     for (int i = 0; i < size; ++i) {
         uint u = unicode[i];
@@ -3961,8 +4021,7 @@ QString QString::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QString result;
-    result.resize(d->size);
+    QString result(d->size, Qt::Uninitialized);
     const QChar *from = (const QChar*) d->data;
     const QChar *fromend = (const QChar*) from+d->size;
     int outc=0;
@@ -4633,16 +4692,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return ucstrcmp(data1, length1, data2, length2);
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    int res;
-    QT_WA({
-        const TCHAR* s1 = (TCHAR*)data1;
-        const TCHAR* s2 = (TCHAR*)data2;
-        res = CompareStringW(GetUserDefaultLCID(), 0, s1, length1, s2, length2);
-    } , {
-        QByteArray s1 = toLocal8Bit_helper(data1, length1);
-        QByteArray s2 = toLocal8Bit_helper(data2, length2);
-        res = CompareStringA(GetUserDefaultLCID(), 0, s1.data(), s1.length(), s2.data(), s2.length());
-    });
+    int res = CompareString(GetUserDefaultLCID(), 0, (wchar_t*)data1, length1, (wchar_t*)data2, length2);
 
     switch (res) {
     case CSTR_LESS_THAN:
@@ -4814,8 +4864,7 @@ QString QString::toLower() const
             c = QChar::surrogateToUcs4(*(p - 1), c);
         const QUnicodeTables::Properties *prop = qGetProp(c);
         if (prop->lowerCaseDiff || prop->lowerCaseSpecial) {
-            QString s;
-            s.resize(d->size);
+            QString s(d->size, Qt::Uninitialized);
             memcpy(s.d->data, d->data, (p - d->data)*sizeof(ushort));
             ushort *pp = s.d->data + (p - d->data);
             while (p < e) {
@@ -4906,8 +4955,7 @@ QString QString::toUpper() const
             c = QChar::surrogateToUcs4(*(p - 1), c);
         const QUnicodeTables::Properties *prop = qGetProp(c);
         if (prop->upperCaseDiff || prop->upperCaseSpecial) {
-            QString s;
-            s.resize(d->size);
+            QString s(d->size, Qt::Uninitialized);
             memcpy(s.d->data, d->data, (p - d->data)*sizeof(ushort));
             ushort *pp = s.d->data + (p - d->data);
             while (p < e) {
@@ -6204,8 +6252,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
                      + d.locale_occurrences
                      *qMax(abs_field_width, larg.length());
 
-    QString result;
-    result.resize(result_len);
+    QString result(result_len, Qt::Uninitialized);
     QChar *result_buff = (QChar*) result.unicode();
 
     QChar *rc = result_buff;

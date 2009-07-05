@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,6 +46,7 @@
 #include "qwsdisplay_qws.h"
 #include "qpixmap.h"
 #include <private/qwssignalhandler_p.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -122,12 +123,12 @@ void QLinuxFbScreenPrivate::openTty()
 
     if (ttyDevice.isEmpty()) {
         for (const char * const *dev = devs; *dev; ++dev) {
-            ttyfd = ::open(*dev, O_RDWR);
+            ttyfd = QT_OPEN(*dev, O_RDWR);
             if (ttyfd != -1)
                 break;
         }
     } else {
-        ttyfd = ::open(ttyDevice.toAscii().constData(), O_RDWR);
+        ttyfd = QT_OPEN(ttyDevice.toAscii().constData(), O_RDWR);
     }
 
     if (ttyfd == -1)
@@ -144,7 +145,7 @@ void QLinuxFbScreenPrivate::openTty()
 
     // No blankin' screen, no blinkin' cursor!, no cursor!
     const char termctl[] = "\033[9;0]\033[?33l\033[?25l\033[?1c";
-    ::write(ttyfd, termctl, sizeof(termctl));
+    QT_WRITE(ttyfd, termctl, sizeof(termctl));
 }
 
 void QLinuxFbScreenPrivate::closeTty()
@@ -157,9 +158,9 @@ void QLinuxFbScreenPrivate::closeTty()
 
     // Blankin' screen, blinkin' cursor!
     const char termctl[] = "\033[9;15]\033[?33h\033[?25h\033[?0c";
-    ::write(ttyfd, termctl, sizeof(termctl));
+    QT_WRITE(ttyfd, termctl, sizeof(termctl));
 
-    ::close(ttyfd);
+    QT_CLOSE(ttyfd);
     ttyfd = -1;
 }
 
@@ -281,7 +282,7 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
         dev = QLatin1String("/dev/fb0");
 
     if (access(dev.toLatin1().constData(), R_OK|W_OK) == 0)
-        d_ptr->fd = open(dev.toLatin1().constData(), O_RDWR);
+        d_ptr->fd = QT_OPEN(dev.toLatin1().constData(), O_RDWR);
     if (d_ptr->fd == -1) {
         if (QApplication::type() == QApplication::GuiServer) {
             perror("QScreenLinuxFb::connect");
@@ -289,7 +290,7 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
             return false;
         }
         if (access(dev.toLatin1().constData(), R_OK) == 0)
-            d_ptr->fd = open(dev.toLatin1().constData(), O_RDONLY);
+            d_ptr->fd = QT_OPEN(dev.toLatin1().constData(), O_RDONLY);
     }
 
     fb_fix_screeninfo finfo;
@@ -681,7 +682,7 @@ bool QLinuxFbScreen::initDevice()
 #ifdef __i386__
     // Now init mtrr
     if(!::getenv("QWS_NOMTRR")) {
-        int mfd=open("/proc/mtrr",O_WRONLY,0);
+        int mfd=QT_OPEN("/proc/mtrr",O_WRONLY,0);
         // MTRR entry goes away when file is closed - i.e.
         // hopefully when QWS is killed
         if(mfd != -1) {
@@ -702,6 +703,9 @@ bool QLinuxFbScreen::initDevice()
                 //sentry.base,sentry.size,strerror(errno));
             }
         }
+
+        // Should we close mfd here?
+        //QT_CLOSE(mfd);
     }
 #endif
     if ((vinfo.bits_per_pixel==8) || (vinfo.bits_per_pixel==4) || (finfo.visual==FB_VISUAL_DIRECTCOLOR))

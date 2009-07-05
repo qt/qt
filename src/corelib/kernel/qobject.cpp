@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2085,6 +2085,34 @@ void QObject::deleteLater()
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
+
+    \section1 Meta Data
+
+    Additional data can be attached to each translatable message.
+    The syntax:
+
+    \tt{//= <id>}
+
+    can be used to give the message a unique identifier to support tools
+    which need it.
+    The syntax:
+
+    \tt{//~ <field name> <field contents>}
+
+    can be used to attach meta data to the message. The field name should consist
+    of a domain prefix (possibly the conventional file extension of the file format
+    the field is inspired by), a hyphen and the actual field name in
+    underscore-delimited notation. For storage in TS files, the field name together
+    with the prefix "extra-" will form an XML element name. The field contents will
+    be XML-escaped, but otherwise appear verbatim as the element's contents.
+    Any number of unique fields can be added to each message.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp meta data
+
+    Meta data appearing right in front of a magic TRANSLATOR comment applies to the
+    whole TS file.
 
     \section1 Character Encodings
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,23 @@ class QDBusError;
 class QDBusPendingCall;
 
 class QDBusAbstractInterfacePrivate;
-class QDBUS_EXPORT QDBusAbstractInterface: public QObject
+
+class QDBUS_EXPORT QDBusAbstractInterfaceBase: public QObject
+{
+public:
+    int qt_metacall(QMetaObject::Call, int, void**);
+protected:
+    QDBusAbstractInterfaceBase(QDBusAbstractInterfacePrivate &dd, QObject *parent);
+private:
+    Q_DECLARE_PRIVATE(QDBusAbstractInterface)
+};
+
+class QDBUS_EXPORT QDBusAbstractInterface:
+#ifdef Q_QDOC
+        public QObject
+#else
+        public QDBusAbstractInterfaceBase
+#endif
 {
     Q_OBJECT
 

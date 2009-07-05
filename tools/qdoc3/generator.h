@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,11 +93,11 @@ class Generator
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
 
-    virtual void generateText(const Text& text, 
+    virtual bool generateText(const Text& text, 
                               const Node *relative,
                               CodeMarker *marker);
 #ifdef QDOC_QML
-    virtual void generateQmlText(const Text& text, 
+    virtual bool generateQmlText(const Text& text, 
                                  const Node *relative,
                                  CodeMarker *marker);
 #endif
@@ -150,6 +150,10 @@ class Generator
                         const Node *relative, 
                         CodeMarker *marker,
                         const Node *actualNode = 0);
+    void appendFullName(Text& text,
+                        const Node *apparentNode,
+                        const QString& fullName,
+                        const Node *actualNode);
     void appendSortedNames(Text& text, 
                            const ClassNode *classe,
                            const QList<RelatedClass> &classes,

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -739,8 +739,12 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             // Note: Setting the access to Private hides the documentation,
             // but setting the status to Internal makes the node available
             // in the XML output when the WebXMLGenerator is used.
+#if 0
+            // Reimplemented functions now reported in separate sections.
             func->setAccess(Node::Private);
             func->setStatus(Node::Internal);
+#endif
+            func->setReimp(true);
         }
         else {
             doc.location().warning(tr("Ignored '\\%1' in %2")

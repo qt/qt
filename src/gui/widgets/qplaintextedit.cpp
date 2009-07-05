@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,6 +65,8 @@
 #include <limits.h>
 #include <qtexttable.h>
 #include <qvariant.h>
+
+#include <qstandardgestures.h>
 
 #include <qinputcontext.h>
 
@@ -250,7 +252,7 @@ QPlainTextDocumentLayoutPrivate *QPlainTextDocumentLayout::priv() const
  */
 void QPlainTextDocumentLayout::requestUpdate()
 {
-    emit update(QRectF(0., -4., 1000000000., 1000000000.));
+    emit update(QRectF(0., -document()->documentMargin(), 1000000000., 1000000000.));
 }
 
 
@@ -345,8 +347,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int /*charsRemoved*/, i
     }
 
     if (!d->blockUpdate)
-        emit update(); // optimization potential
-
+	emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
 }
 
 
@@ -726,6 +727,9 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
     backgroundVisible = false;
     centerOnScroll = false;
     inDrag = false;
+#ifdef Q_WS_WIN
+    singleFingerPanEnabled = true;
+#endif
 }
 
 
@@ -781,6 +785,9 @@ void QPlainTextEditPrivate::init(const QString &txt)
 #ifndef QT_NO_CURSOR
     viewport->setCursor(Qt::IBeamCursor);
 #endif
+    originalOffsetY = 0;
+    panGesture = new QPanGesture(q);
+    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -1014,14 +1021,13 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     QPlainText uses very much the same technology and concepts as
     QTextEdit, but is optimized for plain text handling.
 
-    QPlainTextEdit works on paragraphs and characters. A paragraph is a
-    formatted string which is word-wrapped to fit into the width of
+    QPlainTextEdit works on paragraphs and characters. A paragraph is
+    a formatted string which is word-wrapped to fit into the width of
     the widget. By default when reading plain text, one newline
     signifies a paragraph. A document consists of zero or more
-    paragraphs. The words in the paragraph are aligned in accordance
-    with the paragraph's alignment. Paragraphs are separated by hard
-    line breaks. Each character within a paragraph has its own
-    attributes, for example, font and color.
+    paragraphs. Paragraphs are separated by hard line breaks. Each
+    character within a paragraph has its own attributes, for example,
+    font and color.
 
     The shape of the mouse cursor on a QPlainTextEdit is
     Qt::IBeamCursor by default.  It can be changed through the
@@ -1029,15 +1035,14 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
     \section1 Using QPlainTextEdit as a Display Widget
 
-    The text is set or replaced using setPlainText() which deletes any
-    existing text and replaces it with the text passed in the
-    setPlainText() call.
+    The text is set or replaced using setPlainText() which deletes the
+    existing text and replaces it with the text passed to setPlainText().
 
-    Text itself can be inserted using the QTextCursor class or using
-    the convenience functins insertPlainText(), appendPlainText() or
+    Text can be inserted using the QTextCursor class or using the
+    convenience functions insertPlainText(), appendPlainText() or
     paste().
 
-    By default the text edit wraps words at whitespace to fit within
+    By default, the text edit wraps words at whitespace to fit within
     the text edit widget. The setLineWrapMode() function is used to
     specify the kind of line wrap you want, \l WidgetWidth or \l
     NoWrap if you don't want any wrapping.  If you use word wrap to
@@ -1163,7 +1168,8 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
 
     \sa QTextDocument, QTextCursor, {Application Example},
-	{Syntax Highlighter Example}, {Rich Text Processing}
+        {Code Editor Example}, {Syntax Highlighter Example},
+        {Rich Text Processing}
 
 */
 
@@ -1725,8 +1731,7 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, QRectF
     p->save();
     if (brush.style() >= Qt::LinearGradientPattern && brush.style() <= Qt::ConicalGradientPattern) {
         if (!gradientRect.isNull()) {
-            QTransform m;
-            m.translate(gradientRect.left(), gradientRect.top());
+            QTransform m = QTransform::fromTranslate(gradientRect.left(), gradientRect.top());
             m.scale(gradientRect.width(), gradientRect.height());
             brush.setTransform(m);
             const_cast<QGradient *>(brush.gradient())->setCoordinateMode(QGradient::LogicalMode);
@@ -2020,6 +2025,7 @@ void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
     d->sendControlEvent(e);
+    ensureCursorVisible();
 }
 
 /*!\reimp
@@ -2899,6 +2905,30 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
+
+void QPlainTextEditPrivate::_q_gestureTriggered()
+{
+    Q_Q(QPlainTextEdit);
+    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+    if (!g)
+        return;
+    QScrollBar *hBar = q->horizontalScrollBar();
+    QScrollBar *vBar = q->verticalScrollBar();
+    if (g->state() == Qt::GestureStarted)
+        originalOffsetY = vBar->value();
+    QSize totalOffset = g->totalOffset();
+    if (!totalOffset.isNull()) {
+        if (QApplication::isRightToLeft())
+            totalOffset.rwidth() *= -1;
+        // QPlainTextEdit scrolls by lines only in vertical direction
+        QFontMetrics fm(q->document()->defaultFont());
+        int lineHeight = fm.height();
+        int newX = hBar->value() - g->lastOffset().width();
+        int newY = originalOffsetY - totalOffset.height()/lineHeight;
+        hbar->setValue(newX);
+        vbar->setValue(newY);
+    }
+}
 
 QT_END_NAMESPACE
 

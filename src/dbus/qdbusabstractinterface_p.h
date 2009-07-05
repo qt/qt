@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,15 +75,19 @@ public:
     QString path;
     QString interface;
     mutable QDBusError lastError;
+
+    // this is set during creation and never changed
+    // it can't be const because QDBusInterfacePrivate has one more check
     bool isValid;
 
     QDBusAbstractInterfacePrivate(const QString &serv, const QString &p,
                                   const QString &iface, const QDBusConnection& con, bool dynamic);
     virtual ~QDBusAbstractInterfacePrivate() { }
+    bool canMakeCalls() const;
 
     // these functions do not check if the property is valid
-    QVariant property(const QMetaProperty &mp) const;
-    void setProperty(const QMetaProperty &mp, const QVariant &value);
+    void property(const QMetaProperty &mp, QVariant &where) const;
+    bool setProperty(const QMetaProperty &mp, const QVariant &value);
 
     // return conn's d pointer
     inline QDBusConnectionPrivate *connectionPrivate() const

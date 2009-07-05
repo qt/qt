@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,13 +34,12 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <QFile>
-#include <QSysInfo>
 #include <QProcess>
 #include <QLibraryInfo>
 #include <qt_windows.h>
@@ -87,37 +86,19 @@ static bool runWithQtInEnvironment(const QString &cmd)
 
 static bool attachTypeLibrary(const QString &applicationName, int resource, const QByteArray &data, QString *errorMessage)
 {
-    HANDLE hExe = 0;
-    QT_WA({
-        TCHAR *resourceName = MAKEINTRESOURCEW(resource);
-        hExe = BeginUpdateResourceW((TCHAR*)applicationName.utf16(), false);
-        if (hExe == 0) {
-            if (errorMessage)
-                *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not open file.").arg(applicationName);
-            return false;
-        }
-        if (!UpdateResourceW(hExe,L"TYPELIB",resourceName,0,(void*)data.data(),data.count())) {
-            EndUpdateResource(hExe, true);
-            if (errorMessage)
-                *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not update file.").arg(applicationName);
-            return false;
-        }
-    }, {
-        char *resourceName = MAKEINTRESOURCEA(resource);
-        hExe = BeginUpdateResourceA(applicationName.toLocal8Bit(), false);
-        if (hExe == 0) {
-            if (errorMessage)
-                *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not open file.").arg(applicationName);
-            return false;
-        }
-        if (!UpdateResourceA(hExe,"TYPELIB",resourceName,0,(void*)data.data(),data.count())) {
-            EndUpdateResource(hExe, true);
-            if (errorMessage)
-                *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not update file.").arg(applicationName);
-            return false;
-        }
-    });
-    
+    HANDLE hExe = BeginUpdateResource((const wchar_t *)applicationName.utf16(), false);
+    if (hExe == 0) {
+        if (errorMessage)
+            *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not open file.").arg(applicationName);
+        return false;
+    }
+    if (!UpdateResource(hExe, L"TYPELIB", MAKEINTRESOURCE(resource), 0, (void*)data.data(), data.count())) {
+        EndUpdateResource(hExe, true);
+        if (errorMessage)
+            *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not update file.").arg(applicationName);
+        return false;
+    }
+
     if (!EndUpdateResource(hExe,false)) {
         if (errorMessage)
             *errorMessage = QString::fromLatin1("Failed to attach type library to binary %1 - could not write file.").arg(applicationName);
@@ -135,12 +116,7 @@ static bool registerServer(const QString &input)
     if (input.endsWith(QLatin1String(".exe"))) {
         ok = runWithQtInEnvironment(quotePath(input) + QLatin1String(" -regserver"));
     } else {
-        HMODULE hdll = 0;
-        QT_WA({
-            hdll = LoadLibraryW((TCHAR*)input.utf16());
-        }, {
-            hdll = LoadLibraryA(input.toLocal8Bit());
-        });
+        HMODULE hdll = LoadLibrary((const wchar_t *)input.utf16());
         if (!hdll) {
             fprintf(stderr, "Couldn't load library file %s\n", (const char*)input.toLocal8Bit().data());
             return false;
@@ -162,12 +138,7 @@ static bool unregisterServer(const QString &input)
     if (input.endsWith(QLatin1String(".exe"))) {        
         ok = runWithQtInEnvironment(quotePath(input) + QLatin1String(" -unregserver"));
     } else {
-        HMODULE hdll = 0;
-        QT_WA({
-            hdll = LoadLibraryW((TCHAR*)input.utf16());
-        }, {
-            hdll = LoadLibraryA(input.toLocal8Bit());
-        });
+        HMODULE hdll = LoadLibrary((const wchar_t *)input.utf16());
         if (!hdll) {
             fprintf(stderr, "Couldn't load library file %s\n", (const char*)input.toLocal8Bit().data());
             return false;
@@ -191,12 +162,7 @@ static HRESULT dumpIdl(const QString &input, const QString &idlfile, const QStri
         if (runWithQtInEnvironment(quotePath(input) + QLatin1String(" -dumpidl ") + idlfile + QLatin1String(" -version ") + version))
             res = S_OK;
     } else {
-        HMODULE hdll = 0;
-        QT_WA({
-            hdll = LoadLibraryW((TCHAR*)input.utf16());
-        }, {
-            hdll = LoadLibraryA(input.toLocal8Bit());
-        });
+        HMODULE hdll = LoadLibrary((const wchar_t *)input.utf16());
         if (!hdll) {
             fprintf(stderr, "Couldn't load library file %s\n", (const char*)input.toLocal8Bit().data());
             return 3;
@@ -254,9 +220,6 @@ int runIdc(int argc, char **argv)
             else
                 version = QLatin1String(argv[i]);
         } else if (p == QLatin1String("/tlb") || p == QLatin1String("-tlb")) {
-            if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)
-                fprintf(stderr, "IDC requires Windows NT/2000/XP!\n");
-            
             ++i;
             if (i > argc) {
                 error = QLatin1String("Missing name for type library file!");

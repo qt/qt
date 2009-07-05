@@ -21,7 +21,6 @@
 #ifndef JSXPathEvaluator_h
 #define JSXPathEvaluator_h
 
-
 #if ENABLE(XPATH)
 
 #include "JSDOMBinding.h"

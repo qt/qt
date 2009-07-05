@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1419,9 +1419,10 @@ bool QMainWindow::event(QEvent *event)
     \i Toolbar breaks are not respected or preserved
     \i Any custom widgets in the toolbar will not be shown if the toolbar
         becomes too small (only actions will be shown)
-    \i If you call showFullScreen() on the main window, the QToolbar will
-        disappear since it is considered to be part of the title bar. You can
-        work around this by turning off the unified toolbar before you call
+    \i Before Qt 4.5, if you called showFullScreen() on the main window, the QToolbar would
+        disappear since it is considered to be part of the title bar. Qt 4.5 and up will now work around this by pulling
+        the toolbars out and back into the regular toolbar and vice versa when you swap out.
+        However, a good practice would be that turning off the unified toolbar before you call
         showFullScreen() and restoring it after you call showNormal().
     \endlist
 

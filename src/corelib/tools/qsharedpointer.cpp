@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -337,6 +337,23 @@
     up-casting.
 
     \sa isNull(), qSharedPointerConstCast()
+*/
+
+/*!
+    \fn QSharedPointer<X> QSharedPointer::objectCast() const
+
+    Performs a \l qobject_cast() from this pointer's type to \tt X and
+    returns a QSharedPointer that shares the reference. If this
+    function is used to up-cast, then QSharedPointer will perform a \tt
+    qobject_cast, which means that if the object being pointed by this
+    QSharedPointer is not of type \tt X, the returned object will be
+    null.
+
+    Note: the template type \c X must have the same const and volatile
+    qualifiers as the template of this object, or the cast will
+    fail. Use constCast() if you need to drop those qualifiers.
+
+    \sa qSharedPointerObjectCast()
 */
 
 /*!
@@ -716,6 +733,45 @@
 
     \sa QWeakPointer::toStrongRef(), qSharedPointerCast(), qSharedPointerDynamicCast()
 */
+
+/*!
+    \fn QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &other)
+    \relates QSharedPointer
+
+    Returns a shared pointer to the pointer held by \a other, using a
+    \l qobject_cast() to type \tt X to obtain an internal pointer of the
+    appropriate type. If the \tt qobject_cast fails, the object
+    returned will be null.
+
+    Note that \tt X must have the same cv-qualifiers (\tt const and
+    \tt volatile) that \tt T has, or the code will fail to
+    compile. Use qSharedPointerConstCast to cast away the constness.
+
+    \sa QSharedPointer::objectCast(), qSharedPointerCast(), qSharedPointerConstCast()
+*/
+
+/*!
+    \fn QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &other)
+    \relates QSharedPointer
+    \relates QWeakPointer
+
+    Returns a shared pointer to the pointer held by \a other, using a
+    \l qobject_cast() to type \tt X to obtain an internal pointer of the
+    appropriate type. If the \tt qobject_cast fails, the object
+    returned will be null.
+
+    The \a other object is converted first to a strong reference. If
+    that conversion fails (because the object it's pointing to has
+    already been deleted), this function also returns a null
+    QSharedPointer.
+
+    Note that \tt X must have the same cv-qualifiers (\tt const and
+    \tt volatile) that \tt T has, or the code will fail to
+    compile. Use qSharedPointerConstCast to cast away the constness.
+
+    \sa QWeakPointer::toStrongRef(), qSharedPointerCast(), qSharedPointerConstCast()
+*/
+
 
 /*!
     \fn QWeakPointer<X> qWeakPointerCast(const QWeakPointer<T> &other)

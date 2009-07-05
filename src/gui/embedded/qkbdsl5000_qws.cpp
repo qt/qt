@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,8 @@
 #include "qapplication.h"
 #include "qnamespace.h"
 #include "qtimer.h"
+
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -207,14 +209,14 @@ QWSSL5000KeyboardHandler::QWSSL5000KeyboardHandler(const QString &device)
     numLock = false;
 
     sharp_kbdctl_modifstat  st;
-    int dev = ::open(device.isEmpty()?"/dev/sharp_kbdctl":device.toLocal8Bit().constData(), O_RDWR);
+    int dev = QT_OPEN(device.isEmpty()?"/dev/sharp_kbdctl":device.toLocal8Bit().constData(), O_RDWR);
     if (dev >= 0) {
         memset(&st, 0, sizeof(st));
         st.which = 3;
         int ret = ioctl(dev, SHARP_KBDCTL_GETMODIFSTAT, (char*)&st);
         if(!ret)
             numLock = (bool)st.stat;
-        ::close(dev);
+        QT_CLOSE(dev);
     }
 }
 

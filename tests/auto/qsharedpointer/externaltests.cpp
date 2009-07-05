@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,7 @@ static QString makespec()
 {
     static const char default_makespec[] = DEFAULT_MAKESPEC;
     const char *p;
-    for (p = default_makespec + sizeof(default_makespec); p >= default_makespec; --p)
+    for (p = default_makespec + sizeof(default_makespec) - 1; p >= default_makespec; --p)
         if (*p == '/' || *p == '\\')
             break;
 
@@ -122,6 +122,7 @@ namespace QTest {
         enum Target { Compile, Link, Run };
 
         QList<QByteArray> qmakeLines;
+        QStringList extraProgramSources;
         QByteArray programHeader;
         QExternalTest::QtModules qtModules;
         QExternalTest::ApplicationType appType;
@@ -197,6 +198,16 @@ namespace QTest {
     void QExternalTest::setApplicationType(ApplicationType type)
     {
         d->appType = type;
+    }
+
+    QStringList QExternalTest::extraProgramSources() const
+    {
+        return d->extraProgramSources;
+    }
+
+    void QExternalTest::setExtraProgramSources(const QStringList &extra)
+    {
+        d->extraProgramSources = extra;
     }
 
     QByteArray QExternalTest::programHeader() const
@@ -482,6 +493,13 @@ namespace QTest {
             projectFile.write("\nCONFIG  += debug\n");
         else
             projectFile.write("\nCONFIG  += release\n");
+
+        QByteArray extraSources = QFile::encodeName(extraProgramSources.join(" "));
+        if (!extraSources.isEmpty()) {
+            projectFile.write("SOURCES  += ");
+            projectFile.write(extraSources);
+            projectFile.putChar('\n');
+        }
 
         // Add Qt modules
         if (qtModules & QExternalTest::QtCore)

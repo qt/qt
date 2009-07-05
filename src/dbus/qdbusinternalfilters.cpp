@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,6 +53,7 @@
 #include "qdbusextratypes.h"
 #include "qdbusmessage.h"
 #include "qdbusmetatype.h"
+#include "qdbusmetatype_p.h"
 #include "qdbusmessage_p.h"
 #include "qdbusutil_p.h"
 
@@ -177,12 +178,23 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
 
 // implement the D-Bus interface org.freedesktop.DBus.Properties
 
-static QDBusMessage qDBusPropertyError(const QDBusMessage &msg, const QString &interface_name)
+static inline QDBusMessage interfaceNotFoundError(const QDBusMessage &msg, const QString &interface_name)
 {
-    return msg.createErrorReply(QLatin1String(DBUS_ERROR_INVALID_ARGS),
+    return msg.createErrorReply(QDBusError::UnknownInterface,
                                 QString::fromLatin1("Interface %1 was not found in object %2")
                                 .arg(interface_name)
                                 .arg(msg.path()));
+}
+
+static inline QDBusMessage
+propertyNotFoundError(const QDBusMessage &msg, const QString &interface_name, const QByteArray &property_name)
+{
+    return msg.createErrorReply(QDBusError::InvalidArgs,
+                                QString::fromLatin1("Property %1%2%3 was not found in object %4")
+                                .arg(interface_name,
+                                     QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
+                                     QString::fromLatin1(property_name),
+                                     msg.path()));
 }
 
 QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node,
@@ -198,6 +210,7 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
 
     QDBusAdaptorConnector *connector;
     QVariant value;
+    bool interfaceFound = false;
     if (node.flags & QDBusConnection::ExportAdaptors &&
         (connector = qDBusFindAdaptorConnector(node.obj))) {
 
@@ -217,29 +230,120 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
             it = qLowerBound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
                              interface_name);
-            if (it != connector->adaptors.constEnd() && interface_name == QLatin1String(it->interface))
+            if (it != connector->adaptors.constEnd() && interface_name == QLatin1String(it->interface)) {
+                interfaceFound = true;
                 value = it->adaptor->property(property_name);
+            }
         }
     }
 
-    if (!value.isValid() && node.flags & (QDBusConnection::ExportAllProperties |
-                                          QDBusConnection::ExportNonScriptableProperties)) {
+    if (!interfaceFound && !value.isValid()
+        && node.flags & (QDBusConnection::ExportAllProperties |
+                         QDBusConnection::ExportNonScriptableProperties)) {
         // try the object itself
-        int pidx = node.obj->metaObject()->indexOfProperty(property_name);
-        if (pidx != -1) {
-            QMetaProperty mp = node.obj->metaObject()->property(pidx);
-            if ((mp.isScriptable() && (node.flags & QDBusConnection::ExportScriptableProperties)) ||
-                (!mp.isScriptable() && (node.flags & QDBusConnection::ExportNonScriptableProperties)))
-                value = mp.read(node.obj);
+        if (!interface_name.isEmpty())
+            interfaceFound = qDBusInterfaceInObject(node.obj, interface_name);
+
+        if (interfaceFound) {
+            int pidx = node.obj->metaObject()->indexOfProperty(property_name);
+            if (pidx != -1) {
+                QMetaProperty mp = node.obj->metaObject()->property(pidx);
+                if ((mp.isScriptable() && (node.flags & QDBusConnection::ExportScriptableProperties)) ||
+                    (!mp.isScriptable() && (node.flags & QDBusConnection::ExportNonScriptableProperties)))
+                    value = mp.read(node.obj);
+            }
         }
     }
 
     if (!value.isValid()) {
         // the property was not found
-        return qDBusPropertyError(msg, interface_name);
+        if (!interfaceFound)
+            return interfaceNotFoundError(msg, interface_name);
+        return propertyNotFoundError(msg, interface_name, property_name);
     }
 
     return msg.createReply(qVariantFromValue(QDBusVariant(value)));
+}
+
+enum PropertyWriteResult {
+    PropertyWriteSuccess = 0,
+    PropertyNotFound,
+    PropertyTypeMismatch,
+    PropertyWriteFailed
+};
+
+static QDBusMessage propertyWriteReply(const QDBusMessage &msg, const QString &interface_name,
+                                       const QByteArray &property_name, int status)
+{
+    switch (status) {
+    case PropertyNotFound:
+        return propertyNotFoundError(msg, interface_name, property_name);
+    case PropertyTypeMismatch:
+        return msg.createErrorReply(QDBusError::InvalidArgs,
+                                    QString::fromLatin1("Invalid arguments for writing to property %1%2%3")
+                                    .arg(interface_name,
+                                         QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
+                                         QString::fromLatin1(property_name)));
+    case PropertyWriteFailed:
+        return msg.createErrorReply(QDBusError::InternalError,
+                                    QString::fromLatin1("Internal error"));
+
+    case PropertyWriteSuccess:
+        return msg.createReply();
+    }
+    Q_ASSERT_X(false, "", "Should not be reached");
+    return QDBusMessage();
+}
+
+static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant value,
+                         int propFlags = QDBusConnection::ExportAllProperties)
+{
+    const QMetaObject *mo = obj->metaObject();
+    int pidx = mo->indexOfProperty(property_name);
+    if (pidx == -1) {
+        // this object has no property by that name
+        return PropertyNotFound;
+    }
+
+    QMetaProperty mp = mo->property(pidx);
+
+    // check if this property is exported
+    bool isScriptable = mp.isScriptable();
+    if (!(propFlags & QDBusConnection::ExportScriptableProperties) && isScriptable)
+        return PropertyNotFound;
+    if (!(propFlags & QDBusConnection::ExportNonScriptableProperties) && !isScriptable)
+        return PropertyNotFound;
+
+    // we found our property
+    // do we have the right type?
+    int id = mp.type();
+    if (id == QVariant::UserType) {
+        // dynamic type
+        id = qDBusNameToTypeId(mp.typeName());
+        if (id == -1) {
+            // type not registered?
+            qWarning("QDBusConnection: Unable to handle unregistered datatype '%s' for property '%s::%s'",
+                     mp.typeName(), mo->className(), property_name.constData());
+            return PropertyWriteFailed;
+        }
+    }
+
+    if (id != 0xff && value.userType() == QDBusMetaTypeId::argument) {
+        // we have to demarshall before writing
+        void *null = 0;
+        QVariant other(id, null);
+        if (!QDBusMetaType::demarshall(qVariantValue<QDBusArgument>(value), id, other.data())) {
+            qWarning("QDBusConnection: type `%s' (%d) is not registered with QtDBus. "
+                     "Use qDBusRegisterMetaType to register it",
+                     mp.typeName(), id);
+            return PropertyWriteFailed;
+        }
+
+        value = other;
+    }
+
+    // the property type here should match
+    return mp.write(obj, value) ? PropertyWriteSuccess : PropertyWriteFailed;
 }
 
 QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node,
@@ -263,38 +367,39 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
         if (interface_name.isEmpty()) {
             for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
                  end = connector->adaptors.constEnd(); it != end; ++it) {
-                const QMetaObject *mo = it->adaptor->metaObject();
-                int pidx = mo->indexOfProperty(property_name);
-                if (pidx != -1) {
-                    mo->property(pidx).write(it->adaptor, value);
-                    return msg.createReply();
-                }
+                int status = writeProperty(it->adaptor, property_name, value);
+                if (status == PropertyNotFound)
+                    continue;
+                return propertyWriteReply(msg, interface_name, property_name, status);
             }
         } else {
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
             it = qLowerBound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
                              interface_name);
-            if (it != connector->adaptors.end() && interface_name == QLatin1String(it->interface))
-                if (it->adaptor->setProperty(property_name, value))
-                    return msg.createReply();
+            if (it != connector->adaptors.end() && interface_name == QLatin1String(it->interface)) {
+                return propertyWriteReply(msg, interface_name, property_name,
+                                          writeProperty(it->adaptor, property_name, value));
+            }
         }
     }
 
     if (node.flags & (QDBusConnection::ExportScriptableProperties |
                       QDBusConnection::ExportNonScriptableProperties)) {
         // try the object itself
-        int pidx = node.obj->metaObject()->indexOfProperty(property_name);
-        if (pidx != -1) {
-            QMetaProperty mp = node.obj->metaObject()->property(pidx);
-            if ((mp.isScriptable() && (node.flags & QDBusConnection::ExportScriptableProperties)) ||
-                (!mp.isScriptable() && (node.flags & QDBusConnection::ExportNonScriptableProperties)))
-                if (mp.write(node.obj, value))
-                    return msg.createReply();
+        bool interfaceFound = true;
+        if (!interface_name.isEmpty())
+            interfaceFound = qDBusInterfaceInObject(node.obj, interface_name);
+
+        if (interfaceFound) {
+            return propertyWriteReply(msg, interface_name, property_name,
+                                      writeProperty(node.obj, property_name, value, node.flags));
         }
     }
 
-    // the property was not found or not written to
-    return qDBusPropertyError(msg, interface_name);
+    // the property was not found
+    if (!interface_name.isEmpty())
+        return interfaceNotFoundError(msg, interface_name);
+    return propertyWriteReply(msg, interface_name, property_name, PropertyNotFound);
 }
 
 // unite two QVariantMaps, but don't generate duplicate keys
@@ -385,7 +490,7 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
 
     if (!interfaceFound && !interface_name.isEmpty()) {
         // the interface was not found
-        return qDBusPropertyError(msg, interface_name);
+        return interfaceNotFoundError(msg, interface_name);
     }
 
     return msg.createReply(qVariantFromValue(result));

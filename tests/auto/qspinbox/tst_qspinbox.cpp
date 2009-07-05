@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,6 +65,7 @@
 #include <QDoubleSpinBox>
 #include <QVBoxLayout>
 #include <QKeySequence>
+#include <QStackedWidget>
 #include <QDebug>
 #include "../../shared/util.h"
 
@@ -142,6 +143,9 @@ private slots:
     
     void specialValue();
     void textFromValue();
+
+    void sizeHint();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -954,6 +958,46 @@ void tst_QSpinBox::textFromValue()
 {
     SpinBox spinBox;
     QCOMPARE(spinBox.textFromValue(INT_MIN), QString::number(INT_MIN));
+}
+
+class sizeHint_SpinBox : public QSpinBox
+{
+public:
+    QSize sizeHint() const
+    {
+        ++sizeHintRequests;
+        return QSpinBox::sizeHint();
+    }
+    mutable int sizeHintRequests;
+};
+
+void tst_QSpinBox::sizeHint()
+{
+    QWidget *widget = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout(widget);
+    sizeHint_SpinBox *spinBox = new sizeHint_SpinBox;
+    layout->addWidget(spinBox);
+    widget->show();
+    QTest::qWait(100);
+
+    // Prefix
+    spinBox->sizeHintRequests = 0;
+    spinBox->setPrefix(QLatin1String("abcdefghij"));
+    qApp->processEvents();
+    QVERIFY(spinBox->sizeHintRequests > 0);
+
+    // Suffix
+    spinBox->sizeHintRequests = 0; 
+    spinBox->setSuffix(QLatin1String("abcdefghij"));
+    qApp->processEvents();
+    QVERIFY(spinBox->sizeHintRequests > 0); 
+
+    // Range
+    spinBox->sizeHintRequests = 0; 
+    spinBox->setRange(0, 1234567890);
+    spinBox->setValue(spinBox->maximum());
+    qApp->processEvents();
+    QVERIFY(spinBox->sizeHintRequests > 0); 
 }
 
 QTEST_MAIN(tst_QSpinBox)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,9 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qset.h"
 #include "qpixmapcache.h"
+#include "qgraphicsview_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -150,6 +152,10 @@ public:
         geometryChanged(0),
         inDestructor(0),
         isObject(0),
+        ignoreVisible(0),
+        ignoreOpacity(0),
+        acceptTouchEvents(0),
+        acceptedTouchBeginEvent(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -171,7 +177,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
-    
+
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
@@ -240,7 +246,7 @@ public:
             }
         }
     }
-    
+
     struct ExtraStruct {
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
@@ -252,7 +258,7 @@ public:
         bool operator<(Extra extra) const
         { return type < extra; }
     };
-    
+
     QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
@@ -327,6 +333,15 @@ public:
         return calcEffectiveOpacity();
     }
 
+    inline qreal combineOpacityFromParent(qreal parentOpacity) const
+    {
+        if (parent && !(flags & QGraphicsItem::ItemIgnoresParentOpacity)
+            && !(parent->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+            return parentOpacity * opacity;
+        }
+        return opacity;
+    }
+
     inline bool childrenCombineOpacity() const
     {
         if (!children.size())
@@ -372,7 +387,7 @@ public:
     int index;
     int depth;
 
-    // Packed 32 bits
+    // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -389,8 +404,8 @@ public:
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
     quint32 isWidget : 1;
-    quint32 dirty : 1;    
-    quint32 dirtyChildren : 1;    
+    quint32 dirty : 1;
+    quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
@@ -400,14 +415,18 @@ public:
     quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 12;
+    quint32 flags : 13;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
     quint32 geometryChanged : 1;
     quint32 inDestructor : 1;
     quint32 isObject : 1;
-    quint32 unused : 14; // feel free to use
+    quint32 ignoreVisible : 1;
+    quint32 ignoreOpacity : 1;
+    quint32 acceptTouchEvents : 1;
+    quint32 acceptedTouchBeginEvent : 1;
+    quint32 unused : 9; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

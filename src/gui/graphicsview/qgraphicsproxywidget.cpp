@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -275,7 +275,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
 
     QWidget *embeddedMouseGrabberPtr = (QWidget *)embeddedMouseGrabber;
     QApplicationPrivate::sendMouseEvent(receiver, mouseEvent, alienWidget, widget,
-                                        &embeddedMouseGrabberPtr, lastWidgetUnderMouse);
+                                        &embeddedMouseGrabberPtr, lastWidgetUnderMouse, event->spontaneous());
     embeddedMouseGrabber = embeddedMouseGrabberPtr;
 
     // Handle enter/leave events when last button is released from mouse
@@ -447,6 +447,22 @@ void QGraphicsProxyWidgetPrivate::updateProxyGeometryFromWidget()
     q->setGeometry(widgetGeometry);
     posChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
     sizeChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsProxyWidgetPrivate::updateProxyInputMethodAcceptanceFromWidget()
+{
+    Q_Q(QGraphicsProxyWidget);
+    if (!widget)
+        return;
+
+    QWidget *focusWidget = widget->focusWidget();
+    if (!focusWidget)
+        focusWidget = widget;
+    q->setFlag(QGraphicsItem::ItemAcceptsInputMethod,
+               focusWidget->testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 /*!
@@ -690,6 +706,8 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
 
     updateProxyGeometryFromWidget();
 
+    updateProxyInputMethodAcceptanceFromWidget();
+
     // Hook up the event filter to keep the state up to date.
     newWidget->installEventFilter(q);
     QObject::connect(newWidget, SIGNAL(destroyed()), q, SLOT(_q_removeWidgetSlot()));
@@ -839,7 +857,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         // ### Qt 4.5: this code must also go into a reimplementation
         // of inputMethodEvent().
         QWidget *focusWidget = d->widget->focusWidget();
-        if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+        if (focusWidget && focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
             QApplication::sendEvent(focusWidget, event);
         break;
     }
@@ -1303,8 +1321,8 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
 	if (d->widget && d->widget->focusWidget()) {
 	    d->widget->focusWidget()->setFocus(event->reason());
 	    return;
-	}
-	break;
+        }
+        break;
     }
 }
 

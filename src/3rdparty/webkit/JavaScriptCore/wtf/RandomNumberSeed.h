@@ -38,7 +38,7 @@
 #include <unistd.h>
 #endif
 
-#if PLATFORM(WIN_CE)
+#if PLATFORM(WINCE)
 #include <ce_time.h>
 #endif
 

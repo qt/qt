@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -231,8 +231,10 @@ void QSvgTinyDocument::draw(QPainter *p, const QRectF &bounds)
         m_time.start();
     }
 
-    p->save();
+    if (displayMode() == QSvgNode::NoneMode)
+        return;
 
+    p->save();
     //sets default style on the painter
     //### not the most optimal way
     mapSourceToTarget(p, bounds);
@@ -244,7 +246,7 @@ void QSvgTinyDocument::draw(QPainter *p, const QRectF &bounds)
     applyStyle(p, m_states);
     while (itr != m_renderers.end()) {
         QSvgNode *node = *itr;
-        if (node->isVisible())
+        if ((node->isVisible()) && (node->displayMode() != QSvgNode::NoneMode))
             node->draw(p, m_states);
         ++itr;
     }
@@ -262,6 +264,12 @@ void QSvgTinyDocument::draw(QPainter *p, const QString &id,
         qDebug("Couldn't find node %s. Skipping rendering.", qPrintable(id));
         return;
     }
+    if (m_time.isNull()) {
+        m_time.start();
+    }
+
+    if (node->displayMode() == QSvgNode::NoneMode)
+        return;
 
     p->save();
 

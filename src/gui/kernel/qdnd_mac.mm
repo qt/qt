@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -405,12 +405,12 @@ bool QWidgetPrivate::qt_mac_dnd_event(uint kind, DragRef dragRef)
         SetDragDropAction(dragRef, qt_mac_dnd_map_qt_actions(qDEEvent.dropAction()));
         
         if (!qDEEvent.isAccepted())
-            // The widget is simply not interrested in this
+            // The widget is simply not interested in this
             // drag. So tell carbon this by returning 'false'. We will then
             // not receive any further move, drop or leave events for this widget.
             return false;
         else {
-            // Documentation states that a drag move event is sendt immidiatly after
+            // Documentation states that a drag move event is sent immediately after
             // a drag enter event. So we do that. This will honor widgets overriding
             // 'dragMoveEvent' only, and not 'dragEnterEvent' 
             QDragMoveEvent qDMEvent(q->mapFromGlobal(QPoint(mouse.h, mouse.v)), qtAllowed, dropdata,

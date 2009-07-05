@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -994,57 +994,32 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
 {
     bool neededCoInit = false;
     QString ret;
-    QT_WA({
-        IShellLink *psl;
-        HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        }
 
-        if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
-            IPersistFile *ppf;
-            hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
-            if (SUCCEEDED(hres))  {
-                hres = ppf->Load((LPOLESTR)linkFileName.utf16(), STGM_READ);
-                //The original path of the link is retrieved. If the file/folder
-                //was moved, the return value still have the old path.
-                if(SUCCEEDED(hres)) {
-                    wchar_t szGotPath[MAX_PATH];
-                    if (psl->GetWorkingDirectory(szGotPath, MAX_PATH) == NOERROR)
-                        ret = QString::fromUtf16((ushort*)szGotPath);
-                }
-                ppf->Release();
-            }
-            psl->Release();
-        }
-    },{
-        IShellLinkA *psl;
-        HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-            neededCoInit = true;
-            CoInitialize(NULL);
-            hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-        }
+    IShellLink *psl;
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
+        neededCoInit = true;
+        CoInitialize(NULL);
+        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+    }
 
-        if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
-            IPersistFile *ppf;
-            hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
-            if (SUCCEEDED(hres))  {
-                hres = ppf->Load((LPOLESTR)linkFileName.utf16(), STGM_READ);
-                //The original path of the link is retrieved. If the file/folder
-                //was moved, the return value still have the old path.
-                if(SUCCEEDED(hres)) {
-                    char szGotPath[MAX_PATH];
-                    if (psl->GetWorkingDirectory(szGotPath, MAX_PATH) == NOERROR)
-                        ret = QString::fromLocal8Bit(szGotPath);
-                }
-                ppf->Release();
+    if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
+        IPersistFile *ppf;
+        hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
+        if (SUCCEEDED(hres))  {
+            hres = ppf->Load((LPOLESTR)linkFileName.utf16(), STGM_READ);
+            //The original path of the link is retrieved. If the file/folder
+            //was moved, the return value still have the old path.
+            if(SUCCEEDED(hres)) {
+                wchar_t szGotPath[MAX_PATH];
+                if (psl->GetWorkingDirectory(szGotPath, MAX_PATH) == NOERROR)
+                    ret = QString::fromWCharArray(szGotPath);
             }
-            psl->Release();
+            ppf->Release();
         }
-    });
+        psl->Release();
+    }
+
     if (neededCoInit) {
         CoUninitialize();
     }
@@ -1538,13 +1513,8 @@ void tst_QFile::largeFileSupport()
     qlonglong freespace = qlonglong(0);
 #ifdef Q_WS_WIN
     _ULARGE_INTEGER free;
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based) {
-        if (::GetDiskFreeSpaceExW((wchar_t *)QDir::currentPath().utf16(), &free, 0, 0))
-            freespace = free.QuadPart;
-    } else {
-        if (::GetDiskFreeSpaceExA(QDir::currentPath().local8Bit(), &free, 0, 0))
-            freespace = free.QuadPart;
-    }
+    if (::GetDiskFreeSpaceEx((wchar_t*)QDir::currentPath().utf16(), &free, 0, 0))
+        freespace = free.QuadPart;
     if (freespace != 0) {
 #elif defined(Q_OS_IRIX)
     struct statfs info;
@@ -1662,16 +1632,9 @@ void tst_QFile::longFileName()
     }
     {
         QFile file(fileName);
-#if defined(Q_WS_WIN)
-#if !defined(Q_OS_WINCE)
-        QT_WA({ if (false) ; }, {
-            QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
-            QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
-        });
-#else
-            QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
-            QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
-#endif
+#if defined(Q_OS_WINCE)
+        QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
+        QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
         QTextStream ts(&file);

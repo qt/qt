@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -387,8 +387,9 @@ bool QPushButton::isDefault() const
 QSize QPushButton::sizeHint() const
 {
     Q_D(const QPushButton);
-    if (d->sizeHint.isValid())
+    if (d->sizeHint.isValid() && d->lastAutoDefault == autoDefault())
         return d->sizeHint;
+    d->lastAutoDefault = autoDefault();
     ensurePolished();
 
     int w = 0, h = 0;
@@ -657,6 +658,8 @@ bool QPushButton::event(QEvent *e)
                ) {
 		d->resetLayoutItemMargins();
 		updateGeometry();
+    } else if (e->type() == QEvent::PolishRequest) {
+        updateGeometry();
     }
     return QAbstractButton::event(e);
 }

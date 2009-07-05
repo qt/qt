@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -788,17 +788,9 @@ bool qax_winEventFilter(void *message)
     QAxServerBase *axbase = 0;
     while (!axbase && baseHwnd) {
 #ifdef GWLP_USERDATA
-        QT_WA({
-            axbase = (QAxServerBase*)GetWindowLongPtrW(baseHwnd, GWLP_USERDATA);
-        }, {
-            axbase = (QAxServerBase*)GetWindowLongPtrA(baseHwnd, GWLP_USERDATA);
-        });
+        axbase = (QAxServerBase*)GetWindowLongPtr(baseHwnd, GWLP_USERDATA);
 #else
-        QT_WA({
-            axbase = (QAxServerBase*)GetWindowLongW(baseHwnd, GWL_USERDATA);
-        }, {
-            axbase = (QAxServerBase*)GetWindowLongA(baseHwnd, GWL_USERDATA);
-        });
+        axbase = (QAxServerBase*)GetWindowLong(baseHwnd, GWL_USERDATA);
 #endif
 
 	baseHwnd = ::GetParent(baseHwnd);
@@ -905,11 +897,7 @@ public:
 
         // hook into eventloop; this allows a server to create his own QApplication object
         if (!qax_hhook && qax_ownQApp) {
-            QT_WA({
-                qax_hhook = SetWindowsHookExW(WH_GETMESSAGE, axs_FilterProc, 0, GetCurrentThreadId());
-            }, {
-                qax_hhook = SetWindowsHookExA(WH_GETMESSAGE, axs_FilterProc, 0, GetCurrentThreadId());
-            });
+            qax_hhook = SetWindowsHookEx(WH_GETMESSAGE, axs_FilterProc, 0, GetCurrentThreadId());
         }
 
 	HRESULT res;
@@ -983,7 +971,7 @@ public:
 
     HRESULT WINAPI CreateInstanceLic(IUnknown *pUnkOuter, IUnknown *pUnkReserved, REFIID iid, BSTR bKey, PVOID *ppObject)
     {
-        QString licenseKey = QString::fromUtf16((const ushort *)bKey);
+        QString licenseKey = QString::fromWCharArray(bKey);
 	if (!qAxFactory()->validateLicenseKey(className, licenseKey))
 	    return CLASS_E_NOTLICENSED;
 	return CreateInstanceHelper(pUnkOuter, iid, ppObject);
@@ -1303,15 +1291,11 @@ bool QAxServerBase::internalCreate()
 
     internalBind();
     if (isWidget) {
-	if (!stayTopLevel) {
-	    QEvent e(QEvent::EmbeddingControl);
-	    QApplication::sendEvent(qt.widget, &e);
-	    QT_WA({
-		::SetWindowLongW(qt.widget->winId(), GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-	    }, {
-		::SetWindowLongA(qt.widget->winId(), GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-	    });
-	}
+        if (!stayTopLevel) {
+            QEvent e(QEvent::EmbeddingControl);
+            QApplication::sendEvent(qt.widget, &e);
+            ::SetWindowLong(qt.widget->winId(), GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+        }
         qt.widget->setAttribute(Qt::WA_QuitOnClose, false);
         qt.widget->move(0, 0);
 
@@ -1368,52 +1352,26 @@ class HackWidget : public QWidget
 LRESULT CALLBACK QAxServerBase::ActiveXProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_CREATE) {
-	QAxServerBase *that;
-	QT_WA({
-	    CREATESTRUCTW *cs = (CREATESTRUCTW*)lParam;
-	    that = (QAxServerBase*)cs->lpCreateParams;
-	}, {
-	    CREATESTRUCTA *cs = (CREATESTRUCTA*)lParam;
-	    that = (QAxServerBase*)cs->lpCreateParams;
-	});
+        CREATESTRUCT *cs = (CREATESTRUCT*)lParam;
+        QAxServerBase *that = (QAxServerBase*)cs->lpCreateParams;
 
 #ifdef GWLP_USERDATA
-        QT_WA({
-            SetWindowLongPtrW(hWnd, GWLP_USERDATA, (LONG_PTR)that);
-        }, {
-            SetWindowLongPtrA(hWnd, GWLP_USERDATA, (LONG_PTR)that);
-        });
+        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)that);
 #else
-        QT_WA({
-            SetWindowLongW(hWnd, GWL_USERDATA, (LONG)that);
-        }, {
-            SetWindowLongA(hWnd, GWL_USERDATA, (LONG)that);
-        });
+        SetWindowLong(hWnd, GWL_USERDATA, (LONG)that);
 #endif
 
-	that->m_hWnd = hWnd;
+        that->m_hWnd = hWnd;
 
-	QT_WA({
-	    return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
-	}, {
-	    return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
-	});
+        return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     QAxServerBase *that = 0;
 
 #ifdef GWLP_USERDATA
-    QT_WA({
-        that = (QAxServerBase*)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
-    }, {
-        that = (QAxServerBase*)GetWindowLongPtrA(hWnd, GWLP_USERDATA);
-    });
+    that = (QAxServerBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 #else
-    QT_WA({
-        that = (QAxServerBase*)GetWindowLongW(hWnd, GWL_USERDATA);
-    }, {
-        that = (QAxServerBase*)GetWindowLongA(hWnd, GWL_USERDATA);
-    });
+    that = (QAxServerBase*)GetWindowLong(hWnd, GWL_USERDATA);
 #endif
 
     if (that) {
@@ -1563,11 +1521,7 @@ LRESULT CALLBACK QAxServerBase::ActiveXProc(HWND hWnd, UINT uMsg, WPARAM wParam,
         }
     }
 
-    QT_WA({
-	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
-    }, {
-	return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
-    });
+    return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -1583,54 +1537,29 @@ HWND QAxServerBase::create(HWND hWndParent, RECT& rcPos)
     QString cn(QLatin1String("QAxControl"));
     cn += QString::number((int)ActiveXProc);
     if (!atom) {
-	QT_WA({
-	    WNDCLASSW wcTemp;
-	    wcTemp.style = CS_DBLCLKS;
-	    wcTemp.cbClsExtra = 0;
-	    wcTemp.cbWndExtra = 0;
-	    wcTemp.hbrBackground = 0;
-	    wcTemp.hCursor = 0;
-	    wcTemp.hIcon = 0;
-	    wcTemp.hInstance = hInst;
-	    wcTemp.lpszClassName = (wchar_t*)cn.utf16();
-	    wcTemp.lpszMenuName = 0;
-	    wcTemp.lpfnWndProc = ActiveXProc;
+        WNDCLASS wcTemp;
+        wcTemp.style = CS_DBLCLKS;
+        wcTemp.cbClsExtra = 0;
+        wcTemp.cbWndExtra = 0;
+        wcTemp.hbrBackground = 0;
+        wcTemp.hCursor = 0;
+        wcTemp.hIcon = 0;
+        wcTemp.hInstance = hInst;
+        wcTemp.lpszClassName = (wchar_t*)cn.utf16();
+        wcTemp.lpszMenuName = 0;
+        wcTemp.lpfnWndProc = ActiveXProc;
 
-	    atom = RegisterClassW(&wcTemp);
-	}, {
-            QByteArray cna = cn.toLatin1();
-	    WNDCLASSA wcTemp;
-	    wcTemp.style = CS_DBLCLKS;
-	    wcTemp.cbClsExtra = 0;
-	    wcTemp.cbWndExtra = 0;
-	    wcTemp.hbrBackground = 0;
-	    wcTemp.hCursor = 0;
-	    wcTemp.hIcon = 0;
-	    wcTemp.hInstance = hInst;
-	    wcTemp.lpszClassName = cna.data();
-	    wcTemp.lpszMenuName = 0;
-	    wcTemp.lpfnWndProc = ActiveXProc;
-
-	    atom = RegisterClassA(&wcTemp);
-	});
+        atom = RegisterClass(&wcTemp);
     }
     LeaveCriticalSection(&createWindowSection);
     if (!atom  && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
 	return 0;
 
     Q_ASSERT(!m_hWnd);
-    HWND hWnd = 0;
-    QT_WA({
-	hWnd = ::CreateWindowW((wchar_t*)cn.utf16(), 0,
-	    WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-	    rcPos.left, rcPos.top, rcPos.right - rcPos.left,
-	    rcPos.bottom - rcPos.top, hWndParent, 0, hInst, this);
-    }, {
-	hWnd = ::CreateWindowA(cn.toLatin1().data(), 0,
-	    WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-	    rcPos.left, rcPos.top, rcPos.right - rcPos.left,
-	    rcPos.bottom - rcPos.top, hWndParent, 0, hInst, this);
-    });
+    HWND hWnd = ::CreateWindow((wchar_t*)cn.utf16(), 0,
+                               WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+                               rcPos.left, rcPos.top, rcPos.right - rcPos.left,
+                               rcPos.bottom - rcPos.top, hWndParent, 0, hInst, this);
 
     Q_ASSERT(m_hWnd == hWnd);
 
@@ -1676,11 +1605,7 @@ HMENU QAxServerBase::createPopup(QMenu *popup, HMENU oldMenu)
             actionMap.remove(itemId);
             actionMap.insert(itemId, action);
         }
-        QT_WA({
-            AppendMenuW(popupMenu, flags, itemId, (TCHAR*)action->text().utf16());
-        }, {
-            AppendMenuA(popupMenu, flags, itemId, action->text().toLocal8Bit());
-        });
+        AppendMenu(popupMenu, flags, itemId, (const wchar_t *)action->text().utf16());
     }
     if (oldMenu)
         DrawMenuBar(hwndMenuOwner);
@@ -1726,11 +1651,7 @@ void QAxServerBase::createMenu(QMenuBar *menuBar)
             itemId = static_cast<ushort>(reinterpret_cast<ulong>(action));
             actionMap.insert(itemId, action);
         }
-	QT_WA({
-	    AppendMenuW(hmenuShared, flags, itemId, (TCHAR*)action->text().utf16());
-	} , {
-	    AppendMenuA(hmenuShared, flags, itemId, action->text().toLocal8Bit());
-	});
+        AppendMenu(hmenuShared, flags, itemId, (const wchar_t *)action->text().utf16());
     }
 
     OLEMENUGROUPWIDTHS menuWidths = {0,edit,0,object,0,help};
@@ -2397,7 +2318,7 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
 	    if (!cname)
 	        return res;
 
-            name = QString::fromUtf16((const ushort *)bname).toLatin1();
+            name = QString::fromWCharArray(bname).toLatin1();
 	    SysFreeString(bname);
         }
     }
@@ -2799,7 +2720,7 @@ HRESULT WINAPI QAxServerBase::Load(IStream *pStm)
     bool openAsText = false;
     QByteArray qtarray;
     if (hres == S_OK) {
-        QString streamName = QString::fromUtf16((const ushort *)stat.pwcsName);
+        QString streamName = QString::fromWCharArray(stat.pwcsName);
         CoTaskMemFree(stat.pwcsName);
         openAsText = streamName == QLatin1String("SomeStreamName");
 	if (stat.cbSize.HighPart) // more than 4GB - too large!
@@ -2940,7 +2861,7 @@ HRESULT WINAPI QAxServerBase::Load(IStorage *pStg)
     */
     streamName += QLatin1String("_Stream4.2");
 
-    pStg->OpenStream((const WCHAR *)streamName.utf16(), 0, STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &spStream);
+    pStg->OpenStream((const wchar_t *)streamName.utf16(), 0, STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &spStream);
     if (!spStream) // support for streams saved with 4.1 and earlier
         pStg->OpenStream(L"SomeStreamName", 0, STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &spStream);
     if (!spStream)
@@ -2963,7 +2884,7 @@ HRESULT WINAPI QAxServerBase::Save(IStorage *pStg, BOOL fSameAsLoad)
     */
     streamName += QLatin1String("_Stream4.2");
 
-    pStg->CreateStream((const WCHAR *)streamName.utf16(), STGM_CREATE | STGM_WRITE | STGM_SHARE_EXCLUSIVE, 0, 0, &spStream);
+    pStg->CreateStream((const wchar_t *)streamName.utf16(), STGM_CREATE | STGM_WRITE | STGM_SHARE_EXCLUSIVE, 0, 0, &spStream);
     if (!spStream)
 	return E_FAIL;
 
@@ -3079,7 +3000,7 @@ HRESULT WINAPI QAxServerBase::SaveCompleted(LPCOLESTR fileName)
     if (qt.object->metaObject()->indexOfClassInfo("MIME") == -1)
         return E_NOTIMPL;
 
-    currentFileName = QString::fromUtf16(reinterpret_cast<const ushort *>(fileName));
+    currentFileName = QString::fromWCharArray(fileName);
     return S_OK;
 }
 
@@ -3097,7 +3018,7 @@ HRESULT WINAPI QAxServerBase::GetCurFile(LPOLESTR *currentFile)
     if (!malloc)
         return E_OUTOFMEMORY;
 
-    *currentFile = static_cast<WCHAR *>(malloc->Alloc(currentFileName.length() * 2));
+    *currentFile = static_cast<wchar_t *>(malloc->Alloc(currentFileName.length() * 2));
     malloc->Release();
     memcpy(*currentFile, currentFileName.unicode(), currentFileName.length() * 2);
 
@@ -3117,7 +3038,7 @@ HRESULT WINAPI QAxServerBase::Load(LPCOLESTR fileName, DWORD mode)
         return E_NOTIMPL;
     }
 
-    QString loadFileName = QString::fromUtf16(reinterpret_cast<const ushort *>(fileName));
+    QString loadFileName = QString::fromWCharArray(fileName);
     QString fileExtension = loadFileName.mid(loadFileName.lastIndexOf(QLatin1Char('.')) + 1);
     QFile file(loadFileName);
 
@@ -3162,7 +3083,7 @@ HRESULT WINAPI QAxServerBase::Save(LPCOLESTR fileName, BOOL fRemember)
         return E_NOTIMPL;
     }
 
-    QString saveFileName = QString::fromUtf16(reinterpret_cast<const ushort *>(fileName));
+    QString saveFileName = QString::fromWCharArray(fileName);
     QString fileExtension = saveFileName.mid(saveFileName.lastIndexOf(QLatin1Char('.')) + 1);
     QFile file(saveFileName);
 
@@ -3220,7 +3141,7 @@ HRESULT WINAPI QAxServerBase::Draw(DWORD dwAspect, LONG lindex, void *pvAspect, 
 
     bool bDeleteDC = false;
     if (!hicTargetDev) {
-	hicTargetDev = ::CreateDCA("DISPLAY", NULL, NULL, NULL);
+	hicTargetDev = ::CreateDC(L"DISPLAY", NULL, NULL, NULL);
 	bDeleteDC = (hicTargetDev != hdcDraw);
     }
 
@@ -3383,7 +3304,7 @@ HRESULT WINAPI QAxServerBase::OnAmbientPropertyChange(DISPID dispID)
     case DISPID_AMBIENT_DISPLAYNAME:
 	if (var.vt != VT_BSTR || !isWidget)
 	    break;
-	qt.widget->setWindowTitle(QString::fromUtf16((const ushort *)var.bstrVal));
+	qt.widget->setWindowTitle(QString::fromWCharArray(var.bstrVal));
 	break;
     case DISPID_AMBIENT_FONT:
 	if (var.vt != VT_DISPATCH || !isWidget)

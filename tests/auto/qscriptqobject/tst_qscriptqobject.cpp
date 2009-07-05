@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -605,6 +605,12 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::Undeletable));
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::SkipInEnumeration));
         QVERIFY(mobj.propertyFlags("mySlot") & QScriptValue::QObjectMember);
+
+        // signature-based property
+        QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::ReadOnly));
+        QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::Undeletable));
+        QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::SkipInEnumeration));
+        QVERIFY(mobj.propertyFlags("mySlot()") & QScriptValue::QObjectMember);
     }
 
     // property change in C++ should be reflected in script
@@ -736,6 +742,8 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     // test that we do value conversion if necessary when setting properties
     {
         QScriptValue br = m_engine->evaluate("myObject.brushProperty");
+        QVERIFY(br.isVariant());
+        QVERIFY(!br.strictlyEquals(m_engine->evaluate("myObject.brushProperty")));
         QCOMPARE(qscriptvalue_cast<QBrush>(br), m_myObject->brushProperty());
         QCOMPARE(qscriptvalue_cast<QColor>(br), m_myObject->brushProperty().color());
 
@@ -838,6 +846,17 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         mobj.setProperty("intProperty", m_engine->newFunction(getSetProperty),
                          QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
     }
+
+    // method properties are persistent
+    {
+        QScriptValue slot = m_engine->evaluate("myObject.mySlot");
+        QVERIFY(slot.isFunction());
+        QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
+        QVERIFY(sameSlot.strictlyEquals(slot));
+        sameSlot = m_engine->evaluate("myObject['mySlot()']");
+        QEXPECT_FAIL("", "Signature-based method lookup creates new function wrapper object", Continue);
+        QVERIFY(sameSlot.strictlyEquals(slot));
+    }
 }
 
 void tst_QScriptExtQObject::getSetDynamicProperty()
@@ -886,6 +905,20 @@ void tst_QScriptExtQObject::getSetChildren()
     child->setObjectName("child");
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
+
+    QScriptValue mobj = m_engine->evaluate("myObject");
+    QVERIFY(mobj.propertyFlags("child") & QScriptValue::ReadOnly);
+    QVERIFY(mobj.propertyFlags("child") & QScriptValue::Undeletable);
+    QVERIFY(mobj.propertyFlags("child") & QScriptValue::SkipInEnumeration);
+    QVERIFY(!(mobj.propertyFlags("child") & QScriptValue::QObjectMember));
+
+    {
+        QScriptValue scriptChild = m_engine->evaluate("myObject.child");
+        QVERIFY(scriptChild.isQObject());
+        QCOMPARE(scriptChild.toQObject(), (QObject*)child);
+        QScriptValue sameChild = m_engine->evaluate("myObject.child");
+        QVERIFY(sameChild.strictlyEquals(scriptChild));
+    }
 
     // add a grandchild
     MyQObject *grandChild = new MyQObject(child);
@@ -1954,7 +1987,7 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.AllAbility").toInt32()),
              MyQObject::AllAbility);
 
-    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly;
+    QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly | QScriptValue::Undeletable;
     QCOMPARE(myClass.propertyFlags("FooPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BarPolicy"), expectedEnumFlags);
     QCOMPARE(myClass.propertyFlags("BazPolicy"), expectedEnumFlags);
@@ -2005,6 +2038,15 @@ void tst_QScriptExtQObject::classEnums()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 0);
         QCOMPARE(ret.isNumber(), true);
     }
+
+    // enum properties are not deletable or writable
+    QVERIFY(!m_engine->evaluate("delete MyQObject.BazPolicy").toBool());
+    myClass.setProperty("BazPolicy", QScriptValue());
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
+    myClass.setProperty("BazPolicy", MyQObject::FooPolicy);
+    QCOMPARE(static_cast<MyQObject::Policy>(myClass.property("BazPolicy").toInt32()),
+             MyQObject::BazPolicy);
 }
 
 QT_BEGIN_NAMESPACE

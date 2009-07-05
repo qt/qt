@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -52,54 +52,46 @@ public:
     : QAbstractListModel(parent) 
     {
         HKEY classes_key;
-        QT_WA_INLINE(
-            RegOpenKeyExW(HKEY_CLASSES_ROOT, L"CLSID", 0, KEY_READ, &classes_key),
-            RegOpenKeyExA(HKEY_CLASSES_ROOT, "CLSID", 0, KEY_READ, &classes_key));
+        RegOpenKeyEx(HKEY_CLASSES_ROOT, L"CLSID", 0, KEY_READ, &classes_key);
         if (!classes_key)
             return;
 
         DWORD index = 0;
         LONG result = 0;
-        TCHAR buffer[256];
-        DWORD szBuffer = sizeof(buffer);
+        wchar_t buffer[256];
+        DWORD szBuffer = sizeof(buffer) / sizeof(wchar_t);
         FILETIME ft;
         do {
-            result = QT_WA_INLINE(
-                RegEnumKeyExW(classes_key, index, (wchar_t*)&buffer, &szBuffer, 0, 0, 0, &ft),
-                RegEnumKeyExA(classes_key, index, (char*)&buffer, &szBuffer, 0, 0, 0, &ft));
-            szBuffer = sizeof(buffer);
+            result = RegEnumKeyEx(classes_key, index, buffer, &szBuffer, 0, 0, 0, &ft);
+            szBuffer = sizeof(buffer) / sizeof(wchar_t);
             if (result == ERROR_SUCCESS) {
                 HKEY sub_key;
-                QString clsid = QT_WA_INLINE(QString::fromUtf16((ushort*)buffer), QString::fromLocal8Bit((char*)buffer));
-                result = QT_WA_INLINE(
-                    RegOpenKeyExW(classes_key, reinterpret_cast<const wchar_t *>(QString(clsid + "\\Control").utf16()), 0, KEY_READ, &sub_key),
-                    RegOpenKeyA(classes_key, QString(clsid + QLatin1String("\\Control")).toLocal8Bit(), &sub_key));
+                QString clsid = QString::fromWCharArray(buffer);
+                result = RegOpenKeyEx(classes_key, reinterpret_cast<const wchar_t *>(QString(clsid + "\\Control").utf16()), 0, KEY_READ, &sub_key);
                 if (result == ERROR_SUCCESS) {
                     RegCloseKey(sub_key);
-                    QT_WA_INLINE(
-                        RegistryQueryValueW(classes_key, buffer, (LPBYTE)buffer, &szBuffer),
-                        RegQueryValueA(classes_key, (char*)buffer, (char*)buffer, (LONG*)&szBuffer));
-                    QString name = QT_WA_INLINE(QString::fromUtf16((ushort*)buffer, szBuffer / sizeof(TCHAR)) , QString::fromLocal8Bit((char*)buffer, szBuffer));
+                    RegistryQueryValue(classes_key, buffer, (LPBYTE)buffer, &szBuffer);
+                    QString name = QString::fromWCharArray(buffer);
 
                     controls << name;
                     clsids.insert(name, clsid);
                 }
                 result = ERROR_SUCCESS;
             }
-            szBuffer = sizeof(buffer);
+            szBuffer = sizeof(buffer) / sizeof(wchar_t);
             ++index;
         } while (result == ERROR_SUCCESS);
         RegCloseKey(classes_key);
         controls.sort();
     }
 
-    LONG RegistryQueryValueW(HKEY hKey, LPCWSTR lpSubKey, LPBYTE lpData, LPDWORD lpcbData)
+    LONG RegistryQueryValue(HKEY hKey, LPCWSTR lpSubKey, LPBYTE lpData, LPDWORD lpcbData)
     {
         LONG ret = ERROR_FILE_NOT_FOUND;
         HKEY hSubKey = NULL;
-        RegOpenKeyExW(hKey, lpSubKey, 0, KEY_READ, &hSubKey);
+        RegOpenKeyEx(hKey, lpSubKey, 0, KEY_READ, &hSubKey);
         if (hSubKey) {
-            ret = RegQueryValueExW(hSubKey, 0, 0, 0, lpData, lpcbData);
+            ret = RegQueryValueEx(hSubKey, 0, 0, 0, lpData, lpcbData);
             RegCloseKey(hSubKey);
         }
         return ret;

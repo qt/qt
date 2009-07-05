@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,13 +77,8 @@ public:
 QAuServerWindows::QAuServerWindows(QObject* parent) :
     QAuServer(parent), current(0)
 {
-    QT_WA({
-        mutex = CreateMutexW(0, 0, 0);
-        event = CreateEventW(0, FALSE, FALSE, 0);
-    } , {
-        mutex = CreateMutexA(0, 0, 0);
-        event = CreateEventA(0, FALSE, FALSE, 0);
-    });
+    mutex = CreateMutex(0, 0, 0);
+    event = CreateEvent(0, FALSE, FALSE, 0);
 }
 
 QAuServerWindows::~QAuServerWindows()
@@ -133,13 +128,9 @@ DWORD WINAPI SoundPlayProc(LPVOID param)
         if (loops == -1)
             flags |= SND_LOOP;
 
-        QT_WA({
-            PlaySoundW((TCHAR*)filename.utf16(), 0, flags);
-        } , {
-            PlaySoundA(QFile::encodeName(filename).data(), 0, flags);
-        });
-	if (sound && loops == 1)
-	    server->decLoop(sound);
+        PlaySound((wchar_t*)filename.utf16(), 0, flags);
+        if (sound && loops == 1)
+            server->decLoop(sound);
 
         // GUI thread continues, but we are done as well.
         SetEvent(event);
@@ -148,18 +139,13 @@ DWORD WINAPI SoundPlayProc(LPVOID param)
         QPointer<QSound> guarded_sound = sound;
         SetEvent(event);
 
-	for (int l = 0; l < loops && server->current; ++l) {
-	    QT_WA( {
-		PlaySoundW( (TCHAR*)filename.utf16(), 0, SND_FILENAME|SND_SYNC );
-	    } , {
-		PlaySoundA( QFile::encodeName(filename).data(), 0,
-		    SND_FILENAME|SND_SYNC );
-	    } );
+        for (int l = 0; l < loops && server->current; ++l) {
+            PlaySound((wchar_t*)filename.utf16(), 0, SND_FILENAME | SND_SYNC);
 
-	    if (guarded_sound)
-		server->decLoop(guarded_sound);
-	}
-	server->current = 0;
+            if (guarded_sound)
+                server->decLoop(guarded_sound);
+        }
+        server->current = 0;
     }
     ReleaseMutex(mutex);
 
@@ -169,7 +155,7 @@ DWORD WINAPI SoundPlayProc(LPVOID param)
 void QAuServerWindows::playHelper(const QString &filename, int loop, QSound *snd)
 {
     if (loop == 0)
-	return;
+        return;
     // busy?
     if (WaitForSingleObject(mutex, 0) == WAIT_TIMEOUT)
         return;

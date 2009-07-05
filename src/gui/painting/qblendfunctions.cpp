@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -374,9 +374,9 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
         const uchar *src = srcPixels + y * sbpl;
         const uchar *srcEnd = src + srcOffset;
         while (src < srcEnd) {
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
-            // non-16-bit aligned memory access is not possible on PowerPC &
-            // ARM <v6 (QT_ARCH_ARMV6)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
+            // non-16-bit aligned memory access is not possible on PowerPC,
+            // ARM <v6 (QT_ARCH_ARMV6) & SH
             quint16 spix = (quint16(src[2])<<8) + src[1];
 #else
             quint16 spix = *(quint16 *) (src + 1);

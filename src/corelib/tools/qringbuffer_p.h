@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -301,6 +301,51 @@ public:
         return read(size());
     }
 
+    // read an unspecified amount (will read the first buffer)
+    inline QByteArray read() {
+        // multiple buffers, just take the first one
+        if (head == 0 && tailBuffer != 0) {
+            QByteArray qba = buffers.takeFirst();
+            --tailBuffer;
+            bufferSize -= qba.length();
+            return qba;
+        }
+
+        // one buffer with good value for head. Just take it.
+        if (head == 0 && tailBuffer == 0) {
+            QByteArray qba = buffers.takeFirst();
+            qba.resize(tail);
+            buffers << QByteArray();
+            bufferSize = 0;
+            tail = 0;
+            return qba;
+        }
+
+        // Bad case: We have to memcpy.
+        // We can avoid by initializing the QRingBuffer with basicBlockSize of 0
+        // and only using this read() function.
+        QByteArray qba(readPointer(), nextDataBlockSize());
+        buffers.takeFirst();
+        head = 0;
+        if (tailBuffer == 0) {
+            buffers << QByteArray();
+            tail = 0;
+        } else {
+            --tailBuffer;
+        }
+        bufferSize -= qba.length();
+        return qba;        
+    }
+
+    // append a new buffer to the end
+    inline void append(const QByteArray &qba) {
+        buffers[tailBuffer].resize(tail);
+        buffers << qba;
+        ++tailBuffer;
+        tail = qba.length();
+        bufferSize += qba.length();
+    }
+
     inline QByteArray peek(int maxLength) const {
         int bytesToRead = qMin(size(), maxLength);
         if(maxLength <= 0)
@@ -355,7 +400,7 @@ public:
 private:
     QList<QByteArray> buffers;
     int head, tail;
-    int tailBuffer;
+    int tailBuffer; // always buffers.size() - 1
     int basicBlockSize;
     int bufferSize;
 };

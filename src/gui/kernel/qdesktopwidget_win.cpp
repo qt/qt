@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -152,41 +152,27 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
 
     rects = new QVector<QRect>();
     workrects = new QVector<QRect>();
-
-#ifndef Q_OS_WINCE
-    if (QSysInfo::WindowsVersion != QSysInfo::WV_95 && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-        screenCount = 0;
-        // Trying to get the function pointers to Win98/2000 only functions
-        QLibrary user32Lib(QLatin1String("user32"));
-        if (!user32Lib.load())
-            return;
-        enumDisplayMonitors = (EnumFunc)user32Lib.resolve("EnumDisplayMonitors");
-        QT_WA({
-            getMonitorInfo = (InfoFunc)user32Lib.resolve("GetMonitorInfoW");
-        } , {
-            getMonitorInfo = (InfoFunc)user32Lib.resolve("GetMonitorInfoA");
-        });
-
-        if (!enumDisplayMonitors || !getMonitorInfo) {
-            screenCount = GetSystemMetrics(80);  // SM_CMONITORS
-            rects->resize(screenCount);
-            for (int i = 0; i < screenCount; ++i)
-                rects->replace(i, that->rect());
-            return;
-        }
-        // Calls enumCallback
-        enumDisplayMonitors(0, 0, enumCallback, 0);
-        enumDisplayMonitors = 0;
-        getMonitorInfo = 0;
-    } else {
-        rects->resize(1);
-        rects->replace(0, that->rect());
-        workrects->resize(1);
-        workrects->replace(0, that->rect());
-    }
-#else
     screenCount = 0;
 
+#ifndef Q_OS_WINCE
+    QLibrary user32Lib(QLatin1String("user32"));
+    if (user32Lib.load()) {
+        enumDisplayMonitors = (EnumFunc)user32Lib.resolve("EnumDisplayMonitors");
+        getMonitorInfo = (InfoFunc)user32Lib.resolve("GetMonitorInfoW");
+    }
+
+    if (!enumDisplayMonitors || !getMonitorInfo) {
+        screenCount = GetSystemMetrics(80);  // SM_CMONITORS
+        rects->resize(screenCount);
+        for (int i = 0; i < screenCount; ++i)
+            rects->replace(i, that->rect());
+        return;
+    }
+    // Calls enumCallback
+    enumDisplayMonitors(0, 0, enumCallback, 0);
+    enumDisplayMonitors = 0;
+    getMonitorInfo = 0;
+#else
     QLibrary coreLib(QLatin1String("coredll"));
     if (coreLib.load()) {
         // CE >= 4.0 case
@@ -307,70 +293,61 @@ const QRect QDesktopWidget::availableGeometry(int screen) const
     for(int i=0; i < d->workrects->size(); ++i)
         qt_get_sip_info((*d->workrects)[i]);
 #endif
-    if (QSysInfo::WindowsVersion != QSysInfo::WV_95 && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-        if (screen < 0 || screen >= d->screenCount)
-            screen = d->primaryScreen;
+    if (screen < 0 || screen >= d->screenCount)
+        screen = d->primaryScreen;
 
-        return d->workrects->at(screen);
-    } else {
-        return d->workrects->at(d->primaryScreen);
-    }
+    return d->workrects->at(screen);
 }
 
 const QRect QDesktopWidget::screenGeometry(int screen) const
 {
     const QDesktopWidgetPrivate *d = d_func();
-    if (QSysInfo::WindowsVersion != QSysInfo::WV_95 && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-        if (screen < 0 || screen >= d->screenCount)
-            screen = d->primaryScreen;
+    if (screen < 0 || screen >= d->screenCount)
+        screen = d->primaryScreen;
 
-        return d->rects->at(screen);
-    } else {
-        return d->rects->at(d->primaryScreen);
-    }
+    return d->rects->at(screen);
 }
 
 int QDesktopWidget::screenNumber(const QWidget *widget) const
 {
     Q_D(const QDesktopWidget);
-    if (QSysInfo::WindowsVersion != QSysInfo::WV_95 && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-        if (!widget)
-            return d->primaryScreen;
-        QRect frame = widget->frameGeometry();
-        if (!widget->isWindow())
-            frame.moveTopLeft(widget->mapToGlobal(QPoint(0,0)));
-
-        int maxSize = -1;
-        int maxScreen = -1;
-
-        for (int i = 0; i < d->screenCount; ++i) {
-            QRect sect = d->rects->at(i).intersected(frame);
-            int size = sect.width() * sect.height();
-            if (size > maxSize && sect.width() > 0 && sect.height() > 0) {
-                maxSize = size;
-                maxScreen = i;
-            }
-        }
-        return maxScreen;
-    } else {
+    if (!widget)
         return d->primaryScreen;
+
+    QRect frame = widget->frameGeometry();
+    if (!widget->isWindow())
+        frame.moveTopLeft(widget->mapToGlobal(QPoint(0,0)));
+
+    int maxSize = -1;
+    int maxScreen = -1;
+
+    for (int i = 0; i < d->screenCount; ++i) {
+        QRect sect = d->rects->at(i).intersected(frame);
+        int size = sect.width() * sect.height();
+        if (size > maxSize && sect.width() > 0 && sect.height() > 0) {
+            maxSize = size;
+            maxScreen = i;
+        }
     }
+
+    return maxScreen;
 }
 
 int QDesktopWidget::screenNumber(const QPoint &point) const
 {
     Q_D(const QDesktopWidget);
+
     int closestScreen = -1;
-    if (QSysInfo::WindowsVersion != QSysInfo::WV_95 && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-        int shortestDistance = INT_MAX;
-        for (int i = 0; i < d->screenCount; ++i) {
-            int thisDistance = d->pointToRect(point, d->rects->at(i));
-            if (thisDistance < shortestDistance) {
-                shortestDistance = thisDistance;
-                closestScreen = i;
-            }
+    int shortestDistance = INT_MAX;
+
+    for (int i = 0; i < d->screenCount; ++i) {
+        int thisDistance = d->pointToRect(point, d->rects->at(i));
+        if (thisDistance < shortestDistance) {
+            shortestDistance = thisDistance;
+            closestScreen = i;
         }
     }
+
     return closestScreen;
 }
 

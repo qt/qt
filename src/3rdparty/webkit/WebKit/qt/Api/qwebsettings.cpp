@@ -190,8 +190,8 @@ void QWebSettingsPrivate::apply()
                                       global->attributes.value(QWebSettings::LocalStorageDatabaseEnabled));
         settings->setLocalStorageEnabled(value);
 
-        value = attributes.value(QWebSettings::AllowUniversalAccessFromFileUrls,
-                                      global->attributes.value(QWebSettings::AllowUniversalAccessFromFileUrls));
+        value = attributes.value(QWebSettings::LocalContentCanAccessRemoteUrls,
+                                      global->attributes.value(QWebSettings::LocalContentCanAccessRemoteUrls));
         settings->setAllowUniversalAccessFromFileURLs(value);
     } else {
         QList<QWebSettingsPrivate *> settings = *::allSettings();
@@ -223,16 +223,24 @@ QWebSettings *QWebSettings::globalSettings()
     Each QWebPage object has its own QWebSettings object, which configures the
     settings for that page. If a setting is not configured, then it is looked
     up in the global settings object, which can be accessed using
-    QWebSettings::globalSettings().
+    globalSettings().
 
-    QWebSettings allows configuring font properties such as font size and font
-    family, the location of a custom stylesheet, and generic attributes like java
-    script, plugins, etc. The \l{QWebSettings::WebAttribute}{WebAttribute}
-    enum further describes this.
+    QWebSettings allows configuration of browser properties, such as font sizes and
+    families, the location of a custom style sheet, and generic attributes like
+    JavaScript and plugins. Individual attributes are set using the setAttribute()
+    function. The \l{QWebSettings::WebAttribute}{WebAttribute} enum further describes
+    each attribute.
 
-    QWebSettings also configures global properties such as the web page memory
-    cache and the web page icon database, local database storage and offline
+    QWebSettings also configures global properties such as the Web page memory
+    cache and the Web page icon database, local database storage and offline
     applications storage.
+
+    \section1 Enabling Plugins
+
+    Support for browser plugins can enabled by setting the
+    \l{QWebSettings::PluginsEnabled}{PluginsEnabled} attribute. For many applications,
+    this attribute is enabled for all pages by setting it on the
+    \l{globalSettings()}{global settings object}.
 
     \section1 Web Application Support
 
@@ -320,8 +328,7 @@ QWebSettings *QWebSettings::globalSettings()
         web application cache feature is enabled or not.
     \value LocalStorageDatabaseEnabled Specifies whether support for the HTML 5
         local storage feature is enabled or not.
-    \value AllowUniversalAccessFromFileUrls Specifies whether documents from file
-        Urls should be granted universal access (e.g., to HTTP and HTTPS documents).
+    \value LocalContentCanAccessRemoteUrls Specifies whether locally loaded documents are allowed to access remote urls.
 */
 
 /*!
@@ -350,7 +357,7 @@ QWebSettings::QWebSettings()
     d->attributes.insert(QWebSettings::OfflineStorageDatabaseEnabled, true);
     d->attributes.insert(QWebSettings::OfflineWebApplicationCacheEnabled, true);
     d->attributes.insert(QWebSettings::LocalStorageDatabaseEnabled, true);
-    d->attributes.insert(QWebSettings::AllowUniversalAccessFromFileUrls, true);
+    d->attributes.insert(QWebSettings::LocalContentCanAccessRemoteUrls, true);
     d->offlineStorageDefaultQuota = 5 * 1024 * 1024;
 
 }

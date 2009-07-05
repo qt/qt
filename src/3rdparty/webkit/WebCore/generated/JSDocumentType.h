@@ -21,8 +21,9 @@
 #ifndef JSDocumentType_h
 #define JSDocumentType_h
 
-#include "JSNode.h"
 #include "DocumentType.h"
+#include "JSNode.h"
+
 namespace WebCore {
 
 class DocumentType;

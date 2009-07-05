@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -639,7 +639,7 @@ void QHelpSearchIndexWriter::run()
 
     QFileInfo fInfo(indexPath);
     if (fInfo.exists() && !fInfo.isWritable()) {
-        qWarning("Full Text Search, could not create index (missing permissions).");
+        qWarning("Full Text Search, could not create index (missing permissions for '%s').", qPrintable(indexPath));
         return;
     }
 
@@ -720,7 +720,7 @@ void QHelpSearchIndexWriter::run()
         }
 #if !defined(QT_NO_EXCEPTIONS)
     } catch (...) {
-        qWarning("Full Text Search, could not create index writer.");
+        qWarning("Full Text Search, could not create index writer in '%s'.", qPrintable(indexPath));
         return;
     }
 #endif

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,7 +107,7 @@ static int posix_helper(const wchar_t *dirpath)
     wchar_t appendedPath[MAX_PATH];
     wcscpy(appendedPath, dirpath);
     wcscat(appendedPath, L"\\*");
-    hSearch = FindFirstFileW(appendedPath, &fd);
+    hSearch = FindFirstFile(appendedPath, &fd);
     appendedPath[origDirPathLength] = 0;
 
     if (hSearch == INVALID_HANDLE_VALUE) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1946,26 +1946,21 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
                             colorref2qrgb(GetSysColor(COLOR_CAPTIONTEXT)));
         newPalette.setColor(QPalette::Inactive, QPalette::HighlightedText,
                             colorref2qrgb(GetSysColor(COLOR_INACTIVECAPTIONTEXT)));
-        if (QSysInfo::WindowsVersion != QSysInfo::WV_95
-                && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-            colorsInitialized = true;
-            BOOL hasGradient;
-            QT_WA({
-                SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
-            } , {
-                SystemParametersInfoA(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
-            });
-            if (hasGradient) {
-                newPalette.setColor(QPalette::Active, QPalette::Base,
-                                    colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
-                newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                                    colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
-            } else {
-                newPalette.setColor(QPalette::Active, QPalette::Base,
-                                    newPalette.color(QPalette::Active, QPalette::Highlight));
-                newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                                    newPalette.color(QPalette::Inactive, QPalette::Highlight));
-            }
+
+        colorsInitialized = true;
+        BOOL hasGradient = false;
+        SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
+
+        if (hasGradient) {
+            newPalette.setColor(QPalette::Active, QPalette::Base,
+                                colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
+            newPalette.setColor(QPalette::Inactive, QPalette::Base,
+                                colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
+        } else {
+            newPalette.setColor(QPalette::Active, QPalette::Base,
+                                newPalette.color(QPalette::Active, QPalette::Highlight));
+            newPalette.setColor(QPalette::Inactive, QPalette::Base,
+                                newPalette.color(QPalette::Inactive, QPalette::Highlight));
         }
     }
 #endif // Q_WS_WIN

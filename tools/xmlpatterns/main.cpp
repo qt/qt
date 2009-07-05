@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Patternist project on Trolltech Labs.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -194,7 +194,7 @@ protected:
             /* If we don't open stdout in "binary" mode on Windows, it will translate
              * 0xA into 0xD 0xA. See Trolltech task 173619, for an example. */
             _setmode(_fileno(stdout), _O_BINARY);
-            m_stdout = QT_WA_INLINE(_wfdopen(_fileno(stdout), L"wb"),_fdopen(_fileno(stdout), "wb"));
+            m_stdout = _wfdopen(_fileno(stdout), L"wb");
             out->open(m_stdout, QIODevice::WriteOnly);
 #else
             out->open(stdout, QIODevice::WriteOnly);

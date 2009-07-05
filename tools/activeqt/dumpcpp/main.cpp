@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -969,7 +969,7 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
     QString libName;
     BSTR nameString;
     typelib->GetDocumentation(-1, &nameString, 0, 0, 0);
-    libName = QString::fromUtf16((const ushort *)nameString);
+    libName = QString::fromWCharArray(nameString);
     SysFreeString(nameString);
     if (!nameSpace.isEmpty())
         libName = QString(nameSpace);
@@ -1086,7 +1086,7 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
                         BSTR bstr;
                         if (S_OK != typeinfo->GetDocumentation(-1, &bstr, 0, 0, 0))
                             break;
-                        className = QString::fromUtf16((const ushort *)bstr).toLatin1();
+                        className = QString::fromWCharArray(bstr).toLatin1();
                         SysFreeString(bstr);
                         switch (typekind) {
                         case TKIND_RECORD:
@@ -1227,7 +1227,7 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
                 BSTR bstr;
                 if (S_OK != typeinfo->GetDocumentation(-1, &bstr, 0, 0, 0))
                     break;
-                className = QString::fromUtf16((const ushort *)bstr).toLatin1();
+                className = QString::fromWCharArray(bstr).toLatin1();
                 SysFreeString(bstr);
 
                 declOut << "// stub for vtable-only interface" << endl;

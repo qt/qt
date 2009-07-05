@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -177,14 +177,14 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
         return;
     }
 
-    QByteArray soundName;
+    QString soundName;
     switch (reason) {
     case PopupMenuStart:
-        soundName = "MenuPopup";
+        soundName = QLatin1String("MenuPopup");
         break;
 
     case MenuCommand:
-        soundName = "MenuCommand";
+        soundName = QLatin1String("MenuCommand");
         break;
 
     case Alert:
@@ -194,13 +194,13 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
             if (mb) {
                 switch (mb->icon()) {
                 case QMessageBox::Warning:
-                    soundName = "SystemExclamation";
+                    soundName = QLatin1String("SystemExclamation");
                     break;
                 case QMessageBox::Critical:
-                    soundName = "SystemHand";
+                    soundName = QLatin1String("SystemHand");
                     break;
                 case QMessageBox::Information:
-                    soundName = "SystemAsterisk";
+                    soundName = QLatin1String("SystemAsterisk");
                     break;
                 default:
                     break;
@@ -208,7 +208,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
             } else
 #endif // QT_NO_MESSAGEBOX
             {
-                soundName = "SystemAsterisk";
+                soundName = QLatin1String("SystemAsterisk");
             }
 
         }
@@ -219,20 +219,16 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 
     if (soundName.size()) {
 #ifndef QT_NO_SETTINGS
-        QSettings settings(QLatin1String("HKEY_CURRENT_USER\\AppEvents\\Schemes\\Apps\\.Default\\") +
-                                         QString::fromLatin1(soundName.constData()), QSettings::NativeFormat);
+        QSettings settings(QLatin1String("HKEY_CURRENT_USER\\AppEvents\\Schemes\\Apps\\.Default\\") + soundName,
+                           QSettings::NativeFormat);
         QString file = settings.value(QLatin1String(".Current/.")).toString();
 #else
-		QString file;
+        QString file;
 #endif
-		if (!file.isEmpty()) {
-	        QT_WA({
-				PlaySoundW(reinterpret_cast<const wchar_t *> (QString::fromLatin1(soundName).utf16()), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT );
-			} , {
-				PlaySoundA(soundName.constData(), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT );
-			});
-		}
-	}
+        if (!file.isEmpty()) {
+				    PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
+        }
+    }
 
     if (!isActive())
         return;

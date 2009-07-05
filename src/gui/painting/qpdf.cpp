@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,10 @@
 #include "private/qcups_p.h"
 #include "qprinterinfo.h"
 #include <qnumeric.h>
+
+#ifdef Q_OS_UNIX
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1647,7 +1651,7 @@ static void closeAllOpenFds()
 #endif
     // leave stdin/out/err untouched
     while(--i > 2)
-        ::close(i);
+        QT_CLOSE(i);
 }
 #endif
 
@@ -1681,7 +1685,7 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
         if (!printerName.isEmpty())
             pr = printerName;
         int fds[2];
-        if (pipe(fds) != 0) {
+        if (qt_safe_pipe(fds) != 0) {
             qWarning("QPdfPrinter: Could not open pipe to print");
             return false;
         }
@@ -1700,9 +1704,9 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
                 (void)execlp("true", "true", (char *)0);
                 (void)execl("/bin/true", "true", (char *)0);
                 (void)execl("/usr/bin/true", "true", (char *)0);
-                ::exit(0);
+                ::_exit(0);
             }
-            dup2(fds[0], 0);
+            qt_safe_dup2(fds[0], 0, 0);
 
             closeAllOpenFds();
 
@@ -1769,14 +1773,14 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
             // wait for a second so the parent process (the
             // child of the GUI process) has exited.  then
             // exit.
-            ::close(0);
+            QT_CLOSE(0);
             (void)::sleep(1);
-            ::exit(0);
+            ::_exit(0);
         }
         // parent process
-        ::close(fds[0]);
+        QT_CLOSE(fds[0]);
         fd = fds[1];
-        (void)::waitpid(pid, 0, 0);
+        (void)qt_safe_waitpid(pid, 0, 0);
 
         if (fd < 0)
             return false;
@@ -1923,14 +1927,13 @@ void QPdfBaseEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &t
 #ifdef Q_WS_WIN
     if (ti.fontEngine->type() == QFontEngine::Win) {
         QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
-        size = fe->tm.w.tmHeight;
+        size = fe->tm.tmHeight;
     }
 #endif
 
     QVarLengthArray<glyph_t> glyphs;
     QVarLengthArray<QFixedPoint> positions;
-    QTransform m;
-    m.translate(p.x(), p.y());
+    QTransform m = QTransform::fromTranslate(p.x(), p.y());
     ti.fontEngine->getGlyphPositions(ti.glyphs, m, ti.flags,
                                      glyphs, positions);
     if (glyphs.size() == 0)
