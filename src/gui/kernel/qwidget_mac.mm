@@ -3823,7 +3823,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
       Qt coordinate system for parent
       X coordinate system for parent (relative to parent's wrect).
     */
-    QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
     QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
     QRect wrect;
     //xrect is the X geometry of my X widget. (starts out in  parent's Qt coord sys, and ends up in parent's X coord sys)
@@ -3901,7 +3900,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
-        if (!validRange.contains(xrect)) {
+        if (xrect.height() > XCOORD_MAX || xrect.width() > XCOORD_MAX) {
             // we are too big, and must clip
             xrect &=wrectRange;
             wrect = xrect;
@@ -3949,10 +3948,9 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
 
     qt_mac_update_widget_posisiton(q, oldRect, xrect);
 
-    if  (jump) {
-        updateSystemBackground();
+    if  (jump)
         q->update();
-    }
+
     if (mapWindow && !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
 #ifndef QT_MAC_USE_COCOA
