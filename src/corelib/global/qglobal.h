@@ -110,7 +110,7 @@ namespace QT_NAMESPACE {}
     This expands to a "using QT_NAMESPACE" also in _header files_.
     It is the only way the feature can be used without too much
     pain, but if people _really_ do not want it they can add
-    DEFINES += QT_NO_USING_NAMESPACE to theur .pro files.
+    DEFINES += QT_NO_USING_NAMESPACE to their .pro files.
     */
    QT_USE_NAMESPACE
 # endif
