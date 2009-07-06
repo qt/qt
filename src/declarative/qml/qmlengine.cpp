@@ -912,27 +912,22 @@ QScriptValue QmlEngine::createQmlObject(QScriptContext *ctxt, QScriptEngine *eng
         url = QUrl(ctxt->argument(2).toString());
     QObject *parentArg = ctxt->argument(1).data().toQObject();
     QmlContext *qmlCtxt = qmlContext(parentArg);
-    if(qmlCtxt)
-        qmlCtxt->activate();
+    url = qmlCtxt->resolvedUrl(url);
     QmlComponent component(activeEngine, qml.toUtf8(), url);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         foreach (const QmlError &error, errors) {
-            qWarning() << error;
+            qWarning() <<"Error in createQmlObject(): "<< error;
         }
 
-        if(qmlCtxt)
-            qmlCtxt->deactivate();
         return engine->nullValue();
     }
 
-    QObject *obj = component.create();
-    if(qmlCtxt)
-        qmlCtxt->deactivate();
+    QObject *obj = component.create(qmlCtxt);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         foreach (const QmlError &error, errors) {
-            qWarning() << error;
+            qWarning() <<"Error in createQmlObject(): "<< error;
         }
 
         return engine->nullValue();

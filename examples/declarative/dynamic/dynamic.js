@@ -3,8 +3,7 @@ var fourthBox = null;
 var component = null;
 var started = false;
 function createQml(p) {
-    return createQmlObject('Rect { color: "steelblue"; width: 100;'
-            + 'height: 100; id: newRect }',p,'DynPart.qml');
+    return createQmlObject('DynRect {}',p,'DynPart.qml');
 }
 
 function destroyDynamicObject() {
