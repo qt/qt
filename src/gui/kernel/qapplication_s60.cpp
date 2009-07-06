@@ -104,12 +104,12 @@ private:
     void MatoPrepareComplete(TInt aError);
     void MatoPlayComplete(TInt aError);
 private:
-    typedef enum TBeepState
+    typedef enum
         {
         EBeepNotPrepared,
         EBeepPrepared,
         EBeepPlaying
-        };
+        } TBeepState;
 private:
     CMdaAudioToneUtility* iToneUtil;
     TBeepState iState;
