@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMetaObjectBuilder
+    \internal
     \brief The QMetaObjectBuilder class supports building QMetaObject objects at runtime.
 
 */
@@ -1725,6 +1726,7 @@ void QMetaObjectBuilder::deserialize
 
 /*!
     \class QMetaMethodBuilder
+    \internal
     \brief The QMetaMethodBuilder class enables modifications to a method definition on a meta object builder.
 */
 
@@ -1921,6 +1923,7 @@ void QMetaMethodBuilder::setAttributes(int value)
 
 /*!
     \class QMetaPropertyBuilder
+    \internal
     \brief The QMetaPropertyBuilder class enables modifications to a property definition on a meta object builder.
 */
 
@@ -2340,6 +2343,7 @@ void QMetaPropertyBuilder::setDynamic(bool value)
 
 /*!
     \class QMetaEnumBuilder
+    \internal
     \brief The QMetaEnumBuilder class enables modifications to an enumerator definition on a meta object builder.
 */
 
