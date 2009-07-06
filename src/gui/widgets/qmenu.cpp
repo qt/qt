@@ -257,7 +257,6 @@ void QMenuPrivate::updateActionRects() const
         //let the style modify the above size..
         QStyleOptionMenuItem opt;
         q->initStyleOption(&opt, action);
-        opt.rect = q->rect();
         const QFontMetrics &fm = opt.fontMetrics;
 
         QSize sz;
@@ -757,9 +756,19 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
     }
 
     //actually update flags
-    scroll->scrollOffset = newOffset;
-    if (scroll->scrollOffset > 0)
-        scroll->scrollOffset = 0;
+    const int delta = qMin(0, newOffset) - scroll->scrollOffset; //make sure the new offset is always negative
+    if (!itemsDirty && delta) {
+        //we've scrolled so we need to update the action rects
+        for (int i = 0; i < actionRects.count(); ++i) {
+            QRect &current = actionRects[i];
+            current.moveTop(current.top() + delta);
+
+            //we need to update the widgets geometry
+            if (QWidget *w = widgetItems.at(i))
+                w->setGeometry(current);
+        }
+    }
+    scroll->scrollOffset += delta;
     scroll->scrollFlags = newScrollFlags;
     if (active)
         setCurrentAction(action);
@@ -875,12 +884,10 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             }
         }
         if (isScroll) {
-            if (!scroll->scrollTimer)
-                scroll->scrollTimer = new QBasicTimer;
-            scroll->scrollTimer->start(50, q);
+            scroll->scrollTimer.start(50, q);
             return true;
-        } else if (scroll->scrollTimer && scroll->scrollTimer->isActive()) {
-            scroll->scrollTimer->stop();
+        } else {
+            scroll->scrollTimer.stop();
         }
     }
 
@@ -2054,6 +2061,8 @@ void QMenu::hideEvent(QHideEvent *)
     d->hasHadMouse = false;
     d->causedPopup.widget = 0;
     d->causedPopup.action = 0;
+    if (d->scroll)
+        d->scroll->scrollTimer.stop(); //make sure the timer stops
 }
 
 /*!
@@ -2499,8 +2508,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         }
         if (nextAction) {
             if (d->scroll && scroll_loc != QMenuPrivate::QMenuScroller::ScrollStay) {
-                if (d->scroll->scrollTimer)
-                    d->scroll->scrollTimer->stop();
+                d->scroll->scrollTimer.stop();
                 d->scrollMenu(nextAction, scroll_loc);
             }
             d->setCurrentAction(nextAction, /*popup*/-1, QMenuPrivate::SelectedFromKeyboard);
@@ -2761,10 +2769,10 @@ void
 QMenu::timerEvent(QTimerEvent *e)
 {
     Q_D(QMenu);
-    if (d->scroll && d->scroll->scrollTimer && d->scroll->scrollTimer->timerId() == e->timerId()) {
+    if (d->scroll && d->scroll->scrollTimer.timerId() == e->timerId()) {
         d->scrollMenu((QMenuPrivate::QMenuScroller::ScrollDirection)d->scroll->scrollDirection);
         if (d->scroll->scrollFlags == QMenuPrivate::QMenuScroller::ScrollNone)
-            d->scroll->scrollTimer->stop();
+            d->scroll->scrollTimer.stop();
     } else if(QMenuPrivate::menuDelayTimer.timerId() == e->timerId()) {
         QMenuPrivate::menuDelayTimer.stop();
         internalDelayedPopup();

@@ -189,10 +189,10 @@ public:
         enum ScrollDirection { ScrollNone=0, ScrollUp=0x01, ScrollDown=0x02 };
         uint scrollFlags : 2, scrollDirection : 2;
         int scrollOffset;
-        QBasicTimer *scrollTimer;
+        QBasicTimer scrollTimer;
 
-        QMenuScroller() : scrollFlags(ScrollNone), scrollDirection(ScrollNone), scrollOffset(0), scrollTimer(0) { }
-        ~QMenuScroller() { delete scrollTimer; }
+        QMenuScroller() : scrollFlags(ScrollNone), scrollDirection(ScrollNone), scrollOffset(0) { }
+        ~QMenuScroller() { }
     } *scroll;
     void scrollMenu(QMenuScroller::ScrollLocation location, bool active=false);
     void scrollMenu(QMenuScroller::ScrollDirection direction, bool page=false, bool active=false);
