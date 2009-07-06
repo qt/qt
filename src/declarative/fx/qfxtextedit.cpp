@@ -410,7 +410,7 @@ void QFxTextEdit::setWrap(bool w)
 }
 
 /*!
-    \property QFxTextEdit::cursorVisible
+    \qmlproperty TextEdit::cursorVisible
     \brief If true the text edit shows a cursor.
 
     This property is set and unset when the text edit gets focus, but it can also
@@ -432,6 +432,25 @@ void QFxTextEdit::setCursorVisible(bool on)
     if (!on && !d->preserveSelection)
         d->control->setCursorIsFocusIndicator(true);
     d->control->processEvent(&focusEvent, QPointF(0, 0));
+}
+
+/*!
+    \qmlproperty TextEdit::cursorPosition
+    \brief The position of the cursor in the TextEdit.
+*/
+int QFxTextEdit::cursorPosition() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().position();
+}
+
+void QFxTextEdit::setCursorPosition(int pos)
+{
+    Q_D(QFxTextEdit);
+    QTextCursor cursor = d->control->textCursor();
+    if (cursor.position() == pos)
+        return;
+    cursor.setPosition(pos);
 }
 
 /*!
