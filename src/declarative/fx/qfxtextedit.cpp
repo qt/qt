@@ -179,7 +179,7 @@ void QFxTextEdit::setText(const QString &text)
     Supported text formats are \c AutoText, \c PlainText and \c RichText.
 
     The default is AutoText.  If the text format is AutoText the text edit
-    edit will automatically determine whether the text should be treated as
+    will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
     \table
