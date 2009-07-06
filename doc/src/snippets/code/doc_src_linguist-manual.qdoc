@@ -42,7 +42,7 @@ Options:
     -pluralonly
            Only include plural form messages.
     -silent
-           Don't explain what is being done.
+           Do not explain what is being done.
     -version
            Display the version of lupdate and exit.
 //! [4]
@@ -55,14 +55,14 @@ Usage:
 Options:
     -help  Display this information and exit
     -compress
-           Compress the .qm files
+           Compress the QM files
     -nounfinished
            Do not include unfinished translations
     -removeidentical
            If the translated text is the same as
            the source text, do not include the message
     -silent
-           Don't explain what is being done
+           Do not explain what is being done
     -version
            Display the version of lrelease and exit
 //! [5]

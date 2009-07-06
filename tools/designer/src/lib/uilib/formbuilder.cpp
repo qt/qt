@@ -57,12 +57,12 @@ namespace QFormInternal {
     \class QFormBuilder
 
     \brief The QFormBuilder class is used to dynamically construct
-    user interfaces from .ui files at run-time.
+    user interfaces from UI files at run-time.
 
     \inmodule QtDesigner
 
     The QFormBuilder class provides a mechanism for dynamically
-    creating user interfaces at run-time, based on \c{.ui} files
+    creating user interfaces at run-time, based on UI files
     created with \QD. For example:
 
     \snippet doc/src/snippets/code/tools_designer_src_lib_uilib_formbuilder.cpp 0

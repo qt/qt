@@ -97,7 +97,7 @@
        to developers porting from Qt 3 to Qt 4.
     \o \l{Porting to Qt 4 - Drag and Drop} \mdash covers differences in the
        way drag and drop is handled between Qt 3 and Qt 4.
-    \o \l{Porting .ui Files to Qt 4} \mdash describes the new format used to
+    \o \l{Porting UI Files to Qt 4} \mdash describes the new format used to
        describe forms created with \QD.
     \o \l{Porting to Graphics View} \mdash provides a class-by-class overview
        of the differences between Qt 3's canvas API and Qt 4's Graphics
@@ -135,7 +135,7 @@
     \o Run the \l qt3to4 porting tool. The tool will go through your
        source code and adapt it to Qt 4.
 
-    \o Follow the instructions in the \l{Porting .ui Files to Qt 4}
+    \o Follow the instructions in the \l{Porting UI Files to Qt 4}
        page to port Qt Designer files.
 
     \o Recompile with Qt 4. For each error, search below for related
@@ -347,7 +347,7 @@
     macro, removing the need for a \c Q_OVERRIDE() macro.
 
     The table below lists the Qt properties that have been renamed in
-    Qt 4. Occurrences of these in \e{Qt Designer} \c .ui files are
+    Qt 4. Occurrences of these in \e{Qt Designer} UI files are
     automatically converted to the new name by \c uic.
 
     \table
@@ -406,11 +406,11 @@
 
     Some properties have been removed from Qt 4, but the associated
     access functions are provided if \c QT3_SUPPORT is defined to help
-    porting to Qt 4. When converting Qt 3 \c .ui files to Qt 4, \c uic
+    porting to Qt 4. When converting Qt 3 UI files to Qt 4, \c uic
     generates calls to the Qt 3 compatibility functions. Note that
     this only applies to the properties of the Qt3Support library,
     i.e. \c QT3_SUPPORT properties of the other libraries must be
-    ported manually when converting Qt 3 .ui files to Qt 4.
+    ported manually when converting Qt 3 UI files to Qt 4.
 
     The table below lists these properties with the read and write
     functions that you can use instead. The documentation for the
@@ -518,7 +518,7 @@
     (Notice the \c & in the parameter declaration.)
 
 \omit
-    \section1 Qt Designer .ui Files
+    \section1 Qt Designer UI Files
 
     ###
 \endomit

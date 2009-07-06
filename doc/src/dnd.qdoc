@@ -435,7 +435,7 @@
     \title Porting to Qt 4 - Drag and Drop
     \contentspage {Porting Guides}{Contents}
     \previouspage Porting to Qt 4 - Virtual Functions
-    \nextpage Porting .ui Files to Qt 4
+    \nextpage Porting UI Files to Qt 4
     \ingroup porting
     \brief An overview of the porting process for applications that use drag and drop.
 

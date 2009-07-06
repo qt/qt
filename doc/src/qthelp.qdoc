@@ -279,7 +279,7 @@
 
     \section1 Qt Help Project File Format
 
-    The file format is XML based. For a better understanding of
+    The file format is XML-based. For a better understanding of
     the format we'll discuss the following example:
 
     \snippet doc/src/snippets/code/doc_src_qthelp.qdoc 7

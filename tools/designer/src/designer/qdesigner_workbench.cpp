@@ -960,7 +960,7 @@ QDesignerFormWindow * QDesignerWorkbench::loadForm(const QString &fileName,
         removeFormWindow(formWindow);
         formWindowManager->removeFormWindow(editor);
         m_core->metaDataBase()->remove(editor);
-        *errorMessage = tr("The file <b>%1</b> is not a valid Designer ui file.").arg(file.fileName());
+        *errorMessage = tr("The file <b>%1</b> is not a valid Designer UI file.").arg(file.fileName());
         return 0;
     }
     *uic3Converted = editor->fileName().isEmpty();

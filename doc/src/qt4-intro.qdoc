@@ -235,7 +235,7 @@
     for your project (using "DEFINES +=") on to moc, which has its own
     built-in C++ preprocessor.
 
-    To compile code that uses .ui files, you will also need this line in
+    To compile code that uses UI files, you will also need this line in
     the .pro file:
 
     \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 2

@@ -66,21 +66,21 @@ static void printUsage()
         "    lrelease [options] project-file\n"
         "    lrelease [options] ts-files [-qm qm-file]\n\n"
         "lrelease is part of Qt's Linguist tool chain. It can be used as a\n"
-        "stand-alone tool to convert XML based translations files in the .ts\n"
-        "format into the 'compiled' .qm format used by QTranslator objects.\n\n"
+        "stand-alone tool to convert XML-based translations files in the TS\n"
+        "format into the 'compiled' QM format used by QTranslator objects.\n\n"
         "Options:\n"
         "    -help  Display this information and exit\n"
         "    -idbased\n"
         "           Use IDs instead of source strings for message keying\n"
         "    -compress\n"
-        "           Compress the .qm files\n"
+        "           Compress the QM files\n"
         "    -nounfinished\n"
         "           Do not include unfinished translations\n"
         "    -removeidentical\n"
         "           If the translated text is the same as\n"
         "           the source text, do not include the message\n"
         "    -silent\n"
-        "           Don't explain what is being done\n"
+        "           Do not explain what is being done\n"
         "    -version\n"
         "           Display the version of lrelease and exit\n"
     ));
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
                 }
             } else {
                 qWarning("error: lrelease encountered project file functionality that is currently not supported.\n"
-                    "You might want to consider using .ts files as input instead of a project file.\n"
+                    "You might want to consider using TS files as input instead of a project file.\n"
                     "Try the following syntax:\n"
                     "    lrelease [options] ts-files [-qm qm-file]\n");
             }

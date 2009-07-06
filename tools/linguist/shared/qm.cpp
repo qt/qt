@@ -245,7 +245,7 @@ void Releaser::writeMessage(const ByteTranslatorMessage &msg, QDataStream &strea
     if (mode == SaveEverything)
         prefix = HashContextSourceTextComment;
 
-    // lrelease produces "wrong" .qm files for QByteArrays that are .isNull().
+    // lrelease produces "wrong" QM files for QByteArrays that are .isNull().
     switch (prefix) {
     default:
     case HashContextSourceTextComment:

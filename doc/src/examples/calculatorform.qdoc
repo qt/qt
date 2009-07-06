@@ -45,8 +45,8 @@
 
     The Calculator Form Example shows how to use a form created with
     \QD in an application by using the user interface information from
-    a QWidget subclass.  We use \l{Using a Designer .ui File in Your Application} 
-    {uic's auto-connection} feature to automatically connect signals 
+    a QWidget subclass.  We use \l{Using a Designer UI File in Your Application}
+    {uic's auto-connection} feature to automatically connect signals
     from widgets on the form to slots in our code.
 
     \image calculatorform-example.png Screenshot of the Calculator Form example
@@ -59,7 +59,7 @@
     \section1 Preparation
 
     The user interface for this example is designed completely using \QD. The
-    result is a .ui file describing the form, the widgets used, any signal-slot
+    result is a UI file describing the form, the widgets used, any signal-slot
     connections between them, and other standard user interface properties.
 
     To ensure that the example can use this file, we need to include a \c FORMS
