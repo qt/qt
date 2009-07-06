@@ -575,7 +575,7 @@ void tst_Q3SqlCursor::precision()
     if(!tst_Databases::isSqlServer(db))
         QCOMPARE( cur.value( 0 ).asString(), precStr );
     else
-        QCOMPARE( cur.value( 0 ).asString(), precStr.left(precStr.size()-1) );
+        QCOMPARE( cur.value( 0 ).asString(), precStr.left(precStr.size()-1) ); // Sql server fails at counting.
     QVERIFY( cur.next() );
     QCOMPARE( cur.value( 0 ).asDouble(), precDbl );
 }
@@ -759,8 +759,9 @@ void tst_Q3SqlCursor::insertFieldNameContainsWS() {
 
     QSqlQuery q(db);
     q.exec(QString("DROP TABLE %1").arg(tableName));
-    QString query = QString("CREATE TABLE %1 (id int, \"first Name\" varchar(20), "
-                            "lastName varchar(20))");
+    QString query = "CREATE TABLE %1 (id int, " 
+        + db.driver()->escapeIdentifier("first Name", QSqlDriver::FieldName) 
+        + " varchar(20), lastName varchar(20))";
     QVERIFY_SQL(q, exec(query.arg(tableName)));
 
     Q3SqlCursor cur(QString("%1").arg(tableName), true, db);
