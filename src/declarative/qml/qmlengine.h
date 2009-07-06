@@ -91,7 +91,7 @@ public:
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
 
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
-    static QScriptValue createQMLObject(QScriptContext*, QScriptEngine*);
+    static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
 
 private:
     // LK: move to the private class

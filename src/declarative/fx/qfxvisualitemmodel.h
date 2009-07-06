@@ -70,7 +70,7 @@ class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QObject
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(QString part READ part WRITE setPart)
-    Q_PROPERTY(QObject *parts READ parts)
+    Q_PROPERTY(QObject *parts READ parts CONSTANT)
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
     QFxVisualItemModel();
