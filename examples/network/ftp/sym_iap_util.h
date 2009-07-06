@@ -62,29 +62,28 @@ _LIT(KIapBearer, "IAP\\IAPBearer");             // TUint32 - optional
 _LIT(KIapBearerType, "IAP\\IAPBearerType");     // text - optional
 _LIT(KIapNetwork, "IAP\\IAPNetwork");           // TUint32 - optional
 
-const QLatin1String qtOrganization("Trolltech");
-const QLatin1String qtModule("QtNetwork");
-const QLatin1String qtIapGroup("IAP");
-const QLatin1String namesArray("Names");
-const QLatin1String nameRecord("Name");
-
+const QLatin1String qtOrganizationTag("Trolltech");
+const QLatin1String qtNetworkModuleTag("QtNetwork");
+const QLatin1String iapGroupTag("IAP");
+const QLatin1String iapNamesArrayTag("Names");
+const QLatin1String iapNameItemTag("Name");
 
 void clearIapNamesSettings(QSettings &settings) {
-    settings.beginGroup(qtModule);
-        settings.beginGroup(qtIapGroup);
-           settings.remove(namesArray);
+    settings.beginGroup(qtNetworkModuleTag);
+        settings.beginGroup(iapGroupTag);
+           settings.remove(iapNamesArrayTag);
         settings.endGroup();
     settings.endGroup();
 }
 
 void writeIapNamesSettings(QSettings &settings, const QStringList& iapNames) {
     clearIapNamesSettings(settings);
-    settings.beginGroup(qtModule);
-        settings.beginGroup(qtIapGroup);
-            settings.beginWriteArray(namesArray);
+    settings.beginGroup(qtNetworkModuleTag);
+        settings.beginGroup(iapGroupTag);
+            settings.beginWriteArray(iapNamesArrayTag);
             for (int index = 0; index < iapNames.size(); ++index) {
                 settings.setArrayIndex(index);
-                settings.setValue(nameRecord, iapNames.at(index));
+                settings.setValue(iapNameItemTag, iapNames.at(index));
             }
             settings.endArray();
         settings.endGroup();
@@ -92,12 +91,12 @@ void writeIapNamesSettings(QSettings &settings, const QStringList& iapNames) {
 }
 
 void readIapNamesSettings(QSettings &settings, QStringList& iapNames) {
-    settings.beginGroup(qtModule);
-        settings.beginGroup(qtIapGroup);
-            int last = settings.beginReadArray(namesArray);
+    settings.beginGroup(qtNetworkModuleTag);
+        settings.beginGroup(iapGroupTag);
+            int last = settings.beginReadArray(iapNamesArrayTag);
             for (int index = 0; index < last; ++index) {
                 settings.setArrayIndex(index);
-                iapNames.append(settings.value(nameRecord).toString());
+                iapNames.append(settings.value(iapNameItemTag).toString());
             }
             settings.endArray();
         settings.endGroup();
@@ -113,16 +112,93 @@ QString qt_TDesC2QStringL(const TDesC& aDescriptor)
 #endif
 }
 
-static void qt_SetDefaultIapL() 
-{
-    // settings @ /c/data/.config/Trolltech.com
-    QSettings settings(QSettings::UserScope, qtOrganization);
-    // populate iap name list
-    QStringList iapNames;
-    readIapNamesSettings(settings, iapNames);
+static bool qt_SetDefaultIapName(const QString &iapName, int &error) {
+    struct ifreq ifReq;
+    // clear structure
+    memset(&ifReq, 0, sizeof(struct ifreq));
+    // set IAP name value
+    // make sure it is in UTF8
+    strcpy(ifReq.ifr_name, iapName.toUtf8().data());
 
+    if(setdefaultif(&ifReq) == 0) {
+        // OK
+        error = 0;
+        return true;
+    } else {
+        error = errno;
+        return false;
+    }
+
+}
+static bool qt_SetDefaultSnapId(const int snapId, int &error) {
+    struct ifreq ifReq;
+    // clear structure
+    memset(&ifReq, 0, sizeof(struct ifreq));
+    // set SNAP ID value
+    ifReq.ifr_ifru.snap_id = snapId;
+
+    if(setdefaultif(&ifReq) == 0) {
+        // OK
+        error = 0;
+        return true;
+    } else {
+        error = errno;
+        return false;
+    }
+
+}
+
+static void qt_SaveIapName(QSettings& settings, QStringList& iapNames, QString& iapNameValue) {
+    if(iapNames.contains(iapNameValue) && iapNames.first() == iapNameValue) {
+        // no need to update
+    } else {
+        if(iapNameValue != QString("Easy WLAN")) {
+            // new selection alway on top
+            iapNames.removeAll(iapNameValue);
+            iapNames.prepend(iapNameValue);
+            writeIapNamesSettings(settings, iapNames);
+        } else {
+            // Unbeliveable ... if IAP dodn't exist before
+            // no matter what you choose from IAP selection list
+            // you will get "Easy WLAN" as IAP name value
+
+            // somehow commsdb is not in sync
+        }
+    }
+}
+
+static QString qt_OfferIapDialog() {
+    TBuf8<256> iapName;
+
+    RSocketServ socketServ;
+    CleanupClosePushL(socketServ);
+
+    RConnection connection;
+    CleanupClosePushL(connection);
+
+    socketServ.Connect();
+    connection.Open(socketServ);
+    connection.Start();
+
+    connection.GetDesSetting(TPtrC(KIapNameSetting), iapName);
+
+    //connection.Stop();
+
+    iapName.ZeroTerminate();
+    QString strIapName((char*)iapName.Ptr());
+
+    int error = 0;
+    if(!qt_SetDefaultIapName(strIapName, error))
+        printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+
+    CleanupStack::PopAndDestroy(&connection);
+    CleanupStack::PopAndDestroy(&socketServ);
+
+    return strIapName;
+}
+
+static QString qt_CheckForActiveConnection() {
     TUint count;
-    TBool activeLanConnectionFound = EFalse;
 
     RSocketServ serv;
     CleanupClosePushL(serv);
@@ -130,84 +206,101 @@ static void qt_SetDefaultIapL()
     RConnection conn;
     CleanupClosePushL(conn);
 
-    User::LeaveIfError(serv.Connect());
-    User::LeaveIfError(conn.Open(serv));
+    serv.Connect();
+    conn.Open(serv);
 
     TConnectionInfoBuf connInfo;
 
     TBuf8<256> iapName;
     TBuf8<256> iapServiceType;
 
+    QString strIapName;
+
     if (conn.EnumerateConnections(count) == KErrNone) {
         if(count > 0) {
             for (TUint i = 1; i <= count; i++) {
-                // we will loop all active connections
-                // if we find one of the LAN type - will use it silently
-                // if not prompt thet user as other types
-                /// are more likely to be charged :(
                 if (conn.GetConnectionInfo(i, connInfo) == KErrNone) {
-                    if (conn.Attach(connInfo, RConnection::EAttachTypeNormal) == KErrNone) {
-                        conn.GetDesSetting(TPtrC(KIapNameSetting), iapName);
-                        conn.GetDesSetting(TPtrC(KIapServiceType), iapServiceType);
-                        if(iapServiceType.Find(_L8("LANService")) != KErrNotFound) {
-                            activeLanConnectionFound = ETrue;
-                            break;
-                        }
-                        // close & reopen from previous attach
-                        conn.Close();
-                        User::LeaveIfError(conn.Open(serv));
+                    RConnection tempConn;
+                    CleanupClosePushL(tempConn);
+                    tempConn.Open(serv);
+                    if (tempConn.Attach(connInfo, RConnection::EAttachTypeNormal) == KErrNone) {
+                       tempConn.GetDesSetting(TPtrC(KIapNameSetting), iapName);
+                       tempConn.GetDesSetting(TPtrC(KIapServiceType), iapServiceType);
+                       //tempConn.Stop();
+                       iapName.ZeroTerminate();
+		       iapServiceType.ZeroTerminate();
+
+//                        if(iapServiceType.Find(_L8("LANService")) != KErrNotFound) {
+//                            activeLanConnectionFound = ETrue;
+//                            break;
+//                        }
+			strIapName = QString((char*)iapName.Ptr());
+                        int error = 0;
+                        if(!qt_SetDefaultIapName(strIapName, error))
+                            printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+
+                        CleanupStack::PopAndDestroy(&tempConn);
+                        break;
                     }
                 }
             }
         }
     }
 
-    if (!activeLanConnectionFound) {
-        /*
-         * no active LAN connections yet
-         * offer IAP dialog to user
-         */
-        TCommDbConnPref prefs;
-        conn.Close(); // might be opened after attach
-        User::LeaveIfError(conn.Open(serv));
-        prefs.SetDialogPreference( ECommDbDialogPrefPrompt );
-        User::LeaveIfError(conn.Start(prefs));
-        conn.GetDesSetting(TPtrC(KIapNameSetting), iapName);
-        conn.GetDesSetting(TPtrC(KIapServiceType), iapServiceType);
-    }
-
-    // for some reason makes
-    // setting default more stable
-    conn.Stop();
-
-    // just in case ...
-    iapName.ZeroTerminate();
-    iapServiceType.ZeroTerminate();
-
-    QString iapNameValue((char*)iapName.Ptr());
-    QString iapServiceTypeValue((char*)iapServiceType.Ptr());
-
-    // save IAP name for latere user
-    // but only if (W)LAN service type
-    // and is not already in QSettings
-    if(iapServiceTypeValue.contains(QString("LANService"))) {
-        if(iapNames.contains(iapNameValue) && iapNames.first() == iapNameValue) {
-            // no need to update
-        } else {
-            // new selection alway on top
-            iapNames.removeAll(iapNameValue);
-            iapNames.prepend(iapNameValue);
-            writeIapNamesSettings(settings, iapNames);
-        }
-    }
-
-    struct ifreq ifReq;
-    strcpy(ifReq.ifr_name, (char*)iapName.Ptr());
-
-    User::LeaveIfError(setdefaultif(&ifReq));
+    //conn.Stop();
 
     CleanupStack::PopAndDestroy(&conn);
     CleanupStack::PopAndDestroy(&serv);
+
+    return strIapName;
+}
+
+static QString qt_CheckSettingsForConnection(QStringList& iapNames) {
+    for(int index = 0; index < iapNames.size(); ++index) {
+        QString strIapName = iapNames.at(index);
+        int error = 0;
+        if(!qt_SetDefaultIapName(strIapName, error)) {
+            printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+        } else {
+            return strIapName;
+        }
+    }
+    return QString("");
+}
+
+static void qt_SetDefaultIapL()
+{
+    // settings @ /c/data/.config/Trolltech.com
+    QSettings settings(QSettings::UserScope, qtOrganizationTag);
+    // populate iap name list
+    QStringList iapNames;
+    readIapNamesSettings(settings, iapNames);
+
+    QString iapNameValue;
+
+    iapNameValue = qt_CheckForActiveConnection();
+
+    if(!iapNameValue.isEmpty()) {
+        qt_SaveIapName(settings, iapNames, iapNameValue);
+        return;
+    }
+
+    iapNameValue = qt_CheckSettingsForConnection(iapNames);
+
+    if(!iapNameValue.isEmpty()) {
+        qt_SaveIapName(settings, iapNames, iapNameValue);
+        return;
+    }
+
+    /*
+     * no active LAN connections yet
+     * no IAP in settings
+     * offer IAP dialog to user
+     */
+    iapNameValue = qt_OfferIapDialog();
+    qt_SaveIapName(settings, iapNames, iapNameValue);
+    return;
+
 }
 
 static int qt_SetDefaultIap()
