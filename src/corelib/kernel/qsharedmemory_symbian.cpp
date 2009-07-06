@@ -134,8 +134,6 @@ bool QSharedMemoryPrivate::create(int size)
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 {
     // Grab a pointer to the memory block
-    TBool readOnly = (mode == QSharedMemory::ReadOnly ? true : false);
-
     if (!chunk.Handle()) {
         QString function = QLatin1String("QSharedMemory::handle");
         QString safeKey = makePlatformSafeKey(key);

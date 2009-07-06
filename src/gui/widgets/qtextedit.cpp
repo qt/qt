@@ -108,8 +108,9 @@ public:
 QTextEditPrivate::QTextEditPrivate()
     : control(0),
       autoFormatting(QTextEdit::AutoNone), tabChangesFocus(false),
-      lineWrap(QTextEdit::WidgetWidth), lineWrapColumnOrWidth(0), clickCausedFocus(0),
-      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), textFormat(Qt::AutoText)
+      lineWrap(QTextEdit::WidgetWidth), lineWrapColumnOrWidth(0),
+      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), clickCausedFocus(0),
+      textFormat(Qt::AutoText)
 {
     ignoreAutomaticScrollbarAdjustment = false;
     preferRichText = false;

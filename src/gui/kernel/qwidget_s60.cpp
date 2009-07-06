@@ -252,7 +252,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     }
 }
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
+void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool destroyOldWindow)
 {
     Q_Q(QWidget);
 
@@ -266,16 +266,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                    || type == Qt::Sheet
                    || (flags & Qt::MSWindowsFixedSizeDialogHint));
     bool desktop = (type == Qt::Desktop);
-    bool tool = (type == Qt::Tool || type == Qt::Drawer);
+    //bool tool = (type == Qt::Tool || type == Qt::Drawer);
 
     WId id = 0;
 
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
-
-    // always initialize
-    if (!window)
-        initializeWindow = true;
 
     TRect clientRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
     int sw = clientRect.Width();

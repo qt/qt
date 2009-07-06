@@ -72,7 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static WId autoGrabWindow = 0; // Not the same as QWidget::grab*()
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
 #endif
@@ -105,12 +104,12 @@ private:
     void MatoPrepareComplete(TInt aError);
     void MatoPlayComplete(TInt aError);
 private:
-    typedef enum TBeepState
+    typedef enum
         {
         EBeepNotPrepared,
         EBeepPrepared,
         EBeepPlaying
-        };
+        } TBeepState;
 private:
     CMdaAudioToneUtility* iToneUtil;
     TBeepState iState;
@@ -821,7 +820,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
         id->SetGloballyCapturing(true);
-        autoGrabWindow = id;
     }
 
     // popups are not focus-handled by the window system (the first
@@ -858,7 +856,6 @@ void QApplicationPrivate::closePopup(QWidget *popup)
             if (QWidgetPrivate::mouseGrabber != 0)
                 QWidgetPrivate::mouseGrabber->grabMouse();
 
-            autoGrabWindow = 0;
             if (QWidgetPrivate::keyboardGrabber != 0)
                 QWidgetPrivate::keyboardGrabber->grabKeyboard();
 

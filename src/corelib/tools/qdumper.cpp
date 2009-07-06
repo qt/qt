@@ -92,7 +92,7 @@ static void qProvokeSegFault()
     qCheckAccess(0);
 }
 
-static char qDumpInBuffer[100];
+//static char qDumpInBuffer[100];
 static char qDumpBuffer[1000];
 #ifdef Q_OS_WIN
 static char qDumpBuffer2[sizeof(qDumpBuffer) + 100];
@@ -162,7 +162,7 @@ QDumper::~QDumper()
 #else
     fprintf(stderr, "%d/done\n", token);
 #endif
-    qDumpInBuffer[0] = 0;
+    //qDumpInBuffer[0] = 0;
 }
 
 void QDumper::flush()
