@@ -956,6 +956,13 @@ void QMenuBar::setActiveAction(QAction *act)
 /*!
     Removes all the actions from the menu bar.
 
+    \note On Mac OS X, menu items that have been merged to the system
+    menu bar are not removed by this function. One way to handle this
+    would be to remove the extra actions yourself. You can set the
+    \l{QAction::MenuRole}{menu role} on the different menus, so that
+    you know ahead of time which menu items get merged and which do
+    not. Then decide what to recreate or remove yourself.
+
     \sa removeAction()
 */
 void QMenuBar::clear()
