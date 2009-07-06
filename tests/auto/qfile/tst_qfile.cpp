@@ -1033,11 +1033,7 @@ void tst_QFile::link()
     QVERIFY(QFile::link("tst_qfile.cpp", "myLink.lnk"));
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
-#ifdef Q_OS_WIN // on windows links are always absolute
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#else
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
@@ -1063,11 +1059,7 @@ void tst_QFile::linkToDir()
     // later fail...
     QVERIFY(info2.isSymLink());
 #endif
-#ifdef Q_OS_WIN // on windows links are alway absolute
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#else
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#endif
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
     QFile::remove("myLinkToDir.lnk");
     dir.rmdir("myDir");
@@ -1110,11 +1102,7 @@ void tst_QFile::readBrokenLink()
 #endif
     QFileInfo info2("myLink2.lnk");
     QVERIFY(info2.isSymLink());
-#ifdef Q_OS_WIN // on windows links are alway absolute
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#else
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#endif
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
 
     QVERIFY(QFile::link("ole/..", "myLink2.lnk"));
