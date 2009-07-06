@@ -1105,8 +1105,10 @@ void tst_QFile::readBrokenLink()
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
 
+#if !defined(Q_OS_SYMBIAN)
     QVERIFY(QFile::link("ole/..", "myLink2.lnk"));
     QCOMPARE(QFileInfo("myLink2.lnk").symLinkTarget(), QDir::currentPath());
+#endif
 }
 
 void tst_QFile::readTextFile_data()
