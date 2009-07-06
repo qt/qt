@@ -151,6 +151,8 @@ public:
     }
     void init();
 
+    int scrollerHeight() const;
+
     //item calculations
     mutable uint itemsDirty : 1;
     mutable uint maxIconWidth, tabWidth;
