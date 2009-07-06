@@ -99,6 +99,7 @@ symbian {
         DEFINES+=QT_MAKEDLL
         TARGET.CAPABILITY = All -Tcb        
     }
+    load(armcc_warnings)
 }
 win32-borland:INCLUDEPATH += kernel
 
