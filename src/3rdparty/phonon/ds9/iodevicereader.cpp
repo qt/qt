@@ -36,15 +36,7 @@ namespace Phonon
         //these mediatypes define a stream, its type will be autodetected by DirectShow
         static QVector<AM_MEDIA_TYPE> getMediaTypes()
         {
-            AM_MEDIA_TYPE mt;
-            mt.majortype = MEDIATYPE_Stream;
-            mt.bFixedSizeSamples = TRUE;
-            mt.bTemporalCompression = FALSE;
-            mt.lSampleSize = 1;
-            mt.formattype = GUID_NULL;
-            mt.pUnk = 0;
-            mt.cbFormat = 0;
-            mt.pbFormat = 0;
+            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_NULL, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
 
             QVector<AM_MEDIA_TYPE> ret;
             //normal auto-detect stream

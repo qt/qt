@@ -68,17 +68,7 @@ namespace Phonon
         static const QVector<AM_MEDIA_TYPE> audioMediaType()
         {
             QVector<AM_MEDIA_TYPE> ret;
-
-            AM_MEDIA_TYPE mt;
-            mt.majortype = MEDIATYPE_Audio;
-            mt.subtype = MEDIASUBTYPE_PCM;
-            mt.bFixedSizeSamples = 1;
-            mt.bTemporalCompression = 0;
-            mt.pUnk = 0;
-            mt.lSampleSize = 1;
-            mt.cbFormat = 0;
-            mt.pbFormat = 0;
-            mt.formattype = GUID_NULL;
+            AM_MEDIA_TYPE mt = { MEDIATYPE_Audio, MEDIASUBTYPE_PCM, 1, 0, 1, GUID_NULL, 0, 0, 0};
             ret << mt;
             return ret;
         }
