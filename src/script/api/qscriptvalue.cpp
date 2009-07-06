@@ -2045,8 +2045,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     JSC::MarkedArgumentBuffer applyArgs;
     if (!array.isUndefinedOrNull()) {
         if (!array.isObject()) {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-//            return JSC::throwError(exec, JSC::TypeError);
+            return eng_p->scriptValueFromJSCValue(JSC::throwError(exec, JSC::TypeError, "Arguments must be an array"));
         }
         if (JSC::asObject(array)->classInfo() == &JSC::Arguments::info)
             JSC::asArguments(array)->fillArgList(exec, applyArgs);
@@ -2057,8 +2056,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
             for (unsigned i = 0; i < length; ++i)
                 applyArgs.append(JSC::asArray(array)->get(exec, i));
         } else {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-//            return JSC::throwError(exec, JSC::TypeError);
+            return eng_p->scriptValueFromJSCValue(JSC::throwError(exec, JSC::TypeError, "Arguments must be an array"));
         }
     }
 

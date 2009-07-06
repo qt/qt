@@ -215,6 +215,12 @@ public:
     qint64 objectId() const;
 
 private:
+    // force compile error, prevent QScriptValue(bool) to be called
+    inline QScriptValue(void *) { Q_ASSERT(false); }
+    // force compile error, prevent QScriptValue(QScriptEngine*, bool) to be called
+    inline QScriptValue(QScriptEngine *, void *) { Q_ASSERT(false); }
+
+private:
     QScriptValuePrivate *d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)

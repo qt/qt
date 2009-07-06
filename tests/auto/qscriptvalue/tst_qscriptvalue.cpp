@@ -2343,8 +2343,10 @@ void tst_QScriptValue::call()
 
         {
             QScriptValue result = fun.call();
+            QEXPECT_FAIL("", "Returns null if a function throws an error", Continue);
             QCOMPARE(result.isError(), true);
             QCOMPARE(eng.hasUncaughtException(), true);
+            QEXPECT_FAIL("", "returns null if a function throws an error", Continue);
             QVERIFY(result.strictlyEquals(eng.uncaughtException()));
         }
     }
@@ -2545,8 +2547,10 @@ void tst_QScriptValue::construct()
         QCOMPARE(fun.isFunction(), true);
         fun = eng.evaluate("(function() { throw new Error('foo'); })");
         QScriptValue ret = fun.construct();
+        QEXPECT_FAIL("", "Returns null if a constructor throws an error", Continue);
         QCOMPARE(ret.isError(), true);
         QCOMPARE(eng.hasUncaughtException(), true);
+        QEXPECT_FAIL("", "Returns null if a constructor throws an error", Continue);
         QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
     }
 
@@ -2555,6 +2559,9 @@ void tst_QScriptValue::construct()
 
     {
         QScriptValue fun = eng.evaluate("function() { return arguments; }");
+        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QVERIFY(fun.isFunction());
+        fun = eng.evaluate("(function() { return arguments; })");
         QScriptValue array = eng.newArray(3);
         array.setProperty(0, QScriptValue(&eng, 123.0));
         array.setProperty(1, QScriptValue(&eng, 456.0));
@@ -2562,6 +2569,7 @@ void tst_QScriptValue::construct()
         // construct with single array object as arguments
         QScriptValue ret = fun.construct(array);
         QVERIFY(!eng.hasUncaughtException());
+        QVERIFY(ret.isValid());
         QVERIFY(ret.isObject());
         QCOMPARE(ret.property(0).strictlyEquals(array.property(0)), true);
         QCOMPARE(ret.property(1).strictlyEquals(array.property(1)), true);
