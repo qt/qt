@@ -252,7 +252,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     }
 }
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
+void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool destroyOldWindow)
 {
     Q_Q(QWidget);
 

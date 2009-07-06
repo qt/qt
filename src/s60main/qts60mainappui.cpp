@@ -170,6 +170,8 @@ void CQtS60MainAppUi::OpenCMainCallBack()
 {
     TInt ret;
     TRAPD(err, ret = QtMainWrapper());
+    Q_UNUSED(ret);
+    Q_UNUSED(err);
     Exit();
 }
 
