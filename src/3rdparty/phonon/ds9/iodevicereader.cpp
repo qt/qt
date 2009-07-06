@@ -40,7 +40,6 @@ namespace Phonon
 
             QVector<AM_MEDIA_TYPE> ret;
             //normal auto-detect stream
-            mt.subtype = MEDIASUBTYPE_NULL;
             ret << mt;
             //AVI stream
             mt.subtype = MEDIASUBTYPE_Avi;
