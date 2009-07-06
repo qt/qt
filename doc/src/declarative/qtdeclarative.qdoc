@@ -81,11 +81,13 @@
 
     QML Reference:
     \list
+    \o \l {QML Format}
     \o \l {elements}{Qml Elements}
     \endlist
 
     C++ Reference:
     \list
+    \o \l {Extending QML}
     \o \l {qtbinding}{C++ Data Binding}
     \o \l {cppitem}{C++ Components}
     \endlist

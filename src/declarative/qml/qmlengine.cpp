@@ -707,13 +707,13 @@ QmlEngine *qmlEngine(const QObject *obj)
     return context?context->engine():0;
 }
 
-QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
+QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
     QmlExtendedDeclarativeData *edata = 
         QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
 
     QObject *rv = edata->attachedProperties.value(id);
-    if (rv)
+    if (rv || !create)
         return rv;
 
     QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
