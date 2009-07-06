@@ -260,8 +260,9 @@ static QString qt_CheckForActiveConnection() {
 }
 
 static QString qt_CheckSettingsForConnection(QStringList& iapNames) {
+    QString strIapName;
     for(int index = 0; index < iapNames.size(); ++index) {
-        QString strIapName = iapNames.at(index);
+        strIapName = iapNames.at(index);
         int error = 0;
         if(!qt_SetDefaultIapName(strIapName, error)) {
             //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
