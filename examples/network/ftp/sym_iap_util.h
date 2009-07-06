@@ -188,8 +188,10 @@ static QString qt_OfferIapDialog() {
     QString strIapName((char*)iapName.Ptr());
 
     int error = 0;
-    if(!qt_SetDefaultIapName(strIapName, error))
-        printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+    if(!qt_SetDefaultIapName(strIapName, error)) {
+        //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+        strIapName = QString("");
+    }
 
     CleanupStack::PopAndDestroy(&connection);
     CleanupStack::PopAndDestroy(&socketServ);
@@ -236,8 +238,10 @@ static QString qt_CheckForActiveConnection() {
 //                        }
 			strIapName = QString((char*)iapName.Ptr());
                         int error = 0;
-                        if(!qt_SetDefaultIapName(strIapName, error))
-                            printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+                        if(!qt_SetDefaultIapName(strIapName, error)) {
+                            //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+                            strIapName = QString("");
+                        }
 
                         CleanupStack::PopAndDestroy(&tempConn);
                         break;
@@ -260,12 +264,13 @@ static QString qt_CheckSettingsForConnection(QStringList& iapNames) {
         QString strIapName = iapNames.at(index);
         int error = 0;
         if(!qt_SetDefaultIapName(strIapName, error)) {
-            printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+            //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+            strIapName = QString("");
         } else {
             return strIapName;
         }
     }
-    return QString("");
+    return strIapName;
 }
 
 static void qt_SetDefaultIapL()
