@@ -424,7 +424,7 @@ bool ClassObject::hasInstance(JSC::ExecState *exec, JSC::JSValue value, JSC::JSV
         return JSC::JSObject::hasInstance(exec, value, proto);
     QScriptValueList args;
     QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
-    args << eng_p->scriptValueFromJSCValue(value) << eng_p->scriptValueFromJSCValue(proto);
+    args << eng_p->scriptValueFromJSCValue(this) << eng_p->scriptValueFromJSCValue(value);
     QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
     return result.toBool();
 }

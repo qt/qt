@@ -865,7 +865,7 @@ bool QScriptValue::instanceOf(const QScriptValue &other) const
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue jscProto = eng_p->scriptValueToJSCValue(other.property(QLatin1String("prototype")));
     if (!jscProto)
-        return false;
+        jscProto = JSC::jsUndefined();
     JSC::ExecState *exec = eng_p->globalObject->globalExec();
     JSC::JSValue jscOther = eng_p->scriptValueToJSCValue(other);
     return JSC::asObject(jscOther)->hasInstance(exec, d->jscValue, jscProto);
