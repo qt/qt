@@ -155,11 +155,9 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
     }
 
     if (tst_Databases::isMSAccess(db)) {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 number)"));
-    } else if (db.driverName().startsWith("QIBASE")) {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 number)"));
     } else {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
     }
 }
 
@@ -555,7 +553,7 @@ void tst_Q3SqlCursor::unicode()
 
 void tst_Q3SqlCursor::precision()
 {
-    static const QString precStr = "1.23456789012345";
+    static const QString precStr = QLatin1String("1.23456789012345");
     static const double precDbl = 2.23456789012345;
 
     QFETCH( QString, dbName );
@@ -574,7 +572,10 @@ void tst_Q3SqlCursor::precision()
 
     QVERIFY_SQL(cur, select());
     QVERIFY( cur.next() );
-    QCOMPARE( cur.value( 0 ).asString(), QString( precStr ) );
+    if(!tst_Databases::isSqlServer(db))
+        QCOMPARE( cur.value( 0 ).asString(), precStr );
+    else
+        QCOMPARE( cur.value( 0 ).asString(), precStr.left(precStr.size()-1) );
     QVERIFY( cur.next() );
     QCOMPARE( cur.value( 0 ).asDouble(), precDbl );
 }
