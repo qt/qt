@@ -3057,12 +3057,15 @@ void tst_QUrl::nameprep_testsuite_data()
         << QString() << 0 << 0;
 }
 
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern QString qt_nameprep(const QString &source);
 QT_END_NAMESPACE
+#endif
 
 void tst_QUrl::nameprep_testsuite()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, in);
     QFETCH(QString, out);
     QFETCH(QString, profile);
@@ -3082,6 +3085,7 @@ void tst_QUrl::nameprep_testsuite()
     QEXPECT_FAIL("Larger test (expanding)",
                  "Investigate further", Continue);
     QCOMPARE(qt_nameprep(in), out);
+#endif
 }
 
 void tst_QUrl::ace_testsuite_data()

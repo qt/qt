@@ -44,9 +44,7 @@
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
-#ifndef QT_NO_OPENGL
 #include <qgl.h>
-#endif
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
@@ -78,7 +76,6 @@ tst_QGL::~tst_QGL()
 {
 }
 
-#ifndef QT_NO_OPENGL
 class MyGLContext : public QGLContext
 {
 public:
@@ -96,13 +93,10 @@ public:
     bool autoBufferSwap() const { return QGLWidget::autoBufferSwap(); }
     void setAutoBufferSwap(bool on) { QGLWidget::setAutoBufferSwap(on); }
 };
-#endif
+
 // Testing get/set functions
 void tst_QGL::getSetCheck()
 {
-#ifdef QT_NO_OPENGL
-    QSKIP("QGL not yet supported", SkipAll);
-#else
     if (!QGLFormat::hasOpenGL())
         QSKIP("QGL not supported on this platform", SkipAll);
 
@@ -246,10 +240,9 @@ void tst_QGL::getSetCheck()
     QCOMPARE(false, obj3.autoBufferSwap());
     obj3.setAutoBufferSwap(true);
     QCOMPARE(true, obj3.autoBufferSwap());
-#endif
 }
 
-#ifndef QT_NO_OPENGL
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern QGLFormat::OpenGLVersionFlags qOpenGLVersionFlagsFromString(const QString &versionString);
 QT_END_NAMESPACE
@@ -257,9 +250,7 @@ QT_END_NAMESPACE
 
 void tst_QGL::openGLVersionCheck()
 {
-#ifdef QT_NO_OPENGL
-    QSKIP("QGL not yet supported", SkipAll);
-#else
+#ifdef QT_BUILD_INTERNAL
     if (!QGLFormat::hasOpenGL())
         QSKIP("QGL not supported on this platform", SkipAll);
 
@@ -366,9 +357,6 @@ public:
 
 void tst_QGL::graphicsViewClipping()
 {
-#ifdef QT_NO_OPENGL
-    QSKIP("QGL not supported", SkipAll);
-#else
     const int size = 64;
     UnclippedWidget *widget = new UnclippedWidget;
     widget->setFixedSize(size, size);
@@ -403,7 +391,6 @@ void tst_QGL::graphicsViewClipping()
     p.end();
 
     QCOMPARE(image, expected);
-#endif
 }
 
 void tst_QGL::partialGLWidgetUpdates_data()
@@ -420,9 +407,6 @@ void tst_QGL::partialGLWidgetUpdates_data()
 
 void tst_QGL::partialGLWidgetUpdates()
 {
-#ifdef QT_NO_OPENGL
-    QSKIP("QGL not yet supported", SkipAll);
-#else
     if (!QGLFormat::hasOpenGL())
         QSKIP("QGL not supported on this platform", SkipAll);
 
@@ -466,7 +450,6 @@ void tst_QGL::partialGLWidgetUpdates()
         QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
     else
         QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
-#endif
 }
 
 QTEST_MAIN(tst_QGL)

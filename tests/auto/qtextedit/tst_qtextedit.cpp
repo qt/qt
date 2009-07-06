@@ -1460,6 +1460,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.canInsertCallCount, 0);
     QCOMPARE(ed.insertCallCount, 0);
 
+#ifdef QT_BUILD_INTERNAL
     QTextControl *control = qFindChild<QTextControl *>(&ed);
     QVERIFY(control);
 
@@ -1474,6 +1475,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.createMimeDataCallCount, 1);
     QCOMPARE(ed.canInsertCallCount, 1);
     QCOMPARE(ed.insertCallCount, 1);
+#endif
 }
 
 void tst_QTextEdit::ctrlEnterShouldInsertLineSeparator_NOT()
@@ -2066,6 +2068,7 @@ void tst_QTextEdit::cursorRect()
 
 void tst_QTextEdit::setDocumentPreservesPalette()
 {
+#ifdef QT_BUILD_INTERNAL
     QTextControl *control = qFindChild<QTextControl *>(ed);
     QVERIFY(control);
 
@@ -2085,6 +2088,7 @@ void tst_QTextEdit::setDocumentPreservesPalette()
     QVERIFY(control->document() == newDoc);
     QVERIFY(whitePal.color(QPalette::Active, QPalette::Text)
             == control->palette().color(QPalette::Active, QPalette::Text));
+#endif
 }
 
 class PublicTextEdit : public QTextEdit
