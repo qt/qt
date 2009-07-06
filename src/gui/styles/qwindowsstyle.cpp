@@ -118,7 +118,8 @@ static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  2; // menu item ver text margin
 static const int windowsArrowHMargin     =  6; // arrow horizontal margin
 static const int windowsTabSpacing       = 12; // space between text and tab
-static const int windowsCheckMarkHMargin =  2; // horiz. margins of check mark
+// Save some space and avoid warning.
+//static const int windowsCheckMarkHMargin =  2; // horiz. margins of check mark
 static const int windowsRightBorder      = 15; // right border on windows
 static const int windowsCheckMarkWidth   = 12; // checkmarks width on windows
 

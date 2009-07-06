@@ -75,9 +75,6 @@ QT_BEGIN_NAMESPACE
 #define QGradient_StretchToDevice 0x10000000
 #define QPaintEngine_OpaqueBackground 0x40000000
 
-// use the same rounding as in qrasterizer.cpp (6 bit fixed point)
-static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-
 // #define QT_DEBUG_DRAW
 #ifdef QT_DEBUG_DRAW
 bool qt_show_painter_debug_output = true;

@@ -118,8 +118,6 @@ public:
     QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
-static const uint initial_cache_size = 128;
-
 QSQLiteResultPrivate::QSQLiteResultPrivate(QSQLiteResult* res) : q(res), access(0),
     stmt(0), skippedStatus(false), skipRow(false), utf8(false), precisionPolicy(QSql::HighPrecision)
 {
