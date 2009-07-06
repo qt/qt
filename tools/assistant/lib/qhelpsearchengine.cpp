@@ -96,6 +96,7 @@ private:
         delete indexWriter;
     }
 
+
     int hitsCount() const
     {
         int count = 0;
@@ -107,12 +108,9 @@ private:
 
     QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const
     {
-        QList<QHelpSearchEngine::SearchHit> returnValue;
-        if (indexReader) {
-            for (int i = start; i < end && i < hitsCount(); ++i)
-                returnValue.append(indexReader->hit(i));
-        }
-        return returnValue;
+        return indexReader ?
+                indexReader->hits(start, end) :
+                QList<QHelpSearchEngine::SearchHit>();
     }
 
     void updateIndex(bool reindex = false)
