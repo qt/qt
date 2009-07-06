@@ -70,7 +70,6 @@ QHelpSearchIndexReader::~QHelpSearchIndexReader()
 {
     mutex.lock();
     this->m_cancel = true;
-    waitCondition.wakeOne();
     mutex.unlock();
 
     wait();

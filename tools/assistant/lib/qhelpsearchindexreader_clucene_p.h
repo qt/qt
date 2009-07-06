@@ -106,8 +106,6 @@ private:
 private:
     mutable QMutex mutex;
     QList<QHelpSearchEngine::SearchHit> hitList;
-    QWaitCondition waitCondition;
-
     bool m_cancel;
     QString m_collectionFile;
     QList<QHelpSearchQuery> m_query;
