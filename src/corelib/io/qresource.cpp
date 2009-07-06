@@ -263,9 +263,8 @@ QResourcePrivate::ensureInitialized() const
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
 
-    bool found = false;
     if(path.startsWith(QLatin1Char('/'))) {
-        found = that->load(path);
+        that->load(path);
     } else {
         QMutexLocker lock(resourceMutex());
         QStringList searchPaths = *resourceSearchPaths();
@@ -273,7 +272,6 @@ QResourcePrivate::ensureInitialized() const
         for(int i = 0; i < searchPaths.size(); ++i) {
             const QString searchPath(searchPaths.at(i) + QLatin1Char('/') + path);
             if(that->load(searchPath)) {
-                found = true;
                 that->absoluteFilePath = QLatin1Char(':') + searchPath;
                 break;
             }

@@ -5719,7 +5719,6 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         engine.justify(line);
     }
     QFixed x = QFixed::fromReal(p.x());
-    QFixed ox = x;
 
     for (int i = 0; i < nItems; ++i) {
         int item = visualOrder[i];

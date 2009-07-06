@@ -2821,16 +2821,12 @@ void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
         sectionIndicator = new QLabel(viewport);
     }
 
-    int x, y, w, h;
+    int w, h;
     int p = q->sectionViewportPosition(section);
     if (orientation == Qt::Horizontal) {
-        x = p;
-        y = 0;
         w = q->sectionSize(section);
         h = viewport->height();
     } else {
-        x = 0;
-        y = p;
         w = viewport->width();
         h = q->sectionSize(section);
     }
