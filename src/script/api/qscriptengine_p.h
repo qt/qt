@@ -28,6 +28,7 @@
 #ifndef QT_NO_SCRIPT
 
 #include <QtCore/qhash.h>
+#include <QtCore/qset.h>
 
 #include "RefPtr.h"
 #include "Structure.h"
@@ -157,6 +158,9 @@ public:
     QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
+
+    QSet<QString> importedExtensions;
+    QSet<QString> extensionsBeingImported;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

@@ -44,6 +44,12 @@
 
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qpluginloader.h>
+#include <QtCore/qset.h>
+#include "qscriptextensioninterface.h"
 #endif
 
 Q_DECLARE_METATYPE(QScriptValue)
@@ -2519,8 +2525,68 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
 */
 QStringList QScriptEngine::availableExtensions() const
 {
-    qWarning("QScriptEngine::availableExtensions() not implemented");
+#if defined(QT_NO_QOBJECT) || defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     return QStringList();
+#else
+    QCoreApplication *app = QCoreApplication::instance();
+    if (!app)
+        return QStringList();
+
+    QSet<QString> result;
+
+    QObjectList staticPlugins = QPluginLoader::staticInstances();
+    for (int i = 0; i < staticPlugins.size(); ++i) {
+        QScriptExtensionInterface *iface;
+        iface = qobject_cast<QScriptExtensionInterface*>(staticPlugins.at(i));
+        if (iface) {
+            QStringList keys = iface->keys();
+            for (int j = 0; j < keys.count(); ++j)
+                result << keys.at(j);
+        }
+    }
+
+    QStringList libraryPaths = app->libraryPaths();
+    for (int i = 0; i < libraryPaths.count(); ++i) {
+        QString libPath = libraryPaths.at(i) + QDir::separator() + QLatin1String("script");
+        QDir dir(libPath);
+        if (!dir.exists())
+            continue;
+
+        // look for C++ plugins
+        QFileInfoList files = dir.entryInfoList(QDir::Files);
+        for (int j = 0; j < files.count(); ++j) {
+            QFileInfo entry = files.at(j);
+            QString filePath = entry.canonicalFilePath();
+            QPluginLoader loader(filePath);
+            QScriptExtensionInterface *iface;
+            iface = qobject_cast<QScriptExtensionInterface*>(loader.instance());
+            if (iface) {
+                QStringList keys = iface->keys();
+                for (int k = 0; k < keys.count(); ++k)
+                    result << keys.at(k);
+            }
+        }
+
+        // look for scripts
+        QString initDotJs = QLatin1String("__init__.js");
+        QList<QFileInfo> stack;
+        stack << dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        while (!stack.isEmpty()) {
+            QFileInfo entry = stack.takeLast();
+            QDir dd(entry.canonicalFilePath());
+            if (dd.exists(initDotJs)) {
+                QString rpath = dir.relativeFilePath(dd.canonicalPath());
+                QStringList components = rpath.split(QLatin1Char('/'));
+                result << components.join(QLatin1String("."));
+                stack << dd.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+            }
+        }
+    }
+
+    QStringList lst = result.toList();
+    qSort(lst);
+    return lst;
+#endif
 }
 
 /*!
@@ -2533,8 +2599,10 @@ QStringList QScriptEngine::availableExtensions() const
 */
 QStringList QScriptEngine::importedExtensions() const
 {
-    qWarning("QScriptEngine::importedExtensions() not implemented");
-    return QStringList();
+    Q_D(const QScriptEngine);
+    QStringList lst = d->importedExtensions.toList();
+    qSort(lst);
+    return lst;
 }
 
 /*! \fn QScriptValue QScriptEngine::toScriptValue(const T &value)
