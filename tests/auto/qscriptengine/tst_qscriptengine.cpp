@@ -163,7 +163,6 @@ void tst_QScriptEngine::currentContext()
 
 void tst_QScriptEngine::pushPopContext()
 {
-    QSKIP("{push,pop}context() not implemented", SkipAll);
     QScriptEngine eng;
     QScriptContext *globalCtx = eng.currentContext();
     QScriptContext *ctx = eng.pushContext();

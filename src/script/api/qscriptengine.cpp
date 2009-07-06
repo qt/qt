@@ -49,6 +49,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qpluginloader.h>
 #include <QtCore/qset.h>
+#include <QtCore/qtextstream.h>
 #include "qscriptextensioninterface.h"
 #endif
 
@@ -1936,8 +1937,16 @@ QScriptContext *QScriptEngine::currentContext() const
 */
 QScriptContext *QScriptEngine::pushContext()
 {
-    qWarning("QScriptEngine::pushContext() not implemented");
-    return 0;
+    Q_D(QScriptEngine);
+    QScriptContextPrivate *ctx_p = new QScriptContextPrivate(
+        /*callee=*/0, /*thisObject=*/d->scriptValueToJSCValue(globalObject()),
+        /*args=*/JSC::ArgList(), /*calledAsConstructor=*/false,
+        currentContext(), d);
+    d->currentContext = QScriptContextPrivate::create(*ctx_p);
+#ifndef Q_SCRIPT_NO_EVENT_NOTIFY
+//    notifyContextPush(); TODO
+#endif
+    return d->currentContext;
 }
 
 /*!
@@ -1948,7 +1957,15 @@ QScriptContext *QScriptEngine::pushContext()
 */
 void QScriptEngine::popContext()
 {
-    qWarning("QScriptEngine::popContext() not implemented");
+    Q_D(QScriptEngine);
+    if (!d->currentContext->parentContext())
+        return;
+    QScriptContext *popped = d->currentContext;
+    d->currentContext = popped->parentContext();
+    delete popped;
+#ifndef Q_SCRIPT_NO_EVENT_NOTIFY
+//    notifyContextPop(); TODO
+#endif
 }
 
 /*!
@@ -2509,9 +2526,187 @@ void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 */
 QScriptValue QScriptEngine::importExtension(const QString &extension)
 {
-    qWarning("QScriptEngine::importExtension() not implemented");
+#if defined(QT_NO_QOBJECT) || defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     Q_UNUSED(extension);
-    return QScriptValue();
+#else
+    Q_D(QScriptEngine);
+    if (d->importedExtensions.contains(extension))
+        return undefinedValue(); // already imported
+
+    QScriptContext *context = currentContext();
+    QCoreApplication *app = QCoreApplication::instance();
+    if (!app)
+        return context->throwError(QLatin1String("No application object"));
+
+    QObjectList staticPlugins = QPluginLoader::staticInstances();
+    QStringList libraryPaths = app->libraryPaths();
+    QString dot = QLatin1String(".");
+    QStringList pathComponents = extension.split(dot);
+    QString initDotJs = QLatin1String("__init__.js");
+
+    QString ext;
+    for (int i = 0; i < pathComponents.count(); ++i) {
+        if (!ext.isEmpty())
+            ext.append(dot);
+        ext.append(pathComponents.at(i));
+        if (d->importedExtensions.contains(ext))
+            continue; // already imported
+
+        if (d->extensionsBeingImported.contains(ext)) {
+            return context->throwError(QString::fromLatin1("recursive import of %0")
+                                       .arg(extension));
+        }
+        d->extensionsBeingImported.insert(ext);
+
+        QScriptExtensionInterface *iface = 0;
+        QString initjsContents;
+        QString initjsFileName;
+
+        // look for the extension in static plugins
+        for (int j = 0; j < staticPlugins.size(); ++j) {
+            iface = qobject_cast<QScriptExtensionInterface*>(staticPlugins.at(j));
+            if (!iface)
+                continue;
+            if (iface->keys().contains(ext))
+                break; // use this one
+            else
+                iface = 0; // keep looking
+        }
+
+        {
+            // look for __init__.js resource
+            QString path = QString::fromLatin1(":/qtscriptextension");
+            for (int j = 0; j <= i; ++j) {
+                path.append(QLatin1Char('/'));
+                path.append(pathComponents.at(j));
+            }
+            path.append(QLatin1Char('/'));
+            path.append(initDotJs);
+            QFile file(path);
+            if (file.open(QIODevice::ReadOnly)) {
+                QTextStream ts(&file);
+                initjsContents = ts.readAll();
+                initjsFileName = path;
+                file.close();
+            }
+        }
+
+        if (!iface && initjsContents.isEmpty()) {
+            // look for the extension in library paths
+            for (int j = 0; j < libraryPaths.count(); ++j) {
+                QString libPath = libraryPaths.at(j) + QDir::separator() + QLatin1String("script");
+                QDir dir(libPath);
+                if (!dir.exists(dot))
+                    continue;
+
+                // look for C++ plugin
+                QFileInfoList files = dir.entryInfoList(QDir::Files);
+                for (int k = 0; k < files.count(); ++k) {
+                    QFileInfo entry = files.at(k);
+                    QString filePath = entry.canonicalFilePath();
+                    QPluginLoader loader(filePath);
+                    iface = qobject_cast<QScriptExtensionInterface*>(loader.instance());
+                    if (iface) {
+                        if (iface->keys().contains(ext))
+                            break; // use this one
+                        else
+                            iface = 0; // keep looking
+                    }
+                }
+
+                // look for __init__.js in the corresponding dir
+                QDir dirdir(libPath);
+                bool dirExists = dirdir.exists();
+                for (int k = 0; dirExists && (k <= i); ++k)
+                    dirExists = dirdir.cd(pathComponents.at(k));
+                if (dirExists && dirdir.exists(initDotJs)) {
+                    QFile file(dirdir.canonicalPath()
+                               + QDir::separator() + initDotJs);
+                    if (file.open(QIODevice::ReadOnly)) {
+                        QTextStream ts(&file);
+                        initjsContents = ts.readAll();
+                        initjsFileName = file.fileName();
+                        file.close();
+                    }
+                }
+
+                if (iface || !initjsContents.isEmpty())
+                    break;
+            }
+        }
+
+        if (!iface && initjsContents.isEmpty()) {
+            d->extensionsBeingImported.remove(ext);
+            return context->throwError(
+                QString::fromLatin1("Unable to import %0: no such extension")
+                .arg(extension));
+        }
+
+        // initialize the extension in a new context
+        QScriptContext *ctx = pushContext();
+        ctx->setThisObject(globalObject());
+#if 0 // ### implement me
+        ctx->setActivationObject(newActivationObject());
+        QScriptObject *activation_data = ctx_p->m_activation.m_object_value;
+        activation_data->m_scope = globalObject();
+
+        activation_data->m_members.resize(4);
+        activation_data->m_values.resize(4);
+        activation_data->m_members[0].object(
+            nameId(QLatin1String("__extension__")), 0,
+            QScriptValue::ReadOnly | QScriptValue::Undeletable);
+        activation_data->m_values[0] = QScriptValueImpl(this, ext);
+        activation_data->m_members[1].object(
+            nameId(QLatin1String("__setupPackage__")), 1, 0);
+        activation_data->m_values[1] = createFunction(__setupPackage__, 0, 0);
+        activation_data->m_members[2].object(
+            nameId(QLatin1String("__all__")), 2, 0);
+        activation_data->m_values[2] = undefinedValue();
+        activation_data->m_members[3].object(
+            nameId(QLatin1String("__postInit__")), 3, 0);
+        activation_data->m_values[3] = undefinedValue();
+#endif
+
+        // the script is evaluated first
+        if (!initjsContents.isEmpty()) {
+            QScriptValue ret = evaluate(initjsContents, initjsFileName);
+            if (hasUncaughtException()) {
+                popContext();
+                d->extensionsBeingImported.remove(ext);
+                return ret;
+            }
+        }
+
+        // next, the C++ plugin is called
+        if (iface) {
+            iface->initialize(ext, this);
+            if (hasUncaughtException()) {
+                QScriptValue ret = uncaughtException(); // ctx_p->returnValue();
+                popContext();
+                d->extensionsBeingImported.remove(ext);
+                return ret;
+            }
+        }
+
+        // if the __postInit__ function has been set, we call it
+        QScriptValue postInit = ctx->activationObject().property(QLatin1String("__postInit__"));
+        if (postInit.isFunction()) {
+            postInit.call(globalObject());
+            if (hasUncaughtException()) {
+                QScriptValue ret = uncaughtException(); // ctx_p->returnValue();
+                popContext();
+                d->extensionsBeingImported.remove(ext);
+                return ret;
+            }
+        }
+
+        popContext();
+
+        d->importedExtensions.insert(ext);
+        d->extensionsBeingImported.remove(ext);
+    } // for (i)
+#endif // QT_NO_QOBJECT
+    return undefinedValue();
 }
 
 /*!
