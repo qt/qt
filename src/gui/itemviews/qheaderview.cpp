@@ -524,12 +524,12 @@ QSize QHeaderView::sizeHint() const
     Q_D(const QHeaderView);
     if (d->cachedSizeHint.isValid())
         return d->cachedSizeHint;
-    d->cachedSizeHint = QSize(0, 0);
-    d->executePostedLayout();
+    d->cachedSizeHint = QSize(0, 0); //reinitialize the cached size hint
+    const int sectionCount = count();
 
     // get size hint for the first n sections
     int i = 0;
-    for (int checked = 0; checked < 100 && i < d->sectionCount; ++i) {
+    for (int checked = 0; checked < 100 && i < sectionCount; ++i) {
         if (isSectionHidden(i))
             continue;
         checked++;
@@ -537,8 +537,8 @@ QSize QHeaderView::sizeHint() const
         d->cachedSizeHint = d->cachedSizeHint.expandedTo(hint);
     }
     // get size hint for the last n sections
-    i = qMax(i, d->sectionCount - 100 );
-    for (int j = d->sectionCount - 1, checked = 0; j > i && checked < 100; --j) {
+    i = qMax(i, sectionCount - 100 );
+    for (int j = sectionCount - 1, checked = 0; j >= i && checked < 100; --j) {
         if (isSectionHidden(j))
             continue;
         checked++;
