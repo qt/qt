@@ -710,12 +710,12 @@ inline int QLineControl::cursorBlinkPeriod() const
     return m_blinkPeriod;
 }
 
-QString QLineControl::cancelText() const
+inline QString QLineControl::cancelText() const
 {
     return m_cancelText;
 }
 
-void QLineControl::setCancelText(QString s)
+inline void QLineControl::setCancelText(QString s)
 {
     m_cancelText = s;
 }
