@@ -61,7 +61,7 @@ class Q_GUI_EXPORT QValidator : public QObject
 {
     Q_OBJECT
 public:
-    explicit QValidator(QObject * parent);
+    explicit QValidator(QObject * parent=0);
     ~QValidator();
 
     enum State {
@@ -100,7 +100,7 @@ class Q_GUI_EXPORT QIntValidator : public QValidator
     Q_PROPERTY(int top READ top WRITE setTop)
 
 public:
-    explicit QIntValidator(QObject * parent);
+    explicit QIntValidator(QObject * parent=0);
     QIntValidator(int bottom, int top, QObject * parent);
     ~QIntValidator();
 
@@ -120,7 +120,7 @@ public:
 #endif
 
 private:
-    Q_DISABLE_COPY(QIntValidator)
+    /*Q_DISABLE_COPY(QIntValidator)*/
 
     int b;
     int t;
