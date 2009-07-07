@@ -81,7 +81,7 @@ template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                int scale, bool matrixRotShear, bool simplePen,
-                               bool dfbHandledClip,
+                               bool dfbHandledClip, bool unsupportedCompositionMode,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three)
@@ -98,7 +98,8 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     dbg << "scale" << scale
         << "matrixRotShear" << matrixRotShear
         << "simplePen" << simplePen
-        << "dfbHandledClip" << dfbHandledClip;
+        << "dfbHandledClip" << dfbHandledClip
+        << "unsupportedCompositionMode" << unsupportedCompositionMode;
 
     const T1 *t1 = ptr(one);
     const T2 *t2 = ptr(two);
@@ -124,6 +125,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->unsupportedCompositionMode, \
                            #one, one, #two, two, #three, three);        \
     if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
         return;
@@ -138,6 +140,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->unsupportedCompositionMode, \
                            #one, one, #two, two, #three, three);
 #else
 #define RASTERFALLBACK(op, one, two, three)
@@ -244,9 +247,6 @@ public:
     inline void updateClip();
     void systemStateChanged();
 
-    void begin(QPaintDevice *device);
-    void end();
-
     static IDirectFBSurface *getSurface(const QImage &img, bool *release);
 
 #ifdef QT_DIRECTFB_IMAGECACHE
@@ -299,7 +299,34 @@ QDirectFBPaintEngine::~QDirectFBPaintEngine()
 bool QDirectFBPaintEngine::begin(QPaintDevice *device)
 {
     Q_D(QDirectFBPaintEngine);
-    d->begin(device);
+    d->lastLockedHeight = -1;
+    if (device->devType() == QInternal::CustomRaster) {
+        d->dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
+    } else if (device->devType() == QInternal::Pixmap) {
+        QPixmapData *data = static_cast<QPixmap*>(device)->pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
+        QDirectFBPixmapData *dfbPixmapData = static_cast<QDirectFBPixmapData*>(data);
+        d->dfbDevice = static_cast<QDirectFBPaintDevice*>(dfbPixmapData);
+    }
+
+    if (d->dfbDevice)
+        d->surface = d->dfbDevice->directFBSurface();
+
+    if (!d->surface) {
+        qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
+               device->devType());
+    }
+    d->lockedMemory = 0;
+
+    d->surface->GetSize(d->surface, &d->fbWidth, &d->fbHeight);
+
+    d->setTransform(QTransform());
+    d->antialiased = false;
+    d->setOpacity(255);
+    d->setCompositionMode(state()->compositionMode());
+    d->dirtyClip = true;
+    d->setPen(state()->pen);
+
     const bool status = QRasterPaintEngine::begin(device);
 
     // XXX: QRasterPaintEngine::begin() resets the capabilities
@@ -311,7 +338,13 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
 bool QDirectFBPaintEngine::end()
 {
     Q_D(QDirectFBPaintEngine);
-    d->end();
+    d->unlock();
+    d->dfbDevice = 0;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
+    d->surface->ReleaseSource(d->surface);
+#endif
+    d->surface->SetClip(d->surface, NULL);
+    d->surface = 0;
     return QRasterPaintEngine::end();
 }
 
@@ -873,48 +906,6 @@ void QDirectFBPaintEnginePrivate::setTransform(const QTransform &m)
     }
 }
 
-void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
-{
-    lastLockedHeight = -1;
-    if (device->devType() == QInternal::CustomRaster)
-        dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
-    else if (device->devType() == QInternal::Pixmap) {
-        QPixmapData *data = static_cast<QPixmap*>(device)->pixmapData();
-        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
-        QDirectFBPixmapData* dfbPixmapData = static_cast<QDirectFBPixmapData*>(data);
-        dfbDevice = static_cast<QDirectFBPaintDevice*>(dfbPixmapData);
-    }
-
-    if (dfbDevice)
-        surface = dfbDevice->directFBSurface();
-
-    if (!surface) {
-        qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
-               device->devType());
-    }
-    lockedMemory = 0;
-
-    surface->GetSize(surface, &fbWidth, &fbHeight);
-
-    setTransform(QTransform());
-    antialiased = false;
-    setOpacity(255);
-    setCompositionMode(q->state()->compositionMode());
-    dirtyClip = true;
-    setPen(q->state()->pen);
-}
-
-void QDirectFBPaintEnginePrivate::end()
-{
-    lockedMemory = 0;
-    dfbDevice = 0;
-#if (Q_DIRECTFB_VERSION >= 0x010000)
-    surface->ReleaseSource(surface);
-#endif
-    surface->SetClip(surface, NULL);
-    surface = 0;
-}
-
 void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
 {
     pen = p;
@@ -1071,6 +1062,8 @@ void QDirectFBPaintEnginePrivate::blit(const QRectF &dest, IDirectFBSurface *s, 
 {
     const QRect sr = src.toRect();
     const QRect dr = transform.mapRect(dest).toRect();
+    if (dr.isEmpty())
+        return;
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
     DFBResult result;
 

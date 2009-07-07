@@ -1128,6 +1128,25 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 24
 
+    When linking a library, \c qmake relies on the underlying platform to know
+    what other libraries this library links against. However, if linking
+    statically, \c qmake will not get this information unless we use the following
+    \c CONFIG options:
+
+     \table 95%
+     \header \o Option   \o Description
+     \row    \o create_prl  \o This option enables \c qmake to track these
+        dependencies. When this option is enabled, \c qmake will create a file
+        ending in \c .prl which will save meta-information about the library
+        (see \l{LibDepend}{Library Dependencies} for more info).
+     \row    \o link_prl    \o When this is enabled, \c qmake will process all
+        libraries linked to by the application and find their meta-information
+        (see \l{LibDepend}{Library Dependencies} for more info).
+     \endtable
+
+    Please note that \c create_prl is required when \i {building} a static library,
+    while \c link_prl is required when \i {using} a static library.
+
     On Windows (or if Qt is configured with \c{-debug_and_release}, adding the
     \c build_all option to the \c CONFIG variable makes this rule the default
     when building the project, and installation targets will be created for

@@ -252,7 +252,6 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 
 static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
 {
-    surface->SetBlittingFlags(surface, DSBLIT_NOFX);
     const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
     surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
 }
@@ -365,6 +364,7 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         if (winOpacity != opacity)
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
+#endif
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
@@ -386,7 +386,6 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
             dfbSurface->Flip(dfbSurface, &dfbReg, flipFlags);
         }
     }
-#endif
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
     ++frames;

@@ -81,8 +81,8 @@ namespace QUnicodeTables {
         ushort wordBreak : 8;
         ushort sentenceBreak : 8;
     };
-    Q_CORE_EXPORT const Properties* QT_FASTCALL properties(uint ucs4);
-    Q_CORE_EXPORT const Properties* QT_FASTCALL properties(ushort ucs2);
+    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);
+    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);
 
     // See http://www.unicode.org/reports/tr24/tr24-5.html
 

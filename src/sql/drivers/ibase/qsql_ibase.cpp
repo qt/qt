@@ -1583,7 +1583,7 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
            "b.RDB$FIELD_SCALE, b.RDB$FIELD_PRECISION, a.RDB$NULL_FLAG "
            "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
            "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-           "AND a.RDB$RELATION_NAME = '") + tablename.toUpper() + QLatin1String("' "
+           "AND UPPER(a.RDB$RELATION_NAME) = '") + tablename.toUpper() + QLatin1String("' "
            "ORDER BY a.RDB$FIELD_POSITION"));
 
     while (q.next()) {
@@ -1616,7 +1616,7 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
     q.exec(QLatin1String("SELECT a.RDB$INDEX_NAME, b.RDB$FIELD_NAME, d.RDB$FIELD_TYPE, d.RDB$FIELD_SCALE "
            "FROM RDB$RELATION_CONSTRAINTS a, RDB$INDEX_SEGMENTS b, RDB$RELATION_FIELDS c, RDB$FIELDS d "
            "WHERE a.RDB$CONSTRAINT_TYPE = 'PRIMARY KEY' "
-           "AND a.RDB$RELATION_NAME = '") + table.toUpper() +
+           "AND UPPER(a.RDB$RELATION_NAME) = '") + table.toUpper() +
            QLatin1String(" 'AND a.RDB$INDEX_NAME = b.RDB$INDEX_NAME "
            "AND c.RDB$RELATION_NAME = a.RDB$RELATION_NAME "
            "AND c.RDB$FIELD_NAME = b.RDB$FIELD_NAME "

@@ -3797,6 +3797,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     }
                 }
 
+                // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
+                // like Mac OS X (probably others too), can optimize their views by not
+                // dispatching mouse move events. We have attributes to control hover,
+                // and mouse tracking, but as long as we are deciding to implement this
+                // feature without choice of opting-in or out, you ALWAYS have to have
+                // tracking enabled. Therefore, the other properties give a false sense of
+                // performance enhancement.
                 if (e->type() == QEvent::MouseMove && mouse->buttons() == 0) {
                     d->toolTipWidget = w;
                     d->toolTipPos = relpos;
