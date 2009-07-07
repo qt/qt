@@ -490,9 +490,6 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     viewport->setGeometry(QStyle::visualRect(opt.direction, opt.rect, viewportRect)); // resize the viewport last
 }
 
-// ### Fix for 4.4, talk to Bjoern E or Girish.
-void QAbstractScrollAreaPrivate::scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
-
 /*!
     \internal
 

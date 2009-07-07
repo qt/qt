@@ -52,7 +52,6 @@
 #include <qscrollbar.h>
 #include <qpainter.h>
 #include <qdebug.h>
-#include <qpainterpath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -896,6 +895,15 @@ QList<int> QColumnView::columnWidths() const
 /*!
     \reimp
 */
+void QColumnView::rowsInserted(const QModelIndex &parent, int start, int end)
+{
+    QAbstractItemView::rowsInserted(parent, start, end);
+    d_func()->checkColumnCreation(parent);
+}
+
+/*!
+    \reimp
+*/
 void QColumnView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_D(QColumnView);
@@ -1044,6 +1052,41 @@ QColumnViewPrivate::QColumnViewPrivate()
 
 QColumnViewPrivate::~QColumnViewPrivate()
 {
+}
+
+/*!
+    \internal
+
+  */
+void QColumnViewPrivate::_q_columnsInserted(const QModelIndex &parent, int start, int end)
+{
+    QAbstractItemViewPrivate::_q_columnsInserted(parent, start, end);
+    checkColumnCreation(parent);
+}
+
+/*!
+    \internal
+
+    Makes sure we create a corresponding column as a result of changing the model.
+
+  */
+void QColumnViewPrivate::checkColumnCreation(const QModelIndex &parent)
+{
+    if (parent == q_func()->currentIndex() && model->hasChildren(parent)) {
+        //the parent has children and is the current
+        //let's try to find out if there is already a mapping that is good
+        for (int i = 0; i < columns.count(); ++i) {
+            QAbstractItemView *view = columns.at(i);
+            if (view->rootIndex() == parent) {
+                if (view == previewColumn) {
+                    //let's recreate the parent
+                    closeColumns(parent, false);
+                    createColumn(parent, true /*show*/);
+                }
+                break;
+            }
+        }
+    }
 }
 
 /*!

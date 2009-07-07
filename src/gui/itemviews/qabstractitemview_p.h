@@ -109,12 +109,13 @@ public:
 
     void init();
 
-    void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
-    void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-    void _q_columnsRemoved(const QModelIndex &parent, int start, int end);
-    void _q_columnsInserted(const QModelIndex &parent, int start, int end);
-    void _q_modelDestroyed();
-    void _q_layoutChanged();
+    virtual void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
+    virtual void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    virtual void _q_columnsRemoved(const QModelIndex &parent, int start, int end);
+    virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
+    virtual void _q_modelDestroyed();
+    virtual void _q_layoutChanged();
+    
     void _q_fetchMore();
 
     bool shouldEdit(QAbstractItemView::EditTrigger trigger, const QModelIndex &index) const;

@@ -148,10 +148,13 @@ public:
     void closeColumns(const QModelIndex &parent = QModelIndex(), bool build = false);
     void doLayout();
     void setPreviewWidget(QWidget *widget);
+    void checkColumnCreation(const QModelIndex &parent);
+
 
     void _q_gripMoved(int offset);
     void _q_changeCurrentColumn();
     void _q_clicked(const QModelIndex &index);
+    void _q_columnsInserted(const QModelIndex &parent, int start, int end);
 
     QList<QAbstractItemView*> columns;
     QVector<int> columnSizes; // used during init and corner moving
