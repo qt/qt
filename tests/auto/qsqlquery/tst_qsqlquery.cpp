@@ -188,6 +188,9 @@ private slots:
     void task_205701_data() { generic_data("QMYSQL"); }
     void task_205701();
 
+    void task_233829_data() { generic_data(); }
+    void task_233829();
+
 
 private:
     // returns all database connections
@@ -301,7 +304,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     tablenames <<  qTableName( "qtest_lockedtable" );
 
     tablenames <<  qTableName( "Planet" );
-    
+
     tablenames << qTableName( "task_250026" );
 
     tst_Databases::safeDropTables( db, tablenames );
@@ -2813,6 +2816,31 @@ void tst_QSqlQuery::task_234422()
 }
 
 #endif
+
+void tst_QSqlQuery::task_233829()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    if (!db.driverName().startsWith( "QPSQL" )) {
+        QSKIP( "This is a PostgreSQL specific test", SkipSingle );
+    }
+
+    QSqlQuery q( db );
+    QString tableName = qTableName("task_233829");
+    q.exec("DROP TABLE " + tableName);
+    QVERIFY_SQL(q,exec("CREATE TABLE " + tableName  + " (dbl1 double precision,dbl2 double precision) without oids;"));
+
+    QString queryString("INSERT INTO " + tableName +"(dbl1, dbl2) VALUES(?,?)");
+
+    double k = 0.0;
+    QVERIFY_SQL(q,prepare(queryString));
+    q.bindValue(0,0.0 / k); // nan
+    q.bindValue(1,0.0 / k); // nan
+    QVERIFY_SQL(q,exec());
+    q.exec("DROP TABLE " + tableName);
+}
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"
