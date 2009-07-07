@@ -638,6 +638,8 @@ void GlobalObject::mark()
         engine->qmetaobjectPrototype->mark();
     if (engine->variantPrototype)
         engine->variantPrototype->mark();
+    if (engine->classObjectPrototype)
+        engine->classObjectPrototype->mark();
 
     {
         QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
