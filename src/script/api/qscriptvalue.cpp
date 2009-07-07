@@ -1887,6 +1887,8 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     } else if (callType == JSC::CallTypeHost) {
         result = callData.native.function(exec, JSC::asObject(callee), jscThisObject, jscArgs);
     }
+    if (exec->hadException())
+        eng_p->uncaughtException = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
 }
 
@@ -1964,8 +1966,10 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     } else if (callType == JSC::CallTypeHost) {
         result = callData.native.function(exec, JSC::asObject(callee), jscThisObject, applyArgs);
     }
-    if (exec->hadException())
+    if (exec->hadException()) {
+        eng_p->uncaughtException = exec->exception();
         result = exec->exception();
+    }
     return eng_p->scriptValueFromJSCValue(result);
 }
 
@@ -2014,6 +2018,8 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     } else if (constructType == JSC::ConstructTypeHost) {
         result = constructData.native.function(exec, JSC::asObject(callee), jscArgs);
     }
+    if (exec->hadException())
+        eng_p->uncaughtException = exec->exception();
     return eng_p->scriptValueFromJSCValue(result);
 }
 
@@ -2069,8 +2075,10 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     } else if (constructType == JSC::ConstructTypeHost) {
         result = constructData.native.function(exec, JSC::asObject(callee), applyArgs);
     }
-    if (exec->hadException())
+    if (exec->hadException()) {
+        eng_p->uncaughtException = exec->exception();
         result = exec->exception();
+    }
     return eng_p->scriptValueFromJSCValue(result);
 }
 

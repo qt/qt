@@ -141,6 +141,7 @@ public:
 
     JSC::JSGlobalObject *globalObject;
     QScriptContext *currentContext;
+    JSC::JSValue uncaughtException;
 
     QScript::QObjectPrototype *qobjectPrototype;
     WTF::RefPtr<JSC::Structure> qobjectWrapperObjectStructure;

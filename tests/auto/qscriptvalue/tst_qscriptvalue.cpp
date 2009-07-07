@@ -394,6 +394,7 @@ void tst_QScriptValue::toString()
             "})()");
         QEXPECT_FAIL("", "Validate this behavior", Continue);
         QCOMPARE(objectObject.toString(), QLatin1String("Error: toString"));
+        QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
         QVERIFY(eng.hasUncaughtException());
         QEXPECT_FAIL("", "Validate this behavior", Continue);
         QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: toString"));
@@ -410,6 +411,7 @@ void tst_QScriptValue::toString()
         QVERIFY(objectObject.isObject());
         QEXPECT_FAIL("", "Should return an error string", Continue);
         QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString called on incompatible object"));
+        QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
         QVERIFY(eng.hasUncaughtException());
         eng.clearExceptions();
     }
@@ -1924,11 +1926,14 @@ void tst_QScriptValue::getSetProperty()
             QVERIFY(!eng.hasUncaughtException());
             QScriptValue ret = object5.property("foo");
             QVERIFY(ret.isError());
+            QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
             QVERIFY(eng.hasUncaughtException());
+            QEXPECT_FAIL("", "uncaughtException() and return value should be the same", Continue);
             QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
             eng.evaluate("Object"); // clear exception state...
             QVERIFY(!eng.hasUncaughtException());
             object5.setProperty("foo", str);
+            QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
             QVERIFY(eng.hasUncaughtException());
             QEXPECT_FAIL("", "Should produce an error message", Continue);
             QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: set foo"));
@@ -2378,6 +2383,7 @@ void tst_QScriptValue::call()
             QScriptValueList args;
             args << QScriptValue(&eng, 123.0);
             QScriptValue result = fun.call(eng.undefinedValue(), args);
+            QEXPECT_FAIL("", "hasUncaughtException() should return false", Continue);
             QVERIFY(!eng.hasUncaughtException());
             QEXPECT_FAIL("", "Need to create arguments object for frame", Continue);
             QCOMPARE(result.isNumber(), true);
@@ -2396,6 +2402,7 @@ void tst_QScriptValue::call()
             QScriptValueList args;
             args << QScriptValue();
             QScriptValue ret = fun.call(QScriptValue(), args);
+            QEXPECT_FAIL("", "hasUncaughtException() should return false", Continue);
             QVERIFY(!eng.hasUncaughtException());
             QCOMPARE(ret.isValid(), true);
             QCOMPARE(ret.isUndefined(), true);

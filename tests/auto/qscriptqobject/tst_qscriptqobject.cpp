@@ -1437,7 +1437,6 @@ void tst_QScriptExtQObject::callQtInvokable()
         {
             QVERIFY(!m_engine->hasUncaughtException());
             QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQDirArg({})");
-            QEXPECT_FAIL("", "Doesn't work", Continue);
             QVERIFY(m_engine->hasUncaughtException());
             QVERIFY(ret.isError());
             QCOMPARE(ret.toString(), QString::fromLatin1("Error: No path"));
