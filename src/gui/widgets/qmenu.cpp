@@ -1355,8 +1355,7 @@ QMenu::~QMenu()
 
     if (d->eventLoop)
         d->eventLoop->exit();
-    if (d->tornPopup)
-        d->tornPopup->close();
+    hideTearOffMenu();
 }
 
 /*!
@@ -1567,8 +1566,8 @@ void QMenu::setTearOffEnabled(bool b)
     Q_D(QMenu);
     if (d->tearoff == b)
         return;
-    if (!b && d->tornPopup)
-        d->tornPopup->close();
+    if (!b)
+        hideTearOffMenu();
     d->tearoff = b;
 
     d->itemsDirty = true;
@@ -1603,8 +1602,8 @@ bool QMenu::isTearOffMenuVisible() const
 */
 void QMenu::hideTearOffMenu()
 {
-    if (d_func()->tornPopup)
-        d_func()->tornPopup->close();
+    if (QWidget *w = d_func()->tornPopup)
+        w->close();
 }
 
 
@@ -1719,8 +1718,6 @@ QSize QMenu::sizeHint() const
         if (rect.right() >= s.width())
             s.setWidth(rect.x() + rect.width());
     }
-    if (d->tearoff)
-        s.rheight() += style()->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, this);
     // Note that the action rects calculated above already include
     // the top and left margins, so we only need to add margins for
     // the bottom and right.
