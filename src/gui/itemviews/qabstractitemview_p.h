@@ -116,7 +116,7 @@ public:
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
     
-    void _q_fetchMore();
+    void fetchMore();
 
     bool shouldEdit(QAbstractItemView::EditTrigger trigger, const QModelIndex &index) const;
     bool shouldForwardEvent(QAbstractItemView::EditTrigger trigger, const QEvent *event) const;
@@ -388,6 +388,7 @@ public:
 
 private:
     mutable QBasicTimer delayedLayout;
+    mutable QBasicTimer fetchMoreTimer;
 };
 
 QT_BEGIN_INCLUDE_NAMESPACE
