@@ -4401,6 +4401,7 @@ void QClipData::initialize()
 
                 int y = 0;
                 int firstInBand = 0;
+                count = 0;
                 while (firstInBand < numRects) {
                     const int currMinY = rects.at(firstInBand).y();
                     const int currMaxY = currMinY + rects.at(firstInBand).height();
