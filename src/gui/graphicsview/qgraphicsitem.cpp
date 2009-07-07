@@ -821,6 +821,42 @@ void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTran
     }
 }
 
+void QGraphicsItemPrivate::updateSceneTransformFromParent()
+{
+    if (parent) {
+        Q_ASSERT(!parent->d_ptr->dirtySceneTransform);
+        if (parent->d_ptr->sceneTransformTranslateOnly) {
+            sceneTransform = QTransform::fromTranslate(parent->d_ptr->sceneTransform.dx() + pos.x(),
+                                                       parent->d_ptr->sceneTransform.dy() + pos.y());
+        } else {
+            sceneTransform = parent->d_ptr->sceneTransform;
+            sceneTransform.translate(pos.x(), pos.y());
+        }
+        if (transformData) {
+            sceneTransform = transformData->computedFullTransform(&sceneTransform);
+            sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+        } else {
+            sceneTransformTranslateOnly = parent->d_ptr->sceneTransformTranslateOnly;
+        }
+    } else if (!transformData) {
+        sceneTransform = QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransformTranslateOnly = 1;
+    } else if (transformData->onlyTransform) {
+        sceneTransform = transformData->transform;
+        if (!pos.isNull())
+            sceneTransform *= QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    } else if (pos.isNull()) {
+        sceneTransform = transformData->computedFullTransform();
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    } else {
+        sceneTransform = QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransform = transformData->computedFullTransform(&sceneTransform);
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    }
+    dirtySceneTransform = 0;
+}
+
 /*!
     \internal
 
@@ -3145,7 +3181,8 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 */
 QMatrix QGraphicsItem::sceneMatrix() const
 {
-    return sceneTransform().toAffine();
+    d_ptr->ensureSceneTransform();
+    return d_ptr->sceneTransform.toAffine();
 }
 
 
@@ -3168,16 +3205,7 @@ QMatrix QGraphicsItem::sceneMatrix() const
 */
 QTransform QGraphicsItem::sceneTransform() const
 {
-    if (d_ptr->dirtySceneTransform) {
-        // This item and all its descendants have dirty scene transforms.
-        // We're about to validate this item's scene transform, so we have to
-        // invalidate all the children; otherwise there's no way for the descendants
-        // to detect that the ancestor has changed.
-        d_ptr->invalidateChildrenSceneTransform();
-    }
-
-    QGraphicsItem *that = const_cast<QGraphicsItem *>(this);
-    d_ptr->ensureSceneTransformRecursive(&that);
+    d_ptr->ensureSceneTransform();
     return d_ptr->sceneTransform;
 }
 
@@ -3207,8 +3235,10 @@ QTransform QGraphicsItem::sceneTransform() const
 QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) const
 {
     // Ensure we return the standard transform if we're not untransformable.
-    if (!d_ptr->itemIsUntransformable())
-        return sceneTransform() * viewportTransform;
+    if (!d_ptr->itemIsUntransformable()) {
+        d_ptr->ensureSceneTransform();
+        return d_ptr->sceneTransform * viewportTransform;
+    }
 
     // Find the topmost item that ignores view transformations.
     const QGraphicsItem *untransformedAncestor = this;
@@ -3227,7 +3257,8 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     }
 
     // First translate the base untransformable item.
-    QPointF mappedPoint = (untransformedAncestor->sceneTransform() * viewportTransform).map(QPointF(0, 0));
+    untransformedAncestor->d_ptr->ensureSceneTransform();
+    QPointF mappedPoint = (untransformedAncestor->d_ptr->sceneTransform * viewportTransform).map(QPointF(0, 0));
 
     // COMBINE
     QTransform matrix = QTransform::fromTranslate(mappedPoint.x(), mappedPoint.y());
@@ -3320,8 +3351,11 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     // Find the closest common ancestor. If the two items don't share an
     // ancestor, then the only way is to combine their scene transforms.
     const QGraphicsItem *commonAncestor = commonAncestorItem(other);
-    if (!commonAncestor)
-        return sceneTransform() * other->sceneTransform().inverted(ok);
+    if (!commonAncestor) {
+        d_ptr->ensureSceneTransform();
+        other->d_ptr->ensureSceneTransform();
+        return d_ptr->sceneTransform * other->d_ptr->sceneTransform.inverted(ok);
+    }
 
     // If the two items are cousins (in sibling branches), map both to the
     // common ancestor, and combine the two transforms.
@@ -3716,7 +3750,13 @@ QRectF QGraphicsItem::sceneBoundingRect() const
 
     QRectF br = boundingRect();
     br.translate(offset);
-    return !parentItem ? br : parentItem->sceneTransform().mapRect(br);
+    if (!parentItem)
+        return br;
+    if (parentItem->d_ptr->hasTranslateOnlySceneTransform()) {
+        br.translate(parentItem->d_ptr->sceneTransform.dx(), parentItem->d_ptr->sceneTransform.dy());
+        return br;
+    }
+    return parentItem->d_ptr->sceneTransform.mapRect(br);
 }
 
 /*!
@@ -4484,9 +4524,22 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
     }
 
     // COMBINE my transform with the parent's scene transform.
-    sceneTransform = parent ? parent->d_ptr->sceneTransform : QTransform();
-    combineTransformFromParent(&sceneTransform);
-    dirtySceneTransform = 0;
+    updateSceneTransformFromParent();
+    Q_ASSERT(!dirtySceneTransform);
+}
+
+void QGraphicsItemPrivate::ensureSceneTransform()
+{
+    if (dirtySceneTransform) {
+        // This item and all its descendants have dirty scene transforms.
+        // We're about to validate this item's scene transform, so we have to
+        // invalidate all the children; otherwise there's no way for the descendants
+        // to detect that the ancestor has changed.
+        invalidateChildrenSceneTransform();
+    }
+
+    QGraphicsItem *that = q_func();
+    ensureSceneTransformRecursive(&that);
 }
 
 /*!
@@ -4827,7 +4880,9 @@ QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 */
 QPointF QGraphicsItem::mapToScene(const QPointF &point) const
 {
-    return sceneTransform().map(point);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return QPointF(point.x() + d_ptr->sceneTransform.dx(), point.y() + d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(point);
 }
 
 /*!
@@ -4894,7 +4949,9 @@ QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 */
 QPolygonF QGraphicsItem::mapToScene(const QRectF &rect) const
 {
-    return sceneTransform().map(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(rect);
 }
 
 /*!
@@ -4967,7 +5024,9 @@ QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 */
 QRectF QGraphicsItem::mapRectToScene(const QRectF &rect) const
 {
-    return sceneTransform().mapRect(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.mapRect(rect);
 }
 
 /*!
@@ -5041,7 +5100,9 @@ QRectF QGraphicsItem::mapRectFromParent(const QRectF &rect) const
 */
 QRectF QGraphicsItem::mapRectFromScene(const QRectF &rect) const
 {
-    return sceneTransform().inverted().mapRect(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().mapRect(rect);
 }
 
 /*!
@@ -5093,7 +5154,9 @@ QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 */
 QPolygonF QGraphicsItem::mapToScene(const QPolygonF &polygon) const
 {
-    return sceneTransform().map(polygon);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return polygon.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(polygon);
 }
 
 /*!
@@ -5138,7 +5201,9 @@ QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 */
 QPainterPath QGraphicsItem::mapToScene(const QPainterPath &path) const
 {
-    return sceneTransform().map(path);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return path.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(path);
 }
 
 /*!
@@ -5199,7 +5264,9 @@ QPointF QGraphicsItem::mapFromParent(const QPointF &point) const
 */
 QPointF QGraphicsItem::mapFromScene(const QPointF &point) const
 {
-    return sceneTransform().inverted().map(point);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return QPointF(point.x() - d_ptr->sceneTransform.dx(), point.y() - d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(point);
 }
 
 /*!
@@ -5267,7 +5334,9 @@ QPolygonF QGraphicsItem::mapFromParent(const QRectF &rect) const
 */
 QPolygonF QGraphicsItem::mapFromScene(const QRectF &rect) const
 {
-    return sceneTransform().inverted().map(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(rect);
 }
 
 /*!
@@ -5317,7 +5386,9 @@ QPolygonF QGraphicsItem::mapFromParent(const QPolygonF &polygon) const
 */
 QPolygonF QGraphicsItem::mapFromScene(const QPolygonF &polygon) const
 {
-    return sceneTransform().inverted().map(polygon);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return polygon.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(polygon);
 }
 
 /*!
@@ -5360,7 +5431,9 @@ QPainterPath QGraphicsItem::mapFromParent(const QPainterPath &path) const
 */
 QPainterPath QGraphicsItem::mapFromScene(const QPainterPath &path) const
 {
-    return sceneTransform().inverted().map(path);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return path.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(path);
 }
 
 /*!
@@ -6492,7 +6565,12 @@ void QGraphicsItem::prepareGeometryChange()
         // _q_processDirtyItems is called before _q_emitUpdated.
         if ((scenePrivate->connectedSignals & scenePrivate->changedSignalMask)
             || scenePrivate->views.isEmpty()) {
-            d_ptr->scene->update(sceneTransform().mapRect(boundingRect()));
+            if (d_ptr->hasTranslateOnlySceneTransform()) {
+                d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),
+                                                               d_ptr->sceneTransform.dy()));
+            } else {
+                d_ptr->scene->update(d_ptr->sceneTransform.mapRect(boundingRect()));
+            }
         }
     }
 

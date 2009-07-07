@@ -4228,6 +4228,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     QTransform transform(Qt::Uninitialized);
     QTransform *transformPtr = 0;
+    bool translateOnlyTransform = false;
 #define ENSURE_TRANSFORM_PTR \
     if (!transformPtr) { \
         Q_ASSERT(!itemIsUntransformable); \
@@ -4237,6 +4238,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             transformPtr = &transform; \
         } else { \
             transformPtr = &item->d_ptr->sceneTransform; \
+            translateOnlyTransform = item->d_ptr->sceneTransformTranslateOnly; \
         } \
     }
 
@@ -4248,10 +4250,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         transform = item->deviceTransform(viewTransform ? *viewTransform : QTransform());
         transformPtr = &transform;
     } else if (item->d_ptr->dirtySceneTransform) {
-        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                                          : QTransform();
-        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
-        item->d_ptr->dirtySceneTransform = 0;
+        item->d_ptr->updateSceneTransformFromParent();
+        Q_ASSERT(!item->d_ptr->dirtySceneTransform);
         wasDirtyParentSceneTransform = true;
     }
 
@@ -4260,7 +4260,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (drawItem) {
         const QRectF brect = adjustedItemBoundingRect(item);
         ENSURE_TRANSFORM_PTR
-        QRect viewBoundingRect = transformPtr->mapRect(brect).toRect();
+        QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toRect()
+                                                        : transformPtr->mapRect(brect).toRect();
         item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect) : !viewBoundingRect.isEmpty();
@@ -4416,13 +4417,45 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 }
 
 static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate *item,
-                                const QRectF &rect, const QTransform &xform)
+                                const QRectF &rect, bool itemIsUntransformable)
 {
     Q_ASSERT(view);
     Q_ASSERT(item);
-    if (item->hasBoundingRegionGranularity)
+
+    QGraphicsItem *itemq = static_cast<QGraphicsItem *>(item->q_ptr);
+    QGraphicsView *viewq = static_cast<QGraphicsView *>(view->q_ptr);
+
+    if (itemIsUntransformable) {
+        const QTransform xform = itemq->deviceTransform(viewq->viewportTransform());
+        if (!item->hasBoundingRegionGranularity)
+            return view->updateRect(xform.mapRect(rect).toRect());
         return view->updateRegion(xform.map(QRegion(rect.toRect())));
-    return view->updateRect(xform.mapRect(rect).toRect());
+    }
+
+    if (item->sceneTransformTranslateOnly && view->identityMatrix) {
+        const qreal dx = item->sceneTransform.dx();
+        const qreal dy = item->sceneTransform.dy();
+        if (!item->hasBoundingRegionGranularity) {
+            QRectF r(rect);
+            r.translate(dx - view->horizontalScroll(), dy - view->verticalScroll());
+            return view->updateRect(r.toRect());
+        }
+        QRegion r(rect.toRect());
+        r.translate(qRound(dx) - view->horizontalScroll(), qRound(dy) - view->verticalScroll());
+        return view->updateRegion(r);
+    }
+
+    if (!viewq->isTransformed()) {
+        if (!item->hasBoundingRegionGranularity)
+            return view->updateRect(item->sceneTransform.mapRect(rect).toRect());
+        return view->updateRegion(item->sceneTransform.map(QRegion(rect.toRect())));
+    }
+
+    QTransform xform = item->sceneTransform;
+    xform *= viewq->viewportTransform();
+    if (!item->hasBoundingRegionGranularity)
+        return view->updateRect(xform.mapRect(rect).toRect());
+    return view->updateRegion(xform.map(QRegion(rect.toRect())));
 }
 
 void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren,
@@ -4460,11 +4493,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     bool wasDirtyParentSceneTransform = item->d_ptr->dirtySceneTransform;
     const bool itemIsUntransformable = item->d_ptr->itemIsUntransformable();
     if (wasDirtyParentSceneTransform && !itemIsUntransformable) {
-        // Calculate the full scene transform for this item.
-        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                                          : QTransform();
-        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
-        item->d_ptr->dirtySceneTransform = 0;
+        item->d_ptr->updateSceneTransformFromParent();
+        Q_ASSERT(!item->d_ptr->dirtySceneTransform);
     }
 
     const bool wasDirtyParentViewBoundingRects = item->d_ptr->paintedViewBoundingRectsNeedRepaint;
@@ -4479,8 +4509,14 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     if (item->d_ptr->geometryChanged) {
         // Update growingItemsBoundingRect.
-        if (!hasSceneRect)
-            growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
+        if (!hasSceneRect) {
+            if (item->d_ptr->sceneTransformTranslateOnly) {
+                growingItemsBoundingRect |= item->boundingRect().translated(item->d_ptr->sceneTransform.dx(),
+                                                                            item->d_ptr->sceneTransform.dy());
+            } else {
+                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
+            }
+        }
         item->d_ptr->geometryChanged = 0;
     }
 
@@ -4493,7 +4529,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
-            q->update(item->d_ptr->sceneTransform.mapRect(itemBoundingRect));
+            if (item->d_ptr->sceneTransformTranslateOnly) {
+                q->update(itemBoundingRect.translated(item->d_ptr->sceneTransform.dx(),
+                                                      item->d_ptr->sceneTransform.dy()));
+            } else {
+                q->update(item->d_ptr->sceneTransform.mapRect(itemBoundingRect));
+            }
         } else {
             QRectF dirtyRect;
             bool uninitializedDirtyRect = true;
@@ -4536,18 +4577,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 if (dirtyRect.isEmpty())
                     continue; // Discard updates outside the bounding rect.
 
-                bool valid = false;
-                if (itemIsUntransformable) {
-                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect,
-                                         item->deviceTransform(view->viewportTransform()));
-                } else if (!view->isTransformed()) {
-                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect, item->d_ptr->sceneTransform);
-                } else {
-                    QTransform deviceTransform = item->d_ptr->sceneTransform;
-                    deviceTransform *= view->viewportTransform();
-                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect, deviceTransform);
-                }
-                if (!valid)
+                if (!updateHelper(viewPrivate, item->d_ptr, dirtyRect, itemIsUntransformable))
                     paintedViewBoundingRect = QRect();
             }
         }

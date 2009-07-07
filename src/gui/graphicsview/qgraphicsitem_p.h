@@ -164,6 +164,7 @@ public:
         ignoreOpacity(0),
         acceptTouchEvents(0),
         acceptedTouchBeginEvent(0),
+        sceneTransformTranslateOnly(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -194,6 +195,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void updateSceneTransformFromParent();
 
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
@@ -303,6 +305,13 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+    void ensureSceneTransform();
+
+    inline bool hasTranslateOnlySceneTransform()
+    {
+        ensureSceneTransform();
+        return sceneTransformTranslateOnly;
+    }
 
     inline void invalidateChildrenSceneTransform()
     {
@@ -469,7 +478,8 @@ public:
     quint32 ignoreOpacity : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
-    quint32 unused : 10; // feel free to use
+    quint32 sceneTransformTranslateOnly : 1;
+    quint32 unused : 9; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
@@ -500,6 +510,10 @@ struct QGraphicsItemPrivate::TransformData {
         if (onlyTransform) {
             if (!postmultiplyTransform)
                 return transform;
+            if (postmultiplyTransform->isIdentity())
+                return transform;
+            if (transform.isIdentity())
+                return *postmultiplyTransform;
             QTransform x(transform);
             x *= *postmultiplyTransform;
             return x;

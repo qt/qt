@@ -1864,7 +1864,12 @@ void QGraphicsView::fitInView(const QRectF &rect, Qt::AspectRatioMode aspectRati
 void QGraphicsView::fitInView(const QGraphicsItem *item, Qt::AspectRatioMode aspectRatioMode)
 {
     QPainterPath path = item->isClipped() ? item->clipPath() : item->shape();
-    fitInView(item->sceneTransform().map(path).boundingRect(), aspectRatioMode);
+    if (item->d_ptr->hasTranslateOnlySceneTransform()) {
+        path.translate(item->d_ptr->sceneTransform.dx(), item->d_ptr->sceneTransform.dy());
+        fitInView(path.boundingRect(), aspectRatioMode);
+    } else {
+        fitInView(item->d_ptr->sceneTransform.map(path).boundingRect(), aspectRatioMode);
+    }
 }
 
 /*!
