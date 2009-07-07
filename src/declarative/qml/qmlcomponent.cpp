@@ -270,18 +270,18 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 }
 
 /*!
-    Create a QmlComponent from the given \a url and give it the specified 
+    Create a QmlComponent from the given \a fileName and give it the specified 
     \a parent and \a engine.
 
     \sa loadUrl()
 */
-QmlComponent::QmlComponent(QmlEngine *engine, const QString &url, 
+QmlComponent::QmlComponent(QmlEngine *engine, const QString &fileName, 
                            QObject *parent)
 : QObject(*(new QmlComponentPrivate), parent)
 {
     Q_D(QmlComponent);
     d->engine = engine;
-    loadUrl(QUrl(url));
+    loadUrl(QUrl::fromLocalFile(fileName));
 }
 
 /*!

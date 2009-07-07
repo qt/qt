@@ -578,7 +578,7 @@ void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
     const QMetaObject *mo = obj->metaObject();
 
     int methods = mo->methodCount();
-    for (int ii = 0; ii < methods; ++ii) {
+    for (int ii = methods - 1; ii >= 0; --ii) {
         QMetaMethod method = mo->method(ii);
         QString methodName = QLatin1String(method.signature());
         int idx = methodName.indexOf(QLatin1Char('('));
