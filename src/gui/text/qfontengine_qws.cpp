@@ -47,6 +47,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpdf_p.h>
 #include "qtextengine_p.h"
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
 
 #include <qdebug.h>
 
@@ -387,7 +388,7 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 {
     cache_cost = 1;
 
-    int f = ::open( QFile::encodeName(fn), O_RDONLY, 0);
+    int f = QT_OPEN( QFile::encodeName(fn), O_RDONLY, 0);
     Q_ASSERT(f>=0);
     QT_STATBUF st;
     if ( QT_FSTAT( f, &st ) )
@@ -406,7 +407,7 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 #endif
     if ( !data || data == (uchar*)MAP_FAILED )
         qFatal("Failed to mmap %s",QFile::encodeName(fn).data());
-    ::close(f);
+    QT_CLOSE(f);
 
     d = new QFontEngineQPF1Data;
     memcpy(reinterpret_cast<char*>(&d->fm),data,sizeof(d->fm));

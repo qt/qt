@@ -347,7 +347,7 @@ void BookmarkWidget::filterChanged()
 
     filterBookmarkModel->setFilterRegExp(regExp);
 
-    QModelIndex index = treeView->indexAt(QPoint(1, 1));
+    const QModelIndex &index = treeView->indexAt(QPoint(1, 1));
     if (index.isValid())
         treeView->setCurrentIndex(index);
 
@@ -445,9 +445,10 @@ void BookmarkWidget::setup(bool showButtons)
     treeView = new TreeView(this);
     vlayout->addWidget(treeView);
 
-    QString system = QLatin1String("win");
 #ifdef Q_OS_MAC
-    system = QLatin1String("mac");
+#   define SYSTEM "mac"
+#else
+#   define SYSTEM "win"
 #endif
 
     if (showButtons) {
@@ -458,8 +459,8 @@ void BookmarkWidget::setup(bool showButtons)
 
         addButton = new QToolButton(this);
         addButton->setText(tr("Add"));
-        addButton->setIcon(QIcon(QString::fromUtf8(
-            ":/trolltech/assistant/images/%1/addtab.png").arg(system)));
+        addButton->setIcon(QIcon(QLatin1String(":/trolltech/assistant/images/"
+            SYSTEM "/addtab.png")));
         addButton->setAutoRaise(true);
         addButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         hlayout->addWidget(addButton);
@@ -467,8 +468,8 @@ void BookmarkWidget::setup(bool showButtons)
 
         removeButton = new QToolButton(this);
         removeButton->setText(tr("Remove"));
-        removeButton->setIcon(QIcon(QString::fromUtf8(
-            ":/trolltech/assistant/images/%1/closetab.png").arg(system)));
+        removeButton->setIcon(QIcon(QLatin1String(":/trolltech/assistant/images/"
+            SYSTEM "/closetab.png")));
         removeButton->setAutoRaise(true);
         removeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         hlayout->addWidget(removeButton);
@@ -626,6 +627,10 @@ BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
 
     connect(treeModel, SIGNAL(itemChanged(QStandardItem*)), this,
         SLOT(itemChanged(QStandardItem*)));
+    connect(treeModel, SIGNAL(itemChanged(QStandardItem*)), this,
+        SIGNAL(bookmarksChanged()));
+    connect(treeModel, SIGNAL(rowsRemoved(QModelIndex, int, int)),
+        this, SIGNAL(bookmarksChanged()));
 }
 
 BookmarkManager::~BookmarkManager()
@@ -736,6 +741,41 @@ void BookmarkManager::addNewBookmark(const QModelIndex &index,
     else
         treeModel->appendRow(item);
     listModel->appendRow(item->clone());
+    emit bookmarksChanged();
+}
+
+void BookmarkManager::fillBookmarkMenu(QMenu *menu)
+{
+    if (!menu || !treeModel)
+        return;
+
+    map.clear();
+    fillBookmarkMenu(menu, treeModel->invisibleRootItem());
+}
+
+void BookmarkManager::fillBookmarkMenu(QMenu *menu, QStandardItem *root)
+{
+    for (int i = 0; i < root->rowCount(); ++i) {
+        QStandardItem *item = root->child(i);
+        if (item && item->data(Qt::UserRole + 10)
+            .toString() == QLatin1String("Folder")) {
+                QMenu* newMenu = menu->addMenu(folderIcon, item->text());
+                if (item->rowCount() > 0)
+                    fillBookmarkMenu(newMenu, item);
+        } else {
+            map.insert(menu->addAction(item->text()), item->index());
+        }
+    }
+}
+
+QUrl BookmarkManager::urlForAction(QAction* action) const
+{
+    if (map.contains(action)) {
+        const QModelIndex &index = map.value(action);
+        if (QStandardItem* item = treeModel->itemFromIndex(index))
+            return QUrl(item->data(Qt::UserRole + 10).toString());
+    }
+    return QUrl();
 }
 
 void BookmarkManager::itemChanged(QStandardItem *item)

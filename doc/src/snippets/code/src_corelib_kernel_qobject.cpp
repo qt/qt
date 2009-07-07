@@ -376,6 +376,15 @@ hostNameLabel->setText(tr("Name:"));
 QString example = tr("Example");
 //! [40]
 
+//! [meta data]
+//: This is a comment for the translator.
+//= qtn_foo_bar
+//~ loc-layout_id foo_dialog
+//~ loc-blank False
+//~ magic-stuff This might mean something magic.
+QString text = MyMagicClass::tr("Sim sala bim.");
+//! [meta data]
+
 //! [explicit tr context]
 QString text = QScrollBar::tr("Page up");
 //! [explicit tr context]

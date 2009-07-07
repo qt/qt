@@ -162,6 +162,12 @@ Color RenderThemeChromiumSkia::platformInactiveSelectionForegroundColor() const
     return Color(0x32, 0x32, 0x32);
 }
 
+Color RenderThemeChromiumSkia::focusRingColor() const
+{
+    static Color focusRingColor(229, 151, 0, 255);
+    return focusRingColor;
+}
+
 double RenderThemeChromiumSkia::caretBlinkInterval() const
 {
     // Disable the blinking caret in layout test mode, as it introduces
@@ -579,6 +585,12 @@ int RenderThemeChromiumSkia::buttonInternalPaddingTop() const
 int RenderThemeChromiumSkia::buttonInternalPaddingBottom() const
 {
     return 1;
+}
+
+// static
+void RenderThemeChromiumSkia::setDefaultFontSize(int fontSize)
+{
+    defaultFontSize = static_cast<float>(fontSize);
 }
 
 double RenderThemeChromiumSkia::caretBlinkIntervalInternal() const

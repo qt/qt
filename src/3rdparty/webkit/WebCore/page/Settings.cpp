@@ -28,6 +28,7 @@
 
 #include "Frame.h"
 #include "FrameTree.h"
+#include "FrameView.h"
 #include "HistoryItem.h"
 #include "Page.h"
 #include "PageCache.h"
@@ -104,6 +105,7 @@ Settings::Settings(Page* page)
     // they can't use by. Leaving enabled for now to not change existing behavior.
     , m_downloadableBinaryFontsEnabled(true)
     , m_xssAuditorEnabled(false)
+    , m_acceleratedCompositingEnabled(true)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -462,6 +464,15 @@ void Settings::setDownloadableBinaryFontsEnabled(bool downloadableBinaryFontsEna
 void Settings::setXSSAuditorEnabled(bool xssAuditorEnabled)
 {
     m_xssAuditorEnabled = xssAuditorEnabled;
+}
+
+void Settings::setAcceleratedCompositingEnabled(bool enabled)
+{
+    if (m_acceleratedCompositingEnabled == enabled)
+        return;
+        
+    m_acceleratedCompositingEnabled = enabled;
+    setNeedsReapplyStylesInAllFrames(m_page);
 }
 
 } // namespace WebCore

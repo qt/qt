@@ -3714,13 +3714,13 @@ QByteArray qt_winQString2MB(const QChar *ch, int uclen)
     BOOL used_def;
     QByteArray mb(4096, 0);
     int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)ch, uclen,
+    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
                 mb.data(), mb.size()-1, 0, &used_def)))
     {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
             mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const WCHAR*)ch, uclen,
+                                (const wchar_t*)ch, uclen,
                                 0, 0, 0, &used_def));
                 // and try again...
         } else {
@@ -3741,9 +3741,9 @@ QString qt_winMB2QString(const char *mb, int mblen)
     if (!mb || !mblen)
         return QString();
     const int wclen_auto = 4096;
-    WCHAR wc_auto[wclen_auto];
+    wchar_t wc_auto[wclen_auto];
     int wclen = wclen_auto;
-    WCHAR *wc = wc_auto;
+    wchar_t *wc = wc_auto;
     int len;
     while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                 mb, mblen, wc, wclen)))
@@ -3756,7 +3756,7 @@ QString qt_winMB2QString(const char *mb, int mblen)
             } else {
                 wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
-                wc = new WCHAR[wclen];
+                wc = new wchar_t[wclen];
                 // and try again...
             }
         } else {
@@ -3799,11 +3799,6 @@ QString QString::fromLocal8Bit(const char *str, int size)
         return QString();
     if (size == 0 || (!*str && size < 0))
         return QLatin1String("");
-#if defined(Q_OS_WIN32)
-    if(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        return qt_winMB2QString(str, size);
-    }
-#endif
 #if !defined(QT_NO_TEXTCODEC)
     if (size < 0)
         size = qstrlen(str);
@@ -4697,16 +4692,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return ucstrcmp(data1, length1, data2, length2);
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    int res;
-    QT_WA({
-        const TCHAR* s1 = (TCHAR*)data1;
-        const TCHAR* s2 = (TCHAR*)data2;
-        res = CompareStringW(GetUserDefaultLCID(), 0, s1, length1, s2, length2);
-    } , {
-        QByteArray s1 = toLocal8Bit_helper(data1, length1);
-        QByteArray s2 = toLocal8Bit_helper(data2, length2);
-        res = CompareStringA(GetUserDefaultLCID(), 0, s1.data(), s1.length(), s2.data(), s2.length());
-    });
+    int res = CompareString(GetUserDefaultLCID(), 0, (wchar_t*)data1, length1, (wchar_t*)data2, length2);
 
     switch (res) {
     case CSTR_LESS_THAN:

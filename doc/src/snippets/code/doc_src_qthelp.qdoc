@@ -92,8 +92,7 @@ if (links.count()) {
         </keywords>
         <files>
             <file>classic.css</file>
-            <file>index.html</file>
-            <file>doc.html</file>
+            <file>*.html</file>
         </files>
     </filterSection>
 </QtHelpProject>
@@ -154,8 +153,7 @@ if (links.count()) {
 ...
 <files>
     <file>classic.css</file>
-    <file>index.html</file>
-    <file>doc.html</file>
+    <file>*.html</file>
 </files>
 ...
 //! [13]

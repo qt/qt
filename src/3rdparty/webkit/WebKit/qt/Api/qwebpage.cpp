@@ -796,7 +796,7 @@ void QWebPagePrivate::keyPressEvent(QKeyEvent *ev)
             defaultFont = view->font();
         QFontMetrics fm(defaultFont);
         int fontHeight = fm.height();
-        if (!handleScrolling(ev)) {
+        if (!handleScrolling(ev, frame)) {
             switch (ev->key()) {
             case Qt::Key_Back:
                 q->triggerAction(QWebPage::Back);
@@ -999,7 +999,7 @@ void QWebPagePrivate::shortcutOverrideEvent(QKeyEvent* event)
     }
 }
 
-bool QWebPagePrivate::handleScrolling(QKeyEvent *ev)
+bool QWebPagePrivate::handleScrolling(QKeyEvent *ev, Frame *frame)
 {
     ScrollDirection direction;
     ScrollGranularity granularity;
@@ -1046,10 +1046,7 @@ bool QWebPagePrivate::handleScrolling(QKeyEvent *ev)
         }
     }
 
-    if (!mainFrame->d->frame->eventHandler()->scrollOverflow(direction, granularity))
-        mainFrame->d->frame->view()->scroll(direction, granularity);
-
-    return true;
+    return frame->eventHandler()->scrollRecursively(direction, granularity);
 }
 
 /*!
@@ -1115,6 +1112,7 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
    changes the behaviour to a case sensitive find operation.
    \value FindWrapsAroundDocument Makes findText() restart from the beginning of the document if the end
    was reached and the text was not found.
+   \value HighlightAllOccurrences Highlights all existing occurrences of a specific string.
 */
 
 /*!
@@ -2197,7 +2195,7 @@ bool QWebPage::swallowContextMenuEvent(QContextMenuEvent *event)
 
     if (QWebFrame* webFrame = d->frameAt(event->pos())) {
         Frame* frame = QWebFramePrivate::core(webFrame);
-        if (Scrollbar* scrollbar = frame->view()->scrollbarUnderMouse(PlatformMouseEvent(event, 1))) {
+        if (Scrollbar* scrollbar = frame->view()->scrollbarUnderPoint(PlatformMouseEvent(event, 1).pos())) {
             return scrollbar->contextMenu(PlatformMouseEvent(event, 1));
         }
     }
@@ -2356,8 +2354,18 @@ bool QWebPage::supportsExtension(Extension extension) const
 }
 
 /*!
-    Finds the next occurrence of the string, \a subString, in the page, using the given \a options.
-    Returns true of \a subString was found and selects the match visually; otherwise returns false.
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    If the HighlightAllOccurrences flag is passed, the function will highlight all occurrences
+    that exist in the page. All subsequent calls will extend the highlight, rather than
+    replace it, with occurrences of the new string.
+
+    If the HighlightAllOccurrences flag is not passed, the function will select an occurrence
+    and all subsequent calls will replace the current occurrence with the next one.
+
+    To clear the selection, just pass an empty string.
+
+    Returns true if \a subString was found; otherwise returns false.
 */
 bool QWebPage::findText(const QString &subString, FindFlags options)
 {
@@ -2365,13 +2373,22 @@ bool QWebPage::findText(const QString &subString, FindFlags options)
     if (options & FindCaseSensitively)
         caseSensitivity = ::TextCaseSensitive;
 
-    ::FindDirection direction = ::FindDirectionForward;
-    if (options & FindBackward)
-        direction = ::FindDirectionBackward;
+    if (options & HighlightAllOccurrences) {
+        if (subString.isEmpty()) {
+            d->page->unmarkAllTextMatches();
+            return true;
+        } else {
+            return d->page->markAllMatchesForText(subString, caseSensitivity, true, 0);
+        }
+    } else {
+        ::FindDirection direction = ::FindDirectionForward;
+        if (options & FindBackward)
+            direction = ::FindDirectionBackward;
 
-    const bool shouldWrap = options & FindWrapsAroundDocument;
+        const bool shouldWrap = options & FindWrapsAroundDocument;
 
-    return d->page->findString(subString, caseSensitivity, direction, shouldWrap);
+        return d->page->findString(subString, caseSensitivity, direction, shouldWrap);
+    }
 }
 
 /*!

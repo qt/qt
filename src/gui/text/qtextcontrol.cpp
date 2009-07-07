@@ -1245,7 +1245,8 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
 process:
     {
         QString text = e->text();
-        if (!text.isEmpty() && (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t'))) {
+        if (!text.isEmpty() && (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t')) &&
+            ((e->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) == Qt::NoModifier)) {
             if (overwriteMode
                 // no need to call deleteChar() if we have a selection, insertText
                 // does it already

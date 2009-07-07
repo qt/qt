@@ -41,7 +41,11 @@ HEADERS += \
 	kernel/qwidgetaction.h \
 	kernel/qwidgetaction_p.h \
 	kernel/qwindowdefs.h \
-	kernel/qkeymapper_p.h
+	kernel/qkeymapper_p.h \
+	kernel/qgesture.h \
+	kernel/qgesture_p.h \
+	kernel/qstandardgestures.h \
+	kernel/qstandardgestures_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -70,7 +74,9 @@ SOURCES += \
 	kernel/qwhatsthis.cpp \
 	kernel/qwidget.cpp \
 	kernel/qwidgetaction.cpp \
-	kernel/qkeymapper.cpp
+	kernel/qkeymapper.cpp \
+	kernel/qgesture.cpp \
+	kernel/qstandardgestures.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW
@@ -164,24 +170,26 @@ embedded {
                 qcocoaview_mac_p.h \
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
+                qmultitouch_mac_p.h 
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \
                 kernel/qdnd_mac.mm \
                 kernel/qsound_mac.mm  \
                 kernel/qapplication_mac.mm \
-		kernel/qwidget_mac.mm \
-		kernel/qcocoapanel_mac.mm \
-		kernel/qcocoaview_mac.mm \
-		kernel/qcocoawindow_mac.mm \
-		kernel/qcocoawindowdelegate_mac.mm \
+		        kernel/qwidget_mac.mm \
+		        kernel/qcocoapanel_mac.mm \
+                kernel/qcocoaview_mac.mm \
+                kernel/qcocoawindow_mac.mm \
+                kernel/qcocoawindowdelegate_mac.mm \
                 kernel/qcocoamenuloader_mac.mm \
                 kernel/qcocoaapplication_mac.mm \
                 kernel/qcocoaapplicationdelegate_mac.mm \
                 kernel/qt_cocoa_helpers_mac.mm \
-		kernel/qdesktopwidget_mac.mm \
+                kernel/qdesktopwidget_mac.mm \
                 kernel/qeventdispatcher_mac.mm \
-                kernel/qcocoawindowcustomthemeframe_mac.mm
+                kernel/qcocoawindowcustomthemeframe_mac.mm \   
+                kernel/qmultitouch_mac.mm \
 
         HEADERS += \
                 kernel/qt_cocoa_helpers_mac_p.h \

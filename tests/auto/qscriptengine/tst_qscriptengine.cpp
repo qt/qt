@@ -1562,7 +1562,7 @@ static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
 void tst_QScriptEngine::importExtension()
 {
     QStringList libPaths = QCoreApplication::instance()->libraryPaths();
-    QCoreApplication::instance()->setLibraryPaths(QStringList() << ".");
+    QCoreApplication::instance()->setLibraryPaths(QStringList() << SRCDIR);
 
     QStringList availableExtensions;
     {
@@ -1583,6 +1583,7 @@ void tst_QScriptEngine::importExtension()
         QScriptValue ret = eng.importExtension("this.extension.does.not.exist");
         QCOMPARE(eng.hasUncaughtException(), true);
         QCOMPARE(ret.isError(), true);
+        QCOMPARE(ret.toString(), QString::fromLatin1("Error: Unable to import this.extension.does.not.exist: no such extension"));
     }
 
     {
@@ -1601,6 +1602,8 @@ void tst_QScriptEngine::importExtension()
                      .strictlyEquals(QScriptValue(&eng, "com")), true);
             QCOMPARE(com.property("level")
                      .strictlyEquals(QScriptValue(&eng, 1)), true);
+            QVERIFY(com.property("originalPostInit").isUndefined());
+            QVERIFY(com.property("postInitCallCount").strictlyEquals(1));
 
             QScriptValue trolltech = com.property("trolltech");
             QCOMPARE(trolltech.isObject(), true);
@@ -1610,6 +1613,8 @@ void tst_QScriptEngine::importExtension()
                      .strictlyEquals(QScriptValue(&eng, "com.trolltech")), true);
             QCOMPARE(trolltech.property("level")
                      .strictlyEquals(QScriptValue(&eng, 2)), true);
+            QVERIFY(trolltech.property("originalPostInit").isUndefined());
+            QVERIFY(trolltech.property("postInitCallCount").strictlyEquals(1));
         }
         QStringList imp = eng.importedExtensions();
         QCOMPARE(imp.size(), 2);
@@ -1625,6 +1630,8 @@ void tst_QScriptEngine::importExtension()
         eng.globalObject().setProperty("__import__", eng.newFunction(__import__));
         QScriptValue ret = eng.importExtension("com.trolltech.recursive");
         QCOMPARE(eng.hasUncaughtException(), true);
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("Error: recursive import of com.trolltech.recursive"));
         QStringList imp = eng.importedExtensions();
         QCOMPARE(imp.size(), 2);
         QCOMPARE(imp.at(0), QString::fromLatin1("com"));

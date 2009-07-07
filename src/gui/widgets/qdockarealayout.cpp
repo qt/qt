@@ -223,7 +223,7 @@ static quintptr tabId(const QDockAreaLayoutItem &item)
 QDockAreaLayoutInfo::QDockAreaLayoutInfo()
     : sep(0), dockPos(QInternal::LeftDock), o(Qt::Horizontal), mainWindow(0)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth)
+    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth), tabBarVisible(false)
 #endif
 {
 }
@@ -233,7 +233,7 @@ QDockAreaLayoutInfo::QDockAreaLayoutInfo(int _sep, QInternal::DockPosition _dock
                                             QMainWindow *window)
     : sep(_sep), dockPos(_dockPos), o(_o), mainWindow(window)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape))
+    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape)), tabBarVisible(false)
 #endif
 {
 #ifdef QT_NO_TABBAR
@@ -1488,7 +1488,7 @@ bool QDockAreaLayoutInfo::hasFixedSize() const
 
 void QDockAreaLayoutInfo::apply(bool animate)
 {
-    QWidgetAnimator *widgetAnimator = mainWindowLayout()->widgetAnimator;
+    QWidgetAnimator &widgetAnimator = mainWindowLayout()->widgetAnimator;
 
 #ifndef QT_NO_TABBAR
     if (tabbed) {
@@ -1521,7 +1521,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
             }
         }
 
-        widgetAnimator->animate(tabBar, tab_rect, animate);
+        widgetAnimator.animate(tabBar, tab_rect, animate);
     }
 #endif // QT_NO_TABBAR
 
@@ -1544,7 +1544,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
         QWidget *w = item.widgetItem->widget();
 
         QRect geo = w->geometry();
-        widgetAnimator->animate(w, r, animate);
+        widgetAnimator.animate(w, r, animate);
         if (!w->isHidden()) {
             QDockWidget *dw = qobject_cast<QDockWidget*>(w);
             if (!r.isValid() && geo.right() >= 0 && geo.bottom() >= 0) {
@@ -2074,7 +2074,7 @@ void QDockAreaLayoutInfo::updateTabBar() const
 
     QDockAreaLayoutInfo *that = const_cast<QDockAreaLayoutInfo*>(this);
 
-    if (tabBar == 0) {
+    if (that->tabBar == 0) {
         that->tabBar = mainWindowLayout()->getTabBar();
         that->tabBar->setShape(static_cast<QTabBar::Shape>(tabBarShape));
         that->tabBar->setDrawBase(true);
@@ -3064,13 +3064,13 @@ void QDockAreaLayout::splitDockWidget(QDockWidget *after,
 
 void QDockAreaLayout::apply(bool animate)
 {
-    QWidgetAnimator *widgetAnimator
+    QWidgetAnimator &widgetAnimator
         = qobject_cast<QMainWindowLayout*>(mainWindow->layout())->widgetAnimator;
 
     for (int i = 0; i < QInternal::DockCount; ++i)
         docks[i].apply(animate);
     if (centralWidgetItem != 0 && !centralWidgetItem->isEmpty()) {
-        widgetAnimator->animate(centralWidgetItem->widget(), centralWidgetRect,
+        widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect,
                                 animate);
     }
 

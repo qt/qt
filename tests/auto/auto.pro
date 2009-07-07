@@ -10,6 +10,7 @@ SUBDIRS += _networkselftest \
            compile \
            compilerwarnings \
            exceptionsafety \
+           linguist \
            macgui \
            macplist \
 	   mediaobject \
@@ -216,6 +217,7 @@ SUBDIRS += _networkselftest \
            qnetworkproxy \
 	   qnetworkrequest \
 	   qnetworkreply \
+           qnetworkaccessmanager_and_qprogressdialog \
            qnumeric \
            qobject \
            qobjectrace \
@@ -433,6 +435,7 @@ xmlpatternsxslts.depends = xmlpatternsxqts
 
 unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusabstractadaptor \
+           qdbusabstractinterface \
            qdbusconnection \
            qdbusinterface \
            qdbuslocalcalls \
@@ -448,6 +451,7 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
            qwebpage \
            qwebhistoryinterface \
-           qwebelement
+           qwebelement \
+           qwebhistory
 
 SUBDIRS += math3d

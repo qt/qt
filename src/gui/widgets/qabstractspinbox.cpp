@@ -57,6 +57,9 @@
 #include <qpalette.h>
 #include <qstylepainter.h>
 #include <qdebug.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include <qaccessible.h>
+#endif
 
 #if defined(Q_WS_X11)
 #include <limits.h>
@@ -951,6 +954,9 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
             d->buttonState = (Keyboard | (up ? Up : Down));
         }
         stepBy(steps);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::ValueChanged);
+#endif
         return;
     }
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1548,6 +1554,9 @@ void QAbstractSpinBoxPrivate::updateState(bool up)
         spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
         buttonState = (up ? (Mouse | Up) : (Mouse | Down));
         q->stepBy(up ? 1 : -1);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(q, 0, QAccessible::ValueChanged);
+#endif
     }
 }
 

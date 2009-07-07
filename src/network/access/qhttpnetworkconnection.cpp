@@ -146,7 +146,9 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
     for (int i = 0; i < channelCount; ++i)
         if (channels[i].socket == socket)
             return i;
-    return -1;
+
+    qFatal("Called with unknown socket object.");
+    return 0;
 }
 
 bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
@@ -176,7 +178,8 @@ bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) con
 
 void QHttpNetworkConnectionPrivate::appendUncompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
 {
-    reply.d_func()->responseData.append(fragment);
+    char *dst = reply.d_func()->responseData.reserve(fragment.size());
+    qMemCopy(dst, fragment.constData(), fragment.size());
 }
 
 void QHttpNetworkConnectionPrivate::appendCompressedData(QHttpNetworkReply &reply, const QByteArray &fragment)
@@ -189,6 +192,11 @@ qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetw
     return reply.d_func()->responseData.size();
 }
 
+qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const
+{
+    return reply.d_func()->responseData.nextDataBlockSize();
+}
+
 qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
     return reply.d_func()->compressedData.size();
@@ -196,15 +204,15 @@ qint64 QHttpNetworkConnectionPrivate::compressedBytesAvailable(const QHttpNetwor
 
 qint64 QHttpNetworkConnectionPrivate::read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize)
 {
-    QByteArray *ba = &reply.d_func()->responseData;
-    if (maxSize == -1 || maxSize >= ba->size()) {
+    QRingBuffer *rb = &reply.d_func()->responseData;
+    if (maxSize == -1 || maxSize >= rb->size()) {
         // read the whole data
-        data = *ba;
-        ba->clear();
+        data = rb->readAll();
+        rb->clear();
     } else {
         // read only the requested length
-        data = ba->mid(0, maxSize);
-        ba->remove(0, maxSize);
+        data.resize(maxSize);
+        rb->read(data.data(), maxSize);
     }
     return data.size();
 }
@@ -591,7 +599,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                 // try to reconnect/resend before sending an error.
                 if (channels[i].reconnectAttempts-- > 0) {
                     resendCurrentRequest(socket);
-                } else {
+                } else if (reply) {
                     reply->d_func()->errorString = errorDetail(QNetworkReply::RemoteHostClosedError, socket);
                     emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
                     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
@@ -643,36 +651,58 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
             }
             break;
         case QHttpNetworkReplyPrivate::ReadingDataState: {
-            QBuffer fragment;
-            fragment.open(QIODevice::WriteOnly);
-            bytes = reply->d_func()->readBody(socket, &fragment);
-            if (bytes) {
-                if (reply->d_func()->autoDecompress)
-                    appendCompressedData(*reply, fragment.data());
-                else
-                    appendUncompressedData(*reply, fragment.data());
+            if (!reply->d_func()->isChunked() && !reply->d_func()->autoDecompress
+                && reply->d_func()->bodyLength > 0) {
+                // bulk files like images should fulfill these properties and
+                // we can therefore save on memory copying
+                bytes = reply->d_func()->readBodyFast(socket, &reply->d_func()->responseData);
+                reply->d_func()->totalProgress += bytes;
+                if (shouldEmitSignals(reply)) {
+                    emit reply->readyRead();
+                    // make sure that the reply is valid
+                    if (channels[i].reply != reply)
+                        return;
+                    emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                    // make sure that the reply is valid
+                    if (channels[i].reply != reply)
+                        return;
+                }
+            }
+            else
+            {
+                // use the traditional slower reading (for compressed encoding, chunked encoding,
+                // no content-length etc)
+                QBuffer fragment;
+                fragment.open(QIODevice::WriteOnly);
+                bytes = reply->d_func()->readBody(socket, &fragment);
+                if (bytes) {
+                    if (reply->d_func()->autoDecompress)
+                        appendCompressedData(*reply, fragment.data());
+                    else
+                        appendUncompressedData(*reply, fragment.data());
 
-                if (!reply->d_func()->autoDecompress) {
-                    reply->d_func()->totalProgress += fragment.size();
-                    if (shouldEmitSignals(reply)) {
-                        emit reply->readyRead();
-                        // make sure that the reply is valid
-                        if (channels[i].reply != reply)
-                            return;
-                        // emit dataReadProgress signal (signal is currently not connected
-                        // to the rest of QNAM) since readProgress of the
-                        // QNonContiguousByteDevice is used
-                        emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
-                        // make sure that the reply is valid
-                        if (channels[i].reply != reply)
-                            return;
+                    if (!reply->d_func()->autoDecompress) {
+                        reply->d_func()->totalProgress += fragment.size();
+                        if (shouldEmitSignals(reply)) {
+                            emit reply->readyRead();
+                            // make sure that the reply is valid
+                            if (channels[i].reply != reply)
+                                return;
+                            // emit dataReadProgress signal (signal is currently not connected
+                            // to the rest of QNAM) since readProgress of the
+                            // QNonContiguousByteDevice is used
+                            emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                            // make sure that the reply is valid
+                            if (channels[i].reply != reply)
+                                return;
+                        }
                     }
-                }
 #ifndef QT_NO_COMPRESS
-                else if (!expand(socket, reply, false)) { // expand a chunk if possible
-                    return; // ### expand failed
-                }
+                    else if (!expand(socket, reply, false)) { // expand a chunk if possible
+                        return; // ### expand failed
+                    }
 #endif
+                }
             }
             if (reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState)
                 break;
@@ -887,6 +917,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
     Q_ASSERT(socket);
 
     int i = indexOf(socket);
+
     if (channels[i].authMehtod != QAuthenticatorPrivate::None) {
         if (!(channels[i].authMehtod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 401)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
@@ -1361,7 +1392,8 @@ void QHttpNetworkConnectionPrivate::_q_encrypted()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
-    channels[indexOf(socket)].state = IdleState;
+    int i = indexOf(socket);
+    channels[i].state = IdleState;
     sendRequest(socket);
 }
 

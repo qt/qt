@@ -195,14 +195,18 @@ void QSvgFontStyle::revert(QPainter *p, QSvgExtraStates &)
 }
 
 QSvgStrokeStyle::QSvgStrokeStyle(const QPen &pen)
-    : m_stroke(pen)
+    : m_stroke(pen), m_strokePresent(true)
 {
 }
 
 void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
 {
     m_oldStroke = p->pen();
-    p->setPen(m_stroke);
+    if (!m_strokePresent || !m_stroke.widthF() || !m_stroke.color().alphaF()) {
+        p->setPen(Qt::NoPen);
+    } else {
+        p->setPen(m_stroke);
+    }
 }
 
 void QSvgStrokeStyle::revert(QPainter *p, QSvgExtraStates &)

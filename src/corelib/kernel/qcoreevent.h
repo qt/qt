@@ -272,7 +272,13 @@ public:
         Signal = 192,
         Wrapped = 193,
 
-	// 512 reserved for Qt Jambi's MetaCall event
+        TouchBegin = 194,
+        TouchUpdate = 195,
+        TouchEnd = 196,
+
+        WinGesture = 197,
+
+        // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
         User = 1000,                            // first user event id
@@ -310,6 +316,9 @@ private:
     friend class Q3AccelManager;
     friend class QShortcutMap;
     friend class QETWidget;
+    friend class QGraphicsView;
+    friend class QGraphicsViewPrivate;
+    friend class QGraphicsScenePrivate;
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

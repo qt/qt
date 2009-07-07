@@ -23,6 +23,7 @@
 
 #include "HTMLDataGridColElement.h"
 #include "KURL.h"
+#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
 
@@ -146,14 +147,14 @@ JSValue jsHTMLDataGridColElementSortable(ExecState* exec, const Identifier&, con
 {
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()))->impl());
-    return jsBoolean(imp->sortable());
+    return jsNumber(exec, imp->sortable());
 }
 
 JSValue jsHTMLDataGridColElementSortDirection(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->sortDirection());
+    return jsNumber(exec, imp->sortDirection());
 }
 
 JSValue jsHTMLDataGridColElementPrimary(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -187,13 +188,13 @@ void setJSHTMLDataGridColElementType(ExecState* exec, JSObject* thisObject, JSVa
 void setJSHTMLDataGridColElementSortable(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
-    imp->setSortable(value.toBoolean(exec));
+    imp->setSortable(value.toInt32(exec));
 }
 
 void setJSHTMLDataGridColElementSortDirection(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
-    imp->setSortDirection(value.toString(exec));
+    imp->setSortDirection(value.toInt32(exec));
 }
 
 void setJSHTMLDataGridColElementPrimary(ExecState* exec, JSObject* thisObject, JSValue value)

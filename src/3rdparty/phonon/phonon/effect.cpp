@@ -107,7 +107,8 @@ bool EffectPrivate::aboutToDeleteBackendObject()
 {
     if (m_backendObject) {
         const QList<EffectParameter> parameters = pINTERFACE_CALL(parameters());
-        foreach (const EffectParameter &p, parameters) {
+        for (int i = 0; i < parameters.count(); ++i) {
+            const EffectParameter &p = parameters.at(i);
             parameterValues[p] = pINTERFACE_CALL(parameterValue(p));
         }
     }
@@ -120,7 +121,8 @@ void EffectPrivate::setupBackendObject()
 
     // set up attributes
     const QList<EffectParameter> parameters = pINTERFACE_CALL(parameters());
-    foreach (const EffectParameter &p, parameters) {
+    for (int i = 0; i < parameters.count(); ++i) {
+        const EffectParameter &p = parameters.at(i);
         pINTERFACE_CALL(setParameterValue(p, parameterValues[p]));
     }
 }

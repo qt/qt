@@ -103,6 +103,6 @@
 
     There are various approaches to include forms into applications. The
     Multiple Inheritance approach is just one of them. See
-    \l{Using a Designer .ui File in Your Application} for more information on
+    \l{Using a Designer UI File in Your Application} for more information on
     the other approaches available.
 */

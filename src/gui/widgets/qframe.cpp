@@ -135,7 +135,7 @@ inline void QFramePrivate::init()
     \value VLine  QFrame draws a vertical line that frames nothing
     (useful as separator)
     \value WinPanel draws a rectangular panel that can be raised or
-    sunken like those in Windows 95. Specifying this shape sets
+    sunken like those in Windows 2000. Specifying this shape sets
     the line width to 2 pixels. WinPanel is provided for compatibility.
     For GUI style independence we recommend using StyledPanel instead.
 

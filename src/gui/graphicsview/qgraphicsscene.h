@@ -189,7 +189,7 @@ public:
     inline QGraphicsRectItem *addRect(qreal x, qreal y, qreal w, qreal h, const QPen &pen = QPen(), const QBrush &brush = QBrush())
     { return addRect(QRectF(x, y, w, h), pen, brush); }
     void removeItem(QGraphicsItem *item);
-    
+
     QGraphicsItem *focusItem() const;
     void setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReason = Qt::OtherFocusReason);
     bool hasFocus() const;
@@ -227,6 +227,8 @@ public:
 
     QGraphicsWidget *activeWindow() const;
     void setActiveWindow(QGraphicsWidget *widget);
+
+    bool sendEvent(QGraphicsItem *item, QEvent *event);
 
 public Q_SLOTS:
     void update(const QRectF &rect = QRectF());

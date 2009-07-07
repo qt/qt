@@ -1586,9 +1586,12 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
                 } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
                         && (fld.typ == QVariant::LongLong)) {
                     qint64 qll = 0;
-                    OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
+                    int r = OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
                                    OCI_NUMBER_SIGNED, &qll);
-                    v[index + i] = qll;
+                    if(r == OCI_SUCCESS)
+                        v[index + i] = qll;
+                    else
+                        v[index + i] = QVariant();
                     break;
                 } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
                         && (fld.typ == QVariant::Int)) {

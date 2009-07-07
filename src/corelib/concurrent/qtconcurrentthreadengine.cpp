@@ -176,6 +176,11 @@ void ThreadEngineBase::startThread()
     startThreadInternal();
 }
 
+void ThreadEngineBase::acquireBarrierSemaphore()
+{
+    barrier.acquire();
+}
+
 bool ThreadEngineBase::isCanceled()
 {
     if (futureInterface)

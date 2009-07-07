@@ -1369,6 +1369,14 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         // Set dropWidget to zero, so qt_mac_dnd_event
                         // doesn't get called a second time below:
                         dropWidget = 0;
+                    } else if (ekind == kEventControlDragLeave) {
+                        dropWidget = QDragManager::self()->currentTarget();
+                        if (dropWidget) {
+                            dropWidget->d_func()->qt_mac_dnd_event(kEventControlDragLeave, drag);
+                        }
+                        // Set dropWidget to zero, so qt_mac_dnd_event
+                        // doesn't get called a second time below:
+                        dropWidget = 0;
                     }
                 }
             }
@@ -2132,11 +2140,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
 
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
-        [windowRef setHasShadow:YES];
     } else {
         [windowRef setHidesOnDeactivate:NO];
     }
-
+    [windowRef setHasShadow:YES];
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2481,9 +2488,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         setFocus_sys();
     if (!topLevel && initializeWindow)
         setWSGeometry();
-
     if (destroyid)
         qt_mac_destructView(destroyid);
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
 }
 
 /*!
@@ -2690,10 +2698,15 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
-            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
-                mwl->updateHIToolBarStatus();
+            // We do this down below for wasCreated, so avoid doing this twice
+            // (only for performance, it gets called a lot anyway).
+            if (!wasCreated) {
+                if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                    mwl->updateHIToolBarStatus();
+                }
             }
 #else
+            // Simply transfer our toolbar over. Everything should stay put, unlike in Carbon.
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
@@ -2708,6 +2721,16 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 
     if (wasCreated) {
         transferChildren();
+#ifndef QT_MAC_USE_COCOA
+        // If we were a unified window, We just transfered our toolbars out of the unified toolbar.
+        // So redo the status one more time. It apparently is not an issue with Cocoa.
+        if (q->isWindow()) {
+            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                mwl->updateHIToolBarStatus();
+            }
+        }
+#endif
+
         if (topData &&
                 (!topData->caption.isEmpty() || !topData->filePath.isEmpty()))
             setWindowTitle_helper(q->windowTitle());
@@ -3690,7 +3713,7 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
     // Perform a normal (complete repaint) update in some cases:
     if (
         // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && qd->isOpaque == false) ||
+        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||
@@ -3800,7 +3823,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
       Qt coordinate system for parent
       X coordinate system for parent (relative to parent's wrect).
     */
-    QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
     QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
     QRect wrect;
     //xrect is the X geometry of my X widget. (starts out in  parent's Qt coord sys, and ends up in parent's X coord sys)
@@ -3878,7 +3900,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
-        if (!validRange.contains(xrect)) {
+        if (xrect.height() > XCOORD_MAX || xrect.width() > XCOORD_MAX) {
             // we are too big, and must clip
             xrect &=wrectRange;
             wrect = xrect;
@@ -3926,10 +3948,9 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
 
     qt_mac_update_widget_posisiton(q, oldRect, xrect);
 
-    if  (jump) {
-        updateSystemBackground();
+    if  (jump)
         q->update();
-    }
+
     if (mapWindow && !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
 #ifndef QT_MAC_USE_COCOA
@@ -4011,6 +4032,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             setGeometry_sys_helper(x, y, w, h, isMove);
         }
 #else
+        QSize  olds = q->size();
+        const bool isResize = (olds != QSize(w, h));
         NSWindow *window = qt_mac_window_for(q);
         const QRect &fStrut = frameStrut();
         const QRect frameRect(QPoint(x - fStrut.left(), y - fStrut.top()),
@@ -4018,7 +4041,10 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                                     fStrut.top() + fStrut.bottom() + h));
         NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
                                            frameRect.width(), frameRect.height());
-
+        // The setFrame call will trigger a 'windowDidResize' notification for the corresponding
+        // NSWindow. The pending flag is set, so that the resize event can be send as non-spontaneous.
+        if (isResize)
+            q->setAttribute(Qt::WA_PendingResizeEvent);
         QPoint currTopLeft = data.crect.topLeft();
         if (currTopLeft.x() == x && currTopLeft.y() == y
                 && cocoaFrameRect.size.width != 0
@@ -4214,7 +4240,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
                         HIRect bounds = CGRectMake(w->data->crect.x(), w->data->crect.y(),
                                                    w->data->crect.width(), w->data->crect.height());
                         HIViewRef hiview = qt_mac_nativeview_for(w);
-                        const bool opaque = qt_widget_private(w)->isOpaque;
+                        const bool opaque = q->testAttribute(Qt::WA_OpaquePaintEvent);
 
                         if (opaque)
                             HIViewSetDrawingEnabled(hiview,  false);
@@ -4410,6 +4436,23 @@ void QWidgetPrivate::registerDropSite(bool on)
     if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
         [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
     }
+#endif
+}
+
+void QWidgetPrivate::registerTouchWindow()
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+        return;
+    Q_Q(QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created))
+        return;
+#ifndef QT_MAC_USE_COCOA
+    // Needs implementation!
+#else
+    NSView *view = qt_mac_nativeview_for(q);
+    [view setAcceptsTouchEvents:YES];
+#endif
 #endif
 }
 

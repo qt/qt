@@ -154,6 +154,7 @@ private:
     void updateScissor();
     QRegion defaultClipRegion();
     bool isDefaultClipRegion(const QRegion& region);
+    bool isDefaultClipRect(const QRect& rect);
     bool clearRect(const QRectF &rect, const QColor &color);
 };
 

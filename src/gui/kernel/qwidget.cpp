@@ -82,6 +82,8 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
+#include "qstandardgestures.h"
+#include "qstandardgestures_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -107,6 +109,7 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "QtGui/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
+#include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
 
@@ -860,8 +863,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
     \o X11: This feature relies on the use of an X server that supports ARGB visuals
     and a compositing window manager.
-    \o Windows: This feature requires Windows 2000 or later. The widget needs to have
-    the Qt::FramelessWindowHint window flag set for the translucency to work.
+    \o Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
+    for the translucency to work.
     \endlist
 
 
@@ -7474,11 +7477,13 @@ bool QWidget::event(QEvent *event)
         case QEvent::MouseButtonRelease:
         case QEvent::MouseButtonDblClick:
         case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
         case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
-            return false;
         default:
             break;
         }
@@ -7872,6 +7877,96 @@ bool QWidget::event(QEvent *event)
     case QEvent::MacGLWindowChange:
         d->needWindowChange = false;
         break;
+#endif
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
+        if (touchPoint.isPrimary())
+            break;
+
+        // fake a mouse event!
+        QEvent::Type eventType = QEvent::None;
+        switch (touchEvent->type()) {
+        case QEvent::TouchBegin:
+            eventType = QEvent::MouseButtonPress;
+            break;
+        case QEvent::TouchUpdate:
+            eventType = QEvent::MouseMove;
+            break;
+        case QEvent::TouchEnd:
+            eventType = QEvent::MouseButtonRelease;
+            break;
+        default:
+            Q_ASSERT(!true);
+            break;
+        }
+        if (eventType == QEvent::None)
+            break;
+
+        QMouseEvent mouseEvent(eventType,
+                               touchPoint.pos().toPoint(),
+                               touchPoint.screenPos().toPoint(),
+                               Qt::LeftButton,
+                               Qt::LeftButton,
+                               touchEvent->modifiers());
+        (void) QApplication::sendEvent(this, &mouseEvent);
+        break;
+    }
+#ifdef Q_WS_WIN
+    case QEvent::WinGesture: {
+        QWinGestureEvent *ev = static_cast<QWinGestureEvent*>(event);
+        QApplicationPrivate *qAppPriv = qApp->d_func();
+        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
+        it = qAppPriv->widgetGestures.find(this);
+        if (it != qAppPriv->widgetGestures.end()) {
+            Qt::GestureState state = Qt::GestureUpdated;
+            if (qAppPriv->lastGestureId == 0)
+                state = Qt::GestureStarted;
+            QWinGestureEvent::Type type = ev->gestureType;
+            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+                type = (QWinGestureEvent::Type)qAppPriv->lastGestureId;
+                state = Qt::GestureFinished;
+            }
+
+            QGesture *gesture = 0;
+            switch (type) {
+            case QWinGestureEvent::Pan: {
+                QPanGesture *pan = it.value().pan;
+                gesture = pan;
+                if (state == Qt::GestureStarted) {
+                    gesture->setStartPos(ev->position);
+                    gesture->setLastPos(ev->position);
+                } else {
+                    gesture->setLastPos(gesture->pos());
+                }
+                gesture->setPos(ev->position);
+                break;
+            }
+            case QWinGestureEvent::Pinch:
+                break;
+            default:
+                break;
+            }
+            if (gesture) {
+                gesture->setState(state);
+                if (state == Qt::GestureStarted)
+                    emit gesture->started();
+                emit gesture->triggered();
+                if (state == Qt::GestureFinished)
+                    emit gesture->finished();
+                event->accept();
+            }
+            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+                qAppPriv->lastGestureId = 0;
+            } else {
+                qAppPriv->lastGestureId = type;
+            }
+        }
+        break;
+    }
 #endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
@@ -9881,6 +9976,12 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
 
         break;
+    case Qt::WA_AcceptTouchEvents:
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+        if (on)
+            d->registerTouchWindow();
+#endif
+        break;
     default:
         break;
     }
@@ -9911,8 +10012,8 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, Mac OS X, X11 platforms that
-  support the Composite extension, and Windows 2000 and later.
+  This feature is available on Embedded Linux, Mac OS X, Windows,
+  and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
 

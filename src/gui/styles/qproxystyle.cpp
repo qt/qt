@@ -93,7 +93,7 @@ void QProxyStylePrivate::ensureBaseStyle() const
                 baseStyle = 0;
             }
         }
-    } 
+    }
 
     if (!baseStyle) // Use application desktop style
         baseStyle = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
@@ -368,7 +368,7 @@ bool QProxyStyle::event(QEvent *e)
     return d->baseStyle->event(e);
 }
 
-/*! 
+/*!
   Returns an icon for the given \a standardIcon.
 
   Reimplement this slot to provide your own icons in a QStyle

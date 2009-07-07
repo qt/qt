@@ -428,20 +428,22 @@
     an object and its children (the object cannot be moved if it has a
     parent).
 
-    Calling \c delete on a QObject from another thread than the
-    thread where it is created (or accessing the object in other
-    ways) is unsafe unless you can guarantee that the object isn't
-    processing events at the same moment. Use QObject::deleteLater()
-    instead; it will post a
-    \l{QEvent::DeferredDelete}{DeferredDelete} event, which the
-    event loop of the object's thread will eventually pick up.
+    Calling \c delete on a QObject from a thread other than the one
+    that \e owns the object (or accessing the object in other ways) is
+    unsafe, unless you guarantee that the object isn't processing
+    events at that moment. Use QObject::deleteLater() instead, and a
+    \l{QEvent::DeferredDelete}{DeferredDelete} event will be posted,
+    which the event loop of the object's thread will eventually pick
+    up. By default, the thread that \e owns a QObject is the thread
+    that \e creates the QObject, but not after QObject::moveToThread()
+    has been called.
 
     If no event loop is running, events won't be delivered to the
-    object. For example, if you create a QTimer object in a thread
-    but never call \l{QThread::exec()}{exec()}, the QTimer will never emit its
-    \l{QTimer::timeout()}{timeout()} signal. Calling
-    \l{QObject::deleteLater()}{deleteLater()} won't work either. (These
-    restrictions apply to the main thread as well.)
+    object. For example, if you create a QTimer object in a thread but
+    never call \l{QThread::exec()}{exec()}, the QTimer will never emit
+    its \l{QTimer::timeout()}{timeout()} signal. Calling
+    \l{QObject::deleteLater()}{deleteLater()} won't work
+    either. (These restrictions apply to the main thread as well.)
 
     You can manually post events to any object in any thread at any
     time using the thread-safe function

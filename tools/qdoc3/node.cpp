@@ -868,6 +868,18 @@ void FunctionNode::setOverload(bool overlode)
 }
 
 /*!
+  Sets the function node's reimplementation flag to \a r.
+  When \a r is true, it is supposed to mean that this function
+  is a reimplementation of a virtual function in a base class,
+  but it really just means the \e reimp command was seen in the
+  qdoc comment.
+ */
+void FunctionNode::setReimp(bool r)
+{
+    reimp = r;
+}
+
+/*!
  */
 void FunctionNode::addParameter(const Parameter& parameter)
 {

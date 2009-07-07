@@ -55,6 +55,7 @@
 //
 
 #include "QtGui/qapplication.h"
+#include "QtGui/qevent.h"
 #include "QtGui/qfont.h"
 #include "QtGui/qcursor.h"
 #include "QtGui/qregion.h"
@@ -77,11 +78,10 @@ class QClipboard;
 class QGraphicsScene;
 class QGraphicsSystem;
 class QInputContext;
-class QKeyEvent;
-class QMouseEvent;
 class QObject;
-class QWheelEvent;
 class QWidget;
+class QGestureManager;
+class QSocketNotifier;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -188,6 +188,114 @@ extern "C" {
     typedef bool (*Ptrqt_dispatchAccelEvent)(QWidget *w, QKeyEvent *e);
 }
 #endif
+
+#if defined(Q_WS_WIN)
+typedef BOOL (WINAPI *qt_RegisterTouchWindowPtr)(HWND, ULONG);
+typedef BOOL (WINAPI *qt_GetTouchInputInfoPtr)(HANDLE, UINT, PVOID, int);
+typedef BOOL (WINAPI *qt_CloseTouchInputHandlePtr)(HANDLE);
+
+#ifndef WM_GESTURE
+
+#define WM_GESTURE 0x0119
+#define WM_GESTURE_NOTIFY 0x011A
+
+DECLARE_HANDLE(HGESTUREINFO);
+
+#define GF_BEGIN                        0x00000001
+#define GF_INERTIA                      0x00000002
+#define GF_END                          0x00000004
+
+/*
+ * Gesture IDs
+ */
+#define GID_BEGIN                       1
+#define GID_END                         2
+#define GID_ZOOM                        3
+#define GID_PAN                         4
+#define GID_ROTATE                      5
+#define GID_TWOFINGERTAP                6
+#define GID_ROLLOVER                    7
+
+typedef struct tagGESTUREINFO {
+    UINT cbSize;                    // size, in bytes, of this structure (including variable length Args field)
+    DWORD dwFlags;                  // see GF_* flags
+    DWORD dwID;                     // gesture ID, see GID_* defines
+    HWND hwndTarget;                // handle to window targeted by this gesture
+    POINTS ptsLocation;             // current location of this gesture
+    DWORD dwInstanceID;             // internally used
+    DWORD dwSequenceID;             // internally used
+    ULONGLONG ullArguments;         // arguments for gestures whose arguments fit in 8 BYTES
+    UINT cbExtraArgs;               // size, in bytes, of extra arguments, if any, that accompany this gesture
+} GESTUREINFO, *PGESTUREINFO;
+typedef GESTUREINFO const * PCGESTUREINFO;
+
+typedef struct tagGESTURENOTIFYSTRUCT {
+    UINT cbSize;                    // size, in bytes, of this structure
+    DWORD dwFlags;                  // unused
+    HWND hwndTarget;                // handle to window targeted by the gesture
+    POINTS ptsLocation;             // starting location
+    DWORD dwInstanceID;             // internally used
+} GESTURENOTIFYSTRUCT, *PGESTURENOTIFYSTRUCT;
+
+/*
+ * Gesture argument helpers
+ *   - Angle should be a double in the range of -2pi to +2pi
+ *   - Argument should be an unsigned 16-bit value
+ */
+#define GID_ROTATE_ANGLE_TO_ARGUMENT(_arg_)     ((USHORT)((((_arg_) + 2.0 * 3.14159265) / (4.0 * 3.14159265)) * 65535.0))
+#define GID_ROTATE_ANGLE_FROM_ARGUMENT(_arg_)   ((((double)(_arg_) / 65535.0) * 4.0 * 3.14159265) - 2.0 * 3.14159265)
+
+typedef struct tagGESTURECONFIG {
+    DWORD dwID;                     // gesture ID
+    DWORD dwWant;                   // settings related to gesture ID that are to be turned on
+    DWORD dwBlock;                  // settings related to gesture ID that are to be turned off
+} GESTURECONFIG, *PGESTURECONFIG;
+
+#define GC_ALLGESTURES                              0x00000001
+#define GC_ZOOM                                     0x00000001
+#define GC_PAN                                      0x00000001
+#define GC_PAN_WITH_SINGLE_FINGER_VERTICALLY        0x00000002
+#define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY      0x00000004
+#define GC_PAN_WITH_GUTTER                          0x00000008
+#define GC_PAN_WITH_INERTIA                         0x00000010
+#define GC_ROTATE                                   0x00000001
+#define GC_TWOFINGERTAP                             0x00000001
+#define GC_ROLLOVER                                 0x00000001
+#define GESTURECONFIGMAXCOUNT           256             // Maximum number of gestures that can be included
+                                                        // in a single call to SetGestureConfig / GetGestureConfig
+
+
+
+#define GCF_INCLUDE_ANCESTORS           0x00000001      // If specified, GetGestureConfig returns consolidated configuration
+                                                        // for the specified window and it's parent window chain
+
+typedef BOOL (*PtrGetGestureInfo)(HGESTUREINFO hGestureInfo, PGESTUREINFO pGestureInfo);
+typedef BOOL (*PtrGetGestureExtraArgs)(HGESTUREINFO hGestureInfo, UINT cbExtraArgs, PBYTE pExtraArgs);
+typedef BOOL (*PtrCloseGestureInfoHandle)(HGESTUREINFO hGestureInfo);
+typedef BOOL (*PtrSetGestureConfig)(HWND hwnd, DWORD dwReserved, UINT cIDs,
+                                    PGESTURECONFIG pGestureConfig,
+                                    UINT cbSize);
+typedef BOOL (*PtrGetGestureConfig)(HWND hwnd, DWORD dwReserved,
+                                    DWORD dwFlags, PUINT pcIDs,
+                                    PGESTURECONFIG pGestureConfig,
+                                    UINT cbSize);
+
+typedef BOOL (*PtrBeginPanningFeedback)(HWND hwnd);
+typedef BOOL (*PtrUpdatePanningFeedback)(HWND hwnd, LONG, LONG, BOOL);
+typedef BOOL (*PtrEndPanningFeedback)(HWND hwnd, BOOL);
+
+#endif // WM_GESTURE
+#endif // Q_WS_WIN
+
+class QPanGesture;
+class QPinchGesture;
+struct StandardGestures
+{
+    QPanGesture *pan;
+    QPinchGesture *pinch;
+    StandardGestures() : pan(0), pinch(0) { }
+};
+
 
 class QScopedLoopLevelCounter
 {
@@ -427,9 +535,65 @@ public:
                                       QEvent::Type type, Qt::MouseButtons buttons,
                                       QWidget *buttonDown, QWidget *alienWidget);
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
-                               QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver);
+                               QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
+                               bool spontaneous = true);
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     void sendSyntheticEnterLeave(QWidget *widget);
+#endif
+
+    QMap<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
+    static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
+    void initializeMultitouch();
+    void initializeMultitouch_sys();
+    void cleanupMultitouch();
+    void cleanupMultitouch_sys();
+    int findClosestTouchPointId(const QPointF &screenPos);
+    void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
+    void removeTouchPoint(int touchPointId);
+    static void translateRawTouchEvent(QWidget *widget,
+                                       QTouchEvent::DeviceType deviceType,
+                                       const QList<QTouchEvent::TouchPoint> &touchPoints);
+
+#if defined(Q_WS_WIN)
+    static qt_RegisterTouchWindowPtr RegisterTouchWindow;
+    static qt_GetTouchInputInfoPtr GetTouchInputInfo;
+    static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
+
+    QHash<DWORD, int> touchInputIDToTouchPointID;
+    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
+    bool translateTouchEvent(const MSG &msg);
+
+    typedef QMap<QWidget*, StandardGestures> WidgetStandardGesturesMap;
+    WidgetStandardGesturesMap widgetGestures;
+    ulong lastGestureId;
+
+    PtrGetGestureInfo GetGestureInfo;
+    PtrGetGestureExtraArgs GetGestureExtraArgs;
+    PtrCloseGestureInfoHandle CloseGestureInfoHandle;
+    PtrSetGestureConfig SetGestureConfig;
+    PtrGetGestureConfig GetGestureConfig;
+    PtrBeginPanningFeedback BeginPanningFeedback;
+    PtrUpdatePanningFeedback UpdatePanningFeedback;
+    PtrEndPanningFeedback EndPanningFeedback;
+#endif
+
+#ifdef QT_RX71_MULTITOUCH
+    bool hasRX71MultiTouch;
+
+    struct RX71TouchPointState {
+        QSocketNotifier *socketNotifier;
+        QTouchEvent::TouchPoint touchPoint;
+
+        int minX, maxX, scaleX;
+        int minY, maxY, scaleY;
+        int minZ, maxZ;
+    };
+    QList<RX71TouchPointState> allRX71TouchPoints;
+
+    bool readRX71MultiTouchEvents(int deviceNumber);
+    void fakeMouseEventFromRX71TouchEvent();
+    void _q_readRX71MultiTouchEvents();
 #endif
 
 private:
@@ -438,8 +602,16 @@ private:
 #endif
 
     static QApplicationPrivate *self;
+
+    static void giveFocusAccordingToFocusPolicy(QWidget *w,
+                                                Qt::FocusPolicy focusPolicy,
+                                                Qt::FocusReason focusReason);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
 };
+
+Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+                                            QTouchEvent::DeviceType deviceType,
+                                            const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 QT_END_NAMESPACE
 

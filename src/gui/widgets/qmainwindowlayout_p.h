@@ -59,10 +59,12 @@
 
 #include "QtGui/qlayout.h"
 #include "QtGui/qtabbar.h"
+#include "QtGui/qrubberband.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qset.h"
 #include "QtCore/qbasictimer.h"
 #include "private/qlayoutengine_p.h"
+#include "private/qwidgetanimator_p.h"
 
 #include "qdockarealayout_p.h"
 #include "qtoolbararealayout_p.h"
@@ -89,7 +91,6 @@ typedef const struct __CFString * CFStringRef;
 QT_BEGIN_NAMESPACE
 
 class QToolBar;
-class QWidgetAnimator;
 class QRubberBand;
 
 /* This data structure represents the state of all the tool-bars and dock-widgets. It's value based
@@ -128,9 +129,9 @@ public:
     QLayoutItem *itemAt(int index, int *x) const;
     QLayoutItem *takeAt(int index, int *x);
     QList<int> indexOf(QWidget *widget) const;
-    QLayoutItem *item(QList<int> path);
-    QRect itemRect(QList<int> path) const;
-    QRect gapRect(QList<int> path) const; // ### get rid of this, use itemRect() instead
+    QLayoutItem *item(const QList<int> &path);
+    QRect itemRect(const QList<int> &path) const;
+    QRect gapRect(const QList<int> &path) const; // ### get rid of this, use itemRect() instead
 
     bool contains(QWidget *widget) const;
 
@@ -138,14 +139,14 @@ public:
     QWidget *centralWidget() const;
 
     QList<int> gapIndex(QWidget *widget, const QPoint &pos) const;
-    bool insertGap(QList<int> path, QLayoutItem *item);
-    void remove(QList<int> path);
+    bool insertGap(const QList<int> &path, QLayoutItem *item);
+    void remove(const QList<int> &path);
     void remove(QLayoutItem *item);
     void clear();
     bool isValid() const;
 
-    QLayoutItem *plug(QList<int> path);
-    QLayoutItem *unplug(QList<int> path, QMainWindowLayoutState *savedState = 0);
+    QLayoutItem *plug(const QList<int> &path);
+    QLayoutItem *unplug(const QList<int> &path, QMainWindowLayoutState *savedState = 0);
 
     void saveState(QDataStream &stream) const;
     bool checkFormat(QDataStream &stream, bool pre43);
@@ -278,12 +279,12 @@ public:
 
     // animations
 
-    QWidgetAnimator *widgetAnimator;
+    QWidgetAnimator widgetAnimator;
     QList<int> currentGapPos;
     QRect currentGapRect;
     QWidget *pluggingWidget;
 #ifndef QT_NO_RUBBERBAND
-    QRubberBand *gapIndicator;
+    QRubberBand gapIndicator;
 #endif
 
     QList<int> hover(QLayoutItem *widgetItem, const QPoint &mousePos);
@@ -295,10 +296,10 @@ public:
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
     void updateHIToolBarStatus();
-
-private slots:
     void animationFinished(QWidget *widget);
     void allAnimationsFinished();
+
+private slots:
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
     void tabChanged();

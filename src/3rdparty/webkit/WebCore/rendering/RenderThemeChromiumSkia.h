@@ -54,6 +54,7 @@ namespace WebCore {
         virtual Color platformInactiveSelectionBackgroundColor() const;
         virtual Color platformActiveSelectionForegroundColor() const;
         virtual Color platformInactiveSelectionForegroundColor() const;
+        virtual Color focusRingColor() const;
 
         // To change the blink interval, override caretBlinkIntervalInternal instead of this one so that we may share layout test code an intercepts.
         virtual double caretBlinkInterval() const;
@@ -115,6 +116,13 @@ namespace WebCore {
         virtual int buttonInternalPaddingRight() const;
         virtual int buttonInternalPaddingTop() const;
         virtual int buttonInternalPaddingBottom() const;
+
+        // Provide a way to pass the default font size from the Settings object
+        // to the render theme.  FIXME: http://b/1129186 A cleaner way would be
+        // to remove the default font size from this object and have callers
+        // that need the value to get it directly from the appropriate Settings
+        // object.
+        static void setDefaultFontSize(int);
 
     protected:
         static const String& defaultGUIFont();

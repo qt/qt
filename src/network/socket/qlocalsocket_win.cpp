@@ -137,25 +137,14 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     forever {
         DWORD permissions = (openMode & QIODevice::ReadOnly) ? GENERIC_READ : 0;
         permissions |= (openMode & QIODevice::WriteOnly) ? GENERIC_WRITE : 0;
-        QT_WA({
-        localSocket = CreateFileW(
-                       (TCHAR*)d->fullServerName.utf16(),   // pipe name
-                       permissions,
-                       0,              // no sharing
-                       NULL,           // default security attributes
-                       OPEN_EXISTING,  // opens existing pipe
-                       FILE_FLAG_OVERLAPPED,
-                       NULL);          // no template file
-        }, {
-        localSocket = CreateFileA(
-                       d->fullServerName.toLocal8Bit().constData(), // pipe name
-                       permissions,
-                       0,              // no sharing
-                       NULL,           // default security attributes
-                       OPEN_EXISTING,  // opens existing pipe
-                       FILE_FLAG_OVERLAPPED,
-                       NULL);          // no template file
-        });
+        localSocket = CreateFile((const wchar_t *)d->fullServerName.utf16(),   // pipe name
+                                 permissions,
+                                 0,              // no sharing
+                                 NULL,           // default security attributes
+                                 OPEN_EXISTING,  // opens existing pipe
+                                 FILE_FLAG_OVERLAPPED,
+                                 NULL);          // no template file
+
         if (localSocket != INVALID_HANDLE_VALUE)
             break;
         DWORD error = GetLastError();
@@ -165,13 +154,8 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
         }
 
         // All pipe instances are busy, so wait until connected or up to 5 seconds.
-        QT_WA({
-            if (!WaitNamedPipeW((TCHAR*)d->fullServerName.utf16(), 5000))
-                break;
-        }, {
-            if (!WaitNamedPipeA(d->fullServerName.toLocal8Bit().constData(), 5000))
-                break;
-        });
+        if (!WaitNamedPipe((const wchar_t *)d->fullServerName.utf16(), 5000))
+            break;
     }
 
     if (localSocket == INVALID_HANDLE_VALUE) {

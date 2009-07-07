@@ -389,7 +389,7 @@ int tst_Suite::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 
 tst_Suite::tst_Suite()
 {
-    testsDir = QDir(".");
+    testsDir = QDir(SRCDIR);
     bool testsFound = testsDir.cd("tests");
     if (!testsFound) {
         qWarning("*** no tests/ dir!");

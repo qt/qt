@@ -65,6 +65,7 @@ public:
         m_ignoreUnfinished(false),
         m_sortContexts(false),
         m_noUiLines(false),
+        m_idBased(false),
         m_saveMode(SaveEverything)
     {}
 
@@ -97,6 +98,7 @@ public:
     bool m_ignoreUnfinished;
     bool m_sortContexts;
     bool m_noUiLines;
+    bool m_idBased;
     TranslatorSaveMode m_saveMode;
 };
 
@@ -190,9 +192,9 @@ public:
     static void registerFileFormat(const FileFormat &format);
     static QList<FileFormat> &registeredFileFormats();
 
-    enum VariantSeparators {
-        DefaultVariantSeparator = 0x2762, // some weird character nobody ever heard of :-D
-        InternalVariantSeparator = 0x9c // unicode "STRING TERMINATOR"
+    enum {
+        TextVariantSeparator = 0x2762, // some weird character nobody ever heard of :-D
+        BinaryVariantSeparator = 0x9c // unicode "STRING TERMINATOR"
     };
 
 private:

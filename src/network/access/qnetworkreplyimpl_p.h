@@ -130,6 +130,9 @@ public:
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
     void setNetworkCache(QAbstractNetworkCache *networkCache);
+
+    void pauseNotificationHandling();
+    void resumeNotificationHandling();
     void backendNotify(InternalNotifications notification);
     void handleNotifications();
     void createCache();
@@ -159,6 +162,8 @@ public:
     QIODevice *cacheSaveDevice;
 
     NotificationQueue pendingNotifications;
+    bool notificationHandlingPaused;
+
     QUrl urlForLastAuthentication;
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy lastProxyAuthentication;

@@ -66,13 +66,18 @@ namespace QtConcurrent {
 // The ThreadEngineBarrier counts worker threads, and allows one
 // thread to wait for all others to finish. Tested for its use in
 // QtConcurrent, requires more testing for use as a general class.
-class Q_CORE_EXPORT ThreadEngineBarrier
+class ThreadEngineBarrier
 {
 private:
     // The thread count is maintained as an integer in the count atomic
     // variable. The count can be either positive or negative - a negative
     // count signals that a thread is waiting on the barrier.
+
+    // BC note: inlined code from Qt < 4.6 will expect to find the QMutex 
+    // and QAtomicInt here. ### Qt 5: remove.
+    QMutex mutex;
     QAtomicInt count;
+
     QSemaphore semaphore;
 public:
     ThreadEngineBarrier();
@@ -103,6 +108,7 @@ public:
     bool isProgressReportingEnabled();
     void setProgressValue(int progress);
     void setProgressRange(int minimum, int maximum);
+    void acquireBarrierSemaphore();
 
 protected: // The user overrides these:
     virtual void start() {}
@@ -170,7 +176,7 @@ public:
         QFuture<T> future = QFuture<T>(futureInterfaceTyped());
         start();
 
-        barrier.acquire();
+        acquireBarrierSemaphore();
         threadPool->start(this);
         return future;
     }

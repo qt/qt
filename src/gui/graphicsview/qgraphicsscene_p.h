@@ -57,6 +57,7 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
 #include "qgraphicsscene_bsp_p.h"
 #include "qgraphicsitem_p.h"
@@ -165,7 +166,7 @@ public:
     void grabKeyboard(QGraphicsItem *item);
     void ungrabKeyboard(QGraphicsItem *item, bool itemIsDying = false);
     void clearKeyboardGrabber();
-    
+
     QGraphicsItem *dragDropItem;
     QGraphicsWidget *enterWidget;
     Qt::DropAction lastDropAction;
@@ -184,6 +185,9 @@ public:
     void storeMouseButtonsForMouseGrabber(QGraphicsSceneMouseEvent *event);
 
     QList<QGraphicsView *> views;
+    void addView(QGraphicsView *view);
+    void removeView(QGraphicsView *view);
+
     bool painterStateProtection;
 
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
@@ -247,7 +251,7 @@ public:
     static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
 
     static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-    { 
+    {
         return item1->d_ptr->globalStackingOrder < item2->d_ptr->globalStackingOrder;
     }
     static inline bool closestItemLast_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
@@ -303,6 +307,17 @@ public:
     void updatePalette(const QPalette &palette);
 
     QStyleOptionGraphicsItem styleOptionTmp;
+
+    QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
+    QMap<int, QGraphicsItem *> itemForTouchPointId;
+    static void updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent);
+    int findClosestTouchPointId(const QPointF &scenePos);
+    void touchEventHandler(QTouchEvent *touchEvent);
+    bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
+    bool allItemsIgnoreTouchEvents;
+    void enableTouchEventsOnViews();
+
+    void updateInputMethodSensitivityInViews();
 };
 
 QT_END_NAMESPACE

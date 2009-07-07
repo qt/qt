@@ -122,7 +122,10 @@ void tst_QFontComboBox::currentFont_data()
 {
     QTest::addColumn<QFont>("currentFont");
     // Normalize the names
-    QTest::newRow("default") << QFont(QFontInfo(QFont()).family());
+    QFont defaultFont;
+    QTest::newRow("default") << defaultFont;
+    defaultFont.setPointSize(defaultFont.pointSize() + 10);
+    QTest::newRow("default") << defaultFont;
     QFontDatabase db;
     QStringList list = db.families();
     for (int i = 0; i < list.count(); ++i) {
@@ -141,6 +144,7 @@ void tst_QFontComboBox::currentFont()
     QFont oldCurrentFont = box.currentFont();
 
     box.setCurrentFont(currentFont);
+    QCOMPARE(box.currentFont(), currentFont);
     QString boxFontFamily = QFontInfo(box.currentFont()).family();
     QRegExp foundry(" \\[.*\\]");
     if (!currentFont.family().contains(foundry))
