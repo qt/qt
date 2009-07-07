@@ -631,15 +631,32 @@ static void parseBrush(QSvgNode *node,
     QString opacity = attributes.value(QLatin1String("fill-opacity")).toString();
     QString myId = someId(attributes);
 
-    value = value.trimmed();
-    fillRule = fillRule.trimmed();
-    if (!value.isEmpty() || !fillRule.isEmpty()) {
-        Qt::FillRule f = Qt::WindingFill;
+    QSvgFillStyle *inherited =
+                static_cast<QSvgFillStyle*>(node->parent()->styleProperty(
+                                                QSvgStyleProperty::FILL));
+    QSvgFillStyle *prop = new QSvgFillStyle(QColor(Qt::black));
+
+    //fill-rule attribute handling
+    Qt::FillRule f = Qt::WindingFill;
+    if (!fillRule.isEmpty() && fillRule != QLatin1String("inherit")) {
         if (fillRule == QLatin1String("evenodd"))
             f = Qt::OddEvenFill;
+    } else if (inherited) {
+        f = inherited->fillRule();
+    }
+
+    //fill-opacity atttribute handling
+    qreal fillOpacity = 1.0;
+    if (!opacity.isEmpty() && opacity != QLatin1String("inherit")) {
+        fillOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+    } else if (inherited) {
+        fillOpacity = inherited->fillOpacity();
+    }
+
+    //fill attribute handling
+    if ((!value.isEmpty()) && (value != QLatin1String("inherit")) ) {
         if (value.startsWith(QLatin1String("url"))) {
             value = value.remove(0, 3);
-            QSvgFillStyle *prop = new QSvgFillStyle(0);
             QSvgStyleProperty *style = styleFromUrl(node, value);
             if (style) {
                 prop->setFillStyle(style);
@@ -648,29 +665,25 @@ static void parseBrush(QSvgNode *node,
                 prop->setGradientId(id);
                 prop->setGradientResolved(false);
             }
-            if (!opacity.isEmpty()) {
-                qreal clampedOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
-                prop->setFillOpacity(clampedOpacity);
-            }
-            if (!fillRule.isEmpty())
-                prop->setFillRule(f);
-            node->appendStyleProperty(prop,myId);
         } else if (value != QLatin1String("none")) {
             QColor color;
-            if (constructColor(value, opacity, color, handler)) {
-                QSvgFillStyle *prop = new QSvgFillStyle(QBrush(color));
-                if (!fillRule.isEmpty())
-                    prop->setFillRule(f);
-                node->appendStyleProperty(prop, myId);
-            }
+            if (resolveColor(value, color, handler))
+                prop->setBrush(QBrush(color));
         } else {
-            QSvgFillStyle *prop = new QSvgFillStyle(QBrush(Qt::NoBrush));
-            if (!fillRule.isEmpty())
-                prop->setFillRule(f);
-            node->appendStyleProperty(prop, myId);
+            prop->setBrush(QBrush(Qt::NoBrush));
+        }
+    } else if (inherited) {
+        if (inherited->style()) {
+            prop->setFillStyle(inherited->style());
+        } else {
+            prop->setBrush(inherited->qbrush());
         }
     }
+    prop->setFillOpacity(fillOpacity);
+    prop->setFillRule(f);
+    node->appendStyleProperty(prop,myId);
 }
+
 
 static void parseQPen(QPen &pen, QSvgNode *node,
                       const QSvgAttributes &attributes,

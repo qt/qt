@@ -81,6 +81,7 @@ private slots:
     void paths();
     void displayMode();
     void strokeInherit();
+    void testFillInheritance();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -1053,5 +1054,72 @@ void tst_QSvgRenderer::strokeInherit()
     }
 }
 
+void tst_QSvgRenderer::testFillInheritance()
+{
+    static const char *svgs[] = {
+        //reference
+        "<svg viewBox = \"0 0 200 200\">"
+        "    <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "    <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "    <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\" fill-opacity = \"0\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g fill = \"red\" fill-opacity = \"0.5\" fill-rule = \"evenodd\">"
+        "       <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\"/>"
+        "   </g>"
+        "    <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\" fill-opacity = \"0\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g  fill = \"green\" fill-rule = \"nonzero\">"
+        "       <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\" fill = \"red\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "   </g>"
+        "   <g fill-opacity = \"0.8\" fill = \"red\">"
+        "       <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\" fill-opacity = \"0\"/>"
+        "   </g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g  fill = \"red\" >"
+        "      <g fill-opacity = \"0.5\">"
+        "         <g fill-rule = \"evenodd\">"
+        "            <g>"
+        "                <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\"/>"
+        "            </g>"
+        "         </g>"
+        "      </g>"
+        "   </g>"
+        "   <g fill-opacity = \"0.8\" >"
+        "       <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"none\"/>"
+        "   </g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        "   <g fill = \"none\" fill-opacity = \"0\">"
+        "       <polygon points=\"20,20 50,120 100,10 40,80 50,80\" stroke = \"blue\" fill = \"red\" fill-opacity = \"0.5\" fill-rule = \"evenodd\"/>"
+        "   </g>"
+        "   <g fill-opacity = \"0\" >"
+        "       <rect x = \"40\" y = \"40\" width = \"70\" height =\"20\" fill = \"green\"/>"
+        "   </g>"
+        "</svg>"
+    };
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(200, 200, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+        if (i != 0) {
+            QCOMPARE(images[0], images[i]);
+        }
+    }
+}
 QTEST_MAIN(tst_QSvgRenderer)
 #include "tst_qsvgrenderer.moc"
