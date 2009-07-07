@@ -1685,7 +1685,8 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 
     if (unknown && !isReadOnly()) {
         QString t = event->text();
-        if (!t.isEmpty() && t.at(0).isPrint()) {
+        if (!t.isEmpty() && t.at(0).isPrint() &&
+                ((event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) == Qt::NoModifier)) {
             insert(t);
 #ifndef QT_NO_COMPLETER
             complete(event->key());
