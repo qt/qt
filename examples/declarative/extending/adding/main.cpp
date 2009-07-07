@@ -9,7 +9,7 @@ int main(int argc, char ** argv)
     QCoreApplication app(argc, argv);
 
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl::fromLocalFile(":example.qml"));
+    QmlComponent component(&engine, ":example.qml");
     Person *person = qobject_cast<Person *>(component.create());
     if (person) {
         qWarning() << "The person's name is" << person->name();

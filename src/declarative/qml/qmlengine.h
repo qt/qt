@@ -85,6 +85,9 @@ public:
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;
 
+    QUrl baseUrl() const;
+    void setBaseUrl(const QUrl &);
+
     static QmlContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QmlContext *);
 

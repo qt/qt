@@ -638,6 +638,36 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 }
 
 /*!
+    Return the base URL for this engine.  The base URL is only used to resolve
+    components when a relative URL is passed to the QmlComponent constructor.
+
+    If a base URL has not been explicitly set, this method returns the 
+    application's current working directory.
+
+    \sa setBaseUrl()
+*/
+QUrl QmlEngine::baseUrl() const
+{
+    Q_D(const QmlEngine);
+    if (d->baseUrl.isEmpty()) {
+        return QUrl::fromLocalFile(QDir::currentPath() + QDir::separator());
+    } else {
+        return d->baseUrl;
+    }
+}
+
+/*!
+    Set the  base URL for this engine to \a url.  
+
+    \sa baseUrl()
+*/
+void QmlEngine::setBaseUrl(const QUrl &url)
+{
+    Q_D(QmlEngine);
+    d->baseUrl = url;
+}
+
+/*!
   Returns the QmlContext for the \a object, or 0 if no context has been set.
 
   When the QmlEngine instantiates a QObject, the context is set automatically.

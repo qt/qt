@@ -10,7 +10,7 @@ int main(int argc, char ** argv)
     QCoreApplication app(argc, argv);
 
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl::fromLocalFile(":example.qml"));
+    QmlComponent component(&engine, ":example.qml");
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
     if (party && party->celebrant()) {
