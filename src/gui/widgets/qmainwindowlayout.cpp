@@ -426,42 +426,42 @@ QList<int> QMainWindowLayoutState::gapIndex(QWidget *widget,
     return result;
 }
 
-bool QMainWindowLayoutState::insertGap(QList<int> path, QLayoutItem *item)
+bool QMainWindowLayoutState::insertGap(const QList<int> &path, QLayoutItem *item)
 {
     if (path.isEmpty())
         return false;
 
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0) {
         Q_ASSERT(qobject_cast<QToolBar*>(item->widget()) != 0);
-        return toolBarAreaLayout.insertGap(path, item);
+        return toolBarAreaLayout.insertGap(path.mid(1), item);
     }
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1) {
         Q_ASSERT(qobject_cast<QDockWidget*>(item->widget()) != 0);
-        return dockAreaLayout.insertGap(path, item);
+        return dockAreaLayout.insertGap(path.mid(1), item);
     }
 #endif //QT_NO_DOCKWIDGET
 
     return false;
 }
 
-void QMainWindowLayoutState::remove(QList<int> path)
+void QMainWindowLayoutState::remove(const QList<int> &path)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        toolBarAreaLayout.remove(path);
+        toolBarAreaLayout.remove(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        dockAreaLayout.remove(path);
+        dockAreaLayout.remove(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 }
 
@@ -501,88 +501,88 @@ bool QMainWindowLayoutState::isValid() const
     return rect.isValid();
 }
 
-QLayoutItem *QMainWindowLayoutState::item(QList<int> path)
+QLayoutItem *QMainWindowLayoutState::item(const QList<int> &path)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.item(path).widgetItem;
+        return toolBarAreaLayout.item(path.mid(1)).widgetItem;
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.item(path).widgetItem;
+        return dockAreaLayout.item(path.mid(1)).widgetItem;
 #endif //QT_NO_DOCKWIDGET
 
     return 0;
 }
 
-QRect QMainWindowLayoutState::itemRect(QList<int> path) const
+QRect QMainWindowLayoutState::itemRect(const QList<int> &path) const
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.itemRect(path);
+        return toolBarAreaLayout.itemRect(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.itemRect(path);
+        return dockAreaLayout.itemRect(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return QRect();
 }
 
-QRect QMainWindowLayoutState::gapRect(QList<int> path) const
+QRect QMainWindowLayoutState::gapRect(const QList<int> &path) const
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.itemRect(path);
+        return toolBarAreaLayout.itemRect(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.gapRect(path);
+        return dockAreaLayout.gapRect(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return QRect();
 }
 
-QLayoutItem *QMainWindowLayoutState::plug(QList<int> path)
+QLayoutItem *QMainWindowLayoutState::plug(const QList<int> &path)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
     if (i == 0)
-        return toolBarAreaLayout.plug(path);
+        return toolBarAreaLayout.plug(path.mid(1));
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.plug(path);
+        return dockAreaLayout.plug(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return 0;
 }
 
-QLayoutItem *QMainWindowLayoutState::unplug(QList<int> path, QMainWindowLayoutState *other)
+QLayoutItem *QMainWindowLayoutState::unplug(const QList<int> &path, QMainWindowLayoutState *other)
 {
-    int i = path.takeFirst();
+    int i = path.first();
 
 #ifdef QT_NO_TOOLBAR
     Q_UNUSED(other);
 #else
     if (i == 0)
-        return toolBarAreaLayout.unplug(path, other ? &other->toolBarAreaLayout : 0);
+        return toolBarAreaLayout.unplug(path.mid(1), other ? &other->toolBarAreaLayout : 0);
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
     if (i == 1)
-        return dockAreaLayout.unplug(path);
+        return dockAreaLayout.unplug(path.mid(1));
 #endif //QT_NO_DOCKWIDGET
 
     return 0;

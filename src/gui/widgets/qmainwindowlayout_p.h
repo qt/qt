@@ -129,9 +129,9 @@ public:
     QLayoutItem *itemAt(int index, int *x) const;
     QLayoutItem *takeAt(int index, int *x);
     QList<int> indexOf(QWidget *widget) const;
-    QLayoutItem *item(QList<int> path);
-    QRect itemRect(QList<int> path) const;
-    QRect gapRect(QList<int> path) const; // ### get rid of this, use itemRect() instead
+    QLayoutItem *item(const QList<int> &path);
+    QRect itemRect(const QList<int> &path) const;
+    QRect gapRect(const QList<int> &path) const; // ### get rid of this, use itemRect() instead
 
     bool contains(QWidget *widget) const;
 
@@ -139,14 +139,14 @@ public:
     QWidget *centralWidget() const;
 
     QList<int> gapIndex(QWidget *widget, const QPoint &pos) const;
-    bool insertGap(QList<int> path, QLayoutItem *item);
-    void remove(QList<int> path);
+    bool insertGap(const QList<int> &path, QLayoutItem *item);
+    void remove(const QList<int> &path);
     void remove(QLayoutItem *item);
     void clear();
     bool isValid() const;
 
-    QLayoutItem *plug(QList<int> path);
-    QLayoutItem *unplug(QList<int> path, QMainWindowLayoutState *savedState = 0);
+    QLayoutItem *plug(const QList<int> &path);
+    QLayoutItem *unplug(const QList<int> &path, QMainWindowLayoutState *savedState = 0);
 
     void saveState(QDataStream &stream) const;
     bool checkFormat(QDataStream &stream, bool pre43);
