@@ -72,7 +72,7 @@ class QGraphicsSceneIndexRectIntersector : public QGraphicsSceneIndexIntersector
 {
 public:
     bool intersect(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
-                   const QTransform &transform, const QTransform &deviceTransform) const
+                   const QTransform &deviceTransform) const
     {
         QRectF brect = item->boundingRect();
         _q_adjustRect(&brect);
@@ -81,8 +81,10 @@ public:
         Q_UNUSED(exposeRect);
 
         bool keep = true;
-        if (QGraphicsItemPrivate::get(item)->itemIsUntransformable()) {
+        const QGraphicsItemPrivate *itemd = QGraphicsItemPrivate::get(item);
+        if (itemd->itemIsUntransformable()) {
             // Untransformable items; map the scene rect to item coordinates.
+            const QTransform transform = item->deviceTransform(deviceTransform);
             QRectF itemRect = (deviceTransform * transform.inverted()).mapRect(sceneRect);
             if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
                 keep = itemRect.contains(brect) && itemRect != brect;
@@ -94,14 +96,23 @@ public:
                 keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, itemPath, mode);
             }
         } else {
+            Q_ASSERT(!itemd->dirtySceneTransform);
+            const QRectF itemSceneBoundingRect = itemd->sceneTransformTranslateOnly
+                                               ? brect.translated(itemd->sceneTransform.dx(),
+                                                                  itemd->sceneTransform.dy())
+                                               : itemd->sceneTransform.mapRect(brect);
             if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
-                keep = sceneRect.contains(transform.mapRect(brect)) && sceneRect != brect;
+                keep = sceneRect != brect && sceneRect.contains(itemSceneBoundingRect);
             else
-                keep = sceneRect.intersects(transform.mapRect(brect));
+                keep = sceneRect.intersects(itemSceneBoundingRect);
             if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
                 QPainterPath rectPath;
                 rectPath.addRect(sceneRect);
-                keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, transform.inverted().map(rectPath), mode);
+                if (itemd->sceneTransformTranslateOnly)
+                    rectPath.translate(-itemd->sceneTransform.dx(), -itemd->sceneTransform.dy());
+                else
+                    rectPath = itemd->sceneTransform.inverted().map(rectPath);
+                keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, rectPath, mode);
             }
         }
         return keep;
@@ -114,7 +125,7 @@ class QGraphicsSceneIndexPointIntersector : public QGraphicsSceneIndexIntersecto
 {
 public:
     bool intersect(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
-                   const QTransform &transform, const QTransform &deviceTransform) const
+                   const QTransform &deviceTransform) const
     {
         QRectF brect = item->boundingRect();
         _q_adjustRect(&brect);
@@ -123,8 +134,10 @@ public:
         Q_UNUSED(exposeRect);
 
         bool keep = false;
-        if (QGraphicsItemPrivate::get(item)->itemIsUntransformable()) {
+        const QGraphicsItemPrivate *itemd = QGraphicsItemPrivate::get(item);
+        if (itemd->itemIsUntransformable()) {
             // Untransformable items; map the scene point to item coordinates.
+            const QTransform transform = item->deviceTransform(deviceTransform);
             QPointF itemPoint = (deviceTransform * transform.inverted()).map(scenePoint);
             keep = brect.contains(itemPoint);
             if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
@@ -133,8 +146,19 @@ public:
                 keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, pointPath, mode);
             }
         } else {
-            QRectF sceneBoundingRect = transform.mapRect(brect);
-            keep = sceneBoundingRect.intersects(QRectF(scenePoint, QSizeF(1, 1))) && item->contains(transform.inverted().map(scenePoint));
+            Q_ASSERT(!itemd->dirtySceneTransform);
+            QRectF sceneBoundingRect = itemd->sceneTransformTranslateOnly
+                                     ? brect.translated(itemd->sceneTransform.dx(),
+                                                        itemd->sceneTransform.dy())
+                                     : itemd->sceneTransform.mapRect(brect);
+            keep = sceneBoundingRect.intersects(QRectF(scenePoint, QSizeF(1, 1)));
+            if (keep) {
+                QPointF p = itemd->sceneTransformTranslateOnly
+                          ? QPointF(scenePoint.x() - itemd->sceneTransform.dx(),
+                                    scenePoint.y() - itemd->sceneTransform.dy())
+                          : itemd->sceneTransform.inverted().map(scenePoint);
+                keep = item->contains(p);
+            }
         }
 
         return keep;
@@ -147,7 +171,7 @@ class QGraphicsSceneIndexPathIntersector : public QGraphicsSceneIndexIntersector
 {
 public:
     bool intersect(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
-                   const QTransform &transform, const QTransform &deviceTransform) const
+                   const QTransform &deviceTransform) const
     {
         QRectF brect = item->boundingRect();
         _q_adjustRect(&brect);
@@ -156,8 +180,10 @@ public:
         Q_UNUSED(exposeRect);
 
         bool keep = true;
-        if (QGraphicsItemPrivate::get(item)->itemIsUntransformable()) {
+        const QGraphicsItemPrivate *itemd = QGraphicsItemPrivate::get(item);
+        if (itemd->itemIsUntransformable()) {
             // Untransformable items; map the scene rect to item coordinates.
+            const QTransform transform = item->deviceTransform(deviceTransform);
             QPainterPath itemPath = (deviceTransform * transform.inverted()).map(scenePath);
             if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
                 keep = itemPath.contains(brect);
@@ -166,12 +192,20 @@ public:
             if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape))
                 keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, itemPath, mode);
         } else {
+            Q_ASSERT(!itemd->dirtySceneTransform);
+            const QRectF itemSceneBoundingRect = itemd->sceneTransformTranslateOnly
+                                               ? brect.translated(itemd->sceneTransform.dx(),
+                                                                  itemd->sceneTransform.dy())
+                                               : itemd->sceneTransform.mapRect(brect);
             if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
-                keep = scenePath.contains(transform.mapRect(brect));
+                keep = scenePath.contains(itemSceneBoundingRect);
             else
-                keep = scenePath.intersects(transform.mapRect(brect));
+                keep = scenePath.intersects(itemSceneBoundingRect);
             if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
-                QPainterPath itemPath = transform.inverted().map(scenePath);
+                QPainterPath itemPath = itemd->sceneTransformTranslateOnly
+                                      ? scenePath.translated(-itemd->sceneTransform.dx(),
+                                                             -itemd->sceneTransform.dy())
+                                      : itemd->sceneTransform.inverted().map(scenePath);
                 keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, itemPath, mode);
             }
         }
@@ -236,7 +270,6 @@ bool QGraphicsSceneIndexPrivate::itemCollidesWithPath(const QGraphicsItem *item,
 void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
                                                         QGraphicsSceneIndexIntersector *intersector,
                                                         QList<QGraphicsItem *> *items,
-                                                        const QTransform &parentTransform,
                                                         const QTransform &viewTransform,
                                                         Qt::ItemSelectionMode mode, Qt::SortOrder order,
                                                         qreal parentOpacity) const
@@ -251,16 +284,23 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity()))
         return;
 
-    // Calculate the full transform for this item.
-    QTransform transform(parentTransform);
-    item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
+    // Update the item's scene transform if dirty.
+    const bool itemIsUntransformable = item->d_ptr->itemIsUntransformable();
+    const bool wasDirtyParentSceneTransform = item->d_ptr->dirtySceneTransform && !itemIsUntransformable;
+    if (wasDirtyParentSceneTransform) {
+        item->d_ptr->updateSceneTransformFromParent();
+        Q_ASSERT(!item->d_ptr->dirtySceneTransform);
+    }
 
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     bool processItem = !itemIsFullyTransparent;
     if (processItem) {
-        processItem = intersector->intersect(item, exposeRect, mode, transform, viewTransform);
-        if (!processItem && (!itemHasChildren || itemClipsChildrenToShape))
+        processItem = intersector->intersect(item, exposeRect, mode, viewTransform);
+        if (!processItem && (!itemHasChildren || itemClipsChildrenToShape)) {
+            if (wasDirtyParentSceneTransform)
+                item->d_ptr->invalidateChildrenSceneTransform();
             return;
+        }
     } // else we know for sure this item has children we must process.
 
     int i = 0;
@@ -269,17 +309,24 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
         item->d_ptr->ensureSortedChildren();
 
         // Clip to shape.
-        if (itemClipsChildrenToShape)
-            exposeRect &= transform.map(item->shape()).controlPointRect();
+        if (itemClipsChildrenToShape && !itemIsUntransformable) {
+            QPainterPath mappedShape = item->d_ptr->sceneTransformTranslateOnly
+                                     ? item->shape().translated(item->d_ptr->sceneTransform.dx(),
+                                                                item->d_ptr->sceneTransform.dy())
+                                     : item->d_ptr->sceneTransform.map(item->shape());
+            exposeRect &= mappedShape.controlPointRect();
+        }
 
         // Process children behind
         for (i = 0; i < item->d_ptr->children.size(); ++i) {
             QGraphicsItem *child = item->d_ptr->children.at(i);
+            if (wasDirtyParentSceneTransform)
+                child->d_ptr->dirtySceneTransform = 1;
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
                 break;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            recursive_items_helper(child, exposeRect, intersector, items, transform, viewTransform,
+            recursive_items_helper(child, exposeRect, intersector, items, viewTransform,
                                    mode, order, opacity);
         }
     }
@@ -292,9 +339,11 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
     if (itemHasChildren) {
         for (; i < item->d_ptr->children.size(); ++i) {
             QGraphicsItem *child = item->d_ptr->children.at(i);
+            if (wasDirtyParentSceneTransform)
+                child->d_ptr->dirtySceneTransform = 1;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            recursive_items_helper(child, exposeRect, intersector, items, transform, viewTransform,
+            recursive_items_helper(child, exposeRect, intersector, items, viewTransform,
                                    mode, order, opacity);
         }
     }

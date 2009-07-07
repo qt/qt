@@ -137,7 +137,7 @@ public:
 
     void recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
                                 QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
-                                const QTransform &parentTransform, const QTransform &viewTransform,
+                                const QTransform &viewTransform,
                                 Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
     inline void items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
                              QList<QGraphicsItem *> *items, const QTransform &viewTransform,
@@ -155,9 +155,8 @@ inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphi
 {
     Q_Q(const QGraphicsSceneIndex);
     const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::DescendingOrder);
-    const QTransform identity;
     for (int i = 0; i < tli.size(); ++i)
-        recursive_items_helper(tli.at(i), rect, intersector, items, identity, viewTransform, mode, order);
+        recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode, order);
     if (order == Qt::AscendingOrder) {
         const int n = items->size();
         for (int i = 0; i < n / 2; ++i)
@@ -171,7 +170,7 @@ public:
     QGraphicsSceneIndexIntersector() { }
     virtual ~QGraphicsSceneIndexIntersector() { }
     virtual bool intersect(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
-                           const QTransform &transform, const QTransform &deviceTransform) const = 0;
+                           const QTransform &deviceTransform) const = 0;
 };
 
 #endif // QT_NO_GRAPHICSVIEW
