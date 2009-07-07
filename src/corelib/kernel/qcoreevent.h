@@ -271,8 +271,6 @@ public:
 
         Signal = 192,
         Wrapped = 193,
-        RequestSoftwareInputPanel = 194,
-        CloseSoftwareInputPanel = 195,
 
         TouchBegin = 194,
         TouchUpdate = 195,
@@ -280,6 +278,9 @@ public:
 
         Gesture = 197,
         GraphicsSceneGesture = 198,
+
+        RequestSoftwareInputPanel = 199,
+        CloseSoftwareInputPanel = 200,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
