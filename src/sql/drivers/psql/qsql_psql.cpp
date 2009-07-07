@@ -54,6 +54,8 @@
 #include <qstringlist.h>
 #include <qmutex.h>
 
+#include <qdebug.h>
+
 #include <libpq-fe.h>
 #include <pg_config.h>
 
@@ -1142,6 +1144,21 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             r += QLatin1String((const char*)data);
             r += QLatin1Char('\'');
             qPQfreemem(data);
+            break;
+        }
+        case QVariant::Double: {
+            double val = field.value().toDouble();
+            if (isnan(val))
+                r = QLatin1String("'NaN'");
+            else {
+                int res = isinf(val);
+                if (res == 1)
+                    r = QLatin1String("'Infinity'");
+                else if (res == -1)
+                    r = QLatin1String("'-Infinity'");
+                else
+                    r = QSqlDriver::formatValue(field, trimStrings);
+            }
             break;
         }
         default:
