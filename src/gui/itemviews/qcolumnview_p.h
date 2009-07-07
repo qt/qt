@@ -60,7 +60,7 @@
 #include <private/qabstractitemview_p.h>
 
 #include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qtimeline.h>
+#include <QtCore/qpropertyanimation.h>
 #include <QtGui/qabstractitemdelegate.h>
 #include <QtGui/qabstractitemview.h>
 #include <QtGui/qitemdelegate.h>
@@ -160,7 +160,7 @@ public:
     QVector<int> columnSizes; // used during init and corner moving
     bool showResizeGrips;
     int offset;
-    QTimeLine currentAnimation;
+    QPropertyAnimation currentAnimation;
     QWidget *previewWidget;
     QAbstractItemView *previewColumn;
 };

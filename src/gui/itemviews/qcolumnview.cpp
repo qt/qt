@@ -107,9 +107,10 @@ void QColumnViewPrivate::initialize()
 {
     Q_Q(QColumnView);
     q->setTextElideMode(Qt::ElideMiddle);
-    QObject::connect(&currentAnimation, SIGNAL(frameChanged(int)),
-            hbar, SLOT(setValue(int)));
     QObject::connect(&currentAnimation, SIGNAL(finished()), q, SLOT(_q_changeCurrentColumn()));
+    currentAnimation.setDuration(ANIMATION_DURATION_MSEC);
+    currentAnimation.setTargetObject(hbar);
+    currentAnimation.setEasingCurve(QEasingCurve::InOutQuad);
     delete itemDelegate;
     q->setItemDelegate(new QColumnViewDelegate(q));
 }
@@ -259,7 +260,7 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
     if (!index.isValid() || d->columns.isEmpty())
         return;
 
-    if (d->currentAnimation.state() == QTimeLine::Running)
+    if (d->currentAnimation.state() == QPropertyAnimation::Running)
         return;
 
     d->currentAnimation.stop();
@@ -325,21 +326,7 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
         }
     }
 
-    //horizontalScrollBar()->setValue(newScrollbarValue);
-    //d->_q_changeCurrentColumn();
-    //return;
-    // or do the following currentAnimation
-
-    int oldValue = horizontalScrollBar()->value();
-
-    if (oldValue < newScrollbarValue) {
-        d->currentAnimation.setFrameRange(oldValue, newScrollbarValue);
-        d->currentAnimation.setDirection(QTimeLine::Forward);
-        d->currentAnimation.setCurrentTime(0);
-    } else {
-        d->currentAnimation.setFrameRange(newScrollbarValue, oldValue);
-        d->currentAnimation.setDirection(QTimeLine::Backward);
-    }
+    d->currentAnimation.setEndValue(newScrollbarValue);
     d->currentAnimation.start();
 }
 
@@ -409,7 +396,7 @@ void QColumnView::resizeEvent(QResizeEvent *event)
 void QColumnViewPrivate::updateScrollbars()
 {
     Q_Q(QColumnView);
-    if (currentAnimation.state() == QTimeLine::Running)
+    if (currentAnimation.state() == QPropertyAnimation::Running)
         return;
 
     // find the total horizontal length of the laid out columns
@@ -1044,7 +1031,7 @@ QColumnViewPrivate::QColumnViewPrivate()
 :  QAbstractItemViewPrivate()
 ,showResizeGrips(true)
 ,offset(0)
-,currentAnimation(ANIMATION_DURATION_MSEC)
+,currentAnimation(0, "value") // will set the target later
 ,previewWidget(0)
 ,previewColumn(0)
 {
