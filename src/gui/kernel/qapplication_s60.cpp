@@ -1158,6 +1158,12 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
     }
 }
 
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
+
 #ifndef QT_NO_SESSIONMANAGER
 QSessionManager::QSessionManager(QApplication * app, QString &id, QString& key)
 {
