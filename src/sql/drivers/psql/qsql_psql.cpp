@@ -54,7 +54,6 @@
 #include <qstringlist.h>
 #include <qmutex.h>
 
-#include <qdebug.h>
 
 #include <libpq-fe.h>
 #include <pg_config.h>
