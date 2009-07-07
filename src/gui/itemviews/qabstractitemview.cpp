@@ -1602,7 +1602,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     d->checkMouseMove(index);
 
 #ifndef QT_NO_DRAGANDDROP
-    if (index.isValid()
+    if (d->pressedIndex.isValid()
         && d->dragEnabled
         && (state() != DragSelectingState)
         && (event->buttons() != Qt::NoButton)
