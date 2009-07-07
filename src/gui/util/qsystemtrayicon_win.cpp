@@ -163,7 +163,7 @@ void QSystemTrayIconSys::setIconContents(NOTIFYICONDATA &tnd)
     }
 }
 
-int iconFlag( QSystemTrayIcon::MessageIcon icon )
+static int iconFlag( QSystemTrayIcon::MessageIcon icon )
 {
 #if NOTIFYICON_VERSION >= 3
     switch (icon) {
@@ -176,7 +176,7 @@ int iconFlag( QSystemTrayIcon::MessageIcon icon )
         case QSystemTrayIcon::NoIcon:
             return NIIF_NONE;
         default:
-            Q_ASSERT("Invalid QSystemTrayIcon::MessageIcon value", false);
+            Q_ASSERT_X(false, "QSystemTrayIconSys::showMessage", "Invalid QSystemTrayIcon::MessageIcon value");
             return NIIF_NONE;
     }
 #else

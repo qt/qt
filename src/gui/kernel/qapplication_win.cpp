@@ -3940,13 +3940,11 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 
 bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 {
-    Q_Q(QApplication);
-
     QWidget *widgetForHwnd = QWidget::find(msg.hwnd);
     if (!widgetForHwnd)
         return false;
 
-    QRect screenGeometry = q->desktop()->screenGeometry(widgetForHwnd);
+    QRect screenGeometry = QApplication::desktop()->screenGeometry(widgetForHwnd);
 
     QList<QTouchEvent::TouchPoint> touchPoints;
 
