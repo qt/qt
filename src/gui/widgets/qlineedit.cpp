@@ -1663,7 +1663,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
         qt_mac_secure_keyboard(true);
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-    d->origText = d->text;
+    d->control->setCancelText(d->text);
 #endif
 #ifndef QT_NO_COMPLETER
     if (d->control->completer()) {
@@ -1718,7 +1718,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         qt_mac_secure_keyboard(false);
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-    d->origText = QString();
+    d->control->setCancelText(QString());
 #endif
 #ifndef QT_NO_COMPLETER
     if (d->control->completer()) {

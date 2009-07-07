@@ -217,6 +217,9 @@ public:
     int cursorBlinkPeriod() const;
     void setCursorBlinkPeriod(int msec);
 
+    QString cancelText() const;
+    void setCancelText(QString);
+
     enum DrawFlags {
         DrawText = 0x01,
         DrawSelections = 0x02,
@@ -265,6 +268,7 @@ private:
     QList<int> transactions;
     QPoint m_tripleClick;
     int m_tripleClickTimer;
+    QString m_cancelText;
 
     void emitCursorPositionChanged();
 
@@ -704,6 +708,16 @@ inline void QLineControl::setFont(const QFont &font)
 inline int QLineControl::cursorBlinkPeriod() const
 {
     return m_blinkPeriod;
+}
+
+QString QLineControl::cancelText() const
+{
+    return m_cancelText;
+}
+
+void QLineControl::setCancelText(QString s)
+{
+    m_cancelText = s;
 }
 
 QT_END_NAMESPACE

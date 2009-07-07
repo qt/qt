@@ -1232,7 +1232,6 @@ bool QLineControl::processEvent(QEvent* ev)
                     return true;
                 }
             }
-            //TODO: Needs a call to processKeyEvent?
         } else if (e->type() == QEvent::EnterEditFocus) {
             end(false);
             int cft = QApplication::cursorFlashTime();
@@ -1450,11 +1449,10 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         // ### resets current content.  dubious code; you can
         // navigate with keys up, down, back, and select(?), but if you press
         // "left" or "right" it clears?
-        updatePasswordEchoEditing(true);//TODO: used to set a WA too
+        updatePasswordEchoEditing(true);
         clear();
     }
 
-    //setCursorVisible(true);TODO: Who handles this?
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
         if (hasAcceptableInput() || fixup()) {
             emit accepted();
@@ -1652,19 +1650,19 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
                 }
                 break;
-#ifdef QT_KEYPAD_NAVIGATION//TODO: This section
+#ifdef QT_KEYPAD_NAVIGATION
             case Qt::Key_Back:
                 if (QApplication::keypadNavigationEnabled() && !event->isAutoRepeat()
                     && !isReadOnly()) {
                     if (text().length() == 0) {
-                        setText(d->origText);
+                        setText(m_cancelText);
 
-                        if (d->passwordEchoEditing)
-                            d->updatePasswordEchoEditing(false);
+                        if (passwordEchoEditing)
+                            updatePasswordEchoEditing(false);
 
                         setEditFocus(false);
-                    } else if (!d->deleteAllTimer.isActive()) {
-                        d->deleteAllTimer.start(750, this);
+                    } else if (!deleteAllTimer) {
+                        deleteAllTimer = startTimer(750);
                     }
                 } else {
                     unknown = true;
