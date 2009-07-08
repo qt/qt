@@ -2787,6 +2787,7 @@ void Configure::generateConfigfiles()
         if(dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
+        if(dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_CL"] == "yes" ||
