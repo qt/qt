@@ -2831,7 +2831,7 @@ void tst_QSqlQuery::task_233829()
 
     QSqlQuery q( db );
     QString tableName = qTableName("task_233829");
-    QVERIFY_SQL(q,exec("CREATE TABLE " + tableName  + " (dbl1 double precision,dbl2 double precision) without oids;"));
+    QVERIFY_SQL(q,exec("CREATE TABLE " + tableName  + "(dbl1 double precision,dbl2 double precision) without oids;"));
 
     QString queryString("INSERT INTO " + tableName +"(dbl1, dbl2) VALUES(?,?)");
 
