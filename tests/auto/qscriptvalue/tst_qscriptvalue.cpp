@@ -3207,6 +3207,8 @@ void tst_QScriptValue::engineDeleted()
     QVERIFY(v3.isObject());
     QScriptValue v4 = eng->newQObject(this);
     QVERIFY(v4.isQObject());
+    QScriptValue v5 = "Hello";
+    QVERIFY(v2.isString());
 
     delete eng;
 
@@ -3218,6 +3220,8 @@ void tst_QScriptValue::engineDeleted()
     QVERIFY(v3.engine() == 0);
     QVERIFY(!v4.isValid());
     QVERIFY(v4.engine() == 0);
+    QVERIFY(v5.isValid());
+    QVERIFY(v5.engine() == 0);
 }
 
 void tst_QScriptValue::valueOfWithClosure()
