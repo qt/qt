@@ -78,6 +78,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition)
+    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate);
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
     Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
@@ -133,6 +134,9 @@ public:
     int cursorPosition() const;
     void setCursorPosition(int pos);
 
+    QmlComponent* cursorDelegate() const;
+    void setCursorDelegate(QmlComponent*);
+
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
 
@@ -176,6 +180,8 @@ private Q_SLOTS:
     void fontChanged();
     void updateImgCache(const QRectF &rect);
     void q_textChanged();
+    void moveCursorDelegate();
+    void loadCursorDelegate();
 
 private:
     void updateSize();

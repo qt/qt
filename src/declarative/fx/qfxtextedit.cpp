@@ -454,6 +454,66 @@ void QFxTextEdit::setCursorPosition(int pos)
 }
 
 /*!
+    \qmlproperty TextEdit::cursorDelegate
+    \brief The delegate for the cursor in the TextEdit.
+
+    If you set a cursorDelegate for a TextEdit, this delegate will be used for
+    drawing the cursor instead of the standard cursor. An instance of the
+    delegate will be created and managed by the text edit when a cursor is
+    needed, and the x and y properties of delegate instance will be set so as
+    to be one pixel before the top left of the current character.
+
+    Note that the root item of the delegate component must be a QFxItem or
+    QFxItem derived item.
+*/
+QmlComponent* QFxTextEdit::cursorDelegate() const
+{
+    Q_D(const QFxTextEdit);
+    return d->cursorComponent;
+}
+
+void QFxTextEdit::setCursorDelegate(QmlComponent* c)
+{
+    Q_D(QFxTextEdit);
+    if(d->cursorComponent){
+        delete d->cursorComponent;
+        if(d->cursor){
+            disconnect(d->control, SIGNAL(cursorPositionChanged()),
+                    this, SLOT(moveCursorDelegate()));
+            d->control->setCursorWidth(-1);
+            dirtyCache(cursorRect());
+            delete d->cursor;
+            d->cursor = 0;
+        }
+    }
+    d->cursorComponent = c;
+    if(c && c->isReady()){
+        loadCursorDelegate();
+    }else{
+        connect(c, SIGNAL(statusChanged()),
+                this, SLOT(loadCursorDelegate()));
+    }
+}
+
+void QFxTextEdit::loadCursorDelegate()
+{
+    Q_D(QFxTextEdit);
+    if(d->cursorComponent->isLoading())
+        return;
+    d->cursor = qobject_cast<QFxItem*>(d->cursorComponent->create(qmlContext(this)));
+    if(d->cursor){
+        connect(d->control, SIGNAL(cursorPositionChanged()),
+                this, SLOT(moveCursorDelegate()));
+        d->control->setCursorWidth(0);
+        dirtyCache(cursorRect());
+        d->cursor->setItemParent(this);
+        moveCursorDelegate();
+    }else{
+        qWarning() << "Error loading cursor delegate for TextEdit:" + objectName();
+    }
+}
+
+/*!
     \qmlproperty bool TextEdit::focusOnPress
 
     Whether the TextEdit should gain focus on a mouse press. By default this is
@@ -894,6 +954,16 @@ void QFxTextEdit::q_textChanged()
     if (!widthValid())
         updateSize();   //### optimize: we get 3 calls to updateSize every time a letter is typed
     emit textChanged(text());
+}
+
+void QFxTextEdit::moveCursorDelegate()
+{
+    Q_D(QFxTextEdit);
+    if(!d->cursor)
+        return;
+    QRectF cursorRect = d->control->cursorRect();
+    d->cursor->setX(cursorRect.x());
+    d->cursor->setY(cursorRect.y());
 }
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't

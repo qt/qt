@@ -70,7 +70,7 @@ public:
     QFxTextEditPrivate()
       : font(0), color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop),
       dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false), preserveSelection(true),
-      textMargin(0.0), format(QFxTextEdit::AutoText), document(0)
+      textMargin(0.0), cursor(0), cursorComponent(0), format(QFxTextEdit::AutoText), document(0)
     {
     }
 
@@ -100,6 +100,8 @@ public:
     bool focusOnPress;
     bool preserveSelection;
     qreal textMargin;
+    QmlComponent* cursorComponent;
+    QFxItem* cursor;
     QFxTextEdit::TextFormat format;
     QTextDocument *document;
     QTextControl *control;

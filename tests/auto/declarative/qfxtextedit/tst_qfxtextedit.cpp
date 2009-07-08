@@ -1,6 +1,8 @@
 #include <qtest.h>
 #include <QTextDocument>
 #include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlcontext.h>
+#include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxtextedit.h>
 #include <QFontMetrics>
@@ -23,6 +25,8 @@ private slots:
     void font();
     void color();
 
+    void cursorDelegate();
+
 private:
     QStringList standard;
     QStringList richText;
@@ -37,6 +41,38 @@ private:
 
     QmlEngine engine;
 };
+
+/*
+   Find an item with the specified id.  If index is supplied then the
+   item must also evaluate the {index} expression equal to index
+
+   Copied from ListView test
+*/
+template<typename T>
+T *findItem(QFxItem *parent, const QString &id, int index=0)
+{
+    const QMetaObject &mo = T::staticMetaObject;
+    qDebug() << parent->children()->count() << "children";
+    for (int i = 0; i < parent->children()->count(); ++i) {
+        QFxItem *item = parent->children()->at(i);
+        qDebug() << "try" << item;
+        if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
+            if (index != -1) {
+                QmlExpression e(qmlContext(item), "index", item);
+                e.setTrackChange(false);
+                if (e.value().toInt() == index)
+                    return static_cast<T*>(item);
+            } else {
+                return static_cast<T*>(item);
+            }
+        }
+        item = findItem<T>(item, id, index);
+        if (item)
+            return static_cast<T*>(item);
+    }
+
+    return 0;
+}
 
 tst_qfxtextedit::tst_qfxtextedit()
 {
@@ -124,6 +160,7 @@ void tst_qfxtextedit::width()
         QmlComponent texteditComponent(&engine, "TextEdit {  text: \"\" }");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->width(), 0.);
     }
 
@@ -137,6 +174,7 @@ void tst_qfxtextedit::width()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->width(), qreal(metricWidth));
     }
 
@@ -152,6 +190,7 @@ void tst_qfxtextedit::width()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->width(), qreal(documentWidth));
     }
 }
@@ -163,6 +202,7 @@ void tst_qfxtextedit::wrap()
         QmlComponent texteditComponent(&engine, "TextEdit {  text: \"\"; wrap: true; width: 300 }");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->width(), 300.);
     }
 
@@ -172,6 +212,7 @@ void tst_qfxtextedit::wrap()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->width(), 300.);
     }
 
@@ -181,6 +222,7 @@ void tst_qfxtextedit::wrap()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->width(), 300.);
     }
 
@@ -199,6 +241,7 @@ void tst_qfxtextedit::hAlign()
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+            QVERIFY(textEditObject != 0);
             QCOMPARE((int)textEditObject->hAlign(), (int)hAlignments.at(j));
         }
     }
@@ -211,6 +254,7 @@ void tst_qfxtextedit::hAlign()
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+            QVERIFY(textEditObject != 0);
             QCOMPARE((int)textEditObject->hAlign(), (int)hAlignments.at(j));
         }
     }
@@ -229,6 +273,7 @@ void tst_qfxtextedit::vAlign()
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+            QVERIFY(textEditObject != 0);
             QCOMPARE((int)textEditObject->vAlign(), (int)vAlignments.at(j));
         }
     }
@@ -241,6 +286,7 @@ void tst_qfxtextedit::vAlign()
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+            QVERIFY(textEditObject != 0);
             QCOMPARE((int)textEditObject->vAlign(), (int)vAlignments.at(j));
         }
     }
@@ -255,6 +301,7 @@ void tst_qfxtextedit::font()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->font()->size(), qreal(40));
         QCOMPARE(textEditObject->font()->bold(), false);
         QCOMPARE(textEditObject->font()->italic(), false);
@@ -265,6 +312,7 @@ void tst_qfxtextedit::font()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->font()->bold(), true);
         QCOMPARE(textEditObject->font()->italic(), false);
     }
@@ -274,6 +322,7 @@ void tst_qfxtextedit::font()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->font()->italic(), true);
         QCOMPARE(textEditObject->font()->bold(), false);
     }
@@ -283,6 +332,7 @@ void tst_qfxtextedit::font()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->font()->family(), QString("Helvetica"));
         QCOMPARE(textEditObject->font()->bold(), false);
         QCOMPARE(textEditObject->font()->italic(), false);
@@ -293,6 +343,7 @@ void tst_qfxtextedit::font()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->font()->family(), QString(""));
     }
 }
@@ -306,6 +357,7 @@ void tst_qfxtextedit::color()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
         //qDebug() << "textEditObject: " << textEditObject->color() << "vs. " << QColor(colorStrings.at(i));
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->color(), QColor(colorStrings.at(i)));
     }
 
@@ -318,9 +370,37 @@ void tst_qfxtextedit::color()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
+        QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->color(), testColor);
     }
 }
+
+void tst_qfxtextedit::cursorDelegate()
+{
+    QString componentStr = "TextEdit {  text: \""+ standard[1] +"\"; focusable: true; resources [ Component { id:cursor; Item { id:cursorInstance } } ] cursorDelegate: cursor}";
+    QTest::qWait(10000);
+    QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+    QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
+    QVERIFY(textEditObject != 0);
+    QVERIFY(!findItem<QFxItem>(textEditObject, "cursorInstance"));
+    //Test Delegate gets created
+    textEditObject->setFocus(true);
+    QFxItem* delegateObject = findItem<QFxItem>(textEditObject, "cursorInstance");
+    QVERIFY(delegateObject);
+    //Test Delegate gets moved
+    for(int i=0; i<= standard[1].size(); i++){
+        textEditObject->setCursorPosition(i);
+        QCOMPARE(textEditObject->cursorRect().x(), qRound(delegateObject->x()));
+        QCOMPARE(textEditObject->cursorRect().y(), qRound(delegateObject->y()));
+    }
+    textEditObject->setCursorPosition(0);
+    QCOMPARE(textEditObject->cursorRect().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRect().y(), qRound(delegateObject->y()));
+    //Test Delegate gets deleted
+    textEditObject->setCursorDelegate(0);
+    QVERIFY(!findItem<QFxItem>(textEditObject, "cursorInstance"));
+}
+
 QTEST_MAIN(tst_qfxtextedit)
 
 #include "tst_qfxtextedit.moc"
