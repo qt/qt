@@ -33,6 +33,7 @@ namespace JSC
 {
     class JSObject;
     class ArgList;
+    class ExecState;
 }
 
 #include "wtf/Platform.h"
@@ -44,21 +45,15 @@ class QScriptContext;
 class QScriptContextPrivate
 {
 public:
-    QScriptContextPrivate(JSC::JSObject *callee,
-                          JSC::JSValue thisObject,
-                          const JSC::ArgList &args,
-                          bool calledAsConstructor,
-                          QScriptContext *parentContext,
-                          QScriptEnginePrivate *engine);
+    QScriptContextPrivate();
     ~QScriptContextPrivate();
 
-    static QScriptContext *create(QScriptContextPrivate &dd);
+    static QScriptContext *create(JSC::ExecState *frame,
+                                  QScriptEnginePrivate *engine);
+    static const QScriptContextPrivate *get(const QScriptContext *q);
 
-    JSC::JSObject *callee;
-    JSC::JSValue thisObject;
-    const JSC::ArgList &args;
+    JSC::ExecState *frame;
     bool calledAsConstructor;
-    QScriptContext *parentContext;
     QScriptEnginePrivate *engine;
 };
 

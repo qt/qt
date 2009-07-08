@@ -1877,7 +1877,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     }
 
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
 
     JSC::JSValue jscThisObject = eng_p->scriptValueToJSCValue(thisObject);
     if (!jscThisObject || !jscThisObject.isObject())
@@ -1907,7 +1907,24 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (callType == JSC::CallTypeJS) {
         result = JSC::asFunction(callee)->call(exec, jscThisObject, jscArgs);
     } else if (callType == JSC::CallTypeHost) {
-        result = callData.native.function(exec, JSC::asObject(callee), jscThisObject, jscArgs);
+        JSC::ScopeChainNode* scopeChain = exec->scopeChain();
+        JSC::Interpreter *interp = exec->interpreter();
+        JSC::Register *oldEnd = interp->registerFile().end();
+        int argc = 1 + jscArgs.size(); // implicit "this" parameter
+        if (!interp->registerFile().grow(oldEnd + argc + JSC::RegisterFile::CallFrameHeaderSize)) {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "stack overflow");
+        }
+        JSC::CallFrame* newCallFrame = JSC::CallFrame::create(oldEnd);
+        size_t dst = 0;
+        newCallFrame[0] = jscThisObject;
+        JSC::ArgList::const_iterator it;
+        for (it = jscArgs.begin(); it != jscArgs.end(); ++it)
+            newCallFrame[++dst] = *it;
+        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
+        // ### dst?
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        result = callData.native.function(newCallFrame, JSC::asObject(callee), jscThisObject, jscArgs);
+        interp->registerFile().shrink(oldEnd);
     }
     if (exec->hadException())
         eng_p->uncaughtException = exec->exception();
@@ -1986,7 +2003,25 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (callType == JSC::CallTypeJS) {
         result = JSC::asFunction(callee)->call(exec, jscThisObject, applyArgs);
     } else if (callType == JSC::CallTypeHost) {
-        result = callData.native.function(exec, JSC::asObject(callee), jscThisObject, applyArgs);
+        // ### avoid copy+paste of other call() overload
+        JSC::ScopeChainNode* scopeChain = exec->scopeChain();
+        JSC::Interpreter *interp = exec->interpreter();
+        JSC::Register *oldEnd = interp->registerFile().end();
+        int argc = 1 + applyArgs.size(); // implicit "this" parameter
+        if (!interp->registerFile().grow(oldEnd + argc + JSC::RegisterFile::CallFrameHeaderSize)) {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "stack overflow");
+        }
+        JSC::CallFrame* newCallFrame = JSC::CallFrame::create(oldEnd);
+        size_t dst = 0;
+        newCallFrame[0] = jscThisObject;
+        JSC::MarkedArgumentBuffer::const_iterator it;
+        for (it = applyArgs.begin(); it != applyArgs.end(); ++it)
+            newCallFrame[++dst] = *it;
+        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
+        // ### dst?
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        result = callData.native.function(newCallFrame, JSC::asObject(callee), jscThisObject, applyArgs);
+        interp->registerFile().shrink(oldEnd);
     }
     if (exec->hadException()) {
         eng_p->uncaughtException = exec->exception();
@@ -2038,7 +2073,32 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     if (constructType == JSC::ConstructTypeJS) {
         result = JSC::asFunction(callee)->construct(exec, jscArgs);
     } else if (constructType == JSC::ConstructTypeHost) {
-        result = constructData.native.function(exec, JSC::asObject(callee), jscArgs);
+        JSC::Structure* structure;
+        JSC::JSValue prototype = callee.get(exec, exec->propertyNames().prototype);
+        if (prototype.isObject())
+            structure = asObject(prototype)->inheritorID();
+        else
+            structure = exec->lexicalGlobalObject()->emptyObjectStructure();
+        JSC::JSObject* thisObj = new (exec) JSC::JSObject(structure);
+        // ### avoid copy+paste of call()
+        JSC::ScopeChainNode* scopeChain = exec->scopeChain();
+        JSC::Interpreter *interp = exec->interpreter();
+        JSC::Register *oldEnd = interp->registerFile().end();
+        int argc = 1 + jscArgs.size(); // implicit "this" parameter
+        if (!interp->registerFile().grow(oldEnd + argc + JSC::RegisterFile::CallFrameHeaderSize)) {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "stack overflow");
+        }
+        JSC::CallFrame* newCallFrame = JSC::CallFrame::create(oldEnd);
+        size_t dst = 0;
+        newCallFrame[0] = JSC::JSValue(thisObj);
+        JSC::ArgList::const_iterator it;
+        for (it = jscArgs.begin(); it != jscArgs.end(); ++it)
+            newCallFrame[++dst] = *it;
+        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
+        // ### dst?
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        result = constructData.native.function(newCallFrame, JSC::asObject(callee), jscArgs);
+        interp->registerFile().shrink(oldEnd);
     }
     if (exec->hadException())
         eng_p->uncaughtException = exec->exception();
@@ -2095,7 +2155,32 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     if (constructType == JSC::ConstructTypeJS) {
         result = JSC::asFunction(callee)->construct(exec, applyArgs);
     } else if (constructType == JSC::ConstructTypeHost) {
-        result = constructData.native.function(exec, JSC::asObject(callee), applyArgs);
+        JSC::Structure* structure;
+        JSC::JSValue prototype = callee.get(exec, exec->propertyNames().prototype);
+        if (prototype.isObject())
+            structure = asObject(prototype)->inheritorID();
+        else
+            structure = exec->lexicalGlobalObject()->emptyObjectStructure();
+        JSC::JSObject* thisObj = new (exec) JSC::JSObject(structure);
+        // ### avoid copy+paste of call()
+        JSC::ScopeChainNode* scopeChain = exec->scopeChain();
+        JSC::Interpreter *interp = exec->interpreter();
+        JSC::Register *oldEnd = interp->registerFile().end();
+        int argc = 1 + applyArgs.size(); // implicit "this" parameter
+        if (!interp->registerFile().grow(oldEnd + argc + JSC::RegisterFile::CallFrameHeaderSize)) {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "stack overflow");
+        }
+        JSC::CallFrame* newCallFrame = JSC::CallFrame::create(oldEnd);
+        size_t dst = 0;
+        newCallFrame[0] = JSC::JSValue(thisObj);
+        JSC::MarkedArgumentBuffer::const_iterator it;
+        for (it = applyArgs.begin(); it != applyArgs.end(); ++it)
+            newCallFrame[++dst] = *it;
+        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
+        // ### dst?
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        result = constructData.native.function(newCallFrame, JSC::asObject(callee), applyArgs);
+        interp->registerFile().shrink(oldEnd);
     }
     if (exec->hadException()) {
         eng_p->uncaughtException = exec->exception();

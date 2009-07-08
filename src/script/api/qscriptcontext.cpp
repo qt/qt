@@ -44,10 +44,14 @@
 #ifndef QT_NO_SCRIPT
 
 #include "qscriptcontext_p.h"
+#include "qscriptcontextinfo.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 
+#include "Arguments.h"
+#include "CodeBlock.h"
 #include "Error.h"
+#include "JSFunction.h"
 #include "JSObject.h"
 #include "JSGlobalObject.h"
 
@@ -162,15 +166,7 @@ namespace QScript
 JSC::UString qtStringToJSCUString(const QString &);
 }
 
-QScriptContextPrivate::QScriptContextPrivate(JSC::JSObject *callee_,
-                                             JSC::JSValue thisObject_,
-                                             const JSC::ArgList &args_,
-                                             bool calledAsConstructor_,
-                                             QScriptContext *parentContext_,
-                                             QScriptEnginePrivate *engine_)
-    : callee(callee_), thisObject(thisObject_), args(args_),
-      calledAsConstructor(calledAsConstructor_), parentContext(parentContext_),
-      engine(engine_)
+QScriptContextPrivate::QScriptContextPrivate()
 {
 }
 
@@ -178,18 +174,25 @@ QScriptContextPrivate::~QScriptContextPrivate()
 {
 }
 
-QScriptContext *QScriptContextPrivate::create(QScriptContextPrivate &dd)
+QScriptContext *QScriptContextPrivate::create(JSC::ExecState *frame,
+                                              QScriptEnginePrivate *engine)
 {
     QScriptContext *q = new QScriptContext();
-    q->d_ptr = &dd;
+    q->d_ptr->frame = frame;
+    q->d_ptr->engine = engine;
     return q;
+}
+
+const QScriptContextPrivate *QScriptContextPrivate::get(const QScriptContext *q)
+{
+    return q->d_func();
 }
 
 /*!
   \internal
 */
 QScriptContext::QScriptContext()
-    : d_ptr(0)
+    : d_ptr(new QScriptContextPrivate)
 {
 }
 
@@ -295,9 +298,12 @@ QScriptEngine *QScriptContext::engine() const
 QScriptValue QScriptContext::argument(int index) const
 {
     Q_D(const QScriptContext);
-    if ((index < 0) || (index >= (int)d->args.size()))
+    if ((index < 0) || (index >= argumentCount()))
         return QScriptValue(QScriptValue::UndefinedValue);
-    return d->engine->scriptValueFromJSCValue(d->args.at(index));
+    JSC::Register* thisRegister = d->frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->frame->argumentCount();
+    if (d->frame->codeBlock() == 0)
+        ++index;
+    return d->engine->scriptValueFromJSCValue(thisRegister[index].jsValue());
 }
 
 /*!
@@ -307,7 +313,7 @@ QScriptValue QScriptContext::argument(int index) const
 QScriptValue QScriptContext::callee() const
 {
     Q_D(const QScriptContext);
-    return d->engine->scriptValueFromJSCValue(d->callee);
+    return d->engine->scriptValueFromJSCValue(d->frame->callee());
 }
 
 /*!
@@ -327,11 +333,13 @@ QScriptValue QScriptContext::callee() const
 */
 QScriptValue QScriptContext::argumentsObject() const
 {
-    // ### for now we cheat extremely
-    QScriptValue array = engine()->newArray(argumentCount());
-    for (int i = 0; i < argumentCount(); ++i)
-        array.setProperty(i, argument(i));
-    return array;
+    Q_D(const QScriptContext);
+    if (!d->frame->optionalCalleeArguments()) {
+        JSC::Arguments* arguments = new (&d->frame->globalData())JSC::Arguments(d->frame, JSC::Arguments::NoParameters);
+        d->frame->setCalleeArguments(arguments);
+        d->frame[JSC::RegisterFile::ArgumentsRegister] = arguments;
+    }
+    return d->engine->scriptValueFromJSCValue(d->frame->optionalCalleeArguments());
 }
 
 /*!
@@ -353,7 +361,10 @@ bool QScriptContext::isCalledAsConstructor() const
 QScriptContext *QScriptContext::parentContext() const
 {
     Q_D(const QScriptContext);
-    return d->parentContext;
+    JSC::ExecState *callerFrame = d->frame->callerFrame();
+    if (callerFrame == (JSC::ExecState*)(1)) // ### ExecState::noCaller() is private
+        return 0;
+    return d->engine->contextForFrame(callerFrame);
 }
 
 /*!
@@ -369,7 +380,10 @@ QScriptContext *QScriptContext::parentContext() const
 int QScriptContext::argumentCount() const
 {
     Q_D(const QScriptContext);
-    return d->args.size();
+    int argc = d->frame->argumentCount();
+    if (argc != 0)
+        --argc; // -1 due to "this"
+    return argc;
 }
 
 /*!
@@ -377,7 +391,7 @@ int QScriptContext::argumentCount() const
 */
 QScriptValue QScriptContext::returnValue() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
+    qWarning("QScriptContext::returnValue() not implemented");
     return QScriptValue();
 }
 
@@ -421,7 +435,16 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
 QScriptValue QScriptContext::thisObject() const
 {
     Q_D(const QScriptContext);
-    return d->engine->scriptValueFromJSCValue(d->thisObject);
+    JSC::JSValue result;
+    if (d->frame->codeBlock() != 0) {
+        result = d->frame->thisValue();
+    } else {
+        JSC::Register* thisRegister = d->frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->frame->argumentCount();
+        result = thisRegister->jsValue();
+    }
+    if (!result || result.isNull())
+        result = d->frame->globalThisValue();
+    return d->engine->scriptValueFromJSCValue(result);
 }
 
 /*!
@@ -435,7 +458,20 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
     Q_D(QScriptContext);
     if (!thisObject.isObject())
         return;
-    d->thisObject = d->engine->scriptValueToJSCValue(thisObject);
+    if (thisObject.engine() != engine()) {
+        qWarning("QScriptContext::setThisObject() failed: "
+                 "cannot set an object created in "
+                 "a different engine");
+        return;
+    }
+    JSC::JSValue jscThisObject = d->engine->scriptValueToJSCValue(thisObject);
+    JSC::CodeBlock *cb = d->frame->codeBlock();
+    if (cb != 0) {
+        d->frame[cb->thisRegister()] = jscThisObject;
+    } else {
+        JSC::Register* thisRegister = d->frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->frame->argumentCount();
+        thisRegister[0] = jscThisObject;
+    }
 }
 
 /*!
@@ -513,9 +549,47 @@ QStringList QScriptContext::backtrace() const
 */
 QString QScriptContext::toString() const
 {
+    QScriptContextInfo info(this);
+    QString result;
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return QString();
+    QString functionName = info.functionName();
+    if (functionName.isEmpty()) {
+        if (parentContext()) {
+            if (info.functionType() == QScriptContextInfo::ScriptFunction)
+                result.append(QLatin1String("<anonymous>"));
+            else
+                result.append(QLatin1String("<native>"));
+        } else {
+            result.append(QLatin1String("<global>"));
+        }
+    } else {
+        result.append(functionName);
+    }
+
+    QStringList parameterNames = info.functionParameterNames();
+    result.append(QLatin1String(" ("));
+    for (int i = 0; i < argumentCount(); ++i) {
+        if (i > 0)
+            result.append(QLatin1String(", "));
+        if (i < parameterNames.count()) {
+            result.append(parameterNames.at(i));
+            result.append(QLatin1Char('='));
+        }
+        QScriptValue arg = argument(i);
+//        result.append(safeValueToString(arg)); ###
+        result.append(arg.toString());
+    }
+    result.append(QLatin1Char(')'));
+
+    QString fileName = info.fileName();
+    int lineNumber = info.lineNumber();
+    result.append(QLatin1String(" at "));
+    if (!fileName.isEmpty()) {
+        result.append(fileName);
+        result.append(QLatin1Char(':'));
+    }
+    result.append(QString::number(lineNumber));
+    return result;
 }
 
 /*!
@@ -526,8 +600,13 @@ QString QScriptContext::toString() const
 */
 QScriptValueList QScriptContext::scopeChain() const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return QScriptValueList();
+    Q_D(const QScriptContext);
+    QScriptValueList result;
+    JSC::ScopeChainNode *node = d->frame->scopeChain();
+    JSC::ScopeChainIterator it(node);
+    for (it = node->begin(); it != node->end(); ++it)
+        result.append(d->engine->scriptValueFromJSCValue(*it));
+    return result;
 }
 
 /*!
@@ -540,8 +619,11 @@ QScriptValueList QScriptContext::scopeChain() const
 */
 void QScriptContext::pushScope(const QScriptValue &object)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    Q_UNUSED(object);
+    Q_D(QScriptContext);
+    if (!object.isObject())
+        return;
+    JSC::JSValue jscObject = d->engine->scriptValueToJSCValue(object);
+    d->frame->setScopeChain(d->frame->scopeChain()->push(JSC::asObject(jscObject)));
 }
 
 /*!
@@ -556,8 +638,10 @@ void QScriptContext::pushScope(const QScriptValue &object)
 */
 QScriptValue QScriptContext::popScope()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    return QScriptValue();
+    Q_D(QScriptContext);
+    QScriptValue result = d->engine->scriptValueFromJSCValue(d->frame->scopeChain()->object);
+    d->frame->setScopeChain(d->frame->scopeChain()->pop());
+    return result;
 }
 
 QT_END_NAMESPACE

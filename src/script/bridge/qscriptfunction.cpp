@@ -50,42 +50,36 @@ JSC::ConstructType FunctionWrapper::getConstructData(JSC::ConstructData& consDat
     return JSC::ConstructTypeHost;
 }
 
-JSC::JSValue FunctionWrapper::proxyCall(JSC::ExecState *, JSC::JSObject *callee,
+JSC::JSValue FunctionWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObject *callee,
                                         JSC::JSValue thisObject, const JSC::ArgList &args)
 {
     FunctionWrapper *self = static_cast<FunctionWrapper*>(callee);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
-    QScriptContext *previousContext = eng_p->currentContext;
-    QScriptContextPrivate ctx_p(callee, thisObject, args,
-                                /*calledAsConstructor=*/false,
-                                previousContext, eng_p);
-    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
-    eng_p->currentContext = ctx;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    eng_p->currentFrame = exec;
+    QScriptContext *ctx = eng_p->contextForFrame(exec);
     QScriptValue result = self->data->function(ctx, self->data->engine);
     if (!result.isValid())
         result = QScriptValue(QScriptValue::UndefinedValue);
-    eng_p->currentContext = previousContext;
-    delete ctx;
+    eng_p->currentFrame = previousFrame;
+    eng_p->releaseContextForFrame(exec);
     return eng_p->scriptValueToJSCValue(result);
 }
 
-JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *, JSC::JSObject *callee,
+JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObject *callee,
                                                const JSC::ArgList &args)
 {
     FunctionWrapper *self = static_cast<FunctionWrapper*>(callee);
     QScriptValue object = self->data->engine->newObject();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
-    QScriptContext *previousContext = eng_p->currentContext;
-    QScriptContextPrivate ctx_p(callee, eng_p->scriptValueToJSCValue(object),
-                                args, /*calledAsConstructor=*/true,
-                                previousContext, eng_p);
-    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
-    eng_p->currentContext = ctx;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    QScriptContext *ctx = eng_p->contextForFrame(exec);
+    eng_p->currentFrame = exec;
     QScriptValue result = self->data->function(ctx, self->data->engine);
     if (!result.isValid())
         result = QScriptValue(QScriptValue::UndefinedValue);
-    eng_p->currentContext = previousContext;
-    delete ctx;
+    eng_p->currentFrame = previousFrame;
+    eng_p->releaseContextForFrame(exec);
     if (result.isObject())
         return JSC::asObject(eng_p->scriptValueToJSCValue(result));
     return JSC::asObject(eng_p->scriptValueToJSCValue(object));
@@ -112,38 +106,32 @@ JSC::ConstructType FunctionWithArgWrapper::getConstructData(JSC::ConstructData& 
     return JSC::ConstructTypeHost;
 }
 
-JSC::JSValue FunctionWithArgWrapper::proxyCall(JSC::ExecState *, JSC::JSObject *callee,
+JSC::JSValue FunctionWithArgWrapper::proxyCall(JSC::ExecState *exec, JSC::JSObject *callee,
                                                JSC::JSValue thisObject, const JSC::ArgList &args)
 {
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
-    QScriptContext *previousContext = eng_p->currentContext;
-    QScriptContextPrivate ctx_p(callee, thisObject, args,
-                                /*calledAsConstructor=*/false,
-                                previousContext, eng_p);
-    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
-    eng_p->currentContext = ctx;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    QScriptContext *ctx = eng_p->contextForFrame(exec);
+    eng_p->currentFrame = exec;
     QScriptValue result = self->data->function(ctx, self->data->engine, self->data->arg);
-    eng_p->currentContext = previousContext;
-    delete ctx;
+    eng_p->currentFrame = previousFrame;
+    eng_p->releaseContextForFrame(exec);
     return eng_p->scriptValueToJSCValue(result);
 }
 
-JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *, JSC::JSObject *callee,
+JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObject *callee,
                                                       const JSC::ArgList &args)
 {
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
     QScriptValue object = self->data->engine->newObject();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
-    QScriptContext *previousContext = eng_p->currentContext;
-    QScriptContextPrivate ctx_p(callee, eng_p->scriptValueToJSCValue(object),
-                                args, /*calledAsConstructor=*/true,
-                                previousContext, eng_p);
-    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
-    eng_p->currentContext = ctx;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    QScriptContext *ctx = eng_p->contextForFrame(exec);
+    eng_p->currentFrame = exec;
     QScriptValue result = self->data->function(ctx, self->data->engine, self->data->arg);
-    eng_p->currentContext = previousContext;
-    delete ctx;
+    eng_p->currentFrame = previousFrame;
+    eng_p->releaseContextForFrame(exec);
     if (result.isObject())
         return JSC::asObject(eng_p->scriptValueToJSCValue(result));
     return JSC::asObject(eng_p->scriptValueToJSCValue(object));

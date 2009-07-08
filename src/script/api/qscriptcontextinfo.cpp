@@ -13,7 +13,11 @@
 
 #ifndef QT_NO_SCRIPT
 
+#include "qscriptcontext_p.h"
+#include "../bridge/qscriptqobject_p.h"
 #include <QtCore/qdatastream.h>
+#include "CodeBlock.h"
+#include "JSFunction.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +64,11 @@ QT_BEGIN_NAMESPACE
     \value QtPropertyFunction The function is a Qt property getter or setter.
     \value NativeFunction The function is a built-in Qt Script function, or it was defined through a call to QScriptEngine::newFunction().
 */
+
+namespace QScript
+{
+QString qtStringFromJSCUString(const JSC::UString &str);
+}
 
 class QScriptContextInfoPrivate
 {
@@ -109,7 +118,6 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate()
 QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
 {
     Q_ASSERT(context);
-    qWarning("QScriptContextInfo is not implemented");
     ref = 0;
     functionType = QScriptContextInfo::NativeFunction;
     functionMetaIndex = -1;
@@ -118,6 +126,32 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     scriptId = -1;
     lineNumber = -1;
     columnNumber = -1;
+
+    const QScriptContextPrivate *ctx_p = QScriptContextPrivate::get(context);
+    JSC::ExecState *frame = ctx_p->frame;
+    JSC::InternalFunction *callee = frame->callee();
+    if (callee && callee->isObject(&JSC::JSFunction::info)) {
+        functionType = QScriptContextInfo::ScriptFunction;
+        JSC::SourceProvider *source = frame->codeBlock()->source();
+        scriptId = source->asID();
+        fileName = QScript::qtStringFromJSCUString(source->url());
+        JSC::FunctionBodyNode *body = JSC::asFunction(callee)->body();
+        functionStartLineNumber = body->firstLine();
+        functionEndLineNumber = body->lastLine();
+        const JSC::Identifier* params = body->parameters();
+        for (size_t i = 0; i < body->parameterCount(); ++i)
+            parameterNames.append(QScript::qtStringFromJSCUString(params[i].ustring()));
+        // ### get the function name from the AST
+        // ### don't know the PC, since it's not stored in the frame
+        // lineNumber = codeBlock->expressionRangeForBytecodeOffset(...);
+    } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
+        functionType = QScriptContextInfo::QtFunction;
+        functionMetaIndex = static_cast<QScript::QtFunction*>(callee)->initialIndex();
+    }
+    else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
+        functionType = QScriptContextInfo::QtPropertyFunction;
+        functionMetaIndex = static_cast<QScript::QtPropertyFunction*>(callee)->propertyIndex();
+    }
 }
 
 /*!

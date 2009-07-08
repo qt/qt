@@ -39,6 +39,7 @@ QT_BEGIN_NAMESPACE
 
 namespace JSC
 {
+    class ExecState;
     class JSCell;
     class JSGlobalObject;
     class UString;
@@ -105,6 +106,9 @@ public:
     JSC::JSValue defaultPrototype(int metaTypeId) const;
     void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
 
+    QScriptContext *contextForFrame(JSC::ExecState *frame);
+    void releaseContextForFrame(JSC::ExecState *frame);
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -153,7 +157,8 @@ public:
 #endif
 
     JSC::JSGlobalObject *globalObject;
-    QScriptContext *currentContext;
+    JSC::ExecState *currentFrame;
+    QHash<JSC::ExecState*, QScriptContext*> contextForFrameHash;
     JSC::JSValue uncaughtException;
 
     QScript::QObjectPrototype *qobjectPrototype;

@@ -322,7 +322,7 @@ bool ClassObject::getOwnPropertySlot(JSC::ExecState *exec,
                                      const JSC::Identifier &propertyName,
                                      JSC::PropertySlot &slot)
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -340,7 +340,7 @@ bool ClassObject::getOwnPropertySlot(JSC::ExecState *exec,
 void ClassObject::put(JSC::ExecState *exec, const JSC::Identifier &propertyName,
                       JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -365,7 +365,7 @@ bool ClassObject::getPropertyAttributes(JSC::ExecState *exec,
                                         const JSC::Identifier &propertyName,
                                         unsigned &attribs) const
 {
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
     QString name = qtStringFromJSCUString(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
@@ -412,17 +412,14 @@ JSC::JSValue JSC_HOST_CALL ClassObject::call(JSC::ExecState *exec, JSC::JSObject
     if (!callee->isObject(&ClassObject::info))
         return throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
     ClassObject *obj =  static_cast<ClassObject*>(callee);
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
-    QScriptContext *previousContext = eng_p->currentContext;
-    QScriptContextPrivate ctx_p(callee, thisValue, args,
-                                /*calledAsConstructor=*/false,
-                                previousContext, eng_p);
-    QScriptContext *ctx = QScriptContextPrivate::create(ctx_p);
-    eng_p->currentContext = ctx;
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    QScriptContext *ctx = eng_p->contextForFrame(exec);
+    eng_p->currentFrame = exec;
     QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
     QVariant result = obj->scriptClass()->extension(QScriptClass::Callable, qVariantFromValue(ctx));
-    eng_p->currentContext = previousContext;
-    delete ctx;
+    eng_p->currentFrame = previousFrame;
+    eng_p->releaseContextForFrame(exec);
     return eng_p->jscValueFromVariant(result);
 }
 
@@ -431,7 +428,7 @@ bool ClassObject::hasInstance(JSC::ExecState *exec, JSC::JSValue value, JSC::JSV
     if (!scriptClass()->supportsExtension(QScriptClass::HasInstance))
         return JSC::JSObject::hasInstance(exec, value, proto);
     QScriptValueList args;
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
     args << eng_p->scriptValueFromJSCValue(this) << eng_p->scriptValueFromJSCValue(value);
     QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
     return result.toBool();
@@ -497,7 +494,7 @@ JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/,
         return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
     }
 
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->lexicalGlobalObject())->engine;
 
     JSC::JSValue receiver;
     JSC::JSValue slot;
@@ -580,7 +577,7 @@ JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JS
         }
     }
 
-    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->dynamicGlobalObject())->engine;
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->lexicalGlobalObject())->engine;
 
     JSC::JSValue receiver;
     JSC::JSValue slot;
@@ -858,10 +855,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "disconnect"), QScript::functionDisconnect));
     globalObject->functionPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "connect"), QScript::functionConnect));
 
-    currentContext = QScriptContextPrivate::create(
-        *new QScriptContextPrivate(/*callee=*/0, /*thisObject=*/globalObject,
-                                   /*args=*/JSC::ArgList(), /*calledAsConstructor=*/false,
-                                   /*parentContext=*/0, this));
+    currentFrame = exec;
 
     agent = 0;
     processEventsInterval = -1;
@@ -1038,6 +1032,29 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
         m_typeInfos.insert(metaTypeId, info);
     }
     info->prototype = prototype;
+}
+
+QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
+{
+    QHash<JSC::ExecState*, QScriptContext*>::const_iterator it;
+    it = contextForFrameHash.constFind(frame);
+    if (it != contextForFrameHash.constEnd())
+        return it.value();
+    // ### use a pool of context objects
+    QScriptContext *ctx = QScriptContextPrivate::create(frame, this);
+    contextForFrameHash.insert(frame, ctx);
+    return ctx;
+}
+
+void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
+{
+    QHash<JSC::ExecState*, QScriptContext*>::iterator it;
+    it = contextForFrameHash.find(frame);
+    Q_ASSERT(it != contextForFrameHash.end());
+    QScriptContext *ctx = it.value();
+    contextForFrameHash.erase(it);
+    // ### put back in pool
+    delete ctx;
 }
 
 #ifndef QT_NO_QOBJECT
@@ -1931,7 +1948,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 QScriptContext *QScriptEngine::currentContext() const
 {
     Q_D(const QScriptEngine);
-    return d->currentContext;
+    return const_cast<QScriptEnginePrivate*>(d)->contextForFrame(d->currentFrame);
 }
 
 /*!
@@ -1960,15 +1977,11 @@ QScriptContext *QScriptEngine::currentContext() const
 QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
-    QScriptContextPrivate *ctx_p = new QScriptContextPrivate(
-        /*callee=*/0, /*thisObject=*/d->scriptValueToJSCValue(globalObject()),
-        /*args=*/JSC::ArgList(), /*calledAsConstructor=*/false,
-        currentContext(), d);
-    d->currentContext = QScriptContextPrivate::create(*ctx_p);
+    qWarning("QScriptEngine::pushContext() not implemented");
+    return 0;
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY
 //    notifyContextPush(); TODO
 #endif
-    return d->currentContext;
 }
 
 /*!
@@ -1980,11 +1993,7 @@ QScriptContext *QScriptEngine::pushContext()
 void QScriptEngine::popContext()
 {
     Q_D(QScriptEngine);
-    if (!d->currentContext->parentContext())
-        return;
-    QScriptContext *popped = d->currentContext;
-    d->currentContext = popped->parentContext();
-    delete popped;
+    qWarning("QScriptEngine::popContext() not implemented");
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY
 //    notifyContextPop(); TODO
 #endif

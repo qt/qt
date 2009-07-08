@@ -210,6 +210,9 @@ public:
     JSC::JSValue execute(JSC::ExecState *exec, JSC::JSValue thisValue,
                          const JSC::ArgList &args);
 
+    const QMetaObject *metaObject() const;
+    int propertyIndex() const;
+
 private:
     Data *data;
 };
