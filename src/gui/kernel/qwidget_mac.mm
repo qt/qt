@@ -3905,7 +3905,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             // we are too big, and must clip
             QPoint screenOffset(0, 0); // offset of the part being on screen
             const QWidget *parentWidget = q->parentWidget();
-            while (parentWidget) {
+            while (parentWidget && !parentWidget->isWindow()) {
                 screenOffset -= parentWidget->data->crect.topLeft();
                 parentWidget = parentWidget->parentWidget();
             }
