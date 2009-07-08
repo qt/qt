@@ -156,7 +156,7 @@ void tst_QFontDialog::setFont()
 
 class FriendlyFontDialog : public QFontDialog
 {
-    friend tst_QFontDialog;
+    friend class tst_QFontDialog;
     Q_DECLARE_PRIVATE(QFontDialog);
 };
 
