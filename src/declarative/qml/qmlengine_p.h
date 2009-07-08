@@ -129,6 +129,8 @@ public:
 
     QScriptEngine scriptEngine;
 
+    QUrl baseUrl;
+
     template<class T>
     struct SimpleList {
         SimpleList()
