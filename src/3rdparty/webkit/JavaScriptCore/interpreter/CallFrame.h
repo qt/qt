@@ -37,7 +37,7 @@ namespace JSC  {
     // Passed as the first argument to most functions.
     class ExecState : private Register {
     public:
-        JSFunction* callee() const { return this[RegisterFile::Callee].function(); }
+        InternalFunction* callee() const { return this[RegisterFile::Callee].function(); }
         CodeBlock* codeBlock() const { return this[RegisterFile::CodeBlock].Register::codeBlock(); }
         ScopeChainNode* scopeChain() const { return this[RegisterFile::ScopeChain].Register::scopeChain(); }
         int argumentCount() const { return this[RegisterFile::ArgumentCount].i(); }
@@ -110,7 +110,7 @@ namespace JSC  {
         void setScopeChain(ScopeChainNode* scopeChain) { this[RegisterFile::ScopeChain] = scopeChain; }
 
         ALWAYS_INLINE void init(CodeBlock* codeBlock, Instruction* vPC, ScopeChainNode* scopeChain,
-            CallFrame* callerFrame, int returnValueRegister, int argc, JSFunction* function)
+            CallFrame* callerFrame, int returnValueRegister, int argc, InternalFunction* function)
         {
             ASSERT(callerFrame); // Use noCaller() rather than 0 for the outer host call frame caller.
 
@@ -134,7 +134,7 @@ namespace JSC  {
         int returnValueRegister() const { return this[RegisterFile::ReturnValueRegister].i(); }
 
         void setArgumentCount(int count) { this[RegisterFile::ArgumentCount] = count; }
-        void setCallee(JSFunction* callee) { this[RegisterFile::Callee] = callee; }
+        void setCallee(InternalFunction* callee) { this[RegisterFile::Callee] = callee; }
         void setCodeBlock(CodeBlock* codeBlock) { this[RegisterFile::CodeBlock] = codeBlock; }
 
         static const intptr_t HostCallFrameFlag = 1;
