@@ -93,10 +93,10 @@ class QmlEngine;
 Q_DECLARATIVE_EXPORT void qmlExecuteDeferred(QObject *);
 Q_DECLARATIVE_EXPORT QmlContext *qmlContext(const QObject *);
 Q_DECLARATIVE_EXPORT QmlEngine *qmlEngine(const QObject *);
-Q_DECLARATIVE_EXPORT QObject *qmlAttachedPropertiesObjectById(int, const QObject *);
+Q_DECLARATIVE_EXPORT QObject *qmlAttachedPropertiesObjectById(int, const QObject *, bool create = true);
 
 template<typename T>
-QObject *qmlAttachedPropertiesObject(const QObject *obj)
+QObject *qmlAttachedPropertiesObject(const QObject *obj, bool create = true)
 {
     // ### is this threadsafe?
     static int idx = -1;
@@ -107,7 +107,7 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj)
     if (idx == -1 || !obj)
         return 0;
 
-    return qmlAttachedPropertiesObjectById(idx, obj);
+    return qmlAttachedPropertiesObjectById(idx, obj, create);
 }
 
 QT_END_NAMESPACE

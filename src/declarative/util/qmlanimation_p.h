@@ -346,7 +346,7 @@ public:
     QmlTimeLineValueProxy<QmlPropertyAnimationPrivate> value;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
-    static void convertVariant(QVariant &variant, QVariant::Type type);
+    static void convertVariant(QVariant &variant, int type);
 };
 
 QT_END_NAMESPACE

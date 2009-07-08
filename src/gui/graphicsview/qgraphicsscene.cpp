@@ -604,7 +604,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // the optimization that items send updates directly to the views, but it
     // needs to happen in order to keep compatibility with the behavior from
     // Qt 4.4 and backward.
-    if (connectedSignals & changedSignalMask) {
+    if (connectedSignals[0] & changedSignalMask) {
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsView *view = views.at(i);
             if (!view->d_func()->connectedToScene) {
@@ -3730,7 +3730,7 @@ void QGraphicsScene::update(const QRectF &rect)
 
     // Check if anyone's connected; if not, we can send updates directly to
     // the views. Otherwise or if there are no views, use old behavior.
-    bool directUpdates = !(d->connectedSignals & d->changedSignalMask) && !d->views.isEmpty();
+    bool directUpdates = !(d->connectedSignals[0] & d->changedSignalMask) && !d->views.isEmpty();
     if (rect.isNull()) {
         d->updateAll = true;
         d->updatedRects.clear();
@@ -5394,7 +5394,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (removingItemFromScene) {
         // Note that this function can be called from the item's destructor, so
         // do NOT call any virtual functions on it within this block.
-        if ((connectedSignals & changedSignalMask) || views.isEmpty()) {
+        if ((connectedSignals[0] & changedSignalMask) || views.isEmpty()) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
@@ -5481,7 +5481,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process item.
     if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
-        const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
+        const bool useCompatUpdate = views.isEmpty() || (connectedSignals[0] & changedSignalMask);
         const bool untransformableItem = item->d_ptr->itemIsUntransformable();
         const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
 

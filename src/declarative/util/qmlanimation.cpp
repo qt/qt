@@ -1436,11 +1436,11 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation)
 
 //convert a variant from string type to another animatable type
-//### should use any registered string convertor
-void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, QVariant::Type type)
+void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 {
     if (variant.type() != QVariant::String) {
-        variant.convert(type);
+        if ((uint)type < QVariant::UserType)
+            variant.convert((QVariant::Type)type);
         return;
     }
 
@@ -1474,7 +1474,12 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, QVariant::Ty
         break;
     }
     default:
-        variant.convert(type);
+        if ((uint)type >= QVariant::UserType) {
+            QmlMetaType::StringConverter converter = QmlMetaType::customStringConverter(type);
+            if (converter)
+                variant = converter(variant.toString());
+        } else
+            variant.convert((QVariant::Type)type);
         break;
     }
 }
@@ -1722,7 +1727,7 @@ void QmlPropertyAnimationPrivate::valueChanged(qreal r)
     if (!fromSourced) {
         if (!fromIsDefined) {
             from = property.read();
-            convertVariant(from, (QVariant::Type)(interpolatorType ? interpolatorType : property.propertyType()));
+            convertVariant(from, interpolatorType ? interpolatorType : property.propertyType());
             //### check for invalid variant if using property type
         }
         fromSourced = true;
@@ -1751,9 +1756,9 @@ void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
         d->property = d->userProperty;
 
     int propType = d->property.propertyType();
-    d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : propType));
+    d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : propType);
     if (d->fromIsDefined)
-        d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : propType));
+        d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : propType);
 
     if (!d->interpolatorType) {
         //### check for invalid variants
@@ -1795,7 +1800,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                     if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
                         if (interpolatorType)
-                            QmlPropertyAnimationPrivate::convertVariant(action.fromValue, (QVariant::Type)interpolatorType);
+                            QmlPropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
                     }
                     if (!interpolatorType) {
                         int propType = action.property.propertyType();
@@ -1856,8 +1861,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             if (d->toIsDefined)
                 myAction.toValue = d->to;
 
-            d->convertVariant(myAction.fromValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
-            d->convertVariant(myAction.toValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+            d->convertVariant(myAction.fromValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+            d->convertVariant(myAction.toValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
 
             modified << action.property;
 
@@ -1875,10 +1880,10 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                 continue;
 
             if (d->fromIsDefined) {
-                d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+                d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
                 myAction.fromValue = d->from;
             }
-            d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+            d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
             myAction.toValue = d->to;
             data->actions << myAction;
         }

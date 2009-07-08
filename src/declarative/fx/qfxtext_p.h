@@ -75,7 +75,8 @@ public:
     QFxTextPrivate()
       : _font(0), color((QRgb)0), style(QFxText::Normal), imgDirty(true),
         hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(Qt::ElideNone),
-        dirty(false), wrap(false), smooth(false), richText(false), singleline(false), control(0), doc(0)
+        dirty(false), wrap(false), smooth(false), richText(false), singleline(false), control(0), doc(0),
+        format(QFxText::AutoText)
     {
     }
 
@@ -132,6 +133,7 @@ public:
     QTextDocument *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;
+    QFxText::TextFormat format;
 };
 
 QT_END_NAMESPACE

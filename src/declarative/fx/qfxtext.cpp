@@ -162,7 +162,7 @@ void QFxText::setText(const QString &n)
     if (d->text == n)
         return;
 
-    d->richText = Qt::mightBeRichText(n);   // ### what's the cost?
+    d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
     if (d->richText) {
         if (!d->doc)
         {
@@ -170,7 +170,7 @@ void QFxText::setText(const QString &n)
             d->control->setTextInteractionFlags(Qt::TextBrowserInteraction);
             d->doc = d->control->document(); 
             d->doc->setDocumentMargin(0);
-        }    
+        }
         d->doc->setHtml(n);
     }
 
@@ -374,6 +374,77 @@ void QFxText::setWrap(bool w)
 
     d->imgDirty = true;
     d->updateSize();
+}
+
+/*!
+    \qmlproperty enumeration Text::textFormat
+
+    The way the text property should be displayed.
+
+    Supported text formats are \c AutoText, \c PlainText and \c RichText.
+
+    The default is AutoText.  If the text format is AutoText the text element
+    will automatically determine whether the text should be treated as
+    rich text.  This determination is made using Qt::mightBeRichText().
+
+    \table
+    \row
+    \o
+    \qml
+VerticalLayout {
+    TextEdit {
+        font.size: 24
+        text: "<b>Hello</b> <i>World!</i>"
+    }
+    TextEdit {
+        font.size: 24
+        textFormat: "RichText"
+        text: "<b>Hello</b> <i>World!</i>"
+    }
+    TextEdit {
+        font.size: 24
+        textFormat: "PlainText"
+        text: "<b>Hello</b> <i>World!</i>"
+    }
+}
+    \endqml
+    \o \image declarative-textformat.png
+    \endtable
+*/
+
+QFxText::TextFormat QFxText::textFormat() const
+{
+    Q_D(const QFxText);
+    return d->format;
+}
+
+void QFxText::setTextFormat(TextFormat format)
+{
+    Q_D(QFxText);
+    if (format == d->format)
+        return;
+    bool wasRich = d->richText;
+    d->richText = format == RichText || (format == AutoText && Qt::mightBeRichText(d->text));
+
+    if (wasRich && !d->richText) {
+        //### delete control? (and vice-versa below)
+        d->imgDirty = true;
+        d->updateSize();
+        update();
+    } else if (!wasRich && d->richText) {
+        if (!d->doc)
+        {
+            d->control = new QTextControl(this);
+            d->control->setTextInteractionFlags(Qt::TextBrowserInteraction);
+            d->doc = d->control->document();
+            d->doc->setDocumentMargin(0);
+        }
+        d->doc->setHtml(d->text);
+        d->imgDirty = true;
+        d->updateSize();
+        update();
+    }
+    d->format = format;
 }
 
 /*!

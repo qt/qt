@@ -270,10 +270,25 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 }
 
 /*!
+    Create a QmlComponent from the given \a url and give it the specified 
+    \a parent and \a engine.
+
+    \sa loadUrl()
+*/
+QmlComponent::QmlComponent(QmlEngine *engine, const QString &url, 
+                           QObject *parent)
+: QObject(*(new QmlComponentPrivate), parent)
+{
+    Q_D(QmlComponent);
+    d->engine = engine;
+    loadUrl(QUrl(url));
+}
+
+/*!
     Create a QmlComponent from the given QML \a data and give it the
-    specified \a parent and \a engine.  If \a url is provided, it is used to set
-    the component name, and to provide a base path for items resolved
-    by this component.
+    specified \a parent and \a engine.  \a url is used to provide a base path
+    for items resolved by this component, and may be an empty url if the 
+    component contains no items to resolve.
 
     \sa setData()
 */
@@ -339,10 +354,13 @@ void QmlComponent::loadUrl(const QUrl &url)
 
     d->clear();
 
-    d->url = url;
+    if (url.isRelative())
+        d->url = d->engine->baseUrl().resolved(url);
+    else
+        d->url = url;
 
     QmlCompositeTypeData *data = 
-        d->engine->d_func()->typeManager.get(url);
+        d->engine->d_func()->typeManager.get(d->url);
 
     if (data->status == QmlCompositeTypeData::Waiting) {
 

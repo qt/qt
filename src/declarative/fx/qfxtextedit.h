@@ -77,6 +77,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
     Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
@@ -128,6 +129,9 @@ public:
 
     bool isCursorVisible() const;
     void setCursorVisible(bool on);
+
+    int cursorPosition() const;
+    void setCursorPosition(int pos);
 
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
