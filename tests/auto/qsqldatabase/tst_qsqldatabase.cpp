@@ -256,6 +256,8 @@ static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
     QString autoName = tst_Databases::autoFieldName(db);
     if (tst_Databases::isMSAccess(db))
         qs.append(" (id int not null");
+    else if (tst_Databases::isPostgreSQL(db))
+        qs.append(" (id serial not null");
     else
         qs.append(QString("(id integer not null %1 primary key").arg(autoName));
 
@@ -1350,6 +1352,8 @@ void tst_QSqlDatabase::transaction()
     }
 
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest") + " where id = 41"));
+    if(db.driverName().startsWith("QODBC") && dbName.contains("MySQL"))
+        QEXPECT_FAIL("", "Some odbc drivers don't actually roll back despite telling us they do, especially the mysql driver", Continue);
     QVERIFY(!q.next());
 
     populateTestTables(db);
@@ -1427,7 +1431,8 @@ void tst_QSqlDatabase::caseSensivity()
     bool cs = false;
     if (db.driverName().startsWith("QMYSQL")
      || db.driverName().startsWith("QSQLITE")
-     || db.driverName().startsWith("QTDS"))
+     || db.driverName().startsWith("QTDS")
+     || db.driverName().startsWith("QODBC"))
     cs = true;
 
     QSqlRecord rec = db.record(qTableName("qtest"));
