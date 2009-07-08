@@ -59,7 +59,20 @@
 #include <pg_config.h>
 
 #include <stdlib.h>
+#if defined(_MSC_VER)
+#include <float.h>
+#define isnan(x) _isnan(x)
+int isinf(double x) 
+{ 
+    if(_fpclass(x) == _FPCLASS_NINF) 
+        return -1; 
+    else if(_fpclass(x) == _FPCLASS_PINF) 
+        return 1; 
+    else return 0;
+}
+#else
 #include <math.h>
+#endif
 
 // workaround for postgres defining their OIDs in a private header file
 #define QBOOLOID 16
