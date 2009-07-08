@@ -175,7 +175,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             iface->addressEntries << entry; 
             
 #if defined(QNETWORKINTERFACE_DEBUG)                
-            qDebug("\n       Found network interface %s, interface flags:\n\
+            printf("\n       Found network interface %s, interface flags:\n\
                 IsUp = %d, IsRunning = %d, CanBroadcast = %d,\n\
                 IsLoopBack = %d, IsPointToPoint = %d, CanMulticast = %d, \n\
                 ip = %s, netmask = %s, broadcast = %s,\n\
@@ -188,8 +188,65 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 #endif                    
         }
     }
+
+    // we will try to use routing info to detect more precisely
+    // netmask and then ::postProcess() should calculate
+    // broadcast addresses
+
+    // use dummy socket to start enumerating routes
+    err =  socket.SetOpt(KSoInetEnumRoutes, KSolInetRtCtrl);
+    if( err )
+    {
+        socket.Close();
+        socketServ.Close();
+        // return what we have
+        // up to this moment
+        return interfaces;
+    }
+
+    TSoInetRouteInfo routeInfo;
+    TPckg<TSoInetRouteInfo> routeInfoPkg(routeInfo);
+    while(socket.GetOpt(KSoInetNextRoute, KSolInetRtCtrl, routeInfoPkg) == KErrNone)
+    {
+        TName address;
+
+        // get interface address
+        routeInfo.iIfAddr.Output(address);
+        QHostAddress ifAddr(qstringFromDesc(address));
+        if(ifAddr.isNull())
+            continue;
+
+        routeInfo.iDstAddr.Output(address);
+        QHostAddress destination(qstringFromDesc(address));
+        if(destination.isNull() || destination != ifAddr)
+            continue;
+
+        // search interfaces
+        for(int ifindex = 0; ifindex < interfaces.size(); ++ifindex) {
+            QNetworkInterfacePrivate *iface = interfaces.at(ifindex);
+            for(int eindex = 0; eindex < iface->addressEntries.size(); ++eindex) {
+                QNetworkAddressEntry entry = iface->addressEntries.at(eindex);
+                if(entry.ip() != ifAddr) {
+                    continue;
+                } else {
+                    routeInfo.iNetMask.Output(address);
+                    QHostAddress netmask(qstringFromDesc(address));
+                    entry.setNetmask(netmask);
+                    // NULL boradcast address for
+                    // ::postProcess to have effect
+                    entry.setBroadcast(QHostAddress());
+                    iface->addressEntries.replace(eindex, entry);
+//                    printf("for %s netmask = %s and destination = %s ; type = %d; state = %d; metric = %d \n",
+//                            ifAddr.toString().toLatin1().constData(), netmask.toString().toLatin1().constData(), destination.toString().toLatin1().constData(),
+//                            routeInfo.iType, routeInfo.iState, routeInfo.iMetric);
+                }
+            }
+        }
+    }
+
     socket.Close();
-    socketServ.Close();    
+    socketServ.Close();
+
     return interfaces;
 }
 
