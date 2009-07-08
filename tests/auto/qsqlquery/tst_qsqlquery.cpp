@@ -296,7 +296,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "oraRowId" );
 
     if ( db.driverName().startsWith("QPSQL") )
-        tablenames <<"task_233829";
+        tablenames << qTableName("task_233829");
 
     if ( db.driverName().startsWith("QSQLITE") )
         tablenames << qTableName( "record_sqlite" );
