@@ -56,41 +56,30 @@
 #include <qobject.h>
 #include <qrect.h>
 #include <qmap.h>
-#include <qbasictimer.h>
-#include <qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
 class QWidget;
 class QMainWindowLayout;
+class QPropertyAnimation;
 
 class QWidgetAnimator : public QObject
 {
+    Q_OBJECT
 public:
     QWidgetAnimator(QMainWindowLayout *layout);
-    ~QWidgetAnimator();
     void animate(QWidget *widget, const QRect &final_geometry, bool animate);
     bool animating() const;
-    bool animating(QWidget *widget);
+    bool animating(QWidget *widget) const;
 
     void abort(QWidget *widget);
 
-protected:
-    void timerEvent(QTimerEvent *e);
+private Q_SLOTS:
+    void animationFinished();
 
 private:
-    struct AnimationItem {
-        AnimationItem(QWidget *_widget = 0, const QRect &_r1 = QRect(),
-                        const QRect &_r2 = QRect())
-            : widget(_widget), r1(_r1), r2(_r2), step(0) {}
-        QWidget *widget;
-        QRect r1, r2;
-        int step;
-    };
-    typedef QMap<QWidget*, AnimationItem> AnimationMap;
+    typedef QMap<QWidget*, QPropertyAnimation*> AnimationMap;
     AnimationMap m_animation_map;
-    QBasicTimer m_timer;
-    QTime m_time;
     QMainWindowLayout *m_mainWindowLayout;
 };
 

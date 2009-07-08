@@ -297,9 +297,8 @@ public:
     void restore(bool keepSavedState = false);
     void updateHIToolBarStatus();
     void animationFinished(QWidget *widget);
-    void allAnimationsFinished();
 
-private slots:
+private Q_SLOTS:
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
     void tabChanged();

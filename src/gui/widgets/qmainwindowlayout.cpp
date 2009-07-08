@@ -1550,37 +1550,10 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
     return true;
 }
 
-void QMainWindowLayout::allAnimationsFinished()
-{
-#ifndef QT_NO_DOCKWIDGET
-    parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
-
-#ifndef QT_NO_TABBAR
-    foreach (QTabBar *tab_bar, usedTabBars)
-        tab_bar->show();
-#endif // QT_NO_TABBAR
-#endif // QT_NO_DOCKWIDGET
-
-    updateGapIndicator();
-}
-
 void QMainWindowLayout::animationFinished(QWidget *widget)
 {
-
-    /* This signal is delivered from QWidgetAnimator over a qeued connection. The problem is that
-       the widget can be deleted. This is handled as follows:
-
-       The animator only ever animates widgets that have been added to this layout. If a widget
-       is deleted during animation, the widget's destructor removes the widget form this layout.
-       This in turn aborts the animation (see takeAt()) and this signal will never be delivered.
-
-       If the widget is deleted after the animation is finished but before this qeued signal
-       is delivered, the widget is no longer in the layout and we catch it here. The key is that
-       QMainWindowLayoutState::contains() never dereferences the pointer. */
-
-    if (!layoutState.contains(widget))
-        return;
-
+    //this function is called from within the Widget Animator whenever an animation is finished
+    //on a certain widget
 #ifndef QT_NO_TOOLBAR
     if (QToolBar *tb = qobject_cast<QToolBar*>(widget)) {
         QToolBarLayout *tbl = qobject_cast<QToolBarLayout*>(tb->layout());
@@ -1593,32 +1566,44 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
     }
 #endif
 
-    if (widget != pluggingWidget)
-        return;
+    if (widget == pluggingWidget) {
 
 #ifndef QT_NO_DOCKWIDGET
-    if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
-        dw->d_func()->plug(currentGapRect);
+        if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
+            dw->d_func()->plug(currentGapRect);
 #endif
 #ifndef QT_NO_TOOLBAR
-    if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
-        tb->d_func()->plug(currentGapRect);
+        if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
+            tb->d_func()->plug(currentGapRect);
 #endif
 
-    applyState(layoutState, false);
+        applyState(layoutState, false);
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
-    if (qobject_cast<QDockWidget*>(widget) != 0) {
-        // info() might return null if the widget is destroyed while
-        // animating but before the animationFinished signal is received.
-        if (QDockAreaLayoutInfo *info = layoutState.dockAreaLayout.info(widget))
-            info->setCurrentTab(widget);
+        if (qobject_cast<QDockWidget*>(widget) != 0) {
+            // info() might return null if the widget is destroyed while
+            // animating but before the animationFinished signal is received.
+            if (QDockAreaLayoutInfo *info = layoutState.dockAreaLayout.info(widget))
+                info->setCurrentTab(widget);
+        }
+#endif
+#endif
+        savedState.clear();
+        currentGapPos.clear();
+        pluggingWidget = 0;
     }
-#endif
-#endif
-    savedState.clear();
-    currentGapPos.clear();
-    pluggingWidget = 0;
+
+    if (!widgetAnimator.animating()) {
+        //all animations are finished
+#ifndef QT_NO_DOCKWIDGET
+        parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
+#ifndef QT_NO_TABBAR
+        foreach (QTabBar *tab_bar, usedTabBars)
+            tab_bar->show();
+#endif // QT_NO_TABBAR
+#endif // QT_NO_DOCKWIDGET
+    }
+
     updateGapIndicator();
 }
 
