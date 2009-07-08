@@ -462,7 +462,6 @@ void QDesignerWorkbench::switchToTopLevelMode()
     // make sure that the widgetbox is visible if it is different from neutral.
     QDesignerToolWindow *widgetBoxWrapper = widgetBoxToolWindow();
     Q_ASSERT(widgetBoxWrapper);
-    const bool needWidgetBoxWrapperVisible = widgetBoxWrapper->action()->isChecked();
 
     switchToNeutralMode();
     const QPoint desktopOffset = desktopGeometry().topLeft();
@@ -500,9 +499,6 @@ void QDesignerWorkbench::switchToTopLevelMode()
         tw->action()->setChecked(tw->isVisible());
         found_visible_window |= tw->isVisible();
     }
-
-    if (needWidgetBoxWrapperVisible)
-        widgetBoxWrapper->action()->trigger();
 
     if (!m_toolWindows.isEmpty() && !found_visible_window)
         m_toolWindows.first()->show();
