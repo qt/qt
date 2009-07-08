@@ -58,6 +58,8 @@
 #include <QtCore/qtimer.h>
 #include <private/qobject_p.h>
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 class QAnimationGroup;
@@ -147,4 +149,7 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif
+
+#endif //QT_NO_ANIMATION
+
+#endif //QABSTRACTANIMATION_P_H

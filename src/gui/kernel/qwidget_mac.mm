@@ -3823,7 +3823,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
       Qt coordinate system for parent
       X coordinate system for parent (relative to parent's wrect).
     */
-    QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
     QRect wrect;
     //xrect is the X geometry of my X widget. (starts out in  parent's Qt coord sys, and ends up in parent's X coord sys)
     QRect xrect = data.crect;
@@ -3845,6 +3844,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             parentWRect = QRect(tmpRect.origin.x, tmpRect.origin.y,
                                 tmpRect.size.width, tmpRect.size.height);
         } else {
+            const QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
             parentWRect = wrectRange;
         }
     } else {
@@ -3900,15 +3900,24 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
-        if (xrect.height() > XCOORD_MAX || xrect.width() > XCOORD_MAX) {
+        const QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
+        if (!validRange.contains(xrect)) {
             // we are too big, and must clip
-            xrect &=wrectRange;
-            wrect = xrect;
-            wrect.translate(-data.crect.topLeft());
-            //parent's X coord system is equal to parent's Qt coord
-            //sys, so we don't need to map xrect.
-        }
+            QPoint screenOffset(0, 0); // offset of the part being on screen
+            const QWidget *parentWidget = q->parentWidget();
+            while (parentWidget && !parentWidget->isWindow()) {
+                screenOffset -= parentWidget->data->crect.topLeft();
+                parentWidget = parentWidget->parentWidget();
+            }
+            QRect cropRect(screenOffset.x() - WRECT_MAX,
+                           screenOffset.y() - WRECT_MAX,
+                           2*WRECT_MAX,
+                           2*WRECT_MAX);
 
+            xrect &=cropRect;
+            wrect = xrect;
+            wrect.translate(-data.crect.topLeft()); // translate wrect in my Qt coordinates
+        }
     }
 
     // unmap if we are outside the valid window system coord system

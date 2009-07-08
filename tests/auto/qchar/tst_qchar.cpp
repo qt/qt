@@ -500,6 +500,9 @@ void tst_QChar::normalization()
     }
 
     QFile f("NormalizationTest.txt");
+    // Windows - current directory is the debug/release subdirectory where the executable is located
+    if (!f.exists())
+        f.setFileName("../NormalizationTest.txt");;
     if (!f.exists()) {
         QFAIL("Couldn't find NormalizationTest.txt");
         return;

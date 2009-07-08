@@ -7484,6 +7484,7 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
+            return false;
         default:
             break;
         }

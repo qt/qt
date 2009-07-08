@@ -5233,8 +5233,6 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate *d = self;
-    QApplication *q = self->q_func();
-
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
@@ -5256,7 +5254,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             if (!widget) {
                 // determine which widget this event will go to
                 if (!window)
-                    window = q->topLevelAt(touchPoint.screenPos().toPoint());
+                    window = QApplication::topLevelAt(touchPoint.screenPos().toPoint());
                 if (!window)
                     continue;
                 widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
@@ -5356,7 +5354,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         QTouchEvent touchEvent(eventType,
                                deviceType,
-                               q->keyboardModifiers(),
+                               QApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);

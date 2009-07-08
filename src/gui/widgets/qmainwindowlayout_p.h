@@ -59,7 +59,6 @@
 
 #include "QtGui/qlayout.h"
 #include "QtGui/qtabbar.h"
-#include "QtGui/qrubberband.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qset.h"
 #include "QtCore/qbasictimer.h"
@@ -284,7 +283,7 @@ public:
     QRect currentGapRect;
     QWidget *pluggingWidget;
 #ifndef QT_NO_RUBBERBAND
-    QRubberBand gapIndicator;
+    QRubberBand *gapIndicator;
 #endif
 
     QList<int> hover(QLayoutItem *widgetItem, const QPoint &mousePos);
@@ -297,9 +296,8 @@ public:
     void restore(bool keepSavedState = false);
     void updateHIToolBarStatus();
     void animationFinished(QWidget *widget);
-    void allAnimationsFinished();
 
-private slots:
+private Q_SLOTS:
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
     void tabChanged();

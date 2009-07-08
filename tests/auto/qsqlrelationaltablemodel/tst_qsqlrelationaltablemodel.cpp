@@ -167,10 +167,10 @@ void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
             << qTableName( "reltest3" )
             << qTableName( "reltest4" )
             << qTableName( "reltest5" )
-            << qTableName( "rel test6", db.driver() )
-            << qTableName( "rel test7", db.driver() )
-            << qTableName("CASETEST1", db.driver() )
-            << qTableName("casetest1", db.driver() );
+            << qTableName( "rel test6" )
+            << qTableName( "rel test7" )
+            << qTableName("CASETEST1" )
+            << qTableName("casetest1" );
     tst_Databases::safeDropTables( db, tableNames );
 }
 
