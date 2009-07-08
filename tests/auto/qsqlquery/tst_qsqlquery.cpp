@@ -295,6 +295,9 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "blobstest" )
                << qTableName( "oraRowId" );
 
+    if ( db.driverName().startsWith("QPSQL") )
+        tablenames <<"task_233829";
+
     if ( db.driverName().startsWith("QSQLITE") )
         tablenames << qTableName( "record_sqlite" );
 
@@ -2839,7 +2842,6 @@ void tst_QSqlQuery::task_233829()
     q.bindValue(0,0.0 / k); // nan
     q.bindValue(1,0.0 / k); // nan
     QVERIFY_SQL(q,exec());
-    q.exec("DROP TABLE " + tableName);
 }
 
 QTEST_MAIN( tst_QSqlQuery )
