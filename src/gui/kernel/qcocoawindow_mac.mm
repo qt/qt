@@ -104,6 +104,12 @@ QT_USE_NAMESPACE
     last resort (i.e., this is code that can potentially be removed).
  */
 
+- (void)toggleToolbarShown:(id)sender
+{
+    macSendToolbarChangeEvent([self QT_MANGLE_NAMESPACE(qt_qwidget)]);
+    [super toggleToolbarShown:sender];
+}
+
 - (void)keyDown:(NSEvent *)theEvent
 {
     bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);

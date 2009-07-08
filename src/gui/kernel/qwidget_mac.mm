@@ -843,8 +843,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowToolbarSwitchMode) {
-            QToolBarChangeEvent ev(!(GetCurrentKeyModifiers() & cmdKey));
-            QApplication::sendSpontaneousEvent(widget, &ev);
+            macSendToolbarChangeEvent(widget);
             HIToolbarRef toolbar;
             if (GetWindowToolbar(wid, &toolbar) == noErr) {
                 if (toolbar) {
