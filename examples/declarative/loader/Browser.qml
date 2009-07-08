@@ -5,17 +5,23 @@ Rect {
     FolderListModel {
         id: folders
         nameFilters: [ "*.qml" ]
+//        folder: "E:"
     }
 
     Component {
         id: FolderDelegate
-        Text {
+        Rect {
             id: Wrapper
             width: Root.width
-            text: fileName
-            font.bold: true
-            font.size: 14
+            height: NameText.height
+            Text {
+                id: NameText
+                text: fileName
+                font.bold: true
+                font.size: 12
+            }
             MouseRegion {
+                id: Mouse
                 anchors.fill: parent
                 onClicked: {
                     if (folders.isFolder(index)) {
@@ -25,17 +31,41 @@ Rect {
                     }
                 }
             }
+            states: [
+                State {
+                    name: "pressed"
+                    when: Mouse.pressed
+                    SetProperties { target: Wrapper; color: "#bbbbbb" }
+                }
+            ]
         }
     }
 
-    Text { id: DirText; text: folders.folder }
+    Script {
+        function up(path) {
+            var pos = path.toString().lastIndexOf("/");
+            return path.toString().substring(0, pos);
+        }
+    }
+
+    Rect {
+        id: UpButton
+        width: 30
+        height: UpText.height
+        color: "grey"
+        MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
+        Text { id: UpText; text: "Up" }
+    }
+
+    Text { anchors.left: UpButton.right; text: folders.folder }
 
     ListView {
-        anchors.top: DirText.bottom
+        anchors.top: UpButton.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         model: folders
         delegate: FolderDelegate
+        clip: true
     }
 }
