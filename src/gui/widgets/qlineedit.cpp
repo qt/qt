@@ -692,9 +692,14 @@ int QLineEdit::cursorPositionAt(const QPoint &pos)
 bool QLineEdit::validateAndSet(const QString &newText, int newPos,
                                  int newMarkAnchor, int newMarkDrag)
 {
-    // Note, this doesn't validate', but then neither
-    // does the suggested functions above in the docs.
+    // The suggested functions above in the docs don't seem to validate,
+    // below code tries to mimic previous behaviour.
+    QString oldText = text();
     setText(newText);
+    if(!hasAcceptableInput()){
+        setText(oldText);
+        return false;
+    }
     setCursorPosition(newPos);
     setSelection(qMin(newMarkAnchor, newMarkDrag), qAbs(newMarkAnchor - newMarkDrag));
     return true;
@@ -1947,11 +1952,13 @@ QMenu *QLineEdit::createStandardContextMenu()
 
 #ifndef QT_NO_CLIPBOARD
     action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText());
+    action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
+            && d->control->echoMode() == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(cut()));
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
-    action->setEnabled(d->control->hasSelectedText());
+    action->setEnabled(d->control->hasSelectedText()
+            && d->control->echoMode() == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
     action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
