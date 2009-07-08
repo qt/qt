@@ -1135,6 +1135,10 @@ void Configure::parseCmdLine()
 
     useUnixSeparators = (dictionary["QMAKESPEC"] == "win32-g++");
 
+    // Allow tests for private classes to be compiled against internal builds
+    if (dictionary["BUILDDEV"] == "yes")
+        qtConfig += "private_tests";
+
 
 #if !defined(EVAL)
     for( QStringList::Iterator dis = disabledModules.begin(); dis != disabledModules.end(); ++dis ) {
@@ -1997,7 +2001,6 @@ bool Configure::verifyConfiguration()
      no-gif gif
      dll staticlib
 
-     internal
      nocrosscompiler
      GNUmake
      largefile
