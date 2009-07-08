@@ -1639,7 +1639,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
     , widgetAnimator(this)
     , pluggingWidget(0)
 #ifndef QT_NO_RUBBERBAND
-    , gapIndicator(QRubberBand::Rectangle, mainwindow)
+    , gapIndicator(new QRubberBand(QRubberBand::Rectangle, mainwindow))
 #endif //QT_NO_RUBBERBAND
 {
 #ifndef QT_NO_DOCKWIDGET
@@ -1655,8 +1655,8 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 
 #ifndef QT_NO_RUBBERBAND
     // For accessibility to identify this special widget.
-    gapIndicator.setObjectName(QLatin1String("qt_rubberband"));
-    gapIndicator.hide();
+    gapIndicator->setObjectName(QLatin1String("qt_rubberband"));
+    gapIndicator->hide();
 #endif
     pluggingWidget = 0;
 
@@ -1762,14 +1762,8 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget)
 void QMainWindowLayout::updateGapIndicator()
 {
 #ifndef QT_NO_RUBBERBAND
-    if (widgetAnimator.animating() || currentGapPos.isEmpty()) {
-        gapIndicator.hide();
-    } else {
-        if (gapIndicator.geometry() != currentGapRect)
-            gapIndicator.setGeometry(currentGapRect);
-        if (!gapIndicator.isVisible())
-            gapIndicator.show();
-    }
+    gapIndicator->setVisible(!widgetAnimator.animating() && !currentGapPos.isEmpty());
+    gapIndicator->setGeometry(currentGapRect);
 #endif
 }
 
