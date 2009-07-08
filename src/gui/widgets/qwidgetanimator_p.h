@@ -54,7 +54,6 @@
 //
 
 #include <qobject.h>
-#include <qrect.h>
 #include <qmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -77,12 +76,11 @@ public:
 #ifndef QT_NO_ANIMATION
 private Q_SLOTS:
     void animationFinished();
+#endif
 
 private:
     typedef QMap<QWidget*, QPropertyAnimation*> AnimationMap;
     AnimationMap m_animation_map;
-#endif
-private:
     QMainWindowLayout *m_mainWindowLayout;
 };
 

@@ -1527,24 +1527,20 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
         layoutState.remove(previousPath);
 
     pluggingWidget = widget;
-    if (dockOptions & QMainWindow::AnimatedDocks) {
-        QRect globalRect = currentGapRect;
-        globalRect.moveTopLeft(parentWidget()->mapToGlobal(globalRect.topLeft()));
+    QRect globalRect = currentGapRect;
+    globalRect.moveTopLeft(parentWidget()->mapToGlobal(globalRect.topLeft()));
 #ifndef QT_NO_DOCKWIDGET
-        if (qobject_cast<QDockWidget*>(widget) != 0) {
-            QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(widget->layout());
-            if (layout->nativeWindowDeco()) {
-                globalRect.adjust(0, layout->titleHeight(), 0, 0);
-            } else {
-                int fw = widget->style()->pixelMetric(QStyle::PM_DockWidgetFrameWidth, 0, widget);
-                globalRect.adjust(-fw, -fw, fw, fw);
-            }
+    if (qobject_cast<QDockWidget*>(widget) != 0) {
+        QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(widget->layout());
+        if (layout->nativeWindowDeco()) {
+            globalRect.adjust(0, layout->titleHeight(), 0, 0);
+        } else {
+            int fw = widget->style()->pixelMetric(QStyle::PM_DockWidgetFrameWidth, 0, widget);
+            globalRect.adjust(-fw, -fw, fw, fw);
         }
-#endif
-        widgetAnimator.animate(widget, globalRect, true);
-    } else {
-        animationFinished(widget);
     }
+#endif
+    widgetAnimator.animate(widget, globalRect, dockOptions & QMainWindow::AnimatedDocks);
 
     return true;
 }
@@ -1576,9 +1572,11 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
             tb->d_func()->plug(currentGapRect);
 #endif
 
-        applyState(layoutState, false);
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
+        //it is important to set the current tab before applying the layout
+        //so that applyState will not try to counter the result of the animation
+        //by putting the item in negative space
         if (qobject_cast<QDockWidget*>(widget) != 0) {
             // info() might return null if the widget is destroyed while
             // animating but before the animationFinished signal is received.
@@ -1587,6 +1585,9 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         }
 #endif
 #endif
+
+        applyState(layoutState, false);
+
         savedState.clear();
         currentGapPos.clear();
         pluggingWidget = 0;
