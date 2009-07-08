@@ -66,10 +66,9 @@ QStringList QUsbKbdDriver::keys() const
 QWSKeyboardHandler* QUsbKbdDriver::create(const QString &driver,
                                           const QString &device)
 {
-    Q_UNUSED(device);
     if (driver.compare(QLatin1String("Usb"), Qt::CaseInsensitive))
         return 0;
-    return new QWSUsbKeyboardHandler(driver);
+    return new QWSUsbKeyboardHandler(device);
 }
 
 Q_EXPORT_PLUGIN2(qwsusbkbddriver, QUsbKbdDriver)
