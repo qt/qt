@@ -207,10 +207,10 @@ namespace Phonon
 
             HRESULT hr = S_OK;
 
+            QMutexLocker locker(&m_mutex);
             m_currentRender = w.graph;
 			m_currentRenderId = w.id;
             if (w.task == ReplaceGraph) {
-                QMutexLocker locker(&m_mutex);
                 HANDLE h;
 
                 int index = -1;
