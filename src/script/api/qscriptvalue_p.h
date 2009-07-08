@@ -31,12 +31,54 @@ QT_BEGIN_NAMESPACE
 
 #include "wtf/Platform.h"
 #include "JSValue.h"
+#include "qscriptengine.h"
 
 class QString;
-class QScriptEngine;
 class QScriptValue;
+
+
 class QScriptValuePrivate
 {
+    /** Helper class used only in QScriptValuePrivate. Supports atomatic invalidation of all script
+        values evaluated and contained by QScriptEngine when the engine is above to be deleted.
+        On change it call QScriptEnginePrivate to unregister old and register new pointer value.
+        It should behave as pointer to QScriptEngine.
+        */
+    class QScriptValueAutoRegister
+    {
+        QScriptValuePrivate *val;
+        QScriptEngine *ptr;
+        public:
+            QScriptValueAutoRegister(QScriptValuePrivate *value) : val(value), ptr(0) {};
+            QScriptValueAutoRegister(QScriptValuePrivate *value, const QScriptEngine *engine);
+            ~QScriptValueAutoRegister();
+
+            QScriptValueAutoRegister& operator=(const QScriptEngine* pointer);
+
+            operator QScriptEngine*() const
+            {
+                return ptr;
+            }
+
+            operator bool() const
+            {
+                return ptr;
+            }
+
+            bool operator==(const int i) const
+            {
+                return ptr == (void *)i;
+            }
+
+            bool operator!=(const int i) const
+            {
+                return ptr !=   (void *)i;
+            }
+
+        private:
+            QScriptValueAutoRegister(QScriptValueAutoRegister &/*enigne*/){}; //block it
+    };
+
 public:
     enum Type {
         JSC,
@@ -65,13 +107,23 @@ public:
     QScriptValue property(const QString &name, int resolveMode) const;
     QScriptValue property(quint32 index, int resolveMode) const;
 
-    QScriptEngine *engine;
+    bool isValid() const {return valid;}
+    void detachEngine()
+    {
+        // if type is not developed in js engine there is no
+        // need to invalidate the object
+        if (isJSC()) valid=false;
+        engine=0;
+    }
+
+    QScriptValueAutoRegister engine;
     Type type;
     JSC::JSValue jscValue;
     double numberValue;
     QString *stringValue;
 
     QBasicAtomicInt ref;
+    bool valid;
 };
 
 QT_END_NAMESPACE

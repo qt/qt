@@ -243,7 +243,7 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate()
+QScriptValuePrivate::QScriptValuePrivate() : engine(this), valid(true)
 {
     ref = 0;
 }
@@ -251,6 +251,28 @@ QScriptValuePrivate::QScriptValuePrivate()
 QScriptValuePrivate::~QScriptValuePrivate()
 {
 }
+
+QScriptValuePrivate::QScriptValueAutoRegister::QScriptValueAutoRegister(QScriptValuePrivate *value,const QScriptEngine *engine):
+    val(value), ptr(const_cast<QScriptEngine*>(engine))
+{
+    QScriptEnginePrivate::get(ptr)->registerScriptValue(val);
+}
+
+QScriptValuePrivate::QScriptValueAutoRegister::~QScriptValueAutoRegister()
+{
+    if (ptr) QScriptEnginePrivate::get(ptr)->unregisterScriptValue(val);
+}
+
+QScriptValuePrivate::QScriptValueAutoRegister& QScriptValuePrivate::QScriptValueAutoRegister::operator=(const QScriptEngine *pointer)
+{
+    if (ptr)
+        QScriptEnginePrivate::get(ptr)->unregisterScriptValue(val);
+    ptr = const_cast<QScriptEngine*> (pointer);
+    if (ptr)
+        QScriptEnginePrivate::get(ptr)->registerScriptValue(val);
+    return *this;
+};
+
 
 void QScriptValuePrivate::initFromJSCValue(JSC::JSValue value)
 {
@@ -2270,7 +2292,10 @@ bool QScriptValue::isQMetaObject() const
 bool QScriptValue::isValid() const
 {
     Q_D(const QScriptValue);
-    return (d != 0);
+    if (d)
+        return d->isValid();
+    else
+        return false;
 }
 
 /*!

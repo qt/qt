@@ -59,6 +59,7 @@ class QString;
 class QStringList;
 class QScriptContext;
 class QScriptValue;
+class QScriptValuePrivate;
 class QScriptTypeInfo;
 class QScriptEngineAgent;
 
@@ -135,6 +136,18 @@ public:
     bool scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
                           JSC::JSValue function);
 
+    void registerScriptValue(QScriptValuePrivate *value)
+    {
+        attachedScriptValues.insert(value);
+    }
+
+    void unregisterScriptValue(QScriptValuePrivate *value)
+    {
+        attachedScriptValues.remove(value);
+    }
+
+    void detachAllRegisteredScriptValues();
+
     // private slots
     void _q_objectDestroyed(QObject *);
 #endif
@@ -162,6 +175,8 @@ public:
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
+
+    QSet<QScriptValuePrivate*> attachedScriptValues;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

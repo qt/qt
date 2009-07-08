@@ -20,6 +20,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
 #include "qscriptclass.h"
+#include "qdebug.h"
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmetaobject.h>
@@ -868,6 +869,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    detachAllRegisteredScriptValues();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
 }
@@ -1197,6 +1199,18 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 }
 
 #endif
+
+void QScriptEnginePrivate::detachAllRegisteredScriptValues()
+{
+    //make copy of attachedScriptValues (orignal set will be modified)
+    QSet<QScriptValuePrivate*> tmpSet(attachedScriptValues);
+    QSet<QScriptValuePrivate*>::const_iterator i = tmpSet.begin();
+    while (i != tmpSet.end()) {
+        //this will autmagicly remove *i from attachedScriptValues
+        (*i)->detachEngine();
+        i++;
+    }
+}
 
 QScriptEnginePrivate *QScriptEnginePrivate::get(QScriptEngine *q)
 {
