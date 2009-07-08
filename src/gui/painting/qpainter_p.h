@@ -63,7 +63,7 @@
 #include "QtGui/qpaintengine.h"
 #include <QtCore/qhash.h>
 
-#include "qpen_p.h"
+#include <private/qpen_p.h>
 
 QT_BEGIN_NAMESPACE
 

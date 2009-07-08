@@ -70,7 +70,7 @@
 #   include "private/qcore_mac_p.h"
 #endif
 
-#include "qfontengineglyphcache_p.h"
+#include <private/qfontengineglyphcache_p.h>
 
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
