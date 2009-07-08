@@ -218,7 +218,7 @@ void QMenuBarPrivate::updateGeometries()
     bool hasHiddenActions = false;
     for (int i = 0; i < actions.count(); ++i) {
         const QRect &rect = actionRects.at(i);
-        if (!menuRect.contains(rect)) {
+        if (rect.isValid() && !menuRect.contains(rect)) {
             hasHiddenActions = true;
             break;
         }
@@ -229,7 +229,7 @@ void QMenuBarPrivate::updateGeometries()
         menuRect = this->menuRect(true);
         for (int i = 0; i < actions.count(); ++i) {
             const QRect &rect = actionRects.at(i);
-            if (!menuRect.contains(rect)) {
+            if (rect.isValid() && !menuRect.contains(rect)) {
                 hiddenActions.append(actions.at(i));
             }
         }
