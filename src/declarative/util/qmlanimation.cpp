@@ -1477,7 +1477,7 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
         if ((uint)type >= QVariant::UserType) {
             QmlMetaType::StringConverter converter = QmlMetaType::customStringConverter(type);
             if (converter)
-                variant.setValue(converter(variant.toString()));
+                variant = converter(variant.toString());
         } else
             variant.convert((QVariant::Type)type);
         break;
