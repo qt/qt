@@ -63,6 +63,7 @@
 #include <QtGui/QBoxLayout>
 #include <QtGui/QStyle>
 #include <QtGui/QPushButton>
+#include <private/qgraphicsview_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -175,6 +176,7 @@ private slots:
     void transformationAnchor();
     void resizeAnchor();
     void viewportUpdateMode();
+    void viewportUpdateMode2();
     void acceptDrops();
     void optimizationFlags();
     void optimizationFlags_dontSavePainterState();
@@ -195,6 +197,8 @@ private slots:
     void mouseTracking2();
     void render();
     void exposeRegion();
+    void update_data();
+    void update();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -2229,6 +2233,52 @@ void tst_QGraphicsView::viewportUpdateMode()
     QCOMPARE(view.lastUpdateRegions.size(), 0);
 }
 
+void tst_QGraphicsView::viewportUpdateMode2()
+{
+    // Create a view with viewport rect equal to QRect(0, 0, 200, 200).
+    QGraphicsScene dummyScene;
+    CustomView view;
+    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    view.setScene(&dummyScene);
+    int left, top, right, bottom;
+    view.getContentsMargins(&left, &top, &right, &bottom);
+    view.resize(200 + left + right, 200 + top + bottom);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(300);
+    const QRect viewportRect = view.viewport()->rect();
+    QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
+    QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
+
+    QRect boundingRect;
+    const QRect rect1(0, 0, 10, 10);
+    QVERIFY(viewPrivate->updateRect(rect1));
+    QVERIFY(!viewPrivate->fullUpdatePending);
+    boundingRect |= rect1;
+    QCOMPARE(viewPrivate->dirtyBoundingRect, boundingRect);
+
+    const QRect rect2(50, 50, 10, 10);
+    QVERIFY(viewPrivate->updateRect(rect2));
+    QVERIFY(!viewPrivate->fullUpdatePending);
+    boundingRect |= rect2;
+    QCOMPARE(viewPrivate->dirtyBoundingRect, boundingRect);
+
+    const QRect rect3(190, 190, 10, 10);
+    QVERIFY(viewPrivate->updateRect(rect3));
+    QVERIFY(viewPrivate->fullUpdatePending);
+    boundingRect |= rect3;
+    QCOMPARE(viewPrivate->dirtyBoundingRect, boundingRect);
+
+    view.lastUpdateRegions.clear();
+    viewPrivate->processPendingUpdates();
+    QTest::qWait(50);
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    // Note that we adjust by 2 for antialiasing.
+    QCOMPARE(view.lastUpdateRegions.at(0), QRegion(boundingRect.adjusted(-2, -2, 2, 2) & viewportRect));
+}
+
 void tst_QGraphicsView::acceptDrops()
 {
     QGraphicsView view;
@@ -3349,6 +3399,71 @@ void tst_QGraphicsView::exposeRegion()
 
     // Make sure the item didn't get any repaints.
     QCOMPARE(item->paints, 0);
+}
+
+void tst_QGraphicsView::update_data()
+{
+    // In view.viewport() coordinates. (viewport rect: QRect(0, 0, 200, 200))
+    QTest::addColumn<QRect>("updateRect");
+    QTest::newRow("empty") << QRect();
+    QTest::newRow("outside left") << QRect(-200, 0, 100, 100);
+    QTest::newRow("outside right") << QRect(400, 0 ,100, 100);
+    QTest::newRow("outside top") << QRect(0, -200, 100, 100);
+    QTest::newRow("outside bottom") << QRect(0, 400, 100, 100);
+    QTest::newRow("partially inside left") << QRect(-50, 0, 100, 100);
+    QTest::newRow("partially inside right") << QRect(-150, 0, 100, 100);
+    QTest::newRow("partially inside top") << QRect(0, -150, 100, 100);
+    QTest::newRow("partially inside bottom") << QRect(0, 150, 100, 100);
+    QTest::newRow("on topLeft edge") << QRect(-100, -100, 100, 100);
+    QTest::newRow("on topRight edge") << QRect(200, -100, 100, 100);
+    QTest::newRow("on bottomRight edge") << QRect(200, 200, 100, 100);
+    QTest::newRow("on bottomLeft edge") << QRect(-200, 200, 100, 100);
+    QTest::newRow("inside topLeft") << QRect(-99, -99, 100, 100);
+    QTest::newRow("inside topRight") << QRect(199, -99, 100, 100);
+    QTest::newRow("inside bottomRight") << QRect(199, 199, 100, 100);
+    QTest::newRow("inside bottomLeft") << QRect(-199, 199, 100, 100);
+    QTest::newRow("large1") << QRect(50, -100, 100, 400);
+    QTest::newRow("large2") << QRect(-100, 50, 400, 100);
+    QTest::newRow("large3") << QRect(-100, -100, 400, 400);
+    QTest::newRow("viewport rect") << QRect(0, 0, 200, 200);
+}
+void tst_QGraphicsView::update()
+{
+    QFETCH(QRect, updateRect);
+
+    // Create a view with viewport rect equal to QRect(0, 0, 200, 200).
+    QGraphicsScene dummyScene;
+    CustomView view;
+    view.setScene(&dummyScene);
+    int left, top, right, bottom;
+    view.getContentsMargins(&left, &top, &right, &bottom);
+    view.resize(200 + left + right, 200 + top + bottom);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(300);
+    const QRect viewportRect = view.viewport()->rect();
+    QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
+
+    const bool intersects = updateRect.intersects(viewportRect);
+    QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
+    QCOMPARE(viewPrivate->updateRect(updateRect), intersects);
+    QCOMPARE(viewPrivate->updateRegion(updateRect), intersects);
+
+    view.lastUpdateRegions.clear();
+    viewPrivate->processPendingUpdates();
+    QVERIFY(viewPrivate->dirtyRegion.isEmpty());
+    QVERIFY(viewPrivate->dirtyBoundingRect.isEmpty());
+    QTest::qWait(50);
+    if (!intersects) {
+        QVERIFY(view.lastUpdateRegions.isEmpty());
+    } else {
+        QCOMPARE(view.lastUpdateRegions.size(), 1);
+        // Note that we adjust by 2 for antialiasing.
+        QCOMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect.adjusted(-2, -2, 2, 2) & viewportRect));
+    }
+    QVERIFY(!viewPrivate->fullUpdatePending);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

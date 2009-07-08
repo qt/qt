@@ -839,13 +839,29 @@ void QGraphicsViewPrivate::processPendingUpdates()
     dirtyRegion = QRegion();
 }
 
+static inline bool intersectsViewport(const QRect &r, int width, int height)
+{ return !(r.left() > width) && !(r.right() < 0) && !(r.top() >= height) && !(r.bottom() < 0); }
+
+static inline bool containsViewport(const QRect &r, int width, int height)
+{ return r.left() <= 0 && r.top() <= 0 && r.right() >= width - 1 && r.bottom() >= height - 1; }
+
+static inline void QRect_unite(QRect *rect, const QRect &other)
+{
+    if (rect->isEmpty()) {
+        *rect = other;
+    } else {
+        rect->setCoords(qMin(rect->left(), other.left()), qMin(rect->top(), other.top()),
+                        qMax(rect->right(), other.right()), qMax(rect->bottom(), other.bottom()));
+    }
+}
+
 bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
         return false;
 
     const QRect boundingRect = r.boundingRect();
-    if (!boundingRect.intersects(viewport->rect()))
+    if (!intersectsViewport(boundingRect, viewport->width(), viewport->height()))
         return false; // Update region outside viewport.
 
     switch (viewportUpdateMode) {
@@ -854,8 +870,8 @@ bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= boundingRect;
-        if (dirtyBoundingRect.contains(viewport->rect())) {
+        QRect_unite(&dirtyBoundingRect, boundingRect);
+        if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
             fullUpdatePending = true;
             viewport->update();
         }
@@ -882,7 +898,7 @@ bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
-        || !r.intersects(viewport->rect())) {
+        || !intersectsViewport(r, viewport->width(), viewport->height())) {
         return false;
     }
 
@@ -892,8 +908,8 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= r;
-        if (dirtyBoundingRect.contains(viewport->rect())) {
+        QRect_unite(&dirtyBoundingRect, r);
+        if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
             fullUpdatePending = true;
             viewport->update();
         }
