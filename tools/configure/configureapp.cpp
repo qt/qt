@@ -315,6 +315,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "QT3SUPPORT" ]      = "yes";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
+    dictionary[ "OPENVG" ]          = "no";
     dictionary[ "IPV6" ]            = "yes"; // Always, dynamicly loaded
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
@@ -702,6 +703,14 @@ void Configure::parseCmdLine()
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
         }
+
+        // OpenVG Support -------------------------------------------
+        else if( configCmdLine.at(i) == "-openvg" ) {
+            dictionary[ "OPENVG" ]    = "yes";
+        } else if( configCmdLine.at(i) == "-no-openvg" ) {
+            dictionary[ "OPENVG" ]    = "no";
+        }
+
         // Databases ------------------------------------------------
         else if( configCmdLine.at(i) == "-qt-sql-mysql" )
             dictionary[ "SQL_MYSQL" ] = "yes";
@@ -1057,7 +1066,9 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             QString system = configCmdLine.at(i);
-            if (system == QLatin1String("raster") || system == QLatin1String("opengl"))
+            if (system == QLatin1String("raster")
+                || system == QLatin1String("opengl")
+                || system == QLatin1String("openvg"))
                 dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
         }
 
@@ -1519,7 +1530,7 @@ bool Configure::displayHelp()
                     "[-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-webkit] [-webkit]\n"
                     "[-no-scripttools] [-scripttools]\n"
-                    "[-graphicssystem raster|opengl]\n\n", 0, 7);
+                    "[-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1601,6 +1612,11 @@ bool Configure::displayHelp()
         desc("QT3SUPPORT", "no","-no-qt3support",       "Disables the Qt 3 support functionality.\n");
         desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
 
+        desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality\n");
+        desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
+        desc(                   "",                     "Requires EGL support, typically supplied by an OpenGL", false, ' ');
+        desc(                   "",                     "or other graphics implementation\n", false, ' ');
+
 #endif
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
@@ -1616,7 +1632,8 @@ bool Configure::displayHelp()
         desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "", "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL accelleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL acceleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "openvg", "", "  openvg - Using OpenVG acceleration, experimental!", ' ');
 
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
@@ -2371,6 +2388,11 @@ void Configure::generateOutputVars()
         qtConfig += "opengles1cl";
     }
 
+    if ( dictionary["OPENVG"] == "yes" ) {
+        qtConfig += "openvg";
+        qtConfig += "egl";
+    }
+
      if ( dictionary["DIRECTSHOW"] == "yes" )
         qtConfig += "directshow";
 
@@ -2779,6 +2801,7 @@ void Configure::generateConfigfiles()
         if(dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if(dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
         if(dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
+        if(dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
         if(dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if(dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if(dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
@@ -2807,6 +2830,7 @@ void Configure::generateConfigfiles()
         if(dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if(dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
+        if (dictionary["GRAPHICS_SYSTEM"] == "openvg") qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
         if (dictionary["GRAPHICS_SYSTEM"] == "opengl") qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
         if (dictionary["GRAPHICS_SYSTEM"] == "raster") qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
         // ### This block should be removed once Qt for S60 is out.
@@ -3044,6 +3068,7 @@ void Configure::displayConfig()
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     cout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
+    cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
