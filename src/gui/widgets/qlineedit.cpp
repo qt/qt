@@ -341,14 +341,9 @@ QLineEdit::QLineEdit(const QString& contents, const QString &inputMask, QWidget*
 {
     Q_D(QLineEdit);
     setObjectName(QString::fromAscii(name));
-    //d->control->parseInputMask(inputMask);
-    //if (d->control->maskData) {
-    //    QString ms = d->control->maskString(0, contents);
-    //    d->init(ms + d->control->clearString(ms.length(), d->control->maxLength() - ms.length()));
-   //     d->control->moveCursor(d->control->nextMaskBlank(ms.length()));
-   // } else {
-        d->init(contents);
-   // }
+    d->init(contents);
+    d->control->setInputMask(inputMask);
+    d->control->moveCursor(d->control->nextMaskBlank(contents.length()));
 }
 #endif
 
