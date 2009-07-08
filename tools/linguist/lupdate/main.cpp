@@ -182,9 +182,10 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         if (options & Verbose)
             printOut(QObject::tr("Updating '%1'...\n").arg(fn));
 
+        UpdateOptions theseOptions = options;
         if (tor.locationsType() == Translator::NoLocations) // Could be set from file
-            options |= NoLocations;
-        Translator out = merge(tor, fetchedTor, options, err);
+            theseOptions |= NoLocations;
+        Translator out = merge(tor, fetchedTor, theseOptions, err);
         if (!codecForTr.isEmpty())
             out.setCodecName(codecForTr);
 

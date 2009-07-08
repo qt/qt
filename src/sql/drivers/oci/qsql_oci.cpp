@@ -609,7 +609,7 @@ static QSqlField qFromOraInf(const OraFieldInfo &ofi)
     QSqlField f(ofi.name, ofi.type);
     f.setRequired(ofi.oraIsNull == 0);
 
-    if (ofi.type == QVariant::String)
+    if (ofi.type == QVariant::String && ofi.oraType != SQLT_NUM && ofi.oraType != SQLT_VNU)
         f.setLength(ofi.oraFieldLength);
     else
         f.setLength(ofi.oraPrecision == 0 ? 38 : int(ofi.oraPrecision));

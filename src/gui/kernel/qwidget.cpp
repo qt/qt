@@ -4541,6 +4541,11 @@ void QWidget::unsetLayoutDirection()
     By default, this property contains a cursor with the Qt::ArrowCursor
     shape.
 
+    Some underlying window implementations will reset the cursor if it
+    leaves a widget even if the mouse is grabbed. If you want to have
+    a cursor set for all widgets, even when outside the window, consider
+    QApplication::setOverrideCursor().
+
     \sa QApplication::setOverrideCursor()
 */
 

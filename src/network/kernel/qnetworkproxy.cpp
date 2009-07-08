@@ -366,7 +366,7 @@ static QNetworkProxy::Capabilities defaultCapabilitiesForType(QNetworkProxy::Pro
          int(QNetworkProxy::HostNameLookupCapability)),
     };
 
-    if (int(type) < 0 && int(type) > int(QNetworkProxy::FtpCachingProxy))
+    if (int(type) < 0 || int(type) > int(QNetworkProxy::FtpCachingProxy))
         type = QNetworkProxy::DefaultProxy;
     return QNetworkProxy::Capabilities(defaults[int(type)]);
 }
