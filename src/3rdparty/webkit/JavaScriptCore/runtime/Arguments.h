@@ -45,7 +45,7 @@ namespace JSC {
         OwnArrayPtr<bool> deletedArguments;
         Register extraArgumentsFixedBuffer[4];
 
-        JSFunction* callee;
+        InternalFunction* callee;
         bool overrodeLength : 1;
         bool overrodeCallee : 1;
     };
@@ -87,7 +87,7 @@ namespace JSC {
         }
 
     private:
-        void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
+        void getArgumentsData(CallFrame*, InternalFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
@@ -110,12 +110,17 @@ namespace JSC {
         return static_cast<Arguments*>(asObject(value));
     }
 
-    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSFunction*& function, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
+    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, InternalFunction*& function, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
     {
-        function = asFunction(callFrame->callee());
-    
-        CodeBlock* codeBlock = &function->body()->generatedBytecode();
-        int numParameters = codeBlock->m_numParameters;
+        function = callFrame->callee();
+
+        int numParameters;
+        if (function->isObject(&JSFunction::info)) {
+            CodeBlock* codeBlock =  &JSC::asFunction(function)->body()->generatedBytecode();
+            numParameters = codeBlock->m_numParameters;
+        } else {
+            numParameters = 0;
+        }
         argc = callFrame->argumentCount();
 
         if (argc <= numParameters)
@@ -131,13 +136,16 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        JSFunction* callee;
+        InternalFunction* callee;
         ptrdiff_t firstParameterIndex;
         Register* argv;
         int numArguments;
         getArgumentsData(callFrame, callee, firstParameterIndex, argv, numArguments);
 
-        d->numParameters = callee->body()->parameterCount();
+        if (callee->isObject(&JSFunction::info))
+            d->numParameters = JSC::asFunction(callee)->body()->parameterCount();
+        else
+            d->numParameters = 0;
         d->firstParameterIndex = firstParameterIndex;
         d->numArguments = numArguments;
 
@@ -168,7 +176,8 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        ASSERT(!asFunction(callFrame->callee())->body()->parameterCount());
+        if (callFrame->callee() && callFrame->callee()->isObject(&JSC::JSFunction::info))
+            ASSERT(!asFunction(callFrame->callee())->body()->parameterCount());
 
         unsigned numArguments = callFrame->argumentCount() - 1;
 
@@ -188,7 +197,7 @@ namespace JSC {
 
         d->extraArguments = extraArguments;
 
-        d->callee = asFunction(callFrame->callee());
+        d->callee = callFrame->callee();
         d->overrodeLength = false;
         d->overrodeCallee = false;
     }
