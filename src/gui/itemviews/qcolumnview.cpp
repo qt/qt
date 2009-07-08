@@ -107,10 +107,13 @@ void QColumnViewPrivate::initialize()
 {
     Q_Q(QColumnView);
     q->setTextElideMode(Qt::ElideMiddle);
+#ifndef QT_NO_ANIMATION
     QObject::connect(&currentAnimation, SIGNAL(finished()), q, SLOT(_q_changeCurrentColumn()));
     currentAnimation.setDuration(ANIMATION_DURATION_MSEC);
     currentAnimation.setTargetObject(hbar);
+    currentAnimation.setPropertyName("value");
     currentAnimation.setEasingCurve(QEasingCurve::InOutQuad);
+#endif //QT_NO_ANIMATION
     delete itemDelegate;
     q->setItemDelegate(new QColumnViewDelegate(q));
 }
@@ -260,10 +263,12 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
     if (!index.isValid() || d->columns.isEmpty())
         return;
 
+#ifndef QT_NO_ANIMATION
     if (d->currentAnimation.state() == QPropertyAnimation::Running)
         return;
 
     d->currentAnimation.stop();
+#endif //QT_NO_ANIMATION
 
     // Fill up what is needed to get to index
     d->closeColumns(index, true);
@@ -326,8 +331,12 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
         }
     }
 
+#ifndef QT_NO_ANIMATION
     d->currentAnimation.setEndValue(newScrollbarValue);
     d->currentAnimation.start();
+#else
+    horizontalScrollBar()->setValue(newScrollbarValue);
+#endif //QT_NO_ANIMATION
 }
 
 /*!
@@ -396,8 +405,10 @@ void QColumnView::resizeEvent(QResizeEvent *event)
 void QColumnViewPrivate::updateScrollbars()
 {
     Q_Q(QColumnView);
+#ifndef QT_NO_ANIMATION
     if (currentAnimation.state() == QPropertyAnimation::Running)
         return;
+#endif //QT_NO_ANIMATION
 
     // find the total horizontal length of the laid out columns
     int horizontalLength = 0;
@@ -1031,7 +1042,6 @@ QColumnViewPrivate::QColumnViewPrivate()
 :  QAbstractItemViewPrivate()
 ,showResizeGrips(true)
 ,offset(0)
-,currentAnimation(0, "value") // will set the target later
 ,previewWidget(0)
 ,previewColumn(0)
 {

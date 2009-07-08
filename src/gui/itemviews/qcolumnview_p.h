@@ -160,7 +160,9 @@ public:
     QVector<int> columnSizes; // used during init and corner moving
     bool showResizeGrips;
     int offset;
+#ifndef QT_NO_ANIMATION
     QPropertyAnimation currentAnimation;
+#endif
     QWidget *previewWidget;
     QAbstractItemView *previewColumn;
 };
