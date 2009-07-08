@@ -78,8 +78,11 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
-    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition)
-    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate);
+    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
+    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
     Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
@@ -141,6 +144,14 @@ public:
     QmlComponent* cursorDelegate() const;
     void setCursorDelegate(QmlComponent*);
 
+    int selectionStart() const;
+    void setSelectionStart(int);
+
+    int selectionEnd() const;
+    void setSelectionEnd(int);
+
+    QString selectedText() const;
+
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
 
@@ -176,6 +187,9 @@ public:
 Q_SIGNALS:
     void textChanged(const QString &);
     void cursorPositionChanged();
+    void selectionStartChanged();
+    void selectionEndChanged();
+    void selectionChanged();
 
 public Q_SLOTS:
     void selectAll();
@@ -184,6 +198,7 @@ private Q_SLOTS:
     void fontChanged();
     void updateImgCache(const QRectF &rect);
     void q_textChanged();
+    void updateSelectionMarkers();
     void moveCursorDelegate();
     void loadCursorDelegate();
 

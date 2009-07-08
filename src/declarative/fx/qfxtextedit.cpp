@@ -544,6 +544,80 @@ void QFxTextEdit::loadCursorDelegate()
 }
 
 /*!
+    \qmlproperty int TextEdit::selectionStart
+
+    The cursor position before the first character in the current selection.
+    Setting this and selectionEnd allows you to specify a selection in the
+    text edit.
+
+    Note that if selectionStart == selectionEnd then there is no current
+    selection.
+
+    \sa selectionEnd, cursorPosition, selectedText
+*/
+int QFxTextEdit::selectionStart() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().selectionStart();
+}
+
+void QFxTextEdit::setSelectionStart(int s)
+{
+    Q_D(QFxTextEdit);
+    if(d->lastSelectionStart == s)
+        return;
+    d->lastSelectionStart = s;
+    d->updateSelection();// Will emit the relevant signals
+}
+
+/*!
+    \qmlproperty int TextEdit::selectionEnd
+
+    The cursor position after the last character in the current selection.
+    Setting this and selectionStart allows you to specify a selection in the
+    text edit.
+
+    Note that if selectionStart == selectionEnd then there is no current
+    selection.
+
+    \sa selectionStart, cursorPosition, selectedText
+*/
+int QFxTextEdit::selectionEnd() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().selectionEnd();
+}
+
+void QFxTextEdit::setSelectionEnd(int s)
+{
+    Q_D(QFxTextEdit);
+    if(d->lastSelectionEnd == s)
+        return;
+    d->lastSelectionEnd = s;
+    d->updateSelection();// Will emit the relevant signals
+}
+
+/*!
+    \qmlproperty string TextEdit::selectedText
+
+    This read-only property provides the text currently selected in the
+    text edit.
+
+    It is equivalent to the following snippet, but is faster and easier
+    to use.
+    \code
+    //myTextEdit is the id of the TextEdit
+    myTextEdit.text.toString().substring(myTextEdit.selectionStart,
+            myTextEdit.selectionEnd);
+    \endcode
+*/
+QString QFxTextEdit::selectedText() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().selectedText();
+}
+
+/*!
     \qmlproperty bool TextEdit::focusOnPress
 
     Whether the TextEdit should gain focus on a mouse press. By default this is
@@ -969,6 +1043,8 @@ void QFxTextEditPrivate::init()
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(q_textChanged()));
+    QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
+    QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
     document = control->document();
@@ -994,6 +1070,47 @@ void QFxTextEdit::moveCursorDelegate()
     QRectF cursorRect = d->control->cursorRect();
     d->cursor->setX(cursorRect.x());
     d->cursor->setY(cursorRect.y());
+}
+
+void QFxTextEditPrivate::updateSelection()
+{
+    Q_Q(QFxTextEdit);
+    bool startChange = (lastSelectionStart != control->textCursor().selectionStart());
+    bool endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
+    if(startChange){
+        //### Does this generate spurious intermediate signals?
+        control->textCursor().setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
+        control->textCursor().setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
+    }else if(endChange){
+        int n = lastSelectionEnd - control->textCursor().selectionEnd();
+        if(n > 0)
+            control->textCursor().movePosition(QTextCursor::NextCharacter,
+                    QTextCursor::KeepAnchor, n);
+        else
+            control->textCursor().movePosition(QTextCursor::PreviousCharacter,
+                    QTextCursor::KeepAnchor, -n);
+    }
+    if(startChange)
+        q->selectionStartChanged();
+    if(endChange)
+        q->selectionEndChanged();
+    startChange = (lastSelectionStart != control->textCursor().selectionStart());
+    endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
+    if(startChange || endChange)
+        qWarning() << "QFxTextEditPrivate::updateSelection() has failed you.";
+}
+
+void QFxTextEdit::updateSelectionMarkers()
+{
+    Q_D(QFxTextEdit);
+    if(d->lastSelectionStart != d->control->textCursor().selectionStart()){
+        d->lastSelectionStart = d->control->textCursor().selectionStart();
+        emit selectionStartChanged();
+    }
+    if(d->lastSelectionEnd != d->control->textCursor().selectionEnd()){
+        d->lastSelectionEnd = d->control->textCursor().selectionEnd();
+        emit selectionEndChanged();
+    }
 }
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
