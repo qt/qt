@@ -65,6 +65,7 @@
 #elif defined(Q_OS_WIN)
 #   include "private/qwindowspipewriter_p.h"
 #   include "private/qringbuffer_p.h"
+#   include <private/qwineventnotifier_p.h>
 #else
 #   include "private/qnativesocketengine_p.h"
 #   include <qtcpsocket.h>
@@ -135,18 +136,23 @@ public:
     void _q_notified();
     void _q_canWrite();
     void _q_pipeClosed();
-    qint64 readData(char *data, qint64 maxSize);
-    qint64 bytesAvailable();
-    bool readFromSocket();
+    void _q_emitReadyRead();
+    DWORD bytesAvailable();
+    void startAsyncRead();
+    void completeAsyncRead();
+    void checkReadyRead();
     HANDLE handle;
     OVERLAPPED overlapped;
     QWindowsPipeWriter *pipeWriter;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
-    QTimer dataNotifier;
+    int actualReadBufferSize;
+    QWinEventNotifier *dataReadNotifier;
     QLocalSocket::LocalSocketError error;
-    bool readyReadEmitted;
+    bool readSequenceStarted;
+    bool pendingReadyRead;
     bool pipeClosed;
+    static const qint64 initialReadBufferSize = 4096;
 #else
     QLocalUnixSocket unixSocket;
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;

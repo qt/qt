@@ -74,12 +74,15 @@ public:
 
     void abort(QWidget *widget);
 
+#ifndef QT_NO_ANIMATION
 private Q_SLOTS:
     void animationFinished();
 
 private:
     typedef QMap<QWidget*, QPropertyAnimation*> AnimationMap;
     AnimationMap m_animation_map;
+#endif
+private:
     QMainWindowLayout *m_mainWindowLayout;
 };
 

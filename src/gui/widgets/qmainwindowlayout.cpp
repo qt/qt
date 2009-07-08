@@ -237,7 +237,7 @@ void QMainWindowLayoutState::apply(bool animated)
     if (centralWidgetItem != 0) {
         QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
         Q_ASSERT(layout != 0);
-        layout->widgetAnimator->animate(centralWidgetItem->widget(), centralWidgetRect, animated);
+        layout->widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect, animated);
     }
 #endif
 }
@@ -946,7 +946,6 @@ void QMainWindowLayout::toggleToolBarsVisible()
         r = layoutState.toolBarAreaLayout.rectHint(r);
         r.moveTo(topLeft);
         parentWidget()->setGeometry(r);
-//      widgetAnimator->animate(parentWidget(), r, true);
     } else{
         update();
     }

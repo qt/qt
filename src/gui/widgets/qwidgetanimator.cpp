@@ -53,6 +53,7 @@ QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout) : m_mainWindowLayout
 
 void QWidgetAnimator::abort(QWidget *w)
 {
+#ifndef QT_NO_ANIMATION
     AnimationMap::iterator it = m_animation_map.find(w);
     if (it == m_animation_map.end())
         return;
@@ -60,13 +61,18 @@ void QWidgetAnimator::abort(QWidget *w)
     m_animation_map.erase(it);
     anim->stop();
     m_mainWindowLayout->animationFinished(w);
+#else
+    Q_UNUSED(w); //there is no animation to abort
+#endif //QT_NO_ANIMATION
 }
 
+#ifndef QT_NO_ANIMATION
 void QWidgetAnimator::animationFinished()
 {
     QPropertyAnimation *anim = qobject_cast<QPropertyAnimation*>(sender());
     abort(static_cast<QWidget*>(anim->targetObject()));
 }
+#endif //QT_NO_ANIMATION
 
 void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, bool animate)
 {
@@ -76,6 +82,9 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     if (r.right() < 0 || r.bottom() < 0)
         r = QRect();
 
+#ifdef QT_NO_ANIMATION
+    Q_UNUSED(animate);
+#else
     if (r.isNull() || final_geometry.isNull() || r == final_geometry)
         animate = false;
 
@@ -91,7 +100,9 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
         m_animation_map[widget] = anim;
         connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
         anim->start(QPropertyAnimation::DeleteWhenStopped);
-    } else {
+    } else 
+#endif //QT_NO_ANIMATION
+    {
         if (!final_geometry.isValid() && !widget->isWindow()) {
             // Make the wigdet go away by sending it to negative space
             QSize s = widget->size();
@@ -103,12 +114,21 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
 
 bool QWidgetAnimator::animating() const
 {
+#ifdef QT_NO_ANIMATION
+    return false;
+#else
     return !m_animation_map.isEmpty();
+#endif //QT_NO_ANIMATION
 }
 
 bool QWidgetAnimator::animating(QWidget *widget) const
 {
+#ifdef QT_NO_ANIMATION
+    Q_UNUSED(widget);
+    return false;
+#else
     return m_animation_map.contains(widget);
+#endif //QT_NO_ANIMATION
 }
 
 QT_END_NAMESPACE

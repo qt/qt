@@ -1131,4 +1131,16 @@ CGFloat qt_mac_get_scalefactor()
 #endif
 }
 
+QString qt_mac_get_pasteboardString()
+{
+    QMacCocoaAutoReleasePool pool;
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSString *text = [pb stringForType:NSStringPboardType];
+    if (text) {
+        return qt_mac_NSStringToQString(text);
+    } else {
+        return QString();
+    }
+}
+
 QT_END_NAMESPACE
