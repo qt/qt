@@ -324,6 +324,36 @@ void QFxTextEdit::setHighlightColor(const QColor &color)
 }
 
 /*!
+    \qmlproperty color TextEdit::highlightedTextColor
+
+    The highlighted text color, used in selections.
+*/
+
+/*!
+    \property QFxTextEdit::highlightedTextColor
+    \brief the text edit's default highlighted text color
+*/
+QColor QFxTextEdit::highlightedTextColor() const
+{
+    Q_D(const QFxTextEdit);
+    return d->highlightColor;
+}
+
+void QFxTextEdit::setHighlightedTextColor(const QColor &color)
+{
+    Q_D(QFxTextEdit);
+    if (d->highlightedTextColor == color)
+        return;
+
+    clearCache();
+    d->highlightedTextColor = color;
+    QPalette pal = d->control->palette();
+    pal.setColor(QPalette::HighlightedText, color);
+    d->control->setPalette(pal);
+    update();
+}
+
+/*!
     \qmlproperty enumeration TextEdit::hAlign
     \qmlproperty enumeration TextEdit::vAlign
 

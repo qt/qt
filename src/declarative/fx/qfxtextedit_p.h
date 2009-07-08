@@ -83,6 +83,7 @@ public:
     QmlFont font;
     QColor  color;
     QColor  highlightColor;
+    QColor  highlightedTextColor;
     QString style;
     QColor  styleColor;
     bool imgDirty;
