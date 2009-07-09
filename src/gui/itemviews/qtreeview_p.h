@@ -119,8 +119,6 @@ public:
     void expand(int item, bool emitSignal);
     void collapse(int item, bool emitSignal);
 
-
-    void _q_currentChanged(const QModelIndex&, const QModelIndex&);
     void _q_columnsAboutToBeRemoved(const QModelIndex &, int, int);
     void _q_columnsRemoved(const QModelIndex &, int, int);
     void _q_modelAboutToBeReset();

@@ -262,10 +262,6 @@ void QTreeView::setSelectionModel(QItemSelectionModel *selectionModel)
     Q_D(QTreeView);
     Q_ASSERT(selectionModel);
     if (d->selectionModel) {
-        if (d->allColumnsShowFocus) {
-            QObject::disconnect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                                this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        }
         // support row editing
         disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                    d->model, SLOT(submit()));
@@ -275,10 +271,6 @@ void QTreeView::setSelectionModel(QItemSelectionModel *selectionModel)
     QAbstractItemView::setSelectionModel(selectionModel);
 
     if (d->selectionModel) {
-        if (d->allColumnsShowFocus) {
-            QObject::connect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                             this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        }
         // support row editing
         connect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                 d->model, SLOT(submit()));
@@ -901,15 +893,6 @@ void QTreeView::setAllColumnsShowFocus(bool enable)
     Q_D(QTreeView);
     if (d->allColumnsShowFocus == enable)
         return;
-    if (d->selectionModel) {
-        if (enable) {
-            QObject::connect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                             this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        } else {
-            QObject::disconnect(d->selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                                this, SLOT(_q_currentChanged(QModelIndex,QModelIndex)));
-        }
-    }
     d->allColumnsShowFocus = enable;
     d->viewport->update();
 }
@@ -1309,13 +1292,13 @@ bool QTreeViewPrivate::expandOrCollapseItemAtPos(const QPoint &pos)
 {
     Q_Q(QTreeView);
     // we want to handle mousePress in EditingState (persistent editors)
-    if ((q->state() != QAbstractItemView::NoState
-		&& q->state() != QAbstractItemView::EditingState)
+    if ((state != QAbstractItemView::NoState
+		&& state != QAbstractItemView::EditingState)
 		|| !viewport->rect().contains(pos))
         return true;
 
     int i = itemDecorationAt(pos);
-    if ((i != -1) && q->itemsExpandable() && hasVisibleChildren(viewItems.at(i).index)) {
+    if ((i != -1) && itemsExpandable && hasVisibleChildren(viewItems.at(i).index)) {
         if (viewItems.at(i).expanded)
             collapse(i, true);
         else
@@ -2867,7 +2850,7 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (emitSignal && animationsEnabled)
         prepareAnimatedOperation(item, QVariantAnimation::Forward);
 #endif //QT_NO_ANIMATION
-    QAbstractItemView::State oldState = q->state();
+    QAbstractItemView::State oldState = state;
     q->setState(QAbstractItemView::ExpandingState);
     const QModelIndex index = viewItems.at(item).index;
     storeExpanded(index);
@@ -2909,7 +2892,7 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
         prepareAnimatedOperation(item, QVariantAnimation::Backward);
 #endif //QT_NO_ANIMATION
 
-    QAbstractItemView::State oldState = q->state();
+    QAbstractItemView::State oldState = state;
     q->setState(QAbstractItemView::CollapsingState);
     expandedIndexes.erase(it);
     viewItems[item].expanded = false;
@@ -3026,27 +3009,6 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
     return pixmap;
 }
 #endif //QT_NO_ANIMATION
-
-void QTreeViewPrivate::_q_currentChanged(const QModelIndex &current, const QModelIndex &previous)
-{
-    Q_Q(QTreeView);
-    if (previous.isValid()) {
-        QRect previousRect = q->visualRect(previous);
-        if (allColumnsShowFocus) {
-            previousRect.setX(0);
-            previousRect.setWidth(viewport->width());
-        }
-        viewport->update(previousRect);
-    }
-    if (current.isValid()) {
-        QRect currentRect = q->visualRect(current);
-        if (allColumnsShowFocus) {
-            currentRect.setX(0);
-            currentRect.setWidth(viewport->width());
-        }
-        viewport->update(currentRect);
-    }
-}
 
 void QTreeViewPrivate::_q_modelAboutToBeReset()
 {
@@ -3775,6 +3737,21 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     }
 #endif
     QAbstractItemView::currentChanged(current, previous);
+
+    if (allColumnsShowFocus()) {
+        if (previous.isValid()) {
+            QRect previousRect = visualRect(previous);
+            previousRect.setX(0);
+            previousRect.setWidth(viewport()->width());
+            viewport()->update(previousRect);
+        }
+        if (current.isValid()) {
+            QRect currentRect = visualRect(current);
+            currentRect.setX(0);
+            currentRect.setWidth(viewport()->width());
+            viewport()->update(currentRect);
+        }
+    }
 }
 
 /*!

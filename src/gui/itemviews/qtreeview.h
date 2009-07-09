@@ -223,10 +223,8 @@ private:
 
     Q_DECLARE_PRIVATE(QTreeView)
     Q_DISABLE_COPY(QTreeView)
-    Q_PRIVATE_SLOT(d_func(), void _q_currentChanged(const QModelIndex&, const QModelIndex &))
     Q_PRIVATE_SLOT(d_func(), void _q_modelAboutToBeReset())
     Q_PRIVATE_SLOT(d_func(), void _q_sortIndicatorChanged(int column, Qt::SortOrder order))
-    Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
 };
 
 #endif // QT_NO_TREEVIEW
