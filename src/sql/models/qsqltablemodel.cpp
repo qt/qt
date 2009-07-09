@@ -538,6 +538,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         isOk = updateRowInTable(index.row(), d->editBuffer);
         if (isOk)
             select();
+        emit dataChanged(index, index);
         break; }
     case OnRowChange:
         if (index.row() == d->insertIndex) {
