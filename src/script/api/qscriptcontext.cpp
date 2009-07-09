@@ -302,7 +302,7 @@ QScriptValue QScriptContext::argument(int index) const
         return QScriptValue(QScriptValue::UndefinedValue);
     JSC::Register* thisRegister = d->frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - d->frame->argumentCount();
     if (d->frame->codeBlock() == 0)
-        ++index;
+        ++index; // ### off-by-one issue with native functions
     return d->engine->scriptValueFromJSCValue(thisRegister[index].jsValue());
 }
 

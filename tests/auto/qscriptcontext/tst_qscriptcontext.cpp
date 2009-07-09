@@ -209,6 +209,10 @@ void tst_QScriptContext::arguments()
             QScriptValue replacedLength(&eng, 456);
             result.setProperty("length", replacedLength);
             QVERIFY(result.property("length").equals(replacedLength));
+            result.setProperty("callee", QScriptValue());
+            QVERIFY(!result.property("callee").isValid());
+            result.setProperty("length", QScriptValue());
+            QVERIFY(!result.property("length").isValid());
         }
 
         {
@@ -222,6 +226,28 @@ void tst_QScriptContext::arguments()
 
         {
             QScriptValue result = eng.evaluate(prefix+"get_argumentsObject(\"ciao\", null, true, undefined)");
+            QCOMPARE(result.isArray(), false);
+            QCOMPARE(result.property("length").toUInt32(), quint32(4));
+            QCOMPARE(result.property("0").isString(), true);
+            QCOMPARE(result.property("0").toString(), QString("ciao"));
+            QCOMPARE(result.property("1").isNull(), true);
+            QCOMPARE(result.property("2").isBoolean(), true);
+            QCOMPARE(result.property("2").toBoolean(), true);
+            QCOMPARE(result.property("3").isUndefined(), true);
+        }
+
+        // arguments object returned from script
+        {
+            QScriptValue result = eng.evaluate("(function() { return arguments; })(123)");
+            QCOMPARE(result.isArray(), false);
+            QVERIFY(result.isObject());
+            QCOMPARE(result.property("length").toUInt32(), quint32(1));
+            QCOMPARE(result.property("0").isNumber(), true);
+            QCOMPARE(result.property("0").toNumber(), 123.0);
+        }
+
+        {
+            QScriptValue result = eng.evaluate("(function() { return arguments; })('ciao', null, true, undefined)");
             QCOMPARE(result.isArray(), false);
             QCOMPARE(result.property("length").toUInt32(), quint32(4));
             QCOMPARE(result.property("0").isString(), true);

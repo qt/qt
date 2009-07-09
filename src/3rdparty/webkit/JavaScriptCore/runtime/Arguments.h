@@ -193,6 +193,8 @@ namespace JSC {
             extraArguments = d->extraArgumentsFixedBuffer;
 
         Register* argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numArguments - 1;
+        if (callFrame->callee() && !callFrame->callee()->isObject(&JSC::JSFunction::info))
+            ++argv; // ### off-by-one issue with native functions
         for (unsigned i = 0; i < numArguments; ++i)
             extraArguments[i] = argv[i];
 
