@@ -1812,16 +1812,14 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
 
     JSC::CallData callData;
     JSC::CallType callType = slot.getCallData(callData);
-    if (callType == JSC::CallTypeJS) {
-        if (exec->hadException())
-            exec->clearException(); // ### otherwise JSC asserts
-        (void)JSC::asFunction(slot)->call(exec, thisObject, jscArgs);
-    } else if (callType == JSC::CallTypeHost) {
-        (void)callData.native.function(exec, JSC::asObject(slot), thisObject, jscArgs);
-    }
-
     if (exec->hadException())
+        exec->clearException(); // ### otherwise JSC asserts
+    JSC::call(exec, slot, callType, callData, thisObject, jscArgs);
+
+    if (exec->hadException()) {
+        engine->uncaughtException = exec->exception();
         engine->emitSignalHandlerException();
+    }
 }
 
 QObjectConnectionManager::QObjectConnectionManager(QScriptEnginePrivate *eng)
