@@ -1162,7 +1162,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     if (d->ctx->d_ptr->active_engine) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
-        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
         p->transferMode(BrushDrawingMode);
         p->drawable.doneCurrent();
     }
@@ -1266,7 +1266,7 @@ bool QGL2PaintEngineEx::end()
     if (ctx->d_ptr->active_engine != this) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
         if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
         }
@@ -1290,7 +1290,7 @@ void QGL2PaintEngineEx::ensureActive()
     if (isActive() && ctx->d_ptr->active_engine != this) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
         if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
         }
