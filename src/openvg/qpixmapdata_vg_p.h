@@ -54,7 +54,7 @@
 //
 
 #include <QtGui/private/qpixmap_raster_p.h>
-#include "qvg_p.h"
+#include <private/qvg_p.h>
 #if !defined(QT_NO_EGL)
 #include <QtGui/private/qegl_p.h>
 #endif
