@@ -3495,6 +3495,17 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ArgList args(callFrame->registers() + thisRegister + 1, argCount - 1);
 
             ScopeChainNode* scopeChain = callFrame->scopeChain();
+
+            Structure* structure;
+            JSValue prototype = callFrame[proto].jsValue();
+            if (prototype.isObject())
+                structure = asObject(prototype)->inheritorID();
+            else
+                structure = scopeChain->globalObject()->emptyObjectStructure();
+            JSObject* newObject = new (globalData) JSObject(structure);
+
+            callFrame[thisRegister] = JSValue(newObject); // "this" value
+
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
             newCallFrame->init(0, vPC + 7, scopeChain, callFrame, dst, argCount, asObject(v));
 
