@@ -270,6 +270,7 @@ public:
         KB_KDE = 8,
         KB_Gnome = 16,
         KB_CDE = 32,
+        KB_S60 = 64,
         KB_All = 0xffff
     };
 

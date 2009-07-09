@@ -5049,6 +5049,8 @@ uint QApplicationPrivate::currentPlatform(){
         platform |= KB_Gnome;
     if (X11->desktopEnvironment == DE_CDE)
         platform |= KB_CDE;
+#elif defined(Q_WS_S60)
+    platform = KB_S60;
 #endif
     return platform;
 }
