@@ -129,7 +129,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
     const QScriptContextPrivate *ctx_p = QScriptContextPrivate::get(context);
     JSC::ExecState *frame = ctx_p->frame;
-    JSC::InternalFunction *callee = frame->callee();
+    JSC::JSObject *callee = frame->callee();
     if (callee && callee->isObject(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
         JSC::SourceProvider *source = frame->codeBlock()->source();

@@ -1922,7 +1922,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
         // ### dst?
-        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asObject(callee));
         result = callData.native.function(newCallFrame, JSC::asObject(callee), jscThisObject, jscArgs);
         interp->registerFile().shrink(oldEnd);
     }
@@ -2019,7 +2019,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
         // ### dst?
-        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asObject(callee));
         result = callData.native.function(newCallFrame, JSC::asObject(callee), jscThisObject, applyArgs);
         interp->registerFile().shrink(oldEnd);
     }
@@ -2096,7 +2096,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
         // ### dst?
-        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asObject(callee));
         result = constructData.native.function(newCallFrame, JSC::asObject(callee), jscArgs);
         interp->registerFile().shrink(oldEnd);
     }
@@ -2178,7 +2178,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
         // ### dst?
-        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asInternalFunction(callee));
+        newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, dst, argc, JSC::asObject(callee));
         result = constructData.native.function(newCallFrame, JSC::asObject(callee), applyArgs);
         interp->registerFile().shrink(oldEnd);
     }
