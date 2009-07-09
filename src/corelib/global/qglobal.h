@@ -110,7 +110,7 @@ namespace QT_NAMESPACE {}
     This expands to a "using QT_NAMESPACE" also in _header files_.
     It is the only way the feature can be used without too much
     pain, but if people _really_ do not want it they can add
-    DEFINES += QT_NO_USING_NAMESPACE to theur .pro files.
+    DEFINES += QT_NO_USING_NAMESPACE to their .pro files.
     */
    QT_USE_NAMESPACE
 # endif
@@ -1537,7 +1537,7 @@ inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
    Avoid "unused parameter" warnings
 */
 
-#if defined(Q_CC_INTEL) && !defined(Q_OS_WIN)
+#if defined(Q_CC_INTEL) && !defined(Q_OS_WIN) || defined(Q_CC_RVCT)
 template <typename T>
 inline void qUnused(T &x) { (void)x; }
 #  define Q_UNUSED(x) qUnused(x);
@@ -1549,7 +1549,7 @@ inline void qUnused(T &x) { (void)x; }
    Debugging and error handling
 */
 
-#if defined(Q_OS_SYMBIAN) && defined(NDEBUG)
+#if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
 #  define QT_NO_DEBUG
 #endif
 

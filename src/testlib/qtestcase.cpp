@@ -1766,7 +1766,7 @@ bool QTest::compare_helper(bool success, const char *msg, char *val1, char *val2
 \internal
  */
 template <>
-bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual, const char *expected,
+Q_TESTLIB_EXPORT bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
     return qFuzzyCompare(t1, t2)
@@ -1779,7 +1779,7 @@ bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual
 \internal
  */
 template <>
-bool QTest::qCompare<double>(double const &t1, double const &t2, const char *actual, const char *expected,
+Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
     return qFuzzyCompare(t1, t2)
@@ -1789,7 +1789,7 @@ bool QTest::qCompare<double>(double const &t1, double const &t2, const char *act
 }
 
 #define COMPARE_IMPL2(TYPE, FORMAT) \
-template <> char *QTest::toString<TYPE >(const TYPE &t) \
+template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
     qt_snprintf(msg, 128, #FORMAT, t); \

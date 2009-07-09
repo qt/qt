@@ -58,6 +58,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      httpStatusCode(0),
       state(Idle)
 {
 }
@@ -90,7 +91,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
-    if (!copyDevice && !q->isOpen())
+    if (!copyDevice || !q->isOpen())
         return;
 
     forever {

@@ -94,6 +94,7 @@ symbian {
         DEFINES+=QT_MAKEDLL
         TARGET.CAPABILITY = All -Tcb        
     }
+    load(armcc_warnings)
 }
 win32-borland:INCLUDEPATH += kernel
 
@@ -136,7 +137,7 @@ unix:!symbian {
 }
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
-DEFINES += QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
+DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
 

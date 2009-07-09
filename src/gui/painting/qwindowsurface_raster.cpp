@@ -294,6 +294,12 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     CGContextFlush(context);
 #endif
 #endif
+
+#ifdef Q_WS_S60
+    Q_UNUSED(widget);
+    Q_UNUSED(rgn);
+    Q_UNUSED(offset);
+#endif
 }
 
 void QRasterWindowSurface::setGeometry(const QRect &rect)

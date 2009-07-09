@@ -32,6 +32,10 @@
 #include "flickcharm.h"
 #include "ZoomStrip.h"
 
+#if defined (Q_OS_SYMBIAN)
+#include "sym_iap_util.h"
+#endif
+
 BrowserView::BrowserView(QWidget *parent)
     : QWidget(parent)
     , m_titleBar(0)
@@ -73,9 +77,12 @@ void BrowserView::initialize()
     connect(m_webView, SIGNAL(loadFinished(bool)), SLOT(finish(bool)));
     connect(m_webView, SIGNAL(urlChanged(QUrl)), SLOT(updateTitleBar()));
 
-    m_webView->load(QUrl("http://news.bbc.co.uk/text_only.stm"));
+    m_webView->setHtml("Will try to load page soon!");
     m_webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_webView->setFocus();
+#ifdef Q_OS_SYMBIAN
+    QTimer::singleShot(0, this, SLOT(setDefaultIap()));
+#endif
 }
 
 void BrowserView::start()
@@ -146,6 +153,13 @@ void BrowserView::resizeEvent(QResizeEvent *event)
     int zh = m_zoomStrip->sizeHint().height();
     m_zoomStrip->move(width() - zw, (height() - zh) / 2);
 }
+#ifdef Q_OS_SYMBIAN
+void BrowserView::setDefaultIap()
+{
+    qt_SetDefaultIap();
+    m_webView->load(QUrl("http://news.bbc.co.uk/text_only.stm"));
+}
+#endif
 
 void BrowserView::navigate(const QUrl &url)
 {

@@ -33,7 +33,7 @@ HB_INTERNAL HB_Pointer
 _hb_alloc(size_t     size,
 	  HB_Error  *perror )
 {
-  HB_Error    error = 0;
+  HB_Error    error = (HB_Error)0;
   HB_Pointer  block = NULL;
 
   if ( size > 0 )
@@ -54,7 +54,7 @@ _hb_realloc(HB_Pointer  block,
 	    HB_Error   *perror )
 {
     HB_Pointer  block2 = NULL;
-    HB_Error    error  = 0;
+    HB_Error    error  = (HB_Error)0;
 
     block2 = realloc( block, new_size );
     if ( block2 == NULL && new_size != 0 )

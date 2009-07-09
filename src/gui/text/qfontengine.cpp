@@ -1036,9 +1036,8 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
             return 0;
         quint16 segCountX2 = qFromBigEndian<quint16>(cmap + 6);
         const unsigned char *ends = cmap + 14;
-        quint16 endIndex = 0;
         int i = 0;
-        for (; i < segCountX2/2 && (endIndex = qFromBigEndian<quint16>(ends + 2*i)) < unicode; i++) {}
+        for (; i < segCountX2/2 && qFromBigEndian<quint16>(ends + 2*i) < unicode; i++) {}
 
         const unsigned char *idx = ends + segCountX2 + 2 + 2*i;
         quint16 startIndex = qFromBigEndian<quint16>(idx);

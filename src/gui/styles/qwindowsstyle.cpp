@@ -122,7 +122,8 @@ static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  2; // menu item ver text margin
 static const int windowsArrowHMargin     =  6; // arrow horizontal margin
 static const int windowsTabSpacing       = 12; // space between text and tab
-static const int windowsCheckMarkHMargin =  2; // horiz. margins of check mark
+// Save some space and avoid warning.
+//static const int windowsCheckMarkHMargin =  2; // horiz. margins of check mark
 static const int windowsRightBorder      = 15; // right border on windows
 static const int windowsCheckMarkWidth   = 12; // checkmarks width on windows
 
@@ -1786,8 +1787,6 @@ case PE_FrameDockWidget:
 
     case PE_FrameTabWidget:
         if (use2000style) {
-            QRect rect = opt->rect;
-            QPalette pal = opt->palette;
             qDrawWinButton(p, opt->rect, opt->palette, false, 0);
             break;
        }
@@ -2527,7 +2526,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
             bool floating = false;
             bool active = dwOpt->state & State_Active;
-            int menuOffset = 0; //used to center text when floated
             QColor inactiveCaptionTextColor = d->inactiveCaptionText;
             if (dwOpt->movable) {
                 QColor left, right;
@@ -2542,7 +2540,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                         left = d->inactiveCaptionColor;
                         right = d->inactiveGradientCaptionColor;
                     }
-                    menuOffset = 2;
                     QBrush fillBrush(left);
                     if (left != right) {
                         QPoint p1(r.x(), r.top() + r.height()/2);

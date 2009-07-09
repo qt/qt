@@ -63,10 +63,15 @@ Server::Server(QWidget *parent)
         return;
     }
 //! [0]
+    QList<QHostAddress> ipAddresseList = QNetworkInterface::allAddresses();
+    QString ipAddresses;
+    for (int i = 0; i < ipAddresseList.size(); ++i) {
+        ipAddresses.append(ipAddresseList.at(i).toString()).append("\n");
+    }
 
-    statusLabel->setText(tr("The server is running on port %1.\n"
+    statusLabel->setText(tr("The server is running on \n IP: \n%1 PORT: \n%2\n"
                             "Run the Fortune Client example now.")
-                         .arg(tcpServer->serverPort()));
+                         .arg(ipAddresses).arg(tcpServer->serverPort()));
 //! [1]
 
 //! [2]

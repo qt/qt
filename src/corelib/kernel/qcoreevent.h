@@ -282,6 +282,8 @@ public:
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,
 
+        SymbianDeferredFocusChanged = 194,       // Internal for generating asynchronous focus events on Symbian
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

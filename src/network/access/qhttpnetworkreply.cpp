@@ -479,8 +479,6 @@ bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
 qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 {
     qint64 bytes = 0;
-    char crlfcrlf[5];
-    crlfcrlf[4] = '\0';
     char c = 0;
     bool allHeaders = false;
     while (!allHeaders && socket->bytesAvailable()) {

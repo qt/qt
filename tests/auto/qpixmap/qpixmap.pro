@@ -13,7 +13,7 @@ wince*: {
    DEFINES += SRCDIR=\\\".\\\"
 } symbian*: {
    DEPLOYMENT_PLUGIN += qmng
-   LIBS += -lfbscli.lib -lbitgdi.lib -lgdi.lib
+   LIBS += -lfbscli.dll -lbitgdi.dll -lgdi.dll
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
    win32:LIBS += -lgdi32 -luser32

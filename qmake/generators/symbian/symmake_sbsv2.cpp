@@ -220,56 +220,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         qDeleteAll(subtargets);
     }
 
-    t << "dodistclean:" << endl;
-    foreach(QString item, project->values("SUBDIRS")) {
-        bool fromFile = false;
-        QString fixedItem;
-        if(!project->isEmpty(item + ".file")) {
-            fixedItem = project->first(item + ".file");
-            fromFile = true;
-        } else if(!project->isEmpty(item + ".subdir")) {
-            fixedItem = project->first(item + ".subdir");
-            fromFile = false;
-        } else {
-            fromFile = item.endsWith(Option::pro_ext);
-            fixedItem = item;
-        }
-        QFileInfo fi(fileInfo(fixedItem));
-        if (!fromFile) {
-            t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fi.absoluteFilePath() + "/Makefile") << "\" dodistclean" << endl;
-        } else {
-            QString itemName = fi.fileName();
-            int extIndex = itemName.lastIndexOf(Option::pro_ext);
-            if (extIndex)
-                fixedItem = fi.absolutePath() + "/" + QString("Makefile.") + itemName.mid(0,extIndex);
-            t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fixedItem) << "\" dodistclean" << endl;
-        }
+    generateDistcleanTargets(t);
 
-    }
-
-    generatedFiles << Option::fixPathToTargetOS(fileInfo(Option::output.fileName()).absoluteFilePath()); // bld.inf
-    generatedFiles << project->values("QMAKE_INTERNAL_PRL_FILE"); // Add generated prl files for cleanup
-    generatedFiles << project->values("QMAKE_DISTCLEAN"); // Add any additional files marked for distclean
-    QStringList fixedFiles;
-    QStringList fixedDirs;
-    foreach(QString item, generatedFiles) {
-        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).absoluteFilePath());
-        if (!fixedFiles.contains(fixedItem)) {
-            fixedFiles << fixedItem;
-        }
-    }
-    foreach(QString item, generatedDirs) {
-        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).absoluteFilePath());
-        if (!fixedDirs.contains(fixedItem)) {
-            fixedDirs << fixedItem;
-        }
-    }
-    generateCleanCommands(t, fixedFiles, "$(DEL_FILE)", "", "", "");
-    generateCleanCommands(t, fixedDirs, "$(DEL_DIR)", "", "", "");
-    t << endl;
-
-    t << "distclean: clean dodistclean" << endl;
-    t << endl;
     t << "clean: " << BLD_INF_FILENAME << endl;
     t << "\t-$(SBS) reallyclean" << endl;
     t << endl;
@@ -432,6 +384,28 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         t << "OPTION SVGENCODINGVERSION 3" << endl; // Compatibility with S60 3.1 devices and up
         t << "END" << endl;
     }
+
+    // Generate temp dirs
+    QString tempDirs;
+    for(QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
+        QStringList values = it.value();
+        for (int i = 0; i < values.size(); ++i) {
+            QString value = values.at(i);
+            if (value.endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
+                value = fileInfo(value).absoluteFilePath();
+                tempDirs.append(value);
+                tempDirs.append(" ");
+            }
+        }
+    }
+
+    if (tempDirs.size())
+        tempDirs.chop(1); // Remove final space
+
+    t << "START EXTENSION qt/qmake_generate_temp_dirs" << endl;
+    t << "OPTION DIRS " << tempDirs << endl;
+    t << "END" << endl;
+    t << endl;
 
     t << endl;
 

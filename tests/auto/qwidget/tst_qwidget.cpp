@@ -2470,6 +2470,9 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
     actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
     expectedFocusWidget.sprintf("%p %s %s", edit2, edit2->objectName().toLatin1().constData(), edit2->metaObject()->className());
     QCOMPARE(actualFocusWidget, expectedFocusWidget);
+
+    delete edit2;
+    delete parentWidget;
 }
 
 void tst_QWidget::normalGeometry()
@@ -6169,6 +6172,9 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6264,6 +6270,9 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6359,6 +6368,9 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif

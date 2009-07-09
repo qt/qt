@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 #define BLD_INF_FILENAME "bld.inf"
 #define MAKEFILE_DEPENDENCY_SEPARATOR " \\\n\t"
 
+#define QT_EXTRA_INCLUDE_DIR "tmp"
+
 class SymbianMakefileGenerator : public MakefileGenerator {
 
 protected:
@@ -127,13 +129,14 @@ protected:
 
     QString removePathSeparators(QString &file);
     QString removeTrailingPathSeparators(QString &file);
-    bool generateCleanCommands(QTextStream& t,
+    void generateCleanCommands(QTextStream& t,
                                const QStringList& toClean,
                                const QString& cmd,
                                const QString& cmdOptions,
                                const QString& itemPrefix,
                                const QString& itemSuffix);
 
+    void generateDistcleanTargets(QTextStream& t);
 
     bool writeCustomDefFile();
 

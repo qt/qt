@@ -273,6 +273,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue CocoaRequestModal
     \omitvalue Wrapped
     \omitvalue Signal
+    \omitvalue SymbianDeferredFocusChanged
 */
 
 /*!

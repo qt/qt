@@ -266,12 +266,8 @@ void tst_QStyle::drawItemPixmap()
 {
     testWidget->resize(300, 300);
     testWidget->show();
-#if defined(Q_OS_SYMBIAN)
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
-    QPixmap p(prefix+"task_25863.png", "PNG");
-#else
-    QPixmap p("task_25863.png", "PNG");
-#endif
+
+    QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
     QPixmap actualPix = QPixmap::grabWidget(testWidget);
     QVERIFY(pixmapsAreEqual(&actualPix,&p));
     testWidget->hide();

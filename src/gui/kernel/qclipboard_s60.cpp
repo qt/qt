@@ -261,7 +261,7 @@ bool QClipboard::ownsMode(Mode mode) const
     return false;
 }
 
-bool QClipboard::event(QEvent *e)
+bool QClipboard::event(QEvent * /* e */)
 {
     return true;
 }

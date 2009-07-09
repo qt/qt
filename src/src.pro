@@ -5,7 +5,7 @@ unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 wince*:{
   SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_script src_testlib
-} symbian {
+} else:symbian {
   SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_script src_testlib
   SRC_SUBDIRS += $$QT_SOURCE_TREE/src/s60installs/qt_libs.pro
 } else {

@@ -11,6 +11,7 @@ SUBDIRS += _networkselftest \
            compile \
            compilerwarnings \
            exceptionsafety \
+           linguist \
            macgui \
            macplist \
 	   mediaobject \

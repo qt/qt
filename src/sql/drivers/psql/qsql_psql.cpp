@@ -1265,15 +1265,15 @@ QStringList QPSQLDriver::subscribedToNotificationsImplementation() const
 void QPSQLDriver::_q_handleNotification(int)
 {
     PQconsumeInput(d->connection);
-    PGnotify *notify = PQnotifies(d->connection);
-    if (notify) {
-        QString name(QLatin1String(notify->relname));
 
+    PGnotify *notify = 0;
+    while((notify = PQnotifies(d->connection)) != 0) {
+        QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name))
             emit notification(name);
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
-                qPrintable(name));
+                    qPrintable(name));
 
         qPQfreemem(notify);
     }

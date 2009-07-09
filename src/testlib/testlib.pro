@@ -44,7 +44,7 @@ SOURCES = qtestcase.cpp \
     qtestlightxmlstreamer.cpp \
     qtestlogger.cpp \
     qtestfilelogger.cpp
-DEFINES += QT_NO_CAST_TO_ASCII \
+DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
     QTESTLIB_MAKEDLL \
     QT_NO_DATASTREAM

@@ -44,6 +44,10 @@
 
 #include "client.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "sym_iap_util.h"
+#endif
+
 //! [0]
 Client::Client(QWidget *parent)
     : QDialog(parent)
@@ -102,6 +106,10 @@ Client::Client(QWidget *parent)
 
     setWindowTitle(tr("Fortune Client"));
     portLineEdit->setFocus();
+
+#ifdef Q_OS_SYMBIAN
+    isDefaultIapSet = false;
+#endif
 //! [5]
 }
 //! [5]
@@ -110,6 +118,12 @@ Client::Client(QWidget *parent)
 void Client::requestNewFortune()
 {
     getFortuneButton->setEnabled(false);
+#ifdef Q_OS_SYMBIAN
+    if(!isDefaultIapSet) {
+        qt_SetDefaultIap();
+        isDefaultIapSet = true;
+    }
+#endif
     blockSize = 0;
     tcpSocket->abort();
 //! [7]

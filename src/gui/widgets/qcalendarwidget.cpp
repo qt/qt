@@ -2142,14 +2142,11 @@ QSize QCalendarWidget::minimumSizeHint() const
     int end = 53;
     int rows = 7;
     int cols = 8;
-    int startRow = 0;
-    int startCol = 0;
 
     const int marginH = (style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1) * 2;
 
     if (horizontalHeaderFormat() == QCalendarWidget::NoHorizontalHeader) {
         rows = 6;
-        startRow = 1;
     } else {
         for (int i = 1; i <= 7; i++) {
             QFontMetrics fm(d->m_model->formatForCell(0, i).font());
@@ -2160,7 +2157,6 @@ QSize QCalendarWidget::minimumSizeHint() const
 
     if (verticalHeaderFormat() == QCalendarWidget::NoVerticalHeader) {
         cols = 7;
-        startCol = 1;
     } else {
         for (int i = 1; i <= 6; i++) {
             QFontMetrics fm(d->m_model->formatForCell(i, 0).font());
@@ -2526,13 +2522,6 @@ void QCalendarWidget::setDateRange(const QDate &min, const QDate &max)
         return;
     if (!min.isValid() || !max.isValid())
         return;
-
-    QDate minimum = min;
-    QDate maximum = max;
-    if (min > max) {
-        minimum = max;
-        maximum = min;
-    }
 
     QDate oldDate = d->m_model->m_date;
     d->m_model->setRange(min, max);

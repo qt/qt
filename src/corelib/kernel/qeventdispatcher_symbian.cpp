@@ -943,6 +943,9 @@ bool QEventDispatcherSymbian::unregisterTimer ( int timerId )
 
     SymbianTimerInfoPtr timerInfo = m_timerList.take(timerId);
 
+    if (!QObjectPrivate::get(timerInfo->receiver)->inThreadChangeEvent)
+        QAbstractEventDispatcherPrivate::releaseTimerId(timerId);
+
     return true;
 }
 

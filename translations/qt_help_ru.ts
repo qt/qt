@@ -6,17 +6,17 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+110"/>
         <source>Search Results</source>
-        <translation>Результаты поиска</translation>
+        <translation>Результат поиска</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Note:</source>
-        <translation>Замечание:</translation>
+        <translation>Примечание:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>The search results may not be complete since the documentation is still being indexed!</source>
-        <translation>Могли быть показаны не все результаты, так как документация ещё индексируется!</translation>
+        <translation>Результат поиска может быть неполным, так как документация ещё индексируется!</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -45,7 +45,7 @@
         <location line="+11"/>
         <location line="+48"/>
         <source>Cannot open collection file: %1</source>
-        <translation>Не удалось открыть файл набора: %1</translation>
+        <translation type="unfinished">Не удалось открыть файл набора: %1</translation>
     </message>
     <message>
         <location line="-39"/>
@@ -168,12 +168,12 @@
     <message>
         <location line="+6"/>
         <source>Insert custom filters...</source>
-        <translation>Вставка индивидуальных фильтров...</translation>
+        <translation>Добавление индивидуальных фильтров...</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Insert help data for filter section (%1 of %2)...</source>
-        <translation>Вставка данных справки для секции фильтра (%1 из %2)...</translation>
+        <translation>Добавление данных справки для раздела фильтра (%1 из %2)...</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -198,7 +198,7 @@
     <message>
         <location line="+10"/>
         <source>Insert files...</source>
-        <translation>Вставка файлов...</translation>
+        <translation>Добавление файлов...</translation>
     </message>
     <message>
         <location line="+42"/>
@@ -228,22 +228,22 @@
     <message>
         <location line="+24"/>
         <source>Insert indices...</source>
-        <translation>Вставка указателей...</translation>
+        <translation>Добавление указателей...</translation>
     </message>
     <message>
         <location line="+80"/>
         <source>Insert contents...</source>
-        <translation>Вставка оглавления...</translation>
+        <translation>Добавление содержания...</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Cannot insert contents!</source>
-        <translation>Не удаётся вставить оглавление!</translation>
+        <translation>Не удалось добавить содержание!</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Cannot register contents!</source>
-        <translation>Не удаётся зарегистрировать оглавление!</translation>
+        <translation>Не удалось зарегистрировать содержание!</translation>
     </message>
 </context>
 <context>
@@ -271,12 +271,12 @@
     <message>
         <location line="+5"/>
         <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
-        <translation>&lt;B&gt;не содержит&lt;/B&gt; слова:</translation>
+        <translation>&lt;B&gt;не содержит&lt;/B&gt; слов:</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
-        <translation>содержит &lt;B&gt;фразу полностью&lt;/B&gt;:</translation>
+        <translation>содержит &lt;B&gt;точную фразу&lt;/B&gt;:</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -286,7 +286,7 @@
     <message>
         <location line="+5"/>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
-        <translation>содержит &lt;B&gt; минимум одно&lt;/B&gt; из слов:</translation>
+        <translation>содержит &lt;B&gt;хотя бы одно&lt;/B&gt; из слов:</translation>
     </message>
 </context>
 <context>
@@ -294,7 +294,7 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+235"/>
         <source>0 - 0 of 0 Hits</source>
-        <translation>0 - 0 из 0 соответствий</translation>
+        <translation>0 - 0 из 0 совпадений</translation>
     </message>
 </context>
 <context>
@@ -302,7 +302,7 @@
     <message>
         <location line="-61"/>
         <source>%1 - %2 of %3 Hits</source>
-        <translation>%1 - %2 из %3 соответствий</translation>
+        <translation>%1 - %2 из %3 совпадений</translation>
     </message>
 </context>
 <context>
@@ -315,12 +315,12 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+80"/>
         <source>Unknown token.</source>
-        <translation type="unfinished">Неизвестный токен.</translation>
+        <translation>Неизвестный идентификатор.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
-        <translation type="unfinished">Неизвестный токен. Ожидается &quot;QtHelpProject&quot;!</translation>
+        <translation>Неизвестный идентификатор. Ожидается &quot;QtHelpProject&quot;!</translation>
     </message>
     <message>
         <location line="+5"/>

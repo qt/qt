@@ -283,6 +283,9 @@ public:
     QPalette naturalWidgetPalette(uint inheritedMask) const;
 
     void setMask_sys(const QRegion &);
+#ifdef Q_OS_SYMBIAN
+    void handleSymbianDeferredFocusChanged();
+#endif
 
     void raise_sys();
     void lower_sys();
