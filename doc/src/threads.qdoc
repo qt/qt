@@ -278,7 +278,7 @@
     \e{reentrant} function is not always \e{thread-safe}.
 
     By extension, a class is said to be \e{reentrant} if its member
-    functions can be called safely from multiple threads as long as
+    functions can be called safely from multiple threads, as long as
     each thread uses a \e{different} instance of the class. The class
     is \e{thread-safe} if its member functions can be called safely
     from multiple threads, even if all the threads use the \e{same}
@@ -325,14 +325,14 @@
     declared with the \c mutable qualifier because we need to lock
     and unlock the mutex in \c value(), which is a const function.
 
-    Most Qt classes are \e{reentrant}, but they are not made
+    Many Qt classes are \e{reentrant}, but they are not made
     \e{thread-safe}, because making them thread-safe would incur the
     extra overhead of repeatedly locking and unlocking a QMutex. For
     example, QString is reentrant but not thread-safe. You can safely
     access \e{different} instances of QString from multiple threads
-    simultaneously, but you can't access the \e{same} instance of
-    QString from multiple threads simultaneously (unless you protect
-    the accesses yourself with a QMutex). 
+    simultaneously, but you can't safely access the \e{same} instance
+    of QString from multiple threads simultaneously (unless you
+    protect the accesses yourself with a QMutex).
 
     Some Qt classes and functions are thread-safe. These are mainly
     the thread-related classes (e.g. QMutex) and fundamental functions
@@ -345,7 +345,7 @@
     standardized. POSIX uses definitions of reentrant and thread-safe
     that are somewhat different for its C APIs. When using other
     object-oriented C++ class libraries with Qt, be sure the
-    definitions in use are understood.
+    definitions are understood.
 
     \section1 Threads and QObjects
 
