@@ -887,9 +887,9 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
     case QScriptValuePrivate::JSC:
         return vv->jscValue;
     case QScriptValuePrivate::Number:
-        return JSC::jsNumber(globalObject->globalExec(), vv->numberValue);
+        return JSC::jsNumber(currentFrame, vv->numberValue);
     case QScriptValuePrivate::String:
-        return JSC::jsString(globalObject->globalExec(), QScript::qtStringToJSCUString(*vv->stringValue));
+        return JSC::jsString(currentFrame, QScript::qtStringToJSCUString(*vv->stringValue));
     }
     return JSC::JSValue();
 }
@@ -944,10 +944,10 @@ JSC::JSValue QScriptEnginePrivate::jscValueFromVariant(const QVariant &v)
     case QScriptValuePrivate::JSC:
         return p->jscValue;
     case QScriptValuePrivate::Number:
-        return JSC::jsNumber(globalObject->globalExec(), p->numberValue);
+        return JSC::jsNumber(currentFrame, p->numberValue);
     case QScriptValuePrivate::String: {
         JSC::UString str = QScript::qtStringToJSCUString(*p->stringValue);
-        return JSC::jsString(globalObject->globalExec(), str);
+        return JSC::jsString(currentFrame, str);
       }
     }
     return JSC::JSValue();
@@ -1065,7 +1065,7 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
 {
     if (!object)
         return JSC::jsNull();
-    JSC::ExecState* exec = globalObject->globalExec();
+    JSC::ExecState* exec = currentFrame;
     QScript::QObjectWrapperObject *result = new (exec) QScript::QObjectWrapperObject(object, ownership, options, qobjectWrapperObjectStructure);
 
     /*if (setDefaultPrototype)*/ {
@@ -1093,7 +1093,7 @@ JSC::JSValue QScriptEnginePrivate::newQMetaObject(
 {
     if (!metaObject)
         return JSC::jsNull();
-    JSC::ExecState* exec = globalObject->globalExec();
+    JSC::ExecState* exec = currentFrame;
     QScript::QMetaObjectWrapperObject *result = new (exec) QScript::QMetaObjectWrapperObject(metaObject, ctor, qmetaobjectWrapperObjectStructure);
     return result;
 }
@@ -1389,7 +1389,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
                                         int length)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(this, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     result.setProperty(QLatin1String("prototype"), prototype);
@@ -1408,7 +1408,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
 QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue buf[2];
     JSC::ArgList args(buf, sizeof(buf));
     JSC::UString jscPattern = QScript::qtStringToJSCUString(regexp.pattern());
@@ -1437,7 +1437,7 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     QScript::QVariantWrapperObject *obj = new (exec) QScript::QVariantWrapperObject(d->variantWrapperObjectStructure);
     obj->setValue(value);
     QScriptValue result = d->scriptValueFromJSCValue(obj);
@@ -1572,7 +1572,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
 QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSObject *result = JSC::constructEmptyObject(exec);
     return d->scriptValueFromJSCValue(result);
 }
@@ -1595,7 +1595,7 @@ QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
                                       const QScriptValue &data)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     QScript::ClassObject *result = new (exec) QScript::ClassObject(scriptClass, d->classObjectStructure);
     QScriptValue scriptObject = d->scriptValueFromJSCValue(result);
     scriptObject.setData(data);
@@ -1661,7 +1661,7 @@ QScriptValue QScriptEngine::newActivationObject()
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(this, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
@@ -1678,7 +1678,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(this, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
@@ -1696,7 +1696,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 QScriptValue QScriptEngine::newArray(uint length)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSArray* result = JSC::constructEmptyArray(exec, length);
     return d->scriptValueFromJSCValue(result);
 }
@@ -1711,7 +1711,7 @@ QScriptValue QScriptEngine::newArray(uint length)
 QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue buf[2];
     JSC::ArgList args(buf, sizeof(buf));
     JSC::UString jscPattern = QScript::qtStringToJSCUString(pattern);
@@ -1730,7 +1730,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
 QScriptValue QScriptEngine::newDate(qsreal value)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue val = JSC::jsNumber(exec, value);
     JSC::ArgList args(&val, 1);
     JSC::JSObject *result = JSC::constructDate(exec, args);
@@ -1920,10 +1920,10 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::UString jscProgram = QScript::qtStringToJSCUString(program);
     JSC::UString jscFileName = QScript::qtStringToJSCUString(fileName);
 
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->globalObject->globalExec(); // ### use d->currentFrame
     exec->clearException();
     d->uncaughtException = JSC::JSValue();
-    JSC::Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(),
+    JSC::Completion comp = JSC::evaluate(exec, exec->lexicalGlobalObject()->globalScopeChain(),
                                          JSC::makeSource(jscProgram, jscFileName, lineNumber));
     if ((comp.complType() == JSC::Normal) || (comp.complType() == JSC::ReturnValue)) {
         Q_ASSERT(!exec->hadException());
@@ -2073,7 +2073,7 @@ QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 void QScriptEngine::clearExceptions()
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     exec->clearException();
     d->uncaughtException = JSC::JSValue();
 }
@@ -3313,7 +3313,7 @@ QScriptValue QScriptEngine::toObject(const QScriptValue &value)
     JSC::JSValue jscValue = d->scriptValueToJSCValue(value);
     if (!jscValue || jscValue.isUndefined() || jscValue.isNull())
         return QScriptValue();
-    JSC::ExecState* exec = d->globalObject->globalExec();
+    JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue result = jscValue.toObject(exec);
     return d->scriptValueFromJSCValue(result);
 }

@@ -1746,7 +1746,7 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     QList<QByteArray> parameterTypes = method.parameterTypes();
     int argc = parameterTypes.count();
 
-    JSC::ExecState *exec = engine->globalObject->globalExec();
+    JSC::ExecState *exec = engine->currentFrame;
     QVector<JSC::JSValue> argsVector;
     argsVector.resize(argc);
     for (int i = 0; i < argc; ++i) {

@@ -334,7 +334,7 @@ QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode)
 {
     Q_ASSERT(type == JSC);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::UString jscName = QScript::qtStringToJSCUString(name);
     JSC::Identifier id = JSC::Identifier(exec, jscName);
     JSC::JSObject *object = jscValue.getObject();
@@ -353,7 +353,7 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 {
     Q_ASSERT(type == JSC);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::JSObject *object = jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
@@ -465,7 +465,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
     d_ptr->engine = engine;
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->currentFrame;
         d_ptr->initFromJSCValue(JSC::jsNumber(exec, val));
     } else {
         JSC::JSValue immediate = JSC::JSImmediate::from(val);
@@ -490,7 +490,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
     d_ptr->engine = engine;
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->currentFrame;
         d_ptr->initFromJSCValue(JSC::jsNumber(exec, val));
     } else {
         JSC::JSValue immediate = JSC::JSImmediate::from(val);
@@ -515,7 +515,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
     d_ptr->engine = engine;
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->currentFrame;
         d_ptr->initFromJSCValue(JSC::jsNumber(exec, val));
     } else {
         JSC::JSValue immediate = JSC::JSImmediate::from(val);
@@ -540,7 +540,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
     d_ptr->engine = engine;
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->currentFrame;
         JSC::UString jscVal = QScript::qtStringToJSCUString(val);
         d_ptr->initFromJSCValue(JSC::jsString(exec, jscVal));
     } else {
@@ -564,7 +564,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
     d_ptr->engine = engine;
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->currentFrame;
         d_ptr->initFromJSCValue(JSC::jsString(exec, val));
     } else {
         d_ptr->initFromString(QString::fromAscii(val));
@@ -854,7 +854,7 @@ void QScriptValue::setScope(const QScriptValue &scope)
     }
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(scope);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::Identifier id = JSC::Identifier(exec, "__qt_scope__");
     if (!scope.isValid()) {
         JSC::asObject(d->jscValue)->removeDirect(id);
@@ -888,7 +888,7 @@ bool QScriptValue::instanceOf(const QScriptValue &other) const
     JSC::JSValue jscProto = eng_p->scriptValueToJSCValue(other.property(QLatin1String("prototype")));
     if (!jscProto)
         jscProto = JSC::jsUndefined();
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::JSValue jscOther = eng_p->scriptValueToJSCValue(other);
     return JSC::asObject(jscOther)->hasInstance(exec, d->jscValue, jscProto);
 }
@@ -928,7 +928,7 @@ QScriptValue ToPrimitive(const QScriptValue &object, JSC::PreferredPrimitiveType
     Q_ASSERT(object.isObject());
     QScriptValuePrivate *pp = QScriptValuePrivate::get(object);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(pp->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     return eng_p->scriptValueFromJSCValue(JSC::asObject(pp->jscValue)->toPrimitive(exec, hint));
 }
 
@@ -1114,7 +1114,7 @@ bool QScriptValue::equals(const QScriptValue &other) const
         if (!eng_p)
             eng_p = QScriptEnginePrivate::get(other.d_ptr->engine);
         if (eng_p) {
-            JSC::ExecState *exec = eng_p->globalObject->globalExec();
+            JSC::ExecState *exec = eng_p->currentFrame;
             if (JSC::JSValue::equal(exec, d->jscValue, other.d_ptr->jscValue))
                 return true;
         }
@@ -1188,7 +1188,7 @@ QString QScriptValue::toString() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         JSC::UString str = d->jscValue.toString(exec);
         return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
     }
@@ -1220,7 +1220,7 @@ qsreal QScriptValue::toNumber() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         return d->jscValue.toNumber(exec);
     }
     case QScriptValuePrivate::Number:
@@ -1244,7 +1244,7 @@ bool QScriptValue::toBoolean() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         return d->jscValue.toBoolean(exec);
     }
     case QScriptValuePrivate::Number:
@@ -1277,7 +1277,7 @@ bool QScriptValue::toBool() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         return d->jscValue.toBoolean(exec);
     }
     case QScriptValuePrivate::Number:
@@ -1308,7 +1308,7 @@ qint32 QScriptValue::toInt32() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         return d->jscValue.toInt32(exec);
     }
     case QScriptValuePrivate::Number:
@@ -1339,7 +1339,7 @@ quint32 QScriptValue::toUInt32() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         return d->jscValue.toUInt32(exec);
     }
     case QScriptValuePrivate::Number:
@@ -1400,7 +1400,7 @@ qsreal QScriptValue::toInteger() const
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p ? eng_p->globalObject->globalExec() : 0;
+        JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
         return d->jscValue.toInteger(exec);
     }
     case QScriptValuePrivate::Number:
@@ -1457,7 +1457,7 @@ QVariant QScriptValue::toVariant() const
                 return QScriptEnginePrivate::variantListFromArray(*this);
             // try to convert to primitive
             QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine());
-            JSC::ExecState *exec = eng_p->globalObject->globalExec();
+            JSC::ExecState *exec = eng_p->currentFrame;
             JSC::JSValue prim = d->jscValue.toPrimitive(exec);
             if (!prim.isObject())
                 return eng_p->scriptValueFromJSCValue(prim).toVariant();
@@ -1492,7 +1492,7 @@ QScriptValue QScriptValue::toObject() const
         if (JSC::JSImmediate::isUndefinedOrNull(d->jscValue))
             return QScriptValue();
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-        JSC::ExecState *exec = eng_p->globalObject->globalExec();
+        JSC::ExecState *exec = eng_p->currentFrame;
         return eng_p->scriptValueFromJSCValue(d->jscValue.toObject(exec));
     }
     case QScriptValuePrivate::Number:
@@ -1617,7 +1617,7 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
     JSC::UString jscName = QScript::qtStringToJSCUString(name);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::Identifier id = JSC::Identifier(exec, jscName);
     if (!jscValue) {
         JSC::asObject(d->jscValue)->deleteProperty(exec, id);
@@ -1720,7 +1720,7 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
         return;
     }
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::JSValue jscValue = eng_p->scriptValueToJSCValue(value);
     if (!jscValue) {
         JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex);
@@ -1800,7 +1800,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
     if (!isObject())
         return 0;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::UString jscName = QScript::qtStringToJSCUString(name);
     JSC::Identifier id = JSC::Identifier(exec, jscName);
     unsigned attribs = 0;
@@ -1969,7 +1969,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     }
 
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
 
     JSC::JSValue jscThisObject = eng_p->scriptValueToJSCValue(thisObject);
     if (!jscThisObject || !jscThisObject.isObject())
@@ -2054,7 +2054,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     if (!isFunction())
         return QScriptValue();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
 
     QVector<JSC::JSValue> argsVector;
     argsVector.resize(args.size());
@@ -2126,7 +2126,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     if (!isFunction())
         return QScriptValue();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
 
     JSC::JSValue array = eng_p->scriptValueToJSCValue(arguments);
     // copied from runtime/FunctionPrototype.cpp, functionProtoFuncApply()
@@ -2415,7 +2415,7 @@ void QScriptValue::setData(const QScriptValue &data)
         return;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(data);
-    JSC::ExecState *exec = eng_p->globalObject->globalExec();
+    JSC::ExecState *exec = eng_p->currentFrame;
     JSC::Identifier id = JSC::Identifier(exec, "__qt_data__");
     if (!data.isValid()) {
         JSC::asObject(d->jscValue)->removeDirect(id);
