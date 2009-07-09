@@ -55,10 +55,6 @@ QT_BEGIN_NAMESPACE
     Quaternions are used to represent rotations in 3D space, and
     consist of a 3D rotation axis specified by the x, y, and z
     coordinates, and a scalar representing the rotation angle.
-
-    The components of a quaternion are stored internally using the most
-    efficient representation for the GL rendering engine, which will be
-    either floating-point or fixed-point.
 */
 
 /*!
