@@ -54,8 +54,34 @@
 //
 
 #include "QtCore/qtextcodec.h"
+#include "private/qtextcodec_p.h"
 
 QT_BEGIN_NAMESPACE
+
+enum DataEndianness
+{
+    DetectEndianness,
+    BigEndianness,
+    LittleEndianness
+};
+
+struct QUtf8
+{
+    static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *);
+    static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *);
+};
+
+struct QUtf16
+{
+    static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
+    static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
+};
+
+struct QUtf32
+{
+    static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
+    static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
+};
 
 #ifndef QT_NO_TEXTCODEC
 
@@ -73,13 +99,8 @@ public:
 
 class QUtf16Codec : public QTextCodec {
 protected:
-    enum Endianness {
-        Detect,
-        BE,
-        LE
-    };
 public:
-    QUtf16Codec() { e = Detect; }
+    QUtf16Codec() { e = DetectEndianness; }
     ~QUtf16Codec();
 
     QByteArray name() const;
@@ -90,12 +111,12 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 
 protected:
-    Endianness e;
+    DataEndianness e;
 };
 
 class QUtf16BECodec : public QUtf16Codec {
 public:
-    QUtf16BECodec() : QUtf16Codec() { e = BE; }
+    QUtf16BECodec() : QUtf16Codec() { e = BigEndianness; }
     QByteArray name() const;
     QList<QByteArray> aliases() const;
     int mibEnum() const;
@@ -103,21 +124,15 @@ public:
 
 class QUtf16LECodec : public QUtf16Codec {
 public:
-    QUtf16LECodec() : QUtf16Codec() { e = LE; }
+    QUtf16LECodec() : QUtf16Codec() { e = LittleEndianness; }
     QByteArray name() const;
     QList<QByteArray> aliases() const;
     int mibEnum() const;
 };
 
 class QUtf32Codec : public QTextCodec {
-protected:
-    enum Endianness {
-        Detect,
-        BE,
-        LE
-    };
 public:
-    QUtf32Codec() { e = Detect; }
+    QUtf32Codec() { e = DetectEndianness; }
     ~QUtf32Codec();
 
     QByteArray name() const;
@@ -128,12 +143,12 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 
 protected:
-    Endianness e;
+    DataEndianness e;
 };
 
 class QUtf32BECodec : public QUtf32Codec {
 public:
-    QUtf32BECodec() : QUtf32Codec() { e = BE; }
+    QUtf32BECodec() : QUtf32Codec() { e = BigEndianness; }
     QByteArray name() const;
     QList<QByteArray> aliases() const;
     int mibEnum() const;
@@ -141,7 +156,7 @@ public:
 
 class QUtf32LECodec : public QUtf32Codec {
 public:
-    QUtf32LECodec() : QUtf32Codec() { e = LE; }
+    QUtf32LECodec() : QUtf32Codec() { e = LittleEndianness; }
     QByteArray name() const;
     QList<QByteArray> aliases() const;
     int mibEnum() const;

@@ -45,6 +45,7 @@
 #ifndef QT_NO_TEXTCODEC
 #include <qtextcodec.h>
 #endif
+#include <private/qutfcodec_p.h>
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -964,7 +965,8 @@ int QString::toWCharArray(wchar_t *array) const
     Constructs a string initialized with the first \a size characters
     of the QChar array \a unicode.
 
-    QString makes a deep copy of the string data.
+    QString makes a deep copy of the string data. The unicode data is copied as
+    is and the Byte Order Mark is preserved if present.
 */
 QString::QString(const QChar *unicode, int size)
 {
@@ -3843,74 +3845,7 @@ QString QString::fromUtf8(const char *str, int size)
     if (size < 0)
         size = qstrlen(str);
 
-    QString result(size, Qt::Uninitialized); // worst case
-    ushort *qch = result.d->data;
-    uint uc = 0;
-    uint min_uc = 0;
-    int need = 0;
-    int error = -1;
-    uchar ch;
-    int i = 0;
-
-    // skip utf8-encoded byte order mark
-    if (size >= 3
-        && (uchar)str[0] == 0xef && (uchar)str[1] == 0xbb && (uchar)str[2] == 0xbf)
-        i += 3;
-
-    for (; i < size; ++i) {
-        ch = str[i];
-        if (need) {
-            if ((ch&0xc0) == 0x80) {
-                uc = (uc << 6) | (ch & 0x3f);
-                need--;
-                if (!need) {
-                    if (uc > 0xffffU && uc < 0x110000U) {
-                        // surrogate pair
-                        *qch++ = QChar::highSurrogate(uc);
-                        uc = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || (uc >= 0xfffe)) {
-			// overlong seqence, UTF16 surrogate or BOM
-                        uc = QChar::ReplacementCharacter;
-                    }
-                    *qch++ = uc;
-                }
-            } else {
-                i = error;
-                need = 0;
-                *qch++ = QChar::ReplacementCharacter;
-            }
-        } else {
-            if (ch < 128) {
-                *qch++ = ch;
-            } else if ((ch & 0xe0) == 0xc0) {
-                uc = ch & 0x1f;
-                need = 1;
-                error = i;
-                min_uc = 0x80;
-            } else if ((ch & 0xf0) == 0xe0) {
-                uc = ch & 0x0f;
-                need = 2;
-                error = i;
-                min_uc = 0x800;
-            } else if ((ch&0xf8) == 0xf0) {
-                uc = ch & 0x07;
-                need = 3;
-                error = i;
-                min_uc = 0x10000;
-            } else {
-                // Error
-                *qch++ = QChar::ReplacementCharacter;
-            }
-        }
-    }
-    if (need) {
-        // we have some invalid characters remaining we need to add to the string
-        for (int i = error; i < size; ++i)
-            *qch++ = QChar::ReplacementCharacter;
-    }
-
-    result.truncate(qch - result.d->data);
-    return result;
+    return QUtf8::convertToUnicode(str, size, 0);
 }
 
 /*!
@@ -3933,7 +3868,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QString((const QChar *)unicode, size);
+    return QUtf16::convertToUnicode((const char *)unicode, size*2, 0);
 }
 
 
@@ -3957,20 +3892,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-
-    QString s(size * 2, Qt::Uninitialized); // worst case
-    ushort *uc = s.d->data;
-    for (int i = 0; i < size; ++i) {
-        uint u = unicode[i];
-        if (u > 0xffff) {
-            // decompose into a surrogate pair
-            *uc++ = QChar::highSurrogate(u);
-            u = QChar::lowSurrogate(u);
-        }
-        *uc++ = u;
-    }
-    s.resize(uc - s.d->data);
-    return s;
+    return QUtf32::convertToUnicode((const char *)unicode, size*4, 0);
 }
 
 /*!

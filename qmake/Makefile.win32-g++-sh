@@ -71,6 +71,8 @@ QTOBJS= \
 	qmalloc.o \
 	qmap.o \
 	qregexp.o \
+	qtextcodec.o \
+	qutfcodec.o \
 	qstring.o \
 	qstringlist.o \
 	qtextstream.o \
@@ -190,6 +192,9 @@ qvsnprintf.o: $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp
 
 qbytearraymatcher.o: $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp
+
+qutfcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
 
 qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
