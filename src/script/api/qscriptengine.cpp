@@ -826,7 +826,7 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::GlobalObject);
 
 } // namespace JSC
 
-QScriptEnginePrivate::QScriptEnginePrivate()
+QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 {
     JSC::initializeThreading(); // ### hmmm
 
@@ -1216,6 +1216,11 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 }
 
 #endif
+void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
+{
+    value->id=idGenerator.fetchAndAddRelaxed(1);
+    attachedScriptValues.insert(value);
+}
 
 void QScriptEnginePrivate::detachAllRegisteredScriptValues()
 {
@@ -3328,9 +3333,13 @@ QScriptValue QScriptEngine::toObject(const QScriptValue &value)
 */
 QScriptValue QScriptEngine::objectById(qint64 id) const
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // mapping from id to JSObject*?
-    Q_UNUSED(id);
+    Q_D(const QScriptEngine);
+    QSet<QScriptValuePrivate*>::const_iterator i = d->attachedScriptValues.constBegin();
+    while(i != d->attachedScriptValues.constEnd()) {
+        if ( (*i)->id == id )
+            return (*i)->toPublic();
+        i++;
+    }
     return QScriptValue();
 }
 

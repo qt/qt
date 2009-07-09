@@ -107,6 +107,12 @@ public:
     QScriptValue property(const QString &name, int resolveMode) const;
     QScriptValue property(quint32 index, int resolveMode) const;
 
+    QScriptValue toPublic() {
+        QScriptValue tmp;
+        tmp.d_ptr = this;
+        return tmp;
+    };
+
     bool isValid() const {return valid;}
     void detachEngine()
     {
@@ -123,8 +129,11 @@ public:
     QString *stringValue;
 
     QBasicAtomicInt ref;
-    bool valid;
+    bool valid; //object is valid ?
+
+    qint64 id;  //object unique id number
 };
+
 
 QT_END_NAMESPACE
 

@@ -3279,8 +3279,6 @@ void tst_QScriptValue::valueOfWithClosure()
 
 void tst_QScriptValue::objectId()
 {
-    QFAIL("Not implemented");
-
     QCOMPARE(QScriptValue().objectId(), (qint64)-1);
     QCOMPARE(QScriptValue(QScriptValue::UndefinedValue).objectId(), (qint64)-1);
     QCOMPARE(QScriptValue(QScriptValue::NullValue).objectId(), (qint64)-1);

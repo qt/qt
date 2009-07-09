@@ -140,16 +140,11 @@ public:
     bool scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
                           JSC::JSValue function);
 
-    void registerScriptValue(QScriptValuePrivate *value)
-    {
-        attachedScriptValues.insert(value);
-    }
-
+    void registerScriptValue(QScriptValuePrivate *value);
     void unregisterScriptValue(QScriptValuePrivate *value)
     {
         attachedScriptValues.remove(value);
     }
-
     void detachAllRegisteredScriptValues();
 
     // private slots
@@ -181,7 +176,9 @@ public:
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
 
-    QSet<QScriptValuePrivate*> attachedScriptValues;
+    QSet<QScriptValuePrivate*> attachedScriptValues;  //keep trace to all QScriptValue evalueted
+
+    QAtomicInt idGenerator;  //generate id for QScriptValue
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

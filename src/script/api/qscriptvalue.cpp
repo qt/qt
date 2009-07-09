@@ -243,7 +243,7 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate() : engine(this), valid(true)
+QScriptValuePrivate::QScriptValuePrivate() : engine(this), valid(true), id(-1)
 {
     ref = 0;
 }
@@ -2480,13 +2480,8 @@ void QScriptValue::setScriptClass(QScriptClass *scriptClass)
 */
 qint64 QScriptValue::objectId() const
 {
-    if (!isObject())
-        return -1;
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // lazily initialized mapping from JSObject* to id?
-    return -1;
+    return d_ptr?d_ptr->id:-1;
 }
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_SCRIPT
