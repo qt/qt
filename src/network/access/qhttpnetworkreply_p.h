@@ -198,6 +198,7 @@ public:
     qint64 contentRead;
     qint64 totalProgress;
     QByteArray fragment; // used for header, status, chunk header etc, not for reply data
+    bool chunkedTransferEncoding;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;
