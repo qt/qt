@@ -538,6 +538,7 @@ void QFxTextEdit::loadCursorDelegate()
         d->control->setCursorWidth(0);
         dirtyCache(cursorRect());
         d->cursor->setItemParent(this);
+        d->cursor->setHeight(QFontMetrics(d->font.font()).height());
         moveCursorDelegate();
     }else{
         qWarning() << "Error loading cursor delegate for TextEdit:" + objectName();
@@ -1020,6 +1021,10 @@ void QFxTextEdit::fontChanged()
     Q_D(QFxTextEdit);
     clearCache();
     d->document->setDefaultFont(d->font.font());
+    if(d->cursor){
+        d->cursor->setHeight(QFontMetrics(d->font.font()).height());
+        moveCursorDelegate();
+    }
     updateSize();
     emit update();
 }
