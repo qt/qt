@@ -64,6 +64,10 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
     if (system.isEmpty()) {
         system = QLatin1String("opengl");
     }
+#elif defined (QT_GRAPHICSSYSTEM_OPENVG)
+    if (system.isEmpty()) {
+        system = QLatin1String("openvg");
+    }
 #elif defined (QT_GRAPHICSSYSTEM_RASTER) && !defined(Q_WS_WIN) && !defined(Q_WS_S60)
     if (system.isEmpty()) {
         system = QLatin1String("raster");
