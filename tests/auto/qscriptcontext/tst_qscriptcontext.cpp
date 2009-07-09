@@ -200,10 +200,8 @@ void tst_QScriptContext::arguments()
             QCOMPARE(result.isArray(), false);
             QVERIFY(result.isObject());
             QCOMPARE(result.property("length").toUInt32(), quint32(0));
-            QEXPECT_FAIL("", "arguments.length should have SkipInEnumeration flag", Continue);
             QCOMPARE(result.propertyFlags("length"), QScriptValue::SkipInEnumeration);
             QCOMPARE(result.property("callee").strictlyEquals(fun), true);
-            QEXPECT_FAIL("", "arguments.callee should have SkipInEnumeration flag", Continue);
             QCOMPARE(result.propertyFlags("callee"), QScriptValue::SkipInEnumeration);
             QScriptValue replacedCallee(&eng, 123);
             result.setProperty("callee", replacedCallee);
