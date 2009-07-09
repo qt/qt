@@ -45,7 +45,7 @@ namespace JSC {
         OwnArrayPtr<bool> deletedArguments;
         Register extraArgumentsFixedBuffer[4];
 
-        InternalFunction* callee;
+        JSObject* callee;
         bool overrodeLength : 1;
         bool overrodeCallee : 1;
     };
@@ -87,7 +87,7 @@ namespace JSC {
         }
 
     private:
-        void getArgumentsData(CallFrame*, InternalFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
+        void getArgumentsData(CallFrame*, JSObject*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
@@ -110,13 +110,13 @@ namespace JSC {
         return static_cast<Arguments*>(asObject(value));
     }
 
-    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, InternalFunction*& function, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
+    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSObject*& callee, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
     {
-        function = callFrame->callee();
+        callee = callFrame->callee();
 
         int numParameters;
-        if (function->isObject(&JSFunction::info)) {
-            CodeBlock* codeBlock =  &JSC::asFunction(function)->body()->generatedBytecode();
+        if (callee->isObject(&JSFunction::info)) {
+            CodeBlock* codeBlock =  &JSC::asFunction(callee)->body()->generatedBytecode();
             numParameters = codeBlock->m_numParameters;
         } else {
             numParameters = 0;
@@ -136,7 +136,7 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        InternalFunction* callee;
+        JSObject* callee;
         ptrdiff_t firstParameterIndex;
         Register* argv;
         int numArguments;
