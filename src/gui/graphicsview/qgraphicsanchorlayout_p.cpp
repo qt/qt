@@ -487,42 +487,22 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     items.append(item);
 
     // Horizontal
-    int minimumSize = item->minimumWidth() / 2;
-    int preferredSize = item->preferredWidth() / 2;
-    int maximumSize = item->maximumWidth() / 2;
-
-    QSimplexConstraint *c = new QSimplexConstraint;
+    int minimumSize = item->minimumWidth();
+    int preferredSize = item->preferredWidth();
+    int maximumSize = item->maximumWidth();
 
     AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
     addAnchor(item, QGraphicsAnchorLayout::Left, item,
-              QGraphicsAnchorLayout::HCenter, data);
-    c->variables.insert(data, 1.0);
-
-    data = new AnchorData(minimumSize, preferredSize, maximumSize);
-    addAnchor(item, QGraphicsAnchorLayout::HCenter,
-              item, QGraphicsAnchorLayout::Right, data);
-    c->variables.insert(data, -1.0);
-
-    itemCenterConstraints[Horizontal].append(c);
+              QGraphicsAnchorLayout::Right, data);
 
     // Vertical
-    minimumSize = item->minimumHeight() / 2;
-    preferredSize = item->preferredHeight() / 2;
-    maximumSize = item->maximumHeight() / 2;
-
-    c = new QSimplexConstraint;
+    minimumSize = item->minimumHeight();
+    preferredSize = item->preferredHeight();
+    maximumSize = item->maximumHeight();
 
     data = new AnchorData(minimumSize, preferredSize, maximumSize);
     addAnchor(item, QGraphicsAnchorLayout::Top, item,
-              QGraphicsAnchorLayout::VCenter, data);
-    c->variables.insert(data, 1.0);
-
-    data = new AnchorData(minimumSize, preferredSize, maximumSize);
-    addAnchor(item, QGraphicsAnchorLayout::VCenter,
-              item, QGraphicsAnchorLayout::Bottom, data);
-    c->variables.insert(data, -1.0);
-
-    itemCenterConstraints[Vertical].append(c);
+              QGraphicsAnchorLayout::Bottom, data);
 }
 
 void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *item,
