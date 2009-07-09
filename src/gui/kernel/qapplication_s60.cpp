@@ -659,20 +659,8 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
         return;
 
-    if (IsFocused()) {
-        QApplication::setActiveWindow(qwidget);
-        // If widget is fullscreen, hide status pane and button container
-        // otherwise show them.
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
-            statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
-            buttonGroup->MakeVisible(!isFullscreen);
-    } else {
-        QApplication::setActiveWindow(0);
-    }
+    QEvent *deferredFocusEvent = new QEvent(QEvent::SymbianDeferredFocusChanged);
+    QApplication::postEvent(qwidget, deferredFocusEvent);
 }
 
 void QSymbianControl::HandleResourceChange(int resourceType)

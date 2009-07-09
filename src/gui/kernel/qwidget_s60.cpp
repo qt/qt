@@ -421,6 +421,32 @@ void QWidgetPrivate::setFocus_sys()
             q->effectiveWinId()->SetFocus(true);
 }
 
+void QWidgetPrivate::handleSymbianDeferredFocusChanged()
+{
+    Q_Q(QWidget);
+    WId control = q->internalWinId();
+    if (!control) {
+        // This could happen if the widget was reparented, while the focuschange
+        // was in the event queue.
+        return;
+    }
+
+    if (control->IsFocused()) {
+        QApplication::setActiveWindow(q);
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+    } else {
+        QApplication::setActiveWindow(0);
+    }
+}
+
 void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
