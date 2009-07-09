@@ -481,6 +481,7 @@ void QFxTextEdit::setCursorPosition(int pos)
     if (cursor.position() == pos)
         return;
     cursor.setPosition(pos);
+    d->control->setTextCursor(cursor);
 }
 
 /*!
@@ -1047,6 +1048,7 @@ void QFxTextEditPrivate::init()
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(q_textChanged()));
     QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
     QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
+    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
     document = control->document();
@@ -1081,8 +1083,10 @@ void QFxTextEditPrivate::updateSelection()
     bool startChange = (lastSelectionStart != cursor.selectionStart());
     bool endChange = (lastSelectionEnd != cursor.selectionEnd());
     //### Is it worth calculating a more minimal set of movements?
+    cursor.beginEditBlock();
     cursor.setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
     cursor.setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
     control->setTextCursor(cursor);
     if(startChange)
         q->selectionStartChanged();
