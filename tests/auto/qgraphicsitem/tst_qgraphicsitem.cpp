@@ -6625,6 +6625,17 @@ void tst_QGraphicsItem::update()
     qApp->processEvents();
     QCOMPARE(item->repaints, 0);
     QCOMPARE(view.repaints, 0);
+
+    // Make sure the area occupied by an item is repainted when hiding it.
+    view.reset();
+    item->repaints = 0;
+    item->update(); // Full update; all sub-sequent update requests are discarded.
+    item->hide(); // visible set to 0. ignoreVisible must be set to 1; the item won't be processed otherwise.
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 0);
+    QCOMPARE(view.repaints, 1);
+    // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::setTransformProperties_data()

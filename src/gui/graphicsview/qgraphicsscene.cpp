@@ -4358,6 +4358,16 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
                                           /*ignoreVisibleBit=*/force,
                                           /*ignoreDirtyBit=*/removingItemFromScene || invalidateChildren,
                                           /*ignoreOpacity=*/ignoreOpacity)) {
+        if (item->d_ptr->dirty) {
+            // The item is already marked as dirty and will be processed later. However,
+            // we have to make sure ignoreVisible and ignoreOpacity are set properly;
+            // otherwise things like: item->update(); item->hide() (force is now true)
+            // won't work as expected.
+            if (force)
+                item->d_ptr->ignoreVisible = 1;
+            if (ignoreOpacity)
+                item->d_ptr->ignoreOpacity = 1;
+        }
         return;
     }
 
