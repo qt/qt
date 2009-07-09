@@ -2253,10 +2253,8 @@ void tst_QScriptValue::call()
     QScriptEngine eng;
 
     {
-        QScriptValue fun = eng.evaluate("function() { return 1; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return 1; })");
         QVERIFY(fun.isFunction());
-        fun = eng.evaluate("(function() { return 1; })");
         QScriptValue result = fun.call();
         QVERIFY(result.isNumber());
         QCOMPARE(result.toInt32(), 1);
@@ -2281,10 +2279,8 @@ void tst_QScriptValue::call()
 
     // test that correct "this" object is used
     {
-        QScriptValue fun = eng.evaluate("function() { return this; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return this; })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { return this; })");
 
         {
             QScriptValue numberObject = QScriptValue(&eng, 123.0).toObject();
@@ -2296,10 +2292,8 @@ void tst_QScriptValue::call()
 
     // test that correct arguments are passed
     {
-        QScriptValue fun = eng.evaluate("function() { return arguments[0]; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return arguments[0]; })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { return arguments[0]; })");
 
         {
             QScriptValue result = fun.call(eng.undefinedValue());
@@ -2332,10 +2326,8 @@ void tst_QScriptValue::call()
     }
 
     {
-        QScriptValue fun = eng.evaluate("function() { return arguments[1]; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return arguments[1]; })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { return arguments[1]; })");
 
         {
             QScriptValueList args;
@@ -2355,10 +2347,8 @@ void tst_QScriptValue::call()
     }
 
     {
-        QScriptValue fun = eng.evaluate("function() { throw new Error('foo'); }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { throw new Error('foo'); })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { throw new Error('foo'); })");
         QVERIFY(!eng.hasUncaughtException());
 
         {
@@ -2476,10 +2466,8 @@ void tst_QScriptValue::call()
 
     {
         QScriptEngine otherEngine;
-        QScriptValue fun = otherEngine.evaluate("function() { return 1; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = otherEngine.evaluate("(function() { return 1; })");
         QVERIFY(fun.isFunction());
-        fun = otherEngine.evaluate("(function() { return 1; })");
         QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call() failed: "
                              "cannot call function with thisObject created in "
                              "a different engine");
@@ -2488,10 +2476,8 @@ void tst_QScriptValue::call()
     }
 
     {
-        QScriptValue fun = eng.evaluate("function() { return arguments; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return arguments; })");
         QVERIFY(fun.isFunction());
-        fun = eng.evaluate("(function() { return arguments; })");
         QScriptValue array = eng.newArray(3);
         array.setProperty(0, QScriptValue(&eng, 123.0));
         array.setProperty(1, QScriptValue(&eng, 456.0));
@@ -2543,10 +2529,8 @@ void tst_QScriptValue::construct()
     QScriptEngine eng;
 
     {
-        QScriptValue fun = eng.evaluate("function () { this.foo = 123; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function () { this.foo = 123; })");
         QVERIFY(fun.isFunction());
-        fun = eng.evaluate("(function () { this.foo = 123; })");
         QScriptValue ret = fun.construct();
         QVERIFY(ret.isObject());
         QVERIFY(ret.instanceOf(fun));
@@ -2589,10 +2573,8 @@ void tst_QScriptValue::construct()
 
     // test that internal prototype is set correctly
     {
-        QScriptValue fun = eng.evaluate("function() { return this.__proto__; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return this.__proto__; })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { return this.__proto__; })");
         QCOMPARE(fun.property("prototype").isObject(), true);
         QScriptValue ret = fun.construct();
         QCOMPARE(fun.property("prototype").strictlyEquals(ret), true);
@@ -2600,19 +2582,15 @@ void tst_QScriptValue::construct()
 
     // test that we return the new object even if a non-object value is returned from the function
     {
-        QScriptValue fun = eng.evaluate("function() { return 123; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return 123; })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { return 123; })");
         QScriptValue ret = fun.construct();
         QCOMPARE(ret.isObject(), true);
     }
 
     {
-        QScriptValue fun = eng.evaluate("function() { throw new Error('foo'); }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { throw new Error('foo'); })");
         QCOMPARE(fun.isFunction(), true);
-        fun = eng.evaluate("(function() { throw new Error('foo'); })");
         QScriptValue ret = fun.construct();
         QEXPECT_FAIL("", "Returns null if a constructor throws an error", Continue);
         QCOMPARE(ret.isError(), true);
@@ -2625,10 +2603,8 @@ void tst_QScriptValue::construct()
     QCOMPARE(inv.construct().isValid(), false);
 
     {
-        QScriptValue fun = eng.evaluate("function() { return arguments; }");
-        QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
+        QScriptValue fun = eng.evaluate("(function() { return arguments; })");
         QVERIFY(fun.isFunction());
-        fun = eng.evaluate("(function() { return arguments; })");
         QScriptValue array = eng.newArray(3);
         array.setProperty(0, QScriptValue(&eng, 123.0));
         array.setProperty(1, QScriptValue(&eng, 456.0));
