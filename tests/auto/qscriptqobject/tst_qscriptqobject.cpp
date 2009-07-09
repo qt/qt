@@ -597,9 +597,7 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QScriptValue mobj = m_engine->globalObject().property("myObject");
         QVERIFY(!(mobj.propertyFlags("intProperty") & QScriptValue::ReadOnly));
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::Undeletable);
-        QEXPECT_FAIL("", "Qt properties should have the Getter flag", Continue);
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::PropertyGetter);
-        QEXPECT_FAIL("", "Qt properties should have the Setter flag", Continue);
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::PropertySetter);
         QVERIFY(!(mobj.propertyFlags("intProperty") & QScriptValue::SkipInEnumeration));
         QVERIFY(mobj.propertyFlags("intProperty") & QScriptValue::QObjectMember);

@@ -171,7 +171,7 @@ static QVariant variantFromValue(QScriptEnginePrivate *eng,
     return QVariant();
 }
 
-static const bool GeneratePropertyFunctions = false;
+static const bool GeneratePropertyFunctions = true;
 
 static unsigned flagsForMetaProperty(const QMetaProperty &prop)
 {
@@ -1120,16 +1120,19 @@ bool QObjectWrapperObject::getOwnPropertySlot(JSC::ExecState *exec,
         return false;
     }
 
+    const QMetaObject *meta = qobject->metaObject();
     {
         QHash<QByteArray, JSC::JSValue>::const_iterator it = data->cachedMembers.constFind(name);
         if (it != data->cachedMembers.constEnd()) {
-            slot.setValue(it.value());
+            if (GeneratePropertyFunctions && (meta->indexOfProperty(name) != -1))
+                slot.setGetterSlot(JSC::asObject(it.value()));
+            else
+                slot.setValue(it.value());
             return true;
         }
     }
 
     const QScriptEngine::QObjectWrapOptions &opt = data->options;
-    const QMetaObject *meta = qobject->metaObject();
     QScriptEnginePrivate *eng = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
     int index = -1;
     if (name.contains('(')) {
@@ -1248,8 +1251,9 @@ void QObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& prop
 
     index = meta->indexOfProperty(name);
     if (index != -1) {
-        if (GeneratePropertyFunctions)
-            qWarning("Booo, the property setter should be called...");
+        if (GeneratePropertyFunctions) {
+            // ### the setter should be called
+        }
         QMetaProperty prop = meta->property(index);
         if (prop.isScriptable()) {
             if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
@@ -1302,16 +1306,18 @@ bool QObjectWrapperObject::deleteProperty(JSC::ExecState *exec,
         return false;
     }
 
+    const QMetaObject *meta = qobject->metaObject();
     {
         QHash<QByteArray, JSC::JSValue>::iterator it = data->cachedMembers.find(name);
         if (it != data->cachedMembers.end()) {
+            if (GeneratePropertyFunctions && (meta->indexOfProperty(name) != -1))
+                return false;
             data->cachedMembers.erase(it);
             return true;
         }
     }
 
     const QScriptEngine::QObjectWrapOptions &opt = data->options;
-    const QMetaObject *meta = qobject->metaObject();
     int index = meta->indexOfProperty(name);
     if (index != -1) {
         QMetaProperty prop = meta->property(index);
