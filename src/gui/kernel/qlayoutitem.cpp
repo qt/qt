@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,8 @@ QT_BEGIN_NAMESPACE
 
 inline static QRect fromLayoutItemRect(QWidgetPrivate *priv, const QRect &rect)
 {
-    return priv->fromOrToLayoutItemRect(rect, -1);
+    return rect.adjusted(priv->leftLayoutItemMargin, priv->topLayoutItemMargin,
+                         -priv->rightLayoutItemMargin, -priv->bottomLayoutItemMargin);
 }
 
 inline static QSize fromLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
@@ -64,7 +65,8 @@ inline static QSize fromLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
 
 inline static QRect toLayoutItemRect(QWidgetPrivate *priv, const QRect &rect)
 {
-    return priv->fromOrToLayoutItemRect(rect, +1);
+    return rect.adjusted(-priv->leftLayoutItemMargin, -priv->topLayoutItemMargin,
+                         priv->rightLayoutItemMargin, priv->bottomLayoutItemMargin);
 }
 
 inline static QSize toLayoutItemSize(QWidgetPrivate *priv, const QSize &size)

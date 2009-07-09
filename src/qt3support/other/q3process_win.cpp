@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -285,7 +285,7 @@ bool Q3Process::start( QStringList *env )
     for ( ; it != _arguments.end(); ++it ) {
 	QString tmp = *it;
 	// escape a single " because the arguments will be parsed
-	tmp.replace( QLatin1String("\""), QLatin1String("\\\"") );
+	tmp.replace( QLatin1Char('\"'), QLatin1String("\\\"") );
 	if ( tmp.isEmpty() || tmp.contains( QLatin1Char(' ') ) || tmp.contains( QLatin1Char('\t') ) ) {
 	    // The argument must not end with a \ since this would be interpreted
 	    // as escaping the quote -- rather put the \ behind the quote: e.g.
@@ -294,9 +294,9 @@ bool Q3Process::start( QStringList *env )
 	    int i = tmp.length();
 	    while ( i>0 && tmp.at( i-1 ) == QLatin1Char('\\') ) {
 		--i;
-		endQuote += QLatin1String("\\");
+		endQuote += QLatin1Char('\\');
 	    }
-	    args += QString( QLatin1String(" \"") ) + tmp.left( i ) + endQuote;
+        args += QLatin1String(" \"") + tmp.left( i ) + endQuote;
 	} else {
 	    args += QLatin1Char(' ') + tmp;
 	}
@@ -330,7 +330,7 @@ bool Q3Process::start( QStringList *env )
 	    // add PATH if necessary (for DLL loading)
 	    QByteArray path = qgetenv( "PATH" );
 	    if ( env->grep( QRegExp(QLatin1String("^PATH="),FALSE) ).empty() && !path.isNull() ) {
-		QString tmp = QString( QLatin1String("PATH=%1") ).arg(QString::fromLatin1(path.constData()));
+        QString tmp = QString::fromLatin1("PATH=%1").arg(QLatin1String(path.constData()));
 		uint tmpSize = sizeof(TCHAR) * (tmp.length()+1);
 		envlist.resize( envlist.size() + tmpSize );
 		memcpy( envlist.data()+pos, tmp.ucs2(), tmpSize );
@@ -378,7 +378,7 @@ bool Q3Process::start( QStringList *env )
 	    // add PATH if necessary (for DLL loading)
 	    QByteArray path = qgetenv( "PATH" );
 	    if ( env->grep( QRegExp(QLatin1String("^PATH="),FALSE) ).empty() && !path.isNull() ) {
-		Q3CString tmp = QString( QLatin1String("PATH=%1") ).arg(QString::fromLatin1(path.constData())).local8Bit();
+            Q3CString tmp = QString::fromLatin1("PATH=%1").arg(QString::fromLatin1(path.constData())).local8Bit();
 		uint tmpSize = tmp.length() + 1;
 		envlist.resize( envlist.size() + tmpSize );
 		memcpy( envlist.data()+pos, tmp.data(), tmpSize );

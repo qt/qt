@@ -29,6 +29,8 @@
 #include "config.h"
 #include "SQLTransaction.h"
 
+#if ENABLE(DATABASE)
+
 #include "ChromeClient.h"
 #include "Database.h"
 #include "DatabaseAuthorizer.h"
@@ -41,6 +43,7 @@
 #include "Page.h"
 #include "PlatformString.h"
 #include "SecurityOrigin.h"
+#include "Settings.h"
 #include "SQLError.h"
 #include "SQLiteTransaction.h"
 #include "SQLResultSet.h"
@@ -72,7 +75,6 @@ SQLTransaction::SQLTransaction(Database* db, PassRefPtr<SQLTransactionCallback> 
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
     , m_shouldRetryCurrentStatement(false)
-    , m_shouldCommitAfterErrorCallback(true)
     , m_modifiedDatabase(false)
 {
     ASSERT(m_database);
@@ -88,15 +90,20 @@ void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValu
         e = INVALID_STATE_ERR;
         return;
     }
+
+    bool readOnlyMode = false;
+    Page* page = m_database->document()->page();
+    if (!page || page->settings()->privateBrowsingEnabled())
+        readOnlyMode = true;
     
-    RefPtr<SQLStatement> statement = SQLStatement::create(sqlStatement.copy(), arguments, callback, callbackError);
+    RefPtr<SQLStatement> statement = SQLStatement::create(sqlStatement, arguments, callback, callbackError, readOnlyMode);
 
     if (m_database->deleted())
         statement->setDatabaseDeletedError();
 
     if (!m_database->versionMatchesExpected())
         statement->setVersionMismatchedError();
-        
+
     enqueueStatement(statement);
 }
 
@@ -422,7 +429,6 @@ void SQLTransaction::postflightAndCommit()
 
     // If the commit failed, the transaction will still be marked as "in progress"
     if (m_sqliteTransaction->inProgress()) {
-        m_shouldCommitAfterErrorCallback = false;
         m_transactionError = SQLError::create(0, "failed to commit the transaction");
         handleTransactionError(false);
         return;
@@ -483,8 +489,8 @@ void SQLTransaction::handleTransactionError(bool inCallback)
         return;
     }
     
-    // Transaction Step 12 - If the callback couldn't be called, then rollback the transaction.
-    m_shouldCommitAfterErrorCallback = false;
+    // No error callback, so fast-forward to:
+    // Transaction Step 12 - Rollback the transaction.
     if (inCallback) {
         m_nextStep = &SQLTransaction::cleanupAfterTransactionErrorCallback;
         LOG(StorageAPI, "Scheduling cleanupAfterTransactionErrorCallback for transaction %p\n", this);
@@ -498,10 +504,10 @@ void SQLTransaction::deliverTransactionErrorCallback()
 {
     ASSERT(m_transactionError);
     
-    // Transaction Step 12 - If the callback didn't return false, then rollback the transaction.
-    // This includes the callback not existing, returning true, or throwing an exception
-    if (!m_errorCallback || m_errorCallback->handleEvent(m_transactionError.get()))
-        m_shouldCommitAfterErrorCallback = false;
+    // Transaction Step 12 - If exists, invoke error callback with the last
+    // error to have occurred in this transaction.
+    if (m_errorCallback)
+        m_errorCallback->handleEvent(m_transactionError.get());
 
     m_nextStep = &SQLTransaction::cleanupAfterTransactionErrorCallback;
     LOG(StorageAPI, "Scheduling cleanupAfterTransactionErrorCallback for transaction %p\n", this);
@@ -512,19 +518,8 @@ void SQLTransaction::cleanupAfterTransactionErrorCallback()
 {
     m_database->m_databaseAuthorizer->disable();
     if (m_sqliteTransaction) {
-        // Transaction Step 12 -If the error callback returned false, and the last error wasn't itself a 
-        // failure when committing the transaction, then try to commit the transaction
-        if (m_shouldCommitAfterErrorCallback)
-            m_sqliteTransaction->commit();
-        
-        if (m_sqliteTransaction->inProgress()) {
-            // Transaction Step 12 - If that fails, or if the callback couldn't be called 
-            // or if it didn't return false, then rollback the transaction.
-            m_sqliteTransaction->rollback();
-        } else if (m_modifiedDatabase) {
-            // But if the commit was successful, notify the delegates if the transaction modified this database
-            DatabaseTracker::tracker().scheduleNotifyDatabaseChanged(m_database->m_securityOrigin.get(), m_database->m_name);
-        }
+        // Transaction Step 12 - Rollback the transaction.
+        m_sqliteTransaction->rollback();
         
         ASSERT(!m_database->m_sqliteDatabase.transactionInProgress());
         m_sqliteTransaction.clear();
@@ -548,3 +543,5 @@ void SQLTransaction::cleanupAfterTransactionErrorCallback()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(DATABASE)

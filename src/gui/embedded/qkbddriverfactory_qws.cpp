@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,7 @@
 
 #include "qapplication.h"
 #include "qkbdtty_qws.h"
-#include "qkbdusb_qws.h"
+#include "qkbdlinuxinput_qws.h"
 #include "qkbdum_qws.h"
 #include "qkbdsl5000_qws.h"
 #include "qkbdvfb_qws.h"
@@ -121,9 +121,11 @@ QWSKeyboardHandler *QKbdDriverFactory::create(const QString& key, const QString&
     if (driver == QLatin1String("tty") || driver.isEmpty())
         return new QWSTtyKeyboardHandler(device);
 # endif
-# ifndef QT_NO_QWS_KBD_USB
-    if (driver == QLatin1String("usb"))
-        return new QWSUsbKeyboardHandler(device);
+# ifndef QT_NO_QWS_KBD_LINUXINPUT
+    if (driver == QLatin1String("linuxinput") || \
+        driver == QLatin1String("usb") || \
+        driver == QLatin1String("linuxis"))
+        return new QWSLinuxInputKeyboardHandler(device);
 # endif
 # ifndef QT_NO_QWS_KBD_UM
     if (driver == QLatin1String("um") || driver == QLatin1String("qvfbkeyboard"))
@@ -168,8 +170,8 @@ QStringList QKbdDriverFactory::keys()
 #ifndef QT_NO_QWS_KBD_TTY
     list << QLatin1String("TTY");
 #endif
-#ifndef QT_NO_QWS_KBD_USB
-    list << QLatin1String("USB");
+#ifndef QT_NO_QWS_KBD_LINUXINPUT
+    list << QLatin1String("LinuxInput");
 #endif
 #ifndef QT_NO_QWS_KBD_UM
     list << QLatin1String("UM");

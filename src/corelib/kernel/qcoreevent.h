@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_HEADER
 
@@ -54,7 +55,9 @@ QT_MODULE(Core)
 class QEventPrivate;
 class Q_CORE_EXPORT QEvent           // event base class
 {
+    Q_GADGET
     QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
+    Q_ENUMS(Type)
 public:
     enum Type {
         /*
@@ -266,8 +269,20 @@ public:
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
-        RequestSoftwareInputPanel = 192,
-        CloseSoftwareInputPanel = 193,
+        Signal = 192,
+        Wrapped = 193,
+
+        TouchBegin = 194,
+        TouchUpdate = 195,
+        TouchEnd = 196,
+
+        Gesture = 197,
+        GraphicsSceneGesture = 198,
+
+        RequestSoftwareInputPanel = 199,
+        CloseSoftwareInputPanel = 200,
+
+        SymbianDeferredFocusChanged = 201,       // Internal for generating asynchronous focus events on Symbian
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
@@ -307,6 +322,9 @@ private:
     friend class Q3AccelManager;
     friend class QShortcutMap;
     friend class QETWidget;
+    friend class QGraphicsView;
+    friend class QGraphicsViewPrivate;
+    friend class QGraphicsScenePrivate;
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

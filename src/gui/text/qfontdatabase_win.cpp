@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -364,7 +364,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
                 signature->fsUsb[0], signature->fsUsb[1],
                 signature->fsUsb[2], signature->fsUsb[3]
             };
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
             if (signature->fsUsb[0] == 0) {
                 // If the unicode ranges bit mask is zero then
                 // EnumFontFamiliesEx failed to determine it properly.
@@ -715,7 +715,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
             f = deffnt;
         else if (fam == QLatin1String("system"))
             f = SYSTEM_FONT;
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         else if (fam == QLatin1String("system_fixed"))
             f = SYSTEM_FIXED_FONT;
         else if (fam == QLatin1String("ansi_fixed"))
@@ -774,7 +774,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
         int strat = OUT_DEFAULT_PRECIS;
         if (request.styleStrategy & QFont::PreferBitmap) {
             strat = OUT_RASTER_PRECIS;
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         } else if (request.styleStrategy & QFont::PreferDevice) {
             strat = OUT_DEVICE_PRECIS;
         } else if (request.styleStrategy & QFont::PreferOutline) {
@@ -794,7 +794,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
         if (request.styleStrategy & QFont::PreferMatch)
             qual = DRAFT_QUALITY;
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         else if (request.styleStrategy & QFont::PreferQuality)
             qual = PROOF_QUALITY;
 #endif
@@ -872,7 +872,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
                 qErrnoWarning("QFontEngine::loadEngine: CreateFontIndirect with stretch failed");
         }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         if (hfont == 0) {
             hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
             stockFont = true;

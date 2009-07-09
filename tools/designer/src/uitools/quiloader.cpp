@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -613,8 +613,7 @@ void QUiLoaderPrivate::setupWidgetMap() const
     reason, you can subclass the QUiLoader class and reimplement these
     functions to intervene the process of constructing a user interface. For
     example, you might want to have a list of the actions created when loading
-    a form or creating a custom widget. However, in your reimplementation, you
-    must call QUiLoader's original implementation of these functions first.
+    a form or creating a custom widget.
 
     For a complete example using the QUiLoader class, see the
     \l{Calculator Builder Example}.

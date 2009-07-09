@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -218,8 +218,14 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    QByteArray constructorName = className();
+    {
+        int idx = constructorName.lastIndexOf(':');
+        if (idx != -1)
+            constructorName.remove(0, idx+1); // remove qualified part
+    }
     QVarLengthArray<char, 512> sig;
-    sig.append(className(), qstrlen(className()));
+    sig.append(constructorName.constData(), constructorName.length());
     sig.append('(');
 
     enum { MaximumParamCount = 10 };
@@ -2003,6 +2009,11 @@ QVariant::Type QMetaProperty::type() const
         if (enumMetaTypeId == 0)
             return QVariant::Int;
     }
+#ifdef QT_COORD_TYPE
+    // qreal metatype must be resolved at runtime.
+    if (strcmp(typeName(), "qreal") == 0)
+        return QVariant::Type(qMetaTypeId<qreal>());
+#endif
 
     return QVariant::UserType;
 }

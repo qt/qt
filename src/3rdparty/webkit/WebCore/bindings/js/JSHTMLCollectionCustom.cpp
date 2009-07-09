@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-static JSValuePtr getNamedItems(ExecState* exec, HTMLCollection* impl, const Identifier& propertyName)
+static JSValue getNamedItems(ExecState* exec, HTMLCollection* impl, const Identifier& propertyName)
 {
     Vector<RefPtr<Node> > namedItems;
     impl->namedItems(propertyName, namedItems);
@@ -51,7 +51,7 @@ static JSValuePtr getNamedItems(ExecState* exec, HTMLCollection* impl, const Ide
 
 // HTMLCollections are strange objects, they support both get and call,
 // so that document.forms.item(0) and document.forms(0) both work.
-static JSValuePtr callHTMLCollection(ExecState* exec, JSObject* function, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callHTMLCollection(ExecState* exec, JSObject* function, JSValue, const ArgList& args)
 {
     if (args.size() < 1)
         return jsUndefined();
@@ -64,7 +64,7 @@ static JSValuePtr callHTMLCollection(ExecState* exec, JSObject* function, JSValu
     if (args.size() == 1) {
         // Support for document.all(<index>) etc.
         bool ok;
-        UString string = args.at(exec, 0)->toString(exec);
+        UString string = args.at(0).toString(exec);
         unsigned index = string.toUInt32(&ok, false);
         if (ok)
             return toJS(exec, collection->item(index));
@@ -75,8 +75,8 @@ static JSValuePtr callHTMLCollection(ExecState* exec, JSObject* function, JSValu
 
     // The second arg, if set, is the index of the item we want
     bool ok;
-    UString string = args.at(exec, 0)->toString(exec);
-    unsigned index = args.at(exec, 1)->toString(exec).toUInt32(&ok, false);
+    UString string = args.at(0).toString(exec);
+    unsigned index = args.at(1).toString(exec).toUInt32(&ok, false);
     if (ok) {
         String pstr = string;
         Node* node = collection->namedItem(pstr);
@@ -99,30 +99,30 @@ CallType JSHTMLCollection::getCallData(CallData& callData)
 
 bool JSHTMLCollection::canGetItemsForName(ExecState* exec, HTMLCollection* thisObj, const Identifier& propertyName)
 {
-    return !getNamedItems(exec, thisObj, propertyName)->isUndefined();
+    return !getNamedItems(exec, thisObj, propertyName).isUndefined();
 }
 
-JSValuePtr JSHTMLCollection::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSHTMLCollection::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
 {
     JSHTMLCollection* thisObj = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
     return getNamedItems(exec, thisObj->impl(), propertyName);
 }
 
-JSValuePtr JSHTMLCollection::item(ExecState* exec, const ArgList& args)
+JSValue JSHTMLCollection::item(ExecState* exec, const ArgList& args)
 {
     bool ok;
-    uint32_t index = args.at(exec, 0)->toString(exec).toUInt32(&ok, false);
+    uint32_t index = args.at(0).toString(exec).toUInt32(&ok, false);
     if (ok)
         return toJS(exec, impl()->item(index));
-    return getNamedItems(exec, impl(), Identifier(exec, args.at(exec, 0)->toString(exec)));
+    return getNamedItems(exec, impl(), Identifier(exec, args.at(0).toString(exec)));
 }
 
-JSValuePtr JSHTMLCollection::namedItem(ExecState* exec, const ArgList& args)
+JSValue JSHTMLCollection::namedItem(ExecState* exec, const ArgList& args)
 {
-    return getNamedItems(exec, impl(), Identifier(exec, args.at(exec, 0)->toString(exec)));
+    return getNamedItems(exec, impl(), Identifier(exec, args.at(0).toString(exec)));
 }
 
-JSValuePtr toJS(ExecState* exec, HTMLCollection* collection)
+JSValue toJS(ExecState* exec, HTMLCollection* collection)
 {
     if (!collection)
         return jsNull();
@@ -133,10 +133,10 @@ JSValuePtr toJS(ExecState* exec, HTMLCollection* collection)
         return wrapper;
 
     switch (collection->type()) {
-        case HTMLCollection::SelectOptions:
+        case SelectOptions:
             wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, HTMLOptionsCollection, collection);
             break;
-        case HTMLCollection::DocAll:
+        case DocAll:
             typedef HTMLCollection HTMLAllCollection;
             wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, HTMLAllCollection, collection);
             break;

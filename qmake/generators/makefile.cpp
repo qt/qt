@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -291,7 +291,6 @@ MakefileGenerator::initOutPaths()
         if(Option::fixPathToLocalOS(d.absolutePath()) == Option::fixPathToLocalOS(Option::output_dir))
             v.remove("DESTDIR");
     }
-    QDir::current().cd(currentDir);
 }
 
 QMakeProject
@@ -1948,7 +1947,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 for(int i = 0; i < pre_deps.size(); ++i)
                    deps += replaceExtraCompilerVariables(pre_deps.at(i), (*input), out);
             }
-            QString cmd;
+            QString cmd = replaceExtraCompilerVariables(tmp_cmd, (*input), out);
+            // NOTE: The var -> QMAKE_COMP_var replace feature is unsupported, do not use!
             if (isForSymbianSbsv2()) {
                 // In sbsv2 the command inputs and outputs need to use absolute paths
                 cmd = replaceExtraCompilerVariables(tmp_cmd,
@@ -2538,7 +2538,12 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
         t << suffix << ":";
         for(int target = 0; target < targets.size(); ++target) {
-            QString targetRule = targets.at(target)->target + "-" + suffix;
+            SubTarget *subTarget = targets.at(target);
+            if((suffix == "make_first" || suffix == "make_default")
+                && project->values(subTarget->name + ".CONFIG").indexOf("no_default_target") != -1) {
+                continue;
+            }
+            QString targetRule = subTarget->target + "-" + suffix;
             if(flags & SubTargetOrdered)
                 targetRule += "-ordered";
             t << " " << targetRule;

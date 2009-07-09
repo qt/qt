@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,6 +59,7 @@
 #include "qnetworkproxy.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qqueue.h"
+#include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -91,10 +92,10 @@ public:
 
     Q_DECLARE_PRIVATE(QNetworkReplyImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceReadyRead())
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceReadChannelFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadChannelFinished())
+    Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
+    Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
 };
 
 class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
@@ -102,15 +103,13 @@ class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
 public:
     enum InternalNotifications {
         NotifyDownstreamReadyWrite,
-        NotifyUpstreamReadyRead,
         NotifyCloseDownstreamChannel,
-        NotifyCloseUpstreamChannel,
         NotifyCopyFinished
     };
 
     enum State {
         Idle,
-        Opening,
+        Buffering,
         Working,
         Finished,
         Aborted
@@ -125,10 +124,15 @@ public:
     void _q_sourceReadChannelFinished();
     void _q_copyReadyRead();
     void _q_copyReadChannelFinished();
+    void _q_bufferOutgoingData();
+    void _q_bufferOutgoingDataFinished();
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
     void setNetworkCache(QAbstractNetworkCache *networkCache);
+
+    void pauseNotificationHandling();
+    void resumeNotificationHandling();
     void backendNotify(InternalNotifications notification);
     void handleNotifications();
     void createCache();
@@ -138,9 +142,10 @@ public:
     void setCachingEnabled(bool enable);
     bool isCachingEnabled() const;
     void consume(qint64 count);
+    void emitUploadProgress(qint64 bytesSent, qint64 bytesTotal);
     qint64 nextDownstreamBlockSize() const;
-    void feed(const QByteArray &data);
-    void feed(QIODevice *data);
+    void appendDownstreamData(const QByteArray &data);
+    void appendDownstreamData(QIODevice *data);
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
@@ -149,6 +154,7 @@ public:
 
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
+    QRingBuffer *outgoingDataBuffer;
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache;
 
@@ -156,6 +162,8 @@ public:
     QIODevice *cacheSaveDevice;
 
     NotificationQueue pendingNotifications;
+    bool notificationHandlingPaused;
+
     QUrl urlForLastAuthentication;
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy lastProxyAuthentication;
@@ -163,7 +171,6 @@ public:
 #endif
 
     QRingBuffer readBuffer;
-    QRingBuffer writeBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -103,11 +103,11 @@ bool HybridScreen::connect(const QString &displaySpec)
 {
     QString dspec = displaySpec;
     if (dspec.startsWith(QLatin1String("hybrid:"), Qt::CaseInsensitive))
-        dspec = dspec.mid(QString(QLatin1String("hybrid:")).size());
+        dspec = dspec.mid(QString::fromLatin1("hybrid:").size());
     else if (dspec.compare(QLatin1String("hybrid"), Qt::CaseInsensitive) == 0)
         dspec = QString();
 
-    const QString displayIdSpec = QString(QLatin1String(" :%1")).arg(displayId);
+    const QString displayIdSpec = QString::fromLatin1(" :%1").arg(displayId);
     if (dspec.endsWith(displayIdSpec))
         dspec = dspec.left(dspec.size() - displayIdSpec.size());
 

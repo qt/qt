@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,127 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_VERSION                 Doc::alias("version")
 
 static bool showBrokenLinks = false;
+
+static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
+static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
+static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
+static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
+static QRegExp unknownTag("</?@[^>]*>");
+
+bool parseArg(const QString &src,
+              const QString &tag,
+              int *pos,
+              int n,
+              QStringRef *contents,
+              QStringRef *par1 = 0,
+              bool debug = false)
+{
+#define SKIP_CHAR(c) \
+    if (debug) \
+        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
+    if (i >= n || src[i] != c) { \
+        if (debug) \
+            qDebug() << " char '" << c << "' not found"; \
+        return false; \
+    } \
+    ++i;
+
+
+#define SKIP_SPACE \
+    while (i < n && src[i] == ' ') \
+        ++i;
+
+    int i = *pos;
+    int j = i;
+
+    // assume "<@" has been parsed outside
+    //SKIP_CHAR('<');
+    //SKIP_CHAR('@');
+
+    if (tag != QStringRef(&src, i, tag.length())) {
+        if (0 && debug)
+            qDebug() << "tag " << tag << " not found at " << i;
+        return false;
+    }
+
+    if (debug)
+        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
+
+    // skip tag
+    i += tag.length();
+
+    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
+    if (par1) {
+        SKIP_SPACE;
+        // read parameter name
+        j = i;
+        while (i < n && src[i].isLetter())
+            ++i;
+        if (src[i] == '=') {
+            if (debug)
+                qDebug() << "read parameter" << QString(src.data() + j, i - j);
+            SKIP_CHAR('=');
+            SKIP_CHAR('"');
+            // skip parameter name
+            j = i;
+            while (i < n && src[i] != '"')
+                ++i;
+            *par1 = QStringRef(&src, j, i - j);
+            SKIP_CHAR('"');
+            SKIP_SPACE;
+        } else {
+            if (debug)
+                qDebug() << "no optional parameter found";
+        }
+    }
+    SKIP_SPACE;
+    SKIP_CHAR('>');
+
+    // find contents up to closing "</@tag>
+    j = i;
+    for (; true; ++i) {
+        if (i + 4 + tag.length() > n)
+            return false;
+        if (src[i] != '<')
+            continue;
+        if (src[i + 1] != '/')
+            continue;
+        if (src[i + 2] != '@')
+            continue;
+        if (tag != QStringRef(&src, i + 3, tag.length()))
+            continue;
+        if (src[i + 3 + tag.length()] != '>')
+            continue;
+        break;
+    }
+
+    *contents = QStringRef(&src, j, i - j);
+
+    i += tag.length() + 4;
+
+    *pos = i;
+    if (debug)
+        qDebug() << " tag " << tag << " found: pos now: " << i;
+    return true;
+#undef SKIP_CHAR
+}
+
+static void addLink(const QString &linkTarget,
+                    const QStringRef &nestedStuff,
+                    QString *res)
+{
+    if (!linkTarget.isEmpty()) {
+        *res += "<a href=\"";
+        *res += linkTarget;
+        *res += "\">";
+        *res += nestedStuff;
+        *res += "</a>";
+    }
+    else {
+        *res += nestedStuff;
+    }
+}
+
 
 HtmlGenerator::HtmlGenerator()
     : helpProjectWriter(0), inLink(false), inContents(false),
@@ -326,21 +447,24 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
     case Atom::Code:
-	out() << "<pre>" << trimmedTrailing(highlightedCode(indent(codeIndent, atom->string()),
-                                                            marker, relative))
+	out() << "<pre>"
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
+                                                 marker,relative))
               << "</pre>\n";
 	break;
 #ifdef QDOC_QML        
     case Atom::Qml:
-	out() << "<pre>" << trimmedTrailing(highlightedCode(indent(codeIndent, atom->string()),
-                                                            marker, relative))
+	out() << "<pre>"
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
+                                                 marker,relative))
               << "</pre>\n";
 	break;
 #endif        
     case Atom::CodeNew:
         out() << "<p>you can rewrite it as</p>\n"
-              << "<pre>" << trimmedTrailing(highlightedCode(indent(codeIndent, atom->string()),
-                                                            marker, relative))
+              << "<pre>"
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
+                                                 marker,relative))
               << "</pre>\n";
         break;
     case Atom::CodeOld:
@@ -348,7 +472,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         // fallthrough
     case Atom::CodeBad:
         out() << "<pre><font color=\"#404040\">"
-              << trimmedTrailing(protect(plainCode(indent(codeIndent, atom->string()))))
+              << trimmedTrailing(protect(plainCode(indent(codeIndent,atom->string()))))
               << "</font></pre>\n";
 	break;
     case Atom::FootnoteLeft:
@@ -554,13 +678,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else if (atom->string() == ATOM_LIST_VALUE) {
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
-                out() << "<p><table border=\"1\" cellpadding=\"2\" cellspacing=\"1\" width=\"100%\">\n"
-                         "<tr><th width=\"25%\">Constant</th><th width=\"15%\">Value</th>"
-                         "<th width=\"60%\">Description</th></tr>\n";
+                out() << "<p><table class=\"valuelist\" border=\"1\" cellpadding=\"2\" "
+                      << "cellspacing=\"1\" width=\"100%\">\n"
+                      << "<tr><th width=\"25%\">Constant</th>"
+                      << "<th width=\"15%\">Value</th>"
+                      << "<th width=\"60%\">Description</th></tr>\n";
             }
             else {
-                out() << "<p><table border=\"1\" cellpadding=\"2\" cellspacing=\"1\" width=\"40%\">\n"
-                      << "<tr><th width=\"60%\">Constant</th><th width=\"40%\">Value</th></tr>\n";
+                out() << "<p><table  class=\"valuelist\" border=\"1\" cellpadding=\"2\" "
+                      << "cellspacing=\"1\" width=\"40%\">\n"
+                      << "<tr><th width=\"60%\">Constant</th><th "
+                      << "width=\"40%\">Value</th></tr>\n";
             }
         }
         else {
@@ -734,14 +862,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         if (!atom->string().isEmpty()) {
             if (atom->string().contains("%"))
-                out() << "<p><table width=\"" << atom->string() << "\" "
+                out() << "<p><table class=\"generic\" width=\"" << atom->string() << "\" "
                       << "align=\"center\" cellpadding=\"2\" "
                       << "cellspacing=\"1\" border=\"0\">\n";
-            else
-                out() << "<p><table align=\"center\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
+            else {
+                out() << "<p><table class=\"generic\" align=\"center\" cellpadding=\"2\" "
+                      << "cellspacing=\"1\" border=\"0\">\n";
+            }
         }
         else {
-            out() << "<p><table align=\"center\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
+            out() << "<p><table class=\"generic\" align=\"center\" cellpadding=\"2\" "
+                  << "cellspacing=\"1\" border=\"0\">\n";
         }
         numTableRows = 0;
         break;
@@ -924,12 +1055,16 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         out() << "<li><a href=\"" << membersLink << "\">"
               << "List of all members, including inherited members</a></li>\n";
 
-    QString obsoleteLink = generateLowStatusMemberFile(inner, marker, CodeMarker::Obsolete);
+    QString obsoleteLink = generateLowStatusMemberFile(inner,
+                                                       marker,
+                                                       CodeMarker::Obsolete);
     if (!obsoleteLink.isEmpty())
         out() << "<li><a href=\"" << obsoleteLink << "\">"
               << "Obsolete members</a></li>\n";
 
-    QString compatLink = generateLowStatusMemberFile(inner, marker, CodeMarker::Compat);
+    QString compatLink = generateLowStatusMemberFile(inner,
+                                                     marker,
+                                                     CodeMarker::Compat);
     if (!compatLink.isEmpty())
         out() << "<li><a href=\"" << compatLink << "\">"
               << "Qt 3 support members</a></li>\n";
@@ -941,14 +1076,34 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
-        if (s->members.isEmpty()) {
+        if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
             if (!s->inherited.isEmpty())
                 needOtherSection = true;
-        } else {
-            out() << "<a name=\"" << registerRef((*s).name.toLower()) << "\"></a>\n";
-            out() << "<h3>" << protect((*s).name) << "</h3>\n";
+        }
+        else {
+            if (!s->members.isEmpty()) {
+                out() << "<hr />\n";
+                out() << "<a name=\""
+                      << registerRef((*s).name.toLower())
+                      << "\"></a>\n";
+                out() << "<h2>" << protect((*s).name) << "</h2>\n";
+                generateSection(s->members, inner, marker, CodeMarker::Summary);
+            }
+            if (!s->reimpMembers.isEmpty()) {
+                QString name = QString("Reimplemented ") + (*s).name;
+                out() << "<hr />\n";
+                out() << "<a name=\""
+                      << registerRef(name.toLower())
+                      << "\"></a>\n";
+                out() << "<h2>" << protect(name) << "</h2>\n";
+                generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+            }
 
-            generateSectionList(*s, inner, marker, CodeMarker::Summary);
+            if (!s->inherited.isEmpty()) {
+                out() << "<ul>\n";
+                generateSectionInheritedList(*s, inner, marker, true);
+                out() << "</ul>\n";
+            }
         }
         ++s;
     }
@@ -997,29 +1152,34 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
                 names << (*m)->name();
                 if ((*m)->type() == Node::Function) {
                     const FunctionNode *func = reinterpret_cast<const FunctionNode *>(*m);
-                    if (func->metaness() == FunctionNode::Ctor || func->metaness() == FunctionNode::Dtor
-                            || func->overloadNumber() != 1)
+                    if (func->metaness() == FunctionNode::Ctor ||
+                        func->metaness() == FunctionNode::Dtor ||
+                        func->overloadNumber() != 1)
                         names.clear();
-                } else if ((*m)->type() == Node::Property) {
+                }
+                else if ((*m)->type() == Node::Property) {
                     const PropertyNode *prop = reinterpret_cast<const PropertyNode *>(*m);
-                    if (!prop->getters().isEmpty() && !names.contains(prop->getters().first()->name()))
+                    if (!prop->getters().isEmpty() &&
+                        !names.contains(prop->getters().first()->name()))
                         names << prop->getters().first()->name();
                     if (!prop->setters().isEmpty())
                         names << prop->setters().first()->name();
                     if (!prop->resetters().isEmpty())
                         names << prop->resetters().first()->name();
-                } else if ((*m)->type() == Node::Enum) {
-                    const EnumNode *enume = reinterpret_cast<const EnumNode *>(*m);
+                }
+                else if ((*m)->type() == Node::Enum) {
+                    const EnumNode *enume = reinterpret_cast<const EnumNode*>(*m);
                     if (enume->flagsType())
                         names << enume->flagsType()->name();
 
                     foreach (const QString &enumName,
-                             enume->doc().enumItemNames().toSet()
-                             - enume->doc().omitEnumItemNames().toSet())
-                        names << plainCode(marker->markedUpEnumValue(enumName, enume));
+                             enume->doc().enumItemNames().toSet() -
+                             enume->doc().omitEnumItemNames().toSet())
+                        names << plainCode(marker->markedUpEnumValue(enumName,
+                                                                     enume));
                 }
                 foreach (const QString &name, names)
-                    classSection.keywords += qMakePair(name, linkForNode(*m, 0));
+                    classSection.keywords += qMakePair(name,linkForNode(*m,0));
             }
             ++m;
         }
@@ -1095,12 +1255,16 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
             out() << "<li><a href=\"" << membersLink << "\">"
                   << "List of all members, including inherited members</a></li>\n";
 
-        QString obsoleteLink = generateLowStatusMemberFile(fake, marker, CodeMarker::Obsolete);
+        QString obsoleteLink = generateLowStatusMemberFile(fake,
+                                                           marker,
+                                                           CodeMarker::Obsolete);
         if (!obsoleteLink.isEmpty())
             out() << "<li><a href=\"" << obsoleteLink << "\">"
                   << "Obsolete members</a></li>\n";
 
-        QString compatLink = generateLowStatusMemberFile(fake, marker, CodeMarker::Compat);
+        QString compatLink = generateLowStatusMemberFile(fake,
+                                                         marker,
+                                                         CodeMarker::Compat);
         if (!compatLink.isEmpty())
             out() << "<li><a href=\"" << compatLink << "\">"
                   << "Qt 3 support members</a></li>\n";
@@ -1131,7 +1295,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     s = sections.begin();
     while (s != sections.end()) {
         out() << "<a name=\"" << registerRef((*s).name) << "\"></a>\n";
-        out() << "<h3>" << protect((*s).name) << "</h3>\n";
+        out() << "<h2>" << protect((*s).name) << "</h2>\n";
         generateSectionList(*s, fake, marker, CodeMarker::Summary);
         ++s;
     }
@@ -1407,17 +1571,19 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
-        out() << "<pre>" << trimmedTrailing(highlightedCode(indent(codeIndent,
-                                                                   marker->markedUpIncludes(
-                                                                        inner->includes())),
-                                                                        marker, inner))
+        out() << "<pre>"
+              << trimmedTrailing(highlightedCode(indent(codeIndent,
+                                                        marker->markedUpIncludes(inner->includes())),
+                                                 marker,inner))
               << "</pre>";
     }
 }
 
-void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker,
+void HtmlGenerator::generateTableOfContents(const Node *node,
+                                            CodeMarker *marker,
                                             Doc::SectioningUnit sectioningUnit,
-                                            int numColumns, const Node *relative)
+                                            int numColumns,
+                                            const Node *relative)
 
 {
     if (!node->doc().hasTableOfContents())
@@ -1436,7 +1602,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
     QString tdTag;
     if (numColumns > 1) {
         tdTag = "<td width=\"" + QString::number((100 + numColumns - 1) / numColumns) + "%\">";
-        out() << "<p><table width=\"100%\">\n<tr valign=\"top\">" << tdTag << "\n";
+        out() << "<p><table class=\"toc\" width=\"100%\">\n<tr valign=\"top\">"
+              << tdTag << "\n";
     }
 
     // disable nested links in table of contents
@@ -1455,7 +1622,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
                 out() << "<ul>";
                 sectionNumber.append("1");
             } while (sectionNumber.size() < nextLevel);
-        } else {
+        }
+        else {
             while (sectionNumber.size() > nextLevel) {
                 out() << "</ul>\n";
                 sectionNumber.removeLast();
@@ -1525,7 +1693,9 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner, CodeM
     QList<Section> sections;
     QList<Section>::ConstIterator s;
 
-    sections = marker->sections(inner, CodeMarker::SeparateList, CodeMarker::Okay);
+    sections = marker->sections(inner,
+                                CodeMarker::SeparateList,
+                                CodeMarker::Okay);
     if (sections.isEmpty())
         return QString();
 
@@ -1546,10 +1716,13 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner, CodeM
     return fileName;
 }
 
-QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeMarker *marker,
+QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
+                                                   CodeMarker *marker,
                                                    CodeMarker::Status status)
 {
-    QList<Section> sections = marker->sections(inner, CodeMarker::Summary, status);
+    QList<Section> sections = marker->sections(inner,
+                                               CodeMarker::Summary,
+                                               status);
     QMutableListIterator<Section> j(sections);
     while (j.hasNext()) {
         if (j.next().members.size() == 0)
@@ -1586,12 +1759,13 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeM
                  "code.</p>\n";
     }
 
-    out() << "<p><ul><li><a href=\"" << linkForNode(inner, 0) << "\">" << protect(inner->name())
+    out() << "<p><ul><li><a href=\""
+          << linkForNode(inner, 0) << "\">"
+          << protect(inner->name())
           << " class reference</a></li></ul></p>\n";
 
     for (i = 0; i < sections.size(); ++i) {
-        out() << "<h3>" << protect(sections.at(i).name) << "</h3>\n";
-
+        out() << "<h2>" << protect(sections.at(i).name) << "</h2>\n";
         generateSectionList(sections.at(i), inner, marker, CodeMarker::Summary);
     }
 
@@ -1613,8 +1787,9 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeM
     return fileName;
 }
 
-void HtmlGenerator::generateClassHierarchy(const Node *relative, CodeMarker *marker,
-                                           const QMap<QString, const Node *> &classMap)
+void HtmlGenerator::generateClassHierarchy(const Node *relative,
+                                           CodeMarker *marker,
+                                           const QMap<QString,const Node*> &classMap)
 {
     if (classMap.isEmpty())
         return;
@@ -1656,10 +1831,13 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative, CodeMarker *mar
     }
 }
 
-void HtmlGenerator::generateAnnotatedList(const Node *relative, CodeMarker *marker,
-                    const QMap<QString, const Node *> &nodeMap)
+void
+HtmlGenerator::generateAnnotatedList(const Node *relative,
+                                     CodeMarker *marker,
+                                     const QMap<QString,const Node *>&nodeMap)
 {
-    out() << "<p><table width=\"100%\" class=\"annotated\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
+    out() << "<p><table width=\"100%\" class=\"annotated\" cellpadding=\"2\" "
+          << "cellspacing=\"1\" border=\"0\">\n";
 
     int row = 0;
     foreach (const QString &name, nodeMap.keys()) {
@@ -1690,8 +1868,10 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative, CodeMarker *mark
     out() << "</table></p>\n";
 }
 
-void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker,
-                                        const QMap<QString, const Node *> &classMap)
+void
+HtmlGenerator::generateCompactList(const Node *relative,
+                                   CodeMarker *marker,
+                                   const QMap<QString,const Node*> &classMap)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
     const int NumColumns = 4; // number of columns in the result
@@ -1812,14 +1992,15 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
     }
     firstOffset[NumColumns] = classMap.count();
 
-    out() << "<p><table width=\"100%\">\n";
+    out() << "<p><table class=\"generic\" width=\"100%\">\n";
     for (k = 0; k < numRows; k++) {
         out() << "<tr>\n";
         for (i = 0; i < NumColumns; i++) {
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
                 out() << "<td>\n</td>\n";
-            } else {
+            }
+            else {
                 while (currentOffsetInParagraph[i] == paragraph[currentParagraphNo[i]].count()) {
                     ++currentParagraphNo[i];
                     currentOffsetInParagraph[i] = 0;
@@ -1828,29 +2009,34 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
                 out() << "<td align=\"right\">";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
-                    out() << "<b>" << paragraphName[currentParagraphNo[i]] << "&nbsp;</b>";
+                    out() << "<b>"
+                          << paragraphName[currentParagraphNo[i]]
+                          << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
+                    
+                if (!paragraphName[currentParagraphNo[i]].isEmpty()) {
+                    QMap<QString, const Node *>::Iterator it;
+                    it = paragraph[currentParagraphNo[i]].begin();
+                    for (j = 0; j < currentOffsetInParagraph[i]; j++)
+                        ++it;
 
-                // bad loop
-                QMap<QString, const Node *>::Iterator it;
-                it = paragraph[currentParagraphNo[i]].begin();
-                for (j = 0; j < currentOffsetInParagraph[i]; j++)
-                    ++it;
-
-                out() << "<td>";
-                // Previously, we used generateFullName() for this, but we
-                // require some special formatting.
-                out() << "<a href=\"" << linkForNode(it.value(), relative) << "\">";
-                QStringList pieces = fullName(it.value(), relative, marker).split("::");
-                out() << protect(pieces.last());
-                out() << "</a>";
-                if (pieces.size() > 1) {
-                    out() << " (";
-                    generateFullName(it.value()->parent(), relative, marker);
-                    out() << ")";
-                }
-                out() << "</td>\n";
+                    out() << "<td>";
+                    // Previously, we used generateFullName() for this, but we
+                    // require some special formatting.
+                    out() << "<a href=\""
+                        << linkForNode(it.value(), relative)
+                        << "\">";
+                    QStringList pieces = fullName(it.value(), relative, marker).split("::");
+                    out() << protect(pieces.last());
+                    out() << "</a>";
+                    if (pieces.size() > 1) {
+                        out() << " (";
+                        generateFullName(it.value()->parent(), relative, marker);
+                        out() << ")";
+                    }
+                    out() << "</td>\n";
+                 }
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
@@ -1861,7 +2047,8 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
     out() << "</table></p>\n";
 }
 
-void HtmlGenerator::generateFunctionIndex(const Node *relative, CodeMarker *marker)
+void HtmlGenerator::generateFunctionIndex(const Node *relative,
+                                          CodeMarker *marker)
 {
     out() << "<p align=\"center\"><font size=\"+1\"><b>";
     for (int i = 0; i < 26; i++) {
@@ -1926,40 +2113,6 @@ void HtmlGenerator::generateLegaleseList(const Node *relative, CodeMarker *marke
         } while (it != legaleseTexts.end() && it.key() == text);
         out() << "</ul>\n";
     }
-}
-
-void HtmlGenerator::generateSynopsis(const Node *node, const Node *relative,
-                                     CodeMarker *marker, CodeMarker::SynopsisStyle style)
-{
-    QString marked = marker->markedUpSynopsis(node, relative, style);
-    QRegExp templateTag("(<[^@>]*>)");
-    if (marked.indexOf(templateTag) != -1) {
-        QString contents = protect(marked.mid(templateTag.pos(1),
-                                              templateTag.cap(1).length()));
-        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
-                        contents);
-    }
-    marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"), "<i>\\1<sub>\\2</sub></i>");
-    marked.replace("<@param>", "<i>");
-    marked.replace("</@param>", "</i>");
-
-    if (style == CodeMarker::Summary)
-        marked.replace("@name>", "b>");
-
-    if (style == CodeMarker::SeparateList) {
-        QRegExp extraRegExp("<@extra>.*</@extra>");
-        extraRegExp.setMinimal(true);
-        marked.replace(extraRegExp, "");
-    } else {
-        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
-        marked.replace("</@extra>", "</tt>");
-    }
-
-    if (style != CodeMarker::Detailed) {
-        marked.replace("<@type>", "");
-        marked.replace("</@type>", "");
-    }
-    out() << highlightedCode(marked, marker, relative);
 }
 
 void HtmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* marker */)
@@ -2075,19 +2228,396 @@ void HtmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* m
     }
 }
 
-void HtmlGenerator::generateSectionList(const Section& section, const Node *relative,
-                                        CodeMarker *marker, CodeMarker::SynopsisStyle style)
+#ifdef QDOC_NAME_ALIGNMENT
+void HtmlGenerator::generateSection(const NodeList& nl,
+                                    const Node *relative,
+                                    CodeMarker *marker,
+                                    CodeMarker::SynopsisStyle style)
+{
+    bool name_alignment = true;
+    if (!nl.isEmpty()) {
+        bool twoColumn = false;
+        if (style == CodeMarker::SeparateList) {
+            name_alignment = false;
+            twoColumn = (nl.count() >= 16);
+        }
+        else if (nl.first()->type() == Node::Property) {
+            twoColumn = (nl.count() >= 5);
+            name_alignment = false;
+        }
+        if (name_alignment) {
+            out() << "<table class=\"alignedsummary\" border=\"0\" cellpadding=\"0\" "
+                  << "cellspacing=\"0\" width=\"100%\">\n";
+        }
+        else {
+            if (twoColumn)
+                out() << "<p><table class=\"propsummary\" width=\"100%\" "
+                      << "border=\"0\" cellpadding=\"0\""
+                      << " cellspacing=\"0\">\n"
+                      << "<tr><td width=\"45%\" valign=\"top\">";
+            out() << "<ul>\n";
+        }
+
+        int i = 0;
+        NodeList::ConstIterator m = nl.begin();
+        while (m != nl.end()) {
+            if ((*m)->access() == Node::Private) {
+                ++m;
+                continue;
+            }
+
+            if (name_alignment) {
+                out() << "<tr><td class=\"memItemLeft\" "
+                      << "align=\"right\" valign=\"top\">";
+            }
+            else {
+                if (twoColumn && i == (int) (nl.count() + 1) / 2)
+                    out() << "</ul></td><td valign=\"top\"><ul>\n";
+                out() << "<li><div class=\"fn\">";
+            }
+
+            generateSynopsis(*m, relative, marker, style, name_alignment);
+            if (name_alignment)
+                out() << "</td></tr>\n";
+            else
+                out() << "</div></li>\n";
+            i++;
+            ++m;
+        }
+        if (name_alignment)
+            out() << "</table>\n";
+        else {
+            out() << "</ul>\n";
+            if (twoColumn)
+                out() << "</td></tr>\n</table></p>\n";
+        }
+    }
+}
+
+void HtmlGenerator::generateSectionList(const Section& section,
+                                        const Node *relative,
+                                        CodeMarker *marker,
+                                        CodeMarker::SynopsisStyle style)
+{
+    bool name_alignment = true;
+    if (!section.members.isEmpty()) {
+        bool twoColumn = false;
+        if (style == CodeMarker::SeparateList) {
+            name_alignment = false;
+            twoColumn = (section.members.count() >= 16);
+        }
+        else if (section.members.first()->type() == Node::Property) {
+            twoColumn = (section.members.count() >= 5);
+            name_alignment = false;
+        }
+        if (name_alignment) {
+            out() << "<table class=\"alignedsummary\" border=\"0\" cellpadding=\"0\" "
+                  << "cellspacing=\"0\" width=\"100%\">\n";
+        }
+        else {
+            if (twoColumn)
+                out() << "<p><table class=\"propsummary\" width=\"100%\" "
+                      << "border=\"0\" cellpadding=\"0\""
+                      << " cellspacing=\"0\">\n"
+                      << "<tr><td width=\"45%\" valign=\"top\">";
+            out() << "<ul>\n";
+        }
+
+        int i = 0;
+        NodeList::ConstIterator m = section.members.begin();
+        while (m != section.members.end()) {
+            if ((*m)->access() == Node::Private) {
+                ++m;
+                continue;
+            }
+
+            if (name_alignment) {
+                out() << "<tr><td class=\"memItemLeft\" "
+                      << "align=\"right\" valign=\"top\">";
+            }
+            else {
+                if (twoColumn && i == (int) (section.members.count() + 1) / 2)
+                    out() << "</ul></td><td valign=\"top\"><ul>\n";
+                out() << "<li><div class=\"fn\">";
+            }
+
+            generateSynopsis(*m, relative, marker, style, name_alignment);
+            if (name_alignment)
+                out() << "</td></tr>\n";
+            else
+                out() << "</div></li>\n";
+            i++;
+            ++m;
+        }
+        if (name_alignment)
+            out() << "</table>\n";
+        else {
+            out() << "</ul>\n";
+            if (twoColumn)
+                out() << "</td></tr>\n</table></p>\n";
+        }
+    }
+
+    if (style == CodeMarker::Summary && !section.inherited.isEmpty()) {
+        out() << "<ul>\n";
+        generateSectionInheritedList(section, relative, marker, name_alignment);
+        out() << "</ul>\n";
+    }
+}
+
+void HtmlGenerator::generateSectionInheritedList(const Section& section,
+                                                 const Node *relative,
+                                                 CodeMarker *marker,
+                                                 bool nameAlignment)
+{
+    QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
+    while (p != section.inherited.end()) {
+        if (nameAlignment)
+            out() << "<li><div bar=\"2\" class=\"fn\"></div>";
+        else
+            out() << "<li><div class=\"fn\"></div>";
+        out() << (*p).second << " ";
+        if ((*p).second == 1) {
+            out() << section.singularMember;
+        }
+        else {
+            out() << section.pluralMember;
+        }
+        out() << " inherited from <a href=\"" << fileName((*p).first)
+              << "#" << HtmlGenerator::cleanRef(section.name.toLower()) << "\">"
+              << protect(marker->plainFullName((*p).first, relative))
+              << "</a></li>\n";
+        ++p;
+    }
+}
+
+void HtmlGenerator::generateSynopsis(const Node *node,
+                                     const Node *relative,
+                                     CodeMarker *marker,
+                                     CodeMarker::SynopsisStyle style,
+                                     bool nameAlignment)
+{
+    QString marked = marker->markedUpSynopsis(node, relative, style);
+    QRegExp templateTag("(<[^@>]*>)");
+    if (marked.indexOf(templateTag) != -1) {
+        QString contents = protect(marked.mid(templateTag.pos(1),
+                                              templateTag.cap(1).length()));
+        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
+                        contents);
+    }
+    marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
+                   "<i>\\1<sub>\\2</sub></i>");
+    marked.replace("<@param>", "<i>");
+    marked.replace("</@param>", "</i>");
+
+    if (style == CodeMarker::Summary) {
+        marked.replace("<@name>", "");   // was "<b>"
+        marked.replace("</@name>", "");  // was "</b>"
+    }
+
+    if (style == CodeMarker::SeparateList) {
+        QRegExp extraRegExp("<@extra>.*</@extra>");
+        extraRegExp.setMinimal(true);
+        marked.replace(extraRegExp, "");
+    } else {
+        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+        marked.replace("</@extra>", "</tt>");
+    }
+
+    if (style != CodeMarker::Detailed) {
+        marked.replace("<@type>", "");
+        marked.replace("</@type>", "");
+    }
+    out() << highlightedCode(marked, marker, relative, style, nameAlignment);
+}
+
+QString HtmlGenerator::highlightedCode(const QString& markedCode,
+                                       CodeMarker *marker,
+                                       const Node *relative,
+                                       CodeMarker::SynopsisStyle ,
+                                       bool nameAlignment)
+{
+    QString src = markedCode;
+    QString html;
+    QStringRef arg;
+    QStringRef par1;
+
+    const QChar charLangle = '<';
+    const QChar charAt = '@';
+
+    // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
+    static const QString linkTag("link");
+    bool done = false;
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
+            if (nameAlignment && !done) {// && (i != 0)) Why was this here?
+                html += "</td><td class=\"memItemRight\" valign=\"bottom\">";
+                done = true;
+            }
+            i += 2;
+            if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
+                html += "<b>";
+                QString link = linkForNode(
+                    CodeMarker::nodeForString(par1.toString()), relative);
+                addLink(link, arg, &html);
+                html += "</b>";
+            }
+            else {
+                html += charLangle;
+                html += charAt;
+            }
+        }
+        else {
+            html += src.at(i++);
+        }
+    }
+
+
+    if (slow) {
+        // is this block ever used at all?
+        // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
+        src = html;
+        html = QString();
+        static const QString funcTag("func");
+        for (int i = 0, n = src.size(); i < n;) {
+            if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+                i += 2;
+                if (parseArg(src, funcTag, &i, n, &arg, &par1)) {
+                    QString link = linkForNode(
+                            marker->resolveTarget(par1.toString(),
+                                                  tre,
+                                                  relative),
+                            relative);
+                    addLink(link, arg, &html);
+                    par1 = QStringRef();
+                }
+                else {
+                    html += charLangle;
+                    html += charAt;
+                }
+            }
+            else {
+                html += src.at(i++);
+            }
+        }
+    }
+
+    // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
+    src = html;
+    html = QString();
+    static const QString typeTags[] = { "type", "headerfile", "func" };
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            i += 2;
+            bool handled = false;
+            for (int k = 0; k != 3; ++k) {
+                if (parseArg(src, typeTags[k], &i, n, &arg, &par1)) {
+                    par1 = QStringRef();
+                    QString link = linkForNode(
+                            marker->resolveTarget(arg.toString(), tre, relative),
+                            relative);
+                    addLink(link, arg, &html);
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled) {
+                html += charLangle;
+                html += charAt;
+            }
+        }
+        else {
+            html += src.at(i++);
+        }
+    }
+
+    // replace all
+    // "<@comment>" -> "<span class=\"comment\">";
+    // "<@preprocessor>" -> "<span class=\"preprocessor\">";
+    // "<@string>" -> "<span class=\"string\">";
+    // "<@char>" -> "<span class=\"char\">";
+    // "</@(?:comment|preprocessor|string|char)>" -> "</span>"
+    src = html;
+    html = QString();
+    static const QString spanTags[] = {
+        "<@comment>",      "<span class=\"comment\">",
+        "<@preprocessor>", "<span class=\"preprocessor\">",
+        "<@string>",       "<span class=\"string\">",
+        "<@char>",         "<span class=\"char\">",
+        "</@comment>",     "</span>",
+        "</@preprocessor>","</span>",
+        "</@string>",      "</span>",
+        "</@char>",        "</span>"
+        // "<@char>",      "<font color=blue>",
+        // "</@char>",     "</font>",
+        // "<@func>",      "<font color=green>",
+        // "</@func>",     "</font>",
+        // "<@id>",        "<i>",
+        // "</@id>",       "</i>",
+        // "<@keyword>",   "<b>",
+        // "</@keyword>",  "</b>",
+        // "<@number>",    "<font color=yellow>",
+        // "</@number>",   "</font>",
+        // "<@op>",        "<b>",
+        // "</@op>",       "</b>",
+        // "<@param>",     "<i>",
+        // "</@param>",    "</i>",
+        // "<@string>",    "<font color=green>",
+        // "</@string>",  "</font>",
+    };
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle) {
+            bool handled = false;
+            for (int k = 0; k != 8; ++k) {
+                const QString & tag = spanTags[2 * k];
+                if (tag == QStringRef(&src, i, tag.length())) {
+                    html += spanTags[2 * k + 1];
+                    i += tag.length();
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled) {
+                ++i;
+                if (src.at(i) == charAt ||
+                    (src.at(i) == QLatin1Char('/') && src.at(i + 1) == charAt)) {
+                    // drop 'our' unknown tags (the ones still containing '@')
+                    while (i < n && src.at(i) != QLatin1Char('>'))
+                        ++i;
+                    ++i;
+                }
+                else {
+                    // retain all others
+                    html += charLangle;
+                }
+            }
+        }
+        else {
+            html += src.at(i);
+            ++i;
+        }
+    }
+
+    return html;
+}
+
+#else
+void HtmlGenerator::generateSectionList(const Section& section,
+                                        const Node *relative,
+                                        CodeMarker *marker,
+                                        CodeMarker::SynopsisStyle style)
 {
     if (!section.members.isEmpty()) {
         bool twoColumn = false;
         if (style == CodeMarker::SeparateList) {
             twoColumn = (section.members.count() >= 16);
-        } else if (section.members.first()->type() == Node::Property) {
+        }
+        else if (section.members.first()->type() == Node::Property) {
             twoColumn = (section.members.count() >= 5);
         }
         if (twoColumn)
-            out() << "<p><table width=\"100%\" border=\"0\" cellpadding=\"0\""
-                     " cellspacing=\"0\">\n"
+            out() << "<p><table class=\"generic\" width=\"100%\" border=\"0\" "
+                  << "cellpadding=\"0\" cellspacing=\"0\">\n"
                   << "<tr><td width=\"45%\" valign=\"top\">";
         out() << "<ul>\n";
 
@@ -2124,12 +2654,13 @@ void HtmlGenerator::generateSectionList(const Section& section, const Node *rela
     }
 }
 
-void HtmlGenerator::generateSectionInheritedList(const Section& section, const Node *relative,
+void HtmlGenerator::generateSectionInheritedList(const Section& section,
+                                                 const Node *relative,
                                                  CodeMarker *marker)
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div class=\"fn\"></div>";
+        out() << "<li><div bar=\"2\" class=\"fn\"></div>";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -2144,270 +2675,40 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
     }
 }
 
-void HtmlGenerator::generateLink(const Atom *atom, const Node * /* relative */, CodeMarker *marker)
+void HtmlGenerator::generateSynopsis(const Node *node,
+                                     const Node *relative,
+                                     CodeMarker *marker,
+                                     CodeMarker::SynopsisStyle style)
 {
-    static QRegExp camelCase("[A-Z][A-Z][a-z]|[a-z][A-Z0-9]|_");
+    QString marked = marker->markedUpSynopsis(node, relative, style);
+    QRegExp templateTag("(<[^@>]*>)");
+    if (marked.indexOf(templateTag) != -1) {
+        QString contents = protect(marked.mid(templateTag.pos(1),
+                                              templateTag.cap(1).length()));
+        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
+                        contents);
+    }
+    marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"), "<i>\\1<sub>\\2</sub></i>");
+    marked.replace("<@param>", "<i>");
+    marked.replace("</@param>", "</i>");
 
-    if (funcLeftParen.indexIn(atom->string()) != -1 && marker->recognizeLanguage("Cpp")) {
-        // hack for C++: move () outside of link
-        int k = funcLeftParen.pos(1);
-        out() << protect(atom->string().left(k));
-        if (link.isEmpty()) {
-            if (showBrokenLinks)
-                out() << "</i>";
-        } else {
-            out() << "</a>";
-        }
-        inLink = false;
-        out() << protect(atom->string().mid(k));
-    } else if (marker->recognizeLanguage("Java")) {
-	// hack for Java: remove () and use <tt> when appropriate
-        bool func = atom->string().endsWith("()");
-        bool tt = (func || atom->string().contains(camelCase));
-        if (tt)
-            out() << "<tt>";
-        if (func) {
-            out() << protect(atom->string().left(atom->string().length() - 2));
-        } else {
-            out() << protect(atom->string());
-        }
-        out() << "</tt>";
+    if (style == CodeMarker::Summary)
+        marked.replace("@name>", "b>");
+
+    if (style == CodeMarker::SeparateList) {
+        QRegExp extraRegExp("<@extra>.*</@extra>");
+        extraRegExp.setMinimal(true);
+        marked.replace(extraRegExp, "");
     } else {
-        out() << protect(atom->string());
-    }
-}
-
-QString HtmlGenerator::cleanRef(const QString& ref)
-{
-    QString clean;
-
-    if (ref.isEmpty())
-        return clean;
-
-    clean.reserve(ref.size() + 20);
-    const QChar c = ref[0];
-    const uint u = c.unicode();
-
-    if ((u >= 'a' && u <= 'z') ||
-         (u >= 'A' && u <= 'Z') ||
-         (u >= '0' && u <= '9')) {
-        clean += c;
-    } else if (u == '~') {
-        clean += "dtor.";
-    } else if (u == '_') {
-        clean += "underscore.";
-    } else {
-        clean += "A";
+        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+        marked.replace("</@extra>", "</tt>");
     }
 
-    for (int i = 1; i < (int) ref.length(); i++) {
-        const QChar c = ref[i];
-        const uint u = c.unicode();
-        if ((u >= 'a' && u <= 'z') ||
-             (u >= 'A' && u <= 'Z') ||
-             (u >= '0' && u <= '9') || u == '-' ||
-             u == '_' || u == ':' || u == '.') {
-            clean += c;
-        } else if (c.isSpace()) {
-            clean += "-";
-        } else if (u == '!') {
-            clean += "-not";
-        } else if (u == '&') {
-            clean += "-and";
-        } else if (u == '<') {
-            clean += "-lt";
-        } else if (u == '=') {
-            clean += "-eq";
-        } else if (u == '>') {
-            clean += "-gt";
-        } else if (u == '#') {
-            clean += "#";
-        } else {
-            clean += "-";
-            clean += QString::number((int)u, 16);
-        }
+    if (style != CodeMarker::Detailed) {
+        marked.replace("<@type>", "");
+        marked.replace("</@type>", "");
     }
-    return clean;
-}
-
-QString HtmlGenerator::registerRef(const QString& ref)
-{
-    QString clean = HtmlGenerator::cleanRef(ref);
-
-    for (;;) {
-        QString& prevRef = refMap[clean.toLower()];
-        if (prevRef.isEmpty()) {
-            prevRef = ref;
-            break;
-        } else if (prevRef == ref) {
-            break;
-        }
-        clean += "x";
-    }
-    return clean;
-}
-
-QString HtmlGenerator::protect(const QString& string)
-{
-#define APPEND(x) \
-    if (html.isEmpty()) { \
-        html = string; \
-        html.truncate(i); \
-    } \
-    html += (x);
-
-    QString html;
-    int n = string.length();
-
-    for (int i = 0; i < n; ++i) {
-        QChar ch = string.at(i);
-
-        if (ch == QLatin1Char('&')) {
-            APPEND("&amp;");
-        } else if (ch == QLatin1Char('<')) {
-            APPEND("&lt;");
-        } else if (ch == QLatin1Char('>')) {
-            APPEND("&gt;");
-        } else if (ch == QLatin1Char('"')) {
-            APPEND("&quot;");
-        } else if (ch.unicode() > 0x007F
-                   || (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/'))
-                   || (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
-            // we escape '*/' and the last dot in 'e.g.' and 'i.e.' for the Javadoc generator
-            APPEND("&#x");
-            html += QString::number(ch.unicode(), 16);
-            html += QLatin1Char(';');
-        } else {
-            if (!html.isEmpty())
-                html += ch;
-        }
-    }
-
-    if (!html.isEmpty())
-        return html;
-    return string;
-
-#undef APPEND
-}
-
-static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
-static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
-static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
-static QRegExp unknownTag("</?@[^>]*>");
-
-bool parseArg(const QString &src,
-              const QString &tag,
-              int *pos,
-              int n,
-              QStringRef *contents,
-              QStringRef *par1 = 0,
-              bool debug = false)
-{
-#define SKIP_CHAR(c) \
-    if (debug) \
-        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
-    if (i >= n || src[i] != c) { \
-        if (debug) \
-            qDebug() << " char '" << c << "' not found"; \
-        return false; \
-    } \
-    ++i;
-
-
-#define SKIP_SPACE \
-    while (i < n && src[i] == ' ') \
-        ++i;
-
-    int i = *pos;
-    int j = i;
-
-    // assume "<@" has been parsed outside
-    //SKIP_CHAR('<');
-    //SKIP_CHAR('@');
-
-    if (tag != QStringRef(&src, i, tag.length())) {
-        if (0 && debug)
-            qDebug() << "tag " << tag << " not found at " << i;
-        return false;
-    }
-
-    if (debug)
-        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
-
-    // skip tag
-    i += tag.length();
-
-    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-    if (par1) {
-        SKIP_SPACE;
-        // read parameter name
-        j = i;
-        while (i < n && src[i].isLetter())
-            ++i;
-        if (src[i] == '=') {
-            if (debug)
-                qDebug() << "read parameter" << QString(src.data() + j, i - j);
-            SKIP_CHAR('=');
-            SKIP_CHAR('"');
-            // skip parameter name
-            j = i;
-            while (i < n && src[i] != '"')
-                ++i;
-            *par1 = QStringRef(&src, j, i - j);
-            SKIP_CHAR('"');
-            SKIP_SPACE;
-        } else {
-            if (debug)
-                qDebug() << "no optional parameter found";
-        }
-    }
-    SKIP_SPACE;
-    SKIP_CHAR('>');
-
-    // find contents up to closing "</@tag>
-    j = i;
-    for (; true; ++i) {
-        if (i + 4 + tag.length() > n)
-            return false;
-        if (src[i] != '<')
-            continue;
-        if (src[i + 1] != '/')
-            continue;
-        if (src[i + 2] != '@')
-            continue;
-        if (tag != QStringRef(&src, i + 3, tag.length()))
-            continue;
-        if (src[i + 3 + tag.length()] != '>')
-            continue;
-        break;
-    }
-
-    *contents = QStringRef(&src, j, i - j);
-
-    i += tag.length() + 4;
-
-    *pos = i;
-    if (debug)
-        qDebug() << " tag " << tag << " found: pos now: " << i;
-    return true;
-#undef SKIP_CHAR
-}
-
-static void addLink(const QString &linkTarget,
-                    const QStringRef &nestedStuff,
-                    QString *res)
-{
-    if (!linkTarget.isEmpty()) {
-        *res += "<a href=\"";
-        *res += linkTarget;
-        *res += "\">";
-        *res += nestedStuff;
-        *res += "</a>";
-    }
-    else {
-        *res += nestedStuff;
-    }
+    out() << highlightedCode(marked, marker, relative);
 }
 
 QString HtmlGenerator::highlightedCode(const QString& markedCode,
@@ -2569,6 +2870,153 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     }
 
     return html;
+}
+#endif
+
+void HtmlGenerator::generateLink(const Atom *atom, const Node * /* relative */, CodeMarker *marker)
+{
+    static QRegExp camelCase("[A-Z][A-Z][a-z]|[a-z][A-Z0-9]|_");
+
+    if (funcLeftParen.indexIn(atom->string()) != -1 && marker->recognizeLanguage("Cpp")) {
+        // hack for C++: move () outside of link
+        int k = funcLeftParen.pos(1);
+        out() << protect(atom->string().left(k));
+        if (link.isEmpty()) {
+            if (showBrokenLinks)
+                out() << "</i>";
+        } else {
+            out() << "</a>";
+        }
+        inLink = false;
+        out() << protect(atom->string().mid(k));
+    } else if (marker->recognizeLanguage("Java")) {
+	// hack for Java: remove () and use <tt> when appropriate
+        bool func = atom->string().endsWith("()");
+        bool tt = (func || atom->string().contains(camelCase));
+        if (tt)
+            out() << "<tt>";
+        if (func) {
+            out() << protect(atom->string().left(atom->string().length() - 2));
+        } else {
+            out() << protect(atom->string());
+        }
+        out() << "</tt>";
+    } else {
+        out() << protect(atom->string());
+    }
+}
+
+QString HtmlGenerator::cleanRef(const QString& ref)
+{
+    QString clean;
+
+    if (ref.isEmpty())
+        return clean;
+
+    clean.reserve(ref.size() + 20);
+    const QChar c = ref[0];
+    const uint u = c.unicode();
+
+    if ((u >= 'a' && u <= 'z') ||
+         (u >= 'A' && u <= 'Z') ||
+         (u >= '0' && u <= '9')) {
+        clean += c;
+    } else if (u == '~') {
+        clean += "dtor.";
+    } else if (u == '_') {
+        clean += "underscore.";
+    } else {
+        clean += "A";
+    }
+
+    for (int i = 1; i < (int) ref.length(); i++) {
+        const QChar c = ref[i];
+        const uint u = c.unicode();
+        if ((u >= 'a' && u <= 'z') ||
+             (u >= 'A' && u <= 'Z') ||
+             (u >= '0' && u <= '9') || u == '-' ||
+             u == '_' || u == ':' || u == '.') {
+            clean += c;
+        } else if (c.isSpace()) {
+            clean += "-";
+        } else if (u == '!') {
+            clean += "-not";
+        } else if (u == '&') {
+            clean += "-and";
+        } else if (u == '<') {
+            clean += "-lt";
+        } else if (u == '=') {
+            clean += "-eq";
+        } else if (u == '>') {
+            clean += "-gt";
+        } else if (u == '#') {
+            clean += "#";
+        } else {
+            clean += "-";
+            clean += QString::number((int)u, 16);
+        }
+    }
+    return clean;
+}
+
+QString HtmlGenerator::registerRef(const QString& ref)
+{
+    QString clean = HtmlGenerator::cleanRef(ref);
+
+    for (;;) {
+        QString& prevRef = refMap[clean.toLower()];
+        if (prevRef.isEmpty()) {
+            prevRef = ref;
+            break;
+        } else if (prevRef == ref) {
+            break;
+        }
+        clean += "x";
+    }
+    return clean;
+}
+
+QString HtmlGenerator::protect(const QString& string)
+{
+#define APPEND(x) \
+    if (html.isEmpty()) { \
+        html = string; \
+        html.truncate(i); \
+    } \
+    html += (x);
+
+    QString html;
+    int n = string.length();
+
+    for (int i = 0; i < n; ++i) {
+        QChar ch = string.at(i);
+
+        if (ch == QLatin1Char('&')) {
+            APPEND("&amp;");
+        } else if (ch == QLatin1Char('<')) {
+            APPEND("&lt;");
+        } else if (ch == QLatin1Char('>')) {
+            APPEND("&gt;");
+        } else if (ch == QLatin1Char('"')) {
+            APPEND("&quot;");
+        } else if (ch.unicode() > 0x007F
+                   || (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/'))
+                   || (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
+            // we escape '*/' and the last dot in 'e.g.' and 'i.e.' for the Javadoc generator
+            APPEND("&#x");
+            html += QString::number(ch.unicode(), 16);
+            html += QLatin1Char(';');
+        } else {
+            if (!html.isEmpty())
+                html += ch;
+        }
+    }
+
+    if (!html.isEmpty())
+        return html;
+    return string;
+
+#undef APPEND
 }
 
 QString HtmlGenerator::fileBase(const Node *node)
@@ -2778,7 +3226,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         section.members += property->resetters();
 
         if (!section.members.isEmpty()) {
-            out() << "<p>Access functions:</p>\n";
+            out() << "<p><b>Access functions:</b></p>\n";
             generateSectionList(section, node, marker, CodeMarker::Accessors);
         }
     }
@@ -2789,7 +3237,8 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
                   << " type is a typedef for "
                   << "<a href=\"qflags.html\">QFlags</a>&lt;"
                   << protect(enume->name())
-                  << "&gt;. It stores an OR combination of " << protect(enume->name())
+                  << "&gt;. It stores an OR combination of "
+                  << protect(enume->name())
                   << " values.</p>\n";
         }
     }
@@ -2803,7 +3252,8 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
         if ((*c)->access() != Node::Private && (*c)->url().isEmpty()) {
             if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
                 QString className = (*c)->name();
-                if ((*c)->parent() && (*c)->parent()->type() == Node::Namespace &&
+                if ((*c)->parent() &&
+                    (*c)->parent()->type() == Node::Namespace &&
                     !(*c)->parent()->name().isEmpty())
                     className = (*c)->parent()->name()+"::"+className;
 
@@ -2851,7 +3301,7 @@ void HtmlGenerator::findAllFunctions(const InnerNode *node)
                 const FunctionNode *func = static_cast<const FunctionNode *>(*c);
                 if (func->status() > Node::Obsolete && func->metaness() != FunctionNode::Ctor
                         && func->metaness() != FunctionNode::Dtor) {
-                    funcIndex[(*c)->name()].insert((*c)->parent()->name(), *c);
+                    funcIndex[(*c)->name()].insert(tre->fullDocumentName((*c)->parent()), *c);
                 }
             }
         }

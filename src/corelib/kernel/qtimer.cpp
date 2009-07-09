@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -211,7 +211,7 @@ void QTimer::start()
 */
 void QTimer::start(int msec)
 {
-    setInterval(msec);
+    inter = msec;
     start();
 }
 
@@ -251,7 +251,7 @@ void QTimer::stop()
 
 
 /*!
-    \reimp
+  \reimp
 */
 void QTimer::timerEvent(QTimerEvent *e)
 {
@@ -269,7 +269,7 @@ class QSingleShotTimer : public QObject
 public:
     ~QSingleShotTimer();
     QSingleShotTimer(int msec, QObject *r, const char * m);
-signals:
+Q_SIGNALS:
     void timeout();
 protected:
     void timerEvent(QTimerEvent *);

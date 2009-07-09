@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,12 +34,12 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 
 #include "qguifunctions_wince.h"
 
@@ -211,7 +211,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                 style |= WS_SYSMENU;
             if (flags & Qt::WindowContextHelpButtonHint)
                 exsty |= WS_EX_CONTEXTHELP;
-#ifndef Q_OS_WINCE_WM
+#ifndef Q_WS_WINCE_WM
             if (flags & Qt::WindowMinimizeButtonHint)
                 style |= WS_MINIMIZEBOX;
             if (shouldShowMaximizeButton())
@@ -414,7 +414,7 @@ void QWidgetPrivate::show_sys() {
     int sm = SW_SHOW;
     bool fakedMaximize = false;
     if (q->isWindow()) {
-#ifndef Q_OS_WINCE_WM
+#ifndef Q_WS_WINCE_WM
         if (q->isMinimized()) {
             sm = SW_SHOWMINIMIZED;
         } else if (q->isMaximized()) {
@@ -450,7 +450,7 @@ void QWidgetPrivate::show_sys() {
     if (q->isMaximized() && q->isWindow())
         qt_wince_maximize(q);
 
-#ifndef Q_OS_WINCE_WM
+#ifndef Q_WS_WINCE_WM
     if (!qt_wince_is_mobile() && q->isFullScreen()) {
         HWND handle = FindWindow(L"HHTaskBar", L"");
         if (handle) {
@@ -535,7 +535,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowFullScreen) {
                 if (d->topData()->normalGeometry.width() < 0 && !(oldstate & Qt::WindowMaximized))
                     d->topData()->normalGeometry = geometry();
-                d->topData()->savedFlags = GetWindowLongA(internalWinId(), GWL_STYLE);
+                d->topData()->savedFlags = (Qt::WindowFlags) GetWindowLongA(internalWinId(), GWL_STYLE);
                 UINT style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
                 if (isVisible())
                     style |= WS_VISIBLE;
@@ -583,7 +583,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
         if ((newstate & Qt::WindowMaximized) && !(newstate & Qt::WindowFullScreen)) {
             QRect r = d->topData()->normalGeometry;
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
             if (!inherits("QDialog") && !inherits("QMdiArea") && !isVisible()) {
                 d->data.crect.setRect(0, 0, -1, -1);
             }
@@ -596,13 +596,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     data->window_state_internal = newstate;
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);
-}
-
-
-void QWidgetPrivate::createSysExtra() {
-#ifndef QT_NO_DRAGANDDROP
-    extra->dropTarget = 0;
-#endif
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -704,4 +697,4 @@ void QWidget::show()
 
 QT_END_NAMESPACE
 
-#endif Q_OS_WINCE
+#endif // Q_WS_WINCE

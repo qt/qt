@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -589,22 +589,6 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         // ### split(" ") hack is there to support header file syntax
         QStringList paths = arg.split(" "); 
         QStringList path = paths[0].split("::");
-        
-#if QDOC2DOX        
-        // qdoc -> doxygen.
-        if (Doc::isDoxPass(1)) {
-            if (command == COMMAND_PROPERTY) {
-                Doc::insertProperty(path);
-            }
-            else if (command == COMMAND_VARIABLE) {
-                Doc::insertVariable(path);
-            }
-            else if (command == COMMAND_ENUM) {
-                // zzz
-            }
-        }
-#endif
-
         Node *node = 0;
         if (!usedNamespaces.isEmpty()) {
             foreach (const QString &usedNamespace, usedNamespaces) {
@@ -755,8 +739,11 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             // Note: Setting the access to Private hides the documentation,
             // but setting the status to Internal makes the node available
             // in the XML output when the WebXMLGenerator is used.
+#if 0
+            // Reimplemented functions now reported in separate sections.
             func->setAccess(Node::Private);
             func->setStatus(Node::Internal);
+#endif            
         }
         else {
             doc.location().warning(tr("Ignored '\\%1' in %2")
@@ -1753,12 +1740,6 @@ bool CppCodeParser::matchDocsAndStuff()
             readToken();
 
             Doc::trimCStyleComment(start_loc,comment);
-            /*
-              qdoc --> doxygen
-              We must also remember the location of the end
-              of the comment, so we can construct a diff for
-              it.
-            */
             Location end_loc(location());
 
             /*

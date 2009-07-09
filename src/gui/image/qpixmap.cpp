@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -383,6 +383,56 @@ QPixmap QPixmap::copy(const QRect &rect) const
 }
 
 /*!
+    \fn QPixmap::scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed)
+
+    This convenience function is equivalent to calling QPixmap::scroll(\a dx,
+    \a dy, QRect(\a x, \a y, \a width, \a height), \a exposed).
+
+    \sa QWidget::scroll(), QGraphicsItem::scroll()
+*/
+
+/*!
+    Scrolls the area \a rect of this pixmap by (\a dx, \a dy). The exposed
+    region is left unchanged. You can optionally pass a pointer to an empty
+    QRegion to get the region that is \a exposed by the scroll operation.
+
+    \snippet doc/src/snippets/code/src_gui_image_qpixmap.cpp 2
+
+    You cannot scroll while there is an active painter on the pixmap.
+
+    \sa QWidget::scroll(), QGraphicsItem::scroll()
+*/
+void QPixmap::scroll(int dx, int dy, const QRect &rect, QRegion *exposed)
+{
+    if (isNull() || (dx == 0 && dy == 0))
+        return;
+    QRect dest = rect & this->rect();
+    QRect src = dest.translated(-dx, -dy) & dest;
+    if (src.isEmpty()) {
+        if (exposed)
+            *exposed += dest;
+        return;
+    }
+
+    detach();
+
+    if (!data->scroll(dx, dy, src)) {
+        // Fallback
+        QPixmap pix = *this;
+        QPainter painter(&pix);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.drawPixmap(src.translated(dx, dy), *this, src);
+        painter.end();
+        *this = pix;
+    }
+
+    if (exposed) {
+        *exposed += dest;
+        *exposed -= src.translated(dx, dy);
+    }
+}
+
+/*!
     Assigns the given \a pixmap to this pixmap and returns a reference
     to this pixmap.
 
@@ -506,7 +556,7 @@ bool QPixmap::isQBitmap() const
 */
 bool QPixmap::isNull() const
 {
-    return data->width() == 0;
+    return data->isNull();
 }
 
 /*!
@@ -1271,7 +1321,7 @@ QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)
     return stream;
 }
 
-#endif //QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 #ifdef QT3_SUPPORT
 Q_GUI_EXPORT void copyBlt(QPixmap *dst, int dx, int dy,
@@ -1313,14 +1363,6 @@ bool QPixmap::isDetached() const
 void QPixmap::deref()
 {
     if (data && !data->ref.deref()) { // Destroy image if last ref
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-        if (data->classId() == QPixmapData::RasterClass) {
-            QRasterPixmapData *rData = static_cast<QRasterPixmapData*>(data);
-            if (rData->texture)
-                rData->texture->Release();
-            rData->texture = 0;
-        }
-#endif
         if (data->is_cached && qt_pixmap_cleanup_hook_64)
             qt_pixmap_cleanup_hook_64(cacheKey());
         delete data;
@@ -1408,10 +1450,9 @@ QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Tran
     if (newSize == size())
         return *this;
 
-    QPixmap pix;
-    QTransform wm;
-    wm.scale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
-    pix = transformed(wm, mode);
+    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(),
+                                          (qreal)newSize.height() / height());
+    QPixmap pix = transformed(wm, mode);
     return pix;
 }
 
@@ -1438,9 +1479,8 @@ QPixmap QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QPixmap();
 
-    QTransform wm;
     qreal factor = (qreal) w / width();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -1467,9 +1507,8 @@ QPixmap QPixmap::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QPixmap();
 
-    QTransform wm;
     qreal factor = (qreal) h / height();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -1857,7 +1896,7 @@ int QPixmap::defaultDepth()
     return QScreen::instance()->depth();
 #elif defined(Q_WS_X11)
     return QX11Info::appDepth();
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_WS_WINCE)
     return QColormap::instance().depth();
 #elif defined(Q_WS_WIN)
     return 32; // XXX
@@ -1895,12 +1934,6 @@ void QPixmap::detach()
     if (id == QPixmapData::RasterClass) {
         QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data);
         rasterData->image.detach();
-#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECT3D)
-        if (rasterData->texture) {
-            rasterData->texture->Release();
-            rasterData->texture = 0;
-        }
-#endif
     }
 
     if (data->is_cached && qt_pixmap_cleanup_hook_64 && data->ref == 1)

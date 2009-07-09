@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +51,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h>
+#include <QtCore/qcontiguouscache.h>
 
 QT_BEGIN_HEADER
 
@@ -87,11 +88,11 @@ public:
             delete stream;
         }
     }
-    inline QDebug &space() { stream->space = true; stream->ts << " "; return *this; }
+    inline QDebug &space() { stream->space = true; stream->ts << ' '; return *this; }
     inline QDebug &nospace() { stream->space = false; return *this; }
-    inline QDebug &maybeSpace() { if (stream->space) stream->ts << " "; return *this; }
+    inline QDebug &maybeSpace() { if (stream->space) stream->ts << ' '; return *this; }
 
-    inline QDebug &operator<<(QChar t) { stream->ts << "\'" << t << "\'"; return maybeSpace(); }
+    inline QDebug &operator<<(QChar t) { stream->ts << '\'' << t << '\''; return maybeSpace(); }
     inline QDebug &operator<<(QBool t) { stream->ts << (bool(t) ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(bool t) { stream->ts << (t ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(char t) { stream->ts << t; return maybeSpace(); }
@@ -108,10 +109,10 @@ public:
     inline QDebug &operator<<(float t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(double t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(const char* t) { stream->ts << QString::fromAscii(t); return maybeSpace(); }
-    inline QDebug &operator<<(const QString & t) { stream->ts << "\"" << t  << "\""; return maybeSpace(); }
+    inline QDebug &operator<<(const QString & t) { stream->ts << '\"' << t  << '\"'; return maybeSpace(); }
     inline QDebug &operator<<(const QStringRef & t) { return operator<<(t.toString()); }
-    inline QDebug &operator<<(const QLatin1String &t) { stream->ts << "\""  << t.latin1() << "\""; return maybeSpace(); }
-    inline QDebug &operator<<(const QByteArray & t) { stream->ts  << "\"" << t << "\""; return maybeSpace(); }
+    inline QDebug &operator<<(const QLatin1String &t) { stream->ts << '\"'  << t.latin1() << '\"'; return maybeSpace(); }
+    inline QDebug &operator<<(const QByteArray & t) { stream->ts  << '\"' << t << '\"'; return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
@@ -161,13 +162,13 @@ template <class T>
 inline QDebug operator<<(QDebug debug, const QList<T> &list)
 #endif
 {
-    debug.nospace() << "(";
+    debug.nospace() << '(';
     for (Q_TYPENAME QList<T>::size_type i = 0; i < list.count(); ++i) {
         if (i)
             debug << ", ";
         debug << list.at(i);
     }
-    debug << ")";
+    debug << ')';
     return debug.space();
 }
 
@@ -194,9 +195,9 @@ inline QDebug operator<<(QDebug debug, const QMap<aKey, aT> &map)
     debug.nospace() << "QMap(";
     for (typename QMap<aKey, aT>::const_iterator it = map.constBegin();
          it != map.constEnd(); ++it) {
-        debug << "(" << it.key() << ", " << it.value() << ")";
+        debug << '(' << it.key() << ", " << it.value() << ')';
     }
-    debug << ")";
+    debug << ')';
     return debug.space();
 }
 
@@ -211,8 +212,8 @@ inline QDebug operator<<(QDebug debug, const QHash<aKey, aT> &hash)
     debug.nospace() << "QHash(";
     for (typename QHash<aKey, aT>::const_iterator it = hash.constBegin();
             it != hash.constEnd(); ++it)
-        debug << "(" << it.key() << ", " << it.value() << ")";
-    debug << ")";
+        debug << '(' << it.key() << ", " << it.value() << ')';
+    debug << ')';
     return debug.space();
 }
 
@@ -224,7 +225,7 @@ template <class T1, class T2>
 inline QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
 #endif
 {
-    debug.nospace() << "QPair(" << pair.first << "," << pair.second << ")";
+    debug.nospace() << "QPair(" << pair.first << ',' << pair.second << ')';
     return debug.space();
 }
 
@@ -233,6 +234,24 @@ inline QDebug operator<<(QDebug debug, const QSet<T> &set)
 {
     debug.nospace() << "QSet";
     return operator<<(debug, set.toList());
+}
+
+#if defined(FORCE_UREF)
+template <class T>
+inline QDebug &operator<<(QDebug debug, const QContiguousCache<T> &cache)
+#else
+template <class T>
+inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
+#endif
+{
+    debug.nospace() << "QContiguousCache(";
+    for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i) {
+        debug << cache[i];
+        if (i != cache.lastIndex())
+            debug << ", ";
+    }
+    debug << ')';
+    return debug.space();
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)

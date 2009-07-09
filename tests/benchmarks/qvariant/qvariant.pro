@@ -3,7 +3,6 @@ TEMPLATE = app
 TARGET = tst_qvariant
 DEPENDPATH += .
 INCLUDEPATH += .
-QT -= gui
 
 CONFIG += release
 #CONFIG += debug

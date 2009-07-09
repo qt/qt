@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,11 +81,9 @@ public:
     static int contentHeight;
 
     // properties:
+    static bool openGlAvailable;
     static bool openGlRendering;
-    static bool direct3dRendering;
     static bool softwareRendering;
-    static bool openGlAwailable;
-    static bool direct3dAwailable;
     static bool xRenderPresent;
     static bool noAdapt;
     static bool noTicker;

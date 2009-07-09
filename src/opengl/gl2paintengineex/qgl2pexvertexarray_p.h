@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,11 +50,16 @@
 // We mean it.
 //
 
+#ifndef QGL2PEXVERTEXARRAY_P_H
+#define QGL2PEXVERTEXARRAY_P_H
+
 #include <QRectF>
 
 #include <private/qdatabuffer_p.h>
 #include <private/qvectorpath_p.h>
 #include <private/qgl_p.h>
+
+QT_BEGIN_NAMESPACE
 
 class QGLPoint
 {
@@ -62,7 +67,7 @@ public:
     QGLPoint(GLfloat new_x, GLfloat new_y) :
         x(new_x), y(new_y) {};
 
-    QGLPoint(QPointF p) :
+    QGLPoint(const QPointF &p) :
         x(p.x()), y(p.y()) {};
 
     QGLPoint(const QPointF* p) :
@@ -77,7 +82,7 @@ public:
 
 struct QGLRect
 {
-    QGLRect(QRectF r)
+    QGLRect(const QRectF &r)
         :  left(r.left()), top(r.top()), right(r.right()), bottom(r.bottom()) {}
 
     QGLRect(GLfloat l, GLfloat t, GLfloat r, GLfloat b)
@@ -98,6 +103,7 @@ public:
         maxX(-2e10), maxY(-2e10), minX(2e10), minY(2e10),
         boundingRectDirty(true) {}
 
+    void addRect(const QRectF &rect);
     void addPath(const QVectorPath &path, GLfloat curveInverseScale);
     void clear();
 
@@ -119,3 +125,7 @@ private:
 
     inline void curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale);
 };
+
+QT_END_NAMESPACE
+
+#endif

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,11 @@
 #define GLWIDGET_H
 
 #include <QGLWidget>
+#include <QtGui/qvector3d.h>
+#include <QtGui/qmatrix4x4.h>
+#include <QtOpenGL/qglshaderprogram.h>
 #include <QTime>
+#include <QVector>
 
 class Bubble;
 class GLWidget : public QGLWidget {
@@ -71,24 +75,21 @@ private:
     void createBubbles(int number);
     void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
-    QList<qreal> vertices;
-    QList<qreal> normals;
-    GLfloat *createdVertices;
-    GLfloat *createdNormals;
-    int m_vertexNumber;
+    QVector<QVector3D> vertices;
+    QVector<QVector3D> normals;
     bool qtLogo;
     QList<Bubble*> bubbles;
     int frames;
     QTime time;
-    GLuint program1;
-    GLuint program2;
-    GLuint vertexAttr1;
-    GLuint normalAttr1;
-    GLuint matrixUniform1;
-    GLuint vertexAttr2;
-    GLuint normalAttr2;
-    GLuint texCoordAttr2;
-    GLuint matrixUniform2;
-    GLuint textureUniform2;
+    QGLShaderProgram program1;
+    QGLShaderProgram program2;
+    int vertexAttr1;
+    int normalAttr1;
+    int matrixUniform1;
+    int vertexAttr2;
+    int normalAttr2;
+    int texCoordAttr2;
+    int matrixUniform2;
+    int textureUniform2;
 };
 #endif

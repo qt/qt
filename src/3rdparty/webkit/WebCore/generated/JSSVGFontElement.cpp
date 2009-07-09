@@ -20,22 +20,18 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
-#include "SVGElement.h"
 #include "JSSVGFontElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "SVGFontElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFontElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFontElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +49,9 @@ static const HashTable JSSVGFontElementPrototypeTable =
 
 const ClassInfo JSSVGFontElementPrototype::s_info = { "SVGFontElementPrototype", 0, &JSSVGFontElementPrototypeTable, 0 };
 
-JSObject* JSSVGFontElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFontElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFontElement>(exec);
+    return getDOMPrototype<JSSVGFontElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFontElement::s_info = { "SVGFontElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +61,9 @@ JSSVGFontElement::JSSVGFontElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGFontElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFontElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFontElementPrototype(JSSVGFontElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFontElementPrototype(JSSVGFontElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

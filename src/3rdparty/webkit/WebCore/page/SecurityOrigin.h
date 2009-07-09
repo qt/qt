@@ -90,6 +90,11 @@ namespace WebCore {
         //       with older versions of WebKit.
         void grantLoadLocalResources();
 
+        // Explicitly grant the ability to access very other SecurityOrigin.
+        //
+        // WARNING: This is an extremely powerful ability.  Use with caution!
+        void grantUniversalAccess();
+
         bool isSecureTransitionTo(const KURL&) const;
 
         // The local SecurityOrigin is the most privileged SecurityOrigin.
@@ -123,6 +128,13 @@ namespace WebCore {
         // (and whether it was set) but considering the host. It is used for postMessage.
         bool isSameSchemeHostPort(const SecurityOrigin*) const;
 
+        static void registerURLSchemeAsLocal(const String&);
+        static bool shouldTreatURLAsLocal(const String&);
+        static bool shouldTreatURLSchemeAsLocal(const String&);
+
+        static void registerURLSchemeAsNoAccess(const String&);
+        static bool shouldTreatURLSchemeAsNoAccess(const String&);
+
     private:
         explicit SecurityOrigin(const KURL&);
         explicit SecurityOrigin(const SecurityOrigin*);
@@ -132,6 +144,7 @@ namespace WebCore {
         String m_domain;
         unsigned short m_port;
         bool m_noAccess;
+        bool m_universalAccess;
         bool m_domainWasSetInDOM;
         bool m_canLoadLocalResources;
     };

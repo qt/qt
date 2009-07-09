@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,10 +58,32 @@ class  Q_GUI_EXPORT QWSKeyboardHandler
 {
 public:
     QWSKeyboardHandler();
+    QWSKeyboardHandler(const QString &device);
     virtual ~QWSKeyboardHandler();
 
     virtual void processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers,
                             bool isPress, bool autoRepeat);
+
+    enum KeycodeAction {
+        None               = 0,
+
+        CapsLockOff        = 0x01000000,
+        CapsLockOn         = 0x01000001,
+        NumLockOff         = 0x02000000,
+        NumLockOn          = 0x02000001,
+        ScrollLockOff      = 0x03000000,
+        ScrollLockOn       = 0x03000001,
+
+        Reboot             = 0x04000000,
+
+        PreviousConsole    = 0x05000000,
+        NextConsole        = 0x05000001,
+        SwitchConsoleFirst = 0x06000000,
+        SwitchConsoleLast  = 0x0600007f,
+        SwitchConsoleMask  = 0x0000007f,
+    };
+
+    KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
 
 protected:
     int transformDirKey(int key);

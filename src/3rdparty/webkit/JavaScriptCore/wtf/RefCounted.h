@@ -49,15 +49,17 @@ public:
     }
 
 protected:
-    RefCountedBase(int initialRefCount)
-        : m_refCount(initialRefCount)
+    RefCountedBase()
+        : m_refCount(1)
 #ifndef NDEBUG
         , m_deletionHasBegun(false)
 #endif
     {
     }
 
-    ~RefCountedBase() {}
+    ~RefCountedBase()
+    {
+    }
 
     // Returns whether the pointer should be freed or not.
     bool derefBase()
@@ -75,7 +77,23 @@ protected:
         return false;
     }
 
-protected:
+    // Helper for generating JIT code. Please do not use for non-JIT purposes.
+    int* addressOfCount()
+    {
+        return &m_refCount;
+    }
+
+#ifndef NDEBUG
+    bool deletionHasBegun() const
+    {
+        return m_deletionHasBegun;
+    }
+#endif
+
+private:
+    template<class T>
+    friend class CrossThreadRefCounted;
+
     int m_refCount;
 #ifndef NDEBUG
     bool m_deletionHasBegun;
@@ -85,11 +103,6 @@ protected:
 
 template<class T> class RefCounted : public RefCountedBase {
 public:
-    RefCounted(int initialRefCount = 1)
-        : RefCountedBase(initialRefCount)
-    {
-    }
-
     void deref()
     {
         if (derefBase())
@@ -97,7 +110,9 @@ public:
     }
 
 protected:
-    ~RefCounted() {}
+    ~RefCounted()
+    {
+    }
 };
 
 } // namespace WTF

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,9 +66,21 @@
 #include <grid_p.h>
 #include <QtDesigner/QDesignerPromotionInterface>
 
+// Must be done outside of the Qt namespace
 static void initResources()
 {
     Q_INIT_RESOURCE(shared);
+    Q_INIT_RESOURCE(ClamshellPhone);
+    Q_INIT_RESOURCE(PDAPhone);
+    Q_INIT_RESOURCE(PortableMedia);
+    Q_INIT_RESOURCE(S60_nHD_Touchscreen);
+    Q_INIT_RESOURCE(S60_QVGA_Candybar);
+    Q_INIT_RESOURCE(SmartPhone2);
+    Q_INIT_RESOURCE(SmartPhone);
+    Q_INIT_RESOURCE(SmartPhoneWithButtons);
+    Q_INIT_RESOURCE(TouchscreenPhone);
+    Q_INIT_RESOURCE(Trolltech_Keypad);
+    Q_INIT_RESOURCE(Trolltech_Touchscreen);
 }
 
 QT_BEGIN_NAMESPACE

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -115,13 +115,15 @@ void tst_Q3FileDialog::getSetCheck()
     obj1.setPreviewMode(Q3FileDialog::PreviewMode(Q3FileDialog::NoPreview));
     QCOMPARE(obj1.previewMode(), Q3FileDialog::PreviewMode(Q3FileDialog::NoPreview));
 
-    // Note: Q3FileDialog does not update the previewMode read-state until the
-    // user has actually started navigating to a file that has a functioning
-    // preview.
+    obj1.setContentsPreviewEnabled(true);
+    obj1.setInfoPreviewEnabled(false);
     obj1.setPreviewMode(Q3FileDialog::PreviewMode(Q3FileDialog::Contents));
-    QCOMPARE(obj1.previewMode(), Q3FileDialog::PreviewMode(Q3FileDialog::NoPreview));
+    QCOMPARE(obj1.previewMode(), Q3FileDialog::PreviewMode(Q3FileDialog::Contents));
+
+    obj1.setInfoPreviewEnabled(true);
+    obj1.setContentsPreviewEnabled(false);
     obj1.setPreviewMode(Q3FileDialog::PreviewMode(Q3FileDialog::Info));
-    QCOMPARE(obj1.previewMode(), Q3FileDialog::PreviewMode(Q3FileDialog::NoPreview));
+    QCOMPARE(obj1.previewMode(), Q3FileDialog::PreviewMode(Q3FileDialog::Info));
 }
 
 QTEST_MAIN(tst_Q3FileDialog)

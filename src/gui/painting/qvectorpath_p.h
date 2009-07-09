@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,9 +55,9 @@
 
 #include <QtGui/qpaintengine.h>
 
-#include "qpaintengine_p.h"
-#include "qstroker_p.h"
-#include "qpainter_p.h"
+#include <private/qpaintengine_p.h>
+#include <private/qstroker_p.h>
+#include <private/qpainter_p.h>
 
 
 QT_BEGIN_HEADER
@@ -94,7 +94,7 @@ public:
         // Shape rendering specifiers...
         OddEvenFill             = 0x1000,
         WindingFill             = 0x2000,
-        ImplicitClose           = 0x4000,
+        ImplicitClose           = 0x4000
     };
 
     // ### Falcon: introduca a struct XY for points so lars is not so confused...
@@ -112,7 +112,7 @@ public:
     {
     }
 
-    const QRealRect &controlPointRect() const;
+    QRectF controlPointRect() const;
 
     inline Hint shape() const { return (Hint) (m_hints & ShapeHintMask); }
 

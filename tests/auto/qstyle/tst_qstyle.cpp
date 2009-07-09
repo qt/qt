@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,6 +58,7 @@
 #include <qcdestyle.h>
 #include <qmotifstyle.h>
 #include <qcommonstyle.h>
+#include <qproxystyle.h>
 #include <qstylefactory.h>
 
 #include <qimagereader.h>
@@ -140,6 +141,7 @@ private slots:
     void testWindowsMobileStyle();
     void testS60Style();
     void testStyleFactory();
+    void testProxyStyle();
     void pixelMetric();
     void progressBarChangeStyle();
     void defaultFont();
@@ -222,16 +224,50 @@ void tst_QStyle::testStyleFactory()
     }
 }
 
+class CustomProxy : public QProxyStyle
+{
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = 0,
+                            const QWidget *widget = 0) const
+    {
+        if (metric == QStyle::PM_ButtonIconSize)
+            return 13;
+        return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+};
+
+void tst_QStyle::testProxyStyle()
+{
+    QProxyStyle *proxyStyle = new QProxyStyle();
+    QVERIFY(proxyStyle->baseStyle());
+    QStyle *style = new QWindowsStyle;
+    QVERIFY(style->proxy() == style);
+
+    proxyStyle->setBaseStyle(style);
+    QVERIFY(style->proxy() == proxyStyle);
+    QVERIFY(style->parent() == proxyStyle);
+    QVERIFY(proxyStyle->baseStyle() == style);
+
+    testAllFunctions(proxyStyle);
+    proxyStyle->setBaseStyle(0);
+    QVERIFY(proxyStyle->baseStyle());
+    qApp->setStyle(proxyStyle);
+
+    QProxyStyle doubleProxy(new QProxyStyle(new QWindowsStyle()));
+    testAllFunctions(&doubleProxy);
+
+    CustomProxy customStyle;
+    QLineEdit edit;
+    edit.setStyle(&customStyle);
+    QVERIFY(!customStyle.parent());
+    QVERIFY(edit.style()->pixelMetric(QStyle::PM_ButtonIconSize) == 13);
+}
+
 void tst_QStyle::drawItemPixmap()
 {
     testWidget->resize(300, 300);
     testWidget->show();
-#if defined(Q_OS_SYMBIAN)
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
-    QPixmap p(prefix+"task_25863.png", "PNG");
-#else
-    QPixmap p("task_25863.png", "PNG");
-#endif
+
+    QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
     QPixmap actualPix = QPixmap::grabWidget(testWidget);
     QVERIFY(pixmapsAreEqual(&actualPix,&p));
     testWidget->hide();
@@ -324,7 +360,7 @@ void tst_QStyle::testAllFunctions(QStyle *style)
     testScrollBarSubControls(style);
 }
 
-void tst_QStyle::testScrollBarSubControls(QStyle *style)
+void tst_QStyle::testScrollBarSubControls(QStyle *)
 {
 #ifdef Q_OS_WINCE_WM
     if (qobject_cast<QWindowsMobileStyle*>(style) && qt_wince_is_smartphone())

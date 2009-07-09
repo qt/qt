@@ -1,7 +1,7 @@
 /*******    *********************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -150,7 +150,6 @@ bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
     if (e->type() == QEvent::ApplicationPaletteChange) {
         // Only do this the first time since this will also
         // generate applicationPaletteChange events
-        extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
         if (!qt_app_palettes_hash() ||  qt_app_palettes_hash()->isEmpty()) {
             QGtk::applyCustomPaletteHash();
         }
@@ -176,7 +175,6 @@ public:
 static const int groupBoxBottomMargin    =  2;  // space below the groupbox
 static const int groupBoxTitleMargin     =  6;  // space between contents and title
 static const int groupBoxTopMargin       =  2;
-static bool UsePixmapCache = true;
 
 // Get size of the arrow controls in a GtkSpinButton
 static int spinboxArrowSize()
@@ -675,22 +673,21 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         if (widget && widget->inherits("QComboBoxPrivateContainer")){
             QStyleOption copy = *option;
             copy.state |= State_Raised;
-            drawPrimitive(PE_PanelMenu, &copy, painter, widget);
+            proxy()->drawPrimitive(PE_PanelMenu, &copy, painter, widget);
             break;
         }
         // Drawing the entire itemview frame is very expensive, especially on the native X11 engine
         // Instead we cheat a bit and draw a border image without the center part, hence only scaling
         // thin rectangular images
         const int pmSize = 64;
-        const int border = pixelMetric(PM_DefaultFrameWidth, option, widget);
+        const int border = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
         const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
 
         QPixmap pixmap;
-        QPixmapCache::find(pmKey, pixmap);
         QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
 
         // Only draw through style once
-        if (pixmap.isNull()) {
+        if (!QPixmapCache::find(pmKey, pixmap)) {
             pixmap = QPixmap(pmSize, pmSize);
             pixmap.fill(Qt::transparent);
             QPainter pmPainter(&pixmap);
@@ -789,24 +786,21 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     case PE_IndicatorBranch:
         if (option->state & State_Children) {
             QRect rect = option->rect;
-            rect = QRect(0, 0, 10, 10);
+            rect = QRect(0, 0, 12, 12);
             rect.moveCenter(option->rect.center());
             rect.translate(2, 0);
             GtkExpanderStyle openState = GTK_EXPANDER_EXPANDED;
             GtkExpanderStyle closedState = GTK_EXPANDER_COLLAPSED;
-            GtkWidget *gtkExpander = QGtk::gtkWidget(QLS("GtkExpander"));
-            guint expanderSize;
-            QGtk::gtk_widget_style_get(gtkExpander, "expander-size", &expanderSize, NULL);
-            // Note CleanIce will crash unless a GtkExpander is provided
-            // but providing the expander will enforce the expander-size, which we
-            // don't neccessarily have room for
+            GtkWidget *gtkTreeView = QGtk::gtkWidget(QLS("GtkTreeView"));
+
             GtkStateType state = GTK_STATE_NORMAL;
             if (!(option->state & State_Enabled))
                 state = GTK_STATE_INSENSITIVE;
             else if (option->state & State_MouseOver)
                 state = GTK_STATE_PRELIGHT;
-            gtkPainter.paintExpander(expanderSize <= 10 ? gtkExpander : NULL, "expander", rect, state,
-                                     option->state & State_Open ? openState : closedState , gtkExpander->style);
+
+            gtkPainter.paintExpander(gtkTreeView, "treeview", rect, state,
+                                     option->state & State_Open ? openState : closedState , gtkTreeView->style);
         }
         break;
     case PE_PanelItemViewItem:
@@ -893,8 +887,8 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         int border = (size > 9) ? (size/4) : 0; //Allow small arrows to have exact dimensions
         int bsx = 0, bsy = 0;
         if (option->state & State_Sunken) {
-            bsx = pixelMetric(PM_ButtonShiftHorizontal);
-            bsy = pixelMetric(PM_ButtonShiftVertical);
+            bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal);
+            bsy = proxy()->pixelMetric(PM_ButtonShiftVertical);
         }
         QRect arrowRect = option->rect.adjusted(border + bsx, border + bsy, -border + bsx, -border + bsy);
         GtkShadowType shadow = option->state & State_Sunken ? GTK_SHADOW_IN : GTK_SHADOW_OUT;
@@ -974,7 +968,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             GtkWidget *gtkEntry = QGtk::gtkWidget(QLS("GtkEntry"));
             if (panel->lineWidth > 0)
-                drawPrimitive(PE_FrameLineEdit, option, painter, widget);
+                proxy()->drawPrimitive(PE_FrameLineEdit, option, painter, widget);
             uint resolve_mask = option->palette.resolve();
             QRect textRect = option->rect.adjusted(gtkEntry->style->xthickness, gtkEntry->style->ythickness,
                                                    -gtkEntry->style->xthickness, -gtkEntry->style->ythickness);
@@ -1245,8 +1239,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
         painter->save();
 
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
-            QRect textRect = subControlRect(CC_GroupBox, groupBox, SC_GroupBoxLabel, widget);
-            QRect checkBoxRect = subControlRect(CC_GroupBox, groupBox, SC_GroupBoxCheckBox, widget);
+            QRect textRect = proxy()->subControlRect(CC_GroupBox, groupBox, SC_GroupBoxLabel, widget);
+            QRect checkBoxRect = proxy()->subControlRect(CC_GroupBox, groupBox, SC_GroupBoxCheckBox, widget);
             // Draw title
 
             if ((groupBox->subControls & QStyle::SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
@@ -1261,7 +1255,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 if (!groupBox->text.isEmpty()) {
                     int alignment = int(groupBox->textAlignment);
-                    if (!styleHint(QStyle::SH_UnderlineShortcut, option, widget))
+                    if (!proxy()->styleHint(QStyle::SH_UnderlineShortcut, option, widget))
                         alignment |= Qt::TextHideMnemonic;
                     QColor textColor = groupBox->textColor; // Note: custom textColor is currently ignored
                     int labelState = GTK_STATE_INSENSITIVE;
@@ -1286,7 +1280,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 QStyleOptionButton box;
                 box.QStyleOption::operator=(*groupBox);
                 box.rect = checkBoxRect;
-                drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
             }
         }
 
@@ -1309,7 +1303,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             bool focus = isEnabled && (comboBox->state & State_HasFocus);
             QColor buttonShadow = option->palette.dark().color();
             GtkStateType state = gtkPainter.gtkState(option);
-            int appears_as_list = !styleHint(QStyle::SH_ComboBox_Popup, comboBox, widget);
+            int appears_as_list = !proxy()->styleHint(QStyle::SH_ComboBox_Popup, comboBox, widget);
             QPixmap cache;
             QString pixmapName;
             QStyleOptionComboBox comboBoxCopy = *comboBox;
@@ -1317,9 +1311,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             bool reverse = (option->direction == Qt::RightToLeft);
             QRect rect = option->rect;
-            QRect arrowButtonRect = subControlRect(CC_ComboBox, &comboBoxCopy,
+            QRect arrowButtonRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
                                                    SC_ComboBoxArrow, widget);
-            QRect editRect = subControlRect(CC_ComboBox, &comboBoxCopy,
+            QRect editRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
                                             SC_ComboBoxEditField, widget);
 
             GtkShadowType shadow = (option->state & State_Sunken || option->state & State_On ) ?
@@ -1427,7 +1421,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QGtk::gtk_widget_style_get(gtkToggleButton, "interior-focus", &interiorFocus, NULL);
                     int xt = interiorFocus ? gtkToggleButton->style->xthickness : 0;
                     int yt = interiorFocus ? gtkToggleButton->style->ythickness : 0;
-                    if ((focus && (option->state & State_KeyboardFocusChange)))
+                    if (focus && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget)))
                         gtkCachedPainter.paintFocus(gtkToggleButton, "button",
                                               option->rect.adjusted(xt, yt, -xt, -yt),
                                               option->state & State_Sunken ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL,
@@ -1498,8 +1492,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
         if (const QStyleOptionToolButton *toolbutton
                 = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             QRect button, menuarea;
-            button = subControlRect(control, toolbutton, SC_ToolButton, widget);
-            menuarea = subControlRect(control, toolbutton, SC_ToolButtonMenu, widget);
+            button = proxy()->subControlRect(control, toolbutton, SC_ToolButton, widget);
+            menuarea = proxy()->subControlRect(control, toolbutton, SC_ToolButtonMenu, widget);
             State bflags = toolbutton->state & ~(State_Sunken | State_MouseOver);
 
             if (bflags & State_AutoRaise)
@@ -1528,7 +1522,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (bflags & (State_Sunken | State_On | State_Raised | State_MouseOver)) {
                     tool.rect = button;
                     tool.state = bflags;
-                    drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
                 }
             }
 
@@ -1539,9 +1533,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             if (toolbutton->state & State_HasFocus) {
                 QStyleOptionFocusRect fr;
                 fr.QStyleOption::operator=(*toolbutton);
-                fr.rect = subControlRect(CC_ToolButton, toolbutton, SC_ToolButton, widget);
+                fr.rect = proxy()->subControlRect(CC_ToolButton, toolbutton, SC_ToolButton, widget);
                 fr.rect.adjust(1, 1, -1, -1);
-                drawPrimitive(PE_FrameFocusRect, &fr, painter, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fr, painter, widget);
             }
 
             QStyleOptionToolButton label = *toolbutton;
@@ -1557,21 +1551,21 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
             label.rect = button.adjusted(style->xthickness, style->ythickness,
                                         -style->xthickness - popupArrowSize, -style->ythickness);
-            drawControl(CE_ToolButtonLabel, &label, painter, widget);
+            proxy()->drawControl(CE_ToolButtonLabel, &label, painter, widget);
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
                 tool.state = mflags;
                 if ((mflags & State_Enabled && (mflags & (State_Sunken | State_Raised | State_MouseOver))) || !(mflags & State_AutoRaise))
-                    drawPrimitive(PE_IndicatorButtonDropDown, &tool, painter, widget);
+                    proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, painter, widget);
 
-                drawPrimitive(PE_IndicatorArrowDown, &tool, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &tool, painter, widget);
 
             } else if (drawMenuArrow) {
                 QRect ir = toolbutton->rect;
                 QStyleOptionToolButton newBtn = *toolbutton;
                 newBtn.rect = QRect(ir.right() - popupArrowSize - style->xthickness - 3, ir.height()/2 - 1, popupArrowSize, popupArrowSize);
-                drawPrimitive(PE_IndicatorArrowDown, &newBtn, painter, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, painter, widget);
             }
         }
         break;
@@ -1588,10 +1582,10 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             painter->fillRect(option->rect, option->palette.background());
 
             QRect rect = scrollBar->rect;
-            QRect scrollBarSubLine = subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
-            QRect scrollBarAddLine = subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
-            QRect scrollBarSlider = subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
-            QRect grooveRect = subControlRect(control, scrollBar, SC_ScrollBarGroove, widget);
+            QRect scrollBarSubLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
+            QRect scrollBarAddLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
+            QRect scrollBarSlider = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
+            QRect grooveRect = proxy()->subControlRect(control, scrollBar, SC_ScrollBarGroove, widget);
             bool horizontal = scrollBar->orientation == Qt::Horizontal;
             GtkWidget * scrollbarWidget = horizontal ? gtkHScrollBar : gtkVScrollBar;
             style = scrollbarWidget->style;
@@ -1735,7 +1729,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             bool reverse = (spinBox->direction == Qt::RightToLeft);
 
             //### Move this to subControlRect
-            QRect upRect = subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
+            QRect upRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
             upRect.setTop(option->rect.top());
 
             if (reverse)
@@ -1743,8 +1737,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             else
                 upRect.setRight(option->rect.right());
 
-            QRect editRect = subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget);
-            QRect downRect = subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
+            QRect editRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget);
+            QRect downRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
             downRect.setBottom(option->rect.bottom());
 
             if (reverse)
@@ -1776,8 +1770,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
 
                 QString key;
+
                 if (option->state & State_HasFocus) {
-                    key = QLS("f");
+                    key += QLatin1Char('f');
                     GTK_WIDGET_SET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
                 }
 
@@ -1875,9 +1870,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             GtkWidget *hScaleWidget = QGtk::gtkWidget(QLS("GtkHScale"));
             GtkWidget *vScaleWidget = QGtk::gtkWidget(QLS("GtkVScale"));
 
-            QRect groove = subControlRect(CC_Slider, option, SC_SliderGroove, widget);
-            QRect handle = subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
+            QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
+            QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
 
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
@@ -1932,8 +1927,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             if (option->subControls & SC_SliderTickmarks) {
                 painter->setPen(darkOutline);
-                int tickSize = pixelMetric(PM_SliderTickmarkOffset, option, widget);
-                int available = pixelMetric(PM_SliderSpaceAvailable, slider, widget);
+                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
                 int interval = slider->tickInterval;
 
                 if (interval <= 0) {
@@ -1950,7 +1945,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     interval = 1;
 
                 int v = slider->minimum;
-                int len = pixelMetric(PM_SliderLength, slider, widget);
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
                         break;
@@ -2011,7 +2006,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                         fropt.rect.setLeft(handle.left() - 3);
                         fropt.rect.setRight(handle.right() + 3);
                     }
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
                 gtkPainter.paintSlider( scaleWidget, horizontal ? "hscale" : "vscale", handle, state, shadow, style,
 
@@ -2101,9 +2096,9 @@ void QGtkStyle::drawControl(ControlElement element,
 
             if (option->state & State_Sunken)
                 buttonShift = QPoint(pixelMetric(PM_ButtonShiftHorizontal, option, widget),
-                                     pixelMetric(PM_ButtonShiftVertical, option, widget));
+                                     proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
 
-            if (styleHint(SH_UnderlineShortcut, button, widget))
+            if (proxy()->styleHint(SH_UnderlineShortcut, button, widget))
                 tf |= Qt::TextShowMnemonic;
             else
                 tf |= Qt::TextHideMnemonic;
@@ -2164,7 +2159,7 @@ void QGtkStyle::drawControl(ControlElement element,
             GdkColor gdkText = gtkButton->style->fg[labelState];
             QColor textColor = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
             pal.setBrush(QPalette::ButtonText, textColor);
-            drawItemText(painter, ir, tf, pal, (button->state & State_Enabled),
+            proxy()->drawItemText(painter, ir, tf, pal, (button->state & State_Enabled),
                          button->text, QPalette::ButtonText);
         }
         break;
@@ -2185,7 +2180,7 @@ void QGtkStyle::drawControl(ControlElement element,
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(isRadio ? SE_RadioButtonIndicator
                                          : SE_CheckBoxIndicator, btn, widget);
-            drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
+            proxy()->drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
                           &subopt, painter, widget);
             subopt.rect = subElementRect(isRadio ? SE_RadioButtonContents
                                          : SE_CheckBoxContents, btn, widget);
@@ -2199,14 +2194,14 @@ void QGtkStyle::drawControl(ControlElement element,
             QColor textColor = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
             pal.setBrush(QPalette::WindowText, textColor);
             subopt.palette = pal;
-            drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, painter, widget);
+            proxy()->drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, painter, widget);
 
             if (btn->state & State_HasFocus) {
                 QStyleOptionFocusRect fropt;
                 fropt.QStyleOption::operator=(*btn);
                 fropt.rect = subElementRect(isRadio ? SE_RadioButtonFocusRect
                                             : SE_CheckBoxFocusRect, btn, widget);
-                drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
             }
         }
         break;
@@ -2215,8 +2210,8 @@ void QGtkStyle::drawControl(ControlElement element,
 
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            QRect editRect = subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
-            bool appearsAsList = !styleHint(QStyle::SH_ComboBox_Popup, cb, widget);
+            QRect editRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
+            bool appearsAsList = !proxy()->styleHint(QStyle::SH_ComboBox_Popup, cb, widget);
             painter->save();
             painter->setClipRect(editRect);
 
@@ -2234,7 +2229,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 if (cb->editable)
                     painter->fillRect(iconRect, option->palette.brush(QPalette::Base));
 
-                drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
+                proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
 
                 if (cb->direction == Qt::RightToLeft)
                     editRect.translate(-4 - cb->iconSize.width(), 0);
@@ -2256,7 +2251,7 @@ void QGtkStyle::drawControl(ControlElement element,
 
                 pal.setBrush(QPalette::ButtonText, textColor);
 
-                drawItemText(painter, editRect.adjusted(1, 0, -1, 0),
+                proxy()->drawItemText(painter, editRect.adjusted(1, 0, -1, 0),
                              visualAlignment(cb->direction, Qt::AlignLeft | Qt::AlignVCenter),
                              pal, cb->state & State_Enabled, cb->currentText, QPalette::ButtonText);
             }
@@ -2302,7 +2297,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 QString titleText
                     = painter->fontMetrics().elidedText(dwOpt->title,
                                             Qt::ElideRight, titleRect.width());
-                drawItemText(painter,
+                proxy()->drawItemText(painter,
                              titleRect,
                              Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, dwOpt->palette,
                              dwOpt->state & State_Enabled, titleText,
@@ -2423,10 +2418,10 @@ void QGtkStyle::drawControl(ControlElement element,
                 QPalette::ColorRole textRole = dis ? QPalette::Text : QPalette::HighlightedText;
                 uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
 
-                if (!QCleanlooksStyle::styleHint(SH_UnderlineShortcut, mbi, widget))
+                if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
                     alignment |= Qt::TextHideMnemonic;
 
-                drawItemText(painter, item.rect, alignment, item.palette, mbi->state & State_Enabled, mbi->text, textRole);
+                proxy()->drawItemText(painter, item.rect, alignment, item.palette, mbi->state & State_Enabled, mbi->text, textRole);
             }
         }
         painter->restore();
@@ -2598,7 +2593,7 @@ void QGtkStyle::drawControl(ControlElement element,
                     mode = QIcon::Active;
 
                 QPixmap pixmap;
-                int smallIconSize = pixelMetric(PM_SmallIconSize, option, widget);
+                int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QSize iconSize(smallIconSize, smallIconSize);
 
 #ifndef QT_NO_COMBOBOX
@@ -2626,7 +2621,7 @@ void QGtkStyle::drawControl(ControlElement element,
                     }
                     opt.state |= State_Sunken;
                     opt.rect = vCheckRect;
-                    drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
+                    proxy()->drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
                 }
                 painter->drawPixmap(pmr.topLeft(), pixmap);
             }
@@ -2666,7 +2661,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 int t = s.indexOf(QLatin1Char('\t'));
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
 
-                if (!styleHint(SH_UnderlineShortcut, menuitem, widget))
+                if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
 
                 // Draw shortcut right aligned
@@ -2699,7 +2694,7 @@ void QGtkStyle::drawControl(ControlElement element,
             // Arrow
             if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
                 QPoint buttonShift(pixelMetric(PM_ButtonShiftHorizontal, option, widget),
-                                   pixelMetric(PM_ButtonShiftVertical, option, widget));
+                                   proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
 
                 QFontMetrics fm(menuitem->font);
                 int arrow_size = fm.ascent() + fm.descent() - 2 * gtkMenuItem->style->ythickness;
@@ -2727,7 +2722,7 @@ void QGtkStyle::drawControl(ControlElement element,
     case CE_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
-            drawControl(CE_PushButtonBevel, btn, painter, widget);
+            proxy()->drawControl(CE_PushButtonBevel, btn, painter, widget);
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
             gint interiorFocus = true;
@@ -2737,14 +2732,14 @@ void QGtkStyle::drawControl(ControlElement element,
 
             if (btn->features & QStyleOptionButton::Flat && btn->state & State_HasFocus)
                 // The normal button focus rect does not work well for flat buttons in Clearlooks
-                drawPrimitive(PE_FrameFocusRect, option, painter, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, option, painter, widget);
             else if (btn->state & State_HasFocus)
                 gtkPainter.paintFocus(gtkButton, "button",
                                       option->rect.adjusted(xt, yt, -xt, -yt),
                                       btn->state & State_Sunken ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL,
                                       gtkButton->style);
 
-            drawControl(CE_PushButtonLabel, &subopt, painter, widget);
+            proxy()->drawControl(CE_PushButtonLabel, &subopt, painter, widget);
         }
         break;
 
@@ -2851,8 +2846,7 @@ void QGtkStyle::drawControl(ControlElement element,
             if (vertical) {
                 rect.translate(xt, -yt * 2);
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // Flip width and height
-                QTransform m;
-                m.translate(rect.height(), 0);
+                QTransform m = QTransform::fromTranslate(rect.height(), 0);
                 m.rotate(90.0);
                 painter->setTransform(m);
             }
@@ -2962,8 +2956,8 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
                 font.setBold(true);
                 QFontMetrics fontMetrics(font);
                 QSize textRect = fontMetrics.boundingRect(groupBoxWidget->title()).size() + QSize(4, 4);
-                int indicatorWidth = pixelMetric(PM_IndicatorWidth, option, widget);
-                int indicatorHeight = pixelMetric(PM_IndicatorHeight, option, widget);
+                int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
+                int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
 
                 if (subControl == SC_GroupBoxCheckBox) {
                     rect.setWidth(indicatorWidth);
@@ -3044,7 +3038,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
             QGtk::gtk_widget_set_direction(gtkCombo, (option->direction == Qt::RightToLeft) ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             GtkAllocation geometry = {0, 0, qMax(0, option->rect.width()), qMax(0, option->rect.height())};
             QGtk::gtk_widget_size_allocate(gtkCombo, &geometry);
-            int appears_as_list = !styleHint(QStyle::SH_ComboBox_Popup, option, widget);
+            int appears_as_list = !proxy()->styleHint(QStyle::SH_ComboBox_Popup, option, widget);
             QString arrowPath = comboBoxPath + QLS(".GtkToggleButton");
 
             if (!box->editable && !appears_as_list)
@@ -3208,7 +3202,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
     case CT_ComboBox:
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             GtkWidget *gtkCombo = QGtk::gtkWidget(QLS("GtkComboBox"));
-            QRect arrowButtonRect = subControlRect(CC_ComboBox, combo, SC_ComboBoxArrow, widget);
+            QRect arrowButtonRect = proxy()->subControlRect(CC_ComboBox, combo, SC_ComboBoxArrow, widget);
             newSize = size + QSize(12 + arrowButtonRect.width() + 2*gtkCombo->style->xthickness, 4 + 2*gtkCombo->style->ythickness);
 
             if (!(widget && qobject_cast<QToolBar *>(widget->parentWidget())))

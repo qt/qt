@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,10 +72,11 @@ public:
     uint isOpen : 1;
     uint isOpenError : 1;
     QSqlError error;
+    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 inline QSqlDriverPrivate::QSqlDriverPrivate()
-    : QObjectPrivate(), isOpen(false), isOpenError(false)
+    : QObjectPrivate(), isOpen(false), isOpenError(false), precisionPolicy(QSql::LowPrecisionDouble)
 {
 }
 
@@ -520,7 +521,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
                 continue;
             s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1String(", "));
             if (preparedStatement)
-                vals.append(QLatin1String("?"));
+                vals.append(QLatin1Char('?'));
             else
                 vals.append(formatValue(rec.field(i)));
             vals.append(QLatin1String(", "));
@@ -530,7 +531,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         } else {
             vals.chop(2); // remove trailing comma
             s[s.length() - 2] = QLatin1Char(')');
-            s.append(QLatin1String("VALUES (")).append(vals).append(QLatin1String(")"));
+            s.append(QLatin1String("VALUES (")).append(vals).append(QLatin1Char(')'));
         }
         break; }
     }
@@ -625,10 +626,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
             break;
         }
         case QVariant::Bool:
-            if (field.value().toBool())
-                r = QLatin1String("1");
-            else
-                r = QLatin1String("0");
+            r = QString::number(field.value().toBool());
             break;
         case QVariant::ByteArray : {
             if (hasFeature(BLOB)) {
@@ -884,12 +882,9 @@ QStringList QSqlDriver::subscribedToNotificationsImplementation() const
 bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
 {
     Q_UNUSED(type);
-    bool isLeftDelimited = identifier.left(1) == QString(QLatin1Char('"'));
-    bool isRightDelimited = identifier.right(1) == QString(QLatin1Char('"'));
-    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
-        return true;
-    else
-        return false;
+    return identifier.size() > 2
+        && identifier.startsWith(QLatin1Char('"')) //left delimited
+        && identifier.endsWith(QLatin1Char('"')); //right delimited
 }
 
 /*!
@@ -916,6 +911,30 @@ QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, Ide
         ret = identifier;
     }
     return ret;
+}
+
+/*!
+  Sets the default numerical precision policy used by queries created
+  by this driver to \a precisionPolicy.
+
+  Note: Setting the default precision policy to \a precisionPolicy
+  doesn't affect any currently active queries.
+
+  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+*/
+void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
+{
+    d_func()->precisionPolicy = precisionPolicy;
+}
+
+/*!
+  Returns the current default precision policy for the database connection.
+
+  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+*/
+QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
+{
+    return d_func()->precisionPolicy;
 }
 
 QT_END_NAMESPACE

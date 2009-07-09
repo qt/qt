@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,7 +70,6 @@ QHelpSearchIndexReader::~QHelpSearchIndexReader()
 {
     mutex.lock();
     this->m_cancel = true;
-    waitCondition.wakeOne();
     mutex.unlock();
 
     wait();
@@ -86,8 +85,8 @@ void QHelpSearchIndexReader::cancelSearching()
 void QHelpSearchIndexReader::search(const QString &collectionFile, const QString &indexFilesFolder,
     const QList<QHelpSearchQuery> &queryList)
 {
-    QMutexLocker lock(&mutex);
-
+    wait();
+    
     this->hitList.clear();
     this->m_cancel = false;
     this->m_query = queryList;
@@ -99,12 +98,18 @@ void QHelpSearchIndexReader::search(const QString &collectionFile, const QString
 
 int QHelpSearchIndexReader::hitsCount() const
 {
+    QMutexLocker lock(&mutex);
     return hitList.count();
 }
 
-QHelpSearchEngine::SearchHit QHelpSearchIndexReader::hit(int index) const
+QList<QHelpSearchEngine::SearchHit> QHelpSearchIndexReader::hits(int start,
+                                                                 int end) const
 {
-    return hitList.at(index);
+    QList<QHelpSearchEngine::SearchHit> hits;
+    QMutexLocker lock(&mutex);
+    for (int i = start; i < end && i < hitList.count(); ++i)
+        hits.append(hitList.at(i));
+    return hits;
 }
 
 void QHelpSearchIndexReader::run()
@@ -135,7 +140,7 @@ void QHelpSearchIndexReader::run()
     if(QCLuceneIndexReader::indexExists(indexPath)) {
         mutex.lock();
         if (m_cancel) {
-            mutex.unlock();
+            mutex.unlock();          
             return;
         }
         mutex.unlock();
@@ -213,7 +218,9 @@ void QHelpSearchIndexReader::run()
 
 #if !defined(QT_NO_EXCEPTIONS)
         } catch(...) {
+            mutex.lock();
             hitList.clear();
+            mutex.unlock();
             emit searchingFinished(0);
         }
 #endif
@@ -416,8 +423,9 @@ void QHelpSearchIndexReader::boostSearchHits(const QHelpEngineCore &engine,
             boostedList.append(it.value());
         } while (it != hitMap.constBegin());
         boostedList += hitList.mid(count, hitList.count());
-
+        mutex.lock();
         hitList = boostedList;
+        mutex.unlock();
     }
 }
 

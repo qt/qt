@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -583,7 +583,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     QScriptValuePrivate *p = QScriptValuePrivate::get(scriptObject);
     if (!p || !p->value.isObject())
         return newQObject(qtObject, ownership, options);
-    if (p->value.isVariant()) {
+    if (p->value.isQObject()) {
         QScript::ExtQObject::Instance *data;
         data = d->qobjectConstructor->get(p->value);
         Q_ASSERT(data != 0);
@@ -1612,7 +1612,8 @@ bool qScriptConnect(QObject *sender, const char *signal,
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(function.engine());
     return eng_p->scriptConnect(sender, signal,
                                 eng_p->toImpl(receiver),
-                                eng_p->toImpl(function));
+                                eng_p->toImpl(function),
+                                Qt::AutoConnection);
 }
 
 /*!

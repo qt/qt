@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -481,7 +481,7 @@ void SpreadSheet::setupContents()
     table->setItem(3, 0, new SpreadSheetItem("Lunch"));
     table->setItem(4, 0, new SpreadSheetItem("Flight (LA)"));
     table->setItem(5, 0, new SpreadSheetItem("Taxi"));
-    table->setItem(6, 0, new SpreadSheetItem("Diinner"));
+    table->setItem(6, 0, new SpreadSheetItem("Dinner"));
     table->setItem(7, 0, new SpreadSheetItem("Hotel"));
     table->setItem(8, 0, new SpreadSheetItem("Flight (Oslo)"));
     table->setItem(9, 0, new SpreadSheetItem("Total:"));

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,7 @@
     \ingroup qttools
     \keyword Qt Designer
 
-    \QD is Qt Software's tool for designing and building graphical user
+    \QD is Qt's tool for designing and building graphical user
     interfaces (GUIs) from Qt components. You can compose and customize your
     widgets or dialogs in a what-you-see-is-what-you-get (WYSIWYG) manner, and
     test them using different styles and resolutions.
@@ -2406,12 +2406,106 @@ pixmap property in the property editor.
     is used to hide widgets that should not be explicitly created by the user,
     but are required by other widgets.
 
-    If you would like to use a container widget that is not a subclass of the
-    containers provided in \QD, but the container is still based on the notion
-    of \e{Current Page}, you need to provide a container extension and
-    tell \QD which method to use to add the pages. This can be done using the
-    \c{<addpagemethod>} XML tag.
+    
+    A complete custom widget specification looks like:
+    
+    \code
+<ui language="c++"> displayname="MyWidget">
+    <widget class="widgets::MyWidget" name="mywidget"/>
+    <customwidgets>
+        <customwidget>
+            <class>widgets::MyWidget</class>
+            <addpagemethod>addPage</addpagemethod>
+            <propertyspecifications>
+                <stringpropertyspecification name="fileName" notr="true" type="singleline"
+                <stringpropertyspecification name="text" type="richtext"
+            </propertyspecifications>
+        </customwidget>
+    </customwidgets>
+</ui>
+    \endcode
 
+    Attributes of the \c{<ui>} tag:
+        \table
+        \header
+            \o  Attribute
+            \o  Presence
+            \o  Values
+            \o  Comment
+        \row
+            \o  \c{language}
+            \o  optional
+            \o  "c++", "jambi"
+            \o  This attribute specifies the language the custom widget is intended for.
+                It is mainly there to prevent C++-plugins from appearing in Qt Jambi.
+        \row
+            \o \c{displayname}
+            \o optional
+            \o Class name
+            \o The value of the attribute appears in the Widget box and can be used to
+                strip away namespaces.
+    \endtable
+
+    The \c{<addpagemethod>} tag tells \QD and \l uic which method should be used to
+    add pages to a container widget. This applies to container widgets that require
+    calling a particular method to add a child rather than adding the child by passing
+    the parent. In particular, this is relevant for containers that are not a
+    a subclass of the containers provided in \QD, but are based on the notion
+    of \e{Current Page}. In addition,  you need to provide a container extension
+    for them.
+
+    The \c{<propertyspecifications>} element can contain a list of property meta information.
+    Currently, properties of type string are supported. For these properties, the
+    \c{<stringpropertyspecification>} tag can be used. This tag has the following attributes:
+
+
+    \table
+        \header
+            \o  Attribute
+            \o  Presence
+            \o  Values
+            \o  Comment
+        \row
+            \o  \c{name}
+            \o  required
+            \o  Name of the property
+        \row
+            \o \c{type}
+            \o required
+            \o See below table
+            \o The value of the attribute determines how the property editor will handle them.
+        \row
+            \o \c{notr}
+            \o optional
+            \o "true", "false"
+            \o If the attribute is "true", the value is not meant to be translated.
+    \endtable
+
+    Values of the \c{type} attribute of the string property:
+
+    \table
+        \header
+            \o  Value
+            \o  Type
+        \row
+            \o \c{"richtext"}
+            \o Rich text.
+        \row
+            \o \c{"multiline"}
+            \o Multi-line plain text.
+        \row
+            \o \c{"singleline"}
+            \o Single-line plain text.
+        \row
+            \o \c{"stylesheet"}
+            \o A CSS-style sheet.
+        \row
+            \o \c{"objectname"}
+            \o An object name (restricted set of valid characters).
+        \row
+            \o \c{"url"}
+            \o URL, file name.
+    \endtable
 
     \section1 Plugin Requirements
 

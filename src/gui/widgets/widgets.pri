@@ -37,7 +37,9 @@ HEADERS += \
         widgets/qmdisubwindow.h \
         widgets/qmdisubwindow_p.h \
         widgets/qmenu.h \
+        widgets/qmenu_p.h \
         widgets/qmenubar.h \
+        widgets/qmenubar_p.h \
         widgets/qmenudata.h \
         widgets/qprogressbar.h \
         widgets/qpushbutton.h \

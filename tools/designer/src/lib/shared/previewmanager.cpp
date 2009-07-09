@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,6 +67,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QActionGroup>
 #include <QtGui/QCursor>
+#include <QtGui/QMatrix>
 
 #include <QtCore/QMap>
 #include <QtCore/QDebug>
@@ -149,11 +150,16 @@ QGraphicsProxyWidget *DesignerZoomWidget::createProxyWidget(QGraphicsItem *paren
     return new DesignerZoomProxyWidget(parent, wFlags);
 }
 
-// --------- Widget Preview skin: Forward the key events to the window
+// PreviewDeviceSkin: Forwards the key events to the window and
+// provides context menu with rotation options. Derived class
+// can apply additional transformations to the skin.
+
 class PreviewDeviceSkin : public  DeviceSkin
 {
     Q_OBJECT
 public:
+    enum Direction { DirectionUp, DirectionLeft,  DirectionRight };
+
     explicit PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent);
     virtual void setPreview(QWidget *w);
     QSize screenSize() const { return  m_screenSize; }
@@ -164,15 +170,36 @@ private slots:
     void slotPopupMenu();
 
 protected:
-    virtual void populateContextMenu(QMenu *m);
+    virtual void populateContextMenu(QMenu *) {}
+
+private slots:
+    void slotDirection(QAction *);
+
+protected:
+    // Fit the widget in case the orientation changes (transposing screensize)
+    virtual void fitWidget(const QSize &size);    
+    //  Calculate the complete transformation for the skin
+    // (base class implementation provides rotation).
+    virtual QMatrix skinTransform() const;
 
 private:
     const QSize m_screenSize;
+    Direction m_direction;
+
+    QAction *m_directionUpAction;
+    QAction *m_directionLeftAction;
+    QAction *m_directionRightAction;
+    QAction *m_closeAction;
 };
 
 PreviewDeviceSkin::PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent) :
-    DeviceSkin(parameters, parent),
-    m_screenSize(parameters.screenSize())
+    DeviceSkin(parameters, parent),    
+    m_screenSize(parameters.screenSize()),
+    m_direction(DirectionUp),
+    m_directionUpAction(0),
+    m_directionLeftAction(0),
+    m_directionRightAction(0),
+    m_closeAction(0)
 {
     connect(this, SIGNAL(skinKeyPressEvent(int,QString,bool)),
             this, SLOT(slotSkinKeyPressEvent(int,QString,bool)));
@@ -195,7 +222,6 @@ void PreviewDeviceSkin::slotSkinKeyPressEvent(int code, const QString& text, boo
         QKeyEvent e(QEvent::KeyPress,code,0,text,autorep);
         QApplication::sendEvent(focusWidget, &e);
     }
-
 }
 
 void PreviewDeviceSkin::slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep)
@@ -206,16 +232,83 @@ void PreviewDeviceSkin::slotSkinKeyReleaseEvent(int code, const QString& text, b
     }
 }
 
+// Create a checkable action with integer data and
+// set it checked if it matches the currentState.
+static inline QAction
+        *createCheckableActionIntData(const QString &label,
+                                      int actionValue, int currentState,
+                                      QActionGroup *ag, QObject *parent)
+{
+    QAction *a = new QAction(label, parent);
+    a->setData(actionValue);
+    a->setCheckable(true);
+    if (actionValue == currentState)
+        a->setChecked(true);
+    ag->addAction(a);
+    return a;
+}
+
 void PreviewDeviceSkin::slotPopupMenu()
 {
     QMenu menu(this);
+    // Create actions
+    if (!m_directionUpAction) {
+        QActionGroup *directionGroup = new QActionGroup(this);
+        connect(directionGroup, SIGNAL(triggered(QAction*)), this, SLOT(slotDirection(QAction*)));
+        directionGroup->setExclusive(true);
+        m_directionUpAction = createCheckableActionIntData(tr("&Portrait"), DirectionUp, m_direction, directionGroup, this);
+        m_directionLeftAction = createCheckableActionIntData(tr("Landscape (&CCW)"), DirectionLeft, m_direction, directionGroup, this);
+        m_directionRightAction = createCheckableActionIntData(tr("&Landscape (CW)"), DirectionRight, m_direction, directionGroup, this);
+        m_closeAction = new QAction(tr("&Close"), this);
+        connect(m_closeAction, SIGNAL(triggered()), parentWidget(), SLOT(close()));
+    }
+    menu.addAction(m_directionUpAction);
+    menu.addAction(m_directionLeftAction);
+    menu.addAction(m_directionRightAction);
+    menu.addSeparator();
     populateContextMenu(&menu);
+    menu.addAction(m_closeAction);
     menu.exec(QCursor::pos());
 }
 
-void PreviewDeviceSkin::populateContextMenu(QMenu *menu)
+void PreviewDeviceSkin::slotDirection(QAction *a)
 {
-     connect(menu->addAction(tr("&Close")), SIGNAL(triggered()), parentWidget(), SLOT(close()));
+    const Direction newDirection = static_cast<Direction>(a->data().toInt());
+    if (m_direction == newDirection)
+        return;
+    const Qt::Orientation newOrientation = newDirection == DirectionUp ? Qt::Vertical : Qt::Horizontal;
+    const Qt::Orientation oldOrientation = m_direction  == DirectionUp ? Qt::Vertical : Qt::Horizontal;
+    m_direction = newDirection;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    if (oldOrientation != newOrientation) {
+        QSize size = screenSize();
+        if (newOrientation == Qt::Horizontal)
+            size.transpose();
+        fitWidget(size);
+    }
+    setTransform(skinTransform());
+    QApplication::restoreOverrideCursor();
+}
+
+void PreviewDeviceSkin::fitWidget(const QSize &size)
+{
+    view()->setFixedSize(size);
+}
+
+QMatrix PreviewDeviceSkin::skinTransform() const
+{
+    QMatrix newTransform;    
+    switch (m_direction)  {
+        case DirectionUp:
+            break;
+        case DirectionLeft:
+            newTransform.rotate(270.0);
+            break;
+        case DirectionRight:
+            newTransform.rotate(90.0);
+            break;
+    }
+    return newTransform;
 }
 
 // ------------ PreviewConfigurationPrivate
@@ -257,16 +350,20 @@ signals:
     void zoomPercentChanged(int);
 
 protected:
-    virtual void populateContextMenu(QMenu *m);
+    virtual void populateContextMenu(QMenu *m);    
+    virtual QMatrix skinTransform() const;
+    virtual void fitWidget(const QSize &size);
 
 private:
     ZoomMenu *m_zoomMenu;
+    QAction *m_zoomSubMenuAction;
     ZoomWidget *m_zoomWidget;
 };
 
 ZoomablePreviewDeviceSkin::ZoomablePreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent) :
     PreviewDeviceSkin(parameters, parent),
     m_zoomMenu(new ZoomMenu(this)),
+    m_zoomSubMenuAction(0),
     m_zoomWidget(new DesignerZoomWidget)
 {
     connect(m_zoomMenu, SIGNAL(zoomChanged(int)), this, SLOT(setZoomPercent(int)));
@@ -279,10 +376,20 @@ ZoomablePreviewDeviceSkin::ZoomablePreviewDeviceSkin(const DeviceSkinParameters 
     setView(m_zoomWidget);
 }
 
-void ZoomablePreviewDeviceSkin::setPreview(QWidget *formWidget)
+static inline qreal zoomFactor(int percent)
 {
-    formWidget->setFixedSize(screenSize());
+    return qreal(percent) / 100.0;
+}
+
+static inline QSize scaleSize(int zoomPercent, const QSize &size)
+{
+    return zoomPercent == 100 ? size : (QSizeF(size) * zoomFactor(zoomPercent)).toSize();
+}
+
+void ZoomablePreviewDeviceSkin::setPreview(QWidget *formWidget)
+{    
     m_zoomWidget->setWidget(formWidget);
+    m_zoomWidget->resize(scaleSize(zoomPercent(), screenSize()));
 }
 
 int ZoomablePreviewDeviceSkin::zoomPercent() const
@@ -290,30 +397,48 @@ int ZoomablePreviewDeviceSkin::zoomPercent() const
     return m_zoomWidget->zoom();
 }
 
-void ZoomablePreviewDeviceSkin::setZoomPercent(int z)
+void ZoomablePreviewDeviceSkin::setZoomPercent(int zp)
 {
-    if (z == zoomPercent())
+    if (zp == zoomPercent())
         return;
 
     // If not triggered by the menu itself: Update it
-    if (m_zoomMenu->zoom() != z)
-        m_zoomMenu->setZoom(z);
+    if (m_zoomMenu->zoom() != zp)
+        m_zoomMenu->setZoom(zp);
 
-    const QCursor oldCursor = cursor();
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-    // DeviceSkin has double, not qreal.
-    const double hundred = 100.0;
-    setZoom(static_cast<double>(z) / hundred);
-    m_zoomWidget->setZoom(z);
+    QApplication::setOverrideCursor(Qt::WaitCursor);    
+    m_zoomWidget->setZoom(zp);
+    setTransform(skinTransform());
     QApplication::restoreOverrideCursor();
 }
 
 void ZoomablePreviewDeviceSkin::populateContextMenu(QMenu *menu)
 {
-    m_zoomMenu->addActions(menu);
+    if (!m_zoomSubMenuAction) {
+        m_zoomSubMenuAction = new QAction(tr("&Zoom"), this);
+        QMenu *zoomSubMenu = new QMenu;
+        m_zoomSubMenuAction->setMenu(zoomSubMenu);
+        m_zoomMenu->addActions(zoomSubMenu);
+    }
+    menu->addAction(m_zoomSubMenuAction);
     menu->addSeparator();
-    PreviewDeviceSkin::populateContextMenu(menu);
-    menu->addSeparator();
+}
+
+QMatrix ZoomablePreviewDeviceSkin::skinTransform() const
+{
+    // Complete transformation consisting of base class rotation and zoom.
+    QMatrix rc = PreviewDeviceSkin::skinTransform();
+    const int zp = zoomPercent();
+    if (zp != 100) {
+        const qreal factor = zoomFactor(zp);
+        rc.scale(factor, factor);
+    }
+    return rc;
+}
+
+void ZoomablePreviewDeviceSkin::fitWidget(const QSize &size)
+{
+    m_zoomWidget->resize(scaleSize(zoomPercent(), size));
 }
 
 // ------------- PreviewConfiguration

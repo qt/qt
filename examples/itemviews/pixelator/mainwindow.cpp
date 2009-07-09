@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,14 +79,14 @@ MainWindow::MainWindow()
 
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     QAction *openAction = fileMenu->addAction(tr("&Open..."));
-    openAction->setShortcut(QKeySequence(tr("Ctrl+O")));
+    openAction->setShortcuts(QKeySequence::Open);
 
     printAction = fileMenu->addAction(tr("&Print..."));
     printAction->setEnabled(false);
-    printAction->setShortcut(QKeySequence(tr("Ctrl+P")));
+    printAction->setShortcut(QKeySequence::Print);
 
     QAction *quitAction = fileMenu->addAction(tr("E&xit"));
-    quitAction->setShortcut(QKeySequence(tr("Ctrl+Q")));
+    quitAction->setShortcuts(QKeySequence::Quit);
 
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
     QAction *aboutAction = helpMenu->addAction(tr("&About"));

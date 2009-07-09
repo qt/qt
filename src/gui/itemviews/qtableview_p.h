@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,11 +53,68 @@
 // We mean it.
 //
 
+#include <QtCore/QList>
+#include <QtCore/QMap>
+#include <QtCore/QSet>
+#include <QtCore/QDebug>
 #include "private/qabstractitemview_p.h"
 
 #ifndef QT_NO_TABLEVIEW
 
 QT_BEGIN_NAMESPACE
+
+/** \internal
+*
+* This is a list of span with a binary index to look up quickly a span at a certain index.
+*
+* The index is a map of map.
+* spans are mentaly divided into sub spans so that the start of any subspans doesn't overlap
+* with any other subspans. There is no real representation of the subspans.
+* The key of the first map is the row where the subspan starts, the value of the first map is
+* a list (map) of all subspans that starts at the same row.  It is indexed with its row
+*/
+class QSpanCollection
+{
+public:
+    struct Span
+    {
+        int m_top;
+        int m_left;
+        int m_bottom;
+        int m_right;
+        Span()
+        : m_top(-1), m_left(-1), m_bottom(-1), m_right(-1) { }
+        Span(int row, int column, int rowCount, int columnCount)
+        : m_top(row), m_left(column), m_bottom(row+rowCount-1), m_right(column+columnCount-1) { }
+        inline int top() const { return m_top; }
+        inline int left() const { return m_left; }
+        inline int bottom() const { return m_bottom; }
+        inline int right() const { return m_right; }
+        inline int height() const { return m_bottom - m_top + 1; }
+        inline int width() const { return m_right - m_left + 1; }
+    };
+
+    ~QSpanCollection()
+    {
+        qDeleteAll(spans);
+    }
+
+    void addSpan(Span *span);
+    void updateSpan(Span *span, int old_height);
+    Span *spanAt(int x, int y) const;
+    void clear();
+    QList<Span *> spansInRect(int x, int y, int w, int h) const;
+
+    QList<Span *> spans; //lists of all spans
+private:
+    //the indexes are negative so the QMap::lowerBound do what i need.
+    typedef QMap<int, Span *> SubIndex;
+    typedef QMap<int, SubIndex> Index;
+    Index index;
+};
+
+Q_DECLARE_TYPEINFO ( QSpanCollection::Span, Q_MOVABLE_TYPE);
+
 
 class QTableViewPrivate : public QAbstractItemViewPrivate
 {
@@ -98,11 +155,7 @@ public:
     int sectionSpanEndLogical(const QHeaderView *header, int logical, int span) const;
     int sectionSpanSize(const QHeaderView *header, int logical, int span) const;
     bool spanContainsSection(const QHeaderView *header, int logical, int spanLogical, int span) const;
-    bool spansIntersectColumn(int column) const;
-    bool spansIntersectRow(int row) const;
-    bool spansIntersectColumns(const QList<int> &columns) const;
-    bool spansIntersectRows(const QList<int> &rows) const;
-    void drawAndClipSpans(const QRect &area, QPainter *painter,
+    void drawAndClipSpans(const QRegion &area, QPainter *painter,
                           const QStyleOptionViewItemV4 &option, QBitArray *drawn,
                           int firstVisualRow, int lastVisualRow, int firstVisualColumn, int lastVisualColumn);
     void drawCell(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index);
@@ -121,27 +174,10 @@ public:
     bool sortingEnabled;
     bool geometryRecursionBlock;
 
-    struct Span
-    {
-        int m_top;
-        int m_left;
-        int m_bottom;
-        int m_right;
-        Span()
-            : m_top(-1), m_left(-1), m_bottom(-1), m_right(-1) { }
-        Span(int row, int column, int rowCount, int columnCount)
-            : m_top(row), m_left(column), m_bottom(row+rowCount-1), m_right(column+columnCount-1) { }
-        inline int top() const { return m_top; }
-        inline int left() const { return m_left; }
-        inline int bottom() const { return m_bottom; }
-        inline int right() const { return m_right; }
-        inline int height() const { return m_bottom - m_top + 1; }
-        inline int width() const { return m_right - m_left + 1; }
-    };
-    QList<Span> spans;
+    QSpanCollection spans;
 
     void setSpan(int row, int column, int rowSpan, int columnSpan);
-    Span span(int row, int column) const;
+    QSpanCollection::Span span(int row, int column) const;
     inline int rowSpan(int row, int column) const {
         return span(row, column).height();
     }
@@ -149,17 +185,7 @@ public:
         return span(row, column).width();
     }
     inline bool hasSpans() const {
-        return !spans.isEmpty();
-    }
-    inline bool spanContainsRow(int row, int spanRow, int span) const {
-        return spanContainsSection(verticalHeader, row, spanRow, span);
-    }
-    inline bool spanContainsColumn(int column, int spanColumn, int span) const {
-        return spanContainsSection(horizontalHeader, column, spanColumn, span);
-    }
-    inline bool isInSpan(int row, int column, const Span &span) const {
-        return spanContainsRow(row, span.top(), span.height())
-            && spanContainsColumn(column, span.left(), span.width());
+        return !spans.spans.isEmpty();
     }
     inline int rowSpanHeight(int row, int span) const {
         return sectionSpanSize(verticalHeader, row, span);
@@ -194,7 +220,7 @@ public:
         return isColumnHidden(c) || !isCellEnabled(r, c);
     }
 
-    QRect visualSpanRect(const Span &span) const;
+    QRect visualSpanRect(const QSpanCollection::Span &span) const;
 
     void _q_selectRow(int row);
     void _q_selectColumn(int column);

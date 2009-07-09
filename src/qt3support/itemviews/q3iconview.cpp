@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -614,7 +614,7 @@ QByteArray Q3IconDrag::encodedData(const char* mime) const
                 (*it).item.textRect().x()).arg((*it).item.textRect().y()).
             arg((*it).item.textRect().width()).arg(
                 (*it).item.textRect().height());
-        k += QString(QLatin1String((*it).data.data())) + QLatin1String("$@@$");
+        k += QString::fromLatin1((*it).data.data()) + QLatin1String("$@@$");
         s += k;
     }
 
@@ -1820,8 +1820,8 @@ void Q3IconViewItem::calcRect(const QString &text_)
 
     tw = r.width();
     th = r.height();
-    if (tw < view->d->fm->width(QLatin1String("X")))
-        tw = view->d->fm->width(QLatin1String("X"));
+    if (tw < view->d->fm->width(QLatin1Char('X')))
+        tw = view->d->fm->width(QLatin1Char('X'));
 
     itemTextRect.setWidth(tw);
     itemTextRect.setHeight(th);

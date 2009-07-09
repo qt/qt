@@ -19,21 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSProgressEvent.h"
 
-#include <wtf/GetPtr.h>
-
 #include "ProgressEvent.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSProgressEvent)
+ASSERT_CLASS_FITS_IN_CELL(JSProgressEvent);
 
 /* Hash table */
 
@@ -72,13 +69,13 @@ public:
     JSProgressEventConstructor(ExecState* exec)
         : DOMObject(JSProgressEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSProgressEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSProgressEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -108,9 +105,9 @@ static const HashTable JSProgressEventPrototypeTable =
 
 const ClassInfo JSProgressEventPrototype::s_info = { "ProgressEventPrototype", 0, &JSProgressEventPrototypeTable, 0 };
 
-JSObject* JSProgressEventPrototype::self(ExecState* exec)
+JSObject* JSProgressEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSProgressEvent>(exec);
+    return getDOMPrototype<JSProgressEvent>(exec, globalObject);
 }
 
 bool JSProgressEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -125,9 +122,9 @@ JSProgressEvent::JSProgressEvent(PassRefPtr<Structure> structure, PassRefPtr<Pro
 {
 }
 
-JSObject* JSProgressEvent::createPrototype(ExecState* exec)
+JSObject* JSProgressEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSProgressEventPrototype(JSProgressEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSProgressEventPrototype(JSProgressEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSProgressEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,45 +132,49 @@ bool JSProgressEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSProgressEvent, Base>(exec, &JSProgressEventTable, this, propertyName, slot);
 }
 
-JSValuePtr jsProgressEventLengthComputable(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventLengthComputable(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(static_cast<JSProgressEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->lengthComputable());
 }
 
-JSValuePtr jsProgressEventLoaded(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventLoaded(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(static_cast<JSProgressEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->loaded());
 }
 
-JSValuePtr jsProgressEventTotal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventTotal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(static_cast<JSProgressEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->total());
 }
 
-JSValuePtr jsProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSProgressEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSProgressEvent::getConstructor(ExecState* exec)
+JSValue JSProgressEvent::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSProgressEventConstructor>(exec);
 }
 
-JSValuePtr jsProgressEventPrototypeFunctionInitProgressEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsProgressEventPrototypeFunctionInitProgressEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSProgressEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSProgressEvent::s_info))
         return throwError(exec, TypeError);
     JSProgressEvent* castedThisObj = static_cast<JSProgressEvent*>(asObject(thisValue));
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThisObj->impl());
-    const UString& typeArg = args.at(exec, 0)->toString(exec);
-    bool canBubbleArg = args.at(exec, 1)->toBoolean(exec);
-    bool cancelableArg = args.at(exec, 2)->toBoolean(exec);
-    bool lengthComputableArg = args.at(exec, 3)->toBoolean(exec);
-    unsigned loadedArg = args.at(exec, 4)->toInt32(exec);
-    unsigned totalArg = args.at(exec, 5)->toInt32(exec);
+    const UString& typeArg = args.at(0).toString(exec);
+    bool canBubbleArg = args.at(1).toBoolean(exec);
+    bool cancelableArg = args.at(2).toBoolean(exec);
+    bool lengthComputableArg = args.at(3).toBoolean(exec);
+    unsigned loadedArg = args.at(4).toInt32(exec);
+    unsigned totalArg = args.at(5).toInt32(exec);
 
     imp->initProgressEvent(typeArg, canBubbleArg, cancelableArg, lengthComputableArg, loadedArg, totalArg);
     return jsUndefined();

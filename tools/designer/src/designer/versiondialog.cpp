@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -172,15 +172,11 @@ VersionDialog::VersionDialog(QWidget *parent)
     version = version.arg(tr("Qt Designer")).arg(QLatin1String(QT_VERSION_STR));
     version.append(tr("<br/>Qt Designer is a graphical user interface designer for Qt applications.<br/>"));
 
-    // TODO: Remove this variable for 4.6.0.  Must keep this way for 4.5.x due to string freeze
-    QString edition;
-
     lbl->setText(tr("%1"
-                    "<br/>%2"
                     "<br/>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
                     "<br/><br/>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
                     " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
-                    " PARTICULAR PURPOSE.<br/> ").arg(version).arg(edition));
+                    " PARTICULAR PURPOSE.<br/> ").arg(version));
 
     lbl->setWordWrap(true);
     lbl->setOpenExternalLinks(true);

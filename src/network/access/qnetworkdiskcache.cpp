@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,12 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 //#define QNETWORKDISKCACHE_DEBUG
+
+#ifndef QT_NO_NETWORKDISKCACHE
 
 #include "qnetworkdiskcache.h"
 #include "qnetworkdiskcache_p.h"
@@ -80,6 +82,20 @@ QT_BEGIN_NAMESPACE
     use on the system to 50MB.
 
     Note you have to set the cache directory before it will work.
+
+    A network disk cache can be enabled by:
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkdiskcache.cpp 0
+
+    When sending requests, to control the preference of when to use the cache
+    and when to use the network, consider the following:
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkdiskcache.cpp 1
+
+    To check whether the response came from the cache or from the network, the
+    following can be applied:
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkdiskcache.cpp 2
 */
 
 /*!
@@ -669,3 +685,5 @@ bool QCacheItem::read(QFile *device, bool readData)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKDISKCACHE

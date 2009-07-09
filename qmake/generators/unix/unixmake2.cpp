@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -163,6 +163,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "SED           = " << var("QMAKE_STREAM_EDITOR") << endl;
     t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
     t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
+    t << "STRIP         = " << var("QMAKE_STRIP") << endl;
     t << "INSTALL_FILE  = " << var("QMAKE_INSTALL_FILE") << endl;
     t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
     t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;

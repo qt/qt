@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.5.2"
+#define QT_VERSION_STR   "4.6.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040502
+#define QT_VERSION 0x040600
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -110,7 +110,7 @@ namespace QT_NAMESPACE {}
     This expands to a "using QT_NAMESPACE" also in _header files_.
     It is the only way the feature can be used without too much
     pain, but if people _really_ do not want it they can add
-    DEFINES += QT_NO_USING_NAMESPACE to theur .pro files.
+    DEFINES += QT_NO_USING_NAMESPACE to their .pro files.
     */
    QT_USE_NAMESPACE
 # endif
@@ -285,6 +285,10 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA)
+#error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
+#endif
+
 #if defined(Q_OS_MSDOS) || defined(Q_OS_OS2) || defined(Q_OS_WIN)
 #  undef Q_OS_UNIX
 #elif !defined(Q_OS_UNIX)
@@ -392,6 +396,9 @@ namespace QT_NAMESPACE {}
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+#    define Q_ALIGNOF(type)   __alignof(type)
+#    define Q_DECL_ALIGN(n)   __declspec(align(n))
+
 /* Visual C++.Net issues for _MSC_VER >= 1300 */
 #  if _MSC_VER >= 1300
 #    define Q_CC_MSVC_NET
@@ -486,6 +493,11 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_USING_KEYWORD
 #    define QT_NO_STL_WCHAR
 #  endif
+#  if __GNUC__ >= 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
+#    define Q_ALIGNOF(type)   __alignof__(type)
+#    define Q_TYPEOF(expr)    __typeof__(expr)
+#    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#  endif
 /* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
 #  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
 #    define Q_WRONG_SB_CTYPE_MACROS
@@ -539,6 +551,11 @@ namespace QT_NAMESPACE {}
 #    define Q_OUTOFLINE_TEMPLATE inline
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
+#  elif __xlC__ >= 0x0600
+#    define Q_ALIGNOF(type)     __alignof__(type)
+#    define Q_TYPEOF(expr)      __typeof__(expr)
+#    define Q_DECL_ALIGN(n)     __attribute__((__aligned__(n)))
+#    define Q_PACKED            __attribute__((__packed__))
 #  endif
 
 /* Older versions of DEC C++ do not define __EDG__ or __EDG - observed
@@ -662,6 +679,13 @@ namespace QT_NAMESPACE {}
 #    if __SUNPRO_CC < 0x570
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 #    endif
+   /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
+#    if __SUNPRO_CC >= 0x590
+#      define Q_ALIGNOF(type)   __alignof__(type)
+#      define Q_TYPEOF(expr)    __typeof__(expr)
+#      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
 #    endif
@@ -691,8 +715,17 @@ namespace QT_NAMESPACE {}
 #  if defined(__HP_aCC) || __cplusplus >= 199707L
 #    define Q_NO_TEMPLATE_FRIENDS
 #    define Q_CC_HPACC
-#    ifdef QT_ARCH_PARISC
+#    if __HP_aCC-0 < 060000
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+#      define Q_DECL_EXPORT     __declspec(dllexport)
+#      define Q_DECL_IMPORT     __declspec(dllimport)
+#    endif
+#    if __HP_aCC-0 >= 061200
+#      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
+#    endif
+#    if __HP_aCC-0 >= 062000
+#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
 #    define Q_CC_HP
@@ -772,6 +805,10 @@ namespace QT_NAMESPACE {}
 #  endif
 #elif defined(Q_OS_WINCE)
 #  define Q_WS_WIN32
+#  define Q_WS_WINCE
+#  if defined(Q_OS_WINCE_WM)
+#    define Q_WS_WINCE_WM
+#  endif
 #elif defined(Q_OS_OS2)
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
@@ -791,9 +828,10 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32)
+#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32) || defined(Q_WS_WINCE)
 #  define Q_WS_WIN
 #endif
+
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -848,17 +886,12 @@ typedef quint64 qulonglong;
       sizeof(void *) == sizeof(quintptr)
       && sizeof(void *) == sizeof(qptrdiff)
 */
-template <int> class QUintForSize    { private: typedef void    Type; };
-template <>    class QUintForSize<4> { public:  typedef quint32 Type; };
-template <>    class QUintForSize<8> { public:  typedef quint64 Type; };
-template <typename T> class QUintForType : public QUintForSize<sizeof(T)> { };
-typedef QUintForType<void *>::Type quintptr;
-
-template <int> class QIntForSize    { private: typedef void   Type; };
-template <>    class QIntForSize<4> { public:  typedef qint32 Type; };
-template <>    class QIntForSize<8> { public:  typedef qint64 Type; };
-template <typename T> class QIntForType : public QIntForSize<sizeof(T)> { };
-typedef QIntForType<void *>::Type qptrdiff;
+template <int> struct QIntegerForSize;
+template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
+template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
+template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
+typedef QIntegerForSizeof<void*>::Unsigned quintptr;
+typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 
 /*
    Useful type definitions for Qt
@@ -1037,6 +1070,7 @@ typedef int QNoImplicitBoolCast;
 #define QT_NO_FPU
 #endif
 
+// This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
 #elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
@@ -1184,6 +1218,11 @@ class QDataStream;
 #    else
 #      define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_OPENVG_LIB)
+#      define Q_OPENVG_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_OPENVG_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_XML_LIB)
 #      define Q_XML_EXPORT Q_DECL_EXPORT
 #    else
@@ -1223,6 +1262,7 @@ class QDataStream;
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
+#    define Q_OPENVG_EXPORT Q_DECL_IMPORT
 #    define Q_XML_EXPORT Q_DECL_IMPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
 #    define Q_SCRIPT_EXPORT Q_DECL_IMPORT
@@ -1248,6 +1288,7 @@ class QDataStream;
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
+#    define Q_OPENVG_EXPORT Q_DECL_EXPORT
 #    define Q_XML_EXPORT Q_DECL_EXPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
 #    define Q_SCRIPT_EXPORT Q_DECL_EXPORT
@@ -1496,7 +1537,7 @@ inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
    Avoid "unused parameter" warnings
 */
 
-#if defined(Q_CC_INTEL) && !defined(Q_OS_WIN)
+#if defined(Q_CC_INTEL) && !defined(Q_OS_WIN) || defined(Q_CC_RVCT)
 template <typename T>
 inline void qUnused(T &x) { (void)x; }
 #  define Q_UNUSED(x) qUnused(x);
@@ -1508,7 +1549,7 @@ inline void qUnused(T &x) { (void)x; }
    Debugging and error handling
 */
 
-#if defined(Q_OS_SYMBIAN) && defined(NDEBUG)
+#if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
 #  define QT_NO_DEBUG
 #endif
 
@@ -1805,6 +1846,22 @@ static inline bool qFuzzyCompare(float p1, float p2)
     return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
 
+/*!
+  \internal
+*/
+static inline bool qFuzzyIsNull(double d)
+{
+    return qAbs(d) <= 0.000000000001;
+}
+
+/*!
+  \internal
+*/
+static inline bool qFuzzyIsNull(float f)
+{
+    return qAbs(f) <= 0.00001f;
+}
+
 /*
    This function tests a double for a null value. It doesn't
    check whether the actual value is 0 or close to 0, but whether
@@ -1936,7 +1993,7 @@ enum { /* TYPEINFO flags */
 
 #define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
 template <> \
-class QTypeInfo<TYPE> \
+class QTypeInfo<TYPE > \
 { \
 public: \
     enum { \
@@ -2374,6 +2431,7 @@ Q_CORE_EXPORT int qt_translateExceptionToSymbianError(const std::exception& ex);
 #define QT_MODULE_TEST                 0x04000
 #define QT_MODULE_DBUS                 0x08000
 #define QT_MODULE_SCRIPTTOOLS          0x10000
+#define QT_MODULE_OPENVG               0x20000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2393,6 +2451,7 @@ Q_CORE_EXPORT int qt_translateExceptionToSymbianError(const std::exception& ex);
                                  | QT_MODULE_GUI \
                                  | QT_MODULE_NETWORK \
                                  | QT_MODULE_OPENGL \
+                                 | QT_MODULE_OPENVG \
                                  | QT_MODULE_SQL \
                                  | QT_MODULE_XML \
                                  | QT_MODULE_XMLPATTERNS \
@@ -2438,6 +2497,9 @@ QT_LICENSED_MODULE(Network)
 #endif
 #if (QT_EDITION & QT_MODULE_OPENGL)
 QT_LICENSED_MODULE(OpenGL)
+#endif
+#if (QT_EDITION & QT_MODULE_OPENVG)
+QT_LICENSED_MODULE(OpenVG)
 #endif
 #if (QT_EDITION & QT_MODULE_SQL)
 QT_LICENSED_MODULE(Sql)

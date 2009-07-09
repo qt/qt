@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -333,17 +333,17 @@ QByteArray QFontSubset::glyphName(unsigned int glyph, const QVector<int> reverse
             name[0] = 0;
     }
     if (name[0]) {
-        s << "/" << name;
+        s << '/' << name;
     } else
 #endif
 #if defined(Q_WS_X11)
     if (fontEngine->type() == QFontEngine::XLFD) {
         uint uc = static_cast<QFontEngineXLFD *>(fontEngine)->toUnicode(glyphIndex);
-        s << "/" << glyphName(uc, false /* ### */);
+        s << '/' << glyphName(uc, false /* ### */);
     } else
 #endif
     if (reverseMap[glyphIndex] && reverseMap[glyphIndex] < 0x10000) {
-        s << "/" << glyphName(reverseMap[glyphIndex], false);
+        s << '/' << glyphName(reverseMap[glyphIndex], false);
     } else {
         s << "/gl" << (int)glyphIndex;
     }
@@ -395,13 +395,13 @@ QByteArray QFontSubset::widthArray() const
             int endnonlinear = startLinear ? startLinear : g;
             // qDebug("    startLinear=%x endnonlinear=%x", startLinear,endnonlinear);
             if (endnonlinear > start) {
-                s << start << "[";
+                s << start << '[';
                 for (int i = start; i < endnonlinear; ++i)
                     s << (widths[i]*scale).toInt();
                 s << "]\n";
             }
             if (startLinear)
-                s << startLinear << g - 1 << (widths[startLinear]*scale).toInt() << "\n";
+                s << startLinear << g - 1 << (widths[startLinear]*scale).toInt() << '\n';
         }
         s << "]\n";
     }
@@ -488,14 +488,14 @@ QByteArray QFontSubset::createToUnicodeMap() const
         int endnonlinear = startLinear ? startLinear : g;
         // qDebug("    startLinear=%x endnonlinear=%x", startLinear,endnonlinear);
         if (endnonlinear > start) {
-            s << "<" << QPdf::toHex((ushort)start, buf) << "> <";
+            s << '<' << QPdf::toHex((ushort)start, buf) << "> <";
             s << QPdf::toHex((ushort)(endnonlinear - 1), buf) << "> ";
             if (endnonlinear == start + 1) {
-                s << "<" << QPdf::toHex((ushort)reverseMap[start], buf) << ">\n";
+                s << '<' << QPdf::toHex((ushort)reverseMap[start], buf) << ">\n";
             } else {
-                s << "[";
+                s << '[';
                 for (int i = start; i < endnonlinear; ++i) {
-                    s << "<" << QPdf::toHex((ushort)reverseMap[i], buf) << "> ";
+                    s << '<' << QPdf::toHex((ushort)reverseMap[i], buf) << "> ";
                 }
                 s << "]\n";
             }
@@ -508,9 +508,9 @@ QByteArray QFontSubset::createToUnicodeMap() const
                 int uc_end = uc_start + len - 1;
                 if ((uc_end >> 8) != (uc_start >> 8))
                     len = 256 - (uc_start & 0xff);
-                s << "<" << QPdf::toHex((ushort)startLinear, buf) << "> <";
+                s << '<' << QPdf::toHex((ushort)startLinear, buf) << "> <";
                 s << QPdf::toHex((ushort)(startLinear + len - 1), buf) << "> ";
-                s << "<" << QPdf::toHex((ushort)reverseMap[startLinear], buf) << ">\n";
+                s << '<' << QPdf::toHex((ushort)reverseMap[startLinear], buf) << ">\n";
                 checkRanges(ts, ranges, nranges);
                 startLinear += len;
             }
@@ -1655,7 +1655,7 @@ QByteArray QFontSubset::toType1() const
 
     QByteArray id = QByteArray::number(object_id);
     QByteArray psname = properties.postscriptName;
-    psname.replace(" ", "");
+    psname.replace(' ', "");
 
     standard_font = false;
 
@@ -1681,12 +1681,12 @@ QByteArray QFontSubset::toType1() const
 #endif
     s << "/F" << id << "-Base\n";
     if (standard_font) {
-            s << "/" << psname << " findfont\n"
+            s << '/' << psname << " findfont\n"
                 "0 dict copy dup /NumGlyphs 0 put dup /CMap 256 array put def\n";
     } else {
         s << "<<\n";
         if(!psname.isEmpty())
-            s << "/FontName /" << psname << "\n";
+            s << "/FontName /" << psname << '\n';
         s << "/FontInfo <</FsType " << (int)fontEngine->fsType << ">>\n"
             "/FontType 1\n"
             "/PaintType 0\n"
@@ -1722,7 +1722,7 @@ QByteArray QFontSubset::type1AddedGlyphs() const
     int nGlyphs = glyph_indices.size();
     QByteArray id = QByteArray::number(object_id);
 
-    s << "F" << id << "-Base [\n";
+    s << 'F' << id << "-Base [\n";
     for (int i = downloaded_glyphs; i < nGlyphs; ++i) {
         glyph_t g = glyph_indices.at(i);
         QPainterPath path;

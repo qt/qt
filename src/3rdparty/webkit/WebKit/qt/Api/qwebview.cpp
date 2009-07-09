@@ -27,6 +27,8 @@
 #include "qevent.h"
 #include "qpainter.h"
 #include "qprinter.h"
+#include "qdir.h"
+#include "qfile.h"
 
 class QWebViewPrivate
 {
@@ -34,6 +36,7 @@ public:
     QWebViewPrivate(QWebView *view)
         : view(view)
         , page(0)
+        , renderHints(QPainter::TextAntialiasing)
 #ifndef QT_NO_CURSOR
         , cursorSetByWebCore(false)
         , usesWebCoreCursor(true)
@@ -43,6 +46,7 @@ public:
     QWebView *view;
     QWebPage *page;
 
+    QPainter::RenderHints renderHints;
 
 #ifndef QT_NO_CURSOR
     /*
@@ -245,11 +249,79 @@ void QWebView::setPage(QWebPage *page)
 }
 
 /*!
+    Returns a valid URL from a user supplied \a string if one can be deducted.
+    In the case that is not possible, an invalid QUrl() is returned.
+
+    \since 4.6
+
+    Most applications that can browse the web, allow the user to input a URL
+    in the form of a plain string. This string can be manually typed into
+    a location bar, obtained from the clipboard, or passed in via command
+    line arguments.
+
+    When the string is not already a valid URL, a best guess is performed,
+    making various web related assumptions.
+
+    In the case the string corresponds to a valid file path on the system,
+    a file:// URL is constructed, using QUrl::fromLocalFile().
+
+    If that is not the case, an attempt is made to turn the string into a
+    http:// or ftp:// URL. The latter in the case the string starts with
+    'ftp'. The result is then passed through QUrl's tolerant parser, and
+    in the case or success, a valid QUrl is returned, or else a QUrl().
+
+    Examples
+    - webkit.org becomes http://webkit.org
+    - ftp.webkit.org becomes ftp://ftp.webkit.org
+    - localhost becomes http://localhost
+    - /home/user/test.html becomes file:///home/user/test.html (if exists)
+
+    Tips when dealing with URLs and strings
+    - When creating a QString from a QByteArray or a char*, always use
+      QString::fromUtf8().
+    - Do not use QUrl(string), nor QUrl::toString() anywhere where the URL might
+      be used, such as in the location bar, as those functions loose data.
+      Instead use QUrl::fromEncoded() and QUrl::toEncoded(), respectively.
+
+ */
+QUrl QWebView::guessUrlFromString(const QString &string)
+{
+    QString trimmedString = string.trimmed();
+
+    // Check the most common case of a valid url with scheme and host first
+    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
+    if (url.isValid() && !url.scheme().isEmpty() && !url.host().isEmpty())
+        return url;
+
+    // Absolute files that exists
+    if (QDir::isAbsolutePath(trimmedString) && QFile::exists(trimmedString))
+        return QUrl::fromLocalFile(trimmedString);
+
+    // If the string is missing the scheme or the scheme is not valid prepend a scheme
+    QString scheme = url.scheme();
+    if (scheme.isEmpty() || scheme.contains(QLatin1Char('.')) || scheme == QLatin1String("localhost")) {
+        // Do not do anything for strings such as "foo", only "foo.com"
+        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
+        if (dotIndex != -1 || trimmedString.startsWith(QLatin1String("localhost"))) {
+            const QString hostscheme = trimmedString.left(dotIndex).toLower();
+            QByteArray scheme = (hostscheme == QLatin1String("ftp")) ? "ftp" : "http";
+            trimmedString = QLatin1String(scheme) + QLatin1String("://") + trimmedString;
+        }
+        url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
+    }
+
+    if (url.isValid())
+        return url;
+
+    return QUrl();
+}
+
+/*!
     Loads the specified \a url and displays it.
 
     \note The view remains the same until enough data has arrived to display the new \a url.
 
-    \sa setUrl(), url(), urlChanged()
+    \sa setUrl(), url(), urlChanged(), guessUrlFromString()
 */
 void QWebView::load(const QUrl &url)
 {
@@ -533,9 +605,59 @@ qreal QWebView::textSizeMultiplier() const
 }
 
 /*!
-    Finds the next occurrence of the string, \a subString, in the page, using
-    the given \a options. Returns true of \a subString was found and selects
-    the match visually; otherwise returns false.
+    \property QWebView::renderHints
+    \since 4.6
+    \brief the default render hints for the view
+
+    These hints are used to initialize QPainter before painting the web page.
+
+    QPainter::TextAntialiasing is enabled by default.
+*/
+QPainter::RenderHints QWebView::renderHints() const
+{
+    return d->renderHints;
+}
+
+void QWebView::setRenderHints(QPainter::RenderHints hints)
+{
+    if (hints == d->renderHints)
+        return;
+    d->renderHints = hints;
+    update();
+}
+
+/*!
+    If \a enabled is true, the render hint \a hint is enabled; otherwise it
+    is disabled.
+
+    \since 4.6
+    \sa renderHints
+*/
+void QWebView::setRenderHint(QPainter::RenderHint hint, bool enabled)
+{
+    QPainter::RenderHints oldHints = d->renderHints;
+    if (enabled)
+        d->renderHints |= hint;
+    else
+        d->renderHints &= ~hint;
+    if (oldHints != d->renderHints)
+        update();
+}
+
+
+/*!
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    If the HighlightAllOccurrences flag is passed, the function will highlight all occurrences
+    that exist in the page. All subsequent calls will extend the highlight, rather than
+    replace it, with occurrences of the new string.
+
+    If the HighlightAllOccurrences flag is not passed, the function will select an occurrence
+    and all subsequent calls will replace the current occurrence with the next one.
+
+    To clear the selection, just pass an empty string.
+
+    Returns true if \a subString was found; otherwise returns false.
 
     \sa selectedText(), selectionChanged()
 */
@@ -680,6 +802,7 @@ void QWebView::paintEvent(QPaintEvent *ev)
 
     QWebFrame *frame = d->page->mainFrame();
     QPainter p(this);
+    p.setRenderHints(d->renderHints);
 
     frame->render(&p, ev->region());
 
@@ -914,7 +1037,10 @@ void QWebView::changeEvent(QEvent *e)
 
     This signal is emitted whenever the icon of the page is loaded or changes.
 
-    \sa icon()
+    In order for icons to be loaded, you will need to set an icon database path
+    using QWebSettings::setIconDatabasePath().
+
+    \sa icon(), QWebSettings::setIconDatabasePath()
 */
 
 /*!

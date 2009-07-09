@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,14 +55,20 @@
 
 #include "shared_global_p.h"
 #include "abstractformbuilder.h"
+#include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
 
 class DomScript;
+class DomCustomWidgets;
+class DomCustomWidget;
+class DomSlots;
 
 class QDesignerFormEditorInterface;
 
 namespace qdesigner_internal {
+
+class WidgetDataBaseItem;
 
 class QDESIGNER_SHARED_EXPORT QSimpleResource : public QAbstractFormBuilder
 {
@@ -92,6 +98,11 @@ public:
     static QString customWidgetScript(QDesignerFormEditorInterface *core, const QString &className);
     static bool hasCustomWidgetScript(QDesignerFormEditorInterface *core, QObject *object);
 
+    // Implementation for FormBuilder::createDomCustomWidgets() that adds
+    // the custom widgets to the widget database
+    static void handleDomCustomWidgets(const QDesignerFormEditorInterface *core,
+                                       const DomCustomWidgets *dom_custom_widgets);
+
 protected:
     virtual QIcon nameToIcon(const QString &filePath, const QString &qrcPath);
     virtual QString iconToFilePath(const QIcon &pm) const;
@@ -105,7 +116,13 @@ protected:
     typedef QList<DomScript*> DomScripts;
     static void addScript(const QString &script, ScriptSource source, DomScripts &domScripts);
 
+    static bool addFakeMethods(const DomSlots *domSlots, QStringList &fakeSlots, QStringList &fakeSignals);
+
 private:
+    static void addCustomWidgetsToWidgetDatabase(const QDesignerFormEditorInterface *core,
+                                                 QList<DomCustomWidget*>& custom_widget_list);
+    static void addFakeMethodsToWidgetDataBase(const DomCustomWidget *domCustomWidget, WidgetDataBaseItem *item);
+
     static bool m_warningsEnabled;
     QDesignerFormEditorInterface *m_core;
 };

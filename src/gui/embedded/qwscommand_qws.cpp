@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,6 @@
 #include "qtransportauth_qws.h"
 #include "qtransportauth_qws_p.h"
 
-#include <sys/uio.h>
 #include <unistd.h>
 
 // #define QWSCOMMAND_DEBUG 1 // Uncomment to debug client/server communication
@@ -134,7 +133,7 @@ void QWSHexDump::init()
 
 void QWSHexDump::hexDump()
 {
-    *outstrm << "(" << dataSize << " bytes):\n" << prefix;
+    *outstrm << '(' << dataSize << " bytes):\n" << prefix;
     sprintf(sideviewLayout, " [%%-%us]", wrap);
     dataWidth = (2 * wrap) + (wrap / clustering);
 
@@ -145,7 +144,7 @@ void QWSHexDump::hexDump()
         sideview[wrapIndex = i%wrap] = isprint(c) ? c : '.';
 
         if (wrapIndex && (wrapIndex % clustering == 0))
-            *outstrm << " ";
+            *outstrm << ' ';
 
         outstrm->setFieldWidth(2);
         outstrm->setPadChar('0');
@@ -173,14 +172,14 @@ void QWSHexDump::sideviewDump(int at)
         int currentWidth = (2 * at) + (at / clustering) - (at%clustering?0:1);
         int missing = qMax(dataWidth - currentWidth, 0);
         while (missing--)
-            *outstrm << " ";
+            *outstrm << ' ';
 
         *outstrm << " [";
         outstrm->setPadChar(' ');
         outstrm->setFieldWidth(wrap);
         outstrm->setFieldAlignment( QTextStream::AlignLeft );
         *outstrm << sideview;
-        *outstrm << "]";
+        *outstrm << ']';
     }
 }
 

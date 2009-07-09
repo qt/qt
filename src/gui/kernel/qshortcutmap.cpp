@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,8 +60,6 @@
 #ifndef QT_NO_SHORTCUT
 
 QT_BEGIN_NAMESPACE
-
-extern bool qt_mac_no_native_menubar; // qmenu_mac.cpp
 
 // To enable verbose output uncomment below
 //#define DEBUG_QSHORTCUTMAP
@@ -111,7 +109,7 @@ QDebug &operator<<(QDebug &dbg, const QShortcutEntry *se) {
     dbg.nospace()
         << "QShortcutEntry(" << se->keyseq
         << "), id(" << se->id << "), enabled(" << se->enabled << "), autorepeat(" << se->autorepeat
-        << "), owner(" << se->owner << ")";
+        << "), owner(" << se->owner << ')';
     return dbg.space();
 }
 #endif // QT_NO_DEBUGSTREAM
@@ -627,13 +625,13 @@ QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
 bool QShortcutMap::correctContext(const QShortcutEntry &item) const {
     Q_ASSERT_X(item.owner, "QShortcutMap", "Shortcut has no owner. Illegal map state!");
 
-    QWidget *active_window = qApp->activeWindow();
+    QWidget *active_window = QApplication::activeWindow();
 
     // popups do not become the active window,
     // so we fake it here to get the correct context
     // for the shortcut system.
-    if (qApp->activePopupWidget())
-        active_window = qApp->activePopupWidget();
+    if (QApplication::activePopupWidget())
+        active_window = QApplication::activePopupWidget();
 
     if (!active_window)
         return false;
@@ -657,7 +655,7 @@ bool QShortcutMap::correctWidgetContext(Qt::ShortcutContext context, QWidget *w,
 {
     bool visible = w->isVisible();    
 #ifdef Q_WS_MAC
-    if (!qt_mac_no_native_menubar && qobject_cast<QMenuBar *>(w))
+    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
 
@@ -720,7 +718,7 @@ bool QShortcutMap::correctGraphicsWidgetContext(Qt::ShortcutContext context, QGr
 {
     bool visible = w->isVisible();
 #ifdef Q_WS_MAC
-    if (!qt_mac_no_native_menubar && qobject_cast<QMenuBar *>(w))
+    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
 
@@ -875,7 +873,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     qDebug().nospace()
         << "QShortcutMap::dispatchEvent(): Sending QShortcutEvent(\""
         << (QString)next->keyseq << "\", " << next->id << ", "
-        << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ")";
+        << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ')';
 #endif
     QShortcutEvent se(next->keyseq, next->id, enabledShortcuts>1);
     QApplication::sendEvent(const_cast<QObject *>(next->owner), &se);

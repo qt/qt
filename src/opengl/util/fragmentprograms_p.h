@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,7 +71,7 @@ enum FragmentVariable {
     VAR_FMP2_M_RADIUS2,
     VAR_FMP,
     VAR_INV_MATRIX_M0,
-    VAR_ANGLE,
+    VAR_ANGLE
 };
 
 enum FragmentBrushType {
@@ -80,7 +80,7 @@ enum FragmentBrushType {
     FRAGMENT_PROGRAM_BRUSH_CONICAL,
     FRAGMENT_PROGRAM_BRUSH_LINEAR,
     FRAGMENT_PROGRAM_BRUSH_TEXTURE,
-    FRAGMENT_PROGRAM_BRUSH_PATTERN,
+    FRAGMENT_PROGRAM_BRUSH_PATTERN
 };
 
 enum FragmentCompositionModeType {
@@ -109,12 +109,12 @@ enum FragmentCompositionModeType {
     COMPOSITION_MODES_DIFFERENCE_NOMASK,
     COMPOSITION_MODES_EXCLUSION_NOMASK,
     COMPOSITION_MODE_BLEND_MODE_MASK,
-    COMPOSITION_MODE_BLEND_MODE_NOMASK,
+    COMPOSITION_MODE_BLEND_MODE_NOMASK
 };
 
 enum FragmentMaskType {
     FRAGMENT_PROGRAM_MASK_TRAPEZOID_AA,
-    FRAGMENT_PROGRAM_MASK_ELLIPSE_AA,
+    FRAGMENT_PROGRAM_MASK_ELLIPSE_AA
 };
 
 static const unsigned int num_fragment_variables = 19;

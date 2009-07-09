@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -128,7 +128,7 @@ void QX11WindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint 
         return;
 //         qDebug() << "XSetClipRectangles";
 //         for  (int i = 0; i < num; ++i)
-//             qDebug() << " " << i << rects[i].x << rects[i].x << rects[i].y << rects[i].width << rects[i].height;
+//             qDebug() << ' ' << i << rects[i].x << rects[i].x << rects[i].y << rects[i].width << rects[i].height;
     XSetClipRectangles(X11->display, gc, 0, 0, rects, num, YXBanded);
     XCopyArea(X11->display, d_ptr->device.handle(), widget->handle(), gc,
               br.x() + offset.x(), br.y() + offset.y(), br.width(), br.height(), wbr.x(), wbr.y());

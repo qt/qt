@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -84,6 +84,12 @@ bool qmake_setpwd(const QString &p)
 
 int runQMake(int argc, char **argv)
 {
+    // stderr is unbuffered by default, but stdout buffering depends on whether
+    // there is a terminal attached. Buffering can make output from stderr and stdout
+    // appear out of sync, so force stdout to be unbuffered as well.
+    // This is particularly important for things like QtCreator and scripted builds.
+    setvbuf(stdout, (char *)NULL, _IONBF, 0);
+
     // parse command line
     int ret = Option::init(argc, argv);
     if(ret != Option::QMAKE_CMDLINE_SUCCESS) {

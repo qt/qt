@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -669,7 +669,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
         for (int i = 0; i < cupsPrinterCount; ++i) {
             QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
             if (cupsPrinters[i].instance)
-                printerName += QLatin1String("/") + QString::fromLocal8Bit(cupsPrinters[i].instance);
+                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
 
             widget.printers->addItem(printerName);
             if (cupsPrinters[i].is_default)
@@ -813,7 +813,7 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
             optionsPane->selectPrinter(0);
 #endif
         if (lprPrinters.count() > 0) {
-            QString type = lprPrinters.at(index).name + QLatin1String("@") + lprPrinters.at(index).host;
+            QString type = lprPrinters.at(index).name + QLatin1Char('@') + lprPrinters.at(index).host;
             if (!lprPrinters.at(index).comment.isEmpty())
             type += QLatin1String(", ") + lprPrinters.at(index).comment;
             widget.type->setText(type);
@@ -1194,9 +1194,9 @@ QVariant QPPDOptionsModel::headerData(int section, Qt::Orientation, int role) co
 
     switch(section){
         case 0:
-            return QVariant(QApplication::translate("QPPDOptionsModel","Name"));
+            return QVariant(QApplication::translate("QPPDOptionsModel", "Name"));
         case 1:
-            return QVariant(QApplication::translate("QPPDOptionsModel","Value"));
+            return QVariant(QApplication::translate("QPPDOptionsModel", "Value"));
         default:
             return QVariant();
     }

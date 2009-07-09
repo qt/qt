@@ -26,8 +26,9 @@
 #define SharedBuffer_h
 
 #include "PlatformString.h"
-#include <wtf/RefCounted.h>
 #include <wtf/Forward.h>
+#include <wtf/OwnPtr.h>
+#include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
 #if PLATFORM(CF)
@@ -69,6 +70,7 @@ public:
 #endif
 #if PLATFORM(CF)
     CFDataRef createCFData();
+    static PassRefPtr<SharedBuffer> wrapCFData(CFDataRef);
 #endif
 
     const char* data() const;

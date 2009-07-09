@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,7 +74,7 @@ static inline QDebug operator<<(QDebug dbg, const QThread *th)
     dbg.nospace() << "QThread(ptr=" << (void*)th;
     if (th && !th->objectName().isEmpty())
         dbg.nospace() << ", name=" << th->objectName();
-    dbg.nospace() << ")";
+    dbg.nospace() << ')';
     return dbg.space();
 }
 
@@ -90,7 +90,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
         dbg.nospace() << "same thread";
     else
         dbg.nospace() << conn->thread();
-    dbg.nospace() << ")";
+    dbg.nospace() << ')';
     return dbg.space();
 }
 
@@ -565,7 +565,7 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it = haystack.children.constBegin();
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
     for ( ; it != end; ++it)
-        huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1String("/") + it->name);
+        huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
 
     if (needle == haystack.obj) {
         // is this a signal we should relay?

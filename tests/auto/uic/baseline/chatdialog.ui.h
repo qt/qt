@@ -46,7 +46,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         hboxLayout = new QHBoxLayout();
@@ -54,7 +54,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         textEdit = new QTextEdit(ChatDialog);
@@ -78,7 +78,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         label = new QLabel(ChatDialog);
         label->setObjectName(QString::fromUtf8("label"));

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,6 +66,18 @@
 
     These classes provide more complex user interface widgets (controls).
 
+*/
+
+/*!
+    \group animation
+    \ingroup groups
+
+    \title Animation Framework
+    \brief Classes for animations, states and transitions.
+
+    These classes provide a framework for creating both simple and complex
+    animations. \l{The Animation Framework} also provides states and animated
+    transitions, making it easy to create animated stateful forms.
 */
 
 /*!
@@ -596,4 +608,15 @@
 
     These classes are relevant to developers who are working with Qt Script's
     debugging features.
+*/
+
+/*!
+    \group statemachine
+    \ingroup groups
+
+    \title State Machine Classes
+    \brief Classes for constructing and executing state graphs.
+
+    These classes are provided by \l{The State Machine Framework} for creating
+    event-driven state machines.
 */

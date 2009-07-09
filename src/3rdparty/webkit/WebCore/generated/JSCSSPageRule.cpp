@@ -19,24 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSCSSPageRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSPageRule.h"
 #include "CSSStyleDeclaration.h"
 #include "JSCSSStyleDeclaration.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSPageRule)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSPageRule);
 
 /* Hash table */
 
@@ -74,13 +70,13 @@ public:
     JSCSSPageRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSPageRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSPageRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSPageRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -109,9 +105,9 @@ static const HashTable JSCSSPageRulePrototypeTable =
 
 const ClassInfo JSCSSPageRulePrototype::s_info = { "CSSPageRulePrototype", 0, &JSCSSPageRulePrototypeTable, 0 };
 
-JSObject* JSCSSPageRulePrototype::self(ExecState* exec)
+JSObject* JSCSSPageRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSPageRule>(exec);
+    return getDOMPrototype<JSCSSPageRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSPageRule::s_info = { "CSSPageRule", &JSCSSRule::s_info, &JSCSSPageRuleTable, 0 };
@@ -121,9 +117,9 @@ JSCSSPageRule::JSCSSPageRule(PassRefPtr<Structure> structure, PassRefPtr<CSSPage
 {
 }
 
-JSObject* JSCSSPageRule::createPrototype(ExecState* exec)
+JSObject* JSCSSPageRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSPageRulePrototype(JSCSSPageRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSPageRulePrototype(JSCSSPageRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSPageRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,28 +127,30 @@ bool JSCSSPageRule::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSCSSPageRule, Base>(exec, &JSCSSPageRuleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSPageRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSPageRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSPageRule* imp = static_cast<CSSPageRule*>(static_cast<JSCSSPageRule*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->selectorText());
 }
 
-JSValuePtr jsCSSPageRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSPageRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSPageRule* imp = static_cast<CSSPageRule*>(static_cast<JSCSSPageRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsCSSPageRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSPageRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSPageRule*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSCSSPageRule::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSCSSPageRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSCSSPageRule, Base>(exec, propertyName, value, &JSCSSPageRuleTable, this, slot);
 }
 
-void setJSCSSPageRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSCSSPageRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     CSSPageRule* imp = static_cast<CSSPageRule*>(static_cast<JSCSSPageRule*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -160,7 +158,7 @@ void setJSCSSPageRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValue
     setDOMException(exec, ec);
 }
 
-JSValuePtr JSCSSPageRule::getConstructor(ExecState* exec)
+JSValue JSCSSPageRule::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSPageRuleConstructor>(exec);
 }

@@ -20,21 +20,21 @@
 
 #include "config.h"
 
-#include "JSSQLError.h"
+#if ENABLE(DATABASE)
 
-#include <wtf/GetPtr.h>
+#include "JSSQLError.h"
 
 #include "KURL.h"
 #include "SQLError.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSQLError)
+ASSERT_CLASS_FITS_IN_CELL(JSSQLError);
 
 /* Hash table */
 
@@ -68,9 +68,9 @@ static const HashTable JSSQLErrorPrototypeTable =
 
 const ClassInfo JSSQLErrorPrototype::s_info = { "SQLErrorPrototype", 0, &JSSQLErrorPrototypeTable, 0 };
 
-JSObject* JSSQLErrorPrototype::self(ExecState* exec)
+JSObject* JSSQLErrorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSQLError>(exec);
+    return getDOMPrototype<JSSQLError>(exec, globalObject);
 }
 
 const ClassInfo JSSQLError::s_info = { "SQLError", 0, &JSSQLErrorTable, 0 };
@@ -84,12 +84,11 @@ JSSQLError::JSSQLError(PassRefPtr<Structure> structure, PassRefPtr<SQLError> imp
 JSSQLError::~JSSQLError()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSQLError::createPrototype(ExecState* exec)
+JSObject* JSSQLError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSQLErrorPrototype(JSSQLErrorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSQLErrorPrototype(JSSQLErrorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSQLError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -97,25 +96,29 @@ bool JSSQLError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSSQLError, Base>(exec, &JSSQLErrorTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SQLError* imp = static_cast<SQLError*>(static_cast<JSSQLError*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsSQLErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SQLError* imp = static_cast<SQLError*>(static_cast<JSSQLError*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SQLError* object)
+JSC::JSValue toJS(JSC::ExecState* exec, SQLError* object)
 {
     return getDOMObjectWrapper<JSSQLError>(exec, object);
 }
-SQLError* toSQLError(JSC::JSValuePtr value)
+SQLError* toSQLError(JSC::JSValue value)
 {
-    return value->isObject(&JSSQLError::s_info) ? static_cast<JSSQLError*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSQLError::s_info) ? static_cast<JSSQLError*>(asObject(value))->impl() : 0;
 }
 
 }
+
+#endif // ENABLE(DATABASE)

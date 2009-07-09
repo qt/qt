@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -256,6 +256,7 @@ private slots:
     void convertByteArrayToBool_data() const;
     void toIntFromQString() const;
     void toIntFromDouble() const;
+    void task256984_setValue();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -441,6 +442,9 @@ void tst_QVariant::canConvert_data()
     var = QVariant((double)0.1);
     QTest::newRow("Double")
         << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant(0.1f);
+    QTest::newRow("Float")
+        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = qVariantFromValue(QFont());
     QTest::newRow("Font")
         << var << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
@@ -574,6 +578,7 @@ void tst_QVariant::canConvert()
     QCOMPARE(val.canConvert(QVariant::Date), DateCast);
     QCOMPARE(val.canConvert(QVariant::DateTime), DateTimeCast);
     QCOMPARE(val.canConvert(QVariant::Double), DoubleCast);
+    QCOMPARE(val.canConvert(QVariant::Type(QMetaType::Float)), DoubleCast);
     QCOMPARE(val.canConvert(QVariant::Font), FontCast);
 #ifdef QT3_SUPPORT
     QCOMPARE(val.canConvert(QVariant::IconSet), IconSetCast);
@@ -616,6 +621,7 @@ void tst_QVariant::toInt_data()
     QTest::newRow( "invalid" ) << QVariant()  << 0 << false;
     QTest::newRow( "int" ) << QVariant( 123 ) << 123 << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << 3 << true;
+    QTest::newRow( "float" ) << QVariant( 3.1415927f ) << 3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << 123 << true;
 #ifdef QT3_SUPPORT
     QTest::newRow( "bool" ) << QVariant( true, 42 ) << 1 << true;
@@ -628,6 +634,7 @@ void tst_QVariant::toInt_data()
     QTest::newRow( "ulonglong1" ) << QVariant( uintMax1 ) << 0 << true;
     QTest::newRow( "signedint" ) << QVariant( -123 ) << -123 << true;
     QTest::newRow( "signeddouble" ) << QVariant( -3.1415927 ) << -3 << true;
+    QTest::newRow( "signedfloat" ) << QVariant( -3.1415927f ) << -3 << true;
     QTest::newRow( "signedint-string" ) << QVariant( QString("-123") ) << -123 << true;
     QTest::newRow( "signedlonglong0" ) << QVariant( (qlonglong)-34 ) << -34 << true;
     QTest::newRow( "QChar" ) << QVariant(QChar('a')) << int('a') << true;
@@ -667,6 +674,7 @@ void tst_QVariant::toUInt_data()
 
     QTest::newRow( "int" ) << QVariant( 123 ) << (uint)123 << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << (uint)3 << true;
+    QTest::newRow( "float" ) << QVariant( 3.1415927f ) << (uint)3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << (uint)123 << true;
 #ifdef QT3_SUPPORT
     QTest::newRow( "bool" ) << QVariant( true, 42 ) << (uint)1 << true;
@@ -680,6 +688,7 @@ void tst_QVariant::toUInt_data()
     QTest::newRow( "ulonglong1" ) << QVariant( uintMax1 ) << (uint)0 << true;
     QTest::newRow( "negativeint" ) << QVariant( -123 ) << (uint)-123 << true;
     QTest::newRow( "negativedouble" ) << QVariant( -3.1415927 ) << (uint)-3 << true;
+    QTest::newRow( "negativefloat" ) << QVariant( -3.1415927f ) << (uint)-3 << true;
     QTest::newRow( "negativeint-string" ) << QVariant( QString("-123") ) << (uint)0 << false;
     QTest::newRow( "negativelonglong0" ) << QVariant( (qlonglong)-34 ) << (uint)-34 << true;
     QTest::newRow( "QChar" ) << QVariant(QChar('a')) << uint('a') << true;
@@ -861,7 +870,9 @@ void tst_QVariant::toBool_data()
     QTest::newRow( "uint0" ) << QVariant( 0u ) << false;
     QTest::newRow( "uint1" ) << QVariant( 123u ) << true;
     QTest::newRow( "double0" ) << QVariant( 0.0 ) << false;
+    QTest::newRow( "float0" ) << QVariant( 0.0f ) << false;
     QTest::newRow( "double1" ) << QVariant( 3.1415927 ) << true;
+    QTest::newRow( "float1" ) << QVariant( 3.1415927f ) << true;
 #ifdef QT3_SUPPORT
     QTest::newRow( "bool0" ) << QVariant( false, 42 ) << false;
     QTest::newRow( "bool1" ) << QVariant( true, 42 ) << true;
@@ -1091,6 +1102,7 @@ void tst_QVariant::toLongLong_data()
 
     QTest::newRow( "int0" ) << QVariant( 123 ) << (qlonglong)123 << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << (qlonglong)3 << true;
+    QTest::newRow( "float" ) << QVariant( 3.1415927f ) << (qlonglong)3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << (qlonglong)123 << true;
 #ifdef QT3_SUPPORT
     QTest::newRow( "bool" ) << QVariant( true, 42 ) << (qlonglong)1 << true;
@@ -1131,6 +1143,7 @@ void tst_QVariant::toULongLong_data()
 
     QTest::newRow( "int0" ) << QVariant( 123 ) << (qulonglong)123 << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << (qulonglong)3 << true;
+    QTest::newRow( "float" ) << QVariant( 3.1415927f ) << (qulonglong)3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << (qulonglong)123 << true;
 #ifdef QT3_SUPPORT
     QTest::newRow( "bool" ) << QVariant( true, 42 ) << (qulonglong)1 << true;
@@ -1219,6 +1232,7 @@ void tst_QVariant::toByteArray_data()
     QTest::newRow( "int" ) << QVariant( -123 ) << QByteArray( "-123" );
     QTest::newRow( "uint" ) << QVariant( (uint)123 ) << QByteArray( "123" );
     QTest::newRow( "double" ) << QVariant( 123.456 ) << QByteArray( "123.456" );
+    QTest::newRow( "float" ) << QVariant( 123.456f ) << QByteArray( "123.456" );
     QTest::newRow( "longlong" ) << QVariant( (qlonglong)34 ) << QByteArray( "34" );
     QTest::newRow( "ulonglong" ) << QVariant( (qulonglong)34 ) << QByteArray( "34" );
 }
@@ -1244,6 +1258,7 @@ void tst_QVariant::toString_data()
     QTest::newRow( "int" ) << QVariant( -123 ) << QString( "-123" );
     QTest::newRow( "uint" ) << QVariant( (uint)123 ) << QString( "123" );
     QTest::newRow( "double" ) << QVariant( 123.456 ) << QString( "123.456" );
+    QTest::newRow( "float" ) << QVariant( 123.456f ) << QString( "123.456" );
 #ifdef QT3_SUPPORT
     QTest::newRow( "bool" ) << QVariant( true, 0 ) << QString( "true" );
 #else
@@ -1451,6 +1466,7 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "datetime_invalid" ) << QVariant( QDateTime() ) << true;
     QTest::newRow( "datetime_valid" ) << QVariant( QDateTime( QDate( 2002, 07, 06 ), QTime( 14, 0, 0 ) ) ) << false;
     QTest::newRow( "double_valid" ) << QVariant( 123.456 ) << false;
+    QTest::newRow( "float_valid" ) << QVariant( 123.456f ) << false;
     QTest::newRow( "font_valid" ) << qVariantFromValue( QFont( "times", 12 ) ) << false;
     QTest::newRow( "pixmap_invalid" ) << qVariantFromValue( QPixmap() ) << true;
     QPixmap pixmap( 10, 10 );
@@ -1477,6 +1493,7 @@ void tst_QVariant::writeToReadFromDataStream_data()
     vMap.insert( "int", QVariant( 1 ) );
     vMap.insert( "string", QVariant( QString("Two") ) );
     vMap.insert( "double", QVariant( 3.45 ) );
+    vMap.insert( "float", QVariant( 3.45f ) );
     QTest::newRow( "map_valid" ) << QVariant( vMap ) << false;
     QTest::newRow( "palette_valid" ) << qVariantFromValue(QPalette(QColor("turquoise"))) << false;
     QTest::newRow( "pen_valid" ) << qVariantFromValue( QPen( Qt::red ) ) << false;
@@ -1670,6 +1687,10 @@ void tst_QVariant::operator_eq_eq_data()
     QVariant mDoubleString(QByteArray("42.11"));
     QVariant mDoubleQString(QString("42.11"));
 
+    QVariant mFloat(42.11f);
+    QVariant mFloatString(QByteArray("42.11"));
+    QVariant mFloatQString(QString("42.11"));
+
     QVariant mLongLong((qlonglong)-42);
     QVariant mLongLongString(QByteArray("-42"));
     QVariant mLongLongQString(QString("-42"));
@@ -1687,6 +1708,7 @@ void tst_QVariant::operator_eq_eq_data()
     QVariant mBoolQString(QString("false"));
 
     QTest::newRow( "double_int" ) << QVariant(42.0) << QVariant(42) << true;
+    QTest::newRow( "float_int" ) << QVariant(42.f) << QVariant(42) << true;
     QTest::newRow( "mInt_mIntString" ) << mInt << mIntString << true;
     QTest::newRow( "mIntString_mInt" ) << mIntString << mInt << true;
     QTest::newRow( "mInt_mIntQString" ) << mInt << mIntQString << true;
@@ -1701,6 +1723,11 @@ void tst_QVariant::operator_eq_eq_data()
     QTest::newRow( "mDoubleString_mDouble" ) << mDoubleString << mDouble << true;
     QTest::newRow( "mDouble_mDoubleQString" ) << mDouble << mDoubleQString << true;
     QTest::newRow( "mDoubleQString_mDouble" ) << mDoubleQString << mDouble << true;
+
+    QTest::newRow( "mFloat_mFloatString" ) << mFloat << mFloatString << true;
+    QTest::newRow( "mFloatString_mFloat" ) << mFloatString << mFloat << true;
+    QTest::newRow( "mFloat_mFloatQString" ) << mFloat << mFloatQString << true;
+    QTest::newRow( "mFloatQString_mFloat" ) << mFloatQString << mFloat << true;
 
     QTest::newRow( "mLongLong_mLongLongString" ) << mLongLong << mLongLongString << true;
     QTest::newRow( "mLongLongString_mLongLong" ) << mLongLongString << mLongLong << true;
@@ -1901,6 +1928,7 @@ void tst_QVariant::typeName_data()
     QTest::newRow("17") << int(QVariant::UInt) << QByteArray("uint");
     QTest::newRow("18") << int(QVariant::Bool) << QByteArray("bool");
     QTest::newRow("19") << int(QVariant::Double) << QByteArray("double");
+    QTest::newRow("20") << int(QMetaType::Float) << QByteArray("float");
     QTest::newRow("21") << int(QVariant::Polygon) << QByteArray("QPolygon");
     QTest::newRow("22") << int(QVariant::Region) << QByteArray("QRegion");
     QTest::newRow("23") << int(QVariant::Bitmap) << QByteArray("QBitmap");
@@ -2234,6 +2262,13 @@ void tst_QVariant::basicUserType()
     QCOMPARE(v.toDouble(), 4.4);
 
     {
+        float f = 4.5f;
+        v = QVariant(QMetaType::Float, &f);
+    }
+    QCOMPARE(v.userType(), int(QMetaType::Float));
+    QCOMPARE(v.toDouble(), 4.5);
+
+    {
         QByteArray ba("bar");
         v = QVariant(QMetaType::QByteArray, &ba);
     }
@@ -2247,6 +2282,7 @@ void tst_QVariant::data_()
 
     QVariant i = 1;
     QVariant d = 1.12;
+    QVariant f = 1.12f;
     QVariant ll = (qlonglong)2;
     QVariant ull = (qulonglong)3;
     QVariant s(QString("hallo"));
@@ -2259,6 +2295,10 @@ void tst_QVariant::data_()
     v = d;
     QVERIFY(v.data());
     QCOMPARE(*static_cast<double *>(v.data()), d.toDouble());
+
+    v = f;
+    QVERIFY(v.data());
+    QCOMPARE(*static_cast<float *>(v.data()), qVariantValue<float>(v));
 
     v = ll;
     QVERIFY(v.data());
@@ -2283,6 +2323,7 @@ void tst_QVariant::constData()
 
     int i = 1;
     double d = 1.12;
+    float f = 1.12f;
     qlonglong ll = 2;
     qulonglong ull = 3;
     QString s("hallo");
@@ -2295,6 +2336,10 @@ void tst_QVariant::constData()
     v = QVariant(d);
     QVERIFY(v.constData());
     QCOMPARE(*static_cast<const double *>(v.constData()), d);
+
+    v = QVariant(f);
+    QVERIFY(v.constData());
+    QCOMPARE(*static_cast<const float *>(v.constData()), f);
 
     v = QVariant(ll);
     QVERIFY(v.constData());
@@ -2340,6 +2385,7 @@ void tst_QVariant::variant_to()
     qVariantSetValue(v4, foo);
 
     QCOMPARE(qvariant_cast<double>(v1), 4.2);
+    QCOMPARE(qvariant_cast<float>(v1), 4.2f);
     QCOMPARE(qvariant_cast<int>(v2), 5);
     QCOMPARE(qvariant_cast<QStringList>(v3), sl);
     QCOMPARE(qvariant_cast<QString>(v3), QString::fromLatin1("blah"));
@@ -2355,6 +2401,7 @@ void tst_QVariant::variant_to()
     QCOMPARE(qvariant_cast<int>(n), 42);
     QCOMPARE(qvariant_cast<uint>(n), 42u);
     QCOMPARE(qvariant_cast<double>(n), 42.0);
+    QCOMPARE(qvariant_cast<float>(n), 42.f);
     QCOMPARE(qvariant_cast<short>(n), short(42));
     QCOMPARE(qvariant_cast<ushort>(n), ushort(42));
 
@@ -2362,6 +2409,7 @@ void tst_QVariant::variant_to()
     QCOMPARE(qvariant_cast<int>(n), 43);
     QCOMPARE(qvariant_cast<uint>(n), 43u);
     QCOMPARE(qvariant_cast<double>(n), 43.0);
+    QCOMPARE(qvariant_cast<float>(n), 43.f);
     QCOMPARE(qvariant_cast<long>(n), 43l);
 
     n = QLatin1String("44");
@@ -2403,14 +2451,22 @@ void tst_QVariant::saveLoadCustomTypes()
 
 void tst_QVariant::url()
 {
-    QUrl url("http://www.trolltech.com");
+    QString str("http://www.trolltech.com");
+    QUrl url(str);
 
-    QVariant v(url);
+    QVariant v(url); //built with a QUrl
 
     QVariant v2 = v;
 
-    QVERIFY(v2.toUrl() == url);
+    QVariant v3(str); //built with a QString
 
+    QCOMPARE(v2.toUrl(), url);
+    QVERIFY(qVariantCanConvert<QUrl>(v3));
+    QCOMPARE(v2.toUrl(), v3.toUrl());
+
+    QVERIFY(qVariantCanConvert<QString>(v2));
+    QCOMPARE(v2.toString(), str);
+    QCOMPARE(v3.toString(), str);
 }
 
 void tst_QVariant::globalColor()
@@ -2743,6 +2799,9 @@ void tst_QVariant::task172061_invalidDate() const
 
     variant = foo;
     QVERIFY(!variant.convert(QVariant::Double));
+
+    variant = foo;
+    QVERIFY(!variant.convert(QVariant::Type(QMetaType::Float)));
 }
 
 struct WontCompare
@@ -2934,6 +2993,22 @@ void tst_QVariant::toIntFromDouble() const
     QVERIFY( ok == true );
     QCOMPARE(result, 2147483630);
 }
+
+void tst_QVariant::task256984_setValue()
+{
+    QTransform t; //we just take a value so that we're sure that it will be shared
+    QVariant v1 = t;
+    QVERIFY( v1.isDetached() );
+    QVariant v2 = v1;
+    QVERIFY( !v1.isDetached() );
+    QVERIFY( !v2.isDetached() );
+
+    qVariantSetValue(v2, 3); //set an integer value
+    
+    QVERIFY( v1.isDetached() );
+    QVERIFY( v2.isDetached() );
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

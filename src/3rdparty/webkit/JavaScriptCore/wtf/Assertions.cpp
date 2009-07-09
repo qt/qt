@@ -34,7 +34,7 @@
 #include <CoreFoundation/CFString.h>
 #endif
 
-#if COMPILER(MSVC) && !PLATFORM(WIN_CE)
+#if COMPILER(MSVC) && !PLATFORM(WINCE)
 #ifndef WINVER
 #define WINVER 0x0500
 #endif
@@ -54,7 +54,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
     if (strstr(format, "%@")) {
         CFStringRef cfFormat = CFStringCreateWithCString(NULL, format, kCFStringEncodingUTF8);
         CFStringRef str = CFStringCreateWithFormatAndArguments(NULL, NULL, cfFormat, args);
-        
+
         int length = CFStringGetMaximumSizeForEncoding(CFStringGetLength(str), kCFStringEncodingUTF8);
         char* buffer = (char*)malloc(length + 1);
 
@@ -66,7 +66,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
         CFRelease(str);
         CFRelease(cfFormat);
     } else
-#elif COMPILER(MSVC) && !PLATFORM(WIN_CE)
+#elif COMPILER(MSVC) && !PLATFORM(WINCE)
     if (IsDebuggerPresent()) {
         size_t size = 1024;
 

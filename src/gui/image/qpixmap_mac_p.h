@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,6 +68,7 @@ public:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);
+    bool scroll(int dx, int dy, const QRect &rect);
 
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
     void fill(const QColor &color);
@@ -82,7 +83,6 @@ public:
     QPaintEngine* paintEngine() const;
 
 private:
-    int w, h, d;
 
     uint has_alpha : 1, has_mask : 1, uninit : 1;
 

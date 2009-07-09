@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -363,7 +363,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
 #if (BIDI_DEBUG >= 2)
 //         qDebug() << "pos=" << current << " dir=" << directions[dir]
 //                  << " current=" << directions[dirCurrent] << " last=" << directions[status.last]
-//                  << " eor=" << eor << "/" << directions[status.eor]
+//                  << " eor=" << eor << '/' << directions[status.eor]
 //                  << " sor=" << sor << " lastStrong="
 //                  << directions[status.lastStrong]
 //                  << " level=" << (int)control.level << " override=" << (bool)control.override;
@@ -868,7 +868,7 @@ void QTextEngine::shapeText(int item) const
 
 #if defined(Q_WS_MAC)
     shapeTextMac(item);
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_WS_WINCE)
     shapeTextWithCE(item);
 #else
     shapeTextWithHarfbuzz(item);
@@ -923,7 +923,7 @@ void QTextEngine::shapeText(int item) const
         si.width += glyphs.advances_x[i];
 }
 
-#if defined(Q_OS_WINCE) //TODO
+#if defined(Q_WS_WINCE) //TODO
 // set the glyph attributes heuristically. Assumes a 1 to 1 relationship between chars and glyphs
 // and no reordering.
 // also computes logClusters heuristically
@@ -2212,6 +2212,7 @@ bool QTextEngine::atWordSeparator(int position) const
     case '\'':
     case '"':
     case '~':
+    case '|':
         return true;
     default:
         return false;

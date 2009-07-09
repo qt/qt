@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -589,7 +589,7 @@ void QSqlRecord::detach()
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlRecord &r)
 {
-    dbg << "QSqlRecord(" << r.count() << ")";
+    dbg << "QSqlRecord(" << r.count() << ')';
     for (int i = 0; i < r.count(); ++i)
         dbg << '\n' << QString::fromLatin1("%1:").arg(i, 2) << r.field(i) << r.value(i).toString();
     return dbg;

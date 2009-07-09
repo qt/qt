@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -212,17 +212,17 @@ void MainWindow::createActions()
             this, SLOT(lineWidthActionTriggered(QAction *)));
 
     exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcut(tr("Ctrl+X"));
+    exitAction->setShortcuts(QKeySequence::Quit);
     connect(exitAction, SIGNAL(triggered()),
             this, SLOT(close()));
 
     loadAction = new QAction(tr("&Open..."), this);
-    loadAction->setShortcut(tr("Ctrl+O"));
+    loadAction->setShortcuts(QKeySequence::Open);
     connect(loadAction, SIGNAL(triggered()),
             this, SLOT(loadAct()));
 
     saveAction = new QAction(tr("&Save As..."), this);
-    saveAction->setShortcut(tr("Ctrl+S"));
+    saveAction->setShortcuts(QKeySequence::SaveAs);
     connect(saveAction, SIGNAL(triggered()),
             this, SLOT(saveAct()));
 

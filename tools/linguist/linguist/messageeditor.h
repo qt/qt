@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 #include "messagemodel.h"
 
 #include <QtCore/QLocale>
+#include <QtCore/QTimer>
 
 #include <QtGui/QFrame>
 #include <QtGui/QScrollArea>
@@ -58,11 +59,12 @@ class QTextEdit;
 class MessageEditor;
 class FormatTextEdit;
 class FormWidget;
+class FormMultiWidget;
 
 struct MessageEditorData {
     QWidget *container;
     FormWidget *transCommentText;
-    QList<FormWidget*> transTexts;
+    QList<FormMultiWidget *> transTexts;
     QString invariantForm;
     QString firstForm;
     float fontSize;
@@ -108,30 +110,35 @@ public slots:
     void beginFromSource();
     void setEditorFocus();
     void setTranslation(int latestModel, const QString &translation);
+    void setLenghtVariants(bool on);
 
 private slots:
-    void selectionChanged();
-    bool resetHoverSelection(FormWidget *fw = 0);
-    void emitTranslationChanged();
-    void emitTranslatorCommentChanged();
+    void editorCreated(QTextEdit *);
+    void selectionChanged(QTextEdit *);
+    void resetHoverSelection();
+    void emitTranslationChanged(QTextEdit *);
+    void emitTranslatorCommentChanged(QTextEdit *);
     void updateCanPaste();
     void clipboardChanged();
     void messageModelAppended();
     void messageModelDeleted(int model);
     void allModelsDeleted();
     void setTargetLanguage(int model);
+    void reallyFixTabOrder();
 
 private:
     void setupEditorPage();
     void setEditingEnabled(int model, bool enabled);
     bool focusNextUnfinished(int start);
-    bool resetSelection(FormWidget *fw = 0);
+    void resetSelection();
+    void grabFocus(QWidget *widget);
+    void trackFocus(QWidget *widget);
     void activeModelAndNumerus(int *model, int *numerus) const;
-    FormWidget *activeTranslation() const;
-    FormWidget *activeOr1stTranslation() const;
-    FormWidget *activeTransComment() const;
-    FormWidget *activeEditor() const;
-    FormWidget *activeOr1stEditor() const;
+    QTextEdit *activeTranslation() const;
+    QTextEdit *activeOr1stTranslation() const;
+    QTextEdit *activeTransComment() const;
+    QTextEdit *activeEditor() const;
+    QTextEdit *activeOr1stEditor() const;
     MessageEditorData *modelForWidget(const QObject *o);
     int activeTranslationNumerus() const;
     QStringList translations(int model) const;
@@ -139,6 +146,7 @@ private:
     void updateUndoRedo();
     void updateCanCutCopy();
     void addPluralForm(int model, const QString &label, bool writable);
+    void fixTabOrder();
     QPalette paletteForModel(int model) const;
 
     MultiDataModel *m_dataModel;
@@ -147,21 +155,24 @@ private:
     int m_currentModel;
     int m_currentNumerus;
 
+    bool m_lengthVariants;
+
     bool m_undoAvail;
     bool m_redoAvail;
     bool m_cutAvail;
     bool m_copyAvail;
-    bool m_sourceSelected;
-    bool m_pluralSourceSelected;
-    bool m_currentSelected;
 
     bool m_clipboardEmpty;
 
+    QTextEdit *m_selectionHolder;
+    QWidget *m_focusWidget;
     QBoxLayout *m_layout;
     FormWidget *m_source;
     FormWidget *m_pluralSource;
     FormWidget *m_commentText;
     QList<MessageEditorData> m_editors;
+
+    QTimer m_tabOrderTimer;
 };
 
 QT_END_NAMESPACE

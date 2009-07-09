@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,12 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "glbuffers.h"
+#include <QtGui/qmatrix4x4.h>
 
 //============================================================================//
 //                                  GLTexture                                 //
@@ -346,7 +347,7 @@ void GLRenderTargetCube::end()
     m_fbo.setAsRenderTarget(false);
 }
 
-void GLRenderTargetCube::getViewMatrix(gfx::Matrix4x4f& mat, int face)
+void GLRenderTargetCube::getViewMatrix(QMatrix4x4& mat, int face)
 {
     if (face < 0 || face >= 6) {
         qWarning("GLRenderTargetCube::getViewMatrix: 'face' must be in the range [0, 6). (face == %d)", face);
@@ -371,20 +372,21 @@ void GLRenderTargetCube::getViewMatrix(gfx::Matrix4x4f& mat, int face)
         {-1.0f, -1.0f, +1.0f},
     };
 
-    memset(mat.bits(), 0, sizeof(float) * 16);
+    memset(mat.data(), 0, sizeof(float) * 16);
     for (int i = 0; i < 3; ++i)
-        mat(perm[face][i], i) = signs[face][i];
+        mat(i, perm[face][i]) = signs[face][i];
     mat(3, 3) = 1.0f;
 }
 
-void GLRenderTargetCube::getProjectionMatrix(gfx::Matrix4x4f& mat, float nearZ, float farZ)
+void GLRenderTargetCube::getProjectionMatrix(QMatrix4x4& mat, float nearZ, float farZ)
 {
-    float proj[] = {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, (nearZ+farZ)/(nearZ-farZ), -1.0f,
-        0.0f, 0.0f, 2.0f*nearZ*farZ/(nearZ-farZ), 0.0f,
-    };
+    static const QMatrix4x4 reference(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, -1.0f, 0.0f);
 
-    memcpy(mat.bits(), proj, sizeof(float) * 16);
+    mat = reference;
+    mat(2, 2) = (nearZ+farZ)/(nearZ-farZ);
+    mat(2, 3) = 2.0f*nearZ*farZ/(nearZ-farZ);
 }

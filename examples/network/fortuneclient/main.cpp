@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,19 +34,23 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <QApplication>
-
 #include "client.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Client client;
+#ifdef Q_OS_SYMBIAN
+    // Make application better looking and more usable on small screen
+    client.showMaximized();
+#else
     client.show();
+#endif
     return client.exec();
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,8 +65,9 @@ class QRegion;
 class QWidget;
 struct QGLWindowSurfacePrivate;
 
-class QGLWindowSurface : public QWindowSurface, public QPaintDevice
+class QGLWindowSurface : public QObject, public QWindowSurface, public QPaintDevice
 {
+    Q_OBJECT
 public:
     QGLWindowSurface(QWidget *window);
     ~QGLWindowSurface();
@@ -74,6 +75,7 @@ public:
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void setGeometry(const QRect &rect);
+    void updateGeometry();
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
@@ -89,6 +91,9 @@ public:
 
 protected:
     int metric(PaintDeviceMetric metric) const;
+
+private slots:
+    void deleted(QObject *object);
 
 private:
     void hijackWindow(QWidget *widget);

@@ -3,7 +3,7 @@
               (C) 1997 Torben Weis (weis@kde.org)
               (C) 1998 Waldo Bastian (bastian@kde.org)
               (C) 1999 Lars Knoll (knoll@kde.org)
-    Copyright (C) 2004, 2005, 2006, 2007 Apple Inc. All rights reserved.
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,6 +26,7 @@
 
 #include "QualifiedName.h"
 #include <wtf/Forward.h>
+#include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
 #include "HTMLParserErrorCodes.h"
 
@@ -38,6 +39,7 @@ class HTMLDocument;
 class HTMLFormElement;
 class HTMLHeadElement;
 class HTMLMapElement;
+class HTMLParserQuirks;
 class Node;
 
 struct HTMLStackElem;
@@ -150,34 +152,47 @@ private:
 
     void reportErrorToConsole(HTMLParserErrorCode, const AtomicString* tagName1, const AtomicString* tagName2, bool closeTags);
     
-    Document* document;
+    Document* m_document;
 
     // The currently active element (the one new elements will be added to). Can be a document fragment, a document or an element.
-    Node* current;
+    Node* m_current;
     // We can't ref a document, but we don't want to constantly check if a node is a document just to decide whether to deref.
-    bool didRefCurrent;
+    bool m_didRefCurrent;
 
-    HTMLStackElem* blockStack;
+    HTMLStackElem* m_blockStack;
+
+    // The number of tags with priority minBlockLevelTagPriority or higher
+    // currently in m_blockStack. The parser enforces a cap on this value by
+    // adding such new elements as siblings instead of children once it is reached.
+    size_t m_blocksInStack;
 
     enum ElementInScopeState { NotInScope, InScope, Unknown }; 
     ElementInScopeState m_hasPElementInScope;
 
     RefPtr<HTMLFormElement> m_currentFormElement; // currently active form
     RefPtr<HTMLMapElement> m_currentMapElement; // current map
-    HTMLHeadElement* head; // head element; needed for HTML which defines <base> after </head>
+    RefPtr<HTMLHeadElement> m_head; // head element; needed for HTML which defines <base> after </head>
     RefPtr<Node> m_isindexElement; // a possible <isindex> element in the head
 
-    bool inBody;
-    bool haveContent;
-    bool haveFrameSet;
+    bool m_inBody;
+    bool m_haveContent;
+    bool m_haveFrameSet;
 
     AtomicString m_skipModeTag; // tells the parser to discard all tags until it reaches the one specified
 
     bool m_isParsingFragment;
     bool m_reportErrors;
     bool m_handlingResidualStyleAcrossBlocks;
-    int inStrayTableContent;
+    int m_inStrayTableContent;
+
+    OwnPtr<HTMLParserQuirks> m_parserQuirks;
 };
+
+#if defined(BUILDING_ON_LEOPARD) || defined(BUILDING_ON_TIGER)
+bool shouldCreateImplicitHead(Document*);
+#else
+inline bool shouldCreateImplicitHead(Document*) { return true; }
+#endif
 
 }
     

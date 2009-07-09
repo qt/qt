@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,14 +34,10 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-/*
-TRANSLATOR qdesigner_internal::Sentinel
-*/
 
 #include "qdesigner_toolbar_p.h"
 #include "qdesigner_command_p.h"
@@ -65,7 +61,6 @@ TRANSLATOR qdesigner_internal::Sentinel
 #include <QtGui/QMenu>
 #include <QtGui/qevent.h>
 #include <QtGui/QApplication>
-#include <QtGui/private/qtoolbarlayout_p.h>
 #include <QtCore/QDebug>
 
 Q_DECLARE_METATYPE(QAction*)
@@ -445,11 +440,17 @@ QAction *ToolBarEventFilter::actionAt(const QToolBar *tb, const QPoint &pos)
     return tb->actions().at(index);
 }
 
+//that's a trick to get acces to the initStyleOption which is a protected member
+class FriendlyToolBar : public QToolBar {
+public:
+    friend class ToolBarEventFilter;
+};
+
 QRect ToolBarEventFilter::handleArea(const QToolBar *tb)
 {
-    const QToolBarLayout *tbl = qobject_cast<QToolBarLayout *>(tb->layout());
-    Q_ASSERT(tbl);
-    return tbl->handleRect();
+    QStyleOptionToolBar opt;
+    static_cast<const FriendlyToolBar*>(tb)->initStyleOption(&opt);
+    return tb->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, tb);
 }
 
 bool ToolBarEventFilter::withinHandleArea(const QToolBar *tb, const QPoint &pos)

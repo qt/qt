@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,13 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_QWS_KBD_SL5000
 
-class QWSSL5000KbPrivate;
+struct QWSKeyMap {
+    uint key_code;
+    ushort unicode;
+    ushort shift_unicode;
+    ushort ctrl_unicode;
+};
+
 
 class QWSSL5000KeyboardHandler : public QWSTtyKeyboardHandler
 {
@@ -60,14 +66,21 @@ public:
     explicit QWSSL5000KeyboardHandler(const QString&);
     virtual ~QWSSL5000KeyboardHandler();
 
-    virtual void doKey(uchar scancode);
+    bool filterKeycode(char &keycode);
     virtual const QWSKeyMap *keyMap() const;
 
 private:
+    bool shift;
+    bool alt;
+    bool ctrl;
+    bool caps;
+    uint extended:2;
+    Qt::KeyboardModifiers modifiers;
+    int prevuni;
+    int prevkey;
     bool meta;
     bool fn;
     bool numLock;
-    QWSSL5000KbPrivate *d;
 };
 
 #endif // QT_NO_QWS_KBD_SL5000

@@ -21,10 +21,10 @@
 #ifndef JSSVGAnimateColorElement_h
 #define JSSVGAnimateColorElement_h
 
-
 #if ENABLE(SVG_ANIMATION)
 
 #include "JSSVGAnimationElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -34,7 +34,7 @@ class JSSVGAnimateColorElement : public JSSVGAnimationElement {
     typedef JSSVGAnimationElement Base;
 public:
     JSSVGAnimateColorElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimateColorElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -42,8 +42,9 @@ public:
 
 
 class JSSVGAnimateColorElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimateColorElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

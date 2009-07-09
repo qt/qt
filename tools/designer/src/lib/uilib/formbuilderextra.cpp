@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,7 +81,8 @@ QFormBuilderExtra::~QFormBuilderExtra()
 void QFormBuilderExtra::clear()
 {
     m_buddies.clear();
-    m_rootWidget = 0;
+    m_parentWidget = 0;
+    m_parentWidgetIsSet = false;
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     m_FormScriptRunner.clearErrors();
     m_customWidgetScriptHash.clear();
@@ -136,14 +137,21 @@ bool QFormBuilderExtra::applyBuddy(const QString &buddyName, BuddyMode applyMode
     return false;
 }
 
-const QPointer<QWidget> &QFormBuilderExtra::rootWidget() const
+const QPointer<QWidget> &QFormBuilderExtra::parentWidget() const
 {
-    return m_rootWidget;
+    return m_parentWidget;
 }
 
-void QFormBuilderExtra::setRootWidget(const QPointer<QWidget> &w)
+bool QFormBuilderExtra::parentWidgetIsSet() const
 {
-    m_rootWidget = w;
+    return m_parentWidgetIsSet;
+}
+
+void QFormBuilderExtra::setParentWidget(const QPointer<QWidget> &w)
+{
+    // Parent widget requires special handling of the geometry property.
+    m_parentWidget = w;
+    m_parentWidgetIsSet = true;
 }
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT

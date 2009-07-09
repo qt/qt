@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -754,11 +754,14 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                       qBound(1, data.crect.width(), XCOORD_MAX),
                       qBound(1, data.crect.height(), XCOORD_MAX));
         XStoreName(dpy, id, appName.data());
-        Atom protocols[4];
+        Atom protocols[5];
         int n = 0;
         protocols[n++] = ATOM(WM_DELETE_WINDOW);        // support del window protocol
         protocols[n++] = ATOM(WM_TAKE_FOCUS);                // support take focus window protocol
         protocols[n++] = ATOM(_NET_WM_PING);                // support _NET_WM_PING protocol
+#ifndef QT_NO_XSYNC
+        protocols[n++] = ATOM(_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
+#endif // QT_NO_XSYNC
         if (flags & Qt::WindowContextHelpButtonHint)
             protocols[n++] = ATOM(_NET_WM_CONTEXT_HELP);
         XSetWMProtocols(dpy, id, protocols, n);
@@ -893,17 +896,68 @@ void QWidgetPrivate::x11UpdateIsOpaque()
     int screen = xinfo.screen();
     if (topLevel && X11->use_xrender
         && X11->argbVisuals[screen] && xinfo.depth() != 32) {
-        // recreate widget
-        QPoint pos = q->pos();
-        bool visible = q->isVisible();
-        if (visible)
-            q->hide();
-        q->setParent(q->parentWidget(), q->windowFlags());
-        q->move(pos);
-        if (visible)
-            q->show();
+
+        if (q->inherits("QGLWidget")) {
+            // We send QGLWidgets a ParentChange event which causes them to
+            // recreate their GL context, which in turn causes them to choose
+            // their visual again. Now that WA_TranslucentBackground is set,
+            // QGLContext::chooseVisual will select an ARGB visual.
+            QEvent e(QEvent::ParentChange);
+            QApplication::sendEvent(q, &e);
+        }
+        else {
+            // For regular widgets, reparent them with their parent which
+            // also triggers a recreation of the native window
+            QPoint pos = q->pos();
+            bool visible = q->isVisible();
+            if (visible)
+                q->hide();
+
+            q->setParent(q->parentWidget(), q->windowFlags());
+            q->move(pos);
+            if (visible)
+                q->show();
+        }
     }
 #endif
+}
+
+/*
+  Returns true if the background is inherited; otherwise returns
+  false.
+
+  Mainly used in the paintOnScreen case.
+*/
+bool QWidgetPrivate::isBackgroundInherited() const
+{
+    Q_Q(const QWidget);
+
+    // windows do not inherit their background
+    if (q->isWindow() || q->windowType() == Qt::SubWindow)
+        return false;
+
+    if (q->testAttribute(Qt::WA_NoSystemBackground) || q->testAttribute(Qt::WA_OpaquePaintEvent))
+        return false;
+
+    const QPalette &pal = q->palette();
+    QPalette::ColorRole bg = q->backgroundRole();
+    QBrush brush = pal.brush(bg);
+
+    // non opaque brushes leaves us no choice, we must inherit
+    if (!q->autoFillBackground() || !brush.isOpaque())
+        return true;
+
+    if (brush.style() == Qt::SolidPattern) {
+        // the background is just a solid color. If there is no
+        // propagated contents, then we claim as performance
+        // optimization that it was not inheritet. This is the normal
+        // case in standard Windows or Motif style.
+        const QWidget *w = q->parentWidget();
+        if (!w->d_func()->isBackgroundInherited())
+            return false;
+    }
+
+    return true;
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
@@ -1308,17 +1362,10 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
         // already been set
         return;
 
-    XWMHints *h = 0;
-    if (q->internalWinId())
-        h = XGetWMHints(X11->display, q->internalWinId());
-    XWMHints wm_hints;
-    if (!h) {
-        memset(&wm_hints, 0, sizeof(wm_hints)); // make valgrind happy
-        h = &wm_hints;
-    }
-
     // preparing images to set the _NET_WM_ICON property
     QIcon icon = q->windowIcon();
+    QVector<long> icon_data;
+    Qt::HANDLE pixmap_handle = 0;
     if (!icon.isNull()) {
         QList<QSize> availableSizes = icon.availableSizes();
         if(availableSizes.isEmpty()) {
@@ -1328,7 +1375,6 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             availableSizes.push_back(QSize(64,64));
             availableSizes.push_back(QSize(128,128));
         }
-        QVector<long> icon_data;
         for(int i = 0; i < availableSizes.size(); ++i) {
             QSize size = availableSizes.at(i);
             QPixmap pixmap = icon.pixmap(size);
@@ -1350,11 +1396,6 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             }
         }
         if (!icon_data.isEmpty()) {
-            if (q->internalWinId()) {
-                XChangeProperty(X11->display, q->internalWinId(), ATOM(_NET_WM_ICON), XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) icon_data.data(),
-                                icon_data.size());
-            }
             extern QPixmap qt_toX11Pixmap(const QPixmap &pixmap);
             /*
               if the app is running on an unknown desktop, or it is not
@@ -1368,22 +1409,44 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                h->icon_pixmap = topData->iconPixmap->handle();
+                pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this
                 // violates the ICCCM), since this works on all DEs known to Qt
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QPixmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                h->icon_pixmap = static_cast<QX11PixmapData*>(topData->iconPixmap->data)->x11ConvertToDefaultDepth();
+                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data)->x11ConvertToDefaultDepth();
             }
-            h->flags |= IconPixmapHint;
-        } else {
-            h->flags &= ~(IconPixmapHint | IconMaskHint);
         }
     }
 
-    if (q->internalWinId())
-        XSetWMHints(X11->display, q->internalWinId(), h);
+    if (!q->internalWinId())
+        return;
+
+    if (!icon_data.isEmpty()) {
+        XChangeProperty(X11->display, q->internalWinId(), ATOM(_NET_WM_ICON), XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *) icon_data.data(),
+                        icon_data.size());
+    } else {
+        XDeleteProperty(X11->display, q->internalWinId(), ATOM(_NET_WM_ICON));
+    }
+
+    XWMHints *h = XGetWMHints(X11->display, q->internalWinId());
+    XWMHints wm_hints;
+    if (!h) {
+        memset(&wm_hints, 0, sizeof(wm_hints)); // make valgrind happy
+        h = &wm_hints;
+    }
+
+    if (pixmap_handle) {
+        h->icon_pixmap = pixmap_handle;
+        h->flags |= IconPixmapHint;
+    } else {
+        h->icon_pixmap = 0;
+        h->flags &= ~(IconPixmapHint | IconMaskHint);
+    }
+
+    XSetWMHints(X11->display, q->internalWinId(), h);
     if (h != &wm_hints)
         XFree((char *)h);
 }
@@ -1817,6 +1880,23 @@ void QWidgetPrivate::show_sys()
         if (setUserTime)
             qt_net_update_user_time(q, userTime);
 
+#ifndef QT_NO_XSYNC
+        if (!topData()->syncUpdateCounter) {
+            XSyncValue value;
+            XSyncIntToValue(&value, 0);
+            topData()->syncUpdateCounter = XSyncCreateCounter(X11->display, value);
+
+            XChangeProperty(X11->display, q->internalWinId(),
+                            ATOM(_NET_WM_SYNC_REQUEST_COUNTER),
+                            XA_CARDINAL,
+                            32, PropModeReplace,
+                            (uchar *) &topData()->syncUpdateCounter, 1);
+
+            topData()->newCounterValueHi = 0;
+            topData()->newCounterValueLo = 0;
+        }
+#endif
+
         if (!topData()->embedded
             && (topData()->validWMState || topData()->waitingForMapNotify)
             && !q->isMinimized()) {
@@ -2151,7 +2231,7 @@ static void do_size_hints(QWidget* widget, QWExtra *x)
   parentWRect is the geometry of the parent's X rect, measured in
   parent's coord sys
  */
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 {
     Q_Q(QWidget);
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
@@ -2611,8 +2691,8 @@ int QWidget::metric(PaintDeviceMetric m) const
 
 void QWidgetPrivate::createSysExtra()
 {
-    extra->xDndProxy = 0;
     extra->compress_events = true;
+    extra->xDndProxy = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -2621,9 +2701,18 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->spont_unmapped = 0;
+    extra->topextra->dnd = 0;
     extra->topextra->validWMState = 0;
     extra->topextra->waitingForMapNotify = 0;
+    extra->topextra->parentWinId = 0;
     extra->topextra->userTimeWindow = 0;
+#ifndef QT_NO_XSYNC
+    extra->topextra->syncUpdateCounter = 0;
+    extra->topextra->syncRequestTimestamp = 0;
+    extra->topextra->newCounterValueHi = 0;
+    extra->topextra->newCounterValueLo = 0;
+#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

@@ -629,7 +629,7 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
     aEditorContent.Copy(qt_QString2TPtrC(text.mid(aDocumentPosition, aLengthToRetrieve)));
 }
 
-void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt aDocumentPosition) const
+void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
     if (!w)
@@ -641,12 +641,10 @@ void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt aDocumentPo
     QString name = font.defaultFamily(); // TODO! FIXME! Should be the above.
     QHBufC hBufC(name);
     aFormat = TCharFormat(hBufC->Des(), metrics.height());
-
-    aDocumentPosition = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLine, TInt& aHeight,
-        TInt& aAscent, TInt aDocumentPosition) const
+        TInt& aAscent, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
     if (!w)
@@ -660,8 +658,6 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
     QFontMetrics metrics(font);
     aHeight = metrics.height();
     aAscent = metrics.ascent();
-
-    aDocumentPosition = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()

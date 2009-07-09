@@ -1,22 +1,4 @@
-<html><script>
-function extractFormValues()
-{
-    var firstName = document.getElementById("firstname").value;
-    var lastName = document.getElementById("lastname").value;
-    var maleGender = document.getElementById("genderMale");
-    var femaleGender = document.getElementById("genderFemale");
-    
-    var gender = "";
-    if (maleGender.checked)
-        gender = maleGender.value;
-    else if (femaleGender.checked)
-        gender = femaleGender.value;
-        
-    var updates = document.getElementById("updates").checked;
-        
-    formExtractor.setValues(firstName, lastName, gender, updates);
-}
-</script><body>
+<html><body>
 <h1>
 The Green People Book Club
 </h1>
@@ -24,7 +6,7 @@ The Green People Book Club
 <p>
 Welcome to The Green People Book Club. Please register to obtain a membership with us.
 </p>
-    <form onsubmit="extractFormValues()">
+    <form onsubmit="formExtractor.submit()">
     <table>
     <tbody><tr>
         <td>

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -601,7 +601,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
 
     // mark as an error
     error = QDBusError(QDBusError::UnknownInterface,
-                       QString( QLatin1String("Interface '%1' was not found") )
+        QString::fromLatin1("Interface '%1' was not found")
                        .arg(interface));
     return 0;
 }

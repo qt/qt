@@ -22,9 +22,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEGaussianBlurElement.h"
 
+#include "MappedAttribute.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGResourceFilter.h"
@@ -39,7 +40,6 @@ SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(const QualifiedName& tagName,
     , m_in1(this, SVGNames::inAttr)
     , m_stdDeviationX(this, SVGNames::stdDeviationAttr)
     , m_stdDeviationY(this, SVGNames::stdDeviationAttr)
-    , m_filterEffect(0)
 {
 }
 
@@ -47,8 +47,9 @@ SVGFEGaussianBlurElement::~SVGFEGaussianBlurElement()
 {
 }
 
-void SVGFEGaussianBlurElement::setStdDeviation(float stdDeviationX, float stdDeviationY)
+void SVGFEGaussianBlurElement::setStdDeviation(float, float)
 {
+    // FIXME: Needs an implementation.
 }
 
 void SVGFEGaussianBlurElement::parseMappedAttribute(MappedAttribute* attr)
@@ -66,20 +67,15 @@ void SVGFEGaussianBlurElement::parseMappedAttribute(MappedAttribute* attr)
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
 }
 
-SVGFilterEffect* SVGFEGaussianBlurElement::filterEffect(SVGResourceFilter* filter) const
+bool SVGFEGaussianBlurElement::build(SVGResourceFilter* filterResource)
 {
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-bool SVGFEGaussianBlurElement::build(FilterBuilder* builder)
-{
-    FilterEffect* input1 = builder->getEffectById(in1());
+    FilterEffect* input1 = filterResource->builder()->getEffectById(in1());
 
     if(!input1)
         return false;
 
-    builder->add(result(), FEGaussianBlur::create(input1, stdDeviationX(), stdDeviationY()));
+    RefPtr<FilterEffect> effect = FEGaussianBlur::create(input1, stdDeviationX(), stdDeviationY());
+    filterResource->addFilterEffect(this, effect.release());
 
     return true;
 }

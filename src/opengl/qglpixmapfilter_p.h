@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,35 +85,6 @@ public:
         if (painter)
            drawImpl(painter, pos, src, source);
     }
-};
-
-class Q_OPENGL_EXPORT QGLSLProgram
-{
-public:
-    QGLSLProgram(const QString &src);
-    ~QGLSLProgram();
-
-    bool success() const;
-
-    void enable();
-    void disable();
-
-    int getUniformLocation(const QString &name);
-
-    void setUniform(int uniform, int value);
-    void setUniform(int uniform, qreal value);
-    void setUniform(int uniform, qreal v1, qreal v2);
-    void setUniform(int uniform, qreal v1, qreal v2, qreal v3);
-    void setUniform(int uniform, qreal v1, qreal v2, qreal v3, qreal v4);
-    void setUniform(int uniform, int count, float *v);
-
-private:
-    GLuint m_shader;
-    GLuint m_program;
-
-    GLint m_valid;
-
-    const QGLContext *ctx;
 };
 
 QT_END_NAMESPACE

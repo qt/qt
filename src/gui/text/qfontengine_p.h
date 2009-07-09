@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,7 +70,7 @@
 #   include "private/qcore_mac_p.h"
 #endif
 
-#include "qfontengineglyphcache_p.h"
+#include <private/qfontengineglyphcache_p.h>
 
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
@@ -93,7 +93,6 @@ struct QGlyphLayout;
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
-    Q_OBJECT
 public:
     enum Type {
         Box,
@@ -360,7 +359,7 @@ private:
     int _size;
 };
 
-class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
+class QFontEngineMulti : public QFontEngine
 {
 public:
     explicit QFontEngineMulti(int engineCount);
@@ -396,7 +395,9 @@ public:
     inline virtual const char *name() const
     { return "Multi"; }
 
-    QFontEngine *engine(int at) const;
+    QFontEngine *engine(int at) const
+    {Q_ASSERT(at < engines.size()); return engines.at(at); }
+
 
 protected:
     friend class QPSPrintEnginePrivate;
@@ -532,8 +533,11 @@ public:
     virtual Properties properties() const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
 
 private:
+    QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
+
     ATSUFontID fontID;
     QCFType<CGFontRef> cgFont;
     ATSUStyle style;

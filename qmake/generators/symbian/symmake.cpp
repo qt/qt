@@ -581,8 +581,15 @@ bool SymbianMakefileGenerator::initMmpVariables() {
     for(int j = 0; j < incpaths.size(); ++j) {
         QString includepath = canonizePath(incpaths.at(j));
         appendIfnotExist(sysincspaths, includepath);
+        // As a workaround for Symbian toolchain insistence to treat include
+        // statements as relative to source file rather than the file they appear in,
+        // we generate extra temporary include directories to make
+        // relative include paths used in various headers to work properly.
+        // Note that this is not a fix-all solution; it's just a stop-gap measure
+        // to make Qt itself build until toolchain can support relative includes in
+        // a way that Qt expects.
         if (!includepath.contains(epocPath)) // No temp dirs for epoc includes
-            appendIfnotExist(sysincspaths, includepath + QString("/tmp"));
+            appendIfnotExist(sysincspaths, includepath + QString("/" QT_EXTRA_INCLUDE_DIR));
     }
 
     // remove duplicate include path entries
@@ -687,7 +694,9 @@ bool SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symb
         }
         t << endl;
 
-        writeMmpFileLibraryPart(t);
+        if (!project->values("CONFIG").contains("static") && !project->values("CONFIG").contains("staticlib")) {
+            writeMmpFileLibraryPart(t);
+        }
 
         writeMmpFileCapabilityPart(t);
 
@@ -1605,12 +1614,13 @@ QString SymbianMakefileGenerator::removeTrailingPathSeparators(QString &file)
     return ret;
 }
 
-bool SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
+void SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
                                                      const QStringList& toClean,
                                                      const QString& cmd,
                                                      const QString& cmdOptions,
                                                      const QString& itemPrefix,
-                                                     const QString& itemSuffix) {
+                                                     const QString& itemSuffix)
+{
     for (int i = 0; i < toClean.size(); ++i) {
         QString item = toClean.at(i);
         item.prepend(itemPrefix).append(itemSuffix);
@@ -1622,11 +1632,10 @@ bool SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
         t << cmd << " " << cmdOptions << " " << QDir::toNativeSeparators(item) << "; fi" << endl;
 #endif
     }
-
-    return true;
 }
 
-QString SymbianMakefileGenerator::getWithoutSpecialCharacters(QString& str) {
+QString SymbianMakefileGenerator::getWithoutSpecialCharacters(QString& str)
+{
     QString tmp = str;
 
     tmp.replace(QString("/"), QString("_"));
@@ -1638,11 +1647,66 @@ QString SymbianMakefileGenerator::getWithoutSpecialCharacters(QString& str) {
     return tmp;
 }
 
-void SymbianMakefileGenerator::removeSpecialCharacters(QString& str) {
+void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
+{
     str.replace(QString("/"), QString("_"));
     str.replace(QString("\\"), QString("_"));
     str.replace(QString("-"), QString("_"));
     str.replace(QString(":"), QString("_"));
     str.replace(QString("."), QString("_"));
     str.replace(QString(" "), QString("_"));
+}
+
+void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
+{
+    t << "dodistclean:" << endl;
+    foreach(QString item, project->values("SUBDIRS")) {
+        bool fromFile = false;
+        QString fixedItem;
+        if(!project->isEmpty(item + ".file")) {
+            fixedItem = project->first(item + ".file");
+            fromFile = true;
+        } else if(!project->isEmpty(item + ".subdir")) {
+            fixedItem = project->first(item + ".subdir");
+            fromFile = false;
+        } else {
+            fromFile = item.endsWith(Option::pro_ext);
+            fixedItem = item;
+        }
+        QFileInfo fi(fileInfo(fixedItem));
+        if (!fromFile) {
+            t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fi.absoluteFilePath() + "/Makefile") << "\" dodistclean" << endl;
+        } else {
+            QString itemName = fi.fileName();
+            int extIndex = itemName.lastIndexOf(Option::pro_ext);
+            if (extIndex)
+                fixedItem = fi.absolutePath() + "/" + QString("Makefile.") + itemName.mid(0,extIndex);
+            t << "\t-$(MAKE) -f \"" << Option::fixPathToTargetOS(fixedItem) << "\" dodistclean" << endl;
+        }
+
+    }
+
+    generatedFiles << Option::fixPathToTargetOS(fileInfo(Option::output.fileName()).absoluteFilePath()); // bld.inf
+    generatedFiles << project->values("QMAKE_INTERNAL_PRL_FILE"); // Add generated prl files for cleanup
+    generatedFiles << project->values("QMAKE_DISTCLEAN"); // Add any additional files marked for distclean
+    QStringList fixedFiles;
+    QStringList fixedDirs;
+    foreach(QString item, generatedFiles) {
+        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).absoluteFilePath());
+        if (!fixedFiles.contains(fixedItem)) {
+            fixedFiles << fixedItem;
+        }
+    }
+    foreach(QString item, generatedDirs) {
+        QString fixedItem = Option::fixPathToTargetOS(fileInfo(item).absoluteFilePath());
+        if (!fixedDirs.contains(fixedItem)) {
+            fixedDirs << fixedItem;
+        }
+    }
+    generateCleanCommands(t, fixedFiles, "$(DEL_FILE)", "", "", "");
+    generateCleanCommands(t, fixedDirs, "$(DEL_DIR)", "", "", "");
+    t << endl;
+
+    t << "distclean: clean dodistclean" << endl;
+    t << endl;
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -3879,7 +3879,7 @@ void Q3FileDialog::detailViewSelectionChanged()
                 d->moreFiles->setSelected(f->i, i->isSelected());
         }
         if (i->isSelected() && !((Q3FileDialogPrivate::File *)i)->info.isDir())
-            str += QString(QLatin1String("\"%1\" ")).arg(i->text(0));
+            str += QString::fromLatin1("\"%1\" ").arg(i->text(0));
         i = i->nextSibling();
     }
     d->moreFiles->blockSignals(false);
@@ -3931,7 +3931,7 @@ void Q3FileDialog::listBoxSelectionChanged()
         }
         if (d->moreFiles->isSelected(i)
              && !((Q3FileDialogPrivate::File*)(mcitem)->i)->info.isDir()) {
-            str += QString(QLatin1String("\"%1\" ")).arg(i->text());
+                 str += QString::fromLatin1("\"%1\" ").arg(i->text());
             if (j == 0)
                 j = i;
         }
@@ -4611,11 +4611,11 @@ void Q3FileDialog::setPreviewMode(PreviewMode m)
 }
 Q3FileDialog::PreviewMode Q3FileDialog::previewMode() const
 {
-    if (d->infoPreview && d->infoPreviewWidget->isVisible())
+    if (d->infoPreview && d->infoPreviewWidget->isVisibleTo(const_cast<Q3FileDialog *>(this)))
         return Info;
-    else if (d->contentsPreview && d->contentsPreviewWidget->isVisible())
+    else if (d->contentsPreview
+             && d->contentsPreviewWidget->isVisibleTo(const_cast<Q3FileDialog *>(this)))
         return Contents;
-
     return NoPreview;
 }
 
@@ -5757,8 +5757,8 @@ void Q3FileDialog::insertEntry(const Q3ValueList<QUrlInfo> &lst, Q3NetworkOperat
         if (!bShowHiddenFiles && inf.name() != QLatin1String("..")) {
             if (d->url.isLocalFile()) {
                 QString file = d->url.path();
-                if (!file.endsWith(QLatin1String("/")))
-                    file.append(QLatin1String("/"));
+                if (!file.endsWith(QLatin1Char('/')))
+                    file.append(QLatin1Char('/'));
                 file += inf.name();
                 QT_WA({
                     if (GetFileAttributesW((TCHAR*)file.ucs2()) & FILE_ATTRIBUTE_HIDDEN)

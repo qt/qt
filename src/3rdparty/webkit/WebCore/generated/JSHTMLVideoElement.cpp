@@ -20,24 +20,21 @@
 
 #include "config.h"
 
-
 #if ENABLE(VIDEO)
 
 #include "JSHTMLVideoElement.h"
 
-#include <wtf/GetPtr.h>
-
 #include "HTMLVideoElement.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLVideoElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLVideoElement);
 
 /* Hash table */
 
@@ -78,13 +75,13 @@ public:
     JSHTMLVideoElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLVideoElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLVideoElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLVideoElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -113,9 +110,9 @@ static const HashTable JSHTMLVideoElementPrototypeTable =
 
 const ClassInfo JSHTMLVideoElementPrototype::s_info = { "HTMLVideoElementPrototype", 0, &JSHTMLVideoElementPrototypeTable, 0 };
 
-JSObject* JSHTMLVideoElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLVideoElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLVideoElement>(exec);
+    return getDOMPrototype<JSHTMLVideoElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLVideoElement::s_info = { "HTMLVideoElement", &JSHTMLMediaElement::s_info, &JSHTMLVideoElementTable, 0 };
@@ -125,9 +122,9 @@ JSHTMLVideoElement::JSHTMLVideoElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLVideoElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLVideoElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLVideoElementPrototype(JSHTMLVideoElementPrototype::createStructure(JSHTMLMediaElementPrototype::self(exec)));
+    return new (exec) JSHTMLVideoElementPrototype(JSHTMLVideoElementPrototype::createStructure(JSHTMLMediaElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLVideoElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,64 +132,69 @@ bool JSHTMLVideoElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLVideoElement, Base>(exec, &JSHTMLVideoElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLVideoElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->width());
 }
 
-JSValuePtr jsHTMLVideoElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->height());
 }
 
-JSValuePtr jsHTMLVideoElementVideoWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementVideoWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->videoWidth());
 }
 
-JSValuePtr jsHTMLVideoElementVideoHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementVideoHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->videoHeight());
 }
 
-JSValuePtr jsHTMLVideoElementPoster(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementPoster(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->poster());
 }
 
-JSValuePtr jsHTMLVideoElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLVideoElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLVideoElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLVideoElement, Base>(exec, propertyName, value, &JSHTMLVideoElementTable, this, slot);
 }
 
-void setJSHTMLVideoElementWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLVideoElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(thisObject)->impl());
-    imp->setWidth(value->toInt32(exec));
+    imp->setWidth(value.toInt32(exec));
 }
 
-void setJSHTMLVideoElementHeight(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLVideoElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(thisObject)->impl());
-    imp->setHeight(value->toInt32(exec));
+    imp->setHeight(value.toInt32(exec));
 }
 
-void setJSHTMLVideoElementPoster(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLVideoElementPoster(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(thisObject)->impl());
     imp->setPoster(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLVideoElement::getConstructor(ExecState* exec)
+JSValue JSHTMLVideoElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLVideoElementConstructor>(exec);
 }

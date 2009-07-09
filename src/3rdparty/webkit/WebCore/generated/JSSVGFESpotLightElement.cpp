@@ -20,23 +20,19 @@
 
 #include "config.h"
 
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
-
-#include "SVGElement.h"
 #include "JSSVGFESpotLightElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGAnimatedNumber.h"
 #include "SVGFESpotLightElement.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFESpotLightElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFESpotLightElement);
 
 /* Hash table */
 
@@ -76,9 +72,9 @@ static const HashTable JSSVGFESpotLightElementPrototypeTable =
 
 const ClassInfo JSSVGFESpotLightElementPrototype::s_info = { "SVGFESpotLightElementPrototype", 0, &JSSVGFESpotLightElementPrototypeTable, 0 };
 
-JSObject* JSSVGFESpotLightElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFESpotLightElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFESpotLightElement>(exec);
+    return getDOMPrototype<JSSVGFESpotLightElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFESpotLightElement::s_info = { "SVGFESpotLightElement", &JSSVGElement::s_info, &JSSVGFESpotLightElementTable, 0 };
@@ -88,9 +84,9 @@ JSSVGFESpotLightElement::JSSVGFESpotLightElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSSVGFESpotLightElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFESpotLightElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFESpotLightElementPrototype(JSSVGFESpotLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFESpotLightElementPrototype(JSSVGFESpotLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFESpotLightElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -98,57 +94,65 @@ bool JSSVGFESpotLightElement::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGFESpotLightElement, Base>(exec, &JSSVGFESpotLightElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFESpotLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->zAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementPointsAtX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementPointsAtX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pointsAtXAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementPointsAtY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementPointsAtY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pointsAtYAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementPointsAtZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementPointsAtZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pointsAtZAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementSpecularExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementSpecularExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->specularExponentAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFESpotLightElementLimitingConeAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFESpotLightElementLimitingConeAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->limitingConeAngleAnimated();
     return toJS(exec, obj.get(), imp);
@@ -157,4 +161,4 @@ JSValuePtr jsSVGFESpotLightElementLimitingConeAngle(ExecState* exec, const Ident
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

@@ -19,23 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSDOMCoreException.h"
-
-#include <wtf/GetPtr.h>
 
 #include "DOMCoreException.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDOMCoreException)
+ASSERT_CLASS_FITS_IN_CELL(JSDOMCoreException);
 
 /* Hash table */
 
@@ -57,7 +54,7 @@ static const HashTable JSDOMCoreExceptionTable =
 
 /* Hash table for constructor */
 
-static const HashTableValue JSDOMCoreExceptionConstructorTableValues[18] =
+static const HashTableValue JSDOMCoreExceptionConstructorTableValues[23] =
 {
     { "INDEX_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINDEX_SIZE_ERR, (intptr_t)0 },
     { "DOMSTRING_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionDOMSTRING_SIZE_ERR, (intptr_t)0 },
@@ -76,6 +73,11 @@ static const HashTableValue JSDOMCoreExceptionConstructorTableValues[18] =
     { "INVALID_ACCESS_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_ACCESS_ERR, (intptr_t)0 },
     { "VALIDATION_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionVALIDATION_ERR, (intptr_t)0 },
     { "TYPE_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionTYPE_MISMATCH_ERR, (intptr_t)0 },
+    { "SECURITY_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionSECURITY_ERR, (intptr_t)0 },
+    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNETWORK_ERR, (intptr_t)0 },
+    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionABORT_ERR, (intptr_t)0 },
+    { "URL_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionURL_MISMATCH_ERR, (intptr_t)0 },
+    { "QUOTA_EXCEEDED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionQUOTA_EXCEEDED_ERR, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -91,13 +93,13 @@ public:
     JSDOMCoreExceptionConstructor(ExecState* exec)
         : DOMObject(JSDOMCoreExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMCoreExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMCoreExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -112,7 +114,7 @@ bool JSDOMCoreExceptionConstructor::getOwnPropertySlot(ExecState* exec, const Id
 
 /* Hash table for prototype */
 
-static const HashTableValue JSDOMCoreExceptionPrototypeTableValues[19] =
+static const HashTableValue JSDOMCoreExceptionPrototypeTableValues[24] =
 {
     { "INDEX_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINDEX_SIZE_ERR, (intptr_t)0 },
     { "DOMSTRING_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionDOMSTRING_SIZE_ERR, (intptr_t)0 },
@@ -131,6 +133,11 @@ static const HashTableValue JSDOMCoreExceptionPrototypeTableValues[19] =
     { "INVALID_ACCESS_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_ACCESS_ERR, (intptr_t)0 },
     { "VALIDATION_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionVALIDATION_ERR, (intptr_t)0 },
     { "TYPE_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionTYPE_MISMATCH_ERR, (intptr_t)0 },
+    { "SECURITY_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionSECURITY_ERR, (intptr_t)0 },
+    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNETWORK_ERR, (intptr_t)0 },
+    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionABORT_ERR, (intptr_t)0 },
+    { "URL_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionURL_MISMATCH_ERR, (intptr_t)0 },
+    { "QUOTA_EXCEEDED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionQUOTA_EXCEEDED_ERR, (intptr_t)0 },
     { "toString", DontDelete|DontEnum|Function, (intptr_t)jsDOMCoreExceptionPrototypeFunctionToString, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -139,14 +146,14 @@ static const HashTable JSDOMCoreExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSDOMCoreExceptionPrototypeTableValues, 0 };
 #else
-    { 67, 63, JSDOMCoreExceptionPrototypeTableValues, 0 };
+    { 68, 63, JSDOMCoreExceptionPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSDOMCoreExceptionPrototype::s_info = { "DOMExceptionPrototype", 0, &JSDOMCoreExceptionPrototypeTable, 0 };
 
-JSObject* JSDOMCoreExceptionPrototype::self(ExecState* exec)
+JSObject* JSDOMCoreExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMCoreException>(exec);
+    return getDOMPrototype<JSDOMCoreException>(exec, globalObject);
 }
 
 bool JSDOMCoreExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -165,12 +172,11 @@ JSDOMCoreException::JSDOMCoreException(PassRefPtr<Structure> structure, PassRefP
 JSDOMCoreException::~JSDOMCoreException()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSDOMCoreException::createPrototype(ExecState* exec)
+JSObject* JSDOMCoreException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMCoreExceptionPrototype(JSDOMCoreExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMCoreExceptionPrototype(JSDOMCoreExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMCoreException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -178,139 +184,168 @@ bool JSDOMCoreException::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSDOMCoreException, Base>(exec, &JSDOMCoreExceptionTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDOMCoreExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsDOMCoreExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsDOMCoreExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSValuePtr jsDOMCoreExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSDOMCoreException*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSDOMCoreException::getConstructor(ExecState* exec)
+JSValue JSDOMCoreException::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSDOMCoreExceptionConstructor>(exec);
 }
 
-JSValuePtr jsDOMCoreExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMCoreExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMCoreException::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMCoreException::s_info))
         return throwError(exec, TypeError);
     JSDOMCoreException* castedThisObj = static_cast<JSDOMCoreException*>(asObject(thisValue));
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->toString());
+    JSC::JSValue result = jsString(exec, imp->toString());
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsDOMCoreExceptionINDEX_SIZE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINDEX_SIZE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsDOMCoreExceptionDOMSTRING_SIZE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionDOMSTRING_SIZE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsDOMCoreExceptionHIERARCHY_REQUEST_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionHIERARCHY_REQUEST_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsDOMCoreExceptionWRONG_DOCUMENT_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionWRONG_DOCUMENT_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValuePtr jsDOMCoreExceptionINVALID_CHARACTER_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_CHARACTER_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValuePtr jsDOMCoreExceptionNO_DATA_ALLOWED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNO_DATA_ALLOWED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSValuePtr jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(7));
 }
 
-JSValuePtr jsDOMCoreExceptionNOT_FOUND_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNOT_FOUND_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValuePtr jsDOMCoreExceptionNOT_SUPPORTED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNOT_SUPPORTED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(9));
 }
 
-JSValuePtr jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(10));
 }
 
-JSValuePtr jsDOMCoreExceptionINVALID_STATE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_STATE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(11));
 }
 
-JSValuePtr jsDOMCoreExceptionSYNTAX_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionSYNTAX_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(12));
 }
 
-JSValuePtr jsDOMCoreExceptionINVALID_MODIFICATION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_MODIFICATION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(13));
 }
 
-JSValuePtr jsDOMCoreExceptionNAMESPACE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNAMESPACE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(14));
 }
 
-JSValuePtr jsDOMCoreExceptionINVALID_ACCESS_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_ACCESS_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(15));
 }
 
-JSValuePtr jsDOMCoreExceptionVALIDATION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionVALIDATION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(16));
 }
 
-JSValuePtr jsDOMCoreExceptionTYPE_MISMATCH_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionTYPE_MISMATCH_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(17));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, DOMCoreException* object)
+JSValue jsDOMCoreExceptionSECURITY_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+{
+    return jsNumber(exec, static_cast<int>(18));
+}
+
+JSValue jsDOMCoreExceptionNETWORK_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+{
+    return jsNumber(exec, static_cast<int>(19));
+}
+
+JSValue jsDOMCoreExceptionABORT_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+{
+    return jsNumber(exec, static_cast<int>(20));
+}
+
+JSValue jsDOMCoreExceptionURL_MISMATCH_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+{
+    return jsNumber(exec, static_cast<int>(21));
+}
+
+JSValue jsDOMCoreExceptionQUOTA_EXCEEDED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+{
+    return jsNumber(exec, static_cast<int>(22));
+}
+
+JSC::JSValue toJS(JSC::ExecState* exec, DOMCoreException* object)
 {
     return getDOMObjectWrapper<JSDOMCoreException>(exec, object);
 }
-DOMCoreException* toDOMCoreException(JSC::JSValuePtr value)
+DOMCoreException* toDOMCoreException(JSC::JSValue value)
 {
-    return value->isObject(&JSDOMCoreException::s_info) ? static_cast<JSDOMCoreException*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSDOMCoreException::s_info) ? static_cast<JSDOMCoreException*>(asObject(value))->impl() : 0;
 }
 
 }

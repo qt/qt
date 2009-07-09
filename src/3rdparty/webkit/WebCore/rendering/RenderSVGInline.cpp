@@ -2,7 +2,7 @@
  * This file is part of the WebKit project.
  *
  * Copyright (C) 2006 Oliver Hunt <ojh16@student.canterbury.ac.nz>
- *           (C) 2006 Apple Computer Inc.
+ * Copyright (C) 2006 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,7 +26,11 @@
 #if ENABLE(SVG)
 #include "RenderSVGInline.h"
 
+#include "FloatQuad.h"
+#include "RenderBlock.h"
 #include "SVGInlineFlowBox.h"
+#include "SVGInlineTextBox.h"
+#include "SVGRootInlineBox.h"
 
 namespace WebCore {
     
@@ -35,22 +39,49 @@ RenderSVGInline::RenderSVGInline(Node* n)
 {
 }
 
-InlineBox* RenderSVGInline::createInlineBox(bool makePlaceHolderBox, bool isRootLineBox, bool isOnlyRun)
+InlineFlowBox* RenderSVGInline::createFlowBox()
 {
-    ASSERT(!(!isRootLineBox && (isReplaced() || makePlaceHolderBox)));
-    ASSERT(isInlineFlow());
+    InlineFlowBox* box = new (renderArena()) SVGInlineFlowBox(this);
+    box->setIsSVG(true);
+    return box;
+}
 
-    InlineFlowBox* flowBox = new (renderArena()) SVGInlineFlowBox(this);
+void RenderSVGInline::absoluteRects(Vector<IntRect>& rects, int, int)
+{
+    InlineRunBox* firstBox = firstLineBox();
 
-    if (!m_firstLineBox)
-        m_firstLineBox = m_lastLineBox = flowBox;
-    else {
-        m_lastLineBox->setNextLineBox(flowBox);
-        flowBox->setPreviousLineBox(m_lastLineBox);
-        m_lastLineBox = flowBox;
+    SVGRootInlineBox* rootBox = firstBox ? static_cast<SVGInlineTextBox*>(firstBox)->svgRootInlineBox() : 0;
+    RenderBox* object = rootBox ? rootBox->block() : 0;
+
+    if (!object)
+        return;
+
+    int xRef = object->x();
+    int yRef = object->y();
+
+    for (InlineRunBox* curr = firstBox; curr; curr = curr->nextLineBox()) {
+        FloatRect rect(xRef + curr->x(), yRef + curr->y(), curr->width(), curr->height());
+        rects.append(enclosingIntRect(localToAbsoluteQuad(rect).boundingBox()));
     }
-        
-    return flowBox;
+}
+
+void RenderSVGInline::absoluteQuads(Vector<FloatQuad>& quads)
+{
+    InlineRunBox* firstBox = firstLineBox();
+
+    SVGRootInlineBox* rootBox = firstBox ? static_cast<SVGInlineTextBox*>(firstBox)->svgRootInlineBox() : 0;
+    RenderBox* object = rootBox ? rootBox->block() : 0;
+
+    if (!object)
+        return;
+
+    int xRef = object->x();
+    int yRef = object->y();
+
+    for (InlineRunBox* curr = firstBox; curr; curr = curr->nextLineBox()) {
+        FloatRect rect(xRef + curr->x(), yRef + curr->y(), curr->width(), curr->height());
+        quads.append(localToAbsoluteQuad(rect));
+    }
 }
 
 }

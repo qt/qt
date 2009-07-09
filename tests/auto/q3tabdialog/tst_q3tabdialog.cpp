@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,7 @@ public:
 
 private slots:
     void getSetCheck();
+    void task245918_show();
 };
 
 tst_Q3TabDialog::tst_Q3TabDialog()
@@ -93,6 +94,33 @@ void tst_Q3TabDialog::getSetCheck()
     QCOMPARE(obj1.tabBar(), oldTabBar);
 
     delete var1;
+}
+
+class task245918_Dialog : public Q3TabDialog
+{
+    Q_OBJECT
+public:
+    task245918_Dialog()
+    {
+        QTimer::singleShot(100, this, SLOT(closeWhenVisible()));
+    }
+
+ private slots:
+    void closeWhenVisible()
+    {
+        if (isVisible())
+            accept();
+        else
+            QTimer::singleShot(100, this, SLOT(closeWhenVisible()));
+    }
+};
+
+void tst_Q3TabDialog::task245918_show()
+{
+    task245918_Dialog dialog;
+    QSignalSpy spy(&dialog, SIGNAL(aboutToShow()));
+    dialog.exec();
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_Q3TabDialog)

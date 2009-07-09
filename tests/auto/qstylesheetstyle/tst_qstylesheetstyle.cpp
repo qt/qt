@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,6 +81,7 @@ private slots:
     void onWidgetDestroyed();
     void fontPrecedence();
     void focusColors();
+    void hoverColors();
     void background();
     void tabAlignement();
     void attributesList();
@@ -760,6 +761,7 @@ void tst_QStyleSheetStyle::focusColors()
         combobox->setEditable(true);
         combobox->addItems(QStringList() << "TESTING");
         widgets << combobox;
+        widgets << new QLabel("TESTING");
 
 #ifdef Q_WS_QWS
         // QWS has its own special focus logic which is slightly different
@@ -807,6 +809,56 @@ void tst_QStyleSheetStyle::focusColors()
                     .toLocal8Bit().constData());
         }
   //  }
+}
+
+
+void tst_QStyleSheetStyle::hoverColors()
+{
+    QList<QWidget *> widgets;
+    widgets << new QPushButton("TESTING");
+    widgets << new QLineEdit("TESTING");
+    widgets << new QLabel("TESTING");
+    QSpinBox *spinbox = new QSpinBox;
+    spinbox->setValue(8888);
+    widgets << spinbox;
+    QComboBox *combobox = new QComboBox;
+    combobox->setEditable(true);
+    combobox->addItems(QStringList() << "TESTING");
+    widgets << combobox;
+    widgets << new QLabel("<b>TESTING</b>");
+
+    foreach (QWidget *widget, widgets) {
+        QDialog frame;
+        QLayout* layout = new QGridLayout;
+
+        QLineEdit* dummy = new QLineEdit; 
+
+        widget->setStyleSheet("*:hover { border:none; background: #e8ff66; color: #ff0084 }");
+
+        layout->addWidget(dummy);
+        layout->addWidget(widget);
+        frame.setLayout(layout);
+
+        frame.show();
+#ifdef Q_WS_X11
+        qt_x11_wait_for_window_manager(&frame);
+#endif
+        QApplication::setActiveWindow(&frame);
+        QTest::qWait(60);
+        QTest::mouseMove ( widget, QPoint(5,5));
+        QTest::qWait(60);
+
+        QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
+        frame.render(&image);
+
+        QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
+                  (QString::fromLatin1(widget->metaObject()->className())
+                  + " did not contain background color #e8ff66").toLocal8Bit().constData());
+        QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+                 (QString::fromLatin1(widget->metaObject()->className())
+                  + " did not contain text color #ff0084").toLocal8Bit().constData());
+    }
+
 }
 
 class SingleInheritanceDialog : public QDialog
@@ -1377,8 +1429,6 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     QVERIFY(testForColors(image, tree.palette().base().color()));
     QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
 }
-
-
 
 QTEST_MAIN(tst_QStyleSheetStyle)
 #include "tst_qstylesheetstyle.moc"

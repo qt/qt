@@ -13,7 +13,7 @@ painter->drawPixmap(0, 0, p);
 
 //! [1]
 QPixmap pm;
-if (!QPixmapCache::find("my_big_image", pm)) {
+if (!QPixmapCache::find("my_big_image", &pm)) {
     pm.load("bigimage.png");
     QPixmapCache::insert("my_big_image", pm);
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -115,7 +115,5 @@ QKeyMapperPrivate *qt_keymapper_private()
 {
     return QKeyMapper::instance()->d_func();
 }
-
-Q_GUI_EXPORT QList<int> qt_keymapper_possibleKeys(QKeyEvent *e) { return QKeyMapper::instance()->possibleKeys(e); }
 
 QT_END_NAMESPACE

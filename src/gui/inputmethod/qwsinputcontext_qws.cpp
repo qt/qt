@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,9 +73,16 @@ void QWSInputContext::reset()
 
 void QWSInputContext::setFocusWidget( QWidget *w )
 {
-  QWidget *oldFocus = focusWidget();
+    QWidget *oldFocus = focusWidget();
     if (oldFocus == w)
         return;
+
+    if (w) {
+        QWSInputContext::updateImeStatus(w, true);
+    } else {
+        if (oldFocus)
+            QWSInputContext::updateImeStatus(oldFocus, false);
+    }
 
     if (oldFocus) {
         QWidget *tlw = oldFocus->window();
@@ -224,7 +231,7 @@ bool QWSInputContext::translateIMEvent(QWidget *w, const QWSIMEvent *e)
 
 Q_GUI_EXPORT void (*qt_qws_inputMethodStatusChanged)(QWidget*) = 0;
 
-void QInputContextPrivate::updateImeStatus(QWidget *w, bool hasFocus)
+void QWSInputContext::updateImeStatus(QWidget *w, bool hasFocus)
 {
     Q_UNUSED(hasFocus);
 

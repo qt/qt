@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,12 +34,12 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-/*  TRANSLATOR MsgEdit
+/*  TRANSLATOR MessageEditor
 
   This is the right panel of the main window.
 */
@@ -69,6 +69,7 @@ QT_BEGIN_NAMESPACE
 // functionality is provided within Qt (see task 196275).
 static const char * language_strings[] =
 {
+    QT_TRANSLATE_NOOP("MessageEditor", "Russian"),
     QT_TRANSLATE_NOOP("MessageEditor", "German"),
     QT_TRANSLATE_NOOP("MessageEditor", "Japanese"),
     QT_TRANSLATE_NOOP("MessageEditor", "French"),
@@ -87,13 +88,13 @@ MessageEditor::MessageEditor(MultiDataModel *dataModel, QMainWindow *parent)
       m_dataModel(dataModel),
       m_currentModel(-1),
       m_currentNumerus(-1),
+      m_lengthVariants(false),
       m_undoAvail(false),
       m_redoAvail(false),
       m_cutAvail(false),
       m_copyAvail(false),
-      m_sourceSelected(false),
-      m_pluralSourceSelected(false),
-      m_currentSelected(false)
+      m_selectionHolder(0),
+      m_focusWidget(0)
 {
     setObjectName(QLatin1String("scroll area"));
 
@@ -121,6 +122,9 @@ MessageEditor::MessageEditor(MultiDataModel *dataModel, QMainWindow *parent)
     connect(m_dataModel, SIGNAL(languageChanged(int)),
             SLOT(setTargetLanguage(int)));
 
+    m_tabOrderTimer.setSingleShot(true);
+    connect(&m_tabOrderTimer, SIGNAL(timeout()), SLOT(reallyFixTabOrder()));
+
     clipboardChanged();
 
     setWhatsThis(tr("This whole panel allows you to view and edit "
@@ -144,12 +148,14 @@ void MessageEditor::setupEditorPage()
     m_source = new FormWidget(tr("Source text"), false);
     m_source->setHideWhenEmpty(true);
     m_source->setWhatsThis(tr("This area shows the source text."));
-    connect(m_source, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+    connect(m_source, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
 
     m_pluralSource = new FormWidget(tr("Source text (Plural)"), false);
     m_pluralSource->setHideWhenEmpty(true);
     m_pluralSource->setWhatsThis(tr("This area shows the plural form of the source text."));
-    connect(m_pluralSource, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+    connect(m_pluralSource, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
 
     m_commentText = new FormWidget(tr("Developer comments"), false);
     m_commentText->setHideWhenEmpty(true);
@@ -216,10 +222,13 @@ void MessageEditor::messageModelAppended()
     ed.transCommentText->setWhatsThis(tr("Here you can enter comments for your own use."
                         " They have no effect on the translated applications.") );
     ed.transCommentText->getEditor()->installEventFilter(this);
-    connect(ed.transCommentText, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-    connect(ed.transCommentText, SIGNAL(textChanged()), SLOT(emitTranslatorCommentChanged()));
-    connect(ed.transCommentText, SIGNAL(textChanged()), SLOT(resetHoverSelection()));
+    connect(ed.transCommentText, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
+    connect(ed.transCommentText, SIGNAL(textChanged(QTextEdit *)),
+            SLOT(emitTranslatorCommentChanged(QTextEdit *)));
+    connect(ed.transCommentText, SIGNAL(textChanged(QTextEdit *)), SLOT(resetHoverSelection()));
     connect(ed.transCommentText, SIGNAL(cursorPositionChanged()), SLOT(resetHoverSelection()));
+    fixTabOrder();
     QBoxLayout *box = new QVBoxLayout(ed.container);
     box->setMargin(5);
     box->addWidget(ed.transCommentText);
@@ -250,7 +259,7 @@ void MessageEditor::messageModelDeleted(int model)
         if (m_currentModel >= 0) {
             if (m_currentNumerus >= m_editors[m_currentModel].transTexts.size())
                 m_currentNumerus = m_editors[m_currentModel].transTexts.size() - 1;
-            activeEditor()->getEditor()->setFocus();
+            activeEditor()->setFocus();
         } else {
             m_currentNumerus = -1;
         }
@@ -265,24 +274,62 @@ void MessageEditor::messageModelDeleted(int model)
 
 void MessageEditor::addPluralForm(int model, const QString &label, bool writable)
 {
-    FormWidget *transEditor = new FormWidget(label, true);
-    QFont font;
-    font.setPointSize(static_cast<int>(m_editors[model].fontSize));
-    transEditor->getEditor()->setFont(font);
+    FormMultiWidget *transEditor = new FormMultiWidget(label);
+    connect(transEditor, SIGNAL(editorCreated(QTextEdit *)), SLOT(editorCreated(QTextEdit *)));
     transEditor->setEditingEnabled(writable);
     transEditor->setHideWhenEmpty(!writable);
     if (!m_editors[model].transTexts.isEmpty())
         transEditor->setVisible(false);
+    transEditor->setMultiEnabled(m_lengthVariants);
     static_cast<QBoxLayout *>(m_editors[model].container->layout())->insertWidget(
         m_editors[model].transTexts.count(), transEditor);
 
-    transEditor->getEditor()->installEventFilter(this);
-    connect(transEditor, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-    connect(transEditor, SIGNAL(textChanged()), SLOT(emitTranslationChanged()));
-    connect(transEditor, SIGNAL(textChanged()), SLOT(resetHoverSelection()));
+    connect(transEditor, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
+    connect(transEditor, SIGNAL(textChanged(QTextEdit *)),
+            SLOT(emitTranslationChanged(QTextEdit *)));
+    connect(transEditor, SIGNAL(textChanged(QTextEdit *)), SLOT(resetHoverSelection()));
     connect(transEditor, SIGNAL(cursorPositionChanged()), SLOT(resetHoverSelection()));
 
     m_editors[model].transTexts << transEditor;
+}
+
+void MessageEditor::editorCreated(QTextEdit *te)
+{
+    FormMultiWidget *snd = static_cast<FormMultiWidget *>(sender());
+    for (int model = 0; ; ++model) {
+        MessageEditorData med = m_editors.at(model);
+        if (med.transTexts.contains(snd)) {
+            QFont font;
+            font.setPointSize(static_cast<int>(med.fontSize));
+            te->setFont(font);
+
+            te->installEventFilter(this);
+
+            fixTabOrder();
+            return;
+        }
+    }
+}
+
+void MessageEditor::fixTabOrder()
+{
+    m_tabOrderTimer.start(0);
+}
+
+void MessageEditor::reallyFixTabOrder()
+{
+    QWidget *prev = this;
+    foreach (const MessageEditorData &med, m_editors) {
+        foreach (FormMultiWidget *fmw, med.transTexts)
+            foreach (QTextEdit *te, fmw->getEditors()) {
+                setTabOrder(prev, te);
+                prev = te;
+            }
+        QTextEdit *te = med.transCommentText->getEditor();
+        setTabOrder(prev, te);
+        prev = te;
+    }
 }
 
 /*! internal
@@ -300,69 +347,53 @@ QStringList MessageEditor::translations(int model) const
     return translations;
 }
 
-static bool clearFormSelection(FormWidget *fw, FormWidget *te)
+static void clearSelection(QTextEdit *t)
 {
-    if (fw != te) {
-        QTextEdit *t = fw->getEditor();
-        bool oldBlockState = t->blockSignals(true);
-        QTextCursor c = t->textCursor();
-        c.clearSelection();
-        t->setTextCursor(c);
-        t->blockSignals(oldBlockState);
-        return true;
-    }
-    return false;
+    bool oldBlockState = t->blockSignals(true);
+    QTextCursor c = t->textCursor();
+    c.clearSelection();
+    t->setTextCursor(c);
+    t->blockSignals(oldBlockState);
 }
 
-// Clear the selection for all textedits except the sender
-void MessageEditor::selectionChanged()
+void MessageEditor::selectionChanged(QTextEdit *te)
 {
-    if (!resetSelection(qobject_cast<FormWidget *>(sender())))
+    if (te != m_selectionHolder) {
+        if (m_selectionHolder)
+            clearSelection(m_selectionHolder);
+        m_selectionHolder = (te->textCursor().hasSelection() ? te : 0);
         updateCanCutCopy();
+    }
 }
 
-bool MessageEditor::resetHoverSelection(FormWidget *fw)
+void MessageEditor::resetHoverSelection()
 {
-    if (m_sourceSelected) {
-        if (clearFormSelection(m_source, fw)) {
-            updateCanCutCopy();
-            return true;
-        }
-    } else if (m_pluralSourceSelected) {
-        if (clearFormSelection(m_pluralSource, fw)) {
-            updateCanCutCopy();
-            return true;
-        }
-    }
-    return false;
+    if (m_selectionHolder &&
+        (m_selectionHolder == m_source->getEditor()
+         || m_selectionHolder == m_pluralSource->getEditor()))
+        resetSelection();
 }
 
-bool MessageEditor::resetSelection(FormWidget *fw)
+void MessageEditor::resetSelection()
 {
-    if (resetHoverSelection(fw))
-        return true;
-    if (m_currentSelected) {
-        MessageEditorData &ed = m_editors[m_currentModel];
-        FormWidget *cfw = (m_currentNumerus < 0) ? ed.transCommentText
-                                                 : ed.transTexts[m_currentNumerus];
-        if (clearFormSelection(cfw, fw)) {
-            updateCanCutCopy();
-            return true;
-        }
+    if (m_selectionHolder) {
+        clearSelection(m_selectionHolder);
+        m_selectionHolder = 0;
+        updateCanCutCopy();
     }
-    return false;
 }
 
 void MessageEditor::activeModelAndNumerus(int *model, int *numerus) const
 {
     for (int j = 0; j < m_editors.count(); ++j) {
         for (int i = 0; i < m_editors[j].transTexts.count(); ++i)
-            if (m_editors[j].transTexts[i]->getEditor()->hasFocus()) {
-                *model = j;
-                *numerus = i;
-                return;
-            }
-        if (m_editors[j].transCommentText->getEditor()->hasFocus()) {
+            foreach (QTextEdit *te, m_editors[j].transTexts[i]->getEditors())
+                if (m_focusWidget == te) {
+                    *model = j;
+                    *numerus = i;
+                    return;
+                }
+        if (m_focusWidget == m_editors[j].transCommentText->getEditor()) {
             *model = j;
             *numerus = -1;
             return;
@@ -372,43 +403,46 @@ void MessageEditor::activeModelAndNumerus(int *model, int *numerus) const
     *numerus = -1;
 }
 
-FormWidget *MessageEditor::activeTranslation() const
+QTextEdit *MessageEditor::activeTranslation() const
 {
     if (m_currentNumerus < 0)
         return 0;
-    return m_editors[m_currentModel].transTexts[m_currentNumerus];
+    foreach (QTextEdit *te, m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditors())
+        if (te->hasFocus())
+            return te;
+    return 0; // This cannot happen
 }
 
-FormWidget *MessageEditor::activeOr1stTranslation() const
+QTextEdit *MessageEditor::activeOr1stTranslation() const
 {
     if (m_currentNumerus < 0) {
         for (int i = 0; i < m_editors.size(); ++i)
             if (m_editors[i].container->isVisible()
-                && !m_editors[i].transTexts[0]->getEditor()->isReadOnly())
-                return m_editors[i].transTexts[0];
+                && !m_editors[i].transTexts.first()->getEditors().first()->isReadOnly())
+                return m_editors[i].transTexts.first()->getEditors().first();
         return 0;
     }
-    return m_editors[m_currentModel].transTexts[m_currentNumerus];
-}
-
-FormWidget *MessageEditor::activeTransComment() const
-{
-    if (m_currentModel < 0 || m_currentNumerus >= 0)
-        return 0;
-    return m_editors[m_currentModel].transCommentText;
-}
-
-FormWidget *MessageEditor::activeEditor() const
-{
-    if (FormWidget *fw = activeTransComment())
-        return fw;
     return activeTranslation();
 }
 
-FormWidget *MessageEditor::activeOr1stEditor() const
+QTextEdit *MessageEditor::activeTransComment() const
 {
-    if (FormWidget *fw = activeTransComment())
-        return fw;
+    if (m_currentModel < 0 || m_currentNumerus >= 0)
+        return 0;
+    return m_editors[m_currentModel].transCommentText->getEditor();
+}
+
+QTextEdit *MessageEditor::activeEditor() const
+{
+    if (QTextEdit *te = activeTransComment())
+        return te;
+    return activeTranslation();
+}
+
+QTextEdit *MessageEditor::activeOr1stEditor() const
+{
+    if (QTextEdit *te = activeTransComment())
+        return te;
     return activeOr1stTranslation();
 }
 
@@ -416,25 +450,14 @@ void MessageEditor::setTargetLanguage(int model)
 {
     const QStringList &numerusForms = m_dataModel->model(model)->numerusForms();
     const QString &langLocalized = m_dataModel->model(model)->localizedLanguage();
-    bool added = false;
     for (int i = 0; i < numerusForms.count(); ++i) {
         const QString &label = tr("%1 translation (%2)").arg(langLocalized, numerusForms[i]);
         if (!i)
             m_editors[model].firstForm = label;
-        if (i >= m_editors[model].transTexts.count()) {
+        if (i >= m_editors[model].transTexts.count())
             addPluralForm(model, label, m_dataModel->isModelWritable(model));
-            QWidget *prev;
-            if (i > 0)
-                prev = m_editors[model].transTexts[i - 1]->getEditor();
-            else if (model)
-                prev = m_editors[model - 1].transCommentText->getEditor();
-            else
-                prev = this;
-            setTabOrder(prev, m_editors[model].transTexts[i]->getEditor());
-            added = true;
-        } else {
+        else
             m_editors[model].transTexts[i]->setLabel(label);
-        }
         m_editors[model].transTexts[i]->setVisible(!i || m_editors[model].pluralEditMode);
         m_editors[model].transTexts[i]->setWhatsThis(
                 tr("This is where you can enter or modify"
@@ -444,16 +467,15 @@ void MessageEditor::setTargetLanguage(int model)
         delete m_editors[model].transTexts.takeLast();
     m_editors[model].invariantForm = tr("%1 translation").arg(langLocalized);
     m_editors[model].transCommentText->setLabel(tr("%1 translator comments").arg(langLocalized));
-    if (added)
-        setTabOrder(m_editors[model].transTexts.last()->getEditor(), m_editors[model].transCommentText->getEditor());
 }
 
 MessageEditorData *MessageEditor::modelForWidget(const QObject *o)
 {
     for (int j = 0; j < m_editors.count(); ++j) {
         for (int i = 0; i < m_editors[j].transTexts.count(); ++i)
-            if (m_editors[j].transTexts[i]->getEditor() == o)
-                return &m_editors[j];
+            foreach (QTextEdit *te, m_editors[j].transTexts[i]->getEditors())
+                if (te == o)
+                    return &m_editors[j];
         if (m_editors[j].transCommentText->getEditor() == o)
             return &m_editors[j];
     }
@@ -465,7 +487,8 @@ static bool applyFont(MessageEditorData *med)
     QFont font;
     font.setPointSize(static_cast<int>(med->fontSize));
     for (int i = 0; i < med->transTexts.count(); ++i)
-        med->transTexts[i]->getEditor()->setFont(font);
+        foreach (QTextEdit *te, med->transTexts[i]->getEditors())
+            te->setFont(font);
     med->transCommentText->getEditor()->setFont(font);
     return true;
 }
@@ -502,6 +525,8 @@ bool MessageEditor::eventFilter(QObject *o, QEvent *e)
                     m_pluralSource->getEditor()->copy();
                     return true;
                 }
+            } else if (ke->key() == Qt::Key_A) {
+                return true;
             }
         }
     } else if (e->type() == QEvent::KeyPress) {
@@ -526,20 +551,37 @@ bool MessageEditor::eventFilter(QObject *o, QEvent *e)
             return decFont(modelForWidget(o));
         }
     } else if (e->type() == QEvent::FocusIn) {
-        int model, numerus;
-        activeModelAndNumerus(&model, &numerus);
-        if (model != m_currentModel || numerus != m_currentNumerus) {
-            resetSelection();
-            m_currentModel = model;
-            m_currentNumerus = numerus;
-            emit activeModelChanged(activeModel());
-            updateBeginFromSource();
-            updateUndoRedo();
-            updateCanPaste();
-        }
+        QWidget *widget = static_cast<QWidget *>(o);
+        if (widget != m_focusWidget)
+            trackFocus(widget);
     }
 
     return QScrollArea::eventFilter(o, e);
+}
+
+void MessageEditor::grabFocus(QWidget *widget)
+{
+    if (widget != m_focusWidget) {
+        widget->setFocus();
+        trackFocus(widget);
+    }
+}
+
+void MessageEditor::trackFocus(QWidget *widget)
+{
+    m_focusWidget = widget;
+
+    int model, numerus;
+    activeModelAndNumerus(&model, &numerus);
+    if (model != m_currentModel || numerus != m_currentNumerus) {
+        resetSelection();
+        m_currentModel = model;
+        m_currentNumerus = numerus;
+        emit activeModelChanged(activeModel());
+        updateBeginFromSource();
+        updateUndoRedo();
+        updateCanPaste();
+    }
 }
 
 void MessageEditor::showNothing()
@@ -549,7 +591,7 @@ void MessageEditor::showNothing()
     m_commentText->clearTranslation();
     for (int j = 0; j < m_editors.count(); ++j) {
         setEditingEnabled(j, false);
-        foreach (FormWidget *widget, m_editors[j].transTexts)
+        foreach (FormMultiWidget *widget, m_editors[j].transTexts)
             widget->clearTranslation();
         m_editors[j].transCommentText->clearTranslation();
     }
@@ -636,7 +678,7 @@ void MessageEditor::setTranslation(int model, const QString &translation, int nu
     MessageEditorData &ed = m_editors[model];
     if (numerus >= ed.transTexts.count())
         numerus = 0;
-    FormWidget *transForm = ed.transTexts[numerus];
+    FormMultiWidget *transForm = ed.transTexts[numerus];
     transForm->setTranslation(translation, false);
 
     updateBeginFromSource();
@@ -651,8 +693,8 @@ void MessageEditor::setTranslation(int latestModel, const QString &translation)
         latestModel = m_currentModel;
         numerus = m_currentNumerus;
     }
-    FormWidget *transForm = m_editors[latestModel].transTexts[numerus];
-    transForm->getEditor()->setFocus();
+    FormMultiWidget *transForm = m_editors[latestModel].transTexts[numerus];
+    transForm->getEditors().first()->setFocus();
     transForm->setTranslation(translation, true);
 
     updateBeginFromSource();
@@ -661,29 +703,37 @@ void MessageEditor::setTranslation(int latestModel, const QString &translation)
 void MessageEditor::setEditingEnabled(int model, bool enabled)
 {
     MessageEditorData &ed = m_editors[model];
-    foreach (FormWidget *widget, ed.transTexts)
+    foreach (FormMultiWidget *widget, ed.transTexts)
         widget->setEditingEnabled(enabled);
     ed.transCommentText->setEditingEnabled(enabled);
 
     updateCanPaste();
 }
 
+void MessageEditor::setLenghtVariants(bool on)
+{
+    m_lengthVariants = on;
+    foreach (const MessageEditorData &ed, m_editors)
+        foreach (FormMultiWidget *widget, ed.transTexts)
+            widget->setMultiEnabled(on);
+}
+
 void MessageEditor::undo()
 {
-    activeEditor()->getEditor()->document()->undo();
+    activeEditor()->document()->undo();
 }
 
 void MessageEditor::redo()
 {
-    activeEditor()->getEditor()->document()->redo();
+    activeEditor()->document()->redo();
 }
 
 void MessageEditor::updateUndoRedo()
 {
     bool newUndoAvail = false;
     bool newRedoAvail = false;
-    if (FormWidget *fw = activeEditor()) {
-        QTextDocument *doc = fw->getEditor()->document();
+    if (QTextEdit *te = activeEditor()) {
+        QTextDocument *doc = te->document();
         newUndoAvail = doc->isUndoAvailable();
         newRedoAvail = doc->isRedoAvailable();
     }
@@ -701,18 +751,12 @@ void MessageEditor::updateUndoRedo()
 
 void MessageEditor::cut()
 {
-    QTextEdit *editor = activeEditor()->getEditor();
-    if (editor->textCursor().hasSelection())
-        editor->cut();
+    m_selectionHolder->cut();
 }
 
 void MessageEditor::copy()
 {
-    QTextEdit *te;
-    if ((te = m_source->getEditor())->textCursor().hasSelection()
-        || (te = m_pluralSource->getEditor())->textCursor().hasSelection()
-        || (te = activeEditor()->getEditor())->textCursor().hasSelection())
-        te->copy();
+    m_selectionHolder->copy();
 }
 
 void MessageEditor::updateCanCutCopy()
@@ -720,19 +764,9 @@ void MessageEditor::updateCanCutCopy()
     bool newCopyState = false;
     bool newCutState = false;
 
-    m_sourceSelected = m_source->getEditor()->textCursor().hasSelection();
-    m_pluralSourceSelected = m_pluralSource->getEditor()->textCursor().hasSelection();
-    m_currentSelected = false;
-
-    if (m_sourceSelected || m_pluralSourceSelected) {
+    if (m_selectionHolder) {
         newCopyState = true;
-    } else if (FormWidget *fw = activeEditor()) {
-        QTextEdit *te = fw->getEditor();
-        if (te->textCursor().hasSelection()) {
-            m_currentSelected = true;
-            newCopyState = true;
-            newCutState = !te->isReadOnly();
-        }
+        newCutState = !m_selectionHolder->isReadOnly();
     }
 
     if (newCopyState != m_copyAvail) {
@@ -748,14 +782,14 @@ void MessageEditor::updateCanCutCopy()
 
 void MessageEditor::paste()
 {
-    activeEditor()->getEditor()->paste();
+    activeEditor()->paste();
 }
 
 void MessageEditor::updateCanPaste()
 {
-    FormWidget *fw;
+    QTextEdit *te;
     emit pasteAvailable(!m_clipboardEmpty
-                        && (fw = activeEditor()) && !fw->getEditor()->isReadOnly());
+                        && (te = activeEditor()) && !te->isReadOnly());
 }
 
 void MessageEditor::clipboardChanged()
@@ -770,24 +804,23 @@ void MessageEditor::selectAll()
     // make sure we don't select the selection of a translator textedit,
     // if we really want the source text editor to be selected.
     QTextEdit *te;
-    FormWidget *fw;
     if ((te = m_source->getEditor())->underMouse()
         || (te = m_pluralSource->getEditor())->underMouse()
-        || ((fw = activeEditor()) && (te = fw->getEditor())->hasFocus()))
+        || ((te = activeEditor()) && te->hasFocus()))
         te->selectAll();
 }
 
-void MessageEditor::emitTranslationChanged()
+void MessageEditor::emitTranslationChanged(QTextEdit *widget)
 {
-    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
+    grabFocus(widget); // DND proofness
     updateBeginFromSource();
     updateUndoRedo();
     emit translationChanged(translations(m_currentModel));
 }
 
-void MessageEditor::emitTranslatorCommentChanged()
+void MessageEditor::emitTranslatorCommentChanged(QTextEdit *widget)
 {
-    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
+    grabFocus(widget); // DND proofness
     updateUndoRedo();
     emit translatorCommentChanged(m_editors[m_currentModel].transCommentText->getTranslation());
 }
@@ -795,11 +828,9 @@ void MessageEditor::emitTranslatorCommentChanged()
 void MessageEditor::updateBeginFromSource()
 {
     bool overwrite = false;
-    if (FormWidget *transForm = activeTranslation()) {
-        QTextEdit *activeEditor = transForm->getEditor();
+    if (QTextEdit *activeEditor = activeTranslation())
         overwrite = !activeEditor->isReadOnly()
             && activeEditor->toPlainText().trimmed().isEmpty();
-    }
     emit beginFromSourceAvailable(overwrite);
 }
 
@@ -814,8 +845,8 @@ void MessageEditor::beginFromSource()
 void MessageEditor::setEditorFocus()
 {
     if (!widget()->hasFocus())
-        if (FormWidget *transForm = activeOr1stEditor())
-            transForm->getEditor()->setFocus();
+        if (QTextEdit *activeEditor = activeOr1stEditor())
+            activeEditor->setFocus();
 }
 
 void MessageEditor::setEditorFocus(int model)
@@ -825,12 +856,13 @@ void MessageEditor::setEditorFocus(int model)
             resetSelection();
             m_currentNumerus = -1;
             m_currentModel = -1;
+            m_focusWidget = 0;
             emit activeModelChanged(activeModel());
             updateBeginFromSource();
             updateUndoRedo();
             updateCanPaste();
         } else {
-            m_editors[model].transTexts[0]->getEditor()->setFocus();
+            m_editors[model].transTexts.first()->getEditors().first()->setFocus();
         }
     }
 }
@@ -841,7 +873,7 @@ bool MessageEditor::focusNextUnfinished(int start)
         if (m_dataModel->isModelWritable(j))
             if (MessageItem *item = m_dataModel->messageItem(m_currentIndex, j))
                 if (item->type() == TranslatorMessage::Unfinished) {
-                    m_editors[j].transTexts[0]->getEditor()->setFocus();
+                    m_editors[j].transTexts.first()->getEditors().first()->setFocus();
                     return true;
                 }
     return false;

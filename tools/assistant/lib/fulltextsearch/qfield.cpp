@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QCLucene library and is distributable under
 ** the terms of the LGPL license as specified in the license.txt file.
@@ -28,6 +28,7 @@ QCLuceneFieldPrivate::QCLuceneFieldPrivate(const QCLuceneFieldPrivate &other)
     : QSharedData()
 {
     field = _CL_POINTER(other.field);
+    deleteCLuceneField = other.deleteCLuceneField;
 }
 
 QCLuceneFieldPrivate::~QCLuceneFieldPrivate()

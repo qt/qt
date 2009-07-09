@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -106,6 +106,8 @@ public:
         GetActivationObject,
         GetScopeChain,
         ContextsCheckpoint,
+        GetPropertyExpressionValue,
+        GetCompletions,
 
         NewScriptObjectSnapshot,
         ScriptObjectSnapshotCapture,
@@ -229,6 +231,9 @@ public:
     static QScriptDebuggerCommand getActivationObjectCommand(int contextIndex);
     static QScriptDebuggerCommand getScopeChainCommand(int contextIndex);
     static QScriptDebuggerCommand contextsCheckpoint();
+    static QScriptDebuggerCommand getPropertyExpressionValue(int contextIndex, int lineNumber,
+                                                             const QStringList &path);
+    static QScriptDebuggerCommand getCompletions(int contextIndex, const QStringList &path);
 
     static QScriptDebuggerCommand newScriptObjectSnapshotCommand();
     static QScriptDebuggerCommand scriptObjectSnapshotCaptureCommand(int id, const QScriptDebuggerValue &object);

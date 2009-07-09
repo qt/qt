@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -131,16 +131,17 @@ class QSplitterHandlePrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QSplitterHandle)
 public:
-    QSplitterHandlePrivate() : orient(Qt::Horizontal), opaq(false), s(0), mouseOffset(0) {}
+    QSplitterHandlePrivate() : s(0), orient(Qt::Horizontal), mouseOffset(0), opaq(false), hover(false), pressed(false) {}
 
     inline int pick(const QPoint &pos) const
     { return orient == Qt::Horizontal ? pos.x() : pos.y(); }
 
-    Qt::Orientation orient;
-    bool opaq;
     QSplitter *s;
-    bool hover;
+    Qt::Orientation orient;
     int mouseOffset;
+    bool opaq    : 1;
+    bool hover   : 1;
+    bool pressed : 1;
 };
 
 QT_END_NAMESPACE

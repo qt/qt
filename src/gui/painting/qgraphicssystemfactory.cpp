@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,6 +63,10 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
 #if defined (QT_GRAPHICSSYSTEM_OPENGL)
     if (system.isEmpty()) {
         system = QLatin1String("opengl");
+    }
+#elif defined (QT_GRAPHICSSYSTEM_OPENVG)
+    if (system.isEmpty()) {
+        system = QLatin1String("openvg");
     }
 #elif defined (QT_GRAPHICSSYSTEM_RASTER) && !defined(Q_WS_WIN) && !defined(Q_WS_S60)
     if (system.isEmpty()) {

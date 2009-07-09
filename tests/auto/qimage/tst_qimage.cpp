@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -135,6 +135,8 @@ private slots:
     void nullSize();
 
     void premultipliedAlphaConsistency();
+
+    void compareIndexed();
 };
 
 tst_QImage::tst_QImage()
@@ -281,6 +283,9 @@ void tst_QImage::formatHandlersInput_data()
     QTest::newRow("PPM") << "PPM" << prefix + "image.ppm";
     QTest::newRow("XBM") << "XBM" << prefix + "image.xbm";
     QTest::newRow("XPM") << "XPM" << prefix + "image.xpm";
+#if defined QTEST_HAVE_TIFF
+    QTest::newRow("TIFF") << "TIFF" << prefix + "image.tif";
+#endif
 }
 
 void tst_QImage::formatHandlersInput()
@@ -1765,6 +1770,32 @@ void tst_QImage::premultipliedAlphaConsistency()
         QVERIFY(qGreen(pixel) <= qAlpha(pixel));
         QVERIFY(qBlue(pixel) <= qAlpha(pixel));
     }
+}
+
+void tst_QImage::compareIndexed()
+{
+    QImage img(256, 1, QImage::Format_Indexed8);
+
+    QVector<QRgb> colorTable(256);
+    for (int i = 0; i < 256; ++i)
+        colorTable[i] = qRgb(i, i, i);
+    img.setColorTable(colorTable);
+
+    for (int i = 0; i < 256; ++i) {
+        img.setPixel(i, 0, i);
+    }
+
+    QImage imgInverted(256, 1, QImage::Format_Indexed8);
+    QVector<QRgb> invertedColorTable(256);
+    for (int i = 0; i < 256; ++i)
+        invertedColorTable[255-i] = qRgb(i, i, i);
+    imgInverted.setColorTable(invertedColorTable);
+
+    for (int i = 0; i < 256; ++i) {
+        imgInverted.setPixel(i, 0, (255-i));
+    }
+
+    QCOMPARE(img, imgInverted);
 }
 
 QTEST_MAIN(tst_QImage)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,7 @@
 #include "qdebug.h"
 #endif
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 extern void qt_wince_show_SIP(bool show);   // defined in qguifunctions_wince.cpp
 #endif
 
@@ -237,7 +237,7 @@ QWinInputContext::QWinInputContext(QObject *parent)
             aimmpump->Start();
     }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
     if (ver & QSysInfo::WV_NT_based  && ver >= QSysInfo::WV_VISTA) {
         // Since the IsValidLanguageGroup/IsValidLocale functions always return true on 
@@ -349,7 +349,7 @@ static LONG getCompositionString(HIMC himc, DWORD dwIndex, LPVOID lpbuf, DWORD d
         if(QSysInfo::WindowsVersion != QSysInfo::WV_95) {
             len = ImmGetCompositionStringW(himc, dwIndex, lpbuf, dBufLen);
         }
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
         else {
             len = ImmGetCompositionStringA(himc, dwIndex, lpbuf, dBufLen);
             if (unicode)
@@ -539,7 +539,7 @@ bool QWinInputContext::endComposition()
     }
 
     if (!fw)
-        fw = qApp->focusWidget();
+        fw = QApplication::focusWidget();
 
     if (fw) {
         QInputMethodEvent e;
@@ -637,7 +637,7 @@ bool QWinInputContext::composition(LPARAM lParam)
         // bogus event
         return true;
 
-    QWidget *fw = qApp->focusWidget();
+    QWidget *fw = QApplication::focusWidget();
     if (fw) {
         Q_ASSERT(fw->testAttribute(Qt::WA_WState_Created));
         HIMC imc = getContext(fw->effectiveWinId());
@@ -738,7 +738,7 @@ inline void enableIme(QWidget *w,  bool value)
         // enable ime
         if (defaultContext)
             ImmAssociateContext(w->effectiveWinId(), defaultContext);
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (qApp->autoSipEnabled())
             qt_wince_show_SIP(true);
 #endif
@@ -747,7 +747,7 @@ inline void enableIme(QWidget *w,  bool value)
         HIMC oldimc = ImmAssociateContext(w->effectiveWinId(), 0);
         if (!defaultContext)
             defaultContext = oldimc;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (qApp->autoSipEnabled())
             qt_wince_show_SIP(false);
 #endif
@@ -755,7 +755,7 @@ inline void enableIme(QWidget *w,  bool value)
 }
 
 
-void QInputContextPrivate::updateImeStatus(QWidget *w, bool hasFocus)
+void QWinInputContext::updateImeStatus(QWidget *w, bool hasFocus)
 {
     if (!w)
         return;
@@ -829,6 +829,15 @@ void QWinInputContext::enable(QWidget *w, bool e)
 
 void QWinInputContext::setFocusWidget(QWidget *w)
 {
+    QWidget *oldFocus = focusWidget();
+    if (oldFocus == w)
+        return;
+    if (w) {
+        QWinInputContext::updateImeStatus(w, true);
+    } else {
+        if (oldFocus)
+            QWinInputContext::updateImeStatus(oldFocus , false);
+    }
     QInputContext::setFocusWidget(w);
     update();
 }

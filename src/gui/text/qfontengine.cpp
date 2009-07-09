@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,12 +68,6 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
             && a.m21() == b.m21()
             && a.m22() == b.m22();
     }
-}
-
-
-
-QFontEngineGlyphCache::~QFontEngineGlyphCache()
-{
 }
 
 // Harfbuzz helper functions
@@ -430,8 +424,7 @@ void QFontEngine::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> positioned_glyphs;
-    QTransform matrix;
-    matrix.translate(x, y);
+    QTransform matrix = QTransform::fromTranslate(x, y);
     getGlyphPositions(glyphs, matrix, flags, positioned_glyphs, positions);
     addGlyphsToPath(positioned_glyphs.data(), positions.data(), positioned_glyphs.size(), path, flags);
 }
@@ -917,7 +910,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
 end:
     qSort(kerning_pairs);
 //    for (int i = 0; i < kerning_pairs.count(); ++i)
-//        qDebug() << "i" << i << "left_right" << hex << kerning_pairs.at(i).left_right;
+//        qDebug() << 'i' << i << "left_right" << hex << kerning_pairs.at(i).left_right;
 }
 
 #else
@@ -1043,9 +1036,8 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
             return 0;
         quint16 segCountX2 = qFromBigEndian<quint16>(cmap + 6);
         const unsigned char *ends = cmap + 14;
-        quint16 endIndex = 0;
         int i = 0;
-        for (; i < segCountX2/2 && (endIndex = qFromBigEndian<quint16>(ends + 2*i)) < unicode; i++) {}
+        for (; i < segCountX2/2 && qFromBigEndian<quint16>(ends + 2*i) < unicode; i++) {}
 
         const unsigned char *idx = ends + segCountX2 + 2 + 2*i;
         quint16 startIndex = qFromBigEndian<quint16>(idx);
@@ -1171,8 +1163,7 @@ void QFontEngineBox::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyp
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> positioned_glyphs;
-    QTransform matrix;
-    matrix.translate(x, y - _size);
+    QTransform matrix = QTransform::fromTranslate(x, y - _size);
     getGlyphPositions(glyphs, matrix, flags, positioned_glyphs, positions);
 
     QSize s(_size - 3, _size - 3);
@@ -1200,8 +1191,7 @@ void QFontEngineBox::draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt 
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix;
-    matrix.translate(x, y - _size);
+    QTransform matrix = QTransform::fromTranslate(x, y - _size);
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
     if (glyphs.size() == 0)
         return;
@@ -1658,12 +1648,6 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     }
 
     return allExist;
-}
-
-QFontEngine *QFontEngineMulti::engine(int at) const
-{
-    Q_ASSERT(at < engines.size());
-    return engines.at(at);
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)

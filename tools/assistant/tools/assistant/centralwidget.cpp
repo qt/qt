@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -286,6 +286,10 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
 
 CentralWidget::~CentralWidget()
 {
+#ifndef QT_NO_PRINTER
+    delete printer;
+#endif
+
     QHelpEngineCore engine(collectionFile, 0);
     if (!engine.setupData())
         return;
@@ -357,10 +361,10 @@ void CentralWidget::findNext()
 
 void CentralWidget::nextPage()
 {
-    if(tabWidget->currentIndex() < tabWidget->count() -1)
-        tabWidget->setCurrentIndex(tabWidget->currentIndex() +1);
-    else
-        tabWidget->setCurrentIndex(0);
+    int index = tabWidget->currentIndex() + 1;
+    if (index >= tabWidget->count())
+        index = 0;
+    tabWidget->setCurrentIndex(index);
 }
 
 void CentralWidget::resetZoom()
@@ -376,10 +380,9 @@ void CentralWidget::resetZoom()
 void CentralWidget::previousPage()
 {
     int index = tabWidget->currentIndex() -1;
-    if(index >= 0)
-        tabWidget->setCurrentIndex(index);
-    else
-        tabWidget->setCurrentIndex(tabWidget->count() -1);
+    if (index < 0)
+        index = tabWidget->count() -1;
+    tabWidget->setCurrentIndex(index);
 }
 
 void CentralWidget::findPrevious()
@@ -400,7 +403,8 @@ void CentralWidget::closeTab()
 void CentralWidget::setSource(const QUrl &url)
 {
     HelpViewer *viewer = currentHelpViewer();
-    HelpViewer *lastViewer = qobject_cast<HelpViewer*>(tabWidget->widget(lastTabPage));
+    HelpViewer *lastViewer =
+        qobject_cast<HelpViewer*>(tabWidget->widget(lastTabPage));
 
     if (!viewer && !lastViewer) {
         viewer = new HelpViewer(helpEngine, this);
@@ -427,8 +431,11 @@ void CentralWidget::setLastShownPages()
         QString::SkipEmptyParts);
 
     const int pageCount = lastShownPageList.count();
-    if (pageCount == 0 && usesDefaultCollection) {
-        setSource(QUrl(QLatin1String("help")));
+    if (pageCount == 0) {
+        if (usesDefaultCollection)
+            setSource(QUrl(QLatin1String("help")));
+        else
+            setSource(QUrl(QLatin1String("about:blank")));
         return;
     }
 
@@ -780,6 +787,9 @@ void CentralWidget::showTabBarContextMenu(const QPoint &point)
     menu.addSeparator();
 
     QAction *newBookmark = menu.addAction(tr("Add Bookmark for this Page..."));
+    const QString &url = viewer->source().toString();
+    if (url.isEmpty() || url == QLatin1String("about:blank"))
+        newBookmark->setEnabled(false);
 
     QAction *pickedAction = menu.exec(tabBar->mapToGlobal(point));
     if (pickedAction == newPage)

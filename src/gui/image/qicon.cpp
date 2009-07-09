@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,7 @@
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
-#include <Carbon/Carbon.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -178,8 +178,8 @@ QPixmapIconEngine::~QPixmapIconEngine()
 void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
     QSize pixmapSize = rect.size();
-#if defined(Q_WS_MAC) && !defined(Q_WS_MAC64)
-    pixmapSize *= (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) ? HIGetScaleFactor() : 1;
+#if defined(Q_WS_MAC)
+    pixmapSize *= qt_mac_get_scalefactor();
 #endif
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
@@ -304,6 +304,8 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     QString key = QLatin1String("$qt_icon_")
                   + QString::number(pm.cacheKey())
                   + QString::number(pe->mode)
+                  + QString::number(QApplication::palette().cacheKey())
+                  + QLatin1Char('_')
                   + QString::number(actualSize.width())
                   + QLatin1Char('_')
                   + QString::number(actualSize.height())

@@ -12,6 +12,7 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           QM_EXPORT_ICONVIEW \
                           QM_EXPORT_NETWORK \
                           QM_EXPORT_OPENGL \
+                          QM_EXPORT_OPENVG \
                           QM_EXPORT_SQL \
                           QM_EXPORT_TABLE \
                           QM_EXPORT_WORKSPACE \
@@ -50,6 +51,7 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           Q_INTERNAL_WIN_NO_THROW \
                           Q_NETWORK_EXPORT \
                           Q_OPENGL_EXPORT \
+                          Q_OPENVG_EXPORT \
                           Q_OUTOFLINE_TEMPLATE \
                           Q_SQL_EXPORT \
                           Q_SVG_EXPORT \
@@ -65,7 +67,8 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           QT_BEGIN_INCLUDE_NAMESPACE \
                           QT_END_NAMESPACE \
                           QT_END_INCLUDE_NAMESPACE \
-                          PHONON_EXPORT
+                          PHONON_EXPORT \
+			  Q_GADGET
 Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \

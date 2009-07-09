@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,6 +71,10 @@ public:
 
     void translate(int dx, int dy);
     void translate(const QPoint &offset);
+
+    QPolygon translated(int dx, int dy) const;
+    inline QPolygon translated(const QPoint &offset) const;
+
     QRect boundingRect() const;
 
     void point(int i, int *x, int *y) const;
@@ -120,6 +124,9 @@ inline QPoint QPolygon::point(int index) const
 inline void QPolygon::translate(const QPoint &offset)
 { translate(offset.x(), offset.y()); }
 
+inline QPolygon QPolygon::translated(const QPoint &offset) const
+{ return translated(offset.x(), offset.y()); }
+
 class QRectF;
 
 class Q_GUI_EXPORT QPolygonF : public QVector<QPointF>
@@ -135,6 +142,9 @@ public:
 
     inline void translate(qreal dx, qreal dy);
     void translate(const QPointF &offset);
+
+    inline QPolygonF translated(qreal dx, qreal dy) const;
+    QPolygonF translated(const QPointF &offset) const;
 
     QPolygon toPolygon() const;
 
@@ -165,6 +175,9 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QPolygonF &array);
 
 inline void QPolygonF::translate(qreal dx, qreal dy)
 { translate(QPointF(dx, dy)); }
+
+inline QPolygonF QPolygonF::translated(qreal dx, qreal dy) const
+{ return translated(QPointF(dx, dy)); }
 
 QT_END_NAMESPACE
 

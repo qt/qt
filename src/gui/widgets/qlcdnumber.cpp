@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -403,7 +403,7 @@ QLCDNumber::QLCDNumber(QWidget *parent)
     Constructs an LCD number, sets the number of digits to \a
     numDigits, the base to decimal, the decimal point mode to 'small'
     and the frame style to a raised box. The segmentStyle() is set to
-    \c Outline.
+    \c Filled.
 
     The \a parent argument is passed to the QFrame constructor.
 
@@ -427,7 +427,7 @@ void QLCDNumberPrivate::init()
     base       = QLCDNumber::Dec;
     smallPoint = false;
     q->setNumDigits(ndigits);
-    q->setSegmentStyle(QLCDNumber::Outline);
+    q->setSegmentStyle(QLCDNumber::Filled);
     q->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 }
 
@@ -756,6 +756,10 @@ void QLCDNumber::paintEvent(QPaintEvent *)
     Q_D(QLCDNumber);
     QPainter p(this);
     drawFrame(&p);
+    p.setRenderHint(QPainter::Antialiasing);
+    if (d->shadow)
+        p.translate(0.5, 0.5);
+
     if (d->smallPoint)
         d->drawString(d->digitStr, p, &d->points, false);
     else
@@ -1070,7 +1074,7 @@ void QLCDNumberPrivate::drawSegment(const QPoint &pos, char segmentNo, QPainter 
                      q->objectName().toLocal8Bit().constData(), segmentNo);
         }
         // End exact copy
-        p.setPen(fgColor);
+        p.setPen(Qt::NoPen);
         p.setBrush(fgColor);
         p.drawPolygon(a);
         p.setBrush(Qt::NoBrush);
@@ -1218,8 +1222,8 @@ void QLCDNumberPrivate::drawSegment(const QPoint &pos, char segmentNo, QPainter 
     \header \i Style \i Result
     \row \i \c Outline
          \i Produces raised segments filled with the background color
-            (this is the default).
     \row \i \c Filled
+            (this is the default).
          \i Produces raised segments filled with the foreground color.
     \row \i \c Flat
          \i Produces flat segments filled with the foreground color.

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,23 +46,6 @@
 
 /*
 Functions resolved:
-
-glCreateShaderObjectARB
-glShaderSourceARB
-glCompileShaderARB
-glGetObjectParameterivARB
-glDeleteObjectARB
-glGetInfoLogARB
-glCreateProgramObjectARB
-glAttachObjectARB
-glDetachObjectARB
-glLinkProgramARB
-glUseProgramObjectARB
-glGetUniformLocationARB
-glUniform1iARB
-glUniform1fARB
-glUniform4fARB
-glUniformMatrix4fvARB
 
 glGenFramebuffersEXT
 glGenRenderbuffersEXT
@@ -139,39 +122,6 @@ typedef ptrdiff_t GLsizeiptrARB;
 #define GL_DEPTH_ATTACHMENT_EXT 0x8D00
 #endif
 
-#ifndef GL_ARB_vertex_shader
-#define GL_VERTEX_SHADER_ARB 0x8B31
-#endif
-
-#ifndef GL_ARB_fragment_shader
-#define GL_FRAGMENT_SHADER_ARB 0x8B30
-#endif
-
-#ifndef GL_ARB_shader_objects
-typedef char GLcharARB;
-typedef unsigned int GLhandleARB;
-#define GL_OBJECT_COMPILE_STATUS_ARB 0x8B81
-#define GL_OBJECT_LINK_STATUS_ARB 0x8B82
-#define GL_OBJECT_INFO_LOG_LENGTH_ARB 0x8B84
-#endif
-
-typedef GLhandleARB (APIENTRY *_glCreateShaderObjectARB) (GLenum);
-typedef void (APIENTRY *_glShaderSourceARB) (GLhandleARB, GLuint, const GLcharARB**, GLint *);
-typedef void (APIENTRY *_glCompileShaderARB) (GLhandleARB);
-typedef void (APIENTRY *_glGetObjectParameterivARB) (GLhandleARB, GLenum, int *);
-typedef void (APIENTRY *_glDeleteObjectARB) (GLhandleARB);
-typedef void (APIENTRY *_glGetInfoLogARB) (GLhandleARB, GLsizei, GLsizei *, GLcharARB *);
-typedef GLhandleARB (APIENTRY *_glCreateProgramObjectARB) ();
-typedef void (APIENTRY *_glAttachObjectARB) (GLhandleARB, GLhandleARB);
-typedef void (APIENTRY *_glDetachObjectARB) (GLhandleARB, GLhandleARB);
-typedef void (APIENTRY *_glLinkProgramARB) (GLhandleARB);
-typedef void (APIENTRY *_glUseProgramObjectARB) (GLhandleARB);
-typedef GLint (APIENTRY *_glGetUniformLocationARB) (GLhandleARB, const GLcharARB *);
-typedef void (APIENTRY *_glUniform1iARB) (GLint, GLint);
-typedef void (APIENTRY *_glUniform1fARB) (GLint, GLfloat);
-typedef void (APIENTRY *_glUniform4fARB) (GLint, GLfloat, GLfloat, GLfloat, GLfloat);
-typedef void (APIENTRY *_glUniformMatrix4fvARB) (GLint, GLuint, GLboolean, const GLfloat *);
-
 typedef void (APIENTRY *_glGenFramebuffersEXT) (GLsizei, GLuint *);
 typedef void (APIENTRY *_glGenRenderbuffersEXT) (GLsizei, GLuint *);
 typedef void (APIENTRY *_glBindRenderbufferEXT) (GLenum, GLuint);
@@ -197,26 +147,8 @@ struct GLExtensionFunctions
 {
 	bool resolve(const QGLContext *context);
 
-    bool glslSupported();
     bool fboSupported();
     bool openGL15Supported(); // the rest: multi-texture, 3D-texture, vertex buffer objects
-
-	_glCreateShaderObjectARB CreateShaderObjectARB;
-	_glShaderSourceARB ShaderSourceARB;
-	_glCompileShaderARB CompileShaderARB;
-	_glGetObjectParameterivARB GetObjectParameterivARB;
-	_glDeleteObjectARB DeleteObjectARB;
-	_glGetInfoLogARB GetInfoLogARB;
-	_glCreateProgramObjectARB CreateProgramObjectARB;
-	_glAttachObjectARB AttachObjectARB;
-	_glDetachObjectARB DetachObjectARB;
-	_glLinkProgramARB LinkProgramARB;
-	_glUseProgramObjectARB UseProgramObjectARB;
-	_glGetUniformLocationARB GetUniformLocationARB;
-	_glUniform1iARB Uniform1iARB;
-	_glUniform1fARB Uniform1fARB;
-	_glUniform4fARB Uniform4fARB;
-	_glUniformMatrix4fvARB UniformMatrix4fvARB;
 
 	_glGenFramebuffersEXT GenFramebuffersEXT;
 	_glGenRenderbuffersEXT GenRenderbuffersEXT;
@@ -245,23 +177,6 @@ inline GLExtensionFunctions &getGLExtensionFunctions()
 	static GLExtensionFunctions funcs;
 	return funcs;
 }
-
-#define glCreateShaderObjectARB getGLExtensionFunctions().CreateShaderObjectARB
-#define glShaderSourceARB getGLExtensionFunctions().ShaderSourceARB
-#define glCompileShaderARB getGLExtensionFunctions().CompileShaderARB
-#define glGetObjectParameterivARB getGLExtensionFunctions().GetObjectParameterivARB
-#define glDeleteObjectARB getGLExtensionFunctions().DeleteObjectARB
-#define glGetInfoLogARB getGLExtensionFunctions().GetInfoLogARB
-#define glCreateProgramObjectARB getGLExtensionFunctions().CreateProgramObjectARB
-#define glAttachObjectARB getGLExtensionFunctions().AttachObjectARB
-#define glDetachObjectARB getGLExtensionFunctions().DetachObjectARB
-#define glLinkProgramARB getGLExtensionFunctions().LinkProgramARB
-#define glUseProgramObjectARB getGLExtensionFunctions().UseProgramObjectARB
-#define glGetUniformLocationARB getGLExtensionFunctions().GetUniformLocationARB
-#define glUniform1iARB getGLExtensionFunctions().Uniform1iARB
-#define glUniform1fARB getGLExtensionFunctions().Uniform1fARB
-#define glUniform4fARB getGLExtensionFunctions().Uniform4fARB
-#define glUniformMatrix4fvARB getGLExtensionFunctions().UniformMatrix4fvARB
 
 #define glGenFramebuffersEXT getGLExtensionFunctions().GenFramebuffersEXT
 #define glGenRenderbuffersEXT getGLExtensionFunctions().GenRenderbuffersEXT

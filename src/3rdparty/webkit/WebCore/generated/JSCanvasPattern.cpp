@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSCanvasPattern.h"
 
-#include <wtf/GetPtr.h>
-
 #include "CanvasPattern.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCanvasPattern)
+ASSERT_CLASS_FITS_IN_CELL(JSCanvasPattern);
 
 /* Hash table for prototype */
 
@@ -49,9 +46,9 @@ static const HashTable JSCanvasPatternPrototypeTable =
 
 const ClassInfo JSCanvasPatternPrototype::s_info = { "CanvasPatternPrototype", 0, &JSCanvasPatternPrototypeTable, 0 };
 
-JSObject* JSCanvasPatternPrototype::self(ExecState* exec)
+JSObject* JSCanvasPatternPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCanvasPattern>(exec);
+    return getDOMPrototype<JSCanvasPattern>(exec, globalObject);
 }
 
 const ClassInfo JSCanvasPattern::s_info = { "CanvasPattern", 0, 0, 0 };
@@ -65,21 +62,20 @@ JSCanvasPattern::JSCanvasPattern(PassRefPtr<Structure> structure, PassRefPtr<Can
 JSCanvasPattern::~JSCanvasPattern()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSCanvasPattern::createPrototype(ExecState* exec)
+JSObject* JSCanvasPattern::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCanvasPatternPrototype(JSCanvasPatternPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCanvasPatternPrototype(JSCanvasPatternPrototype::createStructure(globalObject->objectPrototype()));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, CanvasPattern* object)
+JSC::JSValue toJS(JSC::ExecState* exec, CanvasPattern* object)
 {
     return getDOMObjectWrapper<JSCanvasPattern>(exec, object);
 }
-CanvasPattern* toCanvasPattern(JSC::JSValuePtr value)
+CanvasPattern* toCanvasPattern(JSC::JSValue value)
 {
-    return value->isObject(&JSCanvasPattern::s_info) ? static_cast<JSCanvasPattern*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSCanvasPattern::s_info) ? static_cast<JSCanvasPattern*>(asObject(value))->impl() : 0;
 }
 
 }

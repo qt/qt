@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,7 +82,7 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include <qkeysequence.h>
-#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1String("\t") + QString(QKeySequence(k)) : QString())
+#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1Char('\t') + QString(QKeySequence(k)) : QString())
 #else
 #define ACCEL_KEY(k) QString()
 #endif
@@ -394,7 +394,7 @@ void QTextControlPrivate::init(Qt::TextFormat format, const QString &text, QText
     Q_Q(QTextControl);
     setContent(format, text, document);
 
-    QWidget *parentWidget = qobject_cast<QWidget*>(q->parent());
+    QWidget *parentWidget = qobject_cast<QWidget*>(parent);
     if (parentWidget) {
         QTextOption opt = doc->defaultTextOption();
         opt.setTextDirection(parentWidget->layoutDirection());
@@ -1715,7 +1715,7 @@ void QTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton butto
     selectedWordOnDoubleClick = cursor;
 
     trippleClickPoint = pos;
-    trippleClickTimer.start(qApp->doubleClickInterval(), q);
+    trippleClickTimer.start(QApplication::doubleClickInterval(), q);
     if (doEmit) {
         selectionChanged();
 #ifndef QT_NO_CLIPBOARD

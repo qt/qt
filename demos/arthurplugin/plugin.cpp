@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,26 @@
 
 QT_FORWARD_DECLARE_CLASS(QDesignerFormEditorInterface)
 
-static inline QString customWidgetDomXml(const QString &className)
+// Specify "text" to be a singleline property (no richtext)
+static inline QString textSingleLinePropertyDeclaration(const QString &className)
+{
+    QString rc = QLatin1String(
+            "<customwidgets>\n"
+            "  <customwidget>\n"
+            "    <class>");
+    rc += className;
+    rc += QLatin1String("</class>\n"
+            "    <propertyspecifications>\n"
+            "      <stringpropertyspecification name=\"text\" type=\"singleline\"/>\n"
+            "    </propertyspecifications>\n"
+            "  </customwidget>\n"
+            "</customwidgets>\n");
+    return rc;
+}
+
+// Plain XML for a custom widget
+static inline QString customWidgetDomXml(const QString &className,
+                                         const QString &customSection = QString())
 {
     QString rc = QLatin1String("<ui language=\"c++\"><widget class=\"");
     rc += className;
@@ -63,7 +82,9 @@ static inline QString customWidgetDomXml(const QString &className)
     QString objectName = className;
     objectName[0] = objectName.at(0).toLower();
     rc += objectName;
-    rc += QLatin1String("\"/></ui>");
+    rc += QLatin1String("\"/>");
+    rc += customSection;
+    rc += QLatin1String("</ui>");
     return rc;
 }
 
@@ -80,7 +101,7 @@ class DemoPlugin : public QDesignerCustomWidgetInterface
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 
 protected:
-    DemoPlugin(const QString &className);
+    explicit DemoPlugin(const QString &className, const QString &customSection = QString());
 
 public:
     QString name() const { return m_className; }
@@ -105,9 +126,9 @@ private:
     bool m_initialized;
 };
 
-DemoPlugin::DemoPlugin(const QString &className) :
+DemoPlugin::DemoPlugin(const QString &className, const QString &customSection) :
     m_className(className),
-    m_domXml(customWidgetDomXml(className)),
+    m_domXml(customWidgetDomXml(className, customSection)),
     m_initialized(false)
 {
 }
@@ -117,8 +138,8 @@ class DeformPlugin : public QObject, public DemoPlugin
     Q_OBJECT
 
 public:
-    DeformPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("PathDeformRendererEx")) { }
-    QString includeFile() const { return "deform.h"; }
+    explicit DeformPlugin(QObject *parent = 0);
+    QString includeFile() const { return QLatin1String("deform.h"); }
 
     QWidget *createWidget(QWidget *parent)
     {
@@ -126,11 +147,18 @@ public:
         deform->setRadius(70);
         deform->setAnimated(false);
         deform->setFontSize(20);
-        deform->setText("Arthur Widgets Demo");
+        deform->setText(QLatin1String("Arthur Widgets Demo"));
 
         return deform;
     }
 };
+
+DeformPlugin::DeformPlugin(QObject *parent) :
+    QObject(parent),
+    DemoPlugin(QLatin1String("PathDeformRendererEx"),
+               textSingleLinePropertyDeclaration(QLatin1String("PathDeformRendererEx")))
+{
+}
 
 class XFormRendererEx : public XFormView
 {
@@ -144,24 +172,30 @@ class XFormPlugin : public QObject, public DemoPlugin
 {
     Q_OBJECT
 public:
-    XFormPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("XFormRendererEx")) { }
-    QString includeFile() const { return "xform.h"; }
+    explicit XFormPlugin(QObject *parent = 0);
+    QString includeFile() const { return QLatin1String("xform.h"); }
 
     QWidget *createWidget(QWidget *parent)
     {
         XFormRendererEx *xform = new XFormRendererEx(parent);
-        xform->setText("Qt - Hello World!!");
-        xform->setPixmap(QPixmap(":/trolltech/arthurplugin/bg1.jpg"));
+        xform->setText(QLatin1String("Qt - Hello World!!"));
+        xform->setPixmap(QPixmap(QLatin1String(":/trolltech/arthurplugin/bg1.jpg")));
         return xform;
     }
 };
 
+XFormPlugin::XFormPlugin(QObject *parent) :
+    QObject(parent),
+    DemoPlugin(QLatin1String("XFormRendererEx"),
+               textSingleLinePropertyDeclaration(QLatin1String("XFormRendererEx")))
+{
+}
 
 class GradientEditorPlugin : public QObject, public DemoPlugin
 {
     Q_OBJECT
 public:
-    GradientEditorPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("GradientEditor")) { }
+    explicit GradientEditorPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("GradientEditor")) { }
     QString includeFile() const { return "gradients.h"; }
 
     QWidget *createWidget(QWidget *parent)
@@ -184,7 +218,7 @@ class GradientRendererPlugin : public QObject, public DemoPlugin
     Q_OBJECT
 public:
     GradientRendererPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("GradientRendererEx")) { }
-    QString includeFile() const { return "gradients.h"; }
+    QString includeFile() const { return QLatin1String("gradients.h"); }
 
     QWidget *createWidget(QWidget *parent)
     {
@@ -198,7 +232,7 @@ class PathStrokeRendererEx : public PathStrokeRenderer
 {
     Q_OBJECT
 public:
-    PathStrokeRendererEx(QWidget *p) : PathStrokeRenderer(p) { }
+    explicit PathStrokeRendererEx(QWidget *p) : PathStrokeRenderer(p) { }
     QSize sizeHint() const { return QSize(300, 200); }
 };
 
@@ -206,8 +240,8 @@ class StrokeRenderPlugin : public QObject, public DemoPlugin
 {
     Q_OBJECT
 public:
-    StrokeRenderPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("PathStrokeRendererEx")) { }
-    QString includeFile() const { return "pathstroke.h"; }
+    explicit StrokeRenderPlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("PathStrokeRendererEx")) { }
+    QString includeFile() const { return QLatin1String("pathstroke.h"); }
 
     QWidget *createWidget(QWidget *parent)
     {
@@ -221,8 +255,8 @@ class CompositionModePlugin : public QObject, public DemoPlugin
 {
     Q_OBJECT
 public:
-    CompositionModePlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("CompositionRenderer")) { }
-    QString includeFile() const { return "composition.h"; }
+    explicit CompositionModePlugin(QObject *parent = 0) : QObject(parent), DemoPlugin(QLatin1String("CompositionRenderer")) { }
+    QString includeFile() const { return QLatin1String("composition.h"); }
 
     QWidget *createWidget(QWidget *parent)
     {
@@ -239,7 +273,7 @@ class ArthurPlugins : public QObject, public QDesignerCustomWidgetCollectionInte
     Q_INTERFACES(QDesignerCustomWidgetCollectionInterface)
 
 public:
-    ArthurPlugins(QObject *parent = 0);
+    explicit ArthurPlugins(QObject *parent = 0);
     QList<QDesignerCustomWidgetInterface*> customWidgets() const { return m_plugins; }
 
 private:

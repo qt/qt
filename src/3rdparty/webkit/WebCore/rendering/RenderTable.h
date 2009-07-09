@@ -39,26 +39,6 @@ class TableLayout;
 
 class RenderTable : public RenderBlock {
 public:
-    enum Rules {
-        None    = 0x00,
-        RGroups = 0x01,
-        CGroups = 0x02,
-        Groups  = 0x03,
-        Rows    = 0x05,
-        Cols    = 0x0a,
-        All     = 0x0f
-    };
-    enum Frame {
-        Void   = 0x00,
-        Above  = 0x01,
-        Below  = 0x02,
-        Lhs    = 0x04,
-        Rhs    = 0x08,
-        Hsides = 0x03,
-        Vsides = 0x0c,
-        Box    = 0x0f
-    };
-
     RenderTable(Node*);
     ~RenderTable();
 
@@ -79,8 +59,6 @@ public:
     int borderTop() const;
     int borderBottom() const;
     
-    Rules getRules() const { return static_cast<Rules>(m_rules); }
-
     const Color& bgColor() const { return style()->backgroundColor(); }
 
     int outerBorderTop() const;
@@ -94,13 +72,17 @@ public:
 
     // overrides
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0);
+    virtual void removeChild(RenderObject* oldChild);
+
     virtual void paint(PaintInfo&, int tx, int ty);
+    virtual void paintObject(PaintInfo&, int tx, int ty);
     virtual void paintBoxDecorations(PaintInfo&, int tx, int ty);
     virtual void paintMask(PaintInfo& paintInfo, int tx, int ty);
     virtual void layout();
     virtual void calcPrefWidths();
-
-    virtual int getBaselineOfFirstLineBox() const;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int xPos, int yPos, int tx, int ty, HitTestAction);
+    
+    virtual int firstLineBoxBaseline() const;
 
     virtual RenderBlock* firstLineBlock() const;
     virtual void updateFirstLetter();
@@ -169,8 +151,6 @@ public:
         setNeedsLayout(true);
     }
 
-    virtual RenderObject* removeChildNode(RenderObject*, bool fullRemove = true);
-
     RenderTableSection* sectionAbove(const RenderTableSection*, bool skipEmptySections = false) const;
     RenderTableSection* sectionBelow(const RenderTableSection*, bool skipEmptySections = false) const;
 
@@ -183,7 +163,7 @@ public:
     
     bool hasSections() const { return m_head || m_foot || m_firstBody; }
 
-    virtual IntRect getOverflowClipRect(int tx, int ty);
+    virtual IntRect overflowClipRect(int tx, int ty);
 
     void recalcSectionsIfNeeded() const
     {
@@ -192,7 +172,7 @@ public:
     }
 
 protected:
-    virtual void styleDidChange(RenderStyle::Diff, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
 private:
     void recalcSections() const;
@@ -209,9 +189,6 @@ private:
 
     const CollapsedBorderValue* m_currentBorder;
     
-    unsigned m_frame : 4; // Frame
-    unsigned m_rules : 4; // Rules
-
     mutable bool m_hasColElements : 1;
     mutable bool m_needsSectionRecalc : 1;
     

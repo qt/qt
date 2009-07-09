@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -279,7 +279,7 @@ QAuBucketQWS::QAuBucketQWS( QAuServerQWS *server, QSound *sound, QObject* parent
 
     sound->setObjectName( m_id.toString() );
 
-    m_channel = new QCopChannel(QString( QLatin1String("QPE/QSound/") ).append( m_id ), this );
+    m_channel = new QCopChannel(QLatin1String("QPE/QSound/") + m_id ), this );
     connect( m_channel, SIGNAL(received(QString,QByteArray)),
         this, SLOT(processMessage(QString,QByteArray)) );
 

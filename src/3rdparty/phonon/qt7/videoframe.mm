@@ -20,6 +20,8 @@
 #import <QuartzCore/CIFilter.h>
 #import <QuartzCore/CIContext.h>
 
+//#define CACHE_CV_TEXTURE
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -70,7 +72,9 @@ namespace QT7
 
     void VideoFrame::copyMembers(const VideoFrame& frame)
     {
+#ifdef CACHE_CV_TEXTURE
         m_cachedCVTextureRef = frame.m_cachedCVTextureRef;
+#endif
 		m_cachedCIImage = frame.m_cachedCIImage;
 		m_cachedQImage = frame.m_cachedQImage;
         m_cachedNSBitmap = frame.m_cachedNSBitmap;
@@ -105,11 +109,20 @@ namespace QT7
 
     CVOpenGLTextureRef VideoFrame::cachedCVTexture() const
     {
+#ifdef CACHE_CV_TEXTURE
         if (!m_cachedCVTextureRef && m_videoPlayer){
             m_videoPlayer->setColors(m_brightness, m_contrast, m_hue, m_saturation);
             (const_cast<VideoFrame *>(this))->m_cachedCVTextureRef = m_videoPlayer->currentFrameAsCVTexture();
+            CVOpenGLTextureRetain((const_cast<VideoFrame *>(this))->m_cachedCVTextureRef);
         }
         return m_cachedCVTextureRef;
+#else
+        if (m_videoPlayer){
+            m_videoPlayer->setColors(m_brightness, m_contrast, m_hue, m_saturation);
+            return m_videoPlayer->currentFrameAsCVTexture();
+        }
+        return 0;
+#endif
     }
 
     void *VideoFrame::cachedCIImage() const
@@ -329,10 +342,12 @@ namespace QT7
 
     void VideoFrame::invalidateImage() const
     {
+#ifdef CACHE_CV_TEXTURE
         if (m_cachedCVTextureRef){
             CVOpenGLTextureRelease(m_cachedCVTextureRef);
             (const_cast<VideoFrame *>(this))->m_cachedCVTextureRef = 0;
         }
+#endif
         if (m_cachedCIImage){
 			[(CIImage *) m_cachedCIImage release];
             (const_cast<VideoFrame *>(this))->m_cachedCIImage = 0;
@@ -346,8 +361,10 @@ namespace QT7
 
     void VideoFrame::retain() const
     {
+#ifdef CACHE_CV_TEXTURE
         if (m_cachedCVTextureRef)
             CVOpenGLTextureRetain(m_cachedCVTextureRef);
+#endif
 		if (m_cachedCIImage)
 			[(CIImage *) m_cachedCIImage retain];
         if (m_backgroundFrame)
@@ -358,8 +375,12 @@ namespace QT7
 
     void VideoFrame::release() const
     {
-        if (m_cachedCVTextureRef)
+#ifdef CACHE_CV_TEXTURE
+        if (m_cachedCVTextureRef){
             CVOpenGLTextureRelease(m_cachedCVTextureRef);
+            (const_cast<VideoFrame *>(this))->m_cachedCVTextureRef = 0;
+        }
+#endif
 		if (m_cachedCIImage)
 			[(CIImage *) m_cachedCIImage release];
         if (m_backgroundFrame)
@@ -368,7 +389,6 @@ namespace QT7
             [m_cachedNSBitmap release];
 
         (const_cast<VideoFrame *>(this))->m_backgroundFrame = 0;
-        (const_cast<VideoFrame *>(this))->m_cachedCVTextureRef = 0;
         (const_cast<VideoFrame *>(this))->m_cachedCIImage = 0;
         (const_cast<VideoFrame *>(this))->m_cachedNSBitmap = 0;
     }

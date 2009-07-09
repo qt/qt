@@ -30,6 +30,7 @@
 #ifndef JumpTable_h
 #define JumpTable_h
 
+#include "MacroAssembler.h"
 #include "UString.h"
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
@@ -39,7 +40,7 @@ namespace JSC {
     struct OffsetLocation {
         int32_t branchOffset;
 #if ENABLE(JIT)
-        void* ctiOffset;
+        CodeLocationLabel ctiOffset;
 #endif
     };
 
@@ -47,7 +48,7 @@ namespace JSC {
         typedef HashMap<RefPtr<UString::Rep>, OffsetLocation> StringOffsetTable;
         StringOffsetTable offsetTable;
 #if ENABLE(JIT)
-        void* ctiDefault; // FIXME: it should not be necessary to store this.
+        CodeLocationLabel ctiDefault; // FIXME: it should not be necessary to store this.
 #endif
 
         inline int32_t offsetForValue(UString::Rep* value, int32_t defaultOffset)
@@ -60,7 +61,7 @@ namespace JSC {
         }
 
 #if ENABLE(JIT)
-        inline void* ctiForValue(UString::Rep* value)
+        inline CodeLocationLabel ctiForValue(UString::Rep* value)
         {
             StringOffsetTable::const_iterator end = offsetTable.end();
             StringOffsetTable::const_iterator loc = offsetTable.find(value);
@@ -76,8 +77,8 @@ namespace JSC {
         Vector<int32_t> branchOffsets;
         int32_t min;
 #if ENABLE(JIT)
-        Vector<void*> ctiOffsets;
-        void* ctiDefault;
+        Vector<CodeLocationLabel> ctiOffsets;
+        CodeLocationLabel ctiDefault;
 #endif
 
         int32_t offsetForValue(int32_t value, int32_t defaultOffset);
@@ -88,7 +89,7 @@ namespace JSC {
         }
 
 #if ENABLE(JIT)
-        inline void* ctiForValue(int32_t value)
+        inline CodeLocationLabel ctiForValue(int32_t value)
         {
             if (value >= min && static_cast<uint32_t>(value - min) < ctiOffsets.size())
                 return ctiOffsets[value - min];

@@ -32,6 +32,7 @@
 
 #if USE(CFNETWORK)
 #include <ConditionalMacros.h>
+#include <CFNetwork/CFURLCachePriv.h>
 #include <CFNetwork/CFURLResponsePriv.h>
 #endif
 
@@ -49,7 +50,7 @@ namespace WebCore {
     class KURL;
     class ResourceHandle;
     class ResourceError;
-    class ResourceRequest;
+    struct ResourceRequest;
     class ResourceResponse;
 
     enum CacheStoragePolicy {
@@ -78,13 +79,14 @@ namespace WebCore {
         virtual bool shouldUseCredentialStorage(ResourceHandle*) { return false; }
         virtual void didReceiveAuthenticationChallenge(ResourceHandle*, const AuthenticationChallenge&) { }
         virtual void didCancelAuthenticationChallenge(ResourceHandle*, const AuthenticationChallenge&) { }
-        virtual void receivedCredential(ResourceHandle*, const AuthenticationChallenge&, const Credential&) { }
-        virtual void receivedRequestToContinueWithoutCredential(ResourceHandle*, const AuthenticationChallenge&) { }
         virtual void receivedCancellation(ResourceHandle*, const AuthenticationChallenge&) { }
 
 #if PLATFORM(MAC)        
         virtual NSCachedURLResponse* willCacheResponse(ResourceHandle*, NSCachedURLResponse* response) { return response; }
         virtual void willStopBufferingData(ResourceHandle*, const char*, int) { } 
+#endif
+#if USE(CFNETWORK)
+        virtual bool shouldCacheResponse(ResourceHandle*, CFCachedURLResponseRef response) { return true; }
 #endif
     };
 

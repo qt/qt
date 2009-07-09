@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,9 @@
 
 #include "qglgradientcache_p.h"
 
-void QGLGradientCache::cleanCache() {
+QT_BEGIN_NAMESPACE
+
+void QGL2GradientCache::cleanCache() {
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
         const CacheInfo &cache_info = it.value();
@@ -53,7 +55,7 @@ void QGLGradientCache::cleanCache() {
     cache.clear();
 }
 
-GLuint QGLGradientCache::getBuffer(const QGradient &gradient, qreal opacity, const QGLContext *ctx)
+GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity, const QGLContext *ctx)
 {
     if (buffer_ctx && !qgl_share_reg()->checkSharing(buffer_ctx, ctx))
         cleanCache();
@@ -84,7 +86,7 @@ GLuint QGLGradientCache::getBuffer(const QGradient &gradient, qreal opacity, con
 }
 
 
-GLuint QGLGradientCache::addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity)
+GLuint QGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity)
 {
     if (cache.size() == maxCacheSize()) {
         int elem_to_remove = qrand() % maxCacheSize();
@@ -109,34 +111,31 @@ GLuint QGLGradientCache::addCacheElement(quint64 hash_val, const QGradient &grad
 }
 
 
-// GL's expects pixels in RGBA, bin-endian (ABGR on x86).
-// Qt stores in ARGB using whatever byte-order the mancine uses.
+// GL's expects pixels in RGBA (when using GL_RGBA), bin-endian (ABGR on x86).
+// Qt always stores in ARGB reguardless of the byte-order the mancine uses.
 static inline uint qtToGlColor(uint c)
 {
     uint o;
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    o = c & 0xFF00FF00; // alpha & green already in the right place
-    o |= (c >> 16) & 0x000000FF; // red
-    o |= (c << 16) & 0x00FF0000; // blue
-
+    o = (c & 0xff00ff00)  // alpha & green already in the right place
+        | ((c >> 16) & 0x000000ff) // red
+        | ((c << 16) & 0x00ff0000); // blue
 #else //Q_BIG_ENDIAN
-    o = c & 0x00FF00FF; // alpha & green already in the right place
-    o |= (c << 16) & 0xFF000000; // red
-    o |= (c >> 16) & 0x0000FF00; // blue
-#error big endian not tested with QGLGraphicsContext
+    o = (c << 8)
+        | ((c >> 24) & 0x000000ff);
 #endif // Q_BYTE_ORDER
     return o;
 }
 
 //TODO: Let GL generate the texture using an FBO
-void QGLGradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
+void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
 {
     int pos = 0;
     QGradientStops s = gradient.stops();
     QVector<uint> colors(s.size());
 
     for (int i = 0; i < s.size(); ++i)
-        colors[i] = s[i].second.rgba(); // Qt LIES! It returns ARGB
+        colors[i] = s[i].second.rgba(); // Qt LIES! It returns ARGB (on little-endian AND on big-endian)
 
     bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
 
@@ -183,3 +182,5 @@ void QGLGradientCache::generateGradientColorTable(const QGradient& gradient, uin
     // Make sure the last color stop is represented at the end of the table
     colorTable[size-1] = last_color;
 }
+
+QT_END_NAMESPACE

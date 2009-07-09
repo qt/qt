@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,12 +34,11 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include <private/qtextengine_p.h>
 #include <qdebug.h>
 #include <private/qfontengine_p.h>
 #include <qmath.h>
@@ -57,13 +56,11 @@
 #include "qpen.h"
 #include "qvarlengtharray.h"
 #include <private/qpainter_p.h>
-#include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qbezier_p.h>
 #include <qglframebufferobject.h>
 
 #include "private/qtessellator_p.h"
-#include "private/qwindowsurface_gl_p.h"
 
 #include "util/fragmentprograms_p.h"
 
@@ -125,35 +122,6 @@ struct QT_PointF {
     qreal y;
 };
 
-void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
-{
-    qreal left = r.left();
-    qreal right = r.right();
-    qreal top = r.top();
-    qreal bottom = r.bottom();
-
-    array[0] = f2vt(left);
-    array[1] = f2vt(top);
-    array[2] = f2vt(right);
-    array[3] = f2vt(top);
-    array[4] = f2vt(right);
-    array[5] = f2vt(bottom);
-    array[6] = f2vt(left);
-    array[7] = f2vt(bottom);
-}
-
-void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array)
-{
-    array[0] = f2vt(x1);
-    array[1] = f2vt(y1);
-    array[2] = f2vt(x2);
-    array[3] = f2vt(y1);
-    array[4] = f2vt(x2);
-    array[5] = f2vt(y2);
-    array[6] = f2vt(x1);
-    array[7] = f2vt(y2);
-}
-
 struct QGLTrapezoid
 {
     QGLTrapezoid()
@@ -188,180 +156,6 @@ const QGLTrapezoid QGLTrapezoid::translated(const QPointF &delta) const
     trap.bottomLeftX += delta.x();
     trap.bottomRightX += delta.x();
     return trap;
-}
-
-class QGLDrawable {
-public:
-    QGLDrawable() : widget(0), buffer(0), fbo(0)
-                  , wsurf(0)
-        {}
-    inline void setDevice(QPaintDevice *pdev);
-    inline void swapBuffers();
-    inline void makeCurrent();
-    inline void doneCurrent();
-    inline QSize size() const;
-    inline QGLFormat format() const;
-    inline GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
-    inline GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
-    inline QColor backgroundColor() const;
-    inline QGLContext *context() const;
-    inline bool autoFillBackground() const;
-
-private:
-    bool wasBound;
-    QGLWidget *widget;
-    QGLPixelBuffer *buffer;
-    QGLFramebufferObject *fbo;
-#ifdef Q_WS_QWS
-    QWSGLWindowSurface *wsurf;
-#else
-    QGLWindowSurface *wsurf;
-#endif
-};
-
-void QGLDrawable::setDevice(QPaintDevice *pdev)
-{
-    wasBound = false;
-    widget = 0;
-    buffer = 0;
-    fbo = 0;
-#ifdef Q_WS_QWS
-    wsurf = 0;
-#endif
-    if (pdev->devType() == QInternal::Widget)
-        widget = static_cast<QGLWidget *>(pdev);
-    else if (pdev->devType() == QInternal::Pbuffer)
-        buffer = static_cast<QGLPixelBuffer *>(pdev);
-    else if (pdev->devType() == QInternal::FramebufferObject)
-        fbo = static_cast<QGLFramebufferObject *>(pdev);
-    else if (pdev->devType() == QInternal::UnknownDevice)
-#ifdef Q_WS_QWS
-        wsurf = static_cast<QWSGLPaintDevice*>(pdev)->windowSurface();
-#else
-        wsurf = static_cast<QGLWindowSurface *>(pdev);
-#endif
-}
-
-inline void QGLDrawable::swapBuffers()
-{
-    if (widget) {
-        if (widget->autoBufferSwap())
-            widget->swapBuffers();
-    } else {
-        glFlush();
-    }
-}
-
-inline void QGLDrawable::makeCurrent()
-{
-    if (widget)
-        widget->makeCurrent();
-    else if (buffer)
-        buffer->makeCurrent();
-    else if (wsurf)
-        wsurf->context()->makeCurrent();
-    else if (fbo) {
-        wasBound = fbo->isBound();
-        if (!wasBound)
-            fbo->bind();
-    }
-}
-
-inline void QGLDrawable::doneCurrent()
-{
-    if (fbo && !wasBound)
-        fbo->release();
-}
-
-inline QSize QGLDrawable::size() const
-{
-    if (widget) {
-        return QSize(widget->d_func()->glcx->device()->width(),
-                     widget->d_func()->glcx->device()->height());
-    } else if (buffer) {
-        return buffer->size();
-    } else if (fbo) {
-        return fbo->size();
-    } else if (wsurf) {
-#ifdef Q_WS_QWS
-        return wsurf->window()->frameSize();
-#else
-        return QSize(wsurf->width(), wsurf->height());
-#endif
-    }
-    return QSize();
-}
-
-inline QGLFormat QGLDrawable::format() const
-{
-    if (widget)
-        return widget->format();
-    else if (buffer)
-        return buffer->format();
-    else if (wsurf)
-        return wsurf->context()->format();
-    else if (fbo && QGLContext::currentContext()) {
-        QGLFormat fmt = QGLContext::currentContext()->format();
-        fmt.setStencil(fbo->attachment() == QGLFramebufferObject::CombinedDepthStencil);
-        fmt.setDepth(fbo->attachment() != QGLFramebufferObject::NoAttachment);
-        return fmt;
-    }
-
-    return QGLFormat();
-}
-
-inline GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format)
-{
-    if (widget)
-        return widget->d_func()->glcx->d_func()->bindTexture(image, target, format, true);
-    else if (buffer)
-        return buffer->d_func()->qctx->d_func()->bindTexture(image, target, format, true);
-    else if (fbo && QGLContext::currentContext())
-        return const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(image, target, format, true);
-    else if (wsurf)
-        return wsurf->context()->d_func()->bindTexture(image, target, format, true);
-    return 0;
-}
-
-inline GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
-{
-    if (widget)
-        return widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, true);
-    else if (buffer)
-        return buffer->d_func()->qctx->d_func()->bindTexture(pixmap, target, format, true);
-    else if (fbo && QGLContext::currentContext())
-        return const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(pixmap, target, format, true);
-    else if (wsurf)
-        return wsurf->context()->d_func()->bindTexture(pixmap, target, format, true);
-    return 0;
-}
-
-inline QColor QGLDrawable::backgroundColor() const
-{
-    if (widget)
-        return widget->palette().brush(widget->backgroundRole()).color();
-    return QApplication::palette().brush(QPalette::Background).color();
-}
-
-inline QGLContext *QGLDrawable::context() const
-{
-    if (widget)
-        return widget->d_func()->glcx;
-    else if (buffer)
-        return buffer->d_func()->qctx;
-    else if (fbo)
-        return const_cast<QGLContext *>(QGLContext::currentContext());
-    else if (wsurf)
-        return wsurf->context();
-    return 0;
-}
-
-inline bool QGLDrawable::autoFillBackground() const
-{
-    if (widget)
-        return widget->autoFillBackground();
-    else
-        return false;
 }
 
 
@@ -868,6 +662,7 @@ public:
         , txop(QTransform::TxNone)
         , inverseScale(1)
         , moveToCount(0)
+        , last_created_state(0)
         , shader_ctx(0)
         , grad_palette(0)
         , drawable_texture(0)
@@ -973,7 +768,7 @@ public:
     bool isFastRect(const QRectF &r);
 
     void drawImageAsPath(const QRectF &r, const QImage &img, const QRectF &sr);
-    void drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy);
+    void drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy, const QPointF &offset);
 
     void drawOffscreenPath(const QPainterPath &path);
 
@@ -993,6 +788,8 @@ public:
     void copyDrawable(const QRectF &rect);
 
     void updateGLMatrix() const;
+
+    mutable QPainterState *last_created_state;
 
     QGLContext *shader_ctx;
     GLuint grad_palette;
@@ -1536,9 +1333,15 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 
     d->offscreen.begin();
 
-    const QColor &c = d->drawable.backgroundColor();
-    glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
     if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
+
+        if (d->drawable.hasTransparentBackground())
+            glClearColor(0.0, 0.0, 0.0, 0.0);
+        else {
+            const QColor &c = d->drawable.backgroundColor();
+            glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
+        }
+
         GLbitfield clearBits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 #ifndef QT_OPENGL_ES
         clearBits |= GL_ACCUM_BUFFER_BIT;
@@ -1924,15 +1727,15 @@ static void drawTrapezoid(const QGLTrapezoid &trap, const qreal offscreenHeight,
     qreal leftB = trap.bottomLeftX + (trap.topLeftX - trap.bottomLeftX) * reciprocal;
     qreal rightB = trap.bottomRightX + (trap.topRightX - trap.bottomRightX) * reciprocal;
 
-    const bool topZero = qFuzzyCompare(topDist + 1, 1);
+    const bool topZero = qFuzzyIsNull(topDist);
 
     reciprocal = topZero ? 1.0 / bottomDist : 1.0 / topDist;
 
     qreal leftA = topZero ? (trap.bottomLeftX - leftB) * reciprocal : (trap.topLeftX - leftB) * reciprocal;
     qreal rightA = topZero ? (trap.bottomRightX - rightB) * reciprocal : (trap.topRightX - rightB) * reciprocal;
 
-    qreal invLeftA = qFuzzyCompare(leftA + 1, 1) ? 0.0 : 1.0 / leftA;
-    qreal invRightA = qFuzzyCompare(rightA + 1, 1) ? 0.0 : 1.0 / rightA;
+    qreal invLeftA = qFuzzyIsNull(leftA) ? 0.0 : 1.0 / leftA;
+    qreal invRightA = qFuzzyIsNull(rightA) ? 0.0 : 1.0 / rightA;
 
     // fragment program needs the negative of invRightA as it mirrors the line
     glTexCoord4f(topDist, bottomDist, invLeftA, -invRightA);
@@ -2233,7 +2036,7 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
     // Enable color writes.
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glStencilMask(0);
+    glStencilMask(stencilMask);
 
     setGradientOps(cbrush, QRectF(QPointF(min_x, min_y), QSizeF(max_x - min_x, max_y - min_y)));
 
@@ -2245,12 +2048,14 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
         // Enable stencil func.
         glStencilFunc(GL_NOTEQUAL, 0, stencilMask);
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
         composite(rect);
     } else {
         DEBUG_ONCE qDebug() << "QOpenGLPaintEnginePrivate: Drawing polygon using stencil method (no fragment programs)";
 
         // Enable stencil func.
         glStencilFunc(GL_NOTEQUAL, 0, stencilMask);
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 #ifndef QT_OPENGL_ES
         glBegin(GL_QUADS);
         glVertex2f(min_x, min_y);
@@ -2260,24 +2065,6 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
         glEnd();
 #endif
     }
-
-    glStencilMask(~0);
-    glStencilFunc(GL_ALWAYS, 0, 0);
-    glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-
-    // clear all stencil values to 0
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-#ifndef QT_OPENGL_ES
-    glBegin(GL_QUADS);
-    glVertex2f(min_x, min_y);
-    glVertex2f(max_x, min_y);
-    glVertex2f(max_x, max_y);
-    glVertex2f(min_x, max_y);
-    glEnd();
-#endif
-
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     // Disable stencil writes.
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -2435,6 +2222,8 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
 {
     Q_Q(QOpenGLPaintEngine);
 
+    ++q->state()->depthClipId;
+
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
@@ -2460,11 +2249,12 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
         return;
     }
 
-#ifndef QT_OPENGL_ES
-    glClearDepth(0.0f);
-#else
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_ES_1_CL)
     glClearDepthf(0.0f);
+#else
+    glClearDepth(0.0f);
 #endif
+
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -3300,6 +3090,9 @@ QGLTrapezoidMaskGenerator::QGLTrapezoidMaskGenerator(const QPainterPath &path, c
 {
 }
 
+extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
+extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
+
 void QGLTrapezoidMaskGenerator::drawMask(const QRect &rect)
 {
 #ifdef QT_OPENGL_ES
@@ -3445,8 +3238,7 @@ QVector<QGLTrapezoid> QGLRectMaskGenerator::generateTrapezoids()
         // manhattan distance (no rotation)
         qreal width = qAbs(delta.x()) + qAbs(delta.y());
 
-        Q_ASSERT(qFuzzyCompare(delta.x() + 1, static_cast<qreal>(1))
-                 || qFuzzyCompare(delta.y() + 1, static_cast<qreal>(1)));
+        Q_ASSERT(qFuzzyIsNull(delta.x()) || qFuzzyIsNull(delta.y()));
 
         tessellator.tessellateRect(first, last, width);
     } else {
@@ -3898,10 +3690,10 @@ void QOpenGLPaintEngine::drawLines(const QLineF *lines, int lineCount)
             bool useRects = false;
             // scale or 90 degree rotation?
             if (d->matrix.type() <= QTransform::TxTranslate
-                || !d->cpen.isCosmetic()
-                   && (d->matrix.type() <= QTransform::TxScale
-                       || (d->matrix.type() == QTransform::TxRotate
-                           && d->matrix.m11() == 0 && d->matrix.m22() == 0))) {
+                || (!d->cpen.isCosmetic()
+                    && (d->matrix.type() <= QTransform::TxScale
+                        || (d->matrix.type() == QTransform::TxRotate
+                            && d->matrix.m11() == 0 && d->matrix.m22() == 0)))) {
                 useRects = true;
                 for (int i = 0; i < lineCount; ++i) {
                     if (lines[i].p1().x() != lines[i].p2().x()
@@ -4414,8 +4206,7 @@ void QOpenGLPaintEnginePrivate::drawImageAsPath(const QRectF &r, const QImage &i
     qreal scaleX = r.width() / sr.width();
     qreal scaleY = r.height() / sr.height();
 
-    QTransform brush_matrix;
-    brush_matrix.translate(r.left(), r.top());
+    QTransform brush_matrix = QTransform::fromTranslate(r.left(), r.top());
     brush_matrix.scale(scaleX, scaleY);
     brush_matrix.translate(-sr.left(), -sr.top());
 
@@ -4431,14 +4222,15 @@ void QOpenGLPaintEnginePrivate::drawImageAsPath(const QRectF &r, const QImage &i
     brush_origin = old_brush_origin;
 }
 
-void QOpenGLPaintEnginePrivate::drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy)
+void QOpenGLPaintEnginePrivate::drawTiledImageAsPath(const QRectF &r, const QImage &img, qreal sx, qreal sy,
+                                                     const QPointF &offset)
 {
     QBrush old_brush = cbrush;
     QPointF old_brush_origin = brush_origin;
 
-    QTransform brush_matrix;
-    brush_matrix.translate(r.left(), r.top());
+    QTransform brush_matrix = QTransform::fromTranslate(r.left(), r.top());
     brush_matrix.scale(sx, sy);
+    brush_matrix.translate(-offset.x(), -offset.y());
 
     cbrush = QBrush(img);
     cbrush.setTransform(brush_matrix);
@@ -4515,7 +4307,7 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
     }
 }
 
-void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &)
+void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &offset)
 {
     Q_D(QOpenGLPaintEngine);
 
@@ -4525,7 +4317,7 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         int rw = qCeil(r.width());
         int rh = qCeil(r.height());
         if (rw < pm.width() && rh < pm.height()) {
-            drawTiledPixmap(r, pm.copy(0, 0, rw, rh), QPointF());
+            drawTiledPixmap(r, pm.copy(0, 0, rw, rh), offset);
             return;
         }
 
@@ -4534,11 +4326,11 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
     if (d->composition_mode > QPainter::CompositionMode_Plus || (d->high_quality_antialiasing && !d->isFastRect(r))) {
         if (scaled.isNull())
-            d->drawTiledImageAsPath(r, pm.toImage(), 1, 1);
+            d->drawTiledImageAsPath(r, pm.toImage(), 1, 1, offset);
         else {
             const qreal sx = pm.width() / qreal(scaled.width());
             const qreal sy = pm.height() / qreal(scaled.height());
-            d->drawTiledImageAsPath(r, scaled, sx, sy);
+            d->drawTiledImageAsPath(r, scaled, sx, sy, offset);
         }
     } else {
         d->flushDrawQueue();
@@ -4569,8 +4361,12 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         q_vertexType vertexArray[4*2];
         q_vertexType texCoordArray[4*2];
 
+        double offset_x = offset.x() / pm.width();
+        double offset_y = offset.y() / pm.height();
+
         qt_add_rect_to_array(r, vertexArray);
-        qt_add_texcoords_to_array(0, 0, tc_w, tc_h, texCoordArray);
+        qt_add_texcoords_to_array(offset_x, offset_y,
+                                  tc_w + offset_x, tc_h + offset_y, texCoordArray);
 
         glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
         glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
@@ -5079,8 +4875,7 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // add the glyphs used to the glyph texture cache
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix;
-    matrix.translate(qRound(p.x()), qRound(p.y()));
+    QTransform matrix = QTransform::fromTranslate(qRound(p.x()), qRound(p.y()));
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     // make sure the glyphs we want to draw are in the cache
@@ -5714,9 +5509,20 @@ void QOpenGLPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 void QOpenGLPaintEngine::setState(QPainterState *s)
 {
     Q_D(QOpenGLPaintEngine);
+    QOpenGLPaintEngineState *new_state = static_cast<QOpenGLPaintEngineState *>(s);
+    QOpenGLPaintEngineState *old_state = state();
+
     QPaintEngineEx::setState(s);
+
+    // are we in a save() ?
+    if (s == d->last_created_state) {
+        d->last_created_state = 0;
+        return;
+    }
+
     if (isActive()) {
-        d->updateDepthClip();
+        if (old_state->depthClipId != new_state->depthClipId)
+            d->updateDepthClip();
         penChanged();
         brushChanged();
         opacityChanged();
@@ -5728,12 +5534,15 @@ void QOpenGLPaintEngine::setState(QPainterState *s)
 
 QPainterState *QOpenGLPaintEngine::createState(QPainterState *orig) const
 {
+    const Q_D(QOpenGLPaintEngine);
+
     QOpenGLPaintEngineState *s;
     if (!orig)
         s = new QOpenGLPaintEngineState();
     else
         s = new QOpenGLPaintEngineState(*static_cast<QOpenGLPaintEngineState *>(orig));
 
+    d->last_created_state = s;
     return s;
 }
 
@@ -5747,11 +5556,13 @@ QOpenGLPaintEngineState::QOpenGLPaintEngineState(QOpenGLPaintEngineState &other)
     clipRegion = other.clipRegion;
     hasClipping = other.hasClipping;
     fastClip = other.fastClip;
+    depthClipId = other.depthClipId;
 }
 
 QOpenGLPaintEngineState::QOpenGLPaintEngineState()
 {
     hasClipping = false;
+    depthClipId = 0;
 }
 
 QOpenGLPaintEngineState::~QOpenGLPaintEngineState()
@@ -5783,9 +5594,11 @@ void QOpenGLPaintEnginePrivate::ensureDrawableTexture()
 
 QPixmapFilter *QOpenGLPaintEngine::createPixmapFilter(int type) const
 {
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     if (QGLContext::currentContext())
         return QGLContext::currentContext()->d_func()->createPixmapFilter(type);
     else
+#endif
         return 0;
 }
 

@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<context>
+    <name>Dialog2</name>
+    <message numerus="yes">
+        <location filename="main.cpp" line="29"/>
+        <source>%n files</source>
+        <comment>plural form</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="30"/>
+        <source>%n cars</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="31"/>
+        <source>&amp;Find %n cars</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="32"/>
+        <source>Search in %n items?</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="33"/>
+        <source>%1. Search in %n items?</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="34"/>
+        <source>Age: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="35"/>
+        <source>There are %n house(s)</source>
+        <comment>Plurals and function call</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="102"/>
+        <source>func3</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FindDialog</name>
+    <message>
+        <location filename="finddialog.cpp" line="57"/>
+        <source>Enter the text you are looking for.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="107"/>
+        <source>Search reached end of the document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="109"/>
+        <source>Search reached start of the document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="111"/>
+        <source>Text not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="147"/>
+        <source>null comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Kåntekst</name>
+    <message utf8="true">
+        <location filename="finddialog.cpp" line="152"/>
+        <source>encoding, using QApplication</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Plurals, QCoreApplication</name>
+    <message numerus="yes">
+        <location filename="main.cpp" line="40"/>
+        <source>%n house(s)</source>
+        <comment>Plurals and identifier</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="41"/>
+        <source>%n car(s)</source>
+        <comment>Plurals and literal number</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="42"/>
+        <source>%n horse(s)</source>
+        <comment>Plurals and function call</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>QApplication</name>
+    <message>
+        <location filename="main.cpp" line="10"/>
+        <source>QT_LAYOUT_DIRECTION</source>
+        <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QCoreApplication</name>
+    <message>
+        <location filename="finddialog.cpp" line="144"/>
+        <source>with comment</source>
+        <comment>comment</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="145"/>
+        <source>empty comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="146"/>
+        <source>null comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="149"/>
+        <source>encoding, using QCoreApplication</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="150"/>
+        <source>encoding, using QApplication</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QTranslator</name>
+    <message>
+        <location filename="main.cpp" line="52"/>
+        <location filename="main.cpp" line="53"/>
+        <source>Simple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="54"/>
+        <source>Simple with comment</source>
+        <comment>with comment</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="55"/>
+        <source>Plural without comment</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="56"/>
+        <source>Plural with comment</source>
+        <comment>comment 1</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="main.cpp" line="57"/>
+        <source>Plural with comment</source>
+        <comment>comment 2</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>TestClass</name>
+    <message>
+        <location filename="main.cpp" line="116"/>
+        <source>inline function</source>
+        <comment>TestClass</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="120"/>
+        <source>inline function 2</source>
+        <comment>TestClass</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="124"/>
+        <source>static inline function</source>
+        <comment>TestClass</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Testing</name>
+    <message>
+        <location filename="main.cpp" line="141"/>
+        <source>extra-commented string</source>
+        <extracomment>this is an extra comment for the translator</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="142"/>
+        <source>not extra-commented string</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="144"/>
+        <source>another extra-commented string</source>
+        <extracomment>another extra-comment</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>scope</name>
+    <message numerus="yes">
+        <location filename="main.cpp" line="146"/>
+        <source>works in translate, too</source>
+        <comment>blabb</comment>
+        <extracomment>blah!</extracomment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="153"/>
+        <source>string</source>
+        <extracomment>extra comment for NOOP which spans multiple lines</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="155"/>
+        <source>string</source>
+        <comment>comment</comment>
+        <extracomment>extra comment for NOOP3</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="157"/>
+        <source>string continuation on next line</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,7 @@
     write TCP/IP clients and servers.
 
     The network module provides classes to make network programming
-    easier and portable. It offers classes such as QHttp and QFtp that
+    easier and portable. It offers classes such as QFtp that
     implement specific application-level protocols, lower-level classes
     such as QTcpSocket, QTcpServer and QUdpSocket that represent low
     level network concepts, and high level classes such as QNetworkRequest,
@@ -81,7 +81,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qtnetwork.qdoc 1
 
-    \section1 High Level Network Operations
+    \section1 High Level Network Operations for HTTP and FTP
 
     The Network Access API is a collection of classes for performing
     common network operations. The API provides an abstraction layer
@@ -94,6 +94,8 @@
     with a request, such as any header information and the encryption
     used. The URL specified when a request object is constructed
     determines the protocol used for a request.
+    Currently HTTP, FTP and local file URLs are supported for uploading
+    and downloading.
 
     The coordination of network operations is performed by the
     QNetworkAccessManager class. Once a request has been created,
@@ -113,65 +115,50 @@
 
     Each application or library can create one or more instances of
     QNetworkAccessManager to handle network communication.
+    
+    \section1 Writing FTP Clients with QFtp
 
-    \section1 Writing HTTP and FTP Clients with QHttp and QFtp
+    FTP (File Transfer Protocol) is a protocol used almost exclusively
+    for browsing remote directories and for transferring files.
 
-    HTTP (Hypertext Transfer Protocol) is an application-level
-    network protocol used mainly for downloading HTML and XML files,
-    but it is also used as a high-level transport protocol for many
-    other types of data, from images and movies to purchase orders
-    and banking transactions. In contrast, FTP (File Transfer
-    Protocol) is a protocol used almost exclusively for browsing
-    remote directories and for transferring files.
+    \image httpstack.png FTP Client and Server
 
-    \image httpstack.png HTTP Client and Server
-
-    HTTP is a simpler protocol than FTP in many ways. It uses only
-    one network connection, while FTP uses two (one for sending
-    commands, and one for transferring data). HTTP is a stateless
-    protocol; requests and responses are always self-contained. The
+    FTP uses two network connections, one for sending
+    commands and one for transferring data. The
     FTP protocol has a state and requires the client to send several
     commands before a file transfer takes place.
+    FTP clients establish a connection
+    and keeps it open throughout the session. In each session, multiple
+    transfers can occur.
 
-    In practice, HTTP clients often use separate connections for
-    separate requests, whereas FTP clients establish one connection
-    and keep it open throughout the session.
-
-    The QHttp and QFtp classes provide client-side support for HTTP
-    and FTP. Since the two protocols are used to solve the same
-    problems, the QHttp and QFtp classes have many features in
-    common:
-
+    The QFtp class provides client-side support for FTP. 
+    It has the following characteristics:
     \list
 
-    \o \e{Non-blocking behavior.} QHttp and QFtp are asynchronous.
-    You can schedule a series of commands (also called "requests" for
-    HTTP). The commands are executed later, when control returns to
-    Qt's event loop.
+    \o \e{Non-blocking behavior.} QFtp is asynchronous.
+    You can schedule a series of commands which are executed later,
+    when control returns to Qt's event loop.
 
     \o \e{Command IDs.} Each command has a unique ID number that you
     can use to follow the execution of the command. For example, QFtp
     emits the \l{QFtp::commandStarted()}{commandStarted()} and
     \l{QFtp::commandFinished()}{commandFinished()} signal with the
-    command ID for each command that is executed. QHttp has a
-    \l{QHttp::requestStarted()}{requestStarted()} and a
-    \l{QHttp::requestFinished()}{requestFinished()} signal that work
-    the same way.
+    command ID for each command that is executed. 
 
-    \o \e{Data transfer progress indicators.} QHttp and QFtp emit
+    \o \e{Data transfer progress indicators.} QFtp emits
     signals whenever data is transferred
     (QFtp::dataTransferProgress(), QHttp::dataReadProgress(), and
     QHttp::dataSendProgress()). You could connect these signals to
     QProgressBar::setProgress() or QProgressDialog::setProgress(),
     for example.
 
-    \o \e{QIODevice support.} Both classes support convenient
+    \o \e{QIODevice support.} The class supports convenient
     uploading from and downloading to \l{QIODevice}s, in addition to a
     QByteArray-based API.
 
     \endlist
 
-    There are two main ways of using QHttp and QFtp. The most common
+    There are two main ways of using QFtp. The most common
     approach is to keep track of the command IDs and follow the
     execution of every command by connecting to the appropriate
     signals. The other approach is to schedule all commands at once
@@ -182,10 +169,9 @@
     commands based on the result of a previous command. It also
     enables you to provide detailed feedback to the user.
 
-    The \l{network/http}{HTTP} and \l{network/ftp}{FTP} examples
-    illustrate how to write an HTTP and an FTP client.
-
-    Writing your own HTTP or FTP server is possible using the
+    The \l{network/ftp}{FTP} example
+    illustrates how to write an FTP client.
+    Writing your own FTP (or HTTP) server is possible using the
     lower-level classes QTcpSocket and QTcpServer.
 
     \section1 Using TCP with QTcpSocket and QTcpServer

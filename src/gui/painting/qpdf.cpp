@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -346,7 +346,7 @@ QByteArray QPdf::generateDashes(const QPen &pen)
 {
     QByteArray result;
     ByteStream s(&result);
-    s << "[";
+    s << '[';
 
     QVector<qreal> dasharray = pen.dashPattern();
     qreal w = pen.widthF();
@@ -357,7 +357,7 @@ QByteArray QPdf::generateDashes(const QPen &pen)
         if (dw < 0.0001) dw = 0.0001;
         s << dw;
     }
-    s << "]";
+    s << ']';
     //qDebug() << "dasharray: pen has" << dasharray;
     //qDebug() << "  => " << result;
     return result;
@@ -915,17 +915,17 @@ const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
 QByteArray QPdf::stripSpecialCharacters(const QByteArray &string)
 {
     QByteArray s = string;
-    s.replace(" ", "");
-    s.replace("(", "");
-    s.replace(")", "");
-    s.replace("<", "");
-    s.replace(">", "");
-    s.replace("[", "");
-    s.replace("]", "");
-    s.replace("{", "");
-    s.replace("}", "");
-    s.replace("/", "");
-    s.replace("%", "");
+    s.replace(' ', "");
+    s.replace('(', "");
+    s.replace(')', "");
+    s.replace('<', "");
+    s.replace('>', "");
+    s.replace('[', "");
+    s.replace(']', "");
+    s.replace('{', "");
+    s.replace('}', "");
+    s.replace('/', "");
+    s.replace('%', "");
     return s;
 }
 
@@ -1929,8 +1929,7 @@ void QPdfBaseEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &t
 
     QVarLengthArray<glyph_t> glyphs;
     QVarLengthArray<QFixedPoint> positions;
-    QTransform m;
-    m.translate(p.x(), p.y());
+    QTransform m = QTransform::fromTranslate(p.x(), p.y());
     ti.fontEngine->getGlyphPositions(ti.glyphs, m, ti.flags,
                                      glyphs, positions);
     if (glyphs.size() == 0)

@@ -32,8 +32,8 @@
 namespace WebCore {
 
     class Event;
+    class JSLazyEventListener;
     class JSEventListener;
-    class JSUnprotectedEventListener;
     class ScriptExecutionContext;
 
     typedef HashMap<const JSC::ClassInfo*, RefPtr<JSC::Structure> > JSDOMStructureMap;
@@ -53,28 +53,22 @@ namespace WebCore {
 
         virtual ScriptExecutionContext* scriptExecutionContext() const = 0;
 
-        // Finds a wrapper of a JS EventListener, returns 0 if no existing one.
-        JSEventListener* findJSEventListener(JSC::JSValuePtr, bool isInline = false);
-
-        // Finds or creates a wrapper of a JS EventListener. JS EventListener object is GC-protected.
-        PassRefPtr<JSEventListener> findOrCreateJSEventListener(JSC::ExecState*, JSC::JSValuePtr, bool isInline = false);
-
         // Finds a wrapper of a GC-unprotected JS EventListener, returns 0 if no existing one.
-        JSUnprotectedEventListener* findJSUnprotectedEventListener(JSC::ExecState*, JSC::JSValuePtr, bool isInline = false);
+        JSEventListener* findJSEventListener(JSC::JSValue);
 
         // Finds or creates a wrapper of a JS EventListener. JS EventListener object is *NOT* GC-protected.
-        PassRefPtr<JSUnprotectedEventListener> findOrCreateJSUnprotectedEventListener(JSC::ExecState*, JSC::JSValuePtr, bool isInline = false);
+        PassRefPtr<JSEventListener> findOrCreateJSEventListener(JSC::JSValue);
 
-        typedef HashMap<JSC::JSObject*, JSEventListener*> ListenersMap;
-        typedef HashMap<JSC::JSObject*, JSUnprotectedEventListener*> UnprotectedListenersMap;
+        // Creates a GC-protected JS EventListener for an "onXXX" event attribute.
+        // These listeners cannot be removed through the removeEventListener API.
+        PassRefPtr<JSEventListener> createJSAttributeEventListener(JSC::JSValue);
 
-        ListenersMap& jsEventListeners();
-        ListenersMap& jsInlineEventListeners();
-        UnprotectedListenersMap& jsUnprotectedEventListeners();
-        UnprotectedListenersMap& jsUnprotectedInlineEventListeners();
+        typedef HashMap<JSC::JSObject*, JSEventListener*> JSListenersMap;
+
+        JSListenersMap& jsEventListeners();
 
         void setCurrentEvent(Event*);
-        Event* currentEvent();
+        Event* currentEvent() const;
 
         virtual void mark();
 
@@ -85,10 +79,7 @@ namespace WebCore {
             JSDOMStructureMap structures;
             JSDOMConstructorMap constructors;
 
-            JSDOMGlobalObject::ListenersMap jsEventListeners;
-            JSDOMGlobalObject::ListenersMap jsInlineEventListeners;
-            JSDOMGlobalObject::UnprotectedListenersMap jsUnprotectedEventListeners;
-            JSDOMGlobalObject::UnprotectedListenersMap jsUnprotectedInlineEventListeners;
+            JSDOMGlobalObject::JSListenersMap jsEventListeners;
 
             Event* evt;
         };
@@ -108,11 +99,11 @@ namespace WebCore {
     }
 
     template<class ConstructorClass>
-    inline JSC::JSObject* getDOMConstructor(JSC::ExecState* exec, JSDOMGlobalObject* globalObject)
+    inline JSC::JSObject* getDOMConstructor(JSC::ExecState* exec, const JSDOMGlobalObject* globalObject)
     {
         if (JSC::JSObject* constructor = globalObject->constructors().get(&ConstructorClass::s_info))
             return constructor;
-        JSC::JSObject* constructor = new (exec) ConstructorClass(exec, globalObject->scriptExecutionContext());
+        JSC::JSObject* constructor = new (exec) ConstructorClass(exec, const_cast<JSDOMGlobalObject*>(globalObject));
         ASSERT(!globalObject->constructors().contains(&ConstructorClass::s_info));
         globalObject->constructors().set(&ConstructorClass::s_info, constructor);
         return constructor;

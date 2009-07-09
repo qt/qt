@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -135,7 +135,7 @@ struct QUnixSocketRightsPrivate : public QSharedData
 #ifdef QUNIXSOCKET_DEBUG
         if(0 != closerv) {
             qDebug() << "QUnixSocketRightsPrivate: Unable to close managed"
-                        " file descriptor (" << ::strerror(errno) << ")";
+                        " file descriptor (" << ::strerror(errno) << ')';
         }
 #endif
     }
@@ -166,7 +166,7 @@ QUnixSocketRights::QUnixSocketRights(int fd)
 #ifdef QUNIXSOCKET_DEBUG
         if(-1 == d->fd) {
             qDebug() << "QUnixSocketRights: Unable to duplicate fd "
-                     << fd << " (" << ::strerror(errno) << ")";
+                     << fd << " (" << ::strerror(errno) << ')';
         }
 #endif
     }
@@ -237,7 +237,7 @@ int QUnixSocketRights::dupFd() const
 #ifdef QUNIXSOCKET_DEBUG
     if(-1 == rv)
         qDebug() << "QUnixSocketRights: Unable to duplicate managed file "
-                    "descriptor (" << ::strerror(errno) << ")";
+                    "descriptor (" << ::strerror(errno) << ')';
 #endif
 
     return rv;
@@ -927,7 +927,7 @@ bool QUnixSocket::connect(const QByteArray & path)
     int crv;
 #ifdef QUNIXSOCKET_DEBUG
     qDebug() << "QUnixSocket: Connect requested to '"
-             << path << "'";
+             << path << '\'';
 #endif
 
     abort(); // Reset any existing connection
@@ -949,7 +949,7 @@ bool QUnixSocket::connect(const QByteArray & path)
     if(-1 == d->fd) {
 #ifdef QUNIXSOCKET_DEBUG
         qDebug() << "QUnixSocket: Unable to create socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         d->error = ResourceError;
         goto connect_error;
@@ -962,7 +962,7 @@ bool QUnixSocket::connect(const QByteArray & path)
     if(-1 == crv) {
 #ifdef QUNIXSOCKET_DEBUG
         qDebug() << "QUnixSocket: Unable to configure socket ("
-                 << ::strerror(errno) << ")";
+                 << ::strerror(errno) << ')';
 #endif
         d->error = ResourceError;
 
@@ -981,7 +981,7 @@ bool QUnixSocket::connect(const QByteArray & path)
     if(-1 == crv) {
 #ifdef QUNIXSOCKET_DEBUG
         qDebug() << "QUnixSocket: Unable to connect ("
-                 << ::strerror(errno) << ")";
+                 << ::strerror(errno) << ')';
 #endif
         if(ECONNREFUSED == errno)
             d->error = ConnectionRefused;
@@ -1021,7 +1021,7 @@ connect_error: // Cleanup failed connection
 #ifdef QUNIXSOCKET_DEBUG
         if(0 != closerv) {
             qDebug() << "QUnixSocket: Unable to close file descriptor after "
-                        "failed connect (" << ::strerror(errno) << ")";
+                        "failed connect (" << ::strerror(errno) << ')';
         }
 #endif
     }
@@ -1065,7 +1065,7 @@ bool QUnixSocket::setSocketDescriptor(int socketDescriptor)
     if(-1 == crv) {
 #ifdef QUNIXSOCKET_DEBUG
         qDebug() << "QUnixSocket: Unable to configure client provided socket ("
-                 << ::strerror(errno) << ")";
+                 << ::strerror(errno) << ')';
 #endif
         d->error = ResourceError;
 
@@ -1136,7 +1136,7 @@ void QUnixSocket::abort()
 #ifdef QUNIXSOCKET_DEBUG
     if(0 != closerv) {
         qDebug() << "QUnixSocket: Unable to close socket during abort ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
     }
 #endif
 
@@ -1686,11 +1686,11 @@ qint64 QUnixSocketPrivate::writeActivated()
     }
 
 #ifdef QUNIXSOCKET_DEBUG
-    qDebug() << "QUnixSocket: Transmitting message (length" << m.d->size() << ")";
+    qDebug() << "QUnixSocket: Transmitting message (length" << m.d->size() << ')';
 #endif
     ::ssize_t s = ::sendmsg(fd, &sendmessage, MSG_DONTWAIT | MSG_NOSIGNAL);
 #ifdef QUNIXSOCKET_DEBUG
-    qDebug() << "QUnixSocket: Transmitted message (" << s << ")";
+    qDebug() << "QUnixSocket: Transmitted message (" << s << ')';
 #endif
 
     if(-1 == s) {
@@ -1699,13 +1699,13 @@ qint64 QUnixSocketPrivate::writeActivated()
         } else if(EPIPE == errno) {
 #ifdef QUNIXSOCKET_DEBUG
             qDebug() << "QUnixSocket: Remote side disconnected during transmit "
-                        "(" << ::strerror(errno) << ")";
+                        "(" << ::strerror(errno) << ')';
 #endif
             me->abort();
         } else {
 #ifdef QUNIXSOCKET_DEBUG
             qDebug() << "QUnixSocket: Unable to transmit data ("
-                     << ::strerror(errno) << ")";
+                     << ::strerror(errno) << ')';
 #endif
             error = (QUnixSocket::SocketError)(QUnixSocket::WriteFailure |
                     CausedAbort);
@@ -1764,12 +1764,12 @@ void QUnixSocketPrivate::readActivated()
 
     int recvrv = ::recvmsg(fd, &message, 0);
 #ifdef QUNIXSOCKET_DEBUG
-    qDebug() << "QUnixSocket: Received message (" << recvrv << ")";
+    qDebug() << "QUnixSocket: Received message (" << recvrv << ')';
 #endif
     if(-1 == recvrv) {
 #ifdef QUNIXSOCKET_DEBUG
         qDebug() << "QUnixSocket: Unable to receive data ("
-                 << ::strerror(errno) << ")";
+                 << ::strerror(errno) << ')';
 #endif
         error = (QUnixSocket::SocketError)(QUnixSocket::ReadFailure |
                                            CausedAbort);

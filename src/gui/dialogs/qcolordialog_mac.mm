@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,11 +54,19 @@
 typedef float CGFloat;  // Should only not be defined on 32-bit platforms
 #endif
 
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+@protocol NSWindowDelegate <NSObject>
+- (void)windowDidResize:(NSNotification *)notification;
+- (BOOL)windowShouldClose:(id)window;
+@end
+#endif
+
 QT_USE_NAMESPACE
 
 @class QCocoaColorPanelDelegate;
 
-@interface QCocoaColorPanelDelegate : NSObject {
+@interface QCocoaColorPanelDelegate : NSObject<NSWindowDelegate> {
     NSColorPanel *mColorPanel;
     NSView *mStolenContentView;
     NSButton *mOkButton;
@@ -74,8 +82,6 @@ QT_USE_NAMESPACE
                 okButton:(NSButton *)okButton
             cancelButton:(NSButton *)cancelButton
                     priv:(QColorDialogPrivate *)priv;
-- (BOOL)windowShouldClose:(id)window;
-- (void)windowDidResize:(NSNotification *)notification;
 - (void)colorChanged:(NSNotification *)notification;
 - (void)relayout;
 - (void)onOkClicked;
@@ -234,16 +240,22 @@ QT_USE_NAMESPACE
         CGFloat cyan, magenta, yellow, black, alpha;
         [color getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
         mQtColor->setCmykF(cyan, magenta, yellow, black, alpha);
-    } else {
-        NSColor *tmpColor;
-        if (colorSpace == NSCalibratedRGBColorSpace || colorSpace == NSDeviceRGBColorSpace) {
-            tmpColor = color;
-        } else {
-            tmpColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-        }
+    } else if (colorSpace == NSCalibratedRGBColorSpace || colorSpace == NSDeviceRGBColorSpace)  {
         CGFloat red, green, blue, alpha;
-        [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
+        [color getRed:&red green:&green blue:&blue alpha:&alpha];
         mQtColor->setRgbF(red, green, blue, alpha);
+    } else {
+        NSColorSpace *colorSpace = [color colorSpace];
+        if ([colorSpace colorSpaceModel] == NSCMYKColorSpaceModel && [color numberOfComponents] == 5){
+            CGFloat components[5];
+            [color getComponents:components];
+            mQtColor->setCmykF(components[0], components[1], components[2], components[3], components[4]);
+        } else {
+            NSColor *tmpColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+            CGFloat red, green, blue, alpha;
+            [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
+            mQtColor->setRgbF(red, green, blue, alpha);
+        }
     }
 
     if (mPriv)
@@ -414,10 +426,20 @@ void QColorDialogPrivate::setColor(void *delegate, const QColor &color)
 {
     QMacCocoaAutoReleasePool pool;
     QCocoaColorPanelDelegate *theDelegate = static_cast<QCocoaColorPanelDelegate *>(delegate);
-    NSColor *nsColor = [NSColor colorWithCalibratedRed:color.red() / 255.0
-                                                 green:color.green() / 255.0
-                                                  blue:color.blue() / 255.0
-                                                 alpha:color.alpha() / 255.0];
+    NSColor *nsColor;
+    const QColor::Spec spec = color.spec();
+    if (spec == QColor::Cmyk) {
+        nsColor = [NSColor colorWithDeviceCyan:color.cyanF()
+                                       magenta:color.magentaF()
+                                        yellow:color.yellowF()
+                                         black:color.blackF()
+                                         alpha:color.alphaF()];
+    } else {
+        nsColor = [NSColor colorWithCalibratedRed:color.redF()
+                                            green:color.greenF()
+                                             blue:color.blueF()
+                                            alpha:color.alphaF()];
+    }
     [[theDelegate colorPanel] setColor:nsColor];
 }
 

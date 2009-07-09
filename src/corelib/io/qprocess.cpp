@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -100,6 +100,29 @@ QT_END_NAMESPACE
 #ifndef QT_NO_PROCESS
 
 QT_BEGIN_NAMESPACE
+
+static QHash<QString, QString> environmentHashFromList(const QStringList &environment)
+{
+    QHash<QString, QString> result;
+    QStringList::ConstIterator it = environment.constBegin(),
+                              end = environment.constEnd();
+    for ( ; it != end; ++it) {
+        int equals = it->indexOf(QLatin1Char('='));
+
+        QString name = *it;
+        QString value;
+        if (equals != -1) {
+            name.truncate(equals);
+#ifdef Q_OS_WIN
+            name = name.toUpper();
+#endif
+            value = it->mid(equals + 1);
+        }
+        result.insert(name, value);
+    }
+
+    return result;
+}
 
 void QProcessPrivate::Channel::clear()
 {
@@ -421,6 +444,7 @@ QProcessPrivate::QProcessPrivate()
     sequenceNumber = 0;
     exitCode = 0;
     exitStatus = QProcess::NormalExit;
+    environment = 0;
     startupSocketNotifier = 0;
     deathNotifier = 0;
     notifier = 0;
@@ -451,6 +475,7 @@ QProcessPrivate::QProcessPrivate()
 */
 QProcessPrivate::~QProcessPrivate()
 {
+    delete environment;
     if (stdinChannel.process)
         stdinChannel.process->stdoutChannel.clear();
     if (stdoutChannel.process)
@@ -1211,29 +1236,83 @@ QProcess::ProcessState QProcess::state() const
 
     \snippet doc/src/snippets/qprocess-environment/main.cpp 0
 
-    \sa environment(), systemEnvironment()
+    \sa environment(), systemEnvironment(), setEnvironmentHash()
 */
 void QProcess::setEnvironment(const QStringList &environment)
 {
-    Q_D(QProcess);
-    d->environment = environment;
+    setEnvironmentHash(environmentHashFromList(environment));
 }
 
 /*!
     Returns the environment that QProcess will use when starting a
     process, or an empty QStringList if no environment has been set
-    using setEnvironment(). If no environment has been set, the
-    environment of the calling process will be used.
+    using setEnvironment() or setEnvironmentHash(). If no environment
+    has been set, the environment of the calling process will be used.
 
     \note The environment settings are ignored on Windows CE and Symbian,
     as there is no concept of an environment.
 
-    \sa setEnvironment(), systemEnvironment()
+    \sa environmentHash(), setEnvironment(), systemEnvironment()
 */
 QStringList QProcess::environment() const
 {
     Q_D(const QProcess);
-    return d->environment;
+
+    QStringList result;
+    if (!d->environment)
+        return result;
+
+    QHash<QString, QString>::ConstIterator it = d->environment->constBegin(),
+                                          end = d->environment->constEnd();
+    for ( ; it != end; ++it) {
+        QString data = it.key();
+        data.reserve(data.length() + it.value().length() + 1);
+        data.append(QLatin1Char('='));
+        data.append(it.value());
+        result << data;
+    }
+    return result;
+}
+
+/*!
+    \since 4.5
+    Sets the environment that QProcess will use when starting a process to the
+    \a environment hash map.
+
+    For example, the following code adds the \c{C:\\BIN} directory to the list of
+    executable paths (\c{PATHS}) on Windows and sets \c{TMPDIR}:
+
+    \snippet doc/src/snippets/qprocess-environment/main.cpp 1
+
+    \sa environment(), systemEnvironmentHash(), setEnvironment()
+*/
+void QProcess::setEnvironmentHash(const QHash<QString, QString> &environment)
+{
+    Q_D(QProcess);
+    if (!d->environment)
+        d->environment = new QHash<QString, QString>(environment);
+    else
+        *d->environment = environment;
+}
+
+/*!
+    \since 4.5
+    Returns the environment that QProcess will use when starting a
+    process, or an empty QHash if no environment has been set using
+    setEnvironment() or setEnvironmentHash(). If no environment has
+    been set, the environment of the calling process will be used.
+
+    \note The environment settings are ignored on Windows CE,
+    as there is no concept of an environment.
+
+    \sa setEnvironmentHash(), setEnvironment(), systemEnvironmentHash()
+*/
+QHash<QString, QString> QProcess::environmentHash() const
+{
+    Q_D(const QProcess);
+    if (d->environment)
+        return *d->environment;
+    return QHash<QString, QString>();
 }
 
 /*!
@@ -1527,7 +1606,7 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
     }
 
 #if defined QPROCESS_DEBUG
-    qDebug() << "QProcess::start(" << program << "," << arguments << "," << mode << ")";
+    qDebug() << "QProcess::start(" << program << ',' << arguments << ',' << mode << ')';
 #endif
 
     d->outputReadBuffer.clear();
@@ -1838,7 +1917,7 @@ QT_END_INCLUDE_NAMESPACE
 
     \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 8
 
-    \sa environment(), setEnvironment()
+    \sa systemEnvironmentHash(), environment(), setEnvironment()
 */
 QStringList QProcess::systemEnvironment()
 {
@@ -1848,6 +1927,18 @@ QStringList QProcess::systemEnvironment()
     while ((entry = environ[count++]))
         tmp << QString::fromLocal8Bit(entry);
     return tmp;
+}
+
+/*!
+    \since 4.5
+
+    Returns the environment of the calling process as a QHash.
+
+    \sa systemEnvironment(), environmentHash(), setEnvironmentHash()
+*/
+QHash<QString, QString> QProcess::systemEnvironmentHash()
+{
+    return environmentHashFromList(systemEnvironment());
 }
 
 /*!

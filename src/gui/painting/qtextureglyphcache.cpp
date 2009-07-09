@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -157,6 +157,46 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
 
 }
 
+QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
+{
+#if defined(Q_WS_X11)
+    if (m_transform.type() > QTransform::TxTranslate) {
+        QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_None;
+        QImage::Format imageFormat = QImage::Format_Invalid;
+        switch (m_type) {
+        case Raster_RGBMask:
+            format = QFontEngineFT::Format_A32;
+            imageFormat = QImage::Format_RGB32;
+            break;
+        case Raster_A8:
+            format = QFontEngineFT::Format_A8;
+            imageFormat = QImage::Format_Indexed8;
+            break;
+        case Raster_Mono:
+            format = QFontEngineFT::Format_Mono;
+            imageFormat = QImage::Format_Mono;
+            break;
+        };
+
+        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_textitem->fontEngine);
+        QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
+
+        if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
+            QFontEngineFT::Glyph *glyph = gset->glyph_data.value(g);
+            const int bytesPerLine = (format == QFontEngineFT::Format_Mono ? ((glyph->width + 31) & ~31) >> 3
+                               : (glyph->width + 3) & ~3);
+            return QImage(glyph->data, glyph->width, glyph->height, bytesPerLine, imageFormat);
+        }
+    } else
+#endif
+    if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
+        return m_current_textitem->fontEngine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
+    else
+        return m_current_textitem->fontEngine->alphaMapForGlyph(g, m_transform);
+
+    return QImage();
+}
+
 /************************************************************************
  * QImageTextureGlyphCache
  */
@@ -198,34 +238,7 @@ int QImageTextureGlyphCache::glyphMargin() const
 
 void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
 {
-    QImage mask;
-#if defined(Q_WS_X11)
-    if (m_transform.type() > QTransform::TxTranslate) {
-        QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_None;
-        switch (m_type) {
-        case Raster_RGBMask:
-            format = QFontEngineFT::Format_A32; break;
-        case Raster_A8:
-            format = QFontEngineFT::Format_A8; break;
-        case Raster_Mono:
-            format = QFontEngineFT::Format_Mono; break;
-        };
-
-        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_textitem->fontEngine);
-        QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
-
-        if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
-            QFontEngineFT::Glyph *glyph = gset->glyph_data.value(g);
-            const int bytesPerLine = (format == QFontEngineFT::Format_Mono ? ((glyph->width + 31) & ~31) >> 3
-                               : (glyph->width + 3) & ~3);
-            mask = QImage(glyph->data, glyph->width, glyph->height, bytesPerLine, m_image.format());
-        }
-    } else
-#endif
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        mask = m_current_textitem->fontEngine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
-    else
-        mask = m_current_textitem->fontEngine->alphaMapForGlyph(g, m_transform);
+    QImage mask = textureMapForGlyph(g);
 
 #ifdef CACHE_DEBUG
     printf("fillTexture of %dx%d at %d,%d in the cache of %dx%d\n", c.w, c.h, c.x, c.y, m_image.width(), m_image.height());

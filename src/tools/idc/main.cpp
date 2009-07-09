@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,8 +50,8 @@ QT_BEGIN_NAMESPACE
 
 static QString quotePath(const QString &s)
 {
-    if (!s.startsWith(QLatin1String("\"")) && s.contains(QLatin1Char(' ')))
-        return QLatin1String("\"") + s + QLatin1String("\"");
+    if (!s.startsWith(QLatin1Char('\"')) && s.contains(QLatin1Char(' ')))
+        return QLatin1Char('\"') + s + QLatin1Char('\"');
     return s;
 }
 
@@ -282,7 +282,7 @@ int runIdc(int argc, char **argv)
             fprintf(stderr, "Server unregistered successfully!\n");
             return 0;
         } else if (p[0] == QLatin1Char('/') || p[0] == QLatin1Char('-')) {
-            error = QLatin1String("Unknown option \"") + p + QLatin1String("\"");
+            error = QLatin1String("Unknown option \"") + p + QLatin1Char('\"');
             break;
         } else {
             input = QLatin1String(argv[i]);
@@ -331,6 +331,9 @@ int runIdc(int argc, char **argv)
         switch(res) {
         case S_OK:
             break;
+        case E_FAIL:
+            fprintf(stderr, "IDL generation failed trying to run program %s!\n", (const char*)input.toLocal8Bit().data());
+            return res;
         case -1:
             fprintf(stderr, "Couldn't open %s for writing!\n", (const char*)idlfile.toLocal8Bit().data());
             return res;

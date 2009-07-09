@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,7 @@
 #include "Document.h"
 #include "HTMLImageLoader.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "RenderImage.h"
 #include "RenderVideo.h"
 
@@ -52,27 +53,30 @@ bool HTMLVideoElement::rendererIsNeeded(RenderStyle* style)
     return HTMLElement::rendererIsNeeded(style); 
 }
 
+#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 RenderObject* HTMLVideoElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
     if (m_shouldShowPosterImage)
         return new (arena) RenderImage(this);
     return new (arena) RenderVideo(this);
 }
+#endif
 
 void HTMLVideoElement::attach()
 {
     HTMLMediaElement::attach();
-    
+
+#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     if (m_shouldShowPosterImage) {
         if (!m_imageLoader)
             m_imageLoader.set(new HTMLImageLoader(this));
         m_imageLoader->updateFromElement();
         if (renderer() && renderer()->isImage()) {
-            RenderImage* imageRenderer = static_cast<RenderImage*>(renderer());
+            RenderImage* imageRenderer = toRenderImage(renderer());
             imageRenderer->setCachedImage(m_imageLoader->image()); 
         }
     }
-
+#endif
 }
 
 void HTMLVideoElement::detach()
@@ -91,9 +95,14 @@ void HTMLVideoElement::parseMappedAttribute(MappedAttribute* attr)
     if (attrName == posterAttr) {
         updatePosterImage();
         if (m_shouldShowPosterImage) {
+#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
             if (!m_imageLoader)
                 m_imageLoader.set(new HTMLImageLoader(this));
             m_imageLoader->updateFromElementIgnoringPreviousError();
+#else
+            if (m_player)
+                m_player->setPoster(poster());
+#endif
         }
     } else if (attrName == widthAttr)
         addCSSLength(attr, CSSPropertyWidth, attr->value());
@@ -163,12 +172,30 @@ const QualifiedName& HTMLVideoElement::imageSourceAttributeName() const
 
 void HTMLVideoElement::updatePosterImage()
 {
+#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     bool oldShouldShowPosterImage = m_shouldShowPosterImage;
-    m_shouldShowPosterImage = !poster().isEmpty() && m_networkState < LOADED_FIRST_FRAME;
+#endif
+
+    m_shouldShowPosterImage = !poster().isEmpty() && readyState() < HAVE_CURRENT_DATA;
+
+#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     if (attached() && oldShouldShowPosterImage != m_shouldShowPosterImage) {
         detach();
         attach();
     }
+#endif
+}
+
+void HTMLVideoElement::paint(GraphicsContext* context, const IntRect& r)
+{
+    // FIXME: We should also be able to paint the poster image.
+
+    MediaPlayer* player = HTMLMediaElement::player();
+    if (!player)
+        return;
+
+    player->setVisible(true); // Make player visible or it won't draw.
+    player->paint(context, r);
 }
 
 }

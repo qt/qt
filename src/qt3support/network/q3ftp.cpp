@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -485,7 +485,7 @@ bool Q3FtpDTP::parseDir( const QString &buffer, const QString &userName, QUrlInf
     dateStr += lst[ 6 ];
     dateStr += QLatin1Char(' ');
 
-    if ( lst[ 7 ].contains( QLatin1String(":") ) ) {
+    if ( lst[ 7 ].contains( QLatin1Char(':') ) ) {
 	time = QTime( lst[ 7 ].left( 2 ).toInt(), lst[ 7 ].right( 2 ).toInt() );
 	dateStr += QString::number( QDate::currentDate().year() );
     } else {
@@ -495,7 +495,7 @@ bool Q3FtpDTP::parseDir( const QString &buffer, const QString &userName, QUrlInf
     QDate date = QDate::fromString( dateStr );
     info->setLastModified( QDateTime( date, time ) );
 
-    if ( lst[ 7 ].contains( QLatin1String(":") ) ) {
+    if ( lst[ 7 ].contains( QLatin1Char(':') ) ) {
 	const int futureTolerance = 600;
 	if( info->lastModified().secsTo( QDateTime::currentDateTime() ) < -futureTolerance ) {
 	    QDateTime dt = info->lastModified();
@@ -512,7 +512,7 @@ bool Q3FtpDTP::parseDir( const QString &buffer, const QString &userName, QUrlInf
     else {
 	QString n;
 	for ( uint i = 8; i < (uint) lst.count(); ++i )
-	    n += lst[ i ] + QLatin1String(" ");
+	    n += lst[ i ] + QLatin1Char(' ');
 	n = n.stripWhiteSpace();
 	info->setName( n );
     }
@@ -897,7 +897,7 @@ bool Q3FtpPI::processReply()
 	    // ### error handling
 	} else {
 	    QStringList lst = addrPortPattern.capturedTexts();
-	    QString host = lst[1] + QLatin1String(".") + lst[2] + QLatin1String(".") + lst[3] + QLatin1String(".") + lst[4];
+	    QString host = lst[1] + QLatin1Char('.') + lst[2] + QLatin1Char('.') + lst[3] + QLatin1Char('.') + lst[4];
 	    Q_UINT16 port = ( lst[5].toUInt() << 8 ) + lst[6].toUInt();
 	    waitForDtpToConnect = true;
 	    dtp.connectToHost( host, port );
@@ -1435,8 +1435,8 @@ int Q3Ftp::connectToHost( const QString &host, Q_UINT16 port )
 int Q3Ftp::login( const QString &user, const QString &password )
 {
     QStringList cmds;
-    cmds << ( QString(QLatin1String("USER ")) + ( user.isNull() ? QString(QLatin1String("anonymous")) : user ) + QLatin1String("\r\n") );
-    cmds << ( QString(QLatin1String("PASS ")) + ( password.isNull() ? QString(QLatin1String("anonymous@")) : password ) + QLatin1String("\r\n") );
+    cmds << ( QString::fromLatin1("USER ") + ( user.isNull() ? QString::fromLatin1("anonymous") : user ) + QLatin1String("\r\n") );
+    cmds << ( QString::fromLatin1("PASS ") + ( password.isNull() ? QString::fromLatin1("anonymous@") : password ) + QLatin1String("\r\n") );
     return addCommand( new Q3FtpCommand( Login, cmds ) );
 }
 
@@ -2095,7 +2095,7 @@ void Q3Ftp::operationListChildren( Q3NetworkOperation *op )
 {
     op->setState( StInProgress );
 
-    cd( ( url()->path().isEmpty() ? QString( QLatin1String("/") ) : url()->path() ) );
+    cd( ( url()->path().isEmpty() ? QString::fromLatin1("/") : url()->path() ) );
     list();
     emit start( op );
 }
@@ -2115,7 +2115,7 @@ void Q3Ftp::operationRemove( Q3NetworkOperation *op )
 {
     op->setState( StInProgress );
 
-    cd( ( url()->path().isEmpty() ? QString( QLatin1String("/") ) : url()->path() ) );
+    cd( ( url()->path().isEmpty() ? QString::fromLatin1("/") : url()->path() ) );
     remove( Q3Url( op->arg( 0 ) ).path() );
 }
 
@@ -2125,7 +2125,7 @@ void Q3Ftp::operationRename( Q3NetworkOperation *op )
 {
     op->setState( StInProgress );
 
-    cd( ( url()->path().isEmpty() ? QString( QLatin1String("/") ) : url()->path() ) );
+    cd( ( url()->path().isEmpty() ? QString::fromLatin1("/") : url()->path() ) );
     rename( op->arg( 0 ), op->arg( 1 ));
 }
 
@@ -2179,8 +2179,8 @@ bool Q3Ftp::checkConnection( Q3NetworkOperation *op )
 		connectToHost( url()->host(), url()->port() != -1 ? url()->port() : 21 );
 		break;
 	}
-	QString user = url()->user().isEmpty() ? QString( QLatin1String("anonymous") ) : url()->user();
-	QString pass = url()->password().isEmpty() ? QString( QLatin1String("anonymous@") ) : url()->password();
+    QString user = url()->user().isEmpty() ? QString::fromLatin1("anonymous") : url()->user();
+    QString pass = url()->password().isEmpty() ? QString::fromLatin1("anonymous@") : url()->password();
 	login( user, pass );
     }
 

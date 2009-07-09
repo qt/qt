@@ -19,8 +19,4 @@ SOURCES += \
     $$PWD/qph.cpp \
     $$PWD/po.cpp \
     $$PWD/ts.cpp \
-    $$PWD/ui.cpp \
-    $$PWD/cpp.cpp \
-    $$PWD/java.cpp \
-    $$PWD/qscript.cpp \
     $$PWD/xliff.cpp 

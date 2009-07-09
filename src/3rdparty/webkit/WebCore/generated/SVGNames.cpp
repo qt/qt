@@ -58,29 +58,6 @@ DEFINE_GLOBAL(QualifiedName, definition_srcTag, nullAtom, "definition_src", svgN
 DEFINE_GLOBAL(QualifiedName, defsTag, nullAtom, "defs", svgNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, descTag, nullAtom, "desc", svgNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ellipseTag, nullAtom, "ellipse", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feBlendTag, nullAtom, "feBlend", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feColorMatrixTag, nullAtom, "feColorMatrix", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feComponentTransferTag, nullAtom, "feComponentTransfer", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feCompositeTag, nullAtom, "feComposite", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feDiffuseLightingTag, nullAtom, "feDiffuseLighting", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feDisplacementMapTag, nullAtom, "feDisplacementMap", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feDistantLightTag, nullAtom, "feDistantLight", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feFloodTag, nullAtom, "feFlood", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feFuncATag, nullAtom, "feFuncA", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feFuncBTag, nullAtom, "feFuncB", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feFuncGTag, nullAtom, "feFuncG", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feFuncRTag, nullAtom, "feFuncR", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feGaussianBlurTag, nullAtom, "feGaussianBlur", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feImageTag, nullAtom, "feImage", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feMergeTag, nullAtom, "feMerge", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feMergeNodeTag, nullAtom, "feMergeNode", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feOffsetTag, nullAtom, "feOffset", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, fePointLightTag, nullAtom, "fePointLight", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feSpecularLightingTag, nullAtom, "feSpecularLighting", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feSpotLightTag, nullAtom, "feSpotLight", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feTileTag, nullAtom, "feTile", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, feTurbulenceTag, nullAtom, "feTurbulence", svgNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, filterTag, nullAtom, "filter", svgNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, fontTag, nullAtom, "font", svgNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, font_faceTag, nullAtom, "font_face", svgNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, font_face_formatTag, nullAtom, "font_face_format", svgNamespaceURI);
@@ -137,29 +114,6 @@ WebCore::QualifiedName** getSVGTags(size_t* size)
         (WebCore::QualifiedName*)&defsTag,
         (WebCore::QualifiedName*)&descTag,
         (WebCore::QualifiedName*)&ellipseTag,
-        (WebCore::QualifiedName*)&feBlendTag,
-        (WebCore::QualifiedName*)&feColorMatrixTag,
-        (WebCore::QualifiedName*)&feComponentTransferTag,
-        (WebCore::QualifiedName*)&feCompositeTag,
-        (WebCore::QualifiedName*)&feDiffuseLightingTag,
-        (WebCore::QualifiedName*)&feDisplacementMapTag,
-        (WebCore::QualifiedName*)&feDistantLightTag,
-        (WebCore::QualifiedName*)&feFloodTag,
-        (WebCore::QualifiedName*)&feFuncATag,
-        (WebCore::QualifiedName*)&feFuncBTag,
-        (WebCore::QualifiedName*)&feFuncGTag,
-        (WebCore::QualifiedName*)&feFuncRTag,
-        (WebCore::QualifiedName*)&feGaussianBlurTag,
-        (WebCore::QualifiedName*)&feImageTag,
-        (WebCore::QualifiedName*)&feMergeTag,
-        (WebCore::QualifiedName*)&feMergeNodeTag,
-        (WebCore::QualifiedName*)&feOffsetTag,
-        (WebCore::QualifiedName*)&fePointLightTag,
-        (WebCore::QualifiedName*)&feSpecularLightingTag,
-        (WebCore::QualifiedName*)&feSpotLightTag,
-        (WebCore::QualifiedName*)&feTileTag,
-        (WebCore::QualifiedName*)&feTurbulenceTag,
-        (WebCore::QualifiedName*)&filterTag,
         (WebCore::QualifiedName*)&fontTag,
         (WebCore::QualifiedName*)&font_faceTag,
         (WebCore::QualifiedName*)&font_face_formatTag,
@@ -199,7 +153,7 @@ WebCore::QualifiedName** getSVGTags(size_t* size)
         (WebCore::QualifiedName*)&useTag,
         (WebCore::QualifiedName*)&viewTag,
     };
-    *size = 74;
+    *size = 51;
     return SVGTags;
 }
 
@@ -722,29 +676,6 @@ char definition_srcTagString[] = "definition-src";
 char defsTagString[] = "defs";
 char descTagString[] = "desc";
 char ellipseTagString[] = "ellipse";
-char feBlendTagString[] = "feBlend";
-char feColorMatrixTagString[] = "feColorMatrix";
-char feComponentTransferTagString[] = "feComponentTransfer";
-char feCompositeTagString[] = "feComposite";
-char feDiffuseLightingTagString[] = "feDiffuseLighting";
-char feDisplacementMapTagString[] = "feDisplacementMap";
-char feDistantLightTagString[] = "feDistantLight";
-char feFloodTagString[] = "feFlood";
-char feFuncATagString[] = "feFuncA";
-char feFuncBTagString[] = "feFuncB";
-char feFuncGTagString[] = "feFuncG";
-char feFuncRTagString[] = "feFuncR";
-char feGaussianBlurTagString[] = "feGaussianBlur";
-char feImageTagString[] = "feImage";
-char feMergeTagString[] = "feMerge";
-char feMergeNodeTagString[] = "feMergeNode";
-char feOffsetTagString[] = "feOffset";
-char fePointLightTagString[] = "fePointLight";
-char feSpecularLightingTagString[] = "feSpecularLighting";
-char feSpotLightTagString[] = "feSpotLight";
-char feTileTagString[] = "feTile";
-char feTurbulenceTagString[] = "feTurbulence";
-char filterTagString[] = "filter";
 char fontTagString[] = "font";
 char font_faceTagString[] = "font-face";
 char font_face_formatTagString[] = "font-face-format";
@@ -1062,29 +993,6 @@ void init()
     new ((void*)&defsTag) QualifiedName(nullAtom, defsTagString, svgNS);
     new ((void*)&descTag) QualifiedName(nullAtom, descTagString, svgNS);
     new ((void*)&ellipseTag) QualifiedName(nullAtom, ellipseTagString, svgNS);
-    new ((void*)&feBlendTag) QualifiedName(nullAtom, feBlendTagString, svgNS);
-    new ((void*)&feColorMatrixTag) QualifiedName(nullAtom, feColorMatrixTagString, svgNS);
-    new ((void*)&feComponentTransferTag) QualifiedName(nullAtom, feComponentTransferTagString, svgNS);
-    new ((void*)&feCompositeTag) QualifiedName(nullAtom, feCompositeTagString, svgNS);
-    new ((void*)&feDiffuseLightingTag) QualifiedName(nullAtom, feDiffuseLightingTagString, svgNS);
-    new ((void*)&feDisplacementMapTag) QualifiedName(nullAtom, feDisplacementMapTagString, svgNS);
-    new ((void*)&feDistantLightTag) QualifiedName(nullAtom, feDistantLightTagString, svgNS);
-    new ((void*)&feFloodTag) QualifiedName(nullAtom, feFloodTagString, svgNS);
-    new ((void*)&feFuncATag) QualifiedName(nullAtom, feFuncATagString, svgNS);
-    new ((void*)&feFuncBTag) QualifiedName(nullAtom, feFuncBTagString, svgNS);
-    new ((void*)&feFuncGTag) QualifiedName(nullAtom, feFuncGTagString, svgNS);
-    new ((void*)&feFuncRTag) QualifiedName(nullAtom, feFuncRTagString, svgNS);
-    new ((void*)&feGaussianBlurTag) QualifiedName(nullAtom, feGaussianBlurTagString, svgNS);
-    new ((void*)&feImageTag) QualifiedName(nullAtom, feImageTagString, svgNS);
-    new ((void*)&feMergeTag) QualifiedName(nullAtom, feMergeTagString, svgNS);
-    new ((void*)&feMergeNodeTag) QualifiedName(nullAtom, feMergeNodeTagString, svgNS);
-    new ((void*)&feOffsetTag) QualifiedName(nullAtom, feOffsetTagString, svgNS);
-    new ((void*)&fePointLightTag) QualifiedName(nullAtom, fePointLightTagString, svgNS);
-    new ((void*)&feSpecularLightingTag) QualifiedName(nullAtom, feSpecularLightingTagString, svgNS);
-    new ((void*)&feSpotLightTag) QualifiedName(nullAtom, feSpotLightTagString, svgNS);
-    new ((void*)&feTileTag) QualifiedName(nullAtom, feTileTagString, svgNS);
-    new ((void*)&feTurbulenceTag) QualifiedName(nullAtom, feTurbulenceTagString, svgNS);
-    new ((void*)&filterTag) QualifiedName(nullAtom, filterTagString, svgNS);
     new ((void*)&fontTag) QualifiedName(nullAtom, fontTagString, svgNS);
     new ((void*)&font_faceTag) QualifiedName(nullAtom, font_faceTagString, svgNS);
     new ((void*)&font_face_formatTag) QualifiedName(nullAtom, font_face_formatTagString, svgNS);

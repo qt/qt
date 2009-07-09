@@ -19,22 +19,18 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLOptGroupElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLOptGroupElement.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLOptGroupElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLOptGroupElement);
 
 /* Hash table */
 
@@ -72,13 +68,13 @@ public:
     JSHTMLOptGroupElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLOptGroupElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLOptGroupElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLOptGroupElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -107,9 +103,9 @@ static const HashTable JSHTMLOptGroupElementPrototypeTable =
 
 const ClassInfo JSHTMLOptGroupElementPrototype::s_info = { "HTMLOptGroupElementPrototype", 0, &JSHTMLOptGroupElementPrototypeTable, 0 };
 
-JSObject* JSHTMLOptGroupElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLOptGroupElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLOptGroupElement>(exec);
+    return getDOMPrototype<JSHTMLOptGroupElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLOptGroupElement::s_info = { "HTMLOptGroupElement", &JSHTMLElement::s_info, &JSHTMLOptGroupElementTable, 0 };
@@ -119,9 +115,9 @@ JSHTMLOptGroupElement::JSHTMLOptGroupElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLOptGroupElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLOptGroupElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLOptGroupElementPrototype(JSHTMLOptGroupElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLOptGroupElementPrototype(JSHTMLOptGroupElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLOptGroupElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -129,40 +125,42 @@ bool JSHTMLOptGroupElement::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSHTMLOptGroupElement, Base>(exec, &JSHTMLOptGroupElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLOptGroupElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptGroupElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(static_cast<JSHTMLOptGroupElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->disabled());
 }
 
-JSValuePtr jsHTMLOptGroupElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptGroupElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(static_cast<JSHTMLOptGroupElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->label());
 }
 
-JSValuePtr jsHTMLOptGroupElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptGroupElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLOptGroupElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLOptGroupElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLOptGroupElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLOptGroupElement, Base>(exec, propertyName, value, &JSHTMLOptGroupElementTable, this, slot);
 }
 
-void setJSHTMLOptGroupElementDisabled(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptGroupElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(static_cast<JSHTMLOptGroupElement*>(thisObject)->impl());
-    imp->setDisabled(value->toBoolean(exec));
+    imp->setDisabled(value.toBoolean(exec));
 }
 
-void setJSHTMLOptGroupElementLabel(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLOptGroupElementLabel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(static_cast<JSHTMLOptGroupElement*>(thisObject)->impl());
     imp->setLabel(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLOptGroupElement::getConstructor(ExecState* exec)
+JSValue JSHTMLOptGroupElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLOptGroupElementConstructor>(exec);
 }

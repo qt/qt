@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,9 +51,11 @@ int main(int argc, char **argv)
         qDebug() << "Usage: macdeployqt app-bundle [options]";
         qDebug() << "";
         qDebug() << "Options:";
-        qDebug() << "   -no-plugins: Skip plugin deployment";
-        qDebug() << "   -dmg       : Create a .dmg disk image";
-        qDebug() << "   -no-strip  : Don't run 'strip' on the binaries";
+        qDebug() << "   -verbose=<0-3>  : 0 = no output, 1 = error/warning (default), 2 = normal, 3 = debug";
+        qDebug() << "   -no-plugins     : Skip plugin deployment";
+        qDebug() << "   -dmg            : Create a .dmg disk image";
+        qDebug() << "   -no-strip       : Don't run 'strip' on the binaries";
+        qDebug() << "   -use-debug-libs : Deploy with debug versions of frameworks and plugins (implies -no-strip)";
         qDebug() << "";
         qDebug() << "macdeployqt takes an application bundle as input and makes it";
         qDebug() << "self-contained by copying in the Qt frameworks and plugins that";
@@ -68,10 +70,10 @@ int main(int argc, char **argv)
 
         return 0;
     }
-    
+
     if (appBundlePath.endsWith("/"))
         appBundlePath.chop(1);
-    
+
     if (QDir().exists(appBundlePath) == false) {
         qDebug() << "Error: Could not find app bundle" << appBundlePath;
         return 0;
@@ -79,23 +81,40 @@ int main(int argc, char **argv)
 
     bool plugins = true;
     bool dmg = false;
+    bool useDebugLibs = false;
     extern bool runStripEnabled;
 
     for (int i = 2; i < argc; ++i) {
         QByteArray argument = QByteArray(argv[i]);
         if (argument == QByteArray("-no-plugins")) {
+            LogDebug() << "Argument found:" << argument;
             plugins = false;
         } else if (argument == QByteArray("-dmg")) {
+            LogDebug() << "Argument found:" << argument;
             dmg = true;
         } else if (argument == QByteArray("-no-strip")) {
+            LogDebug() << "Argument found:" << argument;
             runStripEnabled = false;
+        } else if (argument == QByteArray("-use-debug-libs")) {
+            LogDebug() << "Argument found:" << argument;
+            useDebugLibs = true;
+            runStripEnabled = false;
+        } else if (argument.startsWith(QByteArray("-verbose"))) {
+            LogDebug() << "Argument found:" << argument;
+            int index = argument.indexOf("=");
+            bool ok = false;
+            int number = argument.mid(index+1).toInt(&ok);
+            if (!ok)
+                LogError() << "Could not parse verbose level";
+            else
+                logLevel = number;
         } else if (argument.startsWith("-")) {
-            qDebug() << "Error: Unknown option" << argument << "\n";
+            LogError() << "Unknown argument" << argument << "\n";
             return 0;
         }
      }
 
-    DeploymentInfo deploymentInfo  = deployQtFrameworks(appBundlePath);
+    DeploymentInfo deploymentInfo  = deployQtFrameworks(appBundlePath, useDebugLibs);
 
     if (plugins) {
         if (deploymentInfo.qtPath.isEmpty())
@@ -103,13 +122,13 @@ int main(int argc, char **argv)
         else
             deploymentInfo.pluginPath = deploymentInfo.qtPath + "/plugins";
 
-        qDebug() << "";
-        qDebug() << "Deploying plugins from" << deploymentInfo.pluginPath;
-        deployPlugins(appBundlePath, deploymentInfo);
+        LogNormal();
+        deployPlugins(appBundlePath, deploymentInfo, useDebugLibs);
         createQtConf(appBundlePath);
     }
 
     if (dmg) {
+        LogNormal();
         createDiskImage(appBundlePath);
     }
 }

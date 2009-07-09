@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -145,7 +145,7 @@ public:
     QPushButton *addButton(StandardButton button);
     void removeButton(QAbstractButton *button);
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void setVisible(bool visible);
 #endif
 
@@ -191,6 +191,8 @@ public:
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
+    // ### Qt 5: Replace Ok with Yes|No in question() function.
+    //     Also consider if Ok == Yes and Cancel == No.
     static StandardButton question(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);

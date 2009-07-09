@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -904,6 +904,7 @@ qsreal QScriptValue::toInteger() const
     \row    \o QObject Object \o A QVariant containing a pointer to the QObject.
     \row    \o Date Object \o A QVariant containing the date value (toDateTime()).
     \row    \o RegExp Object \o A QVariant containing the regular expression value (toRegExp()).
+    \row    \o Array Object \o The array is converted to a QVariantList.
     \row    \o Object     \o If the value is primitive, then the result is converted to a QVariant according to the above rules; otherwise, an invalid QVariant is returned.
     \endtable
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,7 @@
 */
 
 #include <qdir.h>
-
+#include <qdebug.h>
 #include "codemarker.h"
 #include "config.h"
 #include "doc.h"
@@ -307,6 +307,12 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                             .arg(marker->plainFullName(node)));
     }
     else {
+        if (node->type() == Node::Function) {
+            const FunctionNode *func = static_cast<const FunctionNode *>(node);
+            if (func->reimplementedFrom() != 0)
+                generateReimplementedFrom(func, marker);
+        }
+        
         generateText(node->doc().body(), node, marker);
 
         if (node->type() == Node::Enum) {
@@ -345,7 +351,6 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
         else if (node->type() == Node::Function) {
             const FunctionNode *func = static_cast<const FunctionNode *>(node);
-
             QSet<QString> definedParams;
             QList<Parameter>::ConstIterator p = func->parameters().begin();
             while (p != func->parameters().end()) {
@@ -404,9 +409,11 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                 if (!body.contains("return", Qt::CaseInsensitive))
                     node->doc().location().warning(tr("Undocumented return value"));
             }
-
+#if 0
+            // Now we put this at the top, before the other text.
             if (func->reimplementedFrom() != 0)
                 generateReimplementedFrom(func, marker);
+#endif            
         }
     }
 
@@ -859,7 +866,8 @@ void Generator::generateReimplementedFrom(const FunctionNode *func,
         if (from->access() != Node::Private && from->parent()->access() != Node::Private) {
             Text text;
             text << Atom::ParaLeft << "Reimplemented from ";
-            appendFullName(text, from->parent(), func, marker, from);
+            QString fullName =  from->parent()->name() + "::" + from->name() + "()";
+            appendFullName(text, from->parent(), fullName, from);
             text << "." << Atom::ParaRight;
             generateText(text, func, marker);
         }
@@ -936,6 +944,19 @@ void Generator::appendFullName(Text& text,
     text << Atom(Atom::LinkNode, CodeMarker::stringForNode(actualNode))
          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
          << Atom(Atom::String, marker->plainFullName(apparentNode, relative))
+         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+}
+
+void Generator::appendFullName(Text& text,
+                               const Node *apparentNode,
+                               const QString& fullName,
+                               const Node *actualNode)
+{
+    if (actualNode == 0)
+        actualNode = apparentNode;
+    text << Atom(Atom::LinkNode, CodeMarker::stringForNode(actualNode))
+         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+         << Atom(Atom::String, fullName)
          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
 }
 

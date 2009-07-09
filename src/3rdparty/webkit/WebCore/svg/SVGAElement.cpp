@@ -34,13 +34,14 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "KeyboardEvent.h"
+#include "MappedAttribute.h"
 #include "MouseEvent.h"
 #include "PlatformMouseEvent.h"
-#include "RenderSVGTransformableContainer.h"
 #include "RenderSVGInline.h"
+#include "RenderSVGTransformableContainer.h"
 #include "ResourceRequest.h"
-#include "SVGSMILElement.h"
 #include "SVGNames.h"
+#include "SVGSMILElement.h"
 #include "XLinkNames.h"
 
 namespace WebCore {
@@ -92,7 +93,7 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
         setIsLink(!href().isNull());
 
         if (wasLink != isLink())
-            setChanged();
+            setNeedsStyleRecalc();
     }
 }
 
@@ -151,7 +152,7 @@ void SVGAElement::defaultEventHandler(Event* evt)
             }
 #endif
             if (document()->frame())
-                document()->frame()->loader()->urlSelected(document()->completeURL(url), target, evt, false, true);
+                document()->frame()->loader()->urlSelected(document()->completeURL(url), target, evt, false, false, true);
         }
 
         evt->setDefaultHandled();

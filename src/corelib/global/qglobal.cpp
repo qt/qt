@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2147,7 +2147,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         mac_default_handler(buf);
 #elif defined(Q_OS_WINCE)
         QString fstr = QString::fromLatin1(buf);
-        fstr += QLatin1String("\n");
+        fstr += QLatin1Char('\n');
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
 #elif defined(Q_OS_SYMBIAN)
         // RDebug::Print has a cap of 256 characters so break it up
@@ -2454,7 +2454,7 @@ bool qputenv(const char *varName, const QByteArray& value)
     return _putenv_s(varName, value.constData()) == 0;
 #else
     QByteArray buffer(varName);
-    buffer += "=";
+    buffer += '=';
     buffer += value;
     return putenv(qstrdup(buffer.constData())) == 0;
 #endif
@@ -2470,7 +2470,9 @@ typedef uint SeedStorageType;
 #  endif
 
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
+#endif
 
 #endif
 
@@ -3170,7 +3172,12 @@ bool QInternal::callFunction(InternalFunction func, void **args)
  \relates <QtGlobal>
  \since 4.4
  \threadsafe
- \overload
+
+ Compares the floating point value \a p1 and \a p2 and
+ returns \c true if they are considered equal, otherwise \c false.
+
+ The two numbers are compared in a relative way, where the
+ exactness is stronger the smaller the numbers are.
  */
 
 /*!

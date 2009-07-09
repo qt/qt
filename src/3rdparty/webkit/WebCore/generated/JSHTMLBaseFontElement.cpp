@@ -19,22 +19,19 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLBaseFontElement.h"
-
-#include <wtf/GetPtr.h>
 
 #include "HTMLBaseFontElement.h"
 #include "KURL.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLBaseFontElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLBaseFontElement);
 
 /* Hash table */
 
@@ -73,13 +70,13 @@ public:
     JSHTMLBaseFontElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLBaseFontElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBaseFontElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBaseFontElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -108,9 +105,9 @@ static const HashTable JSHTMLBaseFontElementPrototypeTable =
 
 const ClassInfo JSHTMLBaseFontElementPrototype::s_info = { "HTMLBaseFontElementPrototype", 0, &JSHTMLBaseFontElementPrototypeTable, 0 };
 
-JSObject* JSHTMLBaseFontElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLBaseFontElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLBaseFontElement>(exec);
+    return getDOMPrototype<JSHTMLBaseFontElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLBaseFontElement::s_info = { "HTMLBaseFontElement", &JSHTMLElement::s_info, &JSHTMLBaseFontElementTable, 0 };
@@ -120,9 +117,9 @@ JSHTMLBaseFontElement::JSHTMLBaseFontElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLBaseFontElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLBaseFontElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLBaseFontElementPrototype(JSHTMLBaseFontElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLBaseFontElementPrototype(JSHTMLBaseFontElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLBaseFontElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -130,52 +127,55 @@ bool JSHTMLBaseFontElement::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSHTMLBaseFontElement, Base>(exec, &JSHTMLBaseFontElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLBaseFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBaseFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->color());
 }
 
-JSValuePtr jsHTMLBaseFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBaseFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->face());
 }
 
-JSValuePtr jsHTMLBaseFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBaseFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->size());
 }
 
-JSValuePtr jsHTMLBaseFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBaseFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLBaseFontElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLBaseFontElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLBaseFontElement, Base>(exec, propertyName, value, &JSHTMLBaseFontElementTable, this, slot);
 }
 
-void setJSHTMLBaseFontElementColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBaseFontElementColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
     imp->setColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBaseFontElementFace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBaseFontElementFace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
     imp->setFace(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBaseFontElementSize(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBaseFontElementSize(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
-    imp->setSize(value->toInt32(exec));
+    imp->setSize(value.toInt32(exec));
 }
 
-JSValuePtr JSHTMLBaseFontElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBaseFontElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLBaseFontElementConstructor>(exec);
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -114,7 +114,6 @@ public:
         int signal;
         int ref;
     };
-
     // object currently activating the object
     Sender *currentSender;
 
@@ -148,21 +147,23 @@ public:
     // Note: you must hold the signalSlotLock() before accessing the lists below or calling the functions
     struct Connection
     {
+        QObject *sender;
         QObject *receiver;
         int method;
         uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         QBasicAtomicPointer<int> argumentTypes;
+        //senders linked list
+        Connection *next;
+        Connection **prev;
+        ~Connection();
     };
-    typedef QList<Connection> ConnectionList;
+    typedef QList<Connection *> ConnectionList;
 
     QObjectConnectionListVector *connectionLists;
     void addConnection(int signal, Connection *c);
-    void removeReceiver(int signal, QObject *receiver);
     void cleanConnectionLists();
 
-    QList<Sender> senders;
-    void refSender(QObject *sender, int signal);
-    void derefSender(QObject *sender, int signal);
+    Connection *senders; //linked list;
 
     static Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);
@@ -207,7 +208,7 @@ private:
     QSemaphore *semaphore_;
 };
 
-class Q_CORE_EXPORT QBoolBlocker
+class QBoolBlocker
 {
 public:
     inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}

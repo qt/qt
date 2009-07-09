@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -136,13 +136,12 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 class QPSQLResultPrivate
 {
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), precisionPolicy(QSql::HighPrecision) {}
+    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1) {}
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;
     PGresult *result;
     int currentSize;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
     bool preparedQueriesEnabled;
     QString preparedStmtId;
 
@@ -320,15 +319,16 @@ QVariant QPSQLResult::data(int i)
         return atoi(val);
     case QVariant::Double:
         if (ptype == QNUMERICOID) {
-            if (d->precisionPolicy != QSql::HighPrecision) {
+            if (numericalPrecisionPolicy() != QSql::HighPrecision) {
                 QVariant retval;
                 bool convert;
-                if (d->precisionPolicy == QSql::LowPrecisionInt64)
-                    retval = QString::fromAscii(val).toLongLong(&convert);
-                else if (d->precisionPolicy == QSql::LowPrecisionInt32)
-                    retval = QString::fromAscii(val).toInt(&convert);
-                else if (d->precisionPolicy == QSql::LowPrecisionDouble)
-                    retval = QString::fromAscii(val).toDouble(&convert);
+                double dbl=QString::fromAscii(val).toDouble(&convert);
+                if (numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+                    retval = (qlonglong)dbl;
+                else if (numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+                    retval = (int)dbl;
+                else if (numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
+                    retval = dbl;
                 if (!convert)
                     return QVariant();
                 return retval;
@@ -467,9 +467,6 @@ void QPSQLResult::virtual_hook(int id, void *data)
     Q_ASSERT(data);
 
     switch (id) {
-    case QSqlResult::SetNumericalPrecision:
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
-        break;
     default:
         QSqlResult::virtual_hook(id, data);
     }
@@ -534,14 +531,14 @@ bool QPSQLResult::prepare(const QString &query)
 {
     if (!d->preparedQueriesEnabled)
         return QSqlResult::prepare(query);
-    
+
     cleanup();
 
     if (!d->preparedStmtId.isEmpty())
         qDeallocatePreparedStmt(d);
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QString(QLatin1String("PREPARE %1 AS ")).arg(stmtId).append(qReplacePlaceholderMarkers(query));
+    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(qReplacePlaceholderMarkers(query));
 
     PGresult *result = PQexec(d->driver->connection,
                               d->driver->isUtf8 ? stmt.toUtf8().constData()
@@ -570,9 +567,9 @@ bool QPSQLResult::exec()
     QString stmt;
     const QString params = qCreateParamString(boundValues(), d->q->driver());
     if (params.isEmpty())
-        stmt = QString(QLatin1String("EXECUTE %1")).arg(d->preparedStmtId);
+        stmt = QString::fromLatin1("EXECUTE %1").arg(d->preparedStmtId);
     else
-        stmt = QString(QLatin1String("EXECUTE %1 (%2)")).arg(d->preparedStmtId).arg(params);
+        stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId).arg(params);
 
     d->result = PQexec(d->driver->connection,
                        d->driver->isUtf8 ? stmt.toUtf8().constData()
@@ -824,7 +821,20 @@ bool QPSQLDriver::commitTransaction()
         return false;
     }
     PGresult* res = PQexec(d->connection, "COMMIT");
-    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
+
+    bool transaction_failed = false;
+
+    // XXX
+    // This hack is used to tell if the transaction has succeeded for the protocol versions of
+    // PostgreSQL below. For 7.x and other protocol versions we are left in the dark.
+    // This hack can dissapear once there is an API to query this sort of information.
+    if (d->pro == QPSQLDriver::Version8 ||
+        d->pro == QPSQLDriver::Version81 ||
+        d->pro == QPSQLDriver::Version82) {
+        transaction_failed = qstrcmp(PQcmdStatus(res), "ROLLBACK") == 0;
+    }
+
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK || transaction_failed) {
         PQclear(res);
         setLastError(qMakeError(tr("Could not commit transaction"),
                                 QSqlError::TransactionError, d));
@@ -1102,12 +1112,12 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 QTime tm = field.value().toDateTime().time();
                 // msecs need to be right aligned otherwise psql
                 // interpretes them wrong
-                r = QLatin1String("'") + QString::number(dt.year()) + QLatin1String("-")
-                          + QString::number(dt.month()) + QLatin1String("-")
-                          + QString::number(dt.day()) + QLatin1String(" ")
-                          + tm.toString() + QLatin1String(".")
+                r = QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
+                          + QString::number(dt.month()) + QLatin1Char('-')
+                          + QString::number(dt.day()) + QLatin1Char(' ')
+                          + tm.toString() + QLatin1Char('.')
                           + QString::number(tm.msec()).rightJustified(3, QLatin1Char('0'))
-                          + QLatin1String("'");
+                          + QLatin1Char('\'');
             } else {
                 r = QLatin1String("NULL");
             }
@@ -1162,7 +1172,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 QString QPSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));
@@ -1192,12 +1202,12 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
             qPrintable(name));
         return false;
     }
-    
+
     int socket = PQsocket(d->connection);
     if (socket) {
-        QString query = QString(QLatin1String("LISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
-        if (PQresultStatus(PQexec(d->connection, 
-                                  d->isUtf8 ? query.toUtf8().constData() 
+        QString query = QLatin1String("LISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
+        if (PQresultStatus(PQexec(d->connection,
+                                  d->isUtf8 ? query.toUtf8().constData()
                                             : query.toLocal8Bit().constData())
                           ) != PGRES_COMMAND_OK) {
             setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d));
@@ -1227,9 +1237,9 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
         return false;
     }
 
-    QString query = QString(QLatin1String("UNLISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
-    if (PQresultStatus(PQexec(d->connection, 
-                              d->isUtf8 ? query.toUtf8().constData() 
+    QString query = QLatin1String("UNLISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
+    if (PQresultStatus(PQexec(d->connection,
+                              d->isUtf8 ? query.toUtf8().constData()
                                         : query.toLocal8Bit().constData())
                       ) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(tr("Unable to unsubscribe"), QSqlError::StatementError, d));
@@ -1255,15 +1265,15 @@ QStringList QPSQLDriver::subscribedToNotificationsImplementation() const
 void QPSQLDriver::_q_handleNotification(int)
 {
     PQconsumeInput(d->connection);
-    PGnotify *notify = PQnotifies(d->connection);
-    if (notify) {
-        QString name(QLatin1String(notify->relname));
 
+    PGnotify *notify = 0;
+    while((notify = PQnotifies(d->connection)) != 0) {
+        QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name))
             emit notification(name);
         else
-            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.", 
-                qPrintable(name));
+            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
+                    qPrintable(name));
 
         qPQfreemem(notify);
     }

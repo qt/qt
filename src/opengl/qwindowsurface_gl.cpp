@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,7 +69,12 @@
 
 #include <private/qglpixelbuffer_p.h>
 #include <private/qgraphicssystem_gl_p.h>
+
+#include <private/qpaintengineex_opengl2_p.h>
+
+#ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
+#endif
 
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
@@ -100,17 +105,19 @@ QGLGraphicsSystem::QGLGraphicsSystem()
         int i = 0;
         int spec[16];
         spec[i++] = GLX_RGBA;
-#if 0
         spec[i++] = GLX_DOUBLEBUFFER;
-        spec[i++] = GLX_DEPTH_SIZE;
-        spec[i++] = 8;
-        spec[i++] = GLX_STENCIL_SIZE;
-        spec[i++] = 8;
-        spec[i++] = GLX_SAMPLE_BUFFERS_ARB;
-        spec[i++] = 1;
-        spec[i++] = GLX_SAMPLES_ARB;
-        spec[i++] = 4;
-#endif
+
+        if (!qgetenv("QT_GL_SWAPBUFFER_PRESERVE").isNull()) {
+            spec[i++] = GLX_DEPTH_SIZE;
+            spec[i++] = 8;
+            spec[i++] = GLX_STENCIL_SIZE;
+            spec[i++] = 8;
+            spec[i++] = GLX_SAMPLE_BUFFERS_ARB;
+            spec[i++] = 1;
+            spec[i++] = GLX_SAMPLES_ARB;
+            spec[i++] = 4;
+        }
+
         spec[i++] = XNone;
 
         XVisualInfo *vi = glXChooseVisual(X11->display, X11->defaultScreen, spec);
@@ -177,25 +184,29 @@ QGLGraphicsSystem::QGLGraphicsSystem()
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : widget(0) {}
+    QGLGlobalShareWidget() : widget(0), initializing(false) {}
 
     QGLWidget *shareWidget() {
-        if (!widget && !cleanedUp) {
+        if (!initializing && !widget && !cleanedUp) {
+            initializing = true;
             widget = new QGLWidget;
+            initializing = false;
         }
         return widget;
     }
 
     void cleanup() {
-        delete widget;
-        widget = 0;
+        QGLWidget *w = widget;
         cleanedUp = true;
+        widget = 0;
+        delete w;
     }
 
     static bool cleanedUp;
 
 private:
     QGLWidget *widget;
+    bool initializing;
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
@@ -227,6 +238,7 @@ struct QGLWindowSurfacePrivate
 
     int tried_fbo : 1;
     int tried_pb : 1;
+    int destructive_swap_buffers : 1;
 
     QGLContext *ctx;
 
@@ -250,6 +262,7 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->ctx = 0;
     d_ptr->tried_fbo = false;
     d_ptr->tried_pb = false;
+    d_ptr->destructive_swap_buffers = qgetenv("QT_GL_SWAPBUFFER_PRESERVE").isNull();
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -264,6 +277,24 @@ QGLWindowSurface::~QGLWindowSurface()
     delete d_ptr->pb;
     delete d_ptr->fbo;
     delete d_ptr;
+}
+
+void QGLWindowSurface::deleted(QObject *object)
+{
+    QWidget *widget = qobject_cast<QWidget *>(object);
+    if (widget) {
+        QWidgetPrivate *widgetPrivate = widget->d_func();
+        if (widgetPrivate->extraData()) {
+            union { QGLContext **ctxPtr; void **voidPtr; };
+            voidPtr = &widgetPrivate->extraData()->glContext;
+            int index = d_ptr->contexts.indexOf(ctxPtr);
+            if (index != -1) {
+                delete *ctxPtr;
+                *ctxPtr = 0;
+                d_ptr->contexts.removeAt(index);
+            }
+        }
+    }
 }
 
 void QGLWindowSurface::hijackWindow(QWidget *widget)
@@ -282,23 +313,27 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     union { QGLContext **ctxPtr; void **voidPtr; };
 
+    connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(deleted(QObject *)));
+
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 }
 
-#if !defined(QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_paintengine)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
+
+#if !defined (QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
 #endif
 
 /*! \reimp */
 QPaintEngine *QGLWindowSurface::paintEngine() const
 {
 #if !defined(QT_OPENGL_ES_2)
-    return qt_gl_window_surface_paintengine();
-#else
-    return 0;
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_window_surface_engine();
 #endif
+    return qt_gl_window_surface_2_engine();
 }
 
 int QGLWindowSurface::metric(PaintDeviceMetric m) const
@@ -313,6 +348,8 @@ QGLContext *QGLWindowSurface::context() const
 
 QPaintDevice *QGLWindowSurface::paintDevice()
 {
+    updateGeometry();
+
     if (d_ptr->pb)
         return d_ptr->pb;
 
@@ -328,6 +365,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    updateGeometry();
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -343,6 +381,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
+    if (!geometry().isValid())
+        return;
+
     hijackWindow(parent);
 
     QRect br = rgn.boundingRect().translated(offset);
@@ -350,53 +391,57 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     QPoint wOffset = qt_qwidget_data(parent)->wrect.topLeft();
     QRect rect = br.translated(-offset - wOffset);
 
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     if (context()) {
         context()->makeCurrent();
 
         if (context()->format().doubleBuffer()) {
-            glBindTexture(target, d_ptr->tex_id);
+#if !defined(QT_OPENGL_ES_2)
+            if (d_ptr->destructive_swap_buffers) {
+                glBindTexture(target, d_ptr->tex_id);
 
-            QVector<QRect> rects = d_ptr->paintedRegion.rects();
-            for (int i = 0; i < rects.size(); ++i) {
-                QRect br = rects.at(i);
-                if (br.isEmpty())
-                    continue;
-
-                const uint bottom = window()->height() - (br.y() + br.height());
-                glCopyTexSubImage2D(target, 0, br.x(), bottom, br.x(), bottom, br.width(), br.height());
-            }
-
-            glBindTexture(target, 0);
-
-            QRegion dirtyRegion = QRegion(window()->rect()) - d_ptr->paintedRegion;
-
-            if (!dirtyRegion.isEmpty()) {
-                context()->makeCurrent();
-
-                glMatrixMode(GL_MODELVIEW);
-                glLoadIdentity();
-
-                glMatrixMode(GL_PROJECTION);
-                glLoadIdentity();
-#ifndef QT_OPENGL_ES
-                glOrtho(0, window()->width(), window()->height(), 0, -999999, 999999);
-#else
-                glOrthof(0, window()->width(), window()->height(), 0, -999999, 999999);
-#endif
-                glViewport(0, 0, window()->width(), window()->height());
-
-                QVector<QRect> rects = dirtyRegion.rects();
-                glColor4f(1, 1, 1, 1);
+                QVector<QRect> rects = d_ptr->paintedRegion.rects();
                 for (int i = 0; i < rects.size(); ++i) {
-                    QRect rect = rects.at(i);
-                    if (rect.isEmpty())
+                    QRect br = rects.at(i);
+                    if (br.isEmpty())
                         continue;
 
-                    drawTexture(rect, d_ptr->tex_id, window()->size(), rect);
+                    const uint bottom = window()->height() - (br.y() + br.height());
+                    glCopyTexSubImage2D(target, 0, br.x(), bottom, br.x(), bottom, br.width(), br.height());
+                }
+
+                glBindTexture(target, 0);
+
+                QRegion dirtyRegion = QRegion(window()->rect()) - d_ptr->paintedRegion;
+
+                if (!dirtyRegion.isEmpty()) {
+                    context()->makeCurrent();
+
+                    glMatrixMode(GL_MODELVIEW);
+                    glLoadIdentity();
+
+                    glMatrixMode(GL_PROJECTION);
+                    glLoadIdentity();
+#ifndef QT_OPENGL_ES
+                    glOrtho(0, window()->width(), window()->height(), 0, -999999, 999999);
+#else
+                    glOrthof(0, window()->width(), window()->height(), 0, -999999, 999999);
+#endif
+                    glViewport(0, 0, window()->width(), window()->height());
+
+                    QVector<QRect> rects = dirtyRegion.rects();
+                    glColor4f(1, 1, 1, 1);
+                    for (int i = 0; i < rects.size(); ++i) {
+                        QRect rect = rects.at(i);
+                        if (rect.isEmpty())
+                            continue;
+
+                        drawTexture(rect, d_ptr->tex_id, window()->size(), rect);
+                    }
                 }
             }
+#endif
             d_ptr->paintedRegion = QRegion();
 
             context()->swapBuffers();
@@ -421,48 +466,75 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     }
 
     QSize size = widget->rect().size();
-    if (ctx->format().doubleBuffer()) {
+    if (d_ptr->destructive_swap_buffers && ctx->format().doubleBuffer()) {
         rect = parent->rect();
         br = rect.translated(wOffset);
         size = parent->size();
     }
 
-    ctx->makeCurrent();
+    glDisable(GL_SCISSOR_TEST);
+
+    if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
+        const int h = d_ptr->fbo->height();
+
+        const int x0 = rect.left();
+        const int x1 = rect.left() + rect.width();
+        const int y0 = h - (rect.top() + rect.height());
+        const int y1 = h - rect.top();
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
+        glBlitFramebufferEXT(x0, y0, x1, y1,
+                x0, y0, x1, y1,
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+    }
+#if !defined(QT_OPENGL_ES_2)
+    else {
+        glDisable(GL_DEPTH_TEST);
+
+        if (d_ptr->fbo) {
+            d_ptr->fbo->release();
+        } else {
+            ctx->makeCurrent();
 #ifdef Q_WS_MAC
-    ctx->updatePaintDevice();
+            ctx->updatePaintDevice();
 #endif
-    if (d_ptr->fbo)
-        d_ptr->fbo->release();
+        }
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
 #ifndef QT_OPENGL_ES
-    glOrtho(0, size.width(), size.height(), 0, -999999, 999999);
+        glOrtho(0, size.width(), size.height(), 0, -999999, 999999);
 #else
-    glOrthof(0, size.width(), size.height(), 0, -999999, 999999);
+        glOrthof(0, size.width(), size.height(), 0, -999999, 999999);
 #endif
-    glViewport(0, 0, size.width(), size.height());
+        glViewport(0, 0, size.width(), size.height());
 
-    glColor4f(1, 1, 1, 1);
-    drawTexture(rect, texture, window()->size(), br);
+        glColor4f(1, 1, 1, 1);
+        drawTexture(rect, texture, window()->size(), br);
+
+        if (d_ptr->fbo)
+            d_ptr->fbo->bind();
+    }
+#endif
 
     if (ctx->format().doubleBuffer())
         ctx->swapBuffers();
     else
         glFlush();
-
-    if (d_ptr->fbo)
-        d_ptr->fbo->bind();
 }
 
-void QGLWindowSurface::setGeometry(const QRect &rect)
+void QGLWindowSurface::updateGeometry()
 {
-    QWindowSurface::setGeometry(rect);
+    QRect rect = QWindowSurface::geometry();
 
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     if (rect.width() <= 0 || rect.height() <= 0)
         return;
@@ -473,13 +545,51 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
     d_ptr->size = rect.size();
 
     if (d_ptr->ctx) {
-        glBindTexture(target, d_ptr->tex_id);
-        glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-        glBindTexture(target, 0);
+        if (d_ptr->destructive_swap_buffers) {
+            glBindTexture(target, d_ptr->tex_id);
+            glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+            glBindTexture(target, 0);
+        }
         return;
     }
 
-    if (d_ptr->pb || !d_ptr->tried_pb) {
+    if (d_ptr->destructive_swap_buffers
+        && (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject)
+#ifdef QT_OPENGL_ES_2
+        && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+#endif
+        && (d_ptr->fbo || !d_ptr->tried_fbo))
+    {
+        d_ptr->tried_fbo = true;
+        hijackWindow(window());
+        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+        ctx->d_ptr->internal_context = true;
+        ctx->makeCurrent();
+        delete d_ptr->fbo;
+
+        QGLFramebufferObjectFormat format;
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalFormat(GL_RGBA);
+        format.setTextureTarget(target);
+
+        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+            format.setSamples(8);
+
+        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
+        d_ptr->fbo->bind();
+        if (d_ptr->fbo->isValid()) {
+            qDebug() << "Created Window Surface FBO" << rect.size()
+                     << "with samples" << d_ptr->fbo->format().samples();
+            return;
+        } else {
+            qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
+            delete d_ptr->fbo;
+            d_ptr->fbo = 0;
+        }
+    }
+
+#if !defined(QT_OPENGL_ES_2)
+    if (d_ptr->destructive_swap_buffers && (d_ptr->pb || !d_ptr->tried_pb)) {
         d_ptr->tried_pb = true;
 
         if (d_ptr->pb) {
@@ -494,7 +604,7 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
                                         qt_gl_share_widget());
 
         if (d_ptr->pb->isValid()) {
-            qDebug() << "PB Sample buffers:" << d_ptr->pb->format().sampleBuffers();
+            qDebug() << "Created Window Surface Pixelbuffer, Sample buffers:" << d_ptr->pb->format().sampleBuffers();
             d_ptr->pb->makeCurrent();
 
             glGenTextures(1, &d_ptr->pb_tex_id);
@@ -521,42 +631,30 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
             d_ptr->pb = 0;
         }
     }
-
-    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject) && (d_ptr->fbo || !d_ptr->tried_fbo)) {
-        d_ptr->tried_fbo = true;
-        hijackWindow(window());
-        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
-        ctx->d_ptr->internal_context = true;
-        ctx->makeCurrent();
-        delete d_ptr->fbo;
-        d_ptr->fbo = new QGLFramebufferObject(rect.size(), QGLFramebufferObject::CombinedDepthStencil,
-                                              GLenum(target), GLenum(GL_RGBA));
-
-        d_ptr->fbo->bind();
-        if (d_ptr->fbo->isValid()) {
-            return;
-        } else {
-            qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
-            delete d_ptr->fbo;
-            d_ptr->fbo = 0;
-        }
-    }
+#endif // !defined(QT_OPENGL_ES_2)
 
     hijackWindow(window());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
     ctx->makeCurrent();
 
-    glGenTextures(1, &d_ptr->tex_id);
-    glBindTexture(target, d_ptr->tex_id);
-    glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    if (d_ptr->destructive_swap_buffers) {
+        glGenTextures(1, &d_ptr->tex_id);
+        glBindTexture(target, d_ptr->tex_id);
+        glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glBindTexture(target, 0);
+        glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glBindTexture(target, 0);
+    }
 
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
+}
+
+void QGLWindowSurface::setGeometry(const QRect &rect)
+{
+    QWindowSurface::setGeometry(rect);
 }
 
 bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
@@ -582,7 +680,7 @@ bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
     return true;
 #endif
 
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     glBindTexture(target, d_ptr->tex_id);
     glCopyTexImage2D(target, 0, GL_RGBA, br.x(), d_ptr->pb->height() - (br.y() + br.height()), br.width(), br.height(), 0);
@@ -595,7 +693,7 @@ bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
 
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &br)
 {
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
     QRectF src = br.isEmpty()
         ? QRectF(QPointF(), texSize)
         : QRectF(QPointF(br.x(), texSize.height() - br.bottom()), br.size());
@@ -623,6 +721,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
     extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array); // qpaintengine_opengl.cpp
     qt_add_rect_to_array(rect, vertexArray);
 
+#if !defined(QT_OPENGL_ES_2)
     glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
     glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
 
@@ -634,6 +733,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
 
     glDisable(target);
     glBindTexture(target, 0);

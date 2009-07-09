@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2008 Nuanti Ltd.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +35,7 @@
 #include "Element.h"
 #include "Event.h"
 #include "EventHandler.h"
+#include "EventNames.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "FrameTree.h"
@@ -45,6 +47,7 @@
 #include "RenderObject.h"
 #include "RenderWidget.h"
 #include "SelectionController.h"
+#include "Settings.h"
 #include "Widget.h"
 #include <wtf/Platform.h>
 
@@ -63,13 +66,17 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
     if (m_focusedFrame == frame)
         return;
 
-    if (m_focusedFrame && m_focusedFrame->view())
+    if (m_focusedFrame && m_focusedFrame->view()) {
         m_focusedFrame->selection()->setFocused(false);
+        m_focusedFrame->document()->dispatchWindowEvent(eventNames().blurEvent, false, false);
+    }
 
     m_focusedFrame = frame;
 
-    if (m_focusedFrame && m_focusedFrame->view())
+    if (m_focusedFrame && m_focusedFrame->view()) {
         m_focusedFrame->selection()->setFocused(true);
+        m_focusedFrame->document()->dispatchWindowEvent(eventNames().focusEvent, false, false);
+    }
 }
 
 Frame* FocusController::focusedOrMainFrame()
@@ -90,8 +97,6 @@ static Node* deepFocusableNode(FocusDirection direction, Node* node, KeyboardEve
             break;
 
         Document* document = owner->contentFrame()->document();
-        if (!document)
-            break;
 
         node = (direction == FocusDirectionForward)
             ? document->nextFocusableNode(0, event)
@@ -115,12 +120,17 @@ bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* even
     Frame* frame = focusedOrMainFrame();
     ASSERT(frame);
     Document* document = frame->document();
-    if (!document)
-        return false;
+
+    Node* currentNode = document->focusedNode();
+    // FIXME: Not quite correct when it comes to focus transitions leaving/entering the WebView itself
+    bool caretBrowsing = focusedOrMainFrame()->settings()->caretBrowsingEnabled();
+
+    if (caretBrowsing && !currentNode)
+        currentNode = frame->selection()->start().node();
 
     Node* node = (direction == FocusDirectionForward)
-        ? document->nextFocusableNode(document->focusedNode(), event)
-        : document->previousFocusableNode(document->focusedNode(), event);
+        ? document->nextFocusableNode(currentNode, event)
+        : document->previousFocusableNode(currentNode, event);
             
     // If there's no focusable node to advance to, move up the frame tree until we find one.
     while (!node && frame) {
@@ -129,8 +139,6 @@ bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* even
             break;
 
         Document* parentDocument = parentFrame->document();
-        if (!parentDocument)
-            break;
 
         HTMLFrameOwnerElement* owner = frame->ownerElement();
         if (!owner)
@@ -155,10 +163,10 @@ bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* even
         }
 
         // Chrome doesn't want focus, so we should wrap focus.
-        if (Document* d = m_page->mainFrame()->document())
-            node = (direction == FocusDirectionForward)
-                ? d->nextFocusableNode(0, event)
-                : d->previousFocusableNode(0, event);
+        Document* d = m_page->mainFrame()->document();
+        node = (direction == FocusDirectionForward)
+            ? d->nextFocusableNode(0, event)
+            : d->previousFocusableNode(0, event);
 
         node = deepFocusableNode(direction, node, event);
 
@@ -201,6 +209,12 @@ bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* even
     if (newDocument)
         setFocusedFrame(newDocument->frame());
 
+    if (caretBrowsing) {
+        VisibleSelection newSelection(Position(node, 0), Position(node, 0), DOWNSTREAM);
+        if (frame->shouldChangeSelection(newSelection))
+            frame->selection()->setSelection(newSelection);
+    }
+
     static_cast<Element*>(node)->focus(false);
     return true;
 }
@@ -229,7 +243,11 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
     SelectionController* s = oldFocusedFrame->selection();
     if (s->isNone())
         return;
-    
+
+    bool caretBrowsing = oldFocusedFrame->settings()->caretBrowsingEnabled();
+    if (caretBrowsing)
+        return;
+
     Node* selectionStartNode = s->selection().start().node();
     if (selectionStartNode == newFocusedNode || selectionStartNode->isDescendantOf(newFocusedNode) || selectionStartNode->shadowAncestorNode() == newFocusedNode)
         return;
@@ -254,7 +272,8 @@ bool FocusController::setFocusedNode(Node* node, PassRefPtr<Frame> newFocusedFra
     Node* oldFocusedNode = oldDocument ? oldDocument->focusedNode() : 0;
     if (oldFocusedNode == node)
         return true;
-        
+
+    // FIXME: Might want to disable this check for caretBrowsing
     if (oldFocusedNode && oldFocusedNode->rootEditableElement() == oldFocusedNode && !relinquishesEditingFocus(oldFocusedNode))
         return false;
         
@@ -266,9 +285,9 @@ bool FocusController::setFocusedNode(Node* node, PassRefPtr<Frame> newFocusedFra
         m_page->editorClient()->setInputMethodState(false);
         return true;
     }
-    
-    RefPtr<Document> newDocument = node ? node->document() : 0;
-    
+
+    RefPtr<Document> newDocument = node->document();
+
     if (newDocument && newDocument->focusedNode() == node) {
         m_page->editorClient()->setInputMethodState(node->shouldUseInputMethod());
         return true;
@@ -302,6 +321,9 @@ void FocusController::setActive(bool active)
     }
 
     focusedOrMainFrame()->selection()->pageActivationChanged();
+    
+    if (m_focusedFrame)
+        m_focusedFrame->document()->dispatchWindowEvent(active ? eventNames().focusEvent : eventNames().blurEvent, false, false);
 }
 
 } // namespace WebCore

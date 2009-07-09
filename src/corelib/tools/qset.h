@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -84,6 +84,8 @@ public:
     inline bool remove(const T &value) { return q_hash.remove(value) != 0; }
 
     inline bool contains(const T &value) const { return q_hash.contains(value); }
+
+    bool contains(const QSet<T> &set) const;
 
     class const_iterator;
 
@@ -272,6 +274,18 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::subtract(const QSet<T> &other)
             remove(*i);
     }
     return *this;
+}
+
+template <class T>
+Q_INLINE_TEMPLATE bool QSet<T>::contains(const QSet<T> &other) const
+{
+    typename QSet<T>::const_iterator i = other.constBegin();
+    while (i != other.constEnd()) {
+        if (!contains(*i))
+            return false;
+        ++i;
+    }
+    return true;
 }
 
 template <typename T>

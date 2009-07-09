@@ -24,6 +24,7 @@ LRELEASE = $$fixPath($$QT_BUILD_TREE/bin/lrelease)
 QT_TS        = de fr zh_CN untranslated ar es iw ja_JP pl pt ru sk sv uk zh_TW da
 
 ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
+                                -I../include -I../include/Qt \
                                     3rdparty/phonon \
                                     3rdparty/webkit \
                                     activeqt \

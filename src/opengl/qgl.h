@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -364,6 +364,7 @@ private:
     friend class QGLWindowSurface;
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
+    friend class QGLTextureGlyphCache;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
 #ifdef Q_WS_MAC
 public:
@@ -372,9 +373,9 @@ private:
     friend class QMacGLWindowChangeEvent;
     friend QGLContextPrivate *qt_phonon_get_dptr(const QGLContext *);
 #endif
-#ifdef Q_WS_WIN
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
+#ifdef Q_WS_WIN
     friend bool qt_resolve_GLSL_functions(QGLContext *ctx);
     friend bool qt_createGLSLProgram(QGLContext *ctx, GLuint &program, const char *shader_src, GLuint &shader);
 #endif

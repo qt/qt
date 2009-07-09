@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -497,10 +497,8 @@ static bool constructColor(const QString &colorStr, const QString &opacity,
     if (!resolveColor(colorStr, color, handler))
         return false;
     if (!opacity.isEmpty()) {
-        qreal op = toDouble(opacity);
-        if (op <= 1)
-            op *= 255;
-        color.setAlpha(int(op));
+        qreal op = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+        color.setAlphaF(op);
     }
     return true;
 }
@@ -641,15 +639,22 @@ static void parseBrush(QSvgNode *node,
             f = Qt::OddEvenFill;
         if (value.startsWith(QLatin1String("url"))) {
             value = value.remove(0, 3);
+            QSvgFillStyle *prop = new QSvgFillStyle(0);
             QSvgStyleProperty *style = styleFromUrl(node, value);
             if (style) {
-                QSvgFillStyle *prop = new QSvgFillStyle(style);
-                if (!opacity.isEmpty())
-                    prop->setFillOpacity(toDouble(opacity));
-                node->appendStyleProperty(prop, myId);
+                prop->setFillStyle(style);
             } else {
-                qWarning("Couldn't resolve property: %s", qPrintable(idFromUrl(value)));
+                QString id = idFromUrl(value);
+                prop->setGradientId(id);
+                prop->setGradientResolved(false);
             }
+            if (!opacity.isEmpty()) {
+                qreal clampedOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+                prop->setFillOpacity(clampedOpacity);
+            }
+            if (!fillRule.isEmpty())
+                prop->setFillRule(f);
+            node->appendStyleProperty(prop,myId);
         } else if (value != QLatin1String("none")) {
             QColor color;
             if (constructColor(value, opacity, color, handler)) {
@@ -1377,6 +1382,11 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 y = y0 = arg[1] + offsetY;
                 path.moveTo(x0, y0);
                 arg.pop_front(); arg.pop_front();
+
+                 // As per 1.2  spec 8.3.2 The "moveto" commands
+                 // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
+                 // the subsequent pairs shall be treated as implicit 'lineto' commands.
+                 pathElem = QLatin1Char('l');
             }
                 break;
             case 'M': {
@@ -1389,6 +1399,11 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
 
                 path.moveTo(x0, y0);
                 arg.pop_front(); arg.pop_front();
+
+                // As per 1.2  spec 8.3.2 The "moveto" commands
+                // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
+                // the subsequent pairs shall be treated as implicit 'lineto' commands.
+                pathElem = QLatin1Char('L');
             }
                 break;
             case 'z':
@@ -1943,7 +1958,7 @@ static void parseOpacity(QSvgNode *node,
     qreal op = value.toDouble(&ok);
 
     if (ok) {
-        QSvgOpacityStyle *opacity = new QSvgOpacityStyle(op);
+        QSvgOpacityStyle *opacity = new QSvgOpacityStyle(qMin(qreal(1.0), qMax(qreal(0.0), op)));
         node->appendStyleProperty(opacity, someId(attributes));
     }
 }
@@ -2549,6 +2564,9 @@ static QSvgNode *createImageNode(QSvgNode *parent,
         qDebug()<<"couldn't create image from "<<filename;
         return 0;
     }
+
+    if (image.format() == QImage::Format_ARGB32)
+        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     QSvgNode *img = new QSvgImage(parent,
                                   image,
@@ -3375,6 +3393,7 @@ void QSvgHandler::init()
 {
     m_doc = 0;
     m_style = 0;
+    m_animEnd = 0;
     m_defaultCoords = LT_PX;
     m_defaultPen = QPen(Qt::black, 1, Qt::NoPen, Qt::FlatCap, Qt::SvgMiterJoin);
     m_defaultPen.setMiterLimit(4);
@@ -3566,8 +3585,34 @@ bool QSvgHandler::endElement(const QStringRef &localName)
             node->popFormat();
     }
 
-    if (node == Graphics)
+    if (node == Graphics) {
+        // Iterate through the m_renderers to resolve any unresolved gradients.
+        QSvgNode* curNode = static_cast<QSvgNode*>(m_nodes.top());
+        if (curNode->type() == QSvgNode::DOC ||
+            curNode->type() == QSvgNode::G ||
+            curNode->type() == QSvgNode::DEFS ||
+            curNode->type() == QSvgNode::SWITCH) {
+            QSvgStructureNode* structureNode = static_cast<QSvgStructureNode*>(curNode);
+            QList<QSvgNode*> ren = structureNode->renderers();
+            QList<QSvgNode*>::iterator itr = ren.begin();
+            while (itr != ren.end()) {
+                QSvgNode *eleNode = *itr++;
+                QSvgFillStyle *prop = static_cast<QSvgFillStyle*>(eleNode->styleProperty(QSvgStyleProperty::FILL));
+                if (prop && !(prop->isGradientResolved())) {
+                    QString id = prop->getGradientId();
+                    QSvgStyleProperty *style = structureNode->scopeStyle(id);
+                    if (style) {
+                        prop->setFillStyle(style);
+                    } else {
+                        qWarning("Couldn't resolve property : %s",qPrintable(id));
+                        prop->setBrush(QBrush(Qt::NoBrush));
+                    }
+                }
+            }
+        }
         m_nodes.pop();
+    }
+
     else if (m_style && !m_skipNodes.isEmpty() && m_skipNodes.top() != Style)
         m_style = 0;
 

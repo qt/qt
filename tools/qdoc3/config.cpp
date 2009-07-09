@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -751,7 +751,7 @@ void Config::load(Location location, const QString& fileName)
                             word += QChar(c.digitValue());
                             SKIP_CHAR();
                         }
-                        else if ((metaCharPos = QString(QLatin1String("abfnrtv")).indexOf(c)) != -1) {
+                        else if ((metaCharPos = QString::fromLatin1("abfnrtv").indexOf(c)) != -1) {
                             word += "\a\b\f\n\r\t\v"[metaCharPos];
                             SKIP_CHAR();
                         }

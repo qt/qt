@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -84,17 +84,16 @@ private:
         , resultWidget(0)
         , helpEngine(helpEngine)
     {
-        hitList.clear();
         indexReader = 0;
         indexWriter = 0;
     }
 
     ~QHelpSearchEnginePrivate()
     {
-        hitList.clear();
         delete indexReader;
         delete indexWriter;
     }
+
 
     int hitsCount() const
     {
@@ -107,12 +106,9 @@ private:
 
     QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const
     {
-        QList<QHelpSearchEngine::SearchHit> returnValue;
-        if (indexReader) {
-            for (int i = start; i < end && i < hitsCount(); ++i)
-                returnValue.append(indexReader->hit(i));
-        }
-        return returnValue;
+        return indexReader ?
+                indexReader->hits(start, end) :
+                QList<QHelpSearchEngine::SearchHit>();
     }
 
     void updateIndex(bool reindex = false)
@@ -131,11 +127,9 @@ private:
             connect(indexWriter, SIGNAL(indexingFinished()), this, SLOT(optimizeIndex()));
         }
 
-        if (indexWriter) {
-            indexWriter->cancelIndexing();
-            indexWriter->updateIndex(helpEngine->collectionFile(),
-                indexFilesFolder(), reindex);
-        }
+        indexWriter->cancelIndexing();
+        indexWriter->updateIndex(helpEngine->collectionFile(),
+                                 indexFilesFolder(), reindex);
     }
 
     void cancelIndexing()
@@ -159,11 +153,9 @@ private:
             connect(indexReader, SIGNAL(searchingFinished(int)), this, SIGNAL(searchingFinished(int)));
         }
 
-        if (indexReader) {
-            m_queryList = queryList;
-            indexReader->cancelSearching();
-            indexReader->search(helpEngine->collectionFile(), indexFilesFolder(), queryList);
-        }
+        m_queryList = queryList;
+        indexReader->cancelSearching();
+        indexReader->search(helpEngine->collectionFile(), indexFilesFolder(), queryList);
     }
 
     void cancelSearching()
@@ -204,7 +196,6 @@ private:
     QHelpSearchIndexWriter *indexWriter;
 
     QPointer<QHelpEngineCore> helpEngine;
-    QList<QHelpSearchEngine::SearchHit> hitList;
 
     QList<QHelpSearchQuery> m_queryList;
 };
@@ -243,7 +234,7 @@ private:
     This enum type specifies the field names that are handled by the search engine.
 
     \value DEFAULT  the default field provided by the search widget, several terms should be
-                    splitted and stored in the wordlist except search terms enclosed in quotes.
+                    split and stored in the word list except search terms enclosed in quotes.
     \value FUZZY    a field only provided in use with clucene. Terms should be split in seperate
                     words and passed to the search engine.
     \value WITHOUT  a field only provided in use with clucene. Terms should be split in seperate

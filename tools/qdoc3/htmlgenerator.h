@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,8 @@
 
 #ifndef HTMLGENERATOR_H
 #define HTMLGENERATOR_H
+
+#define QDOC_NAME_ALIGNMENT
 
 #include <qmap.h>
 #include <qregexp.h>
@@ -139,17 +141,41 @@ class HtmlGenerator : public PageGenerator
     void generateFunctionIndex(const Node *relative, CodeMarker *marker);
     void generateLegaleseList(const Node *relative, CodeMarker *marker);
     void generateOverviewList(const Node *relative, CodeMarker *marker);
-    void generateSynopsis(const Node *node, 
-                          const Node *relative, 
-                          CodeMarker *marker,
-			  CodeMarker::SynopsisStyle style);
     void generateSectionList(const Section& section, 
                              const Node *relative,
 			     CodeMarker *marker, 
                              CodeMarker::SynopsisStyle style);
+#ifdef QDOC_NAME_ALIGNMENT
+    void generateSection(const NodeList& nl,
+                         const Node *relative,
+                         CodeMarker *marker,
+                         CodeMarker::SynopsisStyle style);
+    void generateSynopsis(const Node *node, 
+                          const Node *relative, 
+                          CodeMarker *marker,
+			  CodeMarker::SynopsisStyle style,
+                          bool nameAlignment = false);
+    void generateSectionInheritedList(const Section& section, 
+                                      const Node *relative,
+                                      CodeMarker *marker,
+                                      bool nameAlignment = false);
+    QString highlightedCode(const QString& markedCode, 
+                            CodeMarker *marker, 
+                            const Node *relative,
+                            CodeMarker::SynopsisStyle style = CodeMarker::Accessors,
+                            bool nameAlignment = false);
+#else
+    void generateSynopsis(const Node *node, 
+                          const Node *relative, 
+                          CodeMarker *marker,
+			  CodeMarker::SynopsisStyle style);
     void generateSectionInheritedList(const Section& section, 
                                       const Node *relative,
                                       CodeMarker *marker);
+    QString highlightedCode(const QString& markedCode, 
+                            CodeMarker *marker, 
+                            const Node *relative);
+#endif
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
                           CodeMarker *marker,
@@ -159,7 +185,6 @@ class HtmlGenerator : public PageGenerator
     void generateStatus(const Node *node, CodeMarker *marker);
     
     QString registerRef(const QString& ref);
-    QString highlightedCode(const QString& markedCode, CodeMarker *marker, const Node *relative);
     QString fileBase(const Node *node);
 #if 0
     QString fileBase(const Node *node, const SectionIterator& section);

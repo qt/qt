@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -644,15 +644,11 @@ bool QGroupBox::isChecked() const
 void QGroupBox::setChecked(bool b)
 {
     Q_D(QGroupBox);
-    if (d->checkable) {
-        if (d->checked != b)
-            update();
-        bool wasToggled = (b != d->checked);
+    if (d->checkable && b != d->checked) {
+        update();
         d->checked = b;
-        if (wasToggled) {
-            d->_q_setChildrenEnabled(b);
-            emit toggled(b);
-        }
+        d->_q_setChildrenEnabled(b);
+        emit toggled(b);
     }
 }
 

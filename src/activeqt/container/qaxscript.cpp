@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -1203,9 +1203,9 @@ QString QAxScriptManager::scriptFileFilter()
             continue;
         
         allFiles += QLatin1String(" *") + engine.extension;
-        specialFiles += QLatin1String(";;") + engine.name + QLatin1String(" Files (*") + engine.extension + QLatin1String(")");
+        specialFiles += QLatin1String(";;") + engine.name + QLatin1String(" Files (*") + engine.extension + QLatin1Char(')');
     }
-    allFiles += QLatin1String(")");
+    allFiles += QLatin1Char(')');
     
     return allFiles + specialFiles + QLatin1String(";;All Files (*.*)");
 }

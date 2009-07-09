@@ -28,52 +28,97 @@
 
 #if ENABLE(VIDEO)
 
+#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
+#include "MediaPlayerProxy.h"
+#endif
+
 #include "IntRect.h"
 #include "StringHash.h"
 #include <wtf/HashSet.h>
+#include <wtf/OwnPtr.h>
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {
 
+class ContentType;
 class FrameView;
 class GraphicsContext;
+class IntRect;
 class IntSize;
 class MediaPlayer;
-class MediaPlayerPrivate;
+class MediaPlayerPrivateInterface;
 class String;
+
+#if USE(ACCELERATED_COMPOSITING)
+class GraphicsLayer;
+#endif
 
 class MediaPlayerClient {
 public:
     virtual ~MediaPlayerClient() { }
+
+    // the network state has changed
     virtual void mediaPlayerNetworkStateChanged(MediaPlayer*) { }
+
+    // the ready state has changed
     virtual void mediaPlayerReadyStateChanged(MediaPlayer*) { }
+
+    // the volume or muted state has changed
     virtual void mediaPlayerVolumeChanged(MediaPlayer*) { }
+
+    // time has jumped, eg. not as a result of normal playback
     virtual void mediaPlayerTimeChanged(MediaPlayer*) { }
+    
+    // the media file duration has changed, or is now known
+    virtual void mediaPlayerDurationChanged(MediaPlayer*) { }
+    
+    // the playback rate has changed
+    virtual void mediaPlayerRateChanged(MediaPlayer*) { }
+
+    // The MediaPlayer has found potentially problematic media content.
+    // This is used internally to trigger swapping from a <video>
+    // element to an <embed> in standalone documents
+    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*) { }
+
+// Presentation-related methods
+    // a new frame of video is available
     virtual void mediaPlayerRepaint(MediaPlayer*) { }
+
+    // the movie size has changed
+    virtual void mediaPlayerSizeChanged(MediaPlayer*) { }
+
+#if USE(ACCELERATED_COMPOSITING)
+    // whether the rendering system can accelerate the display of this MediaPlayer.
+    virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*) { return false; }
+
+    // return the GraphicsLayer that will host the presentation for this MediaPlayer.
+    virtual GraphicsLayer* mediaPlayerGraphicsLayer(MediaPlayer*) { return 0; }
+#endif
 };
 
 class MediaPlayer : Noncopyable {
 public:
     MediaPlayer(MediaPlayerClient*);
     virtual ~MediaPlayer();
-    
-    static bool isAvailable();
-    static bool supportsType(const String&);
+
+    // media engine support
+    enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
+    static MediaPlayer::SupportsType supportsType(ContentType contentType);
     static void getSupportedTypes(HashSet<String>&);
-    
+    static bool isAvailable();
+
+    bool supportsFullscreen() const;
     IntSize naturalSize();
     bool hasVideo();
     
     void setFrameView(FrameView* frameView) { m_frameView = frameView; }
+    FrameView* frameView() { return m_frameView; }
     bool inMediaDocument();
     
-    // FIXME: it would be better to just have a getter and setter for size.
-    // This is currently an absolute rect, which is not appropriate for
-    // content with transforms
-    IntRect rect() const { return m_rect; }
-    void setRect(const IntRect& r);
+    IntSize size() const { return m_size; }
+    void setSize(const IntSize& size);
     
-    void load(const String& url);
+    void load(const String& url, const ContentType& contentType);
     void cancelLoad();
     
     bool visible() const;
@@ -88,15 +133,20 @@ public:
     float duration() const;
     float currentTime() const;
     void seek(float time);
+
+    float startTime() const;
     
     void setEndTime(float time);
     
     float rate() const;
     void setRate(float);
+
+    bool preservesPitch() const;    
+    void setPreservesPitch(bool);
     
     float maxTimeBuffered();
     float maxTimeSeekable();
-    
+
     unsigned bytesLoaded();
     bool totalBytesKnown();
     unsigned totalBytes();
@@ -105,36 +155,72 @@ public:
     void setVolume(float);
     
     int dataRate() const;
-    
+
+    bool autobuffer() const;    
+    void setAutobuffer(bool);
+
     void paint(GraphicsContext*, const IntRect&);
     
-    enum NetworkState { Empty, LoadFailed, Loading, LoadedMetaData, LoadedFirstFrame, Loaded };
+    enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
     NetworkState networkState();
 
-    enum ReadyState  { DataUnavailable, CanShowCurrentFrame, CanPlay, CanPlayThrough };
+    enum ReadyState  { HaveNothing, HaveMetadata, HaveCurrentData, HaveFutureData, HaveEnoughData };
     ReadyState readyState();
     
     void networkStateChanged();
     void readyStateChanged();
     void volumeChanged();
     void timeChanged();
+    void sizeChanged();
+    void rateChanged();
+    void durationChanged();
 
     void repaint();
-    
+
+    MediaPlayerClient* mediaPlayerClient() const { return m_mediaPlayerClient; }
+
+#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
+    void setPoster(const String& url);
+    void deliverNotification(MediaPlayerProxyNotificationType notification);
+    void setMediaPlayerProxy(WebMediaPlayerProxy* proxy);
+#endif
+
+#if USE(ACCELERATED_COMPOSITING)
+    // whether accelerated rendering is supported by the media engine for the current media.
+    bool supportsAcceleratedRendering() const;
+    // called when the rendering system flips the into or out of accelerated rendering mode.
+    void acceleratedRenderingStateChanged();
+#endif
+
+    bool hasSingleSecurityOrigin() const;
+
 private:
-        
-    friend class MediaPlayerPrivate;
-    
+    static void initializeMediaEngines();
+
     MediaPlayerClient* m_mediaPlayerClient;
-    MediaPlayerPrivate* m_private;
+    OwnPtr<MediaPlayerPrivateInterface*> m_private;
+    void* m_currentMediaEngine;
     FrameView* m_frameView;
-    IntRect m_rect;
+    IntSize m_size;
     bool m_visible;
     float m_rate;
     float m_volume;
+    bool m_preservesPitch;
+    bool m_autobuffer;
+#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
+    WebMediaPlayerProxy* m_playerProxy;    // not owned or used, passed to m_private
+#endif
 };
+
+typedef MediaPlayerPrivateInterface* (*CreateMediaEnginePlayer)(MediaPlayer*);
+typedef void (*MediaEngineSupportedTypes)(HashSet<String>& types);
+typedef MediaPlayer::SupportsType (*MediaEngineSupportsType)(const String& type, const String& codecs);
+
+typedef void (*MediaEngineRegistrar)(CreateMediaEnginePlayer, MediaEngineSupportedTypes, MediaEngineSupportsType); 
+
 
 }
 
-#endif
+#endif // ENABLE(VIDEO)
+
 #endif

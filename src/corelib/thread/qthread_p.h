@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -111,51 +111,6 @@ public:
     { }
 };
 
-class Q_CORE_EXPORT QThreadData
-{
-    QAtomicInt _ref;
-
-public:
-    QThreadData(int initialRefCount = 1);
-    ~QThreadData();
-
-    static QThreadData *current();
-    static QThreadData *get2(QThread *thread);
-
-    void ref();
-    void deref();
-
-    QThread *thread;
-    bool quitNow;
-    int loopLevel;
-    QAbstractEventDispatcher *eventDispatcher;
-    QStack<QEventLoop *> eventLoops;
-    QPostEventList postEventList;
-    bool canWait;
-    QMap<int, void *> tls;
-
-    QMutex mutex;
-
-# ifdef Q_OS_SYMBIAN
-    RThread symbian_thread_handle;
-# endif
-};
-
-// thread wrapper for the main() thread
-class QAdoptedThread : public QThread
-{
-    Q_DECLARE_PRIVATE(QThread)
-
-public:
-    QAdoptedThread(QThreadData *data = 0);
-    ~QAdoptedThread();
-    void init();
-
-    static QThread *createThreadForAdoption();
-private:
-    void run();
-};
-
 #ifndef QT_NO_THREAD
 class QThreadPrivate : public QObjectPrivate
 {
@@ -223,6 +178,53 @@ public:
 };
 
 #endif // QT_NO_THREAD
+
+class QThreadData
+{
+    QAtomicInt _ref;
+
+public:
+    QThreadData(int initialRefCount = 1);
+    ~QThreadData();
+
+    static QThreadData *current();
+    static QThreadData *get2(QThread *thread)
+    { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
+
+
+    void ref();
+    void deref();
+
+    QThread *thread;
+    bool quitNow;
+    int loopLevel;
+    QAbstractEventDispatcher *eventDispatcher;
+    QStack<QEventLoop *> eventLoops;
+    QPostEventList postEventList;
+    bool canWait;
+    QMap<int, void *> tls;
+
+    QMutex mutex;
+
+# ifdef Q_OS_SYMBIAN
+    RThread symbian_thread_handle;
+# endif
+};
+
+// thread wrapper for the main() thread
+class QAdoptedThread : public QThread
+{
+    Q_DECLARE_PRIVATE(QThread)
+
+public:
+    QAdoptedThread(QThreadData *data = 0);
+    ~QAdoptedThread();
+    void init();
+
+    static QThread *createThreadForAdoption();
+private:
+    void run();
+};
 
 QT_END_NAMESPACE
 

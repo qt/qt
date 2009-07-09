@@ -22,8 +22,10 @@
 #ifndef SVGFEColorMatrix_h
 #define SVGFEColorMatrix_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FilterEffect.h"
+
+#include "Filter.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {
@@ -45,9 +47,10 @@ namespace WebCore {
 
         const Vector<float>& values() const;
         void setValues(const Vector<float>&);
-        
-        virtual void apply();
-        virtual void dump();
+
+        virtual FloatRect uniteChildEffectSubregions(Filter* filter) { return calculateUnionOfChildEffectSubregions(filter, m_in.get()); }
+        void apply(Filter*);
+        void dump();
 
     private:
         FEColorMatrix(FilterEffect*, ColorMatrixType, const Vector<float>&);
@@ -59,6 +62,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)
 
 #endif // SVGFEColorMatrix_h

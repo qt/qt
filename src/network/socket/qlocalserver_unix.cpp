@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -150,7 +150,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     socketNotifier = new QSocketNotifier(listenSocket,
                                          QSocketNotifier::Read, q);
     q->connect(socketNotifier, SIGNAL(activated(int)),
-               q, SLOT(_q_socketActivated()));
+               q, SLOT(_q_onNewConnection()));
     socketNotifier->setEnabled(maxPendingConnections > 0);
     return true;
 }
@@ -182,7 +182,7 @@ void QLocalServerPrivate::closeServer()
     We have received a notification that we can read on the listen socket.
     Accept the new socket.
  */
-void QLocalServerPrivate::_q_socketActivated()
+void QLocalServerPrivate::_q_onNewConnection()
 {
     Q_Q(QLocalServer);
     if (-1 == listenSocket)
@@ -227,7 +227,7 @@ void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
             break;
         }
         if (result > 0)
-            _q_socketActivated();
+            _q_onNewConnection();
     }
     if (timedOut)
         *timedOut = (result == 0);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QPersistentModelIndexData
+class QPersistentModelIndexData
 {
 public:
     QPersistentModelIndexData() : model(0) {}
@@ -89,6 +89,7 @@ public:
     void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
     void columnsRemoved(const QModelIndex &parent, int first, int last);
     static QAbstractItemModel *staticEmptyModel();
+    static bool canConvertToDouble(const QVariant &value);
 
     inline QModelIndex createIndex(int row, int column, void *data = 0) const {
         return q_func()->createIndex(row, column, data);

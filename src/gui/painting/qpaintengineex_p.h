@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,10 +55,10 @@
 
 #include <QtGui/qpaintengine.h>
 
-#include "qpaintengine_p.h"
-#include "qstroker_p.h"
-#include "qpainter_p.h"
-#include "qvectorpath_p.h"
+#include <private/qpaintengine_p.h>
+#include <private/qstroker_p.h>
+#include <private/qpainter_p.h>
+#include <private/qvectorpath_p.h>
 
 
 QT_BEGIN_HEADER
@@ -139,27 +139,13 @@ public:
 QDebug Q_GUI_EXPORT &operator<<(QDebug &, const QVectorPath &path);
 #endif
 
-class Q_GUI_EXPORT QPaintEngineExPrivate : public QPaintEnginePrivate
-{
-public:
-    QPaintEngineExPrivate();
-    ~QPaintEngineExPrivate();
-
-    QStroker stroker;
-    QDashStroker dasher;
-    StrokeHandler *strokeHandler;
-    QStrokerOps *activeStroker;
-    QPen strokerPen;
-};
-
 class QPixmapFilter;
 
 class Q_GUI_EXPORT QPaintEngineEx : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QPaintEngineEx)
 public:
-    inline QPaintEngineEx()
-        : QPaintEngine(*new QPaintEngineExPrivate, AllFeatures) { extended = true; }
+    QPaintEngineEx();
 
     virtual QPainterState *createState(QPainterState *orig) const;
 
@@ -216,12 +202,30 @@ public:
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
     inline const QPainterState *state() const { return static_cast<const QPainterState *>(QPaintEngine::state); }
 
+    virtual void sync() {}
+
     virtual QPixmapFilter *createPixmapFilter(int /*type*/) const { return 0; }
 
 protected:
     QPaintEngineEx(QPaintEngineExPrivate &data);
 };
 
+class Q_GUI_EXPORT QPaintEngineExPrivate : public QPaintEnginePrivate
+{
+    Q_DECLARE_PUBLIC(QPaintEngineEx)
+public:
+    QPaintEngineExPrivate();
+    ~QPaintEngineExPrivate();
+
+    void replayClipOperations();
+    bool hasClipOperations() const;
+
+    QStroker stroker;
+    QDashStroker dasher;
+    StrokeHandler *strokeHandler;
+    QStrokerOps *activeStroker;
+    QPen strokerPen;
+};
 
 inline uint QVectorPath::polygonFlags(QPaintEngine::PolygonDrawMode mode) {
     switch (mode) {

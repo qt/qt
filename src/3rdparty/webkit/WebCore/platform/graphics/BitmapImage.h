@@ -75,10 +75,12 @@ struct FrameData : Noncopyable {
 
     ~FrameData()
     { 
-        clear();
+        clear(true);
     }
 
-    void clear();
+    // Clear the cached image data on the frame, and (optionally) the metadata.
+    // Returns whether there was cached image data to clear.
+    bool clear(bool clearMetadata);
 
     NativeImagePtr m_frame;
     bool m_haveMetadata;
@@ -138,6 +140,10 @@ public:
     virtual bool getHBITMAPOfSize(HBITMAP, LPSIZE);
 #endif
 
+#if PLATFORM(GTK)
+    virtual GdkPixbuf* getGdkPixbuf();
+#endif
+
     virtual NativeImagePtr nativeImageForCurrentFrame() { return frameAtIndex(currentFrame()); }
 
 protected:
@@ -185,10 +191,6 @@ protected:
     // decreased by |framesCleared| times the size (in bytes) of a frame.
     void destroyMetadataAndNotify(int framesCleared);
 
-    // If frame |frame| is cached, clears the cache handle.  Returns the number
-    // of frames actually cleared.
-    int clearFrame(size_t frame);
-
     // Whether or not size is available yet.    
     bool isSizeAvailable();
 
@@ -210,9 +212,18 @@ protected:
     void invalidatePlatformData();
     
     // Checks to see if the image is a 1x1 solid color.  We optimize these images and just do a fill rect instead.
+    // This check should happen regardless whether m_checkedForSolidColor is already set, as the frame may have
+    // changed.
     void checkForSolidColor();
     
-    virtual bool mayFillWithSolidColor() const { return m_isSolidColor && m_currentFrame == 0; }
+    virtual bool mayFillWithSolidColor()
+    {
+        if (!m_checkedForSolidColor && frameCount() > 0) {
+            checkForSolidColor();
+            ASSERT(m_checkedForSolidColor);
+        }
+        return m_isSolidColor && m_currentFrame == 0;
+    }
     virtual Color solidColor() const { return m_solidColor; }
     
     ImageSource m_source;
@@ -234,6 +245,7 @@ protected:
 
     Color m_solidColor;  // If we're a 1x1 solid color, this is the color to use to fill.
     bool m_isSolidColor;  // Whether or not we are a 1x1 solid image.
+    bool m_checkedForSolidColor; // Whether we've checked the frame for solid color.
 
     bool m_animationFinished;  // Whether or not we've completed the entire animation.
 

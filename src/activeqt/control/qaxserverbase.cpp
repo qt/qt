@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -2446,10 +2446,10 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
             int nameLength = 0;
 	    if (index == -1) {
 	        nameLength = name.length();
-	        name += "(";
+	        name += '(';
 		// no parameter - shortcut
 		if (!pDispParams->cArgs)
-		    index = mo->indexOfSlot((name + ")"));
+		    index = mo->indexOfSlot((name + ')'));
 		// search
 		if (index == -1) {
 		    for (int i = 0; i < mo->methodCount(); ++i) {
@@ -2463,7 +2463,7 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
                     if (index == -1) {
                         QRegExp regexp(QLatin1String("_([0-9])\\("));
                         if (regexp.lastIndexIn(QString::fromLatin1(name.constData())) != -1) {
-                            name = name.left(name.length() - regexp.cap(0).length()) + "(";
+                            name = name.left(name.length() - regexp.cap(0).length()) + '(';
                             int overload = regexp.cap(1).toInt() + 1;
 
                             for (int s = 0; s < qt.object->metaObject()->methodCount(); ++s) {
@@ -2559,7 +2559,7 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
                         argv[p + 1] = varp + p + 1;
                     } else {
                         argv[p + 1] = const_cast<void*>(varp[p + 1].constData());
-                        if (ptype.endsWith("*")) {
+                        if (ptype.endsWith('*')) {
                             argv_pointer[p + 1] = argv[p + 1];
                             argv[p + 1] = argv_pointer + p + 1;
                         }
@@ -2590,7 +2590,7 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
                 } else {
                     argv[0] = const_cast<void*>(varp[0].constData());
                 }
-                if (type.endsWith("*")) {
+                if (type.endsWith('*')) {
                     argv_pointer[0] = argv[0];
                     argv[0] = argv_pointer;
                 }

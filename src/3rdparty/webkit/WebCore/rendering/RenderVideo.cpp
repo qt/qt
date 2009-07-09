@@ -35,15 +35,35 @@
 #include "HTMLVideoElement.h"
 #include "MediaPlayer.h"
 
+#if USE(ACCELERATED_COMPOSITING)
+#include "RenderLayer.h"
+#include "RenderLayerBacking.h"
+#endif
+
 using namespace std;
 
 namespace WebCore {
 
 using namespace HTMLNames;
 
+static const int cDefaultWidth = 300;
+static const int cDefaultHeight = 150;
+
 RenderVideo::RenderVideo(HTMLMediaElement* video)
-    : RenderMedia(video, video->player() ? video->player()->naturalSize() : IntSize(300, 150))
+    : RenderMedia(video)
 {
+    if (video->player())
+        setIntrinsicSize(video->player()->naturalSize());
+    else {
+        // Video in standalone media documents should not use the default 300x150
+        // size since they also have audio thrown at them. By setting the intrinsic
+        // size to 300x1 the video will resize itself in these cases, and audio will
+        // have the correct height (it needs to be > 0 for controls to render properly).
+        if (video->ownerDocument() && video->ownerDocument()->isMediaDocument())
+            setIntrinsicSize(IntSize(cDefaultWidth, 1));
+        else
+            setIntrinsicSize(IntSize(cDefaultWidth, cDefaultHeight));
+    }
 }
 
 RenderVideo::~RenderVideo()
@@ -68,7 +88,7 @@ void RenderVideo::videoSizeChanged()
 
 IntRect RenderVideo::videoBox() const 
 {
-    IntRect contentRect = contentBox();
+    IntRect contentRect = contentBoxRect();
     
     if (intrinsicSize().isEmpty() || contentRect.isEmpty())
         return IntRect();
@@ -124,13 +144,14 @@ void RenderVideo::updatePlayer()
         mediaPlayer->setVisible(false);
         return;
     }
+
+#if USE(ACCELERATED_COMPOSITING)
+    layer()->rendererContentChanged();
+#endif
     
-    // FIXME: This doesn't work correctly with transforms.
-    FloatPoint absPos = localToAbsolute();
     IntRect videoBounds = videoBox(); 
-    videoBounds.move(absPos.x(), absPos.y());
     mediaPlayer->setFrameView(document()->view());
-    mediaPlayer->setRect(videoBounds);
+    mediaPlayer->setSize(IntSize(videoBounds.width(), videoBounds.height()));
     mediaPlayer->setVisible(true);
 }
 
@@ -233,6 +254,32 @@ void RenderVideo::calcPrefWidths()
 
     setPrefWidthsDirty(false);
 }
+
+#if USE(ACCELERATED_COMPOSITING)
+bool RenderVideo::supportsAcceleratedRendering() const
+{
+    MediaPlayer* p = player();
+    if (p)
+        return p->supportsAcceleratedRendering();
+
+    return false;
+}
+
+void RenderVideo::acceleratedRenderingStateChanged()
+{
+    MediaPlayer* p = player();
+    if (p)
+        p->acceleratedRenderingStateChanged();
+}
+
+GraphicsLayer* RenderVideo::videoGraphicsLayer() const
+{
+    if (hasLayer() && layer()->isComposited())
+        return layer()->backing()->graphicsLayer();
+
+    return 0;
+}
+#endif  // USE(ACCELERATED_COMPOSITING)
 
 } // namespace WebCore
 

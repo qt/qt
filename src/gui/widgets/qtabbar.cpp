@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -176,12 +176,11 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
         if (tw->cornerWidget(Qt::TopRightCorner) || tw->cornerWidget(Qt::BottomRightCorner))
             option->cornerWidgets |= QStyleOptionTab::RightCornerWidget;
     }
+#endif
 
     QRect textRect = style()->subElementRect(QStyle::SE_TabBarTabText, option, this);
-
     option->text = fontMetrics().elidedText(option->text, d->elideMode, textRect.width(),
                         Qt::TextShowMnemonic);
-#endif
 }
 
 /*!
@@ -1944,8 +1943,10 @@ void QTabBar::changeEvent(QEvent *event)
     if (event->type() == QEvent::StyleChange) {
         d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
         d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
+        d->refresh();
+    } else if (event->type() == QEvent::FontChange) {
+        d->refresh();
     }
-    d->refresh();
     QWidget::changeEvent(event);
 }
 

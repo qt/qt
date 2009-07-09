@@ -21,10 +21,10 @@
 #ifndef JSSVGFontFaceNameElement_h
 #define JSSVGFontFaceNameElement_h
 
-
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
 
 #include "JSSVGElement.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 
@@ -34,7 +34,7 @@ class JSSVGFontFaceNameElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
     JSSVGFontFaceNameElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFontFaceNameElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -42,8 +42,9 @@ public:
 
 
 class JSSVGFontFaceNameElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGFontFaceNameElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

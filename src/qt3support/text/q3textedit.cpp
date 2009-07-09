@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,7 +77,7 @@
 #include <qkeysequence.h>
 #define ACCEL_KEY(k) QLatin1Char('\t') + QString(QKeySequence(Qt::CTRL | Qt::Key_ ## k))
 #else
-#define ACCEL_KEY(k) QLatin1Char('\t' )+ QString(QLatin1String("Ctrl+" #k))
+#define ACCEL_KEY(k) QLatin1Char('\t' )+ QString::fromLatin1("Ctrl+" #k)
 #endif
 
 #ifdef QT_TEXTEDIT_OPTIMIZATION
@@ -6625,7 +6625,7 @@ void Q3TextEdit::optimSetTextFormat(Q3TextDocument * td, Q3TextCursor * cur,
         }
         if (tag) {
             QString col = tag->tag.simplified();
-            if (col.left(10) == QLatin1String("font color")) {
+            if (col.startsWith(QLatin1String("font color"))) {
                 int i = col.indexOf(QLatin1Char('='), 10);
                 col = col.mid(i + 1).simplified();
                 if (col[0] == QLatin1Char('\"'))

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -199,7 +199,9 @@ int qt_wince__fstat( int handle, struct stat *buffer);
 #define SEM_FAILCRITICALERRORS 0x0001
 #define SEM_NOOPENFILEERRORBOX 0x0002
 int qt_wince_SetErrorMode(int);
-HRESULT qt_wince_CoInitialize(void* reserved);
+#ifndef CoInitialize
+#define CoInitialize(x) CoInitializeEx(x, COINIT_MULTITHREADED)
+#endif
 
 bool qt_wince__chmod(const char *file, int mode);
 bool qt_wince__wchmod(const WCHAR *file, int mode);
@@ -376,7 +378,6 @@ typedef DWORD OLE_COLOR;
 #define _rename(a,b)            qt_wince__rename(a,b)
 #define _remove(a)              qt_wince__remove(a)
 #define SetErrorMode(a)         qt_wince_SetErrorMode(a)
-#define CoInitialize(a)         qt_wince_CoInitialize(a)
 #define _chmod(a,b)             qt_wince__chmod(a,b)
 #define _wchmod(a,b)            qt_wince__wchmod(a,b)
 #define CreateFileA(a,b,c,d,e,f,g) qt_wince_CreateFileA(a,b,c,d,e,f,g)

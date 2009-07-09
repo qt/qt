@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -5330,7 +5330,7 @@ QString QUrl::toString(FormattingOptions options) const
             url += QLatin1Char('/');
         url += ourPath;
         // check if we need to remove trailing slashes
-        while ((options & StripTrailingSlash) && url.right(1) == QLatin1String("/"))
+        while ((options & StripTrailingSlash) && url.endsWith(QLatin1Char('/')))
             url.chop(1);
     }
 
@@ -5698,7 +5698,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
 
     // magic for drives on windows
     if (deslashified.length() > 1 && deslashified.at(1) == QLatin1Char(':') && deslashified.at(0) != QLatin1Char('/')) {
-        url.setPath(QLatin1String("/") + deslashified);
+        url.setPath(QLatin1Char('/') + deslashified);
     // magic for shared drive on windows
     } else if (deslashified.startsWith(QLatin1String("//"))) {
         int indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
@@ -5728,7 +5728,7 @@ QString QUrl::toLocalFile() const
         // magic for shared drive on windows
         if (!d->host.isEmpty()) {
             tmp = QLatin1String("//") + d->host + (ourPath.length() > 0 && ourPath.at(0) != QLatin1Char('/')
-                                                  ? QLatin1String("/") + ourPath :  ourPath);
+                                                  ? QLatin1Char('/') + ourPath :  ourPath);
         } else {
             tmp = ourPath;
             // magic for drives on windows
@@ -5976,7 +5976,7 @@ QDataStream &operator>>(QDataStream &in, QUrl &url)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QUrl &url)
 {
-    d.maybeSpace() << "QUrl(" << url.toString() << ")";
+    d.maybeSpace() << "QUrl(" << url.toString() << ')';
     return d.space();
 }
 #endif

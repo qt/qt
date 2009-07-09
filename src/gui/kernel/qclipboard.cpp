@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qimage.h"
+#include "qtextcodec.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -276,11 +277,12 @@ QClipboard::~QClipboard()
 */
 QString QClipboard::text(QString &subtype, Mode mode) const
 {
-    const QMimeData *data = mimeData(mode);
+    const QMimeData *const data = mimeData(mode);
     if (!data)
         return QString();
+
+    const QStringList formats = data->formats();
     if (subtype.isEmpty()) {
-        QStringList formats = data->formats();
         if (formats.contains(QLatin1String("text/plain")))
             subtype = QLatin1String("plain");
         else {
@@ -289,13 +291,21 @@ QString QClipboard::text(QString &subtype, Mode mode) const
                     subtype = formats.at(i).mid(5);
                     break;
                 }
+            if (subtype.isEmpty())
+                return QString();
         }
-    }
-    if (subtype.isEmpty())
+    } else if (!formats.contains(QLatin1String("text/") + subtype)) {
         return QString();
-    if (subtype == QLatin1String("plain"))
-        return data->text();
-    return QString::fromUtf8(data->data(QLatin1String("text/") + subtype));
+    }
+
+    const QByteArray rawData = data->data(QLatin1String("text/") + subtype);
+
+    QTextCodec* codec = QTextCodec::codecForMib(106); // utf-8 is default
+    if (subtype == QLatin1String("html"))
+        codec = QTextCodec::codecForHtml(rawData, codec);
+    else
+        codec = QTextCodec::codecForUtfText(rawData, codec);
+    return codec->toUnicode(rawData);
 }
 
 /*!

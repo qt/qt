@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,6 +85,15 @@ public:
         VoidStar = 128, Long = 129, Short = 130, Char = 131, ULong = 132,
         UShort = 133, UChar = 134, Float = 135, QObjectStar = 136, QWidgetStar = 137,
         LastCoreExtType = 137 /* QWidgetStar */,
+
+// This logic must match the one in qglobal.h
+#if defined(QT_COORD_TYPE)
+        QReal = 0,
+#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+        QReal = Float,
+#else
+        QReal = Double,
+#endif
 
         User = 256
     };
@@ -174,7 +183,7 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
     QMetaType::registerStreamOperators(typeName, reinterpret_cast<QMetaType::SaveOperator>(sptr),
                                        reinterpret_cast<QMetaType::LoadOperator>(lptr));
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 template <typename T>
 struct QMetaTypeId

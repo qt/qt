@@ -19,23 +19,20 @@
 */
 
 #include "config.h"
-
 #include "JSWebKitAnimationEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "WebKitAnimationEvent.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSWebKitAnimationEvent)
+ASSERT_CLASS_FITS_IN_CELL(JSWebKitAnimationEvent);
 
 /* Hash table */
 
@@ -73,13 +70,13 @@ public:
     JSWebKitAnimationEventConstructor(ExecState* exec)
         : DOMObject(JSWebKitAnimationEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitAnimationEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitAnimationEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -109,9 +106,9 @@ static const HashTable JSWebKitAnimationEventPrototypeTable =
 
 const ClassInfo JSWebKitAnimationEventPrototype::s_info = { "WebKitAnimationEventPrototype", 0, &JSWebKitAnimationEventPrototypeTable, 0 };
 
-JSObject* JSWebKitAnimationEventPrototype::self(ExecState* exec)
+JSObject* JSWebKitAnimationEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWebKitAnimationEvent>(exec);
+    return getDOMPrototype<JSWebKitAnimationEvent>(exec, globalObject);
 }
 
 bool JSWebKitAnimationEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,9 +123,9 @@ JSWebKitAnimationEvent::JSWebKitAnimationEvent(PassRefPtr<Structure> structure, 
 {
 }
 
-JSObject* JSWebKitAnimationEvent::createPrototype(ExecState* exec)
+JSObject* JSWebKitAnimationEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWebKitAnimationEventPrototype(JSWebKitAnimationEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSWebKitAnimationEventPrototype(JSWebKitAnimationEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSWebKitAnimationEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -136,38 +133,41 @@ bool JSWebKitAnimationEvent::getOwnPropertySlot(ExecState* exec, const Identifie
     return getStaticValueSlot<JSWebKitAnimationEvent, Base>(exec, &JSWebKitAnimationEventTable, this, propertyName, slot);
 }
 
-JSValuePtr jsWebKitAnimationEventAnimationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitAnimationEventAnimationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WebKitAnimationEvent* imp = static_cast<WebKitAnimationEvent*>(static_cast<JSWebKitAnimationEvent*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->animationName());
 }
 
-JSValuePtr jsWebKitAnimationEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitAnimationEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     WebKitAnimationEvent* imp = static_cast<WebKitAnimationEvent*>(static_cast<JSWebKitAnimationEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->elapsedTime());
 }
 
-JSValuePtr jsWebKitAnimationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitAnimationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSWebKitAnimationEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSWebKitAnimationEvent::getConstructor(ExecState* exec)
+JSValue JSWebKitAnimationEvent::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSWebKitAnimationEventConstructor>(exec);
 }
 
-JSValuePtr jsWebKitAnimationEventPrototypeFunctionInitWebKitAnimationEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsWebKitAnimationEventPrototypeFunctionInitWebKitAnimationEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSWebKitAnimationEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSWebKitAnimationEvent::s_info))
         return throwError(exec, TypeError);
     JSWebKitAnimationEvent* castedThisObj = static_cast<JSWebKitAnimationEvent*>(asObject(thisValue));
     WebKitAnimationEvent* imp = static_cast<WebKitAnimationEvent*>(castedThisObj->impl());
-    const UString& typeArg = args.at(exec, 0)->toString(exec);
-    bool canBubbleArg = args.at(exec, 1)->toBoolean(exec);
-    bool cancelableArg = args.at(exec, 2)->toBoolean(exec);
-    const UString& animationNameArg = args.at(exec, 3)->toString(exec);
-    double elapsedTimeArg = args.at(exec, 4)->toNumber(exec);
+    const UString& typeArg = args.at(0).toString(exec);
+    bool canBubbleArg = args.at(1).toBoolean(exec);
+    bool cancelableArg = args.at(2).toBoolean(exec);
+    const UString& animationNameArg = args.at(3).toString(exec);
+    double elapsedTimeArg = args.at(4).toNumber(exec);
 
     imp->initWebKitAnimationEvent(typeArg, canBubbleArg, cancelableArg, animationNameArg, elapsedTimeArg);
     return jsUndefined();

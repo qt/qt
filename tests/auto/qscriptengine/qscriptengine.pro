@@ -1,6 +1,7 @@
 load(qttest_p4)
 QT += script
 SOURCES += tst_qscriptengine.cpp 
+DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 wince*|symbian*: {
    addFiles.sources = script

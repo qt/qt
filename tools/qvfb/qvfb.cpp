@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -635,6 +635,7 @@ void QVFb::configure()
     config->touchScreen->setChecked(view->touchScreenEmulation());
     config->lcdScreen->setChecked(view->lcdScreenEmulation());
     chooseDepth(view->displayDepth(), view->displayFormat());
+    config->rgbSwapped->setChecked(view->rgbSwapped());
     connect(config->skin, SIGNAL(activated(int)), this, SLOT(skinConfigChosen(int)));
     if ( view->gammaRed() == view->gammaGreen() && view->gammaGreen() == view->gammaBlue() ) {
 	config->gammaslider->setValue(int(view->gammaRed()*400));
@@ -678,6 +679,8 @@ void QVFb::configure()
 	int d;
 	if ( config->depth_1->isChecked() )
 	    d=1;
+	else if ( config->depth_2gray->isChecked() )
+	    d=2;
 	else if ( config->depth_4gray->isChecked() )
 	    d=4;
 	else if ( config->depth_8->isChecked() )
@@ -708,6 +711,16 @@ void QVFb::configure()
 	}
 	view->setViewFormat(displayFormat);
 	view->setTouchscreenEmulation( config->touchScreen->isChecked() );
+        if (view->rgbSwapped() != config->rgbSwapped->isChecked()) {
+            //### the windowTitle logic is inside init(), and init isn't always invoked
+            QString caption = windowTitle();
+            if (!config->rgbSwapped->isChecked())
+                caption.replace(QLatin1String(" BGR"), QString());
+            else
+                caption.append(QLatin1String(" BGR"));
+            setWindowTitle(caption);
+            view->setRgbSwapped(config->rgbSwapped->isChecked());
+        }
 	bool lcdEmulation = config->lcdScreen->isChecked();
 	view->setLcdScreenEmulation( lcdEmulation );
 	if ( lcdEmulation )
@@ -741,6 +754,7 @@ void QVFb::chooseSize(const QSize& sz)
 void QVFb::chooseDepth(int depth, QVFbView::PixelFormat displayFormat)
 {
     config->depth_1->setChecked(depth==1);
+    config->depth_2gray->setChecked(depth==2);
     config->depth_4gray->setChecked(depth==4);
     config->depth_8->setChecked(depth==8);
     config->depth_12->setChecked(depth==12);

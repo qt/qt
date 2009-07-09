@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -253,7 +253,7 @@ EXTERN_C int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR,
             run = false;
             break;
         } else {
-            unprocessed += cmds.at(i) + " ";
+            unprocessed += cmds.at(i) + ' ';
         }
     }
     

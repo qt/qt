@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -101,16 +101,14 @@ void MainWindow::createActions()
 
 //! [5]
     undoAction = undoStack->createUndoAction(this, tr("&Undo"));
-    undoAction->setShortcut(tr("Ctrl+Z"));
+    undoAction->setShortcuts(QKeySequence::Undo);
 
     redoAction = undoStack->createRedoAction(this, tr("&Redo"));
-    QList<QKeySequence> redoShortcuts;
-    redoShortcuts << tr("Ctrl+Y") << tr("Shift+Ctrl+Z");
-    redoAction->setShortcuts(redoShortcuts);
+    redoAction->setShortcuts(QKeySequence::Redo);
 //! [5]
 
     exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcut(tr("Ctrl+Q"));
+    exitAction->setShortcuts(QKeySequence::Quit);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
     aboutAction = new QAction(tr("&About"), this);

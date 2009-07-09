@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -312,21 +312,14 @@ void MainWindow::about()
 {
     QMessageBox box(this);
 
-    // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
-    QString edition;
-    QString info;
-    QString moreInfo;
-
     box.setText(QString::fromLatin1("<center><img src=\":/trolltech/assistant/images/assistant-128.png\">"
                                     "<h3>%1</h3>"
-                                    "<p>Version %2 %3</p></center>"
-                                    "<p>%4</p>"
-                                    "<p>%5</p>"
+                                    "<p>Version %2</p></center>"
                                     "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
                                     "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
                                     " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
                                     " PARTICULAR PURPOSE.<p/>")
-                   .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)).arg(edition).arg(info).arg(moreInfo));
+                   .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)));
     box.setWindowTitle(tr("Qt Assistant"));
     box.setIcon(QMessageBox::NoIcon);
     box.exec();

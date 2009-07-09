@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,6 +62,7 @@ Q_DECLARE_METATYPE(QStringMap)
 Q_DECLARE_METATYPE(QIntList)
 Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
 Q_DECLARE_METATYPE(QIODevice *)
+Q_DECLARE_METATYPE(QImage::Format)
 
 //TESTED_FILES=
 
@@ -85,6 +86,9 @@ private slots:
     void writeImage2();
     void supportedFormats();
 
+    void readWriteNonDestructive_data();
+    void readWriteNonDestructive();
+
 #if defined QTEST_HAVE_TIFF
     void largeTiff();
 #endif
@@ -99,6 +103,9 @@ private slots:
 
     void saveWithNoFormat_data();
     void saveWithNoFormat();
+
+    void resolution_data();
+    void resolution();
 
     void saveToTemporaryFile();
 };
@@ -167,7 +174,7 @@ tst_QImageWriter::tst_QImageWriter()
 
 tst_QImageWriter::~tst_QImageWriter()
 {
-    QDir dir("images");
+    QDir dir(prefix);
     QStringList filesToDelete = dir.entryList(QStringList() << "gen-*" , QDir::NoDotAndDotDot | QDir::Files);
     foreach( QString file, filesToDelete) {
         QFile::remove(dir.absoluteFilePath(file));
@@ -380,6 +387,28 @@ void tst_QImageWriter::supportedFormats()
     QCOMPARE(formatSet.size(), formats.size());
 }
 
+void tst_QImageWriter::readWriteNonDestructive_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<QImage::Format>("expectedFormat");
+    QTest::newRow("tiff mono") << QImage::Format_Mono << QImage::Format_Mono;
+    QTest::newRow("tiff indexed") << QImage::Format_Indexed8 << QImage::Format_Indexed8;
+    QTest::newRow("tiff rgb32") << QImage::Format_ARGB32 << QImage::Format_ARGB32;
+}
+
+void tst_QImageWriter::readWriteNonDestructive()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(QImage::Format, expectedFormat);
+    QImage image = QImage(prefix + "colorful.bmp").convertToFormat(format);
+    QVERIFY(image.save(prefix + "gen-readWriteNonDestructive.tiff"));
+
+    QImage image2 = QImage(prefix + "gen-readWriteNonDestructive.tiff");
+    QImage::Format readFormat = image2.format();
+    QCOMPARE(readFormat, expectedFormat);
+    QCOMPARE(image, image2);
+}
+
 void tst_QImageWriter::setDescription_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -449,13 +478,13 @@ void tst_QImageWriter::supportsOption_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QIntList>("options");
 
-    QTest::newRow("png") << QString(prefix + "gen-black.png")
+    QTest::newRow("png") << QString("gen-black.png")
                          << (QIntList() << QImageIOHandler::Gamma
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
                               << QImageIOHandler::Size);
 #if defined QTEST_HAVE_TIFF
-    QTest::newRow("tiff") << QString("images/gen-black.tiff")
+    QTest::newRow("tiff") << QString("gen-black.tiff")
                           << (QIntList() << QImageIOHandler::Size
                               << QImageIOHandler::CompressionRatio);
 #endif
@@ -482,7 +511,7 @@ void tst_QImageWriter::supportsOption()
                << QImageIOHandler::Animation
                << QImageIOHandler::BackgroundColor;
 
-    QImageWriter writer(fileName);
+    QImageWriter writer(prefix + fileName);
     for (int i = 0; i < options.size(); ++i) {
         QVERIFY(writer.supportsOption(QImageIOHandler::ImageOption(options.at(i))));
         allOptions.remove(QImageIOHandler::ImageOption(options.at(i)));
@@ -535,6 +564,39 @@ void tst_QImageWriter::saveWithNoFormat()
 
     QImage outImage = reader.read();
     QVERIFY2(!outImage.isNull(), qPrintable(reader.errorString()));
+}
+
+void tst_QImageWriter::resolution_data()
+{
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<int>("expectedDotsPerMeterX");
+    QTest::addColumn<int>("expectedDotsPerMeterY");
+#if defined QTEST_HAVE_TIFF
+    QTest::newRow("TIFF: 100 dpi") << ("image_100dpi.tif") << qRound(100 * (100 / 2.54)) << qRound(100 * (100 / 2.54));
+    QTest::newRow("TIFF: 50 dpi") << ("image_50dpi.tif") << qRound(50 * (100 / 2.54)) << qRound(50 * (100 / 2.54));
+    QTest::newRow("TIFF: 300 dot per meter") << ("image_300dpm.tif") << 300 << 300;
+#endif
+}
+
+void tst_QImageWriter::resolution()
+{
+    QFETCH(QString, filename);
+    QFETCH(int, expectedDotsPerMeterX);
+    QFETCH(int, expectedDotsPerMeterY);
+
+    QImage image(prefix + QLatin1String("colorful.bmp"));
+    image.setDotsPerMeterX(expectedDotsPerMeterX);
+    image.setDotsPerMeterY(expectedDotsPerMeterY);
+    const QString generatedFilepath = prefix + "gen-" + filename;
+    {
+        QImageWriter writer(generatedFilepath);
+        QVERIFY(writer.write(image));
+    }
+    QImageReader reader(generatedFilepath);
+    const QImage generatedImage = reader.read();
+
+    QCOMPARE(expectedDotsPerMeterX, generatedImage.dotsPerMeterX());
+    QCOMPARE(expectedDotsPerMeterY, generatedImage.dotsPerMeterY());
 }
 
 void tst_QImageWriter::saveToTemporaryFile()

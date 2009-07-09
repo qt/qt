@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -124,12 +124,20 @@ QT_USE_NAMESPACE
 -(void)mousePressed:(NSEvent *)mouseEvent;
 @end
 
-@interface QNSMenu : NSMenu {
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+
+@protocol NSMenuDelegate <NSObject>
+-(void)menuNeedsUpdate:(NSMenu*)menu;
+@end
+#endif
+
+
+@interface QNSMenu : NSMenu <NSMenuDelegate> {
     QMenu *qmenu;
 }
 -(QMenu*)menu;
 -(id)initWithQMenu:(QMenu*)qmenu;
--(void)menuNeedsUpdate:(QNSMenu*)menu;
 -(void)selectedAction:(id)item;
 @end
 
@@ -455,10 +463,11 @@ private:
     }
     return self;
 }
--(QMenu*)menu { 
-    return qmenu; 
+-(QMenu*)menu {
+    return qmenu;
 }
--(void)menuNeedsUpdate:(QNSMenu*)menu {
+-(void)menuNeedsUpdate:(NSMenu*)nsmenu {
+    QNSMenu *menu = static_cast<QNSMenu *>(nsmenu);
     emit static_cast<QSystemTrayIconQMenu*>(menu->qmenu)->doAboutToShow();
     for(int i = [menu numberOfItems]-1; i >= 0; --i)
         [menu removeItemAtIndex:i];

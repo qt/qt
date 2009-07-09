@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,7 +93,7 @@ public:
     Q3TextDragPrivate() { setSubType(QLatin1String("plain")); }
     void setSubType(const QString & st) {
         subtype = st;
-        fmt = QString(QLatin1String("text/")).toLatin1() + subtype.toLatin1();
+        fmt = "text/" + subtype.toLatin1();
     }
 
     QString txt;
@@ -208,11 +208,6 @@ void Q3DragObject::setPixmap(QPixmap pm, const QPoint& hotspot)
     Q_D(Q3DragObject);
     d->pixmap = pm;
     d->hot = hotspot;
-#if 0
-    QDragManager *manager = QDragManager::self();
-    if (manager && manager->object == d->data)
-        manager->updatePixmap();
-#endif
 }
 
 /*!
@@ -1302,7 +1297,7 @@ QByteArray Q3UriDrag::localFileToUri(const QString& filename)
         r.prepend(QString::fromLatin1(hostname));
     }
 #endif
-    return unicodeUriToUri(QString(QLatin1String("file://") + r));
+    return unicodeUriToUri(QLatin1String("file://") + r);
 }
 
 /*!
@@ -1357,7 +1352,7 @@ QString Q3UriDrag::uriToLocalFile(const char* uri)
         return file;
     if (0==qstrnicmp(uri,"file:/",6)) // It is a local file uri
         uri += 6;
-    else if (QString(QLatin1String(uri)).indexOf(QLatin1String(":/")) != -1) // It is a different scheme uri
+    else if (QString::fromLatin1(uri).indexOf(QLatin1String(":/")) != -1) // It is a different scheme uri
         return file;
 
     bool local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');

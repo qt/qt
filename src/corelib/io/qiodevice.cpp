@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,10 @@
 #include "qfile.h"
 #include "qstringlist.h"
 #include <limits.h>
+
+#ifdef QIODEVICE_DEBUG
+#  include <ctype.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1465,11 +1469,11 @@ QByteArray QIODevice::peek(qint64 maxSize)
 }
 
 /*!
-    Blocks until data is available for reading and the readyRead()
+    Blocks until new data is available for reading and the readyRead()
     signal has been emitted, or until \a msecs milliseconds have
     passed. If msecs is -1, this function will not time out.
 
-    Returns true if data is available for reading; otherwise returns
+    Returns true if new data is available for reading; otherwise returns
     false (if the operation timed out or if an error occurred).
 
     This function can operate without an event loop. It is
@@ -1756,7 +1760,7 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
     }
     qSort(modeList);
     debug << modeList.join(QLatin1String("|"));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif

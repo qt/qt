@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -214,8 +214,7 @@ QIcon QFileIconProvider::icon(IconType type) const
 QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 {
     QIcon retIcon;
-    QString fileExtension = fileInfo.suffix().toUpper();
-    fileExtension.prepend( QLatin1String(".") );
+    const QString fileExtension = QLatin1Char('.') + fileInfo.suffix().toUpper();
 
     QString key;
     if (fileInfo.isFile() && !fileInfo.isExecutable() && !fileInfo.isSymLink())
@@ -355,7 +354,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
         return icon;
 #endif
     if (info.isRoot())
-#if defined (Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_WS_WIN) && !defined(Q_WS_WINCE)
     {
         uint type = DRIVE_UNKNOWN;
         QT_WA({ type = GetDriveTypeW((wchar_t *)info.absoluteFilePath().utf16()); },
@@ -415,26 +414,22 @@ QString QFileIconProvider::type(const QFileInfo &info) const
     }
 
     if (info.isDir())
-        return QApplication::translate("QFileDialog",
 #ifdef Q_WS_WIN
-                                       "File Folder", "Match Windows Explorer"
+        return QApplication::translate("QFileDialog", "File Folder", "Match Windows Explorer");
 #else
-                                       "Folder", "All other platforms"
+        return QApplication::translate("QFileDialog", "Folder", "All other platforms");
 #endif
-            );
     // Windows   - "File Folder"
     // OS X      - "Folder"
     // Konqueror - "Folder"
     // Nautilus  - "folder"
 
     if (info.isSymLink())
-        return QApplication::translate("QFileDialog",
 #ifdef Q_OS_MAC
-                                       "Alias", "Mac OS X Finder"
+        return QApplication::translate("QFileDialog", "Alias", "Mac OS X Finder");
 #else
-                                       "Shortcut", "All other platforms"
+        return QApplication::translate("QFileDialog", "Shortcut", "All other platforms");
 #endif
-            );
     // OS X      - "Alias"
     // Windows   - "Shortcut"
     // Konqueror - "Folder" or "TXT File" i.e. what it is pointing to

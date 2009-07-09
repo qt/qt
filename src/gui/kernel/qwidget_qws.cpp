@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -565,20 +565,6 @@ void QWidget::activateWindow()
     }
 }
 
-/*
-  Should we require that  q is a toplevel window ???
-
-  Used by QWSManager
- */
-void QWidgetPrivate::blitToScreen(const QRegion &globalrgn)
-{
-    Q_Q(QWidget);
-    QWidget *win = q->window();
-    QBrush bgBrush = win->palette().brush(win->backgroundRole());
-    bool opaque = bgBrush.style() == Qt::NoBrush || bgBrush.isOpaque();
-    QWidget::qwsDisplay()->repaintRegion(win->data->winid, win->windowFlags(), opaque, globalrgn);
-}
-
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
@@ -1038,6 +1024,9 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+#ifndef QT_NO_QWS_MANAGER
+    extra->topextra->qwsManager = 0;
+#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

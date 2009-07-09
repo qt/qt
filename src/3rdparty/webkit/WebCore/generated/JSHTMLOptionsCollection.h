@@ -21,8 +21,9 @@
 #ifndef JSHTMLOptionsCollection_h
 #define JSHTMLOptionsCollection_h
 
-#include "JSHTMLCollection.h"
 #include "HTMLOptionsCollection.h"
+#include "JSHTMLCollection.h"
+
 namespace WebCore {
 
 class HTMLOptionsCollection;
@@ -31,42 +32,43 @@ class JSHTMLOptionsCollection : public JSHTMLCollection {
     typedef JSHTMLCollection Base;
 public:
     JSHTMLOptionsCollection(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLOptionsCollection>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
-    virtual void put(JSC::ExecState*, unsigned propertyName, JSC::JSValuePtr);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, unsigned propertyName, JSC::JSValue);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom attributes
-    JSC::JSValuePtr length(JSC::ExecState*) const;
-    void setLength(JSC::ExecState*, JSC::JSValuePtr);
+    JSC::JSValue length(JSC::ExecState*) const;
+    void setLength(JSC::ExecState*, JSC::JSValue);
 
     // Custom functions
-    JSC::JSValuePtr add(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr remove(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue add(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue remove(JSC::ExecState*, const JSC::ArgList&);
     HTMLOptionsCollection* impl() const
     {
         return static_cast<HTMLOptionsCollection*>(Base::impl());
     }
-    void indexSetter(JSC::ExecState*, unsigned index, JSC::JSValuePtr);
+    void indexSetter(JSC::ExecState*, unsigned index, JSC::JSValue);
 };
 
-HTMLOptionsCollection* toHTMLOptionsCollection(JSC::JSValuePtr);
+HTMLOptionsCollection* toHTMLOptionsCollection(JSC::JSValue);
 
 class JSHTMLOptionsCollectionPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -75,14 +77,14 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsHTMLOptionsCollectionPrototypeFunctionAdd(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsHTMLOptionsCollectionPrototypeFunctionRemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionAdd(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionRemove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsHTMLOptionsCollectionSelectedIndex(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLOptionsCollectionSelectedIndex(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLOptionsCollectionLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLOptionsCollectionLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsHTMLOptionsCollectionSelectedIndex(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLOptionsCollectionSelectedIndex(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLOptionsCollectionLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLOptionsCollectionLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

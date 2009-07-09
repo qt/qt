@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(OpenGL)
 
 class QGLFramebufferObjectPrivate;
+class QGLFramebufferObjectFormat;
 
 class Q_OPENGL_EXPORT QGLFramebufferObject : public QPaintDevice
 {
@@ -77,6 +78,9 @@ public:
                          GLenum target = GL_TEXTURE_2D, GLenum internal_format = GL_RGBA);
 #endif
 
+    QGLFramebufferObject(const QSize &size, const QGLFramebufferObjectFormat &format);
+    QGLFramebufferObject(int width, int height, const QGLFramebufferObjectFormat &format);
+
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
     QGLFramebufferObject(const QSize &size, QMacCompatGLenum target = GL_TEXTURE_2D);
     QGLFramebufferObject(int width, int height, QMacCompatGLenum target = GL_TEXTURE_2D);
@@ -89,10 +93,13 @@ public:
 
     virtual ~QGLFramebufferObject();
 
+    const QGLFramebufferObjectFormat &format() const;
+
     bool isValid() const;
     bool isBound() const;
     bool bind();
     bool release();
+
     GLuint texture() const;
     QSize size() const;
     QImage toImage() const;
@@ -110,6 +117,12 @@ public:
     void drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
 #endif
 
+    static bool hasOpenGLFramebufferBlit();
+    static void blitFramebuffer(QGLFramebufferObject *target, const QRect &targetRect,
+                                QGLFramebufferObject *source, const QRect &sourceRect,
+                                GLbitfield buffers = GL_COLOR_BUFFER_BIT,
+                                GLenum filter = GL_NEAREST);
+
 protected:
     int metric(PaintDeviceMetric metric) const;
     int devType() const { return QInternal::FramebufferObject; }
@@ -118,6 +131,42 @@ private:
     Q_DISABLE_COPY(QGLFramebufferObject)
     QScopedPointer<QGLFramebufferObjectPrivate> d_ptr;
     friend class QGLDrawable;
+};
+
+class QGLFramebufferObjectFormatPrivate;
+class Q_OPENGL_EXPORT QGLFramebufferObjectFormat
+{
+public:
+#if !defined(QT_OPENGL_ES) || defined(Q_QDOC)
+    QGLFramebufferObjectFormat(int samples = 0,
+                               QGLFramebufferObject::Attachment attachment = QGLFramebufferObject::NoAttachment,
+                               GLenum target = GL_TEXTURE_2D,
+                               GLenum internalFormat = GL_RGBA8);
+#else
+    QGLFramebufferObjectFormat(int samples = 0,
+                               QGLFramebufferObject::Attachment attachment = QGLFramebufferObject::NoAttachment,
+                               GLenum target = GL_TEXTURE_2D,
+                               GLenum internalFormat = GL_RGBA);
+#endif
+
+    QGLFramebufferObjectFormat(const QGLFramebufferObjectFormat &other);
+    QGLFramebufferObjectFormat &operator=(const QGLFramebufferObjectFormat &other);
+    ~QGLFramebufferObjectFormat();
+
+    void setSamples(int samples);
+    int samples() const;
+
+    void setAttachment(QGLFramebufferObject::Attachment attachment);
+    QGLFramebufferObject::Attachment attachment() const;
+
+    void setTextureTarget(GLenum target);
+    GLenum textureTarget() const;
+
+    void setInternalFormat(GLenum internalFormat);
+    GLenum internalFormat() const;
+
+private:
+    QGLFramebufferObjectFormatPrivate *d;
 };
 
 QT_END_NAMESPACE

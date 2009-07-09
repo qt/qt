@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,6 +107,8 @@ private slots:
     void removeServer();
 
     void recycleServer();
+
+    void multiConnect();
 
     void debug();
 
@@ -896,6 +898,31 @@ void tst_QLocalSocket::recycleServer()
     client.connectToServer("recycletest2");
     QVERIFY(client.waitForConnected(202));
     QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::multiConnect()
+{
+    QLocalServer server;
+    QLocalSocket client1;
+    QLocalSocket client2;
+    QLocalSocket client3;
+
+    QVERIFY(server.listen("multiconnect"));
+
+    client1.connectToServer("multiconnect");
+    client2.connectToServer("multiconnect");
+    client3.connectToServer("multiconnect");
+
+    QVERIFY(client1.waitForConnected(201));
+    QVERIFY(client2.waitForConnected(202));
+    QVERIFY(client3.waitForConnected(203));
+
+    QVERIFY(server.waitForNewConnection(201));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(203));
     QVERIFY(server.nextPendingConnection() != 0);
 }
 

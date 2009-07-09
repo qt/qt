@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,8 @@
 #include "qgl2pexvertexarray_p.h"
 
 #include <private/qbezier_p.h>
+
+QT_BEGIN_NAMESPACE
 
 void QGL2PEXVertexArray::clear()
 {
@@ -57,6 +59,12 @@ QGLRect QGL2PEXVertexArray::boundingRect() const
         return QGLRect(0.0, 0.0, 0.0, 0.0);
     else
         return QGLRect(minX, minY, maxX, maxY);
+}
+
+void QGL2PEXVertexArray::addRect(const QRectF &rect)
+{
+    vertexArray << rect.topLeft() << rect.topRight() << rect.bottomRight()
+                << rect.bottomRight() << rect.bottomLeft() << rect.topLeft();
 }
 
 void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseScale)
@@ -154,3 +162,5 @@ void QGL2PEXVertexArray::curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, 
         }
     }
 }
+
+QT_END_NAMESPACE

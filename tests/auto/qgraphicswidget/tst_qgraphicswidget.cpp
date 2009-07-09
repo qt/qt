@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -148,7 +148,14 @@ private slots:
     void setSizes();
     void closePopupOnOutsideClick();
     void defaultSize();
+    void explicitMouseGrabber();
+    void implicitMouseGrabber();
+    void doubleClickAfterExplicitMouseGrab();
+    void popupMouseGrabber();
+    void windowFlags_data();
+    void windowFlags();
     void shortcutsDeletion();
+    void painterStateProtectionOnWindowFrame();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -1736,6 +1743,10 @@ void tst_QGraphicsWidget::task236127_bspTreeIndexFails()
     widget->resize(10, 10);
     widget2->resize(10, 10);
     widget2->setZValue(1);
+    QCOMPARE(widget2->zValue(), qreal(1));
+    QCOMPARE(widget->zValue(), qreal(0));
+    widget->setData(0, "widget");
+    widget2->setData(0, "widget2");
 
     QGraphicsScene scene;
     scene.addItem(widget);
@@ -1746,7 +1757,7 @@ void tst_QGraphicsWidget::task236127_bspTreeIndexFails()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(50);
+    QTest::qWait(100);
 
     QVERIFY(!scene.itemAt(25, 25));
     widget->setGeometry(0, 112, 360, 528);
@@ -1784,6 +1795,480 @@ void tst_QGraphicsWidget::defaultSize()
 
 }
 
+void tst_QGraphicsWidget::explicitMouseGrabber()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    EventSpy widgetGrabEventSpy(widget, QEvent::GrabMouse);
+    EventSpy widgetUngrabEventSpy(widget, QEvent::UngrabMouse);
+
+    // Grab without scene
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsItem::grabMouse: cannot grab mouse without scene");
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsItem::ungrabMouse: cannot ungrab mouse without scene");
+    widget->ungrabMouse();
+    QCOMPARE(widgetUngrabEventSpy.count(), 0);
+
+    // Add to scene
+    QGraphicsScene scene;
+    scene.addItem(widget);
+
+    // Ungrab while not grabber
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsItem::ungrabMouse: not a mouse grabber");
+    widget->ungrabMouse();
+
+    // Simple grab with scene
+    QVERIFY(!scene.mouseGrabberItem());
+    widget->grabMouse();
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 1);
+    widget->ungrabMouse();
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(widgetUngrabEventSpy.count(), 1);
+
+    // Grab while grabbing
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 2);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsItem::grabMouse: already a mouse grabber");
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 2);
+    QCOMPARE(widgetUngrabEventSpy.count(), 1);
+    widget->ungrabMouse();
+    QCOMPARE(widgetUngrabEventSpy.count(), 2);
+
+    // Add two more widgets to the scene
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    scene.addItem(widget2);
+    EventSpy widget2GrabEventSpy(widget2, QEvent::GrabMouse);
+    EventSpy widget2UngrabEventSpy(widget2, QEvent::UngrabMouse);
+    QGraphicsWidget *widget3 = new QGraphicsWidget;
+    scene.addItem(widget3);
+    EventSpy widget3GrabEventSpy(widget3, QEvent::GrabMouse);
+    EventSpy widget3UngrabEventSpy(widget3, QEvent::UngrabMouse);
+
+    widget->setData(0, "widget");
+    widget2->setData(0, "widget2");
+    widget3->setData(0, "widget3");
+
+    // Simple nested grabbing
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 3);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    widget2->grabMouse();
+    QCOMPARE(widgetUngrabEventSpy.count(), 3);
+    QCOMPARE(widget2GrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget2);
+    widget3->grabMouse();
+    QCOMPARE(widget2UngrabEventSpy.count(), 1);
+    QCOMPARE(widget3GrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget3);
+    widget3->ungrabMouse();
+    QCOMPARE(widget3UngrabEventSpy.count(), 1);
+    QCOMPARE(widget2GrabEventSpy.count(), 2);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget2);
+    widget2->ungrabMouse();
+    QCOMPARE(widget2UngrabEventSpy.count(), 2);
+    QCOMPARE(widgetGrabEventSpy.count(), 4);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    widget->ungrabMouse();
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+
+    // Out of order ungrab
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 5);
+    widget2->grabMouse();
+    QCOMPARE(widget2GrabEventSpy.count(), 3);
+    widget3->grabMouse();
+    QCOMPARE(widget3GrabEventSpy.count(), 2);
+    widget2->ungrabMouse();
+    QCOMPARE(widget3UngrabEventSpy.count(), 2);
+    QCOMPARE(widget2UngrabEventSpy.count(), 4);
+    QCOMPARE(widgetGrabEventSpy.count(), 6);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+}
+
+void tst_QGraphicsWidget::implicitMouseGrabber()
+{
+    QGraphicsScene scene;
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    widget->setFlag(QGraphicsItem::ItemIsMovable); // can grab mouse
+    widget->resize(200, 200);
+    EventSpy widgetGrabEventSpy(widget, QEvent::GrabMouse);
+    EventSpy widgetUngrabEventSpy(widget, QEvent::UngrabMouse);
+    scene.addItem(widget);
+
+    QVERIFY(!scene.mouseGrabberItem());
+
+    // Click on an item, see if gain and lose implicit mouse grab.
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(widgetGrabEventSpy.count(), 1);
+    QCOMPARE(widgetUngrabEventSpy.count(), 1);
+
+    // Click on an item that already grabs the mouse. Shouldn't have any effect.
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 2);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 2);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 2);
+    QCOMPARE(widgetUngrabEventSpy.count(), 1);
+    widget->ungrabMouse();
+    QCOMPARE(widgetUngrabEventSpy.count(), 2);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+
+    // Implicit mouse grabber tries to explicitly grab the mouse
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 3);
+    widget->grabMouse();
+    QCOMPARE(widgetUngrabEventSpy.count(), 2);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 3);
+    QCOMPARE(widgetUngrabEventSpy.count(), 2);
+    widget->ungrabMouse();
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(widgetGrabEventSpy.count(), 3);
+    QCOMPARE(widgetUngrabEventSpy.count(), 3);
+
+    // Arrival of a new widget
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    widget2->setFlag(QGraphicsItem::ItemIsMovable); // can grab mouse
+    widget2->resize(200, 200);
+    widget2->setPos(205, 0);
+    EventSpy widget2GrabEventSpy(widget2, QEvent::GrabMouse);
+    EventSpy widget2UngrabEventSpy(widget2, QEvent::UngrabMouse);
+    scene.addItem(widget2);
+
+    // Implicit grab while there's an explicit grab is not possible.
+    widget->grabMouse();
+    QCOMPARE(widgetGrabEventSpy.count(), 4);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(250, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 4);
+    QCOMPARE(widget2GrabEventSpy.count(), 0);
+    QCOMPARE(widget2UngrabEventSpy.count(), 0);
+
+    scene.removeItem(widget);
+    QCOMPARE(widgetUngrabEventSpy.count(), 4);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+}
+
+class GrabOnPressItem : public QGraphicsRectItem
+{
+public:
+    GrabOnPressItem(const QRectF &rect)
+        : QGraphicsRectItem(rect),
+          npress(0), nrelease(0), ndoubleClick(0),
+          ngrab(0), nungrab(0)
+    {
+    }
+    int npress;
+    int nrelease;
+    int ndoubleClick;
+    int ngrab;
+    int nungrab;
+protected:
+    bool sceneEvent(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::GrabMouse:
+            ++ngrab;
+            break;
+        case QEvent::UngrabMouse:
+            ++nungrab;
+            break;
+        default:
+            break;
+        }
+        return QGraphicsRectItem::sceneEvent(event);
+    }
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *)
+    {
+        grabMouse();
+        ++npress;
+    }
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+    {
+        ungrabMouse();
+        ++nrelease;
+    }
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+    {
+        ++ndoubleClick;
+    }
+};
+
+void tst_QGraphicsWidget::doubleClickAfterExplicitMouseGrab()
+{
+    QGraphicsScene scene;
+    GrabOnPressItem *item = new GrabOnPressItem(QRectF(0, 0, 100, 100));
+    scene.addItem(item);
+
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(Qt::LeftButton);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)item);
+    QCOMPARE(item->npress, 1);
+    QCOMPARE(item->ngrab, 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(0);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(item->nrelease, 1);
+    QCOMPARE(item->nungrab, 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseDoubleClick);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(Qt::LeftButton);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)item);
+    QCOMPARE(item->ndoubleClick, 1);
+    QCOMPARE(item->ngrab, 2);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(0);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(item->nrelease, 2);
+    QCOMPARE(item->nungrab, 2);
+}
+
+void tst_QGraphicsWidget::popupMouseGrabber()
+{
+    QGraphicsScene scene;
+    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Popup);
+    widget->setFlag(QGraphicsItem::ItemIsMovable); // can grab mouse
+    widget->resize(200, 200);
+    EventSpy widgetGrabEventSpy(widget, QEvent::GrabMouse);
+    EventSpy widgetUngrabEventSpy(widget, QEvent::UngrabMouse);
+
+    // Simply adding a visible popup to the scene immediately grabs the mouse.
+    scene.addItem(widget);
+    QCOMPARE(widgetGrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+
+    // Hiding it loses the grab again.
+    widget->hide();
+    QCOMPARE(widgetUngrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+
+    // Showing it grabs the mosue again
+    widget->show();
+    QCOMPARE(widgetGrabEventSpy.count(), 2);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
+
+    // Add two popups
+    QGraphicsWidget *widget2 = new QGraphicsWidget(0, Qt::Popup);
+    widget2->setFlag(QGraphicsItem::ItemIsMovable); // can grab mouse
+    widget2->resize(200, 200);
+    EventSpy widget2GrabEventSpy(widget2, QEvent::GrabMouse);
+    EventSpy widget2UngrabEventSpy(widget2, QEvent::UngrabMouse);
+    QGraphicsWidget *widget3 = new QGraphicsWidget(0, Qt::Popup);
+    widget3->setFlag(QGraphicsItem::ItemIsMovable); // can grab mouse
+    widget3->resize(200, 200);
+    EventSpy widget3GrabEventSpy(widget3, QEvent::GrabMouse);
+    EventSpy widget3UngrabEventSpy(widget3, QEvent::UngrabMouse);
+
+    // Adding to the scene grabs
+    scene.addItem(widget2);
+    QCOMPARE(widgetUngrabEventSpy.count(), 2);
+    QCOMPARE(widget2GrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget2);
+
+    // Adding to the scene grabs again
+    scene.addItem(widget3);
+    QCOMPARE(widget2UngrabEventSpy.count(), 1);
+    QCOMPARE(widget3GrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget3);
+
+    // Hiding the topmost widget causes widget 2 to regain grab.
+    widget3->hide();
+    QCOMPARE(widget2GrabEventSpy.count(), 2);
+    QCOMPARE(widget3UngrabEventSpy.count(), 1);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget2);
+    widget3->show();
+    QCOMPARE(widget2UngrabEventSpy.count(), 2);
+    QCOMPARE(widget3GrabEventSpy.count(), 2);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget3);
+
+    // Clicking outside the popup still causes it to close (despite that it's
+    // an explicit mouse grabber).
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.ignore();
+        event.setButton(Qt::LeftButton);
+        event.setScenePos(QPointF(500, 500)); // outside
+        qApp->sendEvent(&scene, &event);
+    }
+    QVERIFY(!widget3->isVisible());
+    QCOMPARE(widget3UngrabEventSpy.count(), 2);
+    QCOMPARE(widget2GrabEventSpy.count(), 3);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget2);
+    QVERIFY(widget2->isVisible());
+    QVERIFY(widget->isVisible());
+    widget3->show();
+    QCOMPARE(widget3GrabEventSpy.count(), 3);
+    QCOMPARE(widget2UngrabEventSpy.count(), 3);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget3);
+
+    // This is something of a curiosity. What happens if you call
+    // ungrabMouse() on a popup? The answer is - it loses the grab. If you
+    // hide and show the popup again, it will regain the grab.
+    widget3->ungrabMouse();
+    QCOMPARE(widget3UngrabEventSpy.count(), 3);
+    QCOMPARE(widget2GrabEventSpy.count(), 4);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget2);
+    widget3->hide();
+    widget3->show();
+    QCOMPARE(widget3GrabEventSpy.count(), 4);
+    QCOMPARE(widget2UngrabEventSpy.count(), 4);
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget3);
+}
+
+void tst_QGraphicsWidget::windowFlags_data()
+{
+    QTest::addColumn<int>("inputFlags");
+    QTest::addColumn<int>("outputFlags");
+
+    QTest::newRow("nil") << 0 << 0;
+
+    // Window types
+    QTest::newRow("Qt::Window") << int(Qt::Window)
+                                << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                       | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
+    QTest::newRow("Qt::SubWindow") << int(Qt::SubWindow)
+                                   << int(Qt::SubWindow | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                          | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
+    QTest::newRow("Qt::Dialog") << int(Qt::Dialog)
+                                << int(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                       | Qt::WindowContextHelpButtonHint);
+    QTest::newRow("Qt::Sheet") << int(Qt::Sheet)
+                               << int(Qt::Sheet | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                      | Qt::WindowContextHelpButtonHint);
+    QTest::newRow("Qt::Tool") << int(Qt::Tool)
+                              << int(Qt::Tool | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
+
+    // Custom window flags
+    QTest::newRow("Qt::FramelessWindowHint") << int(Qt::FramelessWindowHint)
+                                             << int(Qt::FramelessWindowHint);
+    QTest::newRow("Qt::CustomizeWindowHint") << int(Qt::CustomizeWindowHint)
+                                             << int(Qt::CustomizeWindowHint);
+}
+
+void tst_QGraphicsWidget::windowFlags()
+{
+    QFETCH(int, inputFlags);
+    QFETCH(int, outputFlags);
+
+    // Construct with flags set already
+    QGraphicsWidget widget(0, Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget.windowFlags(), Qt::WindowFlags(outputFlags));
+
+    // Set flags after construction
+    QGraphicsWidget widget2;
+    widget2.setWindowFlags(Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget2.windowFlags(), Qt::WindowFlags(outputFlags));
+
+    // Reset flags
+    widget2.setWindowFlags(0);
+    QVERIFY(!widget2.windowFlags());
+
+    // Set flags back again
+    widget2.setWindowFlags(Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget2.windowFlags(), Qt::WindowFlags(outputFlags));
+
+    // Construct with custom flags set already
+    QGraphicsWidget widget3(0, Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+    QCOMPARE(widget3.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+
+    // Set custom flags after construction
+    QGraphicsWidget widget4;
+    widget4.setWindowFlags(Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+    QCOMPARE(widget4.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+
+    // Reset flags
+    widget4.setWindowFlags(0);
+    QVERIFY(!widget4.windowFlags());
+
+    // Set custom flags back again
+    widget4.setWindowFlags(Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+    QCOMPARE(widget4.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+
+    QGraphicsWidget *widget5 = new QGraphicsWidget;
+    widget5->setWindowFlags(Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
+    QGraphicsWidget window(0, Qt::Window);
+    widget5->setParentItem(&window);
+    QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
+}
+
 void tst_QGraphicsWidget::shortcutsDeletion()
 {
     QGraphicsWidget *widget = new QGraphicsWidget;
@@ -1796,6 +2281,41 @@ void tst_QGraphicsWidget::shortcutsDeletion()
     widget2->addAction(del);
     widget2->addAction(del);
     delete widget;
+}
+
+class MessUpPainterWidget : public QGraphicsWidget
+{
+public:
+    MessUpPainterWidget(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0)
+    : QGraphicsWidget(parent, wFlags)
+    {}
+
+    void paintWindowFrame(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QCOMPARE(painter->opacity(), 1.0);
+        painter->setOpacity(0.0);
+        QGraphicsWidget::paintWindowFrame(painter, option, widget);
+    }
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QCOMPARE(painter->opacity(), 1.0);
+        painter->drawRect(0, 0, 100, 100);
+        QGraphicsWidget::paint(painter, option, widget);
+    }
+
+};
+
+void tst_QGraphicsWidget::painterStateProtectionOnWindowFrame()
+{
+    MessUpPainterWidget *widget = new MessUpPainterWidget(0, Qt::Window);
+    QGraphicsScene scene(0, 0, 300, 300);
+    QGraphicsView view(&scene);
+    scene.addItem(widget);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(500);
 }
 
 class ProxyStyle : public QCommonStyle

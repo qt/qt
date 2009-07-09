@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,7 +66,7 @@ QCursorData::~QCursorData()
 {
     delete bm;
     delete bmm;
-#if !defined(Q_OS_WINCE) || defined(GWES_ICONCURS)
+#if !defined(Q_WS_WINCE) || defined(GWES_ICONCURS)
     if (hcurs)
         DestroyCursor(hcurs);
 #endif
@@ -129,7 +129,7 @@ extern HBITMAP qt_createIconMask(const QBitmap &bitmap);
 static HCURSOR create32BitCursor(const QPixmap &pixmap, int hx, int hy)
 {
     HCURSOR cur = 0;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     QBitmap mask = pixmap.mask();
     if (mask.isNull()) {
         mask = QBitmap(pixmap.size());
@@ -407,7 +407,7 @@ void QCursorData::update()
         }
         int n = qMax(1, bbits.width() / 8);
         int h = bbits.height();
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
         uchar* xBits = new uchar[h * n];
         uchar* xMask = new uchar[h * n];
         int x = 0;
@@ -430,7 +430,7 @@ void QCursorData::update()
                                    xBits, xMask);
         delete [] xBits;
         delete [] xMask;
-#elif defined(GWES_ICONCURS) // Q_OS_WINCE
+#elif defined(GWES_ICONCURS) // Q_WS_WINCE
         // Windows CE only supports fixed cursor size.
         int sysW = GetSystemMetrics(SM_CXCURSOR);
         int sysH = GetSystemMetrics(SM_CYCURSOR);

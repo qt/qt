@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -136,6 +136,7 @@ private slots:
     void rootItemFlags();
     void task218661_setHeaderData();
     void task245280_sortChildren();
+    void task253109_itemHeight();
 
     // QTreeWidgetItem
     void itemOperatorLessThan();
@@ -2433,6 +2434,10 @@ void tst_QTreeWidget::itemOperatorLessThan()
         item1.setText(0, "b");
         item2.setText(0, "a");
         QCOMPARE(item1 < item2, true);
+        tw.sortItems(0, Qt::AscendingOrder);
+        item1.setData(0, Qt::DisplayRole, 11);
+        item2.setData(0, Qt::DisplayRole, 2);
+        QCOMPARE(item1 < item2, false);
     }
 }
 
@@ -2877,6 +2882,25 @@ void tst_QTreeWidget::task245280_sortChildren()
 
     for (int i = 0; i < top.childCount(); ++i)
         QCOMPARE(top.child(i)->text(1), QString::number(i));
+}
+
+void tst_QTreeWidget::task253109_itemHeight()
+{
+    QTreeWidget treeWidget;
+    treeWidget.setColumnCount(1);
+    treeWidget.show();
+    QTest::qWait(200);
+
+    QTreeWidgetItem item(&treeWidget);
+    class MyWidget : public QWidget
+    {
+        virtual QSize sizeHint() const { return QSize(200,100); }
+    } w;
+    treeWidget.setItemWidget(&item, 0, &w);
+
+    QTest::qWait(200);
+    QCOMPARE(w.geometry(), treeWidget.visualItemRect(&item));
+
 }
 
 void tst_QTreeWidget::task206367_duplication()

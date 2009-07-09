@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -78,6 +78,7 @@ public:
     virtual void fromFile(const QString &filename, const char *format,
                           Qt::ImageConversionFlags flags);
     virtual void copy(const QPixmapData *data, const QRect &rect);
+    virtual bool scroll(int dx, int dy, const QRect &rect);
 
     virtual int metric(QPaintDevice::PaintDeviceMetric metric) const = 0;
     virtual void fill(const QColor &color) = 0;
@@ -98,13 +99,18 @@ public:
 
     virtual QImage* buffer();
 
-    int width() const { return metric(QPaintDevice::PdmWidth); }
-    int height() const { return metric(QPaintDevice::PdmHeight); }
-    int numColors() const { return metric(QPaintDevice::PdmNumColors); }
-    int depth() const { return metric(QPaintDevice::PdmDepth); }
+    inline int width() const { return w; }
+    inline int height() const { return h; }
+    inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
+    inline int depth() const { return d; }
+    inline bool isNull() const { return is_null; }
 
 protected:
     void setSerialNumber(int serNo);
+    int w;
+    int h;
+    int d;
+    bool is_null;
 
 private:
     friend class QPixmap;
@@ -121,7 +127,7 @@ private:
 };
 
 #ifdef Q_WS_WIN
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 QPixmap convertHIconToPixmap( const HICON icon);
 #else
 QPixmap convertHIconToPixmap( const HICON icon, bool large = false);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -168,12 +168,21 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     \section1 Creating a Custom Style
 
-    If you want to design a custom look and feel for your application,
-    the first step is to pick one of the styles provided with Qt to
-    build your custom style from. The choice will depend on which
-    existing style resembles your style the most. The most general
-    class that you can use as base is QCommonStyle (and not QStyle).
-    This is because Qt requires its styles to be \l{QCommonStyle}s.
+    You can create a custom look and feel for your application by
+    creating a custom style. There are two approaches to creating a
+    custom style. In the static approach, you either choose an
+    existing QStyle class, subclass it, and reimplement virtual
+    functions to provide the custom behavior, or you create an entire
+    QStyle class from scratch. In the dynamic approach, you modify the
+    behavior of your system style at runtime. The static approach is
+    described below. The dynamic approach is described in QProxyStyle.
+
+    The first step in the static approach is to pick one of the styles
+    provided by Qt from which you will build your custom style. Your
+    choice of QStyle class will depend on which style resembles your
+    desired style the most. The most general class that you can use as
+    a base is QCommonStyle (not QStyle). This is because Qt requires
+    its styles to be \l{QCommonStyle}s.
 
     Depending on which parts of the base style you want to change,
     you must reimplement the functions that are used to draw those
@@ -222,7 +231,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \section1 Using a Custom Style
 
     There are several ways of using a custom style in a Qt
-    application. The simplest way is call the
+    application. The simplest way is to pass the custom style to the
     QApplication::setStyle() static function before creating the
     QApplication object:
 
@@ -232,8 +241,8 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     it before the constructor, you ensure that the user's preference,
     set using the \c -style command-line option, is respected.
 
-    You may want to make your style available for use in other
-    applications, some of which may not be yours and are not available for
+    You may want to make your custom style available for use in other
+    applications, which may not be yours and hence not available for
     you to recompile. The Qt Plugin system makes it possible to create
     styles as plugins. Styles created as plugins are loaded as shared
     objects at runtime by Qt itself. Please refer to the \link
@@ -325,8 +334,9 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 QStyle::QStyle()
     : QObject(*new QStylePrivate)
 {
+    Q_D(QStyle);
+    d->proxyStyle = this;
 }
-
 
 /*!
     \internal
@@ -336,6 +346,8 @@ QStyle::QStyle()
 QStyle::QStyle(QStylePrivate &dd)
     : QObject(dd)
 {
+  Q_D(QStyle);
+  d->proxyStyle = this;
 }
 
 /*!
@@ -1048,6 +1060,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_TabBarTabRightButton Area for a widget on the right side of a tab in a tab bar.
     \value SE_TabBarTabText Area for the text on a tab in a tab bar.
 
+    \value SE_ToolBarHandle Area for the handle of a tool bar.
+
     \sa subElementRect()
 */
 
@@ -1177,6 +1191,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_All  Special value that matches all sub-controls.
     \omitvalue SC_Q3ListViewBranch
+    \omitvalue SC_CustomBase
 
     \sa ComplexControl
 */
@@ -1330,7 +1345,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_LayoutVerticalSpacing  Default \l{QLayout::spacing}{vertical spacing} for a QLayout.
 
     \value PM_MaximumDragDistance The maximum allowed distance between
-    the mouse and a slider when dragging. Exceeding the specified
+    the mouse and a scrollbar when dragging. Exceeding the specified
     distance will cause the slider to jump back to the original
     position; a value of -1 disables this behavior.
 
@@ -2437,9 +2452,36 @@ QDebug operator<<(QDebug debug, QStyle::State state)
 
     qSort(states);
     debug << states.join(QLatin1String(" | "));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif
+
+/*!
+    \since 4.6
+
+    \fn const QStyle *QStyle::proxy() const
+
+    This function returns the current proxy for this style.
+    By default most styles will return themselves. However
+    when a proxy style is in use, it will allow the style to
+    call back into its proxy.
+*/
+const QStyle * QStyle::proxy() const
+{
+    Q_D(const QStyle);
+    return d->proxyStyle;
+}
+
+/* \internal
+
+    This function sets the base style that style calls will be
+    redirected to. Note that ownership is not transferred.
+*/
+void QStyle::setProxy(QStyle *style)
+{
+    Q_D(QStyle);
+    d->proxyStyle = style;
+}
 
 QT_END_NAMESPACE

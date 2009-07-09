@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 #ifndef QT_NO_PROCESS
+
+template <class Key, class T> class QHash;
 
 #if (!defined(Q_OS_WIN32) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)) || defined(qdoc)
 typedef qint64 Q_PID;
@@ -126,6 +128,8 @@ public:
 
     void setEnvironment(const QStringList &environment);
     QStringList environment() const;
+    void setEnvironmentHash(const QHash<QString, QString> &environment);
+    QHash<QString, QString> environmentHash() const;
 
     QProcess::ProcessError error() const;
     QProcess::ProcessState state() const;
@@ -161,6 +165,7 @@ public:
     static bool startDetached(const QString &program);
 
     static QStringList systemEnvironment();
+    static QHash<QString, QString> systemEnvironmentHash();
 
 public Q_SLOTS:
     void terminate();

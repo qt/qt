@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -423,7 +423,7 @@ int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
         object = addXrefEntry(-1);
         QByteArray alphaDef;
         QPdf::ByteStream s(&alphaDef);
-        s << "<<\n/ca " << (brushAlpha/qreal(255.)) << "\n";
+        s << "<<\n/ca " << (brushAlpha/qreal(255.)) << '\n';
         s << "/CA " << (penAlpha/qreal(255.)) << "\n>>";
         xprintf("%s\nendobj\n", alphaDef.constData());
         alphaCache.insert(QPair<uint, uint>(brushAlpha, penAlpha), object);
@@ -1010,7 +1010,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
             s << (char)('A' + (tag % 26));
             tag /= 26;
         }
-        s <<  "+" << properties.postscriptName << "\n"
+        s <<  '+' << properties.postscriptName << "\n"
             "/Flags " << 4 << "\n"
             "/FontBBox ["
           << properties.boundingBox.x()*scale

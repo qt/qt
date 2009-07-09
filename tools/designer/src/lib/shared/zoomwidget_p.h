@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -104,8 +104,6 @@ class QDESIGNER_SHARED_EXPORT ZoomView : public QGraphicsView
 {
     Q_PROPERTY(int zoom READ zoom WRITE setZoom DESIGNABLE true SCRIPTABLE true)
     Q_PROPERTY(bool zoomContextMenuEnabled READ isZoomContextMenuEnabled WRITE setZoomContextMenuEnabled DESIGNABLE true SCRIPTABLE true)
-    Q_PROPERTY(bool autoScrollSuppressed READ isAutoScrollSuppressed WRITE setAutoScrollSuppressed DESIGNABLE true SCRIPTABLE true)
-
     Q_OBJECT
     Q_DISABLE_COPY(ZoomView)
 public:
@@ -119,10 +117,6 @@ public:
     // Zoom Menu on QGraphicsView.
     bool isZoomContextMenuEnabled() const;
     void setZoomContextMenuEnabled(bool e);
-
-    // Suppress scrolling when changing zoom. Default: on
-    bool isAutoScrollSuppressed() const;
-    void setAutoScrollSuppressed(bool s);
 
     QGraphicsScene &scene() { return *m_scene; }
     const QGraphicsScene &scene() const { return *m_scene; }
@@ -149,8 +143,7 @@ private:
     int m_zoom;
     qreal m_zoomFactor;
 
-    bool m_zoomContextMenuEnabled;
-    bool m_autoScrollSuppressed;
+    bool m_zoomContextMenuEnabled;    
     bool m_resizeBlocked;
     ZoomMenu *m_zoomMenu;
 };

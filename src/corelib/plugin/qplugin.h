@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,6 +63,21 @@ typedef QObject *(*QtPluginInstanceFunction)();
 
 void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunction function);
 
+struct qt_plugin_instance_deleter
+{
+    qt_plugin_instance_deleter(QPointer<QObject> &instance)
+        : instance_(instance)
+    {
+    }
+
+    ~qt_plugin_instance_deleter()
+    {
+        delete instance_;
+    }
+
+    QPointer<QObject> &instance_;
+};
+
 #define Q_IMPORT_PLUGIN(PLUGIN) \
         extern QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance_##PLUGIN(); \
         class Static##PLUGIN##PluginInstance{ \
@@ -76,8 +91,10 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 #define Q_PLUGIN_INSTANCE(IMPLEMENTATION) \
         { \
             static QT_PREPEND_NAMESPACE(QPointer)<QT_PREPEND_NAMESPACE(QObject)> _instance; \
-            if (!_instance)      \
+            if (!_instance) { \
+                static QT_PREPEND_NAMESPACE(qt_plugin_instance_deleter) deleter(_instance); \
                 _instance = new IMPLEMENTATION; \
+            } \
             return _instance; \
         }
 
@@ -114,7 +131,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
       "pattern=""QT_PLUGIN_VERIFICATION_DATA""\n" \
       "version="QT_VERSION_STR"\n" \
       "debug="QPLUGIN_DEBUG_STR"\n" \
-      "buildkey="QT_BUILD_KEY"\0";
+      "buildkey="QT_BUILD_KEY;
 
 #  if defined (Q_OS_WIN32) && defined(Q_CC_BOR)
 #     define Q_STANDARD_CALL __stdcall

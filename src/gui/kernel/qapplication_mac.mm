@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -154,13 +154,16 @@
 #define kThemeBrushAlternatePrimaryHighlightColor -5
 #endif
 
+#define kCMDeviceUnregisteredNotification CFSTR("CMDeviceUnregisteredNotification")
+#define kCMDefaultDeviceNotification CFSTR("CMDefaultDeviceNotification")
+#define kCMDeviceProfilesNotification CFSTR("CMDeviceProfilesNotification")
+#define kCMDefaultDeviceProfileNotification CFSTR("CMDefaultDeviceProfileNotification")
 
 QT_BEGIN_NAMESPACE
 
 //for qt_mac.h
 QPaintDevice *qt_mac_safe_pdev = 0;
 QList<QMacWindowChangeEvent*> *QMacWindowChangeEvent::change_events = 0;
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash(); // qapplication.cpp
 
 /*****************************************************************************
   Internal variables and functions
@@ -523,9 +526,9 @@ void qt_mac_update_os_settings()
         for(int i = 0; mac_widget_fonts[i].qt_class; i++) {
             QFont fnt = qfontForThemeFont(mac_widget_fonts[i].font_key);
             bool set_font = true;
-            QHash<QByteArray, QFont> *hash = qt_app_fonts_hash();
+            FontHash *hash = qt_app_fonts_hash();
             if (!hash->isEmpty()) {
-                QHash<QByteArray, QFont>::const_iterator it
+                FontHash::const_iterator it
                                         = hash->constFind(mac_widget_fonts[i].qt_class);
                 if (it != hash->constEnd())
                     set_font = (fnt != *it);
@@ -624,10 +627,9 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
             }
 
             bool set_palette = true;
-            extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
-            QHash<QByteArray, QPalette> *phash = qt_app_palettes_hash();
+            PaletteHash *phash = qt_app_palettes_hash();
             if (!phash->isEmpty()) {
-                QHash<QByteArray, QPalette>::const_iterator it
+                PaletteHash::const_iterator it
                                     = phash->constFind(mac_widget_colors[i].qt_class);
                 if (it != phash->constEnd())
                     set_palette = (pal != *it);
@@ -1040,11 +1042,29 @@ void qt_release_app_proc_handler()
 #endif
 }
 
+void qt_color_profile_changed(CFNotificationCenterRef, void *, CFStringRef, const void *,
+                              CFDictionaryRef)
+{
+    QCoreGraphicsPaintEngine::cleanUpMacColorSpaces();
+}
 /* platform specific implementations */
 void qt_init(QApplicationPrivate *priv, int)
 {
     if (qt_is_gui_used) {
         CGDisplayRegisterReconfigurationCallback(qt_mac_display_change_callbk, 0);
+        CFNotificationCenterRef center = CFNotificationCenterGetDistributedCenter();
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDeviceUnregisteredNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDefaultDeviceNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDeviceProfilesNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDefaultDeviceProfileNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
         ProcessSerialNumber psn;
         if (GetCurrentProcess(&psn) == noErr) {
             // Jambi needs to transform itself since most people aren't "used"
@@ -1196,10 +1216,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [qtMenuLoader release];
     }
 #endif
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
-        extern void qt_mac_set_native_menubar(bool);
-        qt_mac_set_native_menubar(false);
-    }
     // Register for Carbon tablet proximity events on the event monitor target.
     // This means that we should receive proximity events even when we aren't the active application.
     if (!tablet_proximity_handler) {
@@ -1228,6 +1244,12 @@ void qt_release_apple_event_handler()
 void qt_cleanup()
 {
     CGDisplayRemoveReconfigurationCallback(qt_mac_display_change_callbk, 0);
+    CFNotificationCenterRef center = CFNotificationCenterGetDistributedCenter();
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceUnregisteredNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceProfilesNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceProfileNotification, 0);
+
 #ifndef QT_MAC_USE_COCOA
     qt_release_app_proc_handler();
     if (app_proc_handlerUPP) {
@@ -1294,8 +1316,13 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
+#else
     if (qApp && qApp->activeWindow())
         qt_mac_set_cursor(&qApp->d_func()->cursor_list.first(), QCursor::pos());
+#endif
 }
 
 void QApplication::restoreOverrideCursor()
@@ -1304,12 +1331,17 @@ void QApplication::restoreOverrideCursor()
         return;
     qApp->d_func()->cursor_list.removeFirst();
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [NSCursor pop];
+#else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
         qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first(), QCursor::pos());
     }
-}
 #endif
+}
+#endif // QT_NO_CURSOR
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
@@ -1642,15 +1674,6 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
         bool inNonClientArea = false;
         GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, 0,
                           sizeof(where), 0, &where);
-        if(ekind == kEventMouseMoved && qt_mac_app_fullscreen &&
-            QApplication::desktop()->screenNumber(QPoint(where.h, where.v)) ==
-            QApplication::desktop()->primaryScreen()) {
-            if(where.v <= 0)
-                ShowMenuBar();
-            else if(qt_mac_window_at(where.h, where.v, 0) != inMenuBar)
-                HideMenuBar();
-        }
-
 #if defined(DEBUG_MOUSE_MAPS)
         const char *edesc = 0;
         switch(ekind) {
@@ -2982,5 +3005,10 @@ void onApplicationChangedActivation( bool activated )
     Q_UNUSED(activated);
 #endif
 }
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
 
 QT_END_NAMESPACE

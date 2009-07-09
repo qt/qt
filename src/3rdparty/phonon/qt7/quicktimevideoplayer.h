@@ -39,6 +39,7 @@ namespace Phonon
 namespace QT7
 {
     class QuickTimeStreamReader;
+    class QuickTimeMetaData;
 	class VideoRenderWidgetQTMovieView;
 
     class QuickTimeVideoPlayer : QObject
@@ -56,7 +57,7 @@ namespace QT7
 
             void setMediaSource(const MediaSource &source);
             MediaSource mediaSource() const;
-            void unsetVideo();
+            void unsetCurrentMediaSource();
 
             void play();
             void pause();
@@ -67,11 +68,13 @@ namespace QT7
             GLuint currentFrameAsGLTexture();
 			void *currentFrameAsCIImage();
             QImage currentFrameAsQImage();
+            void releaseImageCache();
             QRect videoRect() const;
 
             quint64 duration() const;
             quint64 currentTime() const;
             long timeScale() const;
+            float staticFps();
             QString currentTimeString();
 
             void setColors(qreal brightness = 0, qreal contrast = 1, qreal hue = 0, qreal saturation = 1);
@@ -84,6 +87,7 @@ namespace QT7
             bool setAudioDevice(int id);
             void setPlaybackRate(float rate);
             QTMovie *qtMovie() const;
+            QMultiMap<QString, QString> metaData();
 
             float playbackRate() const;
             float prefferedPlaybackRate() const;
@@ -103,6 +107,12 @@ namespace QT7
             float percentageLoaded();
             quint64 timeLoaded();
 
+            int trackCount() const;
+            int currentTrack() const;
+            void setCurrentTrack(int track);
+            QString movieCompactDiscPath() const;
+            QString currentTrackPath() const;
+
             static QString timeToString(quint64 ms);
 
 			// Help functions when drawing to more that one widget in cocoa 64:
@@ -116,6 +126,10 @@ namespace QT7
             QTMovie *m_QTMovie;
             State m_state;
             QGLPixelBuffer *m_QImagePixelBuffer;
+            QuickTimeMetaData *m_metaData;
+
+            CVOpenGLTextureRef m_cachedCVTextureRef;
+            QImage m_cachedQImage;
 
             bool m_playbackRateSat;
             bool m_isDrmProtected;
@@ -126,13 +140,18 @@ namespace QT7
             float m_masterVolume;
             float m_relativeVolume;
             float m_playbackRate;
+            float m_staticFps;
             quint64 m_currentTime;
             MediaSource m_mediaSource;
+
 			void *m_primaryRenderingCIImage;
 			qreal m_brightness;
 			qreal m_contrast;
 			qreal m_hue;
 			qreal m_saturation;
+            NSArray *m_folderTracks;
+            int m_currentTrack;
+            QString m_movieCompactDiscPath;
 
 #ifdef QUICKTIME_C_API_AVAILABLE
             QTVisualContextRef m_visualContext;
@@ -140,20 +159,26 @@ namespace QT7
             VideoFrame m_currentFrame;
             QuickTimeStreamReader *m_streamReader;
 
+            void prepareCurrentMovieForPlayback();
             void createVisualContext();
             void openMovieFromCurrentMediaSource();
             void openMovieFromDataRef(QTDataReference *dataRef);
             void openMovieFromFile();
             void openMovieFromUrl();
             void openMovieFromStream();
+            void openMovieFromCompactDisc();
             void openMovieFromData(QByteArray *data, char *fileType);
             void openMovieFromDataGuessType(QByteArray *data);
 			QString mediaSourcePath();
 			bool codecExistsAccordingToSuffix(const QString &fileName);
+            NSString* pathToCompactDisc();
+            bool isCompactDisc(NSString *path);
+            NSArray* scanFolder(NSString *path);
 
             void setError(NSError *error);
             bool errorOccured();
             void readProtection();
+            void calculateStaticFps();
             void checkIfVideoAwailable();
             bool movieNotLoaded();
             void waitStatePlayable();

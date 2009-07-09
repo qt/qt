@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,7 @@ static QString qt_strippedText(QString s)
         s.remove(i-1,1);
     }
     return s.trimmed();
-};
+}
 
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
@@ -137,25 +137,31 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
 void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 {
     Q_Q(QAction);
-    foreach (int id, alternateShortcutIds)
-        if (id)
+    for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+        if (const int id = alternateShortcutIds.at(i))
             map.removeShortcut(id, q);
+    }
     alternateShortcutIds.clear();
     if (alternateShortcuts.isEmpty())
         return;
-    foreach (const QKeySequence& alternate, alternateShortcuts) {
+    for(int i = 0; i < alternateShortcuts.count(); ++i) {
+        const QKeySequence& alternate = alternateShortcuts.at(i);
         if (!alternate.isEmpty())
             alternateShortcutIds.append(map.addShortcut(q, alternate, shortcutContext));
         else
             alternateShortcutIds.append(0);
     }
     if (!enabled) {
-        foreach (int id, alternateShortcutIds)
+        for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+            const int id = alternateShortcutIds.at(i);
             map.setShortcutEnabled(false, id, q);
+        }
     }
     if (!autorepeat) {
-        foreach (int id, alternateShortcutIds)
+        for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+            const int id = alternateShortcutIds.at(i);
             map.setShortcutAutoRepeat(false, id, q);
+        }
     }
 }
 
@@ -164,9 +170,10 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     Q_Q(QAction);
     if (shortcutId)
         map.setShortcutEnabled(enable, shortcutId, q);
-    foreach (int id, alternateShortcutIds)
-        if (id)
+    for(int i = 0; i < alternateShortcutIds.count(); ++i) {
+        if (const int id = alternateShortcutIds.at(i))
             map.setShortcutEnabled(enable, id, q);
+    }
 }
 #endif // QT_NO_SHORTCUT
 
@@ -250,7 +257,9 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
            as described in the QMenuBar documentation.
     \value ApplicationSpecificRole This action should be put in the application menu with an application specific role
     \value AboutQtRole This action matches handles the "About Qt" menu item.
-    \value AboutRole This action should be placed where the "About" menu item is in the application menu.
+    \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
+           the menu item will be set to "About <application name>". The application name is fetched from the
+           \c{Info.plist} file in the application's bundle (See \l{Deploying an Application on Mac OS X}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
 */
@@ -616,8 +625,10 @@ QAction::~QAction()
 #ifndef QT_NO_SHORTCUT
     if (d->shortcutId && qApp) {
         qApp->d_func()->shortcutMap.removeShortcut(d->shortcutId, this);
-        foreach (int id, d->alternateShortcutIds)
+        for(int i = 0; i < d->alternateShortcutIds.count(); ++i) {
+            const int id = d->alternateShortcutIds.at(i);
             qApp->d_func()->shortcutMap.removeShortcut(id, this);
+        }
     }
 #endif
 }
@@ -1152,6 +1163,8 @@ void QAction::activate(ActionEvent event)
             // the checked action of an exclusive group cannot be  unchecked
             if (d->checked && (d->group && d->group->isExclusive()
                                && d->group->checkedAction() == this)) {
+                if (guard)
+                    emit triggered(true);
                 QMetaObject::removeGuard(&guard);
                 return;
             }
@@ -1395,7 +1408,7 @@ QAction::SoftKeyRole QAction::softKeyRole() const
 void QAction::setIconVisibleInMenu(bool visible)
 {
     Q_D(QAction);
-    if (visible != (bool)d->iconVisibleInMenu) {
+    if (d->iconVisibleInMenu == -1 || visible != bool(d->iconVisibleInMenu)) {
         int oldValue = d->iconVisibleInMenu;
         d->iconVisibleInMenu = visible;
         // Only send data changed if we really need to.

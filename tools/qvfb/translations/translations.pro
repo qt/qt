@@ -27,6 +27,7 @@ SOURCES =  ../qvfb.cpp \
            ../../shared/deviceskin/deviceskin.cpp
 
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qvfb_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/qvfb_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qvfb_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qvfb_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qvfb_zh_TW.ts

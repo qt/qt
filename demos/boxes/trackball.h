@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,8 @@
 
 #include <QtGui>
 
-#include "vector.h"
+#include <QtGui/qvector3d.h>
+#include <QtGui/qquaternion.h>
 
 class TrackBall
 {
@@ -55,17 +56,17 @@ public:
         Sphere,
     };
     TrackBall(TrackMode mode = Sphere);
-    TrackBall(float angularVelocity, const gfx::Vector3f& axis, TrackMode mode = Sphere);
+    TrackBall(float angularVelocity, const QVector3D& axis, TrackMode mode = Sphere);
     // coordinates in [-1,1]x[-1,1]
-    void push(const QPointF& p, const gfx::Quaternionf &transformation);
-    void move(const QPointF& p, const gfx::Quaternionf &transformation);
-    void release(const QPointF& p, const gfx::Quaternionf &transformation);
+    void push(const QPointF& p, const QQuaternion &transformation);
+    void move(const QPointF& p, const QQuaternion &transformation);
+    void release(const QPointF& p, const QQuaternion &transformation);
     void start(); // starts clock
     void stop(); // stops clock
-    gfx::Quaternionf rotation() const;
+    QQuaternion rotation() const;
 private:
-    gfx::Quaternionf m_rotation;
-    gfx::Vector3f m_axis;
+    QQuaternion m_rotation;
+    QVector3D m_axis;
     float m_angularVelocity;
 
     QPointF m_lastPos;

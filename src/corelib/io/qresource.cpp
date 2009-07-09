@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,6 +59,37 @@
 //#define DEBUG_RESOURCE_MATCH
 
 QT_BEGIN_NAMESPACE
+
+
+class QStringSplitter
+{
+public:
+    QStringSplitter(const QString &s)
+        : m_string(s), m_data(m_string.constData()), m_len(s.length()), m_pos(0)
+    {
+        m_splitChar = QLatin1Char('/');
+    }
+
+    inline bool hasNext() {
+        while (m_pos < m_len && m_data[m_pos] == m_splitChar)
+            ++m_pos;
+        return m_pos < m_len;
+    }
+
+    inline QStringRef next() {
+        int start = m_pos;
+        while (m_pos < m_len && m_data[m_pos] != m_splitChar)
+            ++m_pos;
+        return QStringRef(&m_string, start, m_pos - start);
+    }
+
+    QString m_string;
+    const QChar *m_data;
+    QChar m_splitChar;
+    int m_len;
+    int m_pos;
+};
+
 
 //resource glue
 class QResourceRoot
@@ -100,6 +131,16 @@ protected:
         payloads = d;
     }
 };
+
+static QString cleanPath(const QString &_path)
+{
+    QString path = QDir::cleanPath(_path);
+    // QDir::cleanPath does not remove two trailing slashes under _Windows_
+    // due to support for UNC paths. Remove those manually.
+    if (path.startsWith(QLatin1String("//")))
+        path.remove(0, 1);
+    return path;
+}
 
 Q_DECLARE_TYPEINFO(QResourceRoot, Q_MOVABLE_TYPE);
 
@@ -216,9 +257,10 @@ QResourcePrivate::load(const QString &file)
     related.clear();
     QMutexLocker lock(resourceMutex());
     const ResourceList *list = resourceList();
+    QString cleaned = cleanPath(file);
     for(int i = 0; i < list->size(); ++i) {
         QResourceRoot *res = list->at(i);
-        const int node = res->findNode(file);
+        const int node = res->findNode(cleaned);
         if(node != -1) {
             if(related.isEmpty()) {
                 container = res->isContainer(node);
@@ -263,9 +305,8 @@ QResourcePrivate::ensureInitialized() const
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
 
-    bool found = false;
     if(path.startsWith(QLatin1Char('/'))) {
-        found = that->load(path);
+        that->load(path);
     } else {
         QMutexLocker lock(resourceMutex());
         QStringList searchPaths = *resourceSearchPaths();
@@ -273,7 +314,6 @@ QResourcePrivate::ensureInitialized() const
         for(int i = 0; i < searchPaths.size(); ++i) {
             const QString searchPath(searchPaths.at(i) + QLatin1Char('/') + path);
             if(that->load(searchPath)) {
-                found = true;
                 that->absoluteFilePath = QLatin1Char(':') + searchPath;
                 break;
             }
@@ -292,6 +332,7 @@ QResourcePrivate::ensureChildren() const
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
     QSet<QString> kids;
+    QString cleaned = cleanPath(path);
     for(int i = 0; i < related.size(); ++i) {
         QResourceRoot *res = related.at(i);
         if(res->mappingRootSubdir(path, &k) && !k.isEmpty()) {
@@ -300,7 +341,7 @@ QResourcePrivate::ensureChildren() const
                 kids.insert(k);
             }
         } else {
-            const int node = res->findNode(path);
+            const int node = res->findNode(cleaned);
             if(node != -1) {
                 QStringList related_children = res->children(node);
                 for(int kid = 0; kid < related_children.size(); ++kid) {
@@ -561,30 +602,32 @@ inline QString QResourceRoot::name(int node) const
                               (names[name_offset+1] << 0);
     name_offset += 2;
     name_offset += 4; //jump past hash
-    for(int i = 0; i < name_length*2; i+=2)
-        ret += QChar(names[name_offset+i+1], names[name_offset+i]);
+
+    ret.resize(name_length);
+    QChar *strData = ret.data();
+    for(int i = 0; i < name_length*2; i+=2) {
+        QChar c(names[name_offset+i+1], names[name_offset+i]);
+        *strData = c;
+        ++strData;
+    }
     return ret;
 }
+
 int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 {
-    QString path = QDir::cleanPath(_path);
-    // QDir::cleanPath does not remove two trailing slashes under _Windows_
-    // due to support for UNC paths. Remove those manually.
-    if (path.startsWith(QLatin1String("//")))
-        path.remove(0, 1);
-
+    QString path = _path;
     {
         QString root = mappingRoot();
         if(!root.isEmpty()) {
             if(root == path) {
-                path = QLatin1String("/");
+                path = QLatin1Char('/');
             } else {
-                if(!root.endsWith(QLatin1String("/")))
-                    root += QLatin1String("/");
+                if(!root.endsWith(QLatin1Char('/')))
+                    root += QLatin1Char('/');
                 if(path.size() >= root.size() && path.startsWith(root))
                     path = path.mid(root.length()-1);
                 if(path.isEmpty())
-                    path = QLatin1String("/");
+                    path = QLatin1Char('/');
             }
         }
     }
@@ -603,12 +646,11 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 
     //now iterate up the tree
     int node = -1;
-    QStringList segments = path.split(QLatin1Char('/'), QString::SkipEmptyParts);
-#ifdef DEBUG_RESOURCE_MATCH
-    qDebug() << "****" << segments;
-#endif
-    for(int i = 0; child_count && i < segments.size(); ++i) {
-        const QString &segment = segments[i];
+
+    QStringSplitter splitter(path);
+    while (child_count && splitter.hasNext()) {
+        QStringRef segment = splitter.next();
+
 #ifdef DEBUG_RESOURCE_MATCH
         qDebug() << "  CHILDREN" << segment;
         for(int j = 0; j < child_count; ++j) {
@@ -650,7 +692,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
                                         (tree[offset+1] << 0);
                     offset += 2;
 
-                    if(i == segments.size()-1) {
+                    if(!splitter.hasNext()) {
                         if(!(flags & Directory)) {
                             const short country = (tree[offset+0] << 8) +
                                                   (tree[offset+1] << 0);

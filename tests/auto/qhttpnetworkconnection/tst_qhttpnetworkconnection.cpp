@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include "private/qhttpnetworkconnection_p.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 #include <QAuthenticator>
 
 #include "../network-settings.h"
@@ -311,8 +312,8 @@ void tst_QHttpNetworkConnection::put()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Put);
 
     QByteArray array = data.toLatin1();
-    QBuffer buffer(&array);
-    request.setData(&buffer);
+    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    request.setUploadByteDevice(bd);
 
     finishedCalled = false;
     finishedWithErrorCalled = false;
@@ -401,8 +402,8 @@ void tst_QHttpNetworkConnection::post()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Post);
 
     QByteArray array = data.toLatin1();
-    QBuffer buffer(&array);
-    request.setData(&buffer);
+    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    request.setUploadByteDevice(bd);
 
     QHttpNetworkReply *reply = connection.sendRequest(request);
 

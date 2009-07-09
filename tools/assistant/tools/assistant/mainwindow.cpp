@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -137,7 +137,14 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     if (initHelpDB()) {
         setupFilterToolbar();
         setupAddressToolbar();
+
         m_bookmarkManager->setupBookmarkModels();
+        m_bookmarkMenu->addSeparator();
+        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
+        connect(m_bookmarkMenu, SIGNAL(triggered(QAction*)), this,
+            SLOT(showBookmark(QAction*)));
+        connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
+            SLOT(updateBookmarkMenu()));
 
         setWindowTitle(m_helpEngine->customValue(QLatin1String("WindowTitle"),
             defWindowTitle).toString());
@@ -370,6 +377,29 @@ void MainWindow::checkInitState()
     }
 }
 
+void MainWindow::updateBookmarkMenu()
+{
+    if (m_bookmarkManager) {
+        m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
+        
+        m_bookmarkMenu->clear();
+        
+        m_bookmarkMenu->addAction(m_bookmarkMenuAction);
+        m_bookmarkMenu->addSeparator();
+        
+        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
+    }
+}
+
+void MainWindow::showBookmark(QAction *action)
+{
+    if (m_bookmarkManager) {
+        const QUrl &url = m_bookmarkManager->urlForAction(action);
+        if (url.isValid())
+            m_centralWidget->setSource(url);
+    }
+}
+
 void MainWindow::insertLastPages()
 {
     if (m_cmdLine->url().isValid())
@@ -412,7 +442,7 @@ void MainWindow::setupActions()
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(tr("CTRL+Q"));
+    tmp->setShortcut(QKeySequence::Quit);
     tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));
@@ -468,7 +498,7 @@ void MainWindow::setupActions()
 
     menu = menuBar()->addMenu(tr("&Go"));
     m_homeAction = menu->addAction(tr("&Home"), m_centralWidget, SLOT(home()));
-    m_homeAction->setShortcut(tr("Ctrl+Home"));
+    m_homeAction->setShortcut(tr("ALT+Home"));
     m_homeAction->setIcon(QIcon(resourcePath + QLatin1String("/home.png")));
 
     m_backAction = menu->addAction(tr("&Back"), m_centralWidget, SLOT(backward()));
@@ -495,9 +525,10 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
-    menu = menuBar()->addMenu(tr("&Bookmarks"));
-    tmp = menu->addAction(tr("Add Bookmark..."), this, SLOT(addBookmark()));
-    tmp->setShortcut(tr("CTRL+D"));
+    m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
+    m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
+        this, SLOT(addBookmark()));
+    m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
@@ -748,7 +779,7 @@ void MainWindow::copyAvailable(bool yes)
 
 void MainWindow::addNewBookmark(const QString &title, const QString &url)
 {
-    if (url.isEmpty())
+    if (url.isEmpty() || url == QLatin1String("about:blank"))
         return;
 
     m_bookmarkManager->showBookmarkDialog(this, title, url);
@@ -797,23 +828,16 @@ void MainWindow::showAboutDialog()
             aboutDia.setPixmap(pix);
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
-        // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
-        QString edition;
-        QString info;
-        QString moreInfo;
-
         QByteArray resources;
         aboutDia.setText(QString::fromLatin1("<center>"
             "<h3>%1</h3>"
-            "<p>Version %2 %3</p></center>"
-            "<p>%4</p>"
-            "<p>%5</p>"
+            "<p>Version %2</p></center>"
             "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)"
             ".</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
             " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
             " PARTICULAR PURPOSE.<p/>")
-            .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR))
-            .arg(edition).arg(info).arg(moreInfo), resources);
+            .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
+            resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");
         aboutDia.setPixmap(QString(path));
     }

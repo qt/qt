@@ -44,7 +44,7 @@ JSObject* JSStaticScopeObject::toThisObject(ExecState* exec) const
     return exec->globalThisValue();
 }
 
-void JSStaticScopeObject::put(ExecState*, const Identifier& propertyName, JSValuePtr value, PutPropertySlot&)
+void JSStaticScopeObject::put(ExecState*, const Identifier& propertyName, JSValue value, PutPropertySlot&)
 {
     if (symbolTablePut(propertyName, value))
         return;
@@ -52,7 +52,7 @@ void JSStaticScopeObject::put(ExecState*, const Identifier& propertyName, JSValu
     ASSERT_NOT_REACHED();
 }
 
-void JSStaticScopeObject::putWithAttributes(ExecState*, const Identifier& propertyName, JSValuePtr value, unsigned attributes)
+void JSStaticScopeObject::putWithAttributes(ExecState*, const Identifier& propertyName, JSValue value, unsigned attributes)
 {
     if (symbolTablePutWithAttributes(propertyName, value, attributes))
         return;
@@ -74,11 +74,6 @@ JSStaticScopeObject::~JSStaticScopeObject()
 inline bool JSStaticScopeObject::getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot& slot)
 {
     return symbolTableGet(propertyName, slot);
-}
-
-inline bool JSStaticScopeObject::getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot& slot, bool& slotIsWriteable)
-{
-    return symbolTableGet(propertyName, slot, slotIsWriteable);
 }
 
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,13 +73,13 @@ PrettyPretty::~PrettyPretty()
 
 void PrettyPretty::acceptAsBlock(AST::Node *node)
 {
-    out << "{";
+    out << '{';
     pushIndentLevel();
     newlineAndIndent();
     accept(node);
     popIndentLevel();
     newlineAndIndent();
-    out << "}";
+    out << '}';
 }
 
 int PrettyPretty::operatorPrecedenceLevel(int op)
@@ -230,8 +230,8 @@ void PrettyPretty::endVisit(AST::FalseLiteral *node)
 bool PrettyPretty::visit(AST::StringLiteral *node)
 {
     QString lit = QScriptEnginePrivate::toString(node->value);
-    lit.replace(QLatin1String("\\"), QLatin1String("\\\\"));
-    out << "\"" << lit << "\"";
+    lit.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
+    out << '\"' << lit << '\"';
     return false;
 }
 
@@ -253,7 +253,7 @@ void PrettyPretty::endVisit(AST::NumericLiteral *node)
 
 bool PrettyPretty::visit(AST::RegExpLiteral *node)
 {
-    out << "/" << QScriptEnginePrivate::toString(node->pattern) << "/";
+    out << '/' << QScriptEnginePrivate::toString(node->pattern) << '/';
     if (node->flags)
         out << QScript::Ecma::RegExp::flagsToString(node->flags);
 
@@ -267,10 +267,10 @@ void PrettyPretty::endVisit(AST::RegExpLiteral *node)
 
 bool PrettyPretty::visit(AST::ArrayLiteral *node)
 {
-    out << "[";
+    out << '[';
     accept(node->elements);
     accept(node->elision);
-    out << "]";
+    out << ']';
     return false;
 }
 
@@ -281,7 +281,7 @@ void PrettyPretty::endVisit(AST::ArrayLiteral *node)
 
 bool PrettyPretty::visit(AST::ObjectLiteral *node)
 {
-    out << "{";
+    out << '{';
     if (node->properties) {
         pushIndentLevel();
         AST::PropertyNameAndValueList *prop;
@@ -289,12 +289,12 @@ bool PrettyPretty::visit(AST::ObjectLiteral *node)
             newlineAndIndent();
             accept(prop);
             if (prop->next)
-                out << ",";
+                out << ',';
         }
         popIndentLevel();
         newlineAndIndent();
     }
-    out << "}";
+    out << '}';
     return false;
 }
 
@@ -384,9 +384,9 @@ void PrettyPretty::endVisit(AST::NumericLiteralPropertyName *node)
 bool PrettyPretty::visit(AST::ArrayMemberExpression *node)
 {
     accept(node->base);
-    out << "[";
+    out << '[';
     accept(node->expression);
-    out << "]";
+    out << ']';
     return false;
 }
 
@@ -398,7 +398,7 @@ void PrettyPretty::endVisit(AST::ArrayMemberExpression *node)
 bool PrettyPretty::visit(AST::FieldMemberExpression *node)
 {
     accept(node->base);
-    out << "." << QScriptEnginePrivate::toString(node->name);
+    out << '.' << QScriptEnginePrivate::toString(node->name);
     return false;
 }
 
@@ -411,9 +411,9 @@ bool PrettyPretty::visit(AST::NewMemberExpression *node)
 {
     out << "new ";
     accept(node->base);
-    out << "(";
+    out << '(';
     accept(node->arguments);
-    out << ")";
+    out << ')';
     return false;
 }
 
@@ -437,9 +437,9 @@ void PrettyPretty::endVisit(AST::NewExpression *node)
 bool PrettyPretty::visit(AST::CallExpression *node)
 {
     accept(node->base);
-    out << "(";
+    out << '(';
     accept(node->arguments);
-    out << ")";
+    out << ')';
     return false;
 }
 
@@ -549,13 +549,13 @@ void PrettyPretty::endVisit(AST::PreDecrementExpression *node)
 
 bool PrettyPretty::visit(AST::UnaryPlusExpression *node)
 {
-    out << "+";
+    out << '+';
     bool needParens = (node->expression->binaryExpressionCast() != 0);
     if (needParens)
-        out << "(";
+        out << '(';
     accept(node->expression);
     if (needParens)
-        out << ")";
+        out << ')';
     return false;
 }
 
@@ -566,13 +566,13 @@ void PrettyPretty::endVisit(AST::UnaryPlusExpression *node)
 
 bool PrettyPretty::visit(AST::UnaryMinusExpression *node)
 {
-    out << "-";
+    out << '-';
     bool needParens = (node->expression->binaryExpressionCast() != 0);
     if (needParens)
-        out << "(";
+        out << '(';
     accept(node->expression);
     if (needParens)
-        out << ")";
+        out << ')';
     return false;
 }
 
@@ -583,13 +583,13 @@ void PrettyPretty::endVisit(AST::UnaryMinusExpression *node)
 
 bool PrettyPretty::visit(AST::TildeExpression *node)
 {
-    out << "~";
+    out << '~';
     bool needParens = (node->expression->binaryExpressionCast() != 0);
     if (needParens)
-        out << "(";
+        out << '(';
     accept(node->expression);
     if (needParens)
-        out << ")";
+        out << ')';
     return false;
 }
 
@@ -600,13 +600,13 @@ void PrettyPretty::endVisit(AST::TildeExpression *node)
 
 bool PrettyPretty::visit(AST::NotExpression *node)
 {
-    out << "!";
+    out << '!';
     bool needParens = (node->expression->binaryExpressionCast() != 0);
     if (needParens)
-        out << "(";
+        out << '(';
     accept(node->expression);
     if (needParens)
-        out << ")";
+        out << ')';
     return false;
 }
 
@@ -620,10 +620,10 @@ bool PrettyPretty::visit(AST::BinaryExpression *node)
     bool needParens = node->left->binaryExpressionCast()
                       && (compareOperatorPrecedence(node->left->binaryExpressionCast()->op, node->op) < 0);
     if (needParens)
-        out << "(";
+        out << '(';
     accept(node->left);
     if (needParens)
-        out << ")";
+        out << ')';
     QString s;
     switch (node->op) {
         case QSOperator::Add:
@@ -699,14 +699,14 @@ bool PrettyPretty::visit(AST::BinaryExpression *node)
         default:
             Q_ASSERT (0);
     }
-    out << " " << s << " ";
+    out << ' ' << s << ' ';
     needParens = node->right->binaryExpressionCast()
                  && (compareOperatorPrecedence(node->right->binaryExpressionCast()->op, node->op) <= 0);
     if (needParens)
-        out << "(";
+        out << '(';
     accept(node->right);
     if (needParens)
-        out << ")";
+        out << ')';
     return false;
 }
 
@@ -798,7 +798,7 @@ bool PrettyPretty::visit(AST::VariableStatement *node)
 void PrettyPretty::endVisit(AST::VariableStatement *node)
 {
     Q_UNUSED(node);
-    out << ";";
+    out << ';';
 }
 
 bool PrettyPretty::visit(AST::VariableDeclaration *node)
@@ -819,7 +819,7 @@ void PrettyPretty::endVisit(AST::VariableDeclaration *node)
 bool PrettyPretty::visit(AST::EmptyStatement *node)
 {
     Q_UNUSED(node);
-    out << ";";
+    out << ';';
     return true;
 }
 
@@ -831,7 +831,7 @@ void PrettyPretty::endVisit(AST::EmptyStatement *node)
 bool PrettyPretty::visit(AST::ExpressionStatement *node)
 {
     accept(node->expression);
-    out << ";";
+    out << ';';
     return false;
 }
 
@@ -959,9 +959,9 @@ bool PrettyPretty::visit(AST::ContinueStatement *node)
 {
     out << "continue";
     if (node->label) {
-        out << " " << QScriptEnginePrivate::toString(node->label);
+        out << ' ' << QScriptEnginePrivate::toString(node->label);
     }
-    out << ";";
+    out << ';';
     return false;
 }
 
@@ -974,9 +974,9 @@ bool PrettyPretty::visit(AST::BreakStatement *node)
 {
     out << "break";
     if (node->label) {
-        out << " " << QScriptEnginePrivate::toString(node->label);
+        out << ' ' << QScriptEnginePrivate::toString(node->label);
     }
-    out << ";";
+    out << ';';
     return false;
 }
 
@@ -989,10 +989,10 @@ bool PrettyPretty::visit(AST::ReturnStatement *node)
 {
     out << "return";
     if (node->expression) {
-        out << " ";
+        out << ' ';
         accept(node->expression);
     }
-    out << ";";
+    out << ';';
     return false;
 }
 
@@ -1067,7 +1067,7 @@ bool PrettyPretty::visit(AST::CaseClause *node)
 {
     out << "case ";
     accept(node->expression);
-    out << ":";
+    out << ':';
     if (node->statements) {
         newlineAndIndent();
         accept(node->statements);
@@ -1109,7 +1109,7 @@ bool PrettyPretty::visit(AST::ThrowStatement *node)
     Q_UNUSED(node);
     out << "throw ";
     accept(node->expression);
-    out << ";";
+    out << ';';
     return false;
 }
 
@@ -1166,10 +1166,10 @@ bool PrettyPretty::visit(AST::FunctionDeclaration *node)
     out << "function";
 
     if (node->name)
-        out << " " << QScriptEnginePrivate::toString(node->name);
+        out << ' ' << QScriptEnginePrivate::toString(node->name);
 
     // the arguments
-    out << "(";
+    out << '(';
     for (AST::FormalParameterList *it = node->formals; it; it = it->next) {
         if (it->name)
             out << QScriptEnginePrivate::toString(it->name);
@@ -1177,7 +1177,7 @@ bool PrettyPretty::visit(AST::FunctionDeclaration *node)
         if (it->next)
             out << ", ";
     }
-    out << ")";
+    out << ')';
 
     // the function body
     out << " {";
@@ -1190,7 +1190,7 @@ bool PrettyPretty::visit(AST::FunctionDeclaration *node)
         newlineAndIndent();
     }
 
-    out << "}";
+    out << '}';
 
     return false;
 }
@@ -1205,10 +1205,10 @@ bool PrettyPretty::visit(AST::FunctionExpression *node)
     out << "function";
 
     if (node->name)
-        out << " " << QScriptEnginePrivate::toString(node->name);
+        out << ' ' << QScriptEnginePrivate::toString(node->name);
 
     // the arguments
-    out << "(";
+    out << '(';
     for (AST::FormalParameterList *it = node->formals; it; it = it->next) {
         if (it->name)
             out << QScriptEnginePrivate::toString(it->name);
@@ -1216,7 +1216,7 @@ bool PrettyPretty::visit(AST::FunctionExpression *node)
         if (it->next)
             out << ", ";
     }
-    out << ")";
+    out << ')';
 
     // the function body
     out << " {";
@@ -1229,7 +1229,7 @@ bool PrettyPretty::visit(AST::FunctionExpression *node)
         newlineAndIndent();
     }
 
-    out << "}";
+    out << '}';
 
     return false;
 }
@@ -1320,7 +1320,7 @@ bool PrettyPretty::visit(AST::DebuggerStatement *node)
 void PrettyPretty::endVisit(AST::DebuggerStatement *node)
 {
     Q_UNUSED(node);
-    out << ";";
+    out << ';';
 }
 
 bool PrettyPretty::preVisit(AST::Node *node)

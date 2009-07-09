@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -150,6 +150,10 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \value AuthenticationRequiredError  the remote server requires
     authentication to serve the content but the credentials provided
     were not accepted (if any)
+
+    \value ContentReSendError          the request needed to be sent
+    again, but this failed for example because the upload data
+    could not be read a second time.
 
     \value ProtocolUnknownError         the Network Access API cannot
     honor the request because the protocol is not known

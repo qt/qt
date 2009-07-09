@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,6 +77,7 @@ public:
     virtual int displayHeight() const = 0;
     virtual int displayDepth() const = 0;
     virtual PixelFormat displayFormat() const { return DefaultFormat; }
+    virtual bool rgbSwapped() const { return false; }
     virtual Rotation displayRotation() const = 0;
 
     virtual void setGamma(double gr, double gg, double gb) = 0;
@@ -105,6 +106,7 @@ public slots:
     virtual void skinKeyPressEvent( int code, const QString& text, bool autorep=FALSE ) = 0;
     virtual void skinKeyReleaseEvent( int code, const QString& text, bool autorep=FALSE ) = 0;
     virtual void setViewFormat(PixelFormat) {}
+    virtual void setRgbSwapped( bool ) {};
     virtual void embedDisplay(WId) {}
 };
 
@@ -120,6 +122,7 @@ public:
     int displayHeight() const;
     int displayDepth() const;
     PixelFormat displayFormat() const;
+    bool rgbSwapped() const { return rgb_swapped; }
     Rotation displayRotation() const;
 
     bool touchScreenEmulation() const { return emulateTouchscreen; }
@@ -151,6 +154,7 @@ public slots:
     void skinKeyPressEvent(int code, const QString& text, bool autorep=FALSE);
     void skinKeyReleaseEvent(int code, const QString& text, bool autorep=FALSE);
     void setViewFormat(PixelFormat);
+    void setRgbSwapped(bool b) { rgb_swapped = b; }
 #ifdef Q_WS_X11
     void embedDisplay(WId id);
 #endif
@@ -180,6 +184,7 @@ private:
     void setDirty(const QRect&);
     int viewdepth; // "faked" depth
     PixelFormat viewFormat;
+    bool rgb_swapped;
     int rsh;
     int gsh;
     int bsh;

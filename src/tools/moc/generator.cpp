@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,6 +107,14 @@ uint qvariant_nameToType(const char* name)
 bool isVariantType(const char* type)
 {
     return qvariant_nameToType(type) != 0;
+}
+
+/*!
+  Returns true if the type is qreal.
+*/
+static bool isQRealType(const char *type)
+{
+    return strcmp(type, "qreal") == 0;
 }
 
 Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile)
@@ -545,7 +553,7 @@ void Generator::generateProperties()
         uint flags = Invalid;
         if (!isVariantType(p.type)) {
             flags |= EnumOrFlag;
-        } else {
+        } else if (!isQRealType(p.type)) {
             flags |= qvariant_nameToType(p.type) << 24;
         }
         if (!p.read.isEmpty())
@@ -589,10 +597,12 @@ void Generator::generateProperties()
         if (p.notifyId != -1)
             flags |= Notify;
 
-        fprintf(out, "    %4d, %4d, 0x%.8x,\n",
-                 strreg(p.name),
-                 strreg(p.type),
-                 flags);
+        fprintf(out, "    %4d, %4d, ",
+                strreg(p.name),
+                strreg(p.type));
+        if (!(flags >> 24) && isQRealType(p.type))
+            fprintf(out, "(QMetaType::QReal << 24) | ");
+        fprintf(out, "0x%.8x,\n", flags);
     }
 
     if(cdef->notifyableProperties) {
@@ -918,7 +928,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "        switch (_id) {\n");
     for (int ctorindex = 0; ctorindex < cdef->constructorList.count(); ++ctorindex) {
         fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
-                cdef->classname.constData(), cdef->classname.constData());
+                cdef->qualified.constData(), cdef->qualified.constData());
         const FunctionDef &f = cdef->constructorList.at(ctorindex);
         int offset = 1;
         for (int j = 0; j < f.arguments.count(); ++j) {
@@ -936,7 +946,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "    }\n");
 
     if (!isQObject)
-        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->classname.constData());
+        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->qualified.constData());
 
     fprintf(out, "    if (_id < 0)\n        return _id;\n");
 
@@ -1161,8 +1171,8 @@ void Generator::_generateFunctions(QList<FunctionDef> &list, int type)
         for (int j = 0; j < f.arguments.count(); ++j) {
             const ArgumentDef &a = f.arguments.at(j);
             if (j) {
-                sig += ",";
-                arguments += ",";
+                sig += ',';
+                arguments += ',';
             }
             sig += a.normalizedType;
             arguments += a.name;

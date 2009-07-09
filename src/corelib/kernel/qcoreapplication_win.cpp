@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,12 +51,11 @@
 
 QT_BEGIN_NAMESPACE
 
-// ############### DON'T EXPORT HERE!!!
-Q_CORE_EXPORT char         appFileName[MAX_PATH+1];                // application file name
-Q_CORE_EXPORT char         theAppName[MAX_PATH+1];                        // application name
-Q_CORE_EXPORT HINSTANCE appInst        = 0;                // handle to app instance
-Q_CORE_EXPORT HINSTANCE appPrevInst        = 0;                // handle to prev app instance
-Q_CORE_EXPORT int appCmdShow = 0;
+char         appFileName[MAX_PATH+1];                // application file name
+char         theAppName[MAX_PATH+1];                        // application name
+HINSTANCE appInst        = 0;                // handle to app instance
+HINSTANCE appPrevInst        = 0;                // handle to prev app instance
+int appCmdShow = 0;
 bool usingWinMain = false;  // whether the qWinMain() is used or not
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
@@ -68,6 +67,12 @@ Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app
 {
     return appPrevInst;
 }
+
+Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
+{
+    return appCmdShow;
+}
+
 
 void set_winapp_name()
 {
@@ -89,6 +94,14 @@ void set_winapp_name()
         int l = qstrlen(theAppName);
         if ((l > 4) && !qstricmp(theAppName + l - 4, ".exe"))
             theAppName[l-4] = '\0';                // drop .exe extension
+
+        if (appInst == 0) {
+            QT_WA({
+                appInst = GetModuleHandle(0);
+            }, {
+                appInst = GetModuleHandleA(0);
+            });
+        }
     }
 }
 
@@ -134,11 +147,11 @@ Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
     staticCriticalSection.lock();
     QT_WA({
         QString s(QString::fromLocal8Bit(str));
-        s += QLatin1String("\n");
+        s += QLatin1Char('\n');
         OutputDebugStringW((TCHAR*)s.utf16());
     }, {
         QByteArray s(str);
-        s += "\n";
+        s += '\n';
         OutputDebugStringA(s.data());
     })
     staticCriticalSection.unlock();
@@ -173,14 +186,14 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
 
   // Create command line
 
-    set_winapp_name();
-
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
     // Get Windows parameters
 
     appInst = instance;
     appPrevInst = prevInstance;
     appCmdShow = cmdShow;
+
+    set_winapp_name();
 }
 
 /*!
@@ -396,6 +409,7 @@ struct {
  { 0x020B, "WM_XBUTTONDOWN" },
  { 0x020C, "WM_XBUTTONUP" },
  { 0x020D, "WM_XBUTTONDBLCLK" },
+ { 0x020E, "WM_MOUSEHWHEEL" },
  { 0x0210, "WM_PARENTNOTIFY" },
  { 0x0211, "WM_ENTERMENULOOP" },
  { 0x0212, "WM_EXITMENULOOP" },
@@ -618,7 +632,7 @@ QString valueCheck(uint actual, ...)
 
 #ifdef Q_CC_BOR
 
-Q_CORE_EXPORT QString decodeMSG(const MSG& msg)
+QString decodeMSG(const MSG& msg)
 {
     return QString::fromLatin1("THis is not supported on Borland");
 }
@@ -827,7 +841,7 @@ QString decodeMSG(const MSG& msg)
                                              FLGSTR(ISC_SHOWUICANDIDATEWINDOW << 2),
                                              FLGSTR(ISC_SHOWUICANDIDATEWINDOW << 3),
                                              FLAG_STRING());
-                parameters.sprintf("Input context(%s) Show flags(%s)", (fSet?"Active":"Inactive"), showFlgs.toLatin1().data());
+                parameters.sprintf("Input context(%s) Show flags(%s)", (fSet? "Active" : "Inactive"), showFlgs.toLatin1().data());
             }
             break;
 #endif
@@ -884,6 +898,9 @@ QString decodeMSG(const MSG& msg)
 #endif
 #ifdef WM_MOUSEWHEEL
         case WM_MOUSEWHEEL:
+#endif
+#ifdef WM_MOUSEHWHEEL
+        case WM_MOUSEHWHEEL:
 #endif
 #ifdef WM_LBUTTONDBLCLK
         case WM_LBUTTONDBLCLK:

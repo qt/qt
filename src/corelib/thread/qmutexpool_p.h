@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QMutexPool
 {
 public:
-    explicit QMutexPool(bool recursive = false, int size = 128);
+    explicit QMutexPool(QMutex::RecursionMode recursionMode = QMutex::NonRecursive, int size = 131);
     ~QMutexPool();
 
     QMutex *get(const void *address);
@@ -72,9 +72,8 @@ public:
     static QMutex *globalInstanceGet(const void *address);
 
 private:
-    QVarLengthArray<QAtomicPointer<QMutex>, 128> mutexes;
-    int count;
-    bool recurs;
+    QVarLengthArray<QAtomicPointer<QMutex>, 131> mutexes;
+    QMutex::RecursionMode recursionMode;
 };
 
 extern Q_CORE_EXPORT QMutexPool *qt_global_mutexpool;

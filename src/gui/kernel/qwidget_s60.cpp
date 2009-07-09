@@ -144,7 +144,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }
 
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool /* dontShow */, const QRect & /* rect */)
 {
 
 }
@@ -252,7 +252,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     }
 }
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
+void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool destroyOldWindow)
 {
     Q_Q(QWidget);
 
@@ -266,16 +266,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                    || type == Qt::Sheet
                    || (flags & Qt::MSWindowsFixedSizeDialogHint));
     bool desktop = (type == Qt::Desktop);
-    bool tool = (type == Qt::Tool || type == Qt::Drawer);
+    //bool tool = (type == Qt::Tool || type == Qt::Drawer);
 
     WId id = 0;
 
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
-
-    // always initialize
-    if (!window)
-        initializeWindow = true;
 
     TRect clientRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
     int sw = clientRect.Width();
@@ -423,6 +419,32 @@ void QWidgetPrivate::setFocus_sys()
     if (q->testAttribute(Qt::WA_WState_Created) && q->window()->windowType() != Qt::Popup)
         if(!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
             q->effectiveWinId()->SetFocus(true);
+}
+
+void QWidgetPrivate::handleSymbianDeferredFocusChanged()
+{
+    Q_Q(QWidget);
+    WId control = q->internalWinId();
+    if (!control) {
+        // This could happen if the widget was reparented, while the focuschange
+        // was in the event queue.
+        return;
+    }
+
+    if (control->IsFocused()) {
+        QApplication::setActiveWindow(q);
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+    } else {
+        QApplication::setActiveWindow(0);
+    }
 }
 
 void QWidgetPrivate::raise_sys()
@@ -686,7 +708,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     }
 }
 
-void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
+void QWidgetPrivate::setWindowIconText_sys(const QString & /*iconText */)
 {
 
 }
@@ -738,7 +760,7 @@ void QWidgetPrivate::updateSystemBackground()
 
 }
 
-void QWidgetPrivate::registerDropSite(bool on)
+void QWidgetPrivate::registerDropSite(bool /* on */)
 {
 
 }
@@ -771,7 +793,7 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
     return new QS60WindowSurface(q_func());
 }
 
-void QWidgetPrivate::setMask_sys(const QRegion& region)
+void QWidgetPrivate::setMask_sys(const QRegion& /* region */)
 {
 
 }

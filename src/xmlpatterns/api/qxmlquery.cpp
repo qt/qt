@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1036,6 +1036,25 @@ bool QXmlQuery::setFocus(QIODevice *document)
     }
 
     return setFocusHelper(this, document);
+}
+
+/*!
+  This function behaves identically to calling the setFocus() overload with a
+  QIODevice whose content is \a focus encoded as UTF-8. That is, \a focus is
+  treated as if it contained an XML document.
+
+  Returns the same result as the overload.
+
+  \overload
+  \since 4.6
+ */
+bool QXmlQuery::setFocus(const QString &focus)
+{
+    QBuffer device;
+    device.setData(focus.toUtf8());
+    device.open(QIODevice::ReadOnly);
+
+    return setFocusHelper(this, &device);
 }
 
 /*!

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -100,12 +100,18 @@ QScriptDebuggerCommandExecutor::~QScriptDebuggerCommandExecutor()
 {
 }
 
+static bool isPrefixOf(const QString &prefix, const QString &what)
+{
+    return ((what.length() > prefix.length())
+            && what.startsWith(prefix));
+}
+
 /*!
   Applies the given \a command to the given \a backend.
 */
 QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
-        QScriptDebuggerBackend *backend,
-        const QScriptDebuggerCommand &command)
+    QScriptDebuggerBackend *backend,
+    const QScriptDebuggerCommand &command)
 {
     QScriptDebuggerResponse response;
     switch (command.type()) {
@@ -297,6 +303,104 @@ QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
 
     case QScriptDebuggerCommand::ContextsCheckpoint: {
         response.setResult(qVariantFromValue(backend->contextsCheckpoint()));
+    }   break;
+
+    case QScriptDebuggerCommand::GetPropertyExpressionValue: {
+        QScriptContext *ctx = backend->context(command.contextIndex());
+        int lineNumber = command.lineNumber();
+        QVariant attr = command.attribute(QScriptDebuggerCommand::UserAttribute);
+        QStringList path = attr.toStringList();
+        if (!ctx || path.isEmpty())
+            break;
+        QScriptContextInfo ctxInfo(ctx);
+        if (ctx->callee().isValid()
+            && ((lineNumber < ctxInfo.functionStartLineNumber())
+                || (lineNumber > ctxInfo.functionEndLineNumber()))) {
+            break;
+        }
+        QScriptValueList objects;
+        int pathIndex = 0;
+        if (path.at(0) == QLatin1String("this")) {
+            objects.append(ctx->thisObject());
+            ++pathIndex;
+        } else {
+            objects << ctx->scopeChain();
+        }
+        for (int i = 0; i < objects.size(); ++i) {
+            QScriptValue val = objects.at(i);
+            for (int j = pathIndex; val.isValid() && (j < path.size()); ++j) {
+                val = val.property(path.at(j));
+            }
+            if (val.isValid()) {
+                bool hadException = (ctx->state() == QScriptContext::ExceptionState);
+                QString str = val.toString();
+                if (!hadException && backend->engine()->hasUncaughtException())
+                    backend->engine()->clearExceptions();
+                response.setResult(str);
+                break;
+            }
+        }
+    }   break;
+
+    case QScriptDebuggerCommand::GetCompletions: {
+        QScriptContext *ctx = backend->context(command.contextIndex());
+        QVariant attr = command.attribute(QScriptDebuggerCommand::UserAttribute);
+        QStringList path = attr.toStringList();
+        if (!ctx || path.isEmpty())
+            break;
+        QScriptValueList objects;
+        QString prefix = path.last();
+        QSet<QString> matches;
+        if (path.size() > 1) {
+            const QString &topLevelIdent = path.at(0);
+            QScriptValue obj;
+            if (topLevelIdent == QLatin1String("this")) {
+                obj = ctx->thisObject();
+            } else {
+                QScriptValueList scopeChain;
+                scopeChain = ctx->scopeChain();
+                for (int i = 0; i < scopeChain.size(); ++i) {
+                    QScriptValue oo = scopeChain.at(i).property(topLevelIdent);
+                    if (oo.isObject()) {
+                        obj = oo;
+                        break;
+                    }
+                }
+            }
+            for (int i = 1; obj.isObject() && (i < path.size()-1); ++i)
+                obj = obj.property(path.at(i));
+            if (obj.isValid())
+                objects.append(obj);
+        } else {
+            objects << ctx->scopeChain();
+            QStringList keywords;
+            keywords.append(QString::fromLatin1("this"));
+            keywords.append(QString::fromLatin1("true"));
+            keywords.append(QString::fromLatin1("false"));
+            keywords.append(QString::fromLatin1("null"));
+            for (int i = 0; i < keywords.size(); ++i) {
+                const QString &kwd = keywords.at(i);
+                if (isPrefixOf(prefix, kwd))
+                    matches.insert(kwd);
+            }
+        }
+
+        for (int i = 0; i < objects.size(); ++i) {
+            QScriptValue obj = objects.at(i);
+            while (obj.isObject()) {
+                QScriptValueIterator it(obj);
+                while (it.hasNext()) {
+                    it.next();
+                    QString propertyName = it.name();
+                    if (isPrefixOf(prefix, propertyName))
+                        matches.insert(propertyName);
+                }
+                obj = obj.prototype();
+            }
+        }
+        QStringList matchesList = matches.toList();
+        qStableSort(matchesList);
+        response.setResult(matchesList);
     }   break;
 
     case QScriptDebuggerCommand::NewScriptObjectSnapshot: {

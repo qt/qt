@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------------
 --
 -- Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
--- Contact: Qt Software Information (qt-info@nokia.com)
+-- Contact: Nokia Corporation (qt-info@nokia.com)
 --
 -- This file is part of the QtCore module of the Qt Toolkit.
 --
@@ -34,7 +34,7 @@
 -- met: http://www.gnu.org/copyleft/gpl.html.
 --
 -- If you are unsure which license is appropriate for your use, please
--- contact the sales department at qt-sales@nokia.com.
+-- contact the sales department at http://www.qtsoftware.com/contact.
 -- $QT_END_LICENSE$
 --
 -- This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
@@ -1533,8 +1533,8 @@ attribute ::= qname space_opt EQ space_opt attribute_value;
                     QStringRef namespacePrefix = symString(attribute.key);
                     QStringRef namespaceUri = symString(attribute.value);
                     attributeStack.pop();
-                    if ((namespacePrefix == QLatin1String("xml")
-                         ^ namespaceUri == QLatin1String("http://www.w3.org/XML/1998/namespace"))
+                    if (((namespacePrefix == QLatin1String("xml"))
+                         ^ (namespaceUri == QLatin1String("http://www.w3.org/XML/1998/namespace")))
                         || namespaceUri == QLatin1String("http://www.w3.org/2000/xmlns/")
                         || namespaceUri.isEmpty()
                         || namespacePrefix == QLatin1String("xmlns"))

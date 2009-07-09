@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,7 +96,7 @@ public:
 
         ShowBase            = 0x80,
         UppercaseBase       = 0x100,
-        ForcePoint          = Alternate,
+        ForcePoint          = Alternate
     };
 
     enum GroupSeparatorMode {
@@ -140,29 +140,29 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    quint32 m_language_id, m_country_id;
+    quint16 m_language_id, m_country_id;
 
     quint16 m_decimal, m_group, m_list, m_percent,
         m_zero, m_minus, m_plus, m_exponential;
 
-    quint32 m_short_date_format_idx, m_short_date_format_size;
-    quint32 m_long_date_format_idx, m_long_date_format_size;
-    quint32 m_short_time_format_idx, m_short_time_format_size;
-    quint32 m_long_time_format_idx, m_long_time_format_size;
-    quint32 m_standalone_short_month_names_idx, m_standalone_short_month_names_size;
-    quint32 m_standalone_long_month_names_idx, m_standalone_long_month_names_size;
-    quint32 m_standalone_narrow_month_names_idx, m_standalone_narrow_month_names_size;
-    quint32 m_short_month_names_idx, m_short_month_names_size;
-    quint32 m_long_month_names_idx, m_long_month_names_size;
-    quint32 m_narrow_month_names_idx, m_narrow_month_names_size;
-    quint32 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
-    quint32 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
-    quint32 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
-    quint32 m_short_day_names_idx, m_short_day_names_size;
-    quint32 m_long_day_names_idx, m_long_day_names_size;
-    quint32 m_narrow_day_names_idx, m_narrow_day_names_size;
-    quint32 m_am_idx, m_am_size;
-    quint32 m_pm_idx, m_pm_size;
+    quint16 m_short_date_format_idx, m_short_date_format_size;
+    quint16 m_long_date_format_idx, m_long_date_format_size;
+    quint16 m_short_time_format_idx, m_short_time_format_size;
+    quint16 m_long_time_format_idx, m_long_time_format_size;
+    quint16 m_standalone_short_month_names_idx, m_standalone_short_month_names_size;
+    quint16 m_standalone_long_month_names_idx, m_standalone_long_month_names_size;
+    quint16 m_standalone_narrow_month_names_idx, m_standalone_narrow_month_names_size;
+    quint16 m_short_month_names_idx, m_short_month_names_size;
+    quint16 m_long_month_names_idx, m_long_month_names_size;
+    quint16 m_narrow_month_names_idx, m_narrow_month_names_size;
+    quint16 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
+    quint16 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
+    quint16 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
+    quint16 m_short_day_names_idx, m_short_day_names_size;
+    quint16 m_long_day_names_idx, m_long_day_names_size;
+    quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
+    quint16 m_am_idx, m_am_size;
+    quint16 m_pm_idx, m_pm_size;
 };
 
 inline char QLocalePrivate::digitToCLocale(const QChar &in) const

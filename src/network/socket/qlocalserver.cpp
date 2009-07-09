@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -280,9 +280,13 @@ QLocalSocket *QLocalServer::nextPendingConnection()
     if(!d->socketNotifier)
         return nextSocket;
 #endif
+#ifndef QT_LOCALSOCKET_TCP
+    if (d->pendingConnections.size() <= d->maxPendingConnections)
 #ifndef Q_OS_WIN
-    d->socketNotifier->setEnabled(d->pendingConnections.size()
-                                   <= d->maxPendingConnections);
+        d->socketNotifier->setEnabled(true);
+#else
+        d->connectionEventNotifier->setEnabled(true);
+#endif
 #endif
     return nextSocket;
 }

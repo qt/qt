@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -333,7 +333,7 @@ public:
         this->stream = stream;
     }
 
-public slots:
+public Q_SLOTS:
     inline void flushStream() { stream->flush(); }
 
 private:
@@ -411,6 +411,7 @@ public:
     QString writeBuffer;
     QString readBuffer;
     int readBufferOffset;
+    int readConverterSavedStateOffset; //the offset between readBufferStartDevicePos and that start of the buffer
     qint64 readBufferStartDevicePos;
 
     // streaming parameters
@@ -437,6 +438,7 @@ QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
 #ifndef QT_NO_TEXTCODEC
     readConverterSavedState(0),
 #endif
+    readConverterSavedStateOffset(0),
     locale(QLocale::C)
 {
     this->q_ptr = q_ptr;
@@ -559,13 +561,8 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (!codec || autoDetectUnicode) {
         autoDetectUnicode = false;
 
-        if (bytesRead >= 4 && ((uchar(buf[0]) == 0xff && uchar(buf[1]) == 0xfe && uchar(buf[2]) == 0 && uchar(buf[3]) == 0)
-                               || (uchar(buf[0]) == 0 && uchar(buf[1]) == 0 && uchar(buf[2]) == 0xfe && uchar(buf[3]) == 0xff))) {
-            codec = QTextCodec::codecForName("UTF-32");
-        } else if (bytesRead >= 2 && ((uchar(buf[0]) == 0xff && uchar(buf[1]) == 0xfe)
-                                      || (uchar(buf[0]) == 0xfe && uchar(buf[1]) == 0xff))) {
-            codec = QTextCodec::codecForName("UTF-16");
-        } else if (!codec) {
+        codec = QTextCodec::codecForUtfText(QByteArray::fromRawData(buf, bytesRead), codec);
+        if (!codec) {
             codec = QTextCodec::codecForLocale();
             writeConverterState.flags |= QTextCodec::IgnoreHeader;
         }
@@ -835,6 +832,10 @@ inline void QTextStreamPrivate::consume(int size)
             readBufferOffset = 0;
             readBuffer.clear();
             saveConverterState(device->pos());
+        } else if (readBufferOffset > QTEXTSTREAM_BUFFERSIZE) {
+            readBuffer = readBuffer.remove(0,readBufferOffset);
+            readConverterSavedStateOffset += readBufferOffset;
+            readBufferOffset = 0;
         }
     }
 }
@@ -856,6 +857,7 @@ inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
 #endif
 
     readBufferStartDevicePos = newPos;
+    readConverterSavedStateOffset = 0;
 }
 
 /*! \internal
@@ -1217,7 +1219,7 @@ qint64 QTextStream::pos() const
 
         // Rewind the device to get to the current position Ensure that
         // readBufferOffset is unaffected by fillReadBuffer()
-        int oldReadBufferOffset = d->readBufferOffset;
+        int oldReadBufferOffset = d->readBufferOffset + d->readConverterSavedStateOffset;
         while (d->readBuffer.size() < oldReadBufferOffset) {
             if (!thatd->fillReadBuffer(1))
                 return qint64(-1);
@@ -2287,7 +2289,7 @@ bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // ShowBase flag set zero should be written as '00'
         if (number == 0 && base == 8 && numberFlags & QTextStream::ShowBase
             && result == QLatin1String("0")) {
-            result.prepend(QLatin1String("0"));
+            result.prepend(QLatin1Char('0'));
         }
     }
     return putString(result, true);

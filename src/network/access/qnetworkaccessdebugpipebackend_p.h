@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,35 +66,38 @@ class QNetworkAccessDebugPipeBackend: public QNetworkAccessBackend
 {
     Q_OBJECT
 public:
-    struct DataPacket;
     QNetworkAccessDebugPipeBackend();
     virtual ~QNetworkAccessDebugPipeBackend();
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
     virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
 
-    virtual void upstreamReadyRead();
     virtual void downstreamReadyWrite();
 
+protected:
+    void pushFromSocketToDownstream();
+    void pushFromUpstreamToSocket();
+    void possiblyFinish();
+    QNonContiguousByteDevice *uploadByteDevice;
+
 private slots:
+    void uploadReadyReadSlot();
     void socketReadyRead();
     void socketBytesWritten(qint64 bytes);
     void socketError();
     void socketDisconnected();
+    void socketConnected();
 
 private:
     QTcpSocket socket;
-    qint32 incomingPacketSize;
-    bool readyReadEmitted;
-    bool bytesWrittenEmitted;
     bool bareProtocol;
+    bool hasUploadFinished;
+    bool hasDownloadFinished;
+    bool hasEverythingFinished;
 
-    bool send(const DataPacket &packet);
-    bool canReceive();
-    bool receive(DataPacket &packet);
+    qint64 bytesDownloaded;
+    qint64 bytesUploaded;
 };
 
 class QNetworkAccessDebugPipeBackendFactory: public QNetworkAccessBackendFactory

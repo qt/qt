@@ -42,7 +42,7 @@
 namespace WebCore {
 
 RenderFrameSet::RenderFrameSet(HTMLFrameSetElement* frameSet)
-    : RenderContainer(frameSet)
+    : RenderBox(frameSet)
     , m_isResizing(false)
     , m_isChildResizing(false)
 {
@@ -126,8 +126,8 @@ void RenderFrameSet::paint(PaintInfo& paintInfo, int tx, int ty)
         return;
 
     // Add in our offsets.
-    tx += m_x;
-    ty += m_y;
+    tx += x();
+    ty += y();
 
     int rows = frameSet()->totalRows();
     int cols = frameSet()->totalCols();
@@ -161,11 +161,11 @@ bool RenderFrameSet::nodeAtPoint(const HitTestRequest& request, HitTestResult& r
     if (action != HitTestForeground)
         return false;
 
-    bool inside = RenderContainer::nodeAtPoint(request, result, x, y, tx, ty, action)
-        || m_isResizing || canResize(IntPoint(x, y));
+    bool inside = RenderBox::nodeAtPoint(request, result, x, y, tx, ty, action)
+        || m_isResizing;
 
     if (inside && frameSet()->noResize()
-            && !request.readonly && !result.innerNode()) {
+            && !request.readOnly() && !result.innerNode()) {
         result.setInnerNode(node());
         result.setInnerNonSharedNode(node());
     }
@@ -457,8 +457,8 @@ void RenderFrameSet::layout()
         oldBounds = absoluteClippedOverflowRect();
 
     if (!parent()->isFrameSet() && !document()->printing()) {
-        m_width = view()->viewWidth();
-        m_height = view()->viewHeight();
+        setWidth(view()->viewWidth());
+        setHeight(view()->viewHeight());
     }
 
     size_t cols = frameSet()->totalCols();
@@ -470,12 +470,12 @@ void RenderFrameSet::layout()
     }
 
     int borderThickness = frameSet()->border();
-    layOutAxis(m_rows, frameSet()->rowLengths(), m_height - (rows - 1) * borderThickness);
-    layOutAxis(m_cols, frameSet()->colLengths(), m_width - (cols - 1) * borderThickness);
+    layOutAxis(m_rows, frameSet()->rowLengths(), height() - (rows - 1) * borderThickness);
+    layOutAxis(m_cols, frameSet()->colLengths(), width() - (cols - 1) * borderThickness);
 
     positionFrames();
 
-    RenderContainer::layout();
+    RenderBox::layout();
 
     computeEdgeInfo();
 
@@ -491,7 +491,7 @@ void RenderFrameSet::layout()
 
 void RenderFrameSet::positionFrames()
 {
-    RenderObject* child = firstChild();
+    RenderBox* child = firstChildBox();
     if (!child)
         return;
 
@@ -504,7 +504,7 @@ void RenderFrameSet::positionFrames()
         int xPos = 0;
         int height = m_rows.m_sizes[r];
         for (int c = 0; c < cols; c++) {
-            child->setPos(xPos, yPos);
+            child->setLocation(xPos, yPos);
             int width = m_cols.m_sizes[c];
 
             // has to be resized and itself resize its contents
@@ -517,7 +517,7 @@ void RenderFrameSet::positionFrames()
 
             xPos += width + borderThickness;
 
-            child = child->nextSibling();
+            child = child->nextSiblingBox();
             if (!child)
                 return;
         }
@@ -525,7 +525,7 @@ void RenderFrameSet::positionFrames()
     }
 
     // all the remaining frames are hidden to avoid ugly spurious unflowed frames
-    for (; child; child = child->nextSibling()) {
+    for (; child; child = child->nextSiblingBox()) {
         child->setWidth(0);
         child->setHeight(0);
         child->setNeedsLayout(false);
@@ -564,8 +564,9 @@ bool RenderFrameSet::userResize(MouseEvent* evt)
         if (needsLayout())
             return false;
         if (evt->type() == eventNames().mousedownEvent && evt->button() == LeftButton) {
-            startResizing(m_cols, evt->pageX() - xPos());
-            startResizing(m_rows, evt->pageY() - yPos());
+            FloatPoint pos = localToAbsolute();
+            startResizing(m_cols, evt->absoluteLocation().x() - pos.x());
+            startResizing(m_rows, evt->absoluteLocation().y() - pos.y());
             if (m_cols.m_splitBeingResized != noSplit || m_rows.m_splitBeingResized != noSplit) {
                 setIsResizing(true);
                 return true;
@@ -573,8 +574,9 @@ bool RenderFrameSet::userResize(MouseEvent* evt)
         }
     } else {
         if (evt->type() == eventNames().mousemoveEvent || (evt->type() == eventNames().mouseupEvent && evt->button() == LeftButton)) {
-            continueResizing(m_cols, evt->pageX() - xPos());
-            continueResizing(m_rows, evt->pageY() - yPos());
+            FloatPoint pos = localToAbsolute();
+            continueResizing(m_cols, evt->absoluteLocation().x() - pos.x());
+            continueResizing(m_rows, evt->absoluteLocation().y() - pos.y());
             if (evt->type() == eventNames().mouseupEvent && evt->button() == LeftButton) {
                 setIsResizing(false);
                 return true;
@@ -603,11 +605,6 @@ bool RenderFrameSet::isResizingRow() const
 bool RenderFrameSet::isResizingColumn() const
 {
     return m_isResizing && m_cols.m_splitBeingResized != noSplit;
-}
-
-bool RenderFrameSet::canResize(const IntPoint& p) const
-{
-    return hitTestSplit(m_cols, p.x()) != noSplit || hitTestSplit(m_rows, p.y()) != noSplit;
 }
 
 bool RenderFrameSet::canResizeRow(const IntPoint& p) const

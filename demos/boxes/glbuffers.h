@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,8 +48,6 @@
 #include <QtGui>
 #include <QtOpenGL>
 
-#include "vector.h"
-
 #define BUFFER_OFFSET(i) ((char*)0 + (i))
 #define SIZE_OF_MEMBER(cls, member) sizeof(static_cast<cls *>(0)->member)
 
@@ -59,6 +57,10 @@ if (m_failed || !(assertion)) {                                                 
     m_failed = true;                                                                        \
     returnStatement;                                                                        \
 }
+
+QT_BEGIN_NAMESPACE
+class QMatrix4x4;
+QT_END_NAMESPACE
 
 class GLTexture
 {
@@ -135,8 +137,8 @@ public:
     void end();
     virtual bool failed() {return m_failed || m_fbo.failed();}
 
-    static void getViewMatrix(gfx::Matrix4x4f& mat, int face);
-    static void getProjectionMatrix(gfx::Matrix4x4f& mat, float nearZ, float farZ);
+    static void getViewMatrix(QMatrix4x4& mat, int face);
+    static void getProjectionMatrix(QMatrix4x4& mat, float nearZ, float farZ);
 private:
     GLFrameBufferObject m_fbo;
 };

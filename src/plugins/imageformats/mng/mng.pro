@@ -7,6 +7,10 @@ HEADERS += qmnghandler.h
 SOURCES += main.cpp \
            qmnghandler.cpp
 
+symbian: {
+	QMAKE_CXXFLAGS.CW += -W nounused
+}
+
 contains(QT_CONFIG, system-mng) {
         unix:LIBS += -lmng
         win32:LIBS += libmng.lib

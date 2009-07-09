@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 
     The Basic Graphics Layouts example shows how to use the layout classes
     in QGraphicsView: QGraphicsLinearLayout and QGraphicsGridLayout.
+    In addition to that it shows how to write your own custom layout item.
 
     \image basicgraphicslayouts-example.png Screenshot of the Basic Layouts Example
 
@@ -115,26 +116,24 @@
 
     \section1 LayoutItem Class Definition
 
-    The \c LayoutItem class is a subclass of QGraphicsWidget. It has a
-    constructor, a destructor, and a reimplementation of the
-    {QGraphicsItem::paint()}{paint()} function.
+    The \c LayoutItem class is a subclass of QGraphicsLayoutItem and
+    QGraphicsItem. It has a constructor, a destructor, and some required
+    reimplementations.
+    Since it inherits QGraphicsLayoutItem it must reimplement
+    {QGraphicsLayoutItem::setGeometry()}{setGeometry()} and
+    {QGraphicsLayoutItem::sizeHint()}{sizeHint()}.
+    In addition to that it inherits QGraphicsItem, so it must reimplement
+    {QGraphicsItem::boundingRect()}{boundingRect()} and
+    {QGraphicsItem::paint()}{paint()}.
 
     \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.h 0
 
-    The \c LayoutItem class also has a private instance of QPixmap, \c pix.
-
-    \note We subclass QGraphicsWidget so that \c LayoutItem objects can
-    be automatically plugged into a layout, as QGraphicsWidget is a
-    specialization of QGraphicsLayoutItem.
+    The \c LayoutItem class also has a private instance of QPixmap, \c m_pix.
 
     \section1 LayoutItem Class Implementation
 
-    In \c{LayoutItem}'s constructor, \c pix is instantiated and the
-    \c{QT_original_R.png} image is loaded into it. We set the size of
-    \c LayoutItem to be slightly larger than the size of the pixmap as we
-    require some space around it for borders that we will paint later.
-    Alternatively, you could scale the pixmap to prevent the item from
-    becoming smaller than the pixmap.
+    In \c{LayoutItem}'s constructor, \c m_pix is instantiated and the
+    \c{block.png} image is loaded into it.
 
     \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 0
 
@@ -147,5 +146,33 @@
     background rect then paint a rect around the pixmap.
 
     \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 2
+
+    The reimplementation of {QGraphicsItem::boundingRect()}{boundingRect()}
+    will set the top left corner at (0,0), and the size of it will be
+    the size of the layout items
+    {QGraphicsLayoutItem::geometry()}{geometry()}. This is the area that
+    we paint within.
+
+    \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 3
+
+
+    The reimplementation of {QGraphicsLayoutItem::setGeometry()}{setGeometry()}
+    simply calls its baseclass implementation. However, since this will change
+    the boundingRect we must also call
+    {QGraphicsItem::prepareGeometryChange()}{prepareGeometryChange()}.
+    Finally, we move the item according to \c geom.topLeft().
+
+    \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 4
+
+
+    Since we don't want the size of the item to be smaller than the pixmap, we
+    must make sure that we return a size hint that is larger than \c m_pix.
+    We also add some extra space around for borders that we will paint later.
+    Alternatively, you could scale the pixmap to prevent the item from
+    becoming smaller than the pixmap.
+    The preferred size is the same as the minimum size hint, while we set
+    maximum to be a large value
+
+    \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 5
 
 */

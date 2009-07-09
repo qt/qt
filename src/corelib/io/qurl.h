@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -223,7 +223,7 @@ public:
     inline QT3_SUPPORT QString ref() const { return fragment(); }
     inline QT3_SUPPORT void setRef(const QString &txt) { setFragment(txt); }
     inline QT3_SUPPORT bool hasRef() const { return !fragment().isEmpty(); }
-    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1String("/") + p); }
+    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1Char('/') + p); }
     QT3_SUPPORT void setFileName(const QString &txt);
     QT3_SUPPORT QString fileName() const;
     QT3_SUPPORT QString dirPath() const;

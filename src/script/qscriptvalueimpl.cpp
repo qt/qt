@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -339,6 +339,8 @@ QVariant QScriptValueImpl::toVariant() const
         if (isQObject())        
             return qVariantFromValue(toQObject());
 #endif
+        if (isArray())
+            return QScriptEnginePrivate::variantListFromArray(*this);
 
         QScriptValueImpl v = engine()->toPrimitive(*this);
         if (!v.isObject())
@@ -395,7 +397,7 @@ QDebug &operator<<(QDebug &d, const QScriptValueImpl &object)
         QScriptObject *od = object.objectValue();
         for (int i=0; i<od->memberCount(); ++i) {
             if (i != 0)
-                d << ",";
+                d << ',';
 
             QScript::Member m;
             od->member(i, &m);
@@ -404,7 +406,7 @@ QDebug &operator<<(QDebug &d, const QScriptValueImpl &object)
                 d << object.engine()->toString(m.nameId());
                 QScriptValueImpl o;
                 od->get(m, &o);
-                d.nospace() << QLatin1String(":")
+                d.nospace() << QLatin1Char(':')
                             << (o.classInfo()
                                 ? o.classInfo()->name()
                                 : QLatin1String("?"));
@@ -415,14 +417,14 @@ QDebug &operator<<(QDebug &d, const QScriptValueImpl &object)
         QScriptValueImpl scope = object.scope();
         while (scope.isValid()) {
             Q_ASSERT(scope.isObject());
-            d.nospace() << " " << scope.objectValue();
+            d.nospace() << ' ' << scope.objectValue();
             scope = scope.scope();
         }
-        d.nospace() << "}";
+        d.nospace() << '}';
         break;
     }
 
-    d << ")";
+    d << ')';
     return d;
 }
 

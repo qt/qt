@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,7 @@
 
 #include <QtGui>
 
-#include "vector.h"
+#include <QtGui/qvector3d.h>
 #include "glbuffers.h"
 
 class ItemBase : public QObject, public QGraphicsItem
@@ -85,9 +85,9 @@ public:
 protected:
     virtual ItemBase *createNew(int size, int x, int y);
 private:
-    gfx::Vector3f m_vertices[8];
-    gfx::Vector2f m_texCoords[4];
-    gfx::Vector3f m_normals[6];
+    QVector3D m_vertices[8];
+    QVector3D m_texCoords[4];
+    QVector3D m_normals[6];
     GLTexture *m_texture;
 };
 

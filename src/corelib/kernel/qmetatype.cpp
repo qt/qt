@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -179,6 +179,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue LastCoreExtType
     \omitvalue LastCoreType
     \omitvalue LastGuiType
+    \omitvalue QReal
 
     Additional types can be registered using Q_DECLARE_METATYPE().
 
@@ -359,7 +360,7 @@ void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveO
     inf.saveOp = saveOp;
     inf.loadOp = loadOp;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     Returns the type name associated with the given \a type, or 0 if no
@@ -884,7 +885,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     }
     return true;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     Returns a copy of \a copy, assuming it is of type \a type. If \a

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -239,13 +239,16 @@
 
     \snippet tutorials/addressbook/part1/main.cpp main function
 
-    On construit un nouveau widget \c AddressBook sur le tas en utilisant le mot-clé
-    \c new et en invoquant sa méthode \l{QWidget::show()}{show()} pour l'afficher.
+    On construit un nouveau widget \c AddressBook sur la pile et on invoque
+    sa méthode \l{QWidget::show()}{show()} pour l'afficher.
     Cependant, le widget ne sera pas visible tant que la boucle d'évènements
     n'aura pas été lancée. On démarre la boucle d'évènements en appelant la
     méthode \l{QApplication::}{exec()} de l'application; le résultat renvoyé
     par cette méthode est lui même utilisé comme valeur de retour pour la méthode
     \c main().
+    On comprend maintenant pourquoi \c AddressBook a été créé sur la pile: à la fin
+    du programme, l'objet sort du scope de la fonction \c main() et tous ses widgets enfants
+    sont supprimés, assurant ainsi qu'il n'y aura pas de fuites de mémoire.
 */
 
 /*!

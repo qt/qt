@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -280,7 +280,7 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
 
     m_fileActions->addAction(createSeparator(this));
 
-    m_quitAction->setShortcut(tr("CTRL+Q"));
+    m_quitAction->setShortcuts(QKeySequence::Quit);
     m_quitAction->setMenuRole(QAction::QuitRole);
     connect(m_quitAction, SIGNAL(triggered()), this, SLOT(shutdown()));
     m_fileActions->addAction(m_quitAction);

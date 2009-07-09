@@ -19,26 +19,26 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLBodyElement.h"
 
-#include <wtf/GetPtr.h>
-
+#include "EventListener.h"
+#include "Frame.h"
 #include "HTMLBodyElement.h"
+#include "JSDOMGlobalObject.h"
+#include "JSEventListener.h"
 #include "KURL.h"
-
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLBodyElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLBodyElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLBodyElementTableValues[12] =
+static const HashTableValue JSHTMLBodyElementTableValues[15] =
 {
     { "aLink", DontDelete, (intptr_t)jsHTMLBodyElementALink, (intptr_t)setJSHTMLBodyElementALink },
     { "background", DontDelete, (intptr_t)jsHTMLBodyElementBackground, (intptr_t)setJSHTMLBodyElementBackground },
@@ -46,10 +46,13 @@ static const HashTableValue JSHTMLBodyElementTableValues[12] =
     { "link", DontDelete, (intptr_t)jsHTMLBodyElementLink, (intptr_t)setJSHTMLBodyElementLink },
     { "text", DontDelete, (intptr_t)jsHTMLBodyElementText, (intptr_t)setJSHTMLBodyElementText },
     { "vLink", DontDelete, (intptr_t)jsHTMLBodyElementVLink, (intptr_t)setJSHTMLBodyElementVLink },
-    { "scrollLeft", DontDelete, (intptr_t)jsHTMLBodyElementScrollLeft, (intptr_t)setJSHTMLBodyElementScrollLeft },
-    { "scrollTop", DontDelete, (intptr_t)jsHTMLBodyElementScrollTop, (intptr_t)setJSHTMLBodyElementScrollTop },
-    { "scrollWidth", DontDelete|ReadOnly, (intptr_t)jsHTMLBodyElementScrollWidth, (intptr_t)0 },
-    { "scrollHeight", DontDelete|ReadOnly, (intptr_t)jsHTMLBodyElementScrollHeight, (intptr_t)0 },
+    { "onbeforeunload", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnbeforeunload, (intptr_t)setJSHTMLBodyElementOnbeforeunload },
+    { "onmessage", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnmessage, (intptr_t)setJSHTMLBodyElementOnmessage },
+    { "onoffline", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnoffline, (intptr_t)setJSHTMLBodyElementOnoffline },
+    { "ononline", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnonline, (intptr_t)setJSHTMLBodyElementOnonline },
+    { "onresize", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnresize, (intptr_t)setJSHTMLBodyElementOnresize },
+    { "onstorage", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnstorage, (intptr_t)setJSHTMLBodyElementOnstorage },
+    { "onunload", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnunload, (intptr_t)setJSHTMLBodyElementOnunload },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLBodyElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -58,7 +61,7 @@ static const HashTable JSHTMLBodyElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLBodyElementTableValues, 0 };
 #else
-    { 33, 31, JSHTMLBodyElementTableValues, 0 };
+    { 34, 31, JSHTMLBodyElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -80,13 +83,13 @@ public:
     JSHTMLBodyElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLBodyElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBodyElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBodyElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -115,9 +118,9 @@ static const HashTable JSHTMLBodyElementPrototypeTable =
 
 const ClassInfo JSHTMLBodyElementPrototype::s_info = { "HTMLBodyElementPrototype", 0, &JSHTMLBodyElementPrototypeTable, 0 };
 
-JSObject* JSHTMLBodyElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLBodyElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLBodyElement>(exec);
+    return getDOMPrototype<JSHTMLBodyElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLBodyElement::s_info = { "HTMLBodyElement", &JSHTMLElement::s_info, &JSHTMLBodyElementTable, 0 };
@@ -127,9 +130,9 @@ JSHTMLBodyElement::JSHTMLBodyElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSHTMLBodyElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLBodyElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLBodyElementPrototype(JSHTMLBodyElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLBodyElementPrototype(JSHTMLBodyElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLBodyElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -137,124 +140,241 @@ bool JSHTMLBodyElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSHTMLBodyElement, Base>(exec, &JSHTMLBodyElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLBodyElementALink(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementALink(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->aLink());
 }
 
-JSValuePtr jsHTMLBodyElementBackground(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementBackground(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->background());
 }
 
-JSValuePtr jsHTMLBodyElementBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->bgColor());
 }
 
-JSValuePtr jsHTMLBodyElementLink(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementLink(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->link());
 }
 
-JSValuePtr jsHTMLBodyElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->text());
 }
 
-JSValuePtr jsHTMLBodyElementVLink(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementVLink(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->vLink());
 }
 
-JSValuePtr jsHTMLBodyElementScrollLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementOnbeforeunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsNumber(exec, imp->scrollLeft());
+    if (EventListener* listener = imp->onbeforeunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
 }
 
-JSValuePtr jsHTMLBodyElementScrollTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsNumber(exec, imp->scrollTop());
+    if (EventListener* listener = imp->onmessage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
 }
 
-JSValuePtr jsHTMLBodyElementScrollWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementOnoffline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsNumber(exec, imp->scrollWidth());
+    if (EventListener* listener = imp->onoffline()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
 }
 
-JSValuePtr jsHTMLBodyElementScrollHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementOnonline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
-    return jsNumber(exec, imp->scrollHeight());
+    if (EventListener* listener = imp->ononline()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
 }
 
-JSValuePtr jsHTMLBodyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBodyElementOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onresize()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnstorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onstorage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLBodyElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLBodyElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLBodyElement, Base>(exec, propertyName, value, &JSHTMLBodyElementTable, this, slot);
 }
 
-void setJSHTMLBodyElementALink(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementALink(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setALink(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBodyElementBackground(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementBackground(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setBackground(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBodyElementBgColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementBgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setBgColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBodyElementLink(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementLink(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setLink(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBodyElementText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setText(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBodyElementVLink(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementVLink(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
     imp->setVLink(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLBodyElementScrollLeft(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementOnbeforeunload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setScrollLeft(value->toInt32(exec));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnbeforeunload(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSHTMLBodyElementScrollTop(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLBodyElementOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    imp->setScrollTop(value->toInt32(exec));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValuePtr JSHTMLBodyElement::getConstructor(ExecState* exec)
+void setJSHTMLBodyElementOnoffline(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnoffline(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnonline(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnonline(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnresize(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnresize(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnstorage(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnstorage(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnunload(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnunload(globalObject->createJSAttributeEventListener(value));
+}
+
+JSValue JSHTMLBodyElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLBodyElementConstructor>(exec);
 }

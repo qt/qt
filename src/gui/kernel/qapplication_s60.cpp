@@ -72,7 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static WId autoGrabWindow = 0; // Not the same as QWidget::grab*()
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
 #endif
@@ -105,12 +104,12 @@ private:
     void MatoPrepareComplete(TInt aError);
     void MatoPlayComplete(TInt aError);
 private:
-    typedef enum TBeepState
+    typedef enum
         {
         EBeepNotPrepared,
         EBeepPrepared,
         EBeepPlaying
-        };
+        } TBeepState;
 private:
     CMdaAudioToneUtility* iToneUtil;
     TBeepState iState;
@@ -416,7 +415,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
         events.append(Event(alienWidget,mEvent));
         QEventDispatcherS60 *dispatcher;
         // It is theoretically possible for someone to install a different event dispatcher.
-        if (dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) {
+        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) != 0) {
             if (dispatcher->excludeUserInputEvents()) {
                 for (int i=0;i < events.count();++i)
                 {
@@ -509,7 +508,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
 
         QEventDispatcherS60 *dispatcher;
         // It is theoretically possible for someone to install a different event dispatcher.
-        if (dispatcher = qobject_cast<QEventDispatcherS60 *>(widget->d_func()->threadData->eventDispatcher)) {
+        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widget->d_func()->threadData->eventDispatcher)) != 0) {
             if (dispatcher->excludeUserInputEvents()) {
                 dispatcher->saveInputEvent(this, widget, new QKeyEventEx(qKeyEvent));
                 return EKeyWasConsumed;
@@ -650,7 +649,7 @@ void QSymbianControl::PositionChanged()
     }
 }
 
-void QSymbianControl::FocusChanged(TDrawNow aDrawNow)
+void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
     if (m_ignoreFocusChanged)
         return;
@@ -660,20 +659,8 @@ void QSymbianControl::FocusChanged(TDrawNow aDrawNow)
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
         return;
 
-    if (IsFocused()) {
-        QApplication::setActiveWindow(qwidget);
-        // If widget is fullscreen, hide status pane and button container
-        // otherwise show them.
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
-            statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
-            buttonGroup->MakeVisible(!isFullscreen);
-    } else {
-        QApplication::setActiveWindow(0);
-    }
+    QEvent *deferredFocusEvent = new QEvent(QEvent::SymbianDeferredFocusChanged);
+    QApplication::postEvent(qwidget, deferredFocusEvent);
 }
 
 void QSymbianControl::HandleResourceChange(int resourceType)
@@ -715,7 +702,7 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
-void qt_init(QApplicationPrivate *priv, int)
+void qt_init(QApplicationPrivate * /* priv */, int)
 {
     S60 = new QS60Data;
 
@@ -800,12 +787,12 @@ bool QApplicationPrivate::modalState()
     return false;
 }
 
-void QApplicationPrivate::enterModal_sys(QWidget *widget)
+void QApplicationPrivate::enterModal_sys(QWidget * /* widget */)
 {
     // TODO: Implement QApplicationPrivate::enterModal_sys(QWidget *widget)
 }
 
-void QApplicationPrivate::leaveModal_sys(QWidget *widget)
+void QApplicationPrivate::leaveModal_sys(QWidget * /* widget */)
 {
     // TODO: Implement QApplicationPrivate::leaveModal_sys(QWidget *widget)
 }
@@ -821,7 +808,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
         id->SetGloballyCapturing(true);
-        autoGrabWindow = id;
     }
 
     // popups are not focus-handled by the window system (the first
@@ -858,7 +844,6 @@ void QApplicationPrivate::closePopup(QWidget *popup)
             if (QWidgetPrivate::mouseGrabber != 0)
                 QWidgetPrivate::mouseGrabber->grabMouse();
 
-            autoGrabWindow = 0;
             if (QWidgetPrivate::keyboardGrabber != 0)
                 QWidgetPrivate::keyboardGrabber->grabKeyboard();
 
@@ -910,7 +895,7 @@ QWidget * QApplication::topLevelAt(QPoint const& point)
     return found;
 }
 
-void QApplication::alert(QWidget *widget, int duration)
+void QApplication::alert(QWidget * /* widget */, int /* duration */)
 {
     // TODO: Implement QApplication::alert(QWidget *widget, int duration)
 }
@@ -1052,7 +1037,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     return 0;
 }
 
-bool QApplication::s60EventFilter(TWsEvent *aEvent)
+bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
     return false;
 }
@@ -1135,13 +1120,13 @@ void QApplication::setWheelScrollLines(int n)
 }
 #endif //QT_NO_WHEELEVENT
 
-bool QApplication::isEffectEnabled(Qt::UIEffect effect)
+bool QApplication::isEffectEnabled(Qt::UIEffect /* effect */)
 {
     // TODO: Implement QApplication::isEffectEnabled(Qt::UIEffect effect)
     return false;
 }
 
-void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
+void QApplication::setEffectEnabled(Qt::UIEffect /* effect */, bool /* enable */)
 {
     // TODO: Implement QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 }
@@ -1158,8 +1143,14 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
     }
 }
 
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
+
 #ifndef QT_NO_SESSIONMANAGER
-QSessionManager::QSessionManager(QApplication * app, QString &id, QString& key)
+QSessionManager::QSessionManager(QApplication * /* app */, QString & /* id */, QString& /* key */)
 {
 
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -119,22 +119,12 @@ class QTestData;
 
 namespace QTest
 {
-#ifndef Q_CC_NOKIAX86
-    template <typename T> 
+    template <typename T>
     inline char *toString(const T &)
     {
         return 0;
     }
-#else    
-        // Nokia X86 compiler bug:
-        // does not export template specializations if parent template is inline
-    template <typename T> 
-    Q_TESTLIB_EXPORT char *toString(const T &)
-    {
-        return 0;
-    }    
-#endif    
-    
+
 
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
     Q_TESTLIB_EXPORT char *toString(const char *);
@@ -179,7 +169,6 @@ namespace QTest
     }
     Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag);
 
-#ifndef Q_CC_NOKIAX86
     template <typename T>
     inline bool qCompare(T const &t1, T const &t2, const char *actual, const char *expected,
                         const char *file, int line)
@@ -189,19 +178,6 @@ namespace QTest
             : compare_helper(false, "Compared values are not the same",
                              toString<T>(t1), toString<T>(t2), actual, expected, file, line);
     }
-#else    
-        // Nokia X86 compiler bug:
-        // does not export template specializations if parent template is inline
-    template <typename T>
-    Q_TESTLIB_EXPORT bool qCompare(T const &t1, T const &t2, const char *actual, const char *expected,
-                        const char *file, int line)
-    {
-        return (t1 == t2)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared values are not the same",
-                             toString<T>(t1), toString<T>(t2), actual, expected, file, line);
-    } 
-#endif 
 
 
     template <>
@@ -316,8 +292,8 @@ namespace QTest
     }
 #else  /* QTEST_NO_SPECIALIZATIONS */
 
-// In Synmbian we have QTEST_NO_SPECIALIZATIONS defined, but still float related specialization
-// Should be uses. If QTEST_NO_SPECIALIZATIONS is enabled we get ambiguous overload errors
+// In Symbian we have QTEST_NO_SPECIALIZATIONS defined, but still float related specialization
+// should be used. If QTEST_NO_SPECIALIZATIONS is enabled we get ambiguous overload errors.
 #if defined(QT_ARCH_SYMBIAN)
     template <typename T1, typename T2>
     bool qCompare(T1 const &, T2 const &, const char *, const char *, const char *, int);
@@ -370,12 +346,12 @@ namespace QTest
         return compare_string_helper(t1, t2, actual, expected, file, line);
     }
 
-    // NokiaX86 and RVCT do not like implicitly comparing bool with int 
+    // NokiaX86 and RVCT do not like implicitly comparing bool with int
 #ifndef QTEST_NO_SPECIALIZATIONS
     template <>
 #endif
     inline bool qCompare(bool const &t1, int const &t2,
-                    const char *actual, const char *expected, const char *file, int line) 
+                    const char *actual, const char *expected, const char *file, int line)
     {
         return qCompare<int>(int(t1), t2, actual, expected, file, line);
     }
@@ -387,7 +363,7 @@ namespace QTest
     {
         return qCompare(actual, *static_cast<const T *>(QTest::qElementData(elementName,
                        qMetaTypeId<T>())), actualStr, expected, file, line);
-    } 
+    }
 }
 
 #undef QTEST_COMPARE_DECL

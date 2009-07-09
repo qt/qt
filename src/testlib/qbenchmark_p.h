@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(Q_OS_LINUX) && !defined(QT_NO_PROCESS)
+#if (defined(Q_OS_LINUX) || defined Q_OS_MAC) && !defined(QT_NO_PROCESS)
 #define QTESTLIB_USE_VALGRIND 
 #else
 #undef QTESTLIB_USE_VALGRIND
@@ -81,7 +81,7 @@ struct QBenchmarkContext
 
     QString toString() const
     {
-        QString s = QString(QLatin1String("%1,%2,%3")).arg(slotName).arg(tag).arg(checkpointIndex);
+        QString s = QString::fromLatin1("%1,%2,%3").arg(slotName).arg(tag).arg(checkpointIndex);
         return s;
     }
 

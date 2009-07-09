@@ -40,6 +40,7 @@ namespace JSC {
     #define FOR_EACH_OPCODE_ID(macro) \
         macro(op_enter, 1) \
         macro(op_enter_with_activation, 2) \
+        macro(op_init_arguments, 1) \
         macro(op_create_arguments, 1) \
         macro(op_convert_this, 2) \
         \
@@ -94,7 +95,7 @@ namespace JSC {
         macro(op_resolve_global, 6) \
         macro(op_get_scoped_var, 4) \
         macro(op_put_scoped_var, 4) \
-        macro(op_get_global_var, 6) \
+        macro(op_get_global_var, 4) \
         macro(op_put_global_var, 4) \
         macro(op_resolve_base, 3) \
         macro(op_resolve_with_base, 4) \
@@ -125,7 +126,9 @@ namespace JSC {
         macro(op_jfalse, 3) \
         macro(op_jeq_null, 3) \
         macro(op_jneq_null, 3) \
+        macro(op_jneq_ptr, 4) \
         macro(op_jnless, 4) \
+        macro(op_jnlesseq, 4) \
         macro(op_jmp_scopes, 3) \
         macro(op_loop, 2) \
         macro(op_loop_if_true, 3) \
@@ -139,12 +142,17 @@ namespace JSC {
         macro(op_new_func_exp, 3) \
         macro(op_call, 5) \
         macro(op_call_eval, 5) \
+        macro(op_call_varargs, 5) \
+        macro(op_load_varargs, 3) \
         macro(op_tear_off_activation, 2) \
         macro(op_tear_off_arguments, 1) \
         macro(op_ret, 2) \
+        macro(op_method_check, 1) \
         \
         macro(op_construct, 7) \
         macro(op_construct_verify, 3) \
+        macro(op_strcat, 4) \
+        macro(op_to_primitive, 3) \
         \
         macro(op_get_pnames, 3) \
         macro(op_next_pname, 4) \

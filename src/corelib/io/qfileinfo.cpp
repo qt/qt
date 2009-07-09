@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,72 +48,9 @@
 #include "qatomic.h"
 #include "qhash.h"
 #include "qdir.h"
+#include "qfileinfo_p.h"
 
 QT_BEGIN_NAMESPACE
-
-class QFileInfoPrivate
-{
-public:
-    QFileInfoPrivate(const QFileInfo *copy=0);
-    ~QFileInfoPrivate();
-
-    void initFileEngine(const QString &);
-
-    enum Access {
-        ReadAccess,
-        WriteAccess,
-        ExecuteAccess
-    };
-    bool hasAccess(Access access) const;
-
-    uint getFileFlags(QAbstractFileEngine::FileFlags) const;
-    QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
-    QString getFileName(QAbstractFileEngine::FileName) const;
-
-    enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
-           CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
-           CachedSize =0x08 };
-    struct Data {
-        inline Data()
-            : ref(1), fileEngine(0), cache_enabled(1)
-        { clear(); }
-        inline Data(const Data &copy)
-            : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
-              fileName(copy.fileName), cache_enabled(copy.cache_enabled)
-        { clear(); }
-        inline ~Data() { delete fileEngine; }
-        inline void clearFlags() {
-            fileFlags = 0;
-            cachedFlags = 0;
-            if (fileEngine)
-                (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
-        }
-        inline void clear() {
-            fileNames.clear();
-            clearFlags();
-        }
-        mutable QAtomicInt ref;
-
-        QAbstractFileEngine *fileEngine;
-        mutable QString fileName;
-        mutable QHash<int, QString> fileNames;
-
-        mutable uint cachedFlags : 31;
-        mutable uint cache_enabled : 1;
-        mutable uint fileFlags;
-        mutable qint64 fileSize;
-        mutable QDateTime fileTimes[3];
-        inline bool getCachedFlag(uint c) const
-        { return cache_enabled ? (cachedFlags & c) : 0; }
-        inline void setCachedFlag(uint c)
-        { if (cache_enabled) cachedFlags |= c; }
-    } *data;
-    inline void reset() {
-        detach();
-        data->clear();
-    }
-    void detach();
-};
 
 QFileInfoPrivate::QFileInfoPrivate(const QFileInfo *copy)
 {
@@ -122,7 +59,6 @@ QFileInfoPrivate::QFileInfoPrivate(const QFileInfo *copy)
         data = copy->d_func()->data;
     } else {
         data = new QFileInfoPrivate::Data;
-        data->clear();
     }
 }
 
@@ -197,11 +133,11 @@ void QFileInfoPrivate::detach()
 
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
-    if(data->cache_enabled && data->fileNames.contains((int)name))
-        return data->fileNames.value(name);
+    if(data->cache_enabled && !data->fileNames[(int)name].isNull())
+        return data->fileNames[(int)name];
     QString ret = data->fileEngine->fileName(name);
     if(data->cache_enabled)
-        data->fileNames.insert((int)name, ret);
+        data->fileNames[(int)name] = ret;
     return ret;
 }
 
@@ -535,8 +471,7 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 
 void QFileInfo::setFile(const QString &file)
 {
-    Q_D(QFileInfo);
-    d->initFileEngine(file);
+    *this = QFileInfo(file);
 }
 
 /*!
@@ -553,8 +488,7 @@ void QFileInfo::setFile(const QString &file)
 
 void QFileInfo::setFile(const QFile &file)
 {
-    Q_D(QFileInfo);
-    d->initFileEngine(file.fileName());
+    *this = QFileInfo(file.fileName());
 }
 
 /*!
@@ -571,8 +505,7 @@ void QFileInfo::setFile(const QFile &file)
 
 void QFileInfo::setFile(const QDir &dir, const QString &file)
 {
-    Q_D(QFileInfo);
-    d->initFileEngine(dir.filePath(file));
+    *this = QFileInfo(dir.filePath(file));
 }
 
 /*!
@@ -919,7 +852,7 @@ QString QFileInfo::suffix() const
 
   \bold{Note:} The QDir returned always corresponds to the object's
   parent directory, even if the QFileInfo represents a directory.
-  
+
   For each of the follwing, dir() returns a QDir for
   \c{"~/examples/191697"}.
 

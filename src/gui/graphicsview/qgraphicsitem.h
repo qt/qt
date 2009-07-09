@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,6 +64,7 @@ class QBrush;
 class QCursor;
 class QFocusEvent;
 class QGraphicsItemGroup;
+class QGraphicsObject;
 class QGraphicsSceneContextMenuEvent;
 class QGraphicsSceneDragDropEvent;
 class QGraphicsSceneEvent;
@@ -95,7 +96,11 @@ public:
         ItemIgnoresTransformations = 0x20,
         ItemIgnoresParentOpacity = 0x40,
         ItemDoesntPropagateOpacityToChildren = 0x80,
-        ItemStacksBehindParent = 0x100
+        ItemStacksBehindParent = 0x100,
+        ItemUsesExtendedStyleOption = 0x200,
+        ItemHasNoContents = 0x400,
+        ItemSendsGeometryChanges = 0x800
+        // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
 
@@ -147,6 +152,7 @@ public:
 
     QGraphicsItem *parentItem() const;
     QGraphicsItem *topLevelItem() const;
+    QGraphicsObject *parentObject() const;
     QGraphicsWidget *parentWidget() const;
     QGraphicsWidget *topLevelWidget() const;
     QGraphicsWidget *window() const;
@@ -155,6 +161,9 @@ public:
     QList<QGraphicsItem *> childItems() const;
     bool isWidget() const;
     bool isWindow() const;
+
+    QGraphicsObject *toGraphicsObject();
+    const QGraphicsObject *toGraphicsObject() const;
 
     QGraphicsItemGroup *group() const;
     void setGroup(QGraphicsItemGroup *group);
@@ -204,6 +213,8 @@ public:
     void setAcceptsHoverEvents(bool enabled); // obsolete
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
+    bool acceptTouchEvents() const;
+    void setAcceptTouchEvents(bool enabled);
 
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);
@@ -220,7 +231,9 @@ public:
     // Positioning in scene coordinates
     QPointF pos() const;
     inline qreal x() const { return pos().x(); }
+    void setX(qreal x);
     inline qreal y() const { return pos().y(); }
+    void setY(qreal y);
     QPointF scenePos() const;
     void setPos(const QPointF &pos);
     inline void setPos(qreal x, qreal y);
@@ -240,11 +253,41 @@ public:
     QTransform itemTransform(const QGraphicsItem *other, bool *ok = 0) const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
-    
-    void rotate(qreal angle);
-    void scale(qreal sx, qreal sy);
-    void shear(qreal sh, qreal sv);
-    void translate(qreal dx, qreal dy);
+
+    void rotate(qreal angle);           // ### obsolete
+    void scale(qreal sx, qreal sy);     // ### obsolete
+    void shear(qreal sh, qreal sv);     // ### obsolete
+    void translate(qreal dx, qreal dy); // ### obsolete
+
+    qreal xRotation() const;
+    void setXRotation(qreal angle);
+
+    qreal yRotation() const;
+    void setYRotation(qreal angle);
+
+    qreal zRotation() const;
+    void setZRotation(qreal angle);
+    void setRotation(qreal x, qreal y, qreal z);
+
+    qreal xScale() const;
+    void setXScale(qreal factor);
+
+    qreal yScale() const;
+    void setYScale(qreal factor);
+    void setScale(qreal sx, qreal sy);
+
+    qreal horizontalShear() const;
+    void setHorizontalShear(qreal shear);
+
+    qreal verticalShear() const;
+    void setVerticalShear(qreal shear);
+    void setShear(qreal sh, qreal sv);
+
+    QPointF transformOrigin() const;
+    void setTransformOrigin(const QPointF &origin);
+    inline void setTransformOrigin(qreal x, qreal y)
+    { setTransformOrigin(QPointF(x,y)); }
+
     virtual void advance(int phase);
 
     // Stacking order
@@ -336,6 +379,11 @@ public:
     // Custom data
     QVariant data(int key) const;
     void setData(int key, const QVariant &value);
+
+    int grabGesture(Qt::GestureType gesture);
+    int grabGesture(const QString &gesture);
+    void releaseGesture(int gestureId);
+    void setGestureEnabled(int gestureId, bool enable = true);
 
     enum {
         Type = 1,
@@ -450,6 +498,39 @@ inline QRectF QGraphicsItem::mapRectFromParent(qreal ax, qreal ay, qreal w, qrea
 { return mapRectFromParent(QRectF(ax, ay, w, h)); }
 inline QRectF QGraphicsItem::mapRectFromScene(qreal ax, qreal ay, qreal w, qreal h) const
 { return mapRectFromScene(QRectF(ax, ay, w, h)); }
+
+
+class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QGraphicsObject * parent READ parentObject WRITE setParentItem NOTIFY parentChanged DESIGNABLE false)
+    Q_PROPERTY(QString id READ objectName WRITE setObjectName)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
+    Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged)
+public:
+    QGraphicsObject(QGraphicsItem *parent = 0);
+
+Q_SIGNALS:
+    void parentChanged();
+    void opacityChanged();
+    void visibleChanged();
+    void enabledChanged();
+    void xChanged();
+    void yChanged();
+    void zChanged();
+
+protected:
+    QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
+private:
+    friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
+};
+
 
 class QAbstractGraphicsShapeItemPrivate;
 class Q_GUI_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
@@ -802,7 +883,7 @@ inline void QGraphicsPixmapItem::setOffset(qreal ax, qreal ay)
 class QGraphicsTextItemPrivate;
 class QTextDocument;
 class QTextCursor;
-class Q_GUI_EXPORT QGraphicsTextItem : public QObject, public QGraphicsItem
+class Q_GUI_EXPORT QGraphicsTextItem : public QGraphicsObject
 {
     Q_OBJECT
     QDOC_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
@@ -1014,4 +1095,3 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif // QGRAPHICSITEM_H
-

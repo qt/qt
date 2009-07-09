@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -838,7 +838,7 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
         for (int i = 0; i < cupsPrinterCount; ++i) {
             QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
             if (cupsPrinters[i].instance)
-                printerName += QLatin1String("/") + QString::fromLocal8Bit(cupsPrinters[i].instance);
+                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
             list.append(QPrinterInfo(printerName));
             if (cupsPrinters[i].is_default)
                 list[i].d_ptr->m_default = true;
@@ -909,7 +909,7 @@ QPrinterInfo::QPrinterInfo(const QPrinter& printer)
         for (int i = 0; i < cupsPrinterCount; ++i) {
             QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
             if (cupsPrinters[i].instance)
-                printerName += QLatin1String("/") + QString::fromLocal8Bit(cupsPrinters[i].instance);
+                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
             if (printerName == printer.printerName()) {
                 if (cupsPrinters[i].is_default)
                     d->m_default = true;

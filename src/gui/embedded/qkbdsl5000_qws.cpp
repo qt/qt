@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -195,6 +195,13 @@ static const int keyMSize = sizeof(sl5000KeyMap)/sizeof(QWSKeyMap)-1;
 QWSSL5000KeyboardHandler::QWSSL5000KeyboardHandler(const QString &device)
     : QWSTtyKeyboardHandler(device)
 {
+    shift = false;
+    alt   = false;
+    ctrl  = false;
+    extended = 0;
+    prevuni = 0;
+    prevkey = 0;
+    caps = false;
     meta = false;
     fn = false;
     numLock = false;
@@ -220,7 +227,7 @@ const QWSKeyMap *QWSSL5000KeyboardHandler::keyMap() const
     return sl5000KeyMap;
 }
 
-void QWSSL5000KeyboardHandler::doKey(uchar code)
+bool QWSSL5000KeyboardHandler::filterKeycode(char &code)
 {
     int keyCode = Qt::Key_unknown;
     bool release = false;
@@ -239,19 +246,19 @@ void QWSSL5000KeyboardHandler::doKey(uchar code)
         else if (code == 0x52) { unicode='Z'-'@'; scan=Qt::Key_Z; } // Undo
         if (scan) {
             processKeyEvent(unicode, scan, Qt::ControlModifier, !release, false);
-            return;
+            return true;
         }
     }
 
     if (code < keyMSize) {
-        keyCode = keyMap()[code].key_code;
+        keyCode = keyMap()[int(code)].key_code;
     }
 
     bool repeatable = true;
 
     if (release && (keyCode == Qt::Key_F34 || keyCode == Qt::Key_F35))
-        return; // no release for power and light keys
-    if (keyCode >= Qt::Key_F1 && keyCode <= Qt::Key_F35
+        return true; // no release for power and light keys
+    if ((keyCode >= Qt::Key_F1 && keyCode <= Qt::Key_F35)
             || keyCode == Qt::Key_Escape || keyCode == Qt::Key_Home
             || keyCode == Qt::Key_Shift || keyCode == Qt::Key_Meta)
         repeatable = false;
@@ -318,11 +325,11 @@ void QWSSL5000KeyboardHandler::doKey(uchar code)
                 keyCode = Qt::Key_QuoteLeft;
                 unicode = '`';
             } else if (bCtrl)
-                unicode =  keyMap()[code].ctrl_unicode ?  keyMap()[code].ctrl_unicode : 0xffff;
+                unicode =  keyMap()[int(code)].ctrl_unicode ?  keyMap()[int(code)].ctrl_unicode : 0xffff;
             else if (bCaps)
-                unicode =  keyMap()[code].shift_unicode ?  keyMap()[code].shift_unicode : 0xffff;
+                unicode =  keyMap()[int(code)].shift_unicode ?  keyMap()[int(code)].shift_unicode : 0xffff;
             else
-                unicode =  keyMap()[code].unicode ?  keyMap()[code].unicode : 0xffff;
+                unicode =  keyMap()[int(code)].unicode ?  keyMap()[int(code)].unicode : 0xffff;
         }
 
         modifiers = 0;
@@ -349,6 +356,8 @@ void QWSSL5000KeyboardHandler::doKey(uchar code)
         beginAutoRepeat(prevuni, prevkey, modifiers);
     else
         endAutoRepeat();
+
+    return true;
 }
 
 QT_END_NAMESPACE

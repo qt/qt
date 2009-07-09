@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -292,7 +292,7 @@ QScriptValue QScriptDebuggerBackendPrivate::trace(QScriptContext *context,
     QString str;
     for (int i = 0; i < context->argumentCount(); ++i) {
         if (i > 0)
-            str.append(QLatin1String(" "));
+            str.append(QLatin1Char(' '));
         str.append(context->argument(i).toString());
     }
     QScriptDebuggerEvent e(QScriptDebuggerEvent::Trace);
@@ -411,14 +411,15 @@ void QScriptDebuggerBackend::attachTo(QScriptEngine *engine)
     detach();
     d->agent = new QScriptDebuggerAgent(d, engine);
     QScriptValue global = engine->globalObject();
+    d->origTraceFunction = global.property(QString::fromLatin1("print"));
     global.setProperty(QString::fromLatin1("print"), traceFunction());
 //    global.setProperty(QString::fromLatin1("qAssert"), assertFunction());
+    d->origFileNameFunction = global.property(QString::fromLatin1("__FILE__"));
     global.setProperty(QString::fromLatin1("__FILE__"), fileNameFunction(),
-                       QScriptValue::PropertyGetter | QScriptValue::PropertySetter
-                       | QScriptValue::ReadOnly);
+                       QScriptValue::PropertyGetter | QScriptValue::ReadOnly);
+    d->origLineNumberFunction = global.property(QString::fromLatin1("__LINE__"));
     global.setProperty(QString::fromLatin1("__LINE__"), lineNumberFunction(),
-                       QScriptValue::PropertyGetter | QScriptValue::PropertySetter
-                       | QScriptValue::ReadOnly);
+                       QScriptValue::PropertyGetter | QScriptValue::ReadOnly);
     engine->setAgent(d->agent);
 }
 
@@ -432,21 +433,25 @@ void QScriptDebuggerBackend::attachTo(QScriptEngine *engine)
 void QScriptDebuggerBackend::detach()
 {
     Q_D(QScriptDebuggerBackend);
-    if (!d->agent)
-        return;
-    QScriptEngine *eng = d->agent->engine();
-    if (eng && eng->agent() == d->agent) {
-        eng->setAgent(0);
-        QScriptValue global = eng->globalObject();
-        if (global.property(QString::fromLatin1("print")).strictlyEquals(traceFunction()))
-            global.setProperty(QString::fromLatin1("print"), QScriptValue());
-//        global.setProperty(QString::fromLatin1("qAssert"), QScriptValue());
-        if (global.property(QString::fromLatin1("__FILE__")).strictlyEquals(fileNameFunction()))
-            global.setProperty(QString::fromLatin1("__FILE__"), QScriptValue());
-        if (global.property(QString::fromLatin1("__LINE__")).strictlyEquals(lineNumberFunction()))
-            global.setProperty(QString::fromLatin1("__LINE__"), QScriptValue());
-        d->agent->nullifyBackendPointer();
-        d->agent = 0; // agent is owned by engine
+    if (d->agent) {
+        QScriptEngine *eng = d->agent->engine();
+        if (eng && eng->agent() == d->agent) {
+            eng->setAgent(0);
+            QScriptValue global = eng->globalObject();
+            global.setProperty(QString::fromLatin1("print"), d->origTraceFunction);
+            d->origTraceFunction = QScriptValue();
+//            global.setProperty(QString::fromLatin1("qAssert"), QScriptValue());
+            global.setProperty(QString::fromLatin1("__FILE__"), QScriptValue(),
+                               QScriptValue::PropertyGetter);
+            global.setProperty(QString::fromLatin1("__FILE__"), d->origFileNameFunction);
+            d->origFileNameFunction = QScriptValue();
+            global.setProperty(QString::fromLatin1("__LINE__"), QScriptValue(),
+                               QScriptValue::PropertyGetter);
+            global.setProperty(QString::fromLatin1("__LINE__"), d->origLineNumberFunction);
+            d->origLineNumberFunction = QScriptValue();
+            d->agent->nullifyBackendPointer();
+            d->agent = 0; // agent is owned by engine
+        }
     }
 
     d->pendingEvaluateLineNumber = -1;

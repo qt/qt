@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,6 +48,7 @@
 #include <qinputcontext.h>
 #include <private/qkeymapper_p.h>
 #include <private/qapplication_p.h>
+#include <private/qmacinputcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -160,6 +161,14 @@ Qt::KeyboardModifiers qt_mac_get_modifiers(int keys)
             ret |= Qt::KeyboardModifier(qt_mac_modifier_symbols[i].qt_code);
         }
     }
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        Qt::KeyboardModifiers oldModifiers = ret;
+        ret &= ~(Qt::MetaModifier | Qt::ControlModifier);
+        if (oldModifiers & Qt::ControlModifier)
+            ret |= Qt::MetaModifier;
+        if (oldModifiers & Qt::MetaModifier)
+            ret |= Qt::ControlModifier;
+    }
     return ret;
 }
 static int qt_mac_get_mac_modifiers(Qt::KeyboardModifiers keys)
@@ -175,6 +184,15 @@ static int qt_mac_get_mac_modifiers(Qt::KeyboardModifiers keys)
 #endif
             ret |= qt_mac_modifier_symbols[i].mac_code;
         }
+    }
+
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        int oldModifiers = ret;
+        ret &= ~(controlKeyBit | cmdKeyBit);
+        if (oldModifiers & controlKeyBit)
+            ret |= cmdKeyBit;
+        if (oldModifiers & cmdKeyBit)
+            ret |= controlKeyBit;
     }
     return ret;
 }
@@ -480,7 +498,8 @@ static bool translateKeyEventInternal(EventHandlerCallRef er, EventRef keyEvent,
 #ifdef QT_MAC_USE_COCOA
             if (outHandled) {
                 qt_mac_eat_unicode_key = false;
-                CallNextEventHandler(er, keyEvent);
+                if (er)
+                    CallNextEventHandler(er, keyEvent);
                 *outHandled = qt_mac_eat_unicode_key;
             }
 #endif
@@ -692,8 +711,14 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         return true;
     }
 
-    if (qApp->inputContext() && qApp->inputContext()->isComposing())
+    if (qApp->inputContext() && qApp->inputContext()->isComposing()) {
+        if (ekind == kEventRawKeyDown) {
+            QMacInputContext *context = qobject_cast<QMacInputContext*>(qApp->inputContext());
+            if (context)
+                context->setLastKeydownEvent(event);
+        }
         return false;
+    }
     //get modifiers
     Qt::KeyboardModifiers modifiers;
     int qtKey;
@@ -721,7 +746,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
             //is it of use to text services? If so we won't bother
             //with a QKeyEvent.
             qt_mac_eat_unicode_key = false;
-            CallNextEventHandler(er, event);	
+            if (er)
+                CallNextEventHandler(er, event);
             extern bool qt_mac_menubar_is_open();   
             if (qt_mac_eat_unicode_key || qt_mac_menubar_is_open()) {
                 return true;

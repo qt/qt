@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,7 @@
 #include "qpixmap.h"
 #include "qvarlengtharray.h"
 #include "qwsdisplay_qws.h"
+#include "qpainter.h"
 #include <private/qdrawhelper_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpixmap_raster_p.h>
@@ -198,10 +199,12 @@ void QScreenCursor::set(const QImage &image, int hotx, int hoty)
 */
 void QScreenCursor::move(int x, int y)
 {
-    const QRegion r = boundingRect();
+    QRegion r = boundingRect();
     pos = QPoint(x,y);
-    if (enable && !hwaccel)
-        qt_screen->exposeRegion(r | boundingRect(), 0);
+    if (enable && !hwaccel) {
+        r |= boundingRect();
+        qt_screen->exposeRegion(r, 0);
+    }
 }
 
 
@@ -2708,7 +2711,7 @@ void QScreen::compose(int level, const QRegion &exposed, QRegion &blend,
             default:
                 break;
             }
-            spanData.setup(qwsServer->backgroundBrush(), 256);
+            spanData.setup(qwsServer->backgroundBrush(), 256, QPainter::CompositionMode_SourceOver);
             spanData.dx = off.x();
             spanData.dy = off.y();
         } else if (!surface->isBuffered()) {
@@ -2773,7 +2776,7 @@ void QScreen::paintBackground(const QRegion &r)
         rb.prepare(&img);
         QSpanData spanData;
         spanData.init(&rb, 0);
-        spanData.setup(bg, 256);
+        spanData.setup(bg, 256, QPainter::CompositionMode_Source);
         spanData.dx = off.x();
         spanData.dy = off.y();
         Q_ASSERT(spanData.blend);

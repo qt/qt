@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,7 +42,7 @@
 #ifndef QKBDTTY_QWS_H
 #define QKBDTTY_QWS_H
 
-#include <QtGui/qkbdpc101_qws.h>
+#include <QtGui/qkbd_qws.h>
 
 QT_BEGIN_HEADER
 
@@ -56,15 +56,13 @@ QT_MODULE(Gui)
 
 class QWSTtyKbPrivate;
 
-class QWSTtyKeyboardHandler : public QWSPC101KeyboardHandler
+class QWSTtyKeyboardHandler : public QWSKeyboardHandler
 {
 public:
     explicit QWSTtyKeyboardHandler(const QString&);
     virtual ~QWSTtyKeyboardHandler();
 
-protected:
-    virtual void processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers,
-                                bool isPress, bool autoRepeat);
+    virtual bool filterKeycode(char &code);
 
 private:
     QWSTtyKbPrivate *d;

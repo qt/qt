@@ -154,7 +154,7 @@ bool QS60WindowSurface::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
-void QS60WindowSurface::endPaint(const QRegion &rgn)
+void QS60WindowSurface::endPaint(const QRegion & /* rgn */)
 {
     if(!d_ptr->bitmap)
         return;

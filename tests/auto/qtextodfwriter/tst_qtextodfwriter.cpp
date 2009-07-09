@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -137,7 +137,7 @@ void tst_QTextOdfWriter::testWriteParagraph_data()
     QTest::newRow("tab") << "word\ttab x" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">word<text:tab/>tab x</text:span></text:p>";
     QTest::newRow("tab2") << "word\t\ttab\tx" <<
-        "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">word<text:tab text:tab-ref=\"2\"/>tab<text:tab/>x</text:span></text:p>";
+        "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">word<text:tab/><text:tab/>tab<text:tab/>x</text:span></text:p>";
     QTest::newRow("misc") << "foobar   word\ttab x" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">foobar <text:s text:c=\"2\"/>word<text:tab/>tab x</text:span></text:p>";
     QTest::newRow("misc2") << "\t     \tFoo" <<

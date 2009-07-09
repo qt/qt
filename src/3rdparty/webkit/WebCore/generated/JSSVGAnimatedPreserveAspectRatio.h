@@ -21,10 +21,10 @@
 #ifndef JSSVGAnimatedPreserveAspectRatio_h
 #define JSSVGAnimatedPreserveAspectRatio_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -35,12 +35,12 @@ class JSSVGAnimatedPreserveAspectRatio : public DOMObject {
 public:
     JSSVGAnimatedPreserveAspectRatio(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedPreserveAspectRatio>, SVGElement* context);
     virtual ~JSSVGAnimatedPreserveAspectRatio();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -53,12 +53,13 @@ private:
     RefPtr<SVGAnimatedPreserveAspectRatio > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGAnimatedPreserveAspectRatio*, SVGElement* context);
-SVGAnimatedPreserveAspectRatio* toSVGAnimatedPreserveAspectRatio(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedPreserveAspectRatio*, SVGElement* context);
+SVGAnimatedPreserveAspectRatio* toSVGAnimatedPreserveAspectRatio(JSC::JSValue);
 
 class JSSVGAnimatedPreserveAspectRatioPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimatedPreserveAspectRatioPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -66,8 +67,8 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGAnimatedPreserveAspectRatioBaseVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAnimatedPreserveAspectRatioAnimVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAnimatedPreserveAspectRatioBaseVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAnimatedPreserveAspectRatioAnimVal(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

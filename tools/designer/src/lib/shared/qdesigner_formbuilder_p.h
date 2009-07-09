@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,7 +75,7 @@ namespace qdesigner_internal {
 class DesignerPixmapCache;
 class DesignerIconCache;
 
-/* Form builder used for previewing forms, widget box and new form dialog.
+/* Form builder used for previewing forms and widget box.
  * It applies the system settings to its toplevel window. */
 
 class QDESIGNER_SHARED_EXPORT QDesignerFormBuilder: public QFormBuilder
@@ -158,6 +158,21 @@ private:
     QtResourceSet *m_tempResourceSet;
     bool m_mainWidget;
 };
+
+// Form builder for a new form widget (preview). To allow for promoted
+// widgets in the template, it implements the handling of custom widgets
+// (adding of them to the widget database).
+
+class QDESIGNER_SHARED_EXPORT NewFormWidgetFormBuilder: public QDesignerFormBuilder {
+public:
+    NewFormWidgetFormBuilder(QDesignerFormEditorInterface *core,
+                             Mode mode,
+                             const DeviceProfile &deviceProfile = DeviceProfile());
+
+protected:
+    virtual void createCustomWidgets(DomCustomWidgets *);
+};
+
 
 } // namespace qdesigner_internal
 

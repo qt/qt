@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
+class QGLFramebufferObject;
 
 class QGLPixmapData : public QPixmapData
 {
@@ -72,18 +73,34 @@ public:
     void resize(int width, int height);
     void fromImage(const QImage &image,
                    Qt::ImageConversionFlags flags);
+    void copy(const QPixmapData *data, const QRect &rect);
+
+    bool scroll(int dx, int dy, const QRect &rect);
 
     void fill(const QColor &color);
     bool hasAlphaChannel() const;
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
 
-    GLuint bind() const;
+    GLuint bind(bool copyBack = true) const;
     GLuint textureId() const;
 
     bool isValidContext(const QGLContext *ctx) const;
 
     void ensureCreated() const;
+
+    bool isUninitialized() const { return m_dirty && m_source.isNull(); }
+
+    bool needsFill() const { return m_hasFillColor; }
+    QColor fillColor() const { return m_fillColor; }
+
+    QSize size() const { return QSize(w, h); }
+
+    QGLFramebufferObject *fbo() const;
+
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
@@ -92,12 +109,27 @@ private:
     QGLPixmapData(const QGLPixmapData &other);
     QGLPixmapData &operator=(const QGLPixmapData &other);
 
-    int m_width;
-    int m_height;
+    void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
 
-    mutable GLuint m_texture;
-    mutable bool m_dirty;
+    static bool useFramebufferObjects();
+
+    QImage fillImage(const QColor &color) const;
+
+    mutable QGLFramebufferObject *m_renderFbo;
+    mutable GLuint m_textureId;
+    mutable QPaintEngine *m_engine;
+    mutable QGLContext *m_ctx;
     mutable QImage m_source;
+
+    // the texture is not in sync with the source image
+    mutable bool m_dirty;
+
+    // fill has been called and no painting has been done, so the pixmap is
+    // represented by a single fill color
+    mutable QColor m_fillColor;
+    mutable bool m_hasFillColor;
+
+    mutable bool m_hasAlpha;
 };
 
 QT_END_NAMESPACE

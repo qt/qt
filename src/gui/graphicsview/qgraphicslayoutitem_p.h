@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,16 +63,20 @@ class Q_AUTOTEST_EXPORT QGraphicsLayoutItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsLayoutItem)
 public:
-    virtual ~QGraphicsLayoutItemPrivate() {}
+    virtual ~QGraphicsLayoutItemPrivate();
     QGraphicsLayoutItemPrivate(QGraphicsLayoutItem *parent, bool isLayout);
     void init();
     QSizeF *effectiveSizeHints(const QSizeF &constraint) const;
     QGraphicsItem *parentItem() const;
+    void ensureUserSizeHints();
+    void setSize(Qt::SizeHint which, const QSizeF &size);
+    enum SizeComponent { Width, Height };
+    void setSizeComponent(Qt::SizeHint which, SizeComponent component, qreal value);
 
     QSizePolicy sizePolicy;
     QGraphicsLayoutItem *parent;
 
-    QSizeF userSizeHints[Qt::NSizeHints];
+    QSizeF *userSizeHints;
     mutable QSizeF cachedSizeHints[Qt::NSizeHints];
     mutable QSizeF cachedConstraint;
 

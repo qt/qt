@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -828,7 +828,7 @@ bool Q3Process::start( QStringList *env )
 #ifndef QT_NO_DIR
 			QFileInfo fileInfo( dir, command );
 #else
-			QFileInfo fileInfo( dir + "/" + command );
+			QFileInfo fileInfo( dir + QLatin1Char('/') + command );
 #endif
 			if ( fileInfo.isExecutable() ) {
 #if defined(Q_OS_MACX)

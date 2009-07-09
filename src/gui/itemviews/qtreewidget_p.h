@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -219,12 +219,11 @@ class QTreeWidgetPrivate : public QTreeViewPrivate
     Q_DECLARE_PUBLIC(QTreeWidget)
 public:
     QTreeWidgetPrivate() : QTreeViewPrivate(), explicitSortColumn(-1) {}
-    inline QTreeModel *model() const
-        { return qobject_cast<QTreeModel*>(q_func()->model()); }
+    inline QTreeModel *treeModel() const { return qobject_cast<QTreeModel*>(model); }
     inline QModelIndex index(const QTreeWidgetItem *item, int column = 0) const
-        { return model()->index(item, column); }
+        { return treeModel()->index(item, column); }
     inline QTreeWidgetItem *item(const QModelIndex &index) const
-        { return model()->item(index); }
+        { return treeModel()->item(index); }
     void _q_emitItemPressed(const QModelIndex &index);
     void _q_emitItemClicked(const QModelIndex &index);
     void _q_emitItemDoubleClicked(const QModelIndex &index);

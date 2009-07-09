@@ -1,9 +1,0 @@
-#ifndef QTVGGRAPHICSSYSTEM_IBY
-#define QTVGGRAPHICSSYSTEM_IBY
-
-#include <qt.iby>
-
-file=ABI_DIR\BUILD_DIR\qvggraphicssystem.dll	qvggraphicssystem.dll
-data=\epoc32\winscw\c\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin	resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
-
-#endif // QTVGGRAPHICSSYSTEM_IBY

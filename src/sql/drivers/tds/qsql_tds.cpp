@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -181,7 +181,7 @@ static int CS_PUBLIC qTdsMsgHandler (DBPROCESS* dbproc,
     }
 
     if (severity > 0) {
-        QString errMsg = QString(QLatin1String("%1 (%2)")).arg(QString::fromAscii(msgtext)).arg(
+        QString errMsg = QString::fromLatin1("%1 (%2)").arg(QString::fromAscii(msgtext)).arg(
                                     msgstate);
         p->addErrorMsg(errMsg);
     }
@@ -211,8 +211,8 @@ static int CS_PUBLIC qTdsErrHandler(DBPROCESS* dbproc,
     }
 
 
-    QString errMsg = QString(QLatin1String("%1 %2\n")).arg(QString::fromAscii(dberrstr)).arg(
-                                QString::fromAscii(oserrstr));
+    QString errMsg = QString::fromLatin1("%1 %2\n").arg(QLatin1String(dberrstr)).arg(
+                                QLatin1String(oserrstr));
     errMsg += p->getErrorMsgs();
     p->lastError = qMakeError(errMsg, QSqlError::UnknownError, dberr);
     p->clearErrorMsgs();

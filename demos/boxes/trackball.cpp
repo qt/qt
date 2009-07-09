@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,12 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "trackball.h"
+#include "scene.h"
 
 //============================================================================//
 //                                  TrackBall                                 //
@@ -51,23 +52,23 @@ TrackBall::TrackBall(TrackMode mode)
     , m_pressed(false)
     , m_mode(mode)
 {
-    m_axis = gfx::Vector3f::vector(0, 1, 0);
-    m_rotation = gfx::Quaternionf::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+    m_axis = QVector3D(0, 1, 0);
+    m_rotation = QQuaternion();
     m_lastTime = QTime::currentTime();
 }
 
-TrackBall::TrackBall(float angularVelocity, const gfx::Vector3f& axis, TrackMode mode)
+TrackBall::TrackBall(float angularVelocity, const QVector3D& axis, TrackMode mode)
     : m_axis(axis)
     , m_angularVelocity(angularVelocity)
     , m_paused(false)
     , m_pressed(false)
     , m_mode(mode)
 {
-    m_rotation = gfx::Quaternionf::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+    m_rotation = QQuaternion();
     m_lastTime = QTime::currentTime();
 }
 
-void TrackBall::push(const QPointF& p, const gfx::Quaternionf &)
+void TrackBall::push(const QPointF& p, const QQuaternion &)
 {
     m_rotation = rotation();
     m_pressed = true;
@@ -76,7 +77,7 @@ void TrackBall::push(const QPointF& p, const gfx::Quaternionf &)
     m_angularVelocity = 0.0f;
 }
 
-void TrackBall::move(const QPointF& p, const gfx::Quaternionf &transformation)
+void TrackBall::move(const QPointF& p, const QQuaternion &transformation)
 {
     if (!m_pressed)
         return;
@@ -90,44 +91,45 @@ void TrackBall::move(const QPointF& p, const gfx::Quaternionf &transformation)
     case Plane:
         {
             QLineF delta(m_lastPos, p);
-            m_angularVelocity = delta.length() / msecs;
-            m_axis = gfx::Vector3f::vector(delta.dy(), -delta.dx(), 0.0f).normalized();
-            m_axis = transformation.transform(m_axis);
-            m_rotation *= gfx::Quaternionf::rotation(delta.length(), m_axis);
+            m_angularVelocity = 180*delta.length() / (PI*msecs);
+            m_axis = QVector3D(delta.dy(), -delta.dx(), 0.0f).normalized();
+            m_axis = transformation.rotateVector(m_axis);
+            m_rotation *= QQuaternion::fromAxisAndAngle(m_axis, delta.length());
         }
         break;
     case Sphere:
         {
-            gfx::Vector3f lastPos3D = gfx::Vector3f::vector(m_lastPos.x(), m_lastPos.y(), 0);
-            float sqrZ = 1 - lastPos3D.sqrNorm();
+            QVector3D lastPos3D = QVector3D(m_lastPos.x(), m_lastPos.y(), 0.0f);
+            float sqrZ = 1 - QVector3D::dotProduct(lastPos3D, lastPos3D);
             if (sqrZ > 0)
-                lastPos3D[2] = sqrt(sqrZ);
+                lastPos3D.setZ(sqrt(sqrZ));
             else
                 lastPos3D.normalize();
 
-            gfx::Vector3f currentPos3D = gfx::Vector3f::vector(p.x(), p.y(), 0);
-            sqrZ = 1 - currentPos3D.sqrNorm();
+            QVector3D currentPos3D = QVector3D(p.x(), p.y(), 0.0f);
+            sqrZ = 1 - QVector3D::dotProduct(currentPos3D, currentPos3D);
             if (sqrZ > 0)
-                currentPos3D[2] = sqrt(sqrZ);
+                currentPos3D.setZ(sqrt(sqrZ));
             else
                 currentPos3D.normalize();
 
-            m_axis = gfx::Vector3f::cross(currentPos3D, lastPos3D);
-            float angle = asin(sqrt(m_axis.sqrNorm()));
+            m_axis = QVector3D::crossProduct(currentPos3D, lastPos3D);
+            float angle = asin(sqrt(QVector3D::dotProduct(m_axis, m_axis)));
 
-            m_angularVelocity = angle / msecs;
+            m_angularVelocity = 180*angle / (PI*msecs);
             m_axis.normalize();
-            m_axis = transformation.transform(m_axis);
-            m_rotation *= gfx::Quaternionf::rotation(angle, m_axis);
+            m_axis = transformation.rotateVector(m_axis);
+            m_rotation *= QQuaternion::fromAxisAndAngle(m_axis, angle);
         }
         break;
     }
+
 
     m_lastPos = p;
     m_lastTime = currentTime;
 }
 
-void TrackBall::release(const QPointF& p, const gfx::Quaternionf &transformation)
+void TrackBall::release(const QPointF& p, const QQuaternion &transformation)
 {
     // Calling move() caused the rotation to stop if the framerate was too low.
     move(p, transformation);
@@ -146,13 +148,13 @@ void TrackBall::stop()
     m_paused = true;
 }
 
-gfx::Quaternionf TrackBall::rotation() const
+QQuaternion TrackBall::rotation() const
 {
     if (m_paused || m_pressed)
         return m_rotation;
 
     QTime currentTime = QTime::currentTime();
     float angle = m_angularVelocity * m_lastTime.msecsTo(currentTime);
-    return m_rotation * gfx::Quaternionf::rotation(angle, m_axis);
+    return m_rotation * QQuaternion::fromAxisAndAngle(m_axis, angle);
 }
 

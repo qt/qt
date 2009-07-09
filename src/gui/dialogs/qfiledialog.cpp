@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#if !defined(Q_OS_WINCE) && !defined(Q_WS_S60)
+#if !defined(Q_WS_WINCE) && !defined(Q_WS_S60)
 #include "ui_qfiledialog.h"
 #else
 #define Q_EMBEDDED_SMALLSCREEN
@@ -874,8 +874,8 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesT
             // This check is needed since we might be at the root directory
             // and on Windows it already ends with slash.
             QString path = rootPath();
-            if (!path.endsWith(QLatin1String("/")))
-                path += QLatin1String("/");
+            if (!path.endsWith(QLatin1Char('/')))
+                path += QLatin1Char('/');
             path += name;
             files.append(path);
         }
@@ -1898,7 +1898,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
 
 #if defined(Q_WS_WIN)
     if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         && qt_priv_ptr_valid
 #endif
         ) {
@@ -2687,7 +2687,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
 void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
 {
-    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1String("\\"))) {
+    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1Char('\\'))) {
         qFileDialogUi->listView->selectionModel()->clearSelection();
         return;
     }
@@ -2729,7 +2729,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     QStringList files = q->selectedFiles();
     QString lineEditText = lineEdit()->text();
 
-    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1String("\\"))) {
+    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
         button->setEnabled(true);
         if (acceptMode == QFileDialog::AcceptSave)
             button->setText(isOpenDirectory ? QFileDialog::tr("&Open") : acceptLabel);
@@ -3238,7 +3238,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         doubleSlash.clear();
 #endif
 
-    QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
+    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
 
 #if defined(Q_OS_SYMBIAN)
     QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);

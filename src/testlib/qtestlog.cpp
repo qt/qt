@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,13 +46,15 @@
 #include "QtTest/private/qabstracttestlogger_p.h"
 #include "QtTest/private/qplaintestlogger_p.h"
 #include "QtTest/private/qxmltestlogger_p.h"
-
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+
+
+#include "qtestlogger_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -83,6 +85,7 @@ namespace QTest {
     static IgnoreResultList *ignoreResultList = 0;
 
     static QTestLog::LogMode logMode = QTestLog::Plain;
+    static QTestLog::FlushMode flushMode = QTestLog::NoFlush;
     static int verbosity = 0;
     static int maxWarnings = 2002;
 
@@ -136,7 +139,7 @@ namespace QTest {
 
             if (!counter.deref()) {
                 QTest::testLogger->addMessage(QAbstractTestLogger::QSystem,
-                        "Maximum amount of warnings exceeded.");
+                        "Maximum amount of warnings exceeded. Use -maxwarnings to override.");
                 return;
             }
         }
@@ -270,15 +273,24 @@ void QTestLog::startLogging()
     QTEST_ASSERT(!QTest::testLogger);
 
     switch (QTest::logMode) {
-    case QTestLog::Plain:
-        QTest::testLogger = new QPlainTestLogger();
-        break;
-    case QTestLog::XML:
-        QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
-        break;
-    case QTestLog::LightXML:
-        QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
-    }
+        case QTestLog::Plain:
+            QTest::testLogger = new QPlainTestLogger;
+            break;
+        case QTestLog::XML:{
+            if(QTest::flushMode == QTestLog::FLushOn)
+                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
+            else
+                QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
+            break;
+        }case QTestLog::LightXML:{
+            if(QTest::flushMode == QTestLog::FLushOn)
+                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
+            else
+                QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);
+            break;
+        }case QTestLog::XunitXML:
+            QTest::testLogger = new QTestLogger(QTestLogger::TLF_XunitXml);
+        }
 
     QTest::testLogger->startLogging();
 
@@ -359,6 +371,11 @@ const char *QTestLog::outputFileName()
 void QTestLog::setMaxWarnings(int m)
 {
     QTest::maxWarnings = m <= 0 ? INT_MAX : m + 2;
+}
+
+void QTestLog::setFlushMode(FlushMode mode)
+{
+    QTest::flushMode = mode;
 }
 
 QT_END_NAMESPACE

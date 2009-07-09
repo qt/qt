@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -373,6 +373,8 @@ public:
 
         SE_ShapedFrameContents,
 
+        SE_ToolBarHandle,
+
         // do not add any values below/greater than this
         SE_CustomBase = 0xf0000000
     };
@@ -453,6 +455,7 @@ public:
         SC_MdiNormalButton  =      0x00000002,
         SC_MdiCloseButton   =      0x00000004,
 
+        SC_CustomBase =            0xf0000000,
         SC_All =                   0xffffffff
     };
     Q_DECLARE_FLAGS(SubControls, SubControl)
@@ -845,6 +848,8 @@ public:
                               QSizePolicy::ControlTypes controls2, Qt::Orientation orientation,
                               QStyleOption *option = 0, QWidget *widget = 0) const;
 
+    const QStyle * proxy() const;
+
 protected Q_SLOTS:
     QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
                                      const QWidget *widget = 0) const;
@@ -859,6 +864,9 @@ private:
     friend class QWidget;
     friend class QWidgetPrivate;
     friend class QApplication;
+    friend class QProxyStyle;
+    friend class QProxyStylePrivate;
+    void setProxy(QStyle *style);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyle::State)

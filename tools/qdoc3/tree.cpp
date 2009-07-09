@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1884,23 +1884,25 @@ QString Tree::fullDocumentLocation(const Node *node) const
     if (!node->url().isEmpty())
         return node->url();
 
+    QString parentName;
+    QString anchorRef;
+
     if (node->type() == Node::Namespace) {
 
         // The root namespace has no name - check for this before creating
         // an attribute containing the location of any documentation.
 
         if (!node->fileBase().isEmpty())
-            return node->fileBase() + ".html";
+            parentName = node->fileBase() + ".html";
         else
             return "";
     }
     else if (node->type() == Node::Fake) {
-        return node->fileBase() + ".html";
+        parentName = node->fileBase() + ".html";
     }
     else if (node->fileBase().isEmpty())
         return "";
 
-    QString parentName;
     Node *parentNode = 0;
 
     if ((parentNode = node->relates()))
@@ -1912,10 +1914,11 @@ QString Tree::fullDocumentLocation(const Node *node) const
         case Node::Class:
         case Node::Namespace:
             if (parentNode && !parentNode->name().isEmpty())
-                return parentName.replace(".html", "") + "-"
-                    + node->fileBase().toLower() + ".html";
+                parentName = parentName.replace(".html", "") + "-"
+                           + node->fileBase().toLower() + ".html";
             else
-                return node->fileBase() + ".html";
+                parentName = node->fileBase() + ".html";
+            break;
         case Node::Function:
             {
                 /*
@@ -1925,29 +1928,17 @@ QString Tree::fullDocumentLocation(const Node *node) const
                 const FunctionNode *functionNode =
                     static_cast<const FunctionNode *>(node);
 
-                // Functions can be compatibility functions or be obsolete.
-                switch (node->status()) {
-                case Node::Compat:
-                    parentName.replace(".html", "-qt3.html");
-                    break;
-                case Node::Obsolete:
-                    parentName.replace(".html", "-obsolete.html");
-                    break;
-                default:
-                    ;
-                }
-
                 if (functionNode->metaness() == FunctionNode::Dtor)
-                    return parentName + "#dtor." + functionNode->name().mid(1);
+                    anchorRef = "#dtor." + functionNode->name().mid(1);
 
-                if (functionNode->associatedProperty())
+                else if (functionNode->associatedProperty())
                     return fullDocumentLocation(functionNode->associatedProperty());
 
-                if (functionNode->overloadNumber() > 1)
-                    return parentName + "#" + functionNode->name()
-                           + "-" + QString::number(functionNode->overloadNumber());
+                else if (functionNode->overloadNumber() > 1)
+                    anchorRef = "#" + functionNode->name()
+                              + "-" + QString::number(functionNode->overloadNumber());
                 else
-                    return parentName + "#" + functionNode->name();
+                    anchorRef = "#" + functionNode->name();
             }
 
             /*
@@ -1955,27 +1946,52 @@ QString Tree::fullDocumentLocation(const Node *node) const
               the latter returns the name in lower-case. For
               HTML anchors, we need to preserve the case.
             */
+            break;
         case Node::Enum:
-            return parentName + "#" + node->name() + "-enum";
+            anchorRef = "#" + node->name() + "-enum";
+            break;
         case Node::Typedef:
-            return parentName + "#" + node->name() + "-typedef";
+            anchorRef = "#" + node->name() + "-typedef";
+            break;
         case Node::Property:
-            return parentName + "#" + node->name() + "-prop";
+            anchorRef = "#" + node->name() + "-prop";
+            break;
         case Node::Variable:
-            return parentName + "#" + node->name() + "-var";
+            anchorRef = "#" + node->name() + "-var";
+            break;
         case Node::Target:
-            return parentName + "#" + Doc::canonicalTitle(node->name());
+            anchorRef = "#" + Doc::canonicalTitle(node->name());
+            break;
         case Node::Fake:
             {
-            QString pageName = node->name();
-            return pageName.replace("/", "-").replace(".", "-") + ".html";
+            /*
+              Use node->fileBase() for fake nodes because they are represented
+              by pages whose file names are lower-case.
+            */
+            parentName = node->fileBase();
+            parentName.replace("/", "-").replace(".", "-");
+            parentName += ".html";
             }
             break;
         default:
             break;
     }
 
-    return "";
+    // Various objects can be compat (deprecated) or obsolete.
+    if (node->type() != Node::Class && node->type() != Node::Namespace) {
+        switch (node->status()) {
+        case Node::Compat:
+            parentName.replace(".html", "-qt3.html");
+            break;
+        case Node::Obsolete:
+            parentName.replace(".html", "-obsolete.html");
+            break;
+        default:
+            ;
+        }
+    }
+
+    return parentName.toLower() + anchorRef;
 }
 
 /*!

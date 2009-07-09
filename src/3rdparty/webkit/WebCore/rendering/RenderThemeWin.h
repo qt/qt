@@ -2,6 +2,7 @@
  * This file is part of the WebKit project.
  *
  * Copyright (C) 2006, 2008 Apple Computer, Inc.
+ * Copyright (C) 2009 Kenneth Rohde Christiansen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -48,8 +49,7 @@ struct ThemeData {
 
 class RenderThemeWin : public RenderTheme {
 public:
-    RenderThemeWin();
-    ~RenderThemeWin();
+    static PassRefPtr<RenderTheme> create();
 
     virtual String extraDefaultStyleSheet();
     virtual String extraQuirksStyleSheet();
@@ -92,7 +92,12 @@ public:
     virtual bool paintSliderThumb(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r);
     virtual void adjustSliderThumbSize(RenderObject*) const;
 
-    virtual void adjustButtonInnerStyle(RenderStyle*) const;
+    virtual bool popupOptionSupportsTextIndent() const { return true; }
+
+    virtual int buttonInternalPaddingLeft() const;
+    virtual int buttonInternalPaddingRight() const;
+    virtual int buttonInternalPaddingTop() const;
+    virtual int buttonInternalPaddingBottom() const;
 
     virtual void adjustSearchFieldStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
     virtual bool paintSearchField(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
@@ -117,7 +122,22 @@ public:
 
     static void setWebKitIsBeingUnloaded();
 
+    virtual bool supportsFocusRing(const RenderStyle*) const;
+
+#if ENABLE(VIDEO)
+    virtual bool paintMediaFullscreenButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+    virtual bool paintMediaPlayButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+    virtual bool paintMediaMuteButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+    virtual bool paintMediaSeekBackButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+    virtual bool paintMediaSeekForwardButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+    virtual bool paintMediaSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+    virtual bool paintMediaSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+#endif
+
 private:
+    RenderThemeWin();
+    ~RenderThemeWin();
+
     void addIntrinsicMargins(RenderStyle*) const;
     void close();
 
@@ -126,7 +146,7 @@ private:
     unsigned determineSliderThumbState(RenderObject*);
     unsigned determineButtonState(RenderObject*);
 
-    bool supportsFocus(ControlPart);
+    bool supportsFocus(ControlPart) const;
 
     ThemeData getThemeData(RenderObject*);
     ThemeData getClassicThemeData(RenderObject* o);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,7 +71,7 @@ void AccelTree::printStats(const NamePool::Ptr &np) const
     for(int i = 0; i < len; ++i)
     {
         const BasicNodeData &v = basicData.at(i);
-        pDebug() << "|" << i
+        pDebug() << '|' << i
                  << "\t\t|" << v.depth()
                  << "\t|" << v.size()
                  << "\t|" << postNumber(i)
@@ -81,12 +81,12 @@ void AccelTree::printStats(const NamePool::Ptr &np) const
                                                                                           : data.value(i))
                  << "\t|";
         /*
-        pDebug() << "|" << QString().arg(i, 14)
-                 << "|" << QString().arg(v.depth(), 6)
-                 << "|" << QString().arg(v.size(), 6)
-                 << "|" << QString().arg(postNumber(i), 14)
-                 << "|" << QString().arg(v.kind(), 6)
-                 << "|";
+        pDebug() << '|' << QString().arg(i, 14)
+                 << '|' << QString().arg(v.depth(), 6)
+                 << '|' << QString().arg(v.size(), 6)
+                 << '|' << QString().arg(postNumber(i), 14)
+                 << '|' << QString().arg(v.kind(), 6)
+                 << '|';
                  */
     }
     pDebug() << "+---------------+-------+-------+---------------+-------+--------------+";

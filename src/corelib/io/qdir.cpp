@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
 #endif
+#include "qdiriterator.h"
 #include "qfsfileengine.h"
 #include "qdatetime.h"
 #include "qstring.h"
@@ -54,6 +55,8 @@
 #ifdef QT_BUILD_CORE_LIB
 # include "qresource.h"
 #endif
+
+#include "qvarlengtharray.h"
 
 #include "../kernel/qcoreglobaldata_p.h"
 #include <stdlib.h>
@@ -91,7 +94,7 @@ protected:
     QString initFileEngine(const QString &file);
 
     void updateFileLists() const;
-    void sortFileList(QDir::SortFlags, QStringList &, QStringList *, QFileInfoList *) const;
+    void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *) const;
 
 private:
 #ifdef QT3_SUPPORT
@@ -261,45 +264,57 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
             ? f1->filename_cache.localeAwareCompare(f2->filename_cache)
             : f1->filename_cache.compare(f2->filename_cache);
     }
-
+    if (r == 0) // Enforce an order - the order the items appear in the array
+        r = (&n1) - (&n2);
     if (qt_cmp_si_sort_flags & QDir::Reversed)
         return r > 0;
     return r < 0;
 }
 
-inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
+inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                                       QStringList *names, QFileInfoList *infos) const
 {
     if(names)
         names->clear();
     if(infos)
         infos->clear();
-    if(!l.isEmpty()) {
-        QDirSortItem *si= new QDirSortItem[l.count()];
-        int i;
-        for (i = 0; i < l.size(); ++i) {
-            QString path = data->path;
-            if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
-                path += QLatin1Char('/');
-            si[i].item = QFileInfo(path + l.at(i));
-        }
-        if ((sort & QDir::SortByMask) != QDir::Unsorted)
-            qStableSort(si, si+i, QDirSortItemComparator(sort));
-        // put them back in the list(s)
-        for (int j = 0; j<i; j++) {
+    int n = l.size();
+    if(n > 0) {
+        if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
             if(infos)
-                infos->append(si[j].item);
-            if(names)
-                names->append(si[j].item.fileName());
+                *infos = l;
+            if(names) {
+                for (int i = 0; i < n; ++i)
+                    names->append(l.at(i).fileName());
+            }
+        } else {
+            QDirSortItem *si = new QDirSortItem[n];
+            for (int i = 0; i < n; ++i)
+                si[i].item = l.at(i);
+            qSort(si, si+n, QDirSortItemComparator(sort));
+            // put them back in the list(s)
+            if(infos) {
+                for (int i = 0; i < n; ++i)
+                    infos->append(si[i].item);
+            }
+            if(names) {
+                for (int i = 0; i < n; ++i)
+                    names->append(si[i].item.fileName());
+            }
+            delete [] si;
         }
-        delete [] si;
     }
 }
 
 inline void QDirPrivate::updateFileLists() const
 {
     if(data->listsDirty) {
-        QStringList l = data->fileEngine->entryList(data->filters, data->nameFilters);
+        QFileInfoList l;
+        QDirIterator it(data->path, data->nameFilters, data->filters);
+        while (it.hasNext()) {
+            it.next();
+            l.append(it.fileInfo());
+        }
         sortFileList(data->sort, l, &data->files, &data->fileInfos);
         data->listsDirty = 0;
     }
@@ -1303,7 +1318,6 @@ QStringList QDir::entryList(Filters filters, SortFlags sort) const
 
     \sa entryList(), setNameFilters(), setSorting(), setFilter(), isReadable(), exists()
 */
-
 QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
 {
     Q_D(const QDir);
@@ -1345,10 +1359,12 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         d->updateFileLists();
         return d->data->files;
     }
-    QStringList l = d->data->fileEngine->entryList(filters, nameFilters);
-    if ((sort & QDir::SortByMask) == QDir::Unsorted)
-        return l;
-
+    QFileInfoList l;
+    QDirIterator it(d->data->path, nameFilters, filters);
+    while (it.hasNext()) {
+        it.next();
+        l.append(it.fileInfo());
+    }
     QStringList ret;
     d->sortFileList(sort, l, &ret, 0);
     return ret;
@@ -1388,8 +1404,13 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
         d->updateFileLists();
         return d->data->fileInfos;
     }
+    QFileInfoList l;
+    QDirIterator it(d->data->path, nameFilters, filters);
+    while (it.hasNext()) {
+        it.next();
+        l.append(it.fileInfo());
+    }
     QFileInfoList ret;
-    QStringList l = d->data->fileEngine->entryList(filters, nameFilters);
     d->sortFileList(sort, l, 0, &ret);
     return ret;
 }
@@ -2056,11 +2077,13 @@ QString QDir::cleanPath(const QString &path)
     QString name = path;
     QChar dir_separator = separator();
     if(dir_separator != QLatin1Char('/'))
-        name.replace(dir_separator, QLatin1Char('/'));
+ 	name.replace(dir_separator, QLatin1Char('/'));
 
     int used = 0, levels = 0;
     const int len = name.length();
-    QVector<QChar> out(len);
+    QVarLengthArray<QChar> outVector(len);
+    QChar *out = outVector.data();
+
     const QChar *p = name.unicode();
     for(int i = 0, last = -1, iwrite = 0; i < len; i++) {
         if(p[i] == QLatin1Char('/')) {
@@ -2160,7 +2183,7 @@ QString QDir::cleanPath(const QString &path)
     if(used == len)
         ret = name;
     else
-	ret = QString(out.data(), used);
+	ret = QString(out, used);
 
     // Strip away last slash except for root directories
     if (ret.endsWith(QLatin1Char('/'))
@@ -2223,7 +2246,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
 
     \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 13
 
-    If the file name contains characters that cannot be part of a valid C++ function name 
+    If the file name contains characters that cannot be part of a valid C++ function name
     (such as '-'), they have to be replaced by the underscore character ('_').
 
     Note: This macro cannot be used in a namespace. It should be called from
@@ -2415,7 +2438,7 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
         if (filters & QDir::System) flags << QLatin1String("System");
         if (filters & QDir::CaseSensitive) flags << QLatin1String("CaseSensitive");
     }
-    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1String("|"))) << ")";
+    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1String("|"))) << ')';
     return debug;
 }
 
@@ -2437,8 +2460,8 @@ QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
         if (sorting & QDir::LocaleAware) flags << QLatin1String("LocaleAware");
         if (sorting & QDir::Type) flags << QLatin1String("Type");
         debug << "QDir::SortFlags(" << qPrintable(type)
-              << "|"
-              << qPrintable(flags.join(QLatin1String("|"))) << ")";
+              << '|'
+              << qPrintable(flags.join(QLatin1String("|"))) << ')';
     }
     return debug;
 }
@@ -2450,9 +2473,9 @@ QDebug operator<<(QDebug debug, const QDir &dir)
                        << qPrintable(dir.nameFilters().join(QLatin1String(",")))
                        << "}, "
                        << dir.sorting()
-                       << ","
+                       << ','
                        << dir.filter()
-                       << ")";
+                       << ')';
     return debug.space();
 }
 

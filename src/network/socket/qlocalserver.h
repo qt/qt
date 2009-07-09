@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -86,15 +86,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QLocalServer)
-#if defined(QT_LOCALSOCKET_TCP)
     Q_PRIVATE_SLOT(d_func(), void _q_onNewConnection())
-#elif defined(Q_OS_WIN)
-    Q_PRIVATE_SLOT(d_func(), void _q_openSocket(HANDLE handle))
-    Q_PRIVATE_SLOT(d_func(), void _q_stoppedListening())
-    Q_PRIVATE_SLOT(d_func(), void _q_setError(QAbstractSocket::SocketError error, const QString &errorString))
-#else
-    Q_PRIVATE_SLOT(d_func(), void _q_socketActivated())
-#endif
 };
 
 #endif // QT_NO_LOCALSERVER

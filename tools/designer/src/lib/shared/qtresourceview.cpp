@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 #include "qtresourcemodel_p.h"
 #include "qtresourceeditordialog_p.h"
 #include "iconloader_p.h"
+#include "filterwidget_p.h" // For FilterWidget
 
 #include <QtDesigner/QDesignerFormEditorInterface>
 
@@ -144,6 +145,7 @@ public:
     void slotReloadResources();
     void slotCopyResourcePath();
     void slotListWidgetContextMenuRequested(const QPoint &pos);
+    void slotFilterChanged(const QString &pattern);
     void createPaths();
     QTreeWidgetItem *createPath(const QString &path, QTreeWidgetItem *parent);
     void createResources(const QString &path);
@@ -152,16 +154,20 @@ public:
     void restoreSettings();
     void saveSettings();
     void updateActions();
+    void filterOutResources();
 
     QPixmap makeThumbnail(const QPixmap &pix) const;
 
     QDesignerFormEditorInterface *m_core;
     QtResourceModel *m_resourceModel;
     QToolBar *m_toolBar;
+    qdesigner_internal::FilterWidget *m_filterWidget;
     QTreeWidget *m_treeWidget;
     QListWidget *m_listWidget;
     QSplitter *m_splitter;
-    QMap<QString, QStringList>       m_pathToContents; // full path to contents file names
+    QMap<QString, QStringList>       m_pathToContents; // full path to contents file names (full path to its resource filenames)
+    QMap<QString, QString>           m_pathToParentPath; // full path to full parent path
+    QMap<QString, QStringList>       m_pathToSubPaths; // full path to full sub paths
     QMap<QString, QTreeWidgetItem *> m_pathToItem;
     QMap<QTreeWidgetItem *, QString> m_itemToPath;
     QMap<QString, QListWidgetItem *> m_resourceToItem;
@@ -175,6 +181,7 @@ public:
     bool m_ignoreGuiSignals;
     QString m_settingsKey;
     bool m_resourceEditingEnabled;
+    QString m_filterPattern;
 };
 
 QtResourceViewPrivate::QtResourceViewPrivate(QDesignerFormEditorInterface *core) :
@@ -251,6 +258,12 @@ void QtResourceViewPrivate::slotListWidgetContextMenuRequested(const QPoint &pos
     menu.exec(m_listWidget->mapToGlobal(pos));
 }
 
+void QtResourceViewPrivate::slotFilterChanged(const QString &pattern)
+{
+    m_filterPattern = pattern;
+    filterOutResources();
+}
+
 void QtResourceViewPrivate::storeExpansionState()
 {
     QMapIterator<QString, QTreeWidgetItem *> it(m_pathToItem);
@@ -294,6 +307,7 @@ void QtResourceViewPrivate::updateActions()
     m_editResourcesAction->setVisible(m_resourceEditingEnabled);
     m_editResourcesAction->setEnabled(resourceActive);
     m_reloadResourcesAction->setEnabled(resourceActive);
+    m_filterWidget->setEnabled(resourceActive);
 }
 
 void QtResourceViewPrivate::slotResourceSetActivated(QtResourceSet *resourceSet)
@@ -307,6 +321,8 @@ void QtResourceViewPrivate::slotResourceSetActivated(QtResourceSet *resourceSet)
     const QString currentResource = m_itemToResource.value(m_listWidget->currentItem());
     m_treeWidget->clear();
     m_pathToContents.clear();
+    m_pathToParentPath.clear();
+    m_pathToSubPaths.clear();
     m_pathToItem.clear();
     m_itemToPath.clear();
     m_listWidget->clear();
@@ -320,6 +336,7 @@ void QtResourceViewPrivate::slotResourceSetActivated(QtResourceSet *resourceSet)
         q_ptr->selectResource(currentResource);
     else if (!currentPath.isEmpty())
         q_ptr->selectResource(currentPath);
+    filterOutResources();
 }
 
 void QtResourceViewPrivate::slotCurrentPathChanged(QTreeWidgetItem *item)
@@ -362,9 +379,6 @@ void QtResourceViewPrivate::createPaths()
 
     const QString root(QLatin1Char(':'));
 
-    QMap<QString, QString> pathToParentPath; // full path to full parent path
-    QMap<QString, QStringList> pathToSubPaths; // full path to full sub paths
-
     QMap<QString, QString> contents = m_resourceModel->contents();
     QMapIterator<QString, QString> itContents(contents);
     while (itContents.hasNext()) {
@@ -372,11 +386,11 @@ void QtResourceViewPrivate::createPaths()
         const QFileInfo fi(filePath);
         QString dirPath = fi.absolutePath();
         m_pathToContents[dirPath].append(fi.fileName());
-        while (!pathToParentPath.contains(dirPath) && dirPath != root) {
+        while (!m_pathToParentPath.contains(dirPath) && dirPath != root) { // create all parent paths
             const QFileInfo fd(dirPath);
             const QString parentDirPath = fd.absolutePath();
-            pathToParentPath[dirPath] = parentDirPath;
-            pathToSubPaths[parentDirPath].append(dirPath);
+            m_pathToParentPath[dirPath] = parentDirPath;
+            m_pathToSubPaths[parentDirPath].append(dirPath);
             dirPath = parentDirPath;
         }
     }
@@ -387,10 +401,123 @@ void QtResourceViewPrivate::createPaths()
         QPair<QString, QTreeWidgetItem *> pathToParentItem = pathToParentItemQueue.dequeue();
         const QString path = pathToParentItem.first;
         QTreeWidgetItem *item = createPath(path, pathToParentItem.second);
-        QStringList subPaths = pathToSubPaths.value(path);
+        QStringList subPaths = m_pathToSubPaths.value(path);
         QStringListIterator itSubPaths(subPaths);
         while (itSubPaths.hasNext())
             pathToParentItemQueue.enqueue(qMakePair(itSubPaths.next(), item));
+    }
+}
+
+void QtResourceViewPrivate::filterOutResources()
+{
+    QMap<QString, bool> pathToMatchingContents; // true means the path has any matching contents
+    QMap<QString, bool> pathToVisible; // true means the path has to be shown
+
+    // 1) we go from root path recursively.
+    // 2) we check every path if it contains at least one matching resource - if empty we add it
+    //                 to pathToMatchingContents and pathToVisible with false, if non empty
+    //                 we add it with true and change every parent path in pathToVisible to true.
+    // 3) we hide these items which has pathToVisible value false.
+
+    const bool matchAll = m_filterPattern.isEmpty();
+    const QString root(QLatin1Char(':'));
+
+    QQueue<QString> pathQueue;
+    pathQueue.enqueue(root);
+    while (!pathQueue.isEmpty()) {
+        const QString path = pathQueue.dequeue();
+
+        QStringList fileNames = m_pathToContents.value(path);
+        QStringListIterator it(fileNames);
+        bool hasContents = matchAll;
+        if (!matchAll) { // the case filter is not empty - we check if the path contains anything
+            while (it.hasNext()) {
+                QString fileName = it.next();
+                hasContents = fileName.contains(m_filterPattern, Qt::CaseInsensitive);
+                if (hasContents) // the path contains at least one resource which matches the filter
+                    break;
+            }
+        }
+
+        pathToMatchingContents[path] = hasContents;
+        pathToVisible[path] = hasContents;
+
+        if (hasContents) { // if the path is going to be shown we need to show all its parent paths
+            QString parentPath = m_pathToParentPath.value(path);
+            while (!parentPath.isEmpty()) {
+                QString p = parentPath;
+                if (pathToVisible.value(p)) // parent path is already shown, we break the loop
+                    break;
+                pathToVisible[p] = true;
+                parentPath = m_pathToParentPath.value(p);
+            }
+        }
+
+        QStringList subPaths = m_pathToSubPaths.value(path); // we do the same for children paths
+        QStringListIterator itSubPaths(subPaths);
+        while (itSubPaths.hasNext())
+            pathQueue.enqueue(itSubPaths.next());
+    }
+
+    // we setup here new path and resource to be activated
+    const QString currentPath = m_itemToPath.value(m_treeWidget->currentItem());
+    QString newCurrentPath = currentPath;
+    QString currentResource = m_itemToResource.value(m_listWidget->currentItem());
+    if (!matchAll) {
+        bool searchForNewPathWithContents = true;
+
+        if (!currentPath.isEmpty()) { // if the currentPath is empty we will search for a new path too
+            QMap<QString, bool>::ConstIterator it = pathToMatchingContents.constFind(currentPath);
+            if (it != pathToMatchingContents.constEnd() && it.value()) // the current item has contents, we don't need to search for another path
+                searchForNewPathWithContents = false;
+        }
+
+        if (searchForNewPathWithContents) {
+            // we find the first path with the matching contents
+            QMap<QString, bool>::ConstIterator itContents = pathToMatchingContents.constBegin();
+            while (itContents != pathToMatchingContents.constEnd()) {
+                if (itContents.value()) {
+                    newCurrentPath = itContents.key(); // the new path will be activated
+                    break;
+                }
+
+                itContents++;
+            }
+        }
+
+        QFileInfo fi(currentResource);
+        if (!fi.fileName().contains(m_filterPattern, Qt::CaseInsensitive)) { // the case when the current resource is filtered out
+            const QStringList fileNames = m_pathToContents.value(newCurrentPath);
+            QStringListIterator it(fileNames);
+            while (it.hasNext()) { // we try to select the first matching resource from the newCurrentPath
+                QString fileName = it.next();
+                if (fileName.contains(m_filterPattern, Qt::CaseInsensitive)) {
+                    QDir dirPath(newCurrentPath);
+                    currentResource = dirPath.absoluteFilePath(fileName); // the new resource inside newCurrentPath will be activated
+                    break;
+                }
+            }
+        }
+    }
+
+    QTreeWidgetItem *newCurrentItem = m_pathToItem.value(newCurrentPath);
+    if (currentPath != newCurrentPath)
+        m_treeWidget->setCurrentItem(newCurrentItem);
+    else
+        slotCurrentPathChanged(newCurrentItem); // trigger filtering on the current path
+
+    QListWidgetItem *currentResourceItem = m_resourceToItem.value(currentResource);
+    if (currentResourceItem) {
+        m_listWidget->setCurrentItem(currentResourceItem);
+        m_listWidget->scrollToItem(currentResourceItem);
+    }
+
+    QMapIterator<QString, bool> it(pathToVisible); // hide all paths filtered out
+    while (it.hasNext()) {
+        const QString path = it.next().key();
+        QTreeWidgetItem *item = m_pathToItem.value(path);
+        if (item)
+            item->setHidden(!it.value());
     }
 }
 
@@ -417,27 +544,32 @@ QTreeWidgetItem *QtResourceViewPrivate::createPath(const QString &path, QTreeWid
 
 void QtResourceViewPrivate::createResources(const QString &path)
 {
+    const bool matchAll = m_filterPattern.isEmpty();
+
     QDir dir(path);
-    QStringList files = m_pathToContents.value(path);
-    QStringListIterator it(files);
+    QStringList fileNames = m_pathToContents.value(path);
+    QStringListIterator it(fileNames);
     while (it.hasNext()) {
-        QString file = it.next();
-        QString filePath = dir.absoluteFilePath(file);
-        QFileInfo fi(filePath);
-        if (fi.isFile()) {
-            QListWidgetItem *item = new QListWidgetItem(fi.fileName(), m_listWidget);
-            const QPixmap pix = QPixmap(filePath);
-            if (pix.isNull()) {
-                item->setToolTip(filePath);
-            } else {
-                item->setIcon(QIcon(makeThumbnail(pix)));
-                const QSize size = pix.size();
-                item->setToolTip(QtResourceView::tr("Size: %1 x %2\n%3").arg(size.width()).arg(size.height()).arg(filePath));
+        QString fileName = it.next();
+        const bool showProperty = matchAll || fileName.contains(m_filterPattern, Qt::CaseInsensitive);
+        if (showProperty) {
+            QString filePath = dir.absoluteFilePath(fileName);
+            QFileInfo fi(filePath);
+            if (fi.isFile()) {
+                QListWidgetItem *item = new QListWidgetItem(fi.fileName(), m_listWidget);
+                const QPixmap pix = QPixmap(filePath);
+                if (pix.isNull()) {
+                    item->setToolTip(filePath);
+                } else {
+                    item->setIcon(QIcon(makeThumbnail(pix)));
+                    const QSize size = pix.size();
+                    item->setToolTip(QtResourceView::tr("Size: %1 x %2\n%3").arg(size.width()).arg(size.height()).arg(filePath));
+                }
+                item->setFlags(item->flags() | Qt::ItemIsDragEnabled);
+                item->setData(Qt::UserRole, filePath);
+                m_itemToResource[item] = filePath;
+                m_resourceToItem[filePath] = item;
             }
-            item->setFlags(item->flags() | Qt::ItemIsDragEnabled);
-            item->setData(Qt::UserRole, filePath);
-            m_itemToResource[item] = filePath;
-            m_resourceToItem[filePath] = item;
         }
     }
 }
@@ -463,6 +595,11 @@ QtResourceView::QtResourceView(QDesignerFormEditorInterface *core, QWidget *pare
     d_ptr->m_copyResourcePathAction = new QAction(qdesigner_internal::createIconSet(QLatin1String("editcopy.png")), tr("Copy Path"), this);
     connect(d_ptr->m_copyResourcePathAction, SIGNAL(triggered()), this, SLOT(slotCopyResourcePath()));
     d_ptr->m_copyResourcePathAction->setEnabled(false);
+
+    //d_ptr->m_filterWidget = new qdesigner_internal::FilterWidget(0, qdesigner_internal::FilterWidget::LayoutAlignNone);
+    d_ptr->m_filterWidget = new qdesigner_internal::FilterWidget(d_ptr->m_toolBar);
+    d_ptr->m_toolBar->addWidget(d_ptr->m_filterWidget);
+    connect(d_ptr->m_filterWidget, SIGNAL(filterChanged(QString)), this, SLOT(slotFilterChanged(QString)));
 
     d_ptr->m_splitter = new QSplitter;
     d_ptr->m_splitter->setChildrenCollapsible(false);

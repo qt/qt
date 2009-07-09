@@ -27,10 +27,6 @@
 
 #include "BrowserWindow.h"
 
-#if defined (Q_OS_SYMBIAN)
-#include "sym_iap_util.h"
-#endif
-
 int main(int argc, char *argv[])
 {
 #if !defined(Q_WS_S60)
@@ -47,7 +43,6 @@ int main(int argc, char *argv[])
     window.showFullScreen();
     QWebSettings::globalSettings()->setObjectCacheCapacities(128*1024, 1024*1024, 1024*1024);
     QWebSettings::globalSettings()->setMaximumPagesInCache(3);
-    qt_SetDefaultIap();
 #else
     window.resize(360, 640);
     window.show();

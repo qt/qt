@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -137,13 +137,8 @@ void PropertyEditor::setupStringProperty(QtVariantProperty *property, bool isMai
     const bool hasComment = params.second;
     property->setAttribute(m_strings.m_validationModeAttribute, params.first);
     // assuming comment cannot appear or disappear for the same property in different object instance
-    if (!hasComment) {
-        QList<QtProperty *> commentProperties = property->subProperties();
-        if (commentProperties.count() > 0)
-            delete commentProperties.at(0);
-        if (commentProperties.count() > 1)
-            delete commentProperties.at(1);
-    }
+    if (!hasComment)
+        qDeleteAll(property->subProperties());
 }
 
 void PropertyEditor::setupPaletteProperty(QtVariantProperty *property)

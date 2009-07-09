@@ -19,19 +19,16 @@
 */
 
 #include "config.h"
-
 #include "JSBarInfo.h"
 
-#include <wtf/GetPtr.h>
-
 #include "BarInfo.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSBarInfo)
+ASSERT_CLASS_FITS_IN_CELL(JSBarInfo);
 
 /* Hash table */
 
@@ -64,9 +61,9 @@ static const HashTable JSBarInfoPrototypeTable =
 
 const ClassInfo JSBarInfoPrototype::s_info = { "BarInfoPrototype", 0, &JSBarInfoPrototypeTable, 0 };
 
-JSObject* JSBarInfoPrototype::self(ExecState* exec)
+JSObject* JSBarInfoPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSBarInfo>(exec);
+    return getDOMPrototype<JSBarInfo>(exec, globalObject);
 }
 
 const ClassInfo JSBarInfo::s_info = { "BarInfo", 0, &JSBarInfoTable, 0 };
@@ -80,12 +77,11 @@ JSBarInfo::JSBarInfo(PassRefPtr<Structure> structure, PassRefPtr<BarInfo> impl)
 JSBarInfo::~JSBarInfo()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSBarInfo::createPrototype(ExecState* exec)
+JSObject* JSBarInfo::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSBarInfoPrototype(JSBarInfoPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSBarInfoPrototype(JSBarInfoPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSBarInfo::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -93,19 +89,20 @@ bool JSBarInfo::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSBarInfo, Base>(exec, &JSBarInfoTable, this, propertyName, slot);
 }
 
-JSValuePtr jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     BarInfo* imp = static_cast<BarInfo*>(static_cast<JSBarInfo*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->visible());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, BarInfo* object)
+JSC::JSValue toJS(JSC::ExecState* exec, BarInfo* object)
 {
     return getDOMObjectWrapper<JSBarInfo>(exec, object);
 }
-BarInfo* toBarInfo(JSC::JSValuePtr value)
+BarInfo* toBarInfo(JSC::JSValue value)
 {
-    return value->isObject(&JSBarInfo::s_info) ? static_cast<JSBarInfo*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSBarInfo::s_info) ? static_cast<JSBarInfo*>(asObject(value))->impl() : 0;
 }
 
 }

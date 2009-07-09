@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -118,6 +118,21 @@ public:
     operator RgnHandle() {
         return qdRgn;
     }
+};
+
+// Class for chaining to gether a bunch of fades. It pretty much is only used for qmenu fading.
+class QMacWindowFader
+{
+    QWidgetList m_windowsToFade;
+    float m_duration;
+    Q_DISABLE_COPY(QMacWindowFader)
+public:
+    QMacWindowFader(); // PLEASE DON'T CALL THIS.
+    static QMacWindowFader *currentFader();
+    void registerWindowToFade(QWidget *window);
+    void setFadeDuration(float durationInSecs) { m_duration = durationInSecs; }
+    float fadeDuration() const { return m_duration; }
+    void performFade();
 };
 
 class Q_GUI_EXPORT QMacCocoaAutoReleasePool

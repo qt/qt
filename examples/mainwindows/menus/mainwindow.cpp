@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -219,7 +219,7 @@ void MainWindow::createActions()
     connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
 
     exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
@@ -240,7 +240,7 @@ void MainWindow::createActions()
     connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
 
     copyAct = new QAction(tr("&Copy"), this);
-    copyAct->setShortcut(tr("Ctrl+C"));
+    copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
@@ -253,7 +253,7 @@ void MainWindow::createActions()
 
     boldAct = new QAction(tr("&Bold"), this);
     boldAct->setCheckable(true);
-    boldAct->setShortcut(tr("Ctrl+B"));
+    boldAct->setShortcut(QKeySequence::Bold);
     boldAct->setStatusTip(tr("Make the text bold"));
     connect(boldAct, SIGNAL(triggered()), this, SLOT(bold()));
 
@@ -263,7 +263,7 @@ void MainWindow::createActions()
 
     italicAct = new QAction(tr("&Italic"), this);
     italicAct->setCheckable(true);
-    italicAct->setShortcut(tr("Ctrl+I"));
+    italicAct->setShortcut(QKeySequence::Italic);
     italicAct->setStatusTip(tr("Make the text italic"));
     connect(italicAct, SIGNAL(triggered()), this, SLOT(italic()));
 

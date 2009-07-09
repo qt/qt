@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -215,11 +215,8 @@ void QButtonGroup::setExclusive(bool exclusive)
     d->exclusive = exclusive;
 }
 
-/*!
-    Adds the given \a button to the end of the group's internal list of buttons.
 
-    \sa removeButton()
-*/
+// TODO: Qt 5: Merge with addButton(QAbstractButton *button, int id)
 void QButtonGroup::addButton(QAbstractButton *button)
 {
     addButton(button, -1);
@@ -232,8 +229,18 @@ void QButtonGroup::addButton(QAbstractButton *button, int id)
         previous->removeButton(button);
     button->d_func()->group = this;
     d->buttonList.append(button);
-    if (id != -1)
+    if (id == -1) {
+        QList<int> ids = d->mapping.values();
+        if (ids.isEmpty())
+           d->mapping[button] = -2;
+        else {
+            qSort(ids);
+            d->mapping[button] = ids.first()-1;
+        }
+    } else {
         d->mapping[button] = id;
+    }
+
     if (d->exclusive && button->isChecked())
         button->d_func()->notifyChecked();
 }
@@ -312,20 +319,16 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
         return group->d_func()->buttonList;
 #endif
 
-    Q_Q(const QAbstractButton);
-    QList<QAbstractButton*>candidates;
-    if (q->parentWidget()) {
-        candidates =  qFindChildren<QAbstractButton *>(q->parentWidget());
-        if (autoExclusive) {
-            for (int i = candidates.count() - 1; i >= 0; --i) {
-                QAbstractButton *candidate = candidates.at(i);
-                if (!candidate->autoExclusive()
+    QList<QAbstractButton*>candidates = qFindChildren<QAbstractButton *>(parent);
+    if (autoExclusive) {
+        for (int i = candidates.count() - 1; i >= 0; --i) {
+            QAbstractButton *candidate = candidates.at(i);
+            if (!candidate->autoExclusive()
 #ifndef QT_NO_BUTTONGROUP
-                    || candidate->group()
+                || candidate->group()
 #endif
-                    )
-                    candidates.removeAt(i);
-            }
+                )
+                candidates.removeAt(i);
         }
     }
     return candidates;
@@ -376,7 +379,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
 #else
     bool exclusive = autoExclusive;
 #endif
-    QWidget *f = qApp->focusWidget();
+    QWidget *f = QApplication::focusWidget();
     QAbstractButton *fb = qobject_cast<QAbstractButton *>(f);
     if (!fb || !buttonList.contains(fb))
         return;
@@ -1236,7 +1239,9 @@ void QAbstractButton::timerEvent(QTimerEvent *e)
         d->repeatTimer.start(d->autoRepeatInterval, this);
         if (d->down) {
             QPointer<QAbstractButton> guard(this);
-            d->emitReleased();
+            nextCheckState();
+            if (guard)
+                d->emitReleased();
             if (guard)
                 d->emitClicked();
             if (guard)

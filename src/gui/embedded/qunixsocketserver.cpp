@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -172,7 +172,7 @@ void QUnixSocketServer::close()
 #ifdef QUNIXSOCKET_DEBUG
         if(0 != closerv) {
             qDebug() << "QUnixSocketServer: Unable to close socket ("
-                     << strerror(errno) << ")";
+                     << strerror(errno) << ')';
         }
 #endif
     }
@@ -245,7 +245,7 @@ bool QUnixSocketServer::listen(const QByteArray & path)
     if(-1 == d->fd) {
 #ifdef QUNIXSOCKETSERVER_DEBUG
         qDebug() << "QUnixSocketServer: Unable to create socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         close();
         d->error = ResourceError;
@@ -263,7 +263,7 @@ bool QUnixSocketServer::listen(const QByteArray & path)
     if(-1 == ::bind(d->fd, (sockaddr *)&addr, sizeof(sockaddr_un))) {
 #ifdef QUNIXSOCKETSERVER_DEBUG
         qDebug() << "QUnixSocketServer: Unable to bind socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         close();
         d->error = BindError;
@@ -274,7 +274,7 @@ bool QUnixSocketServer::listen(const QByteArray & path)
     if(-1 == ::listen(d->fd, d->maxConns)) {
 #ifdef QUNIXSOCKETSERVER_DEBUG
         qDebug() << "QUnixSocketServer: Unable to listen socket ("
-                 << strerror(errno) << ")";
+                 << strerror(errno) << ')';
 #endif
         close();
         d->error = ListenError;

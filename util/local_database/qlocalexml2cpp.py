@@ -237,7 +237,17 @@ class StringData:
             return self.hash[s]
 
         lst = map(lambda x: hex(ord(x)), s)
-        token = StringDataToken(len(self.data), len(lst))
+        index = len(self.data)
+        if index >= 65535:
+            print "\n\n\n#error Data index is too big!"
+            sys.stderr.write ("\n\n\nERROR: index exceeds the uint16 range! index = %d\n" % index)
+            sys.exit(1)
+        size = len(lst)
+        if size >= 65535:
+            print "\n\n\n#error Data is too big!"
+            sys.stderr.write ("\n\n\nERROR: data size exceeds the uint16 range! size = %d\n" % size)
+            sys.exit(1)
+        token = StringDataToken(index, size)
         self.hash[s] = token
         self.data += lst
         return token
@@ -308,7 +318,7 @@ def main():
     print
 
     # Locale index
-    print "static const uint locale_index[] = {"
+    print "static const quint16 locale_index[] = {"
     print "     0, // unused"
     index = 0
     for key in language_map.keys():
@@ -444,7 +454,7 @@ def main():
     print
 
     # Language name index
-    print "static const uint language_name_index[] = {"
+    print "static const quint16 language_name_index[] = {"
     print "     0, // Unused"
     index = 8
     for key in language_map.keys():
@@ -467,7 +477,7 @@ def main():
     print
 
     # Country name index
-    print "static const uint country_name_index[] = {"
+    print "static const quint16 country_name_index[] = {"
     print "     0, // AnyCountry"
     index = 8
     for key in country_map.keys():

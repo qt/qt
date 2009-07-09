@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -529,24 +529,6 @@ void QTableModel::sort(int column, Qt::SortOrder order)
 
     emit layoutChanged();
 }
-
-bool QTableModel::canConvertToDouble(const QVariant &value)
-{
-    switch (value.type()) {
-    case QVariant::Bool:
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::Double:
-    case QVariant::Char:
-        return true;
-    default:
-        return false;
-    }
-    return false;
-}
-
 
 /*
   \internal
@@ -1410,7 +1392,7 @@ QVariant QTableWidgetItem::data(int role) const
 bool QTableWidgetItem::operator<(const QTableWidgetItem &other) const
 {
     const QVariant v1 = data(Qt::DisplayRole), v2 = other.data(Qt::DisplayRole);
-    if (QTableModel::canConvertToDouble(v1) && QTableModel::canConvertToDouble(v2))
+    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
         return v1.toDouble() < v2.toDouble();
     return v1.toString() < v2.toString();
 }
@@ -1588,7 +1570,7 @@ void QTableWidgetPrivate::setup()
     QObject::connect(q, SIGNAL(activated(QModelIndex)), q, SLOT(_q_emitItemActivated(QModelIndex)));
     QObject::connect(q, SIGNAL(entered(QModelIndex)), q, SLOT(_q_emitItemEntered(QModelIndex)));
     // model signals
-    QObject::connect(model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+    QObject::connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                      q, SLOT(_q_emitItemChanged(QModelIndex)));
     // selection signals
     QObject::connect(q->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
@@ -1596,15 +1578,15 @@ void QTableWidgetPrivate::setup()
     QObject::connect(q->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      q, SIGNAL(itemSelectionChanged()));
     // sorting
-    QObject::connect(model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+    QObject::connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                      q, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
-    QObject::connect(model(), SIGNAL(columnsRemoved(QModelIndex,int,int)), q, SLOT(_q_sort()));
+    QObject::connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)), q, SLOT(_q_sort()));
 }
 
 void QTableWidgetPrivate::_q_emitItemPressed(const QModelIndex &index)
 {
     Q_Q(QTableWidget);
-    if (QTableWidgetItem *item = model()->item(index))
+    if (QTableWidgetItem *item = tableModel()->item(index))
         emit q->itemPressed(item);
     emit q->cellPressed(index.row(), index.column());
 }
@@ -1612,7 +1594,7 @@ void QTableWidgetPrivate::_q_emitItemPressed(const QModelIndex &index)
 void QTableWidgetPrivate::_q_emitItemClicked(const QModelIndex &index)
 {
     Q_Q(QTableWidget);
-    if (QTableWidgetItem *item = model()->item(index))
+    if (QTableWidgetItem *item = tableModel()->item(index))
         emit q->itemClicked(item);
     emit q->cellClicked(index.row(), index.column());
 }
@@ -1620,7 +1602,7 @@ void QTableWidgetPrivate::_q_emitItemClicked(const QModelIndex &index)
 void QTableWidgetPrivate::_q_emitItemDoubleClicked(const QModelIndex &index)
 {
     Q_Q(QTableWidget);
-    if (QTableWidgetItem *item = model()->item(index))
+    if (QTableWidgetItem *item = tableModel()->item(index))
         emit q->itemDoubleClicked(item);
     emit q->cellDoubleClicked(index.row(), index.column());
 }
@@ -1628,7 +1610,7 @@ void QTableWidgetPrivate::_q_emitItemDoubleClicked(const QModelIndex &index)
 void QTableWidgetPrivate::_q_emitItemActivated(const QModelIndex &index)
 {
     Q_Q(QTableWidget);
-    if (QTableWidgetItem *item = model()->item(index))
+    if (QTableWidgetItem *item = tableModel()->item(index))
         emit q->itemActivated(item);
     emit q->cellActivated(index.row(), index.column());
 }
@@ -1636,7 +1618,7 @@ void QTableWidgetPrivate::_q_emitItemActivated(const QModelIndex &index)
 void QTableWidgetPrivate::_q_emitItemEntered(const QModelIndex &index)
 {
     Q_Q(QTableWidget);
-    if (QTableWidgetItem *item = model()->item(index))
+    if (QTableWidgetItem *item = tableModel()->item(index))
         emit q->itemEntered(item);
     emit q->cellEntered(index.row(), index.column());
 }
@@ -1644,7 +1626,7 @@ void QTableWidgetPrivate::_q_emitItemEntered(const QModelIndex &index)
 void QTableWidgetPrivate::_q_emitItemChanged(const QModelIndex &index)
 {
     Q_Q(QTableWidget);
-    if (QTableWidgetItem *item = model()->item(index))
+    if (QTableWidgetItem *item = tableModel()->item(index))
         emit q->itemChanged(item);
     emit q->cellChanged(index.row(), index.column());
 }
@@ -1653,8 +1635,8 @@ void QTableWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
                                                  const QModelIndex &previous)
 {
     Q_Q(QTableWidget);
-    QTableWidgetItem *currentItem = model()->item(current);
-    QTableWidgetItem *previousItem = model()->item(previous);
+    QTableWidgetItem *currentItem = tableModel()->item(current);
+    QTableWidgetItem *previousItem = tableModel()->item(previous);
     if (currentItem || previousItem)
         emit q->currentItemChanged(currentItem, previousItem);
     emit q->currentCellChanged(current.row(), current.column(), previous.row(), previous.column());
@@ -1662,23 +1644,21 @@ void QTableWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
 
 void QTableWidgetPrivate::_q_sort()
 {
-    Q_Q(QTableWidget);
     if (sortingEnabled) {
-        int column = q->horizontalHeader()->sortIndicatorSection();
-        Qt::SortOrder order = q->horizontalHeader()->sortIndicatorOrder();
-        model()->sort(column, order);
+        int column = horizontalHeader->sortIndicatorSection();
+        Qt::SortOrder order = horizontalHeader->sortIndicatorOrder();
+        model->sort(column, order);
     }
 }
 
 void QTableWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
                                          const QModelIndex &bottomRight)
 {
-    Q_Q(QTableWidget);
     if (sortingEnabled && topLeft.isValid() && bottomRight.isValid()) {
-        int column = q->horizontalHeader()->sortIndicatorSection();
+        int column = horizontalHeader->sortIndicatorSection();
         if (column >= topLeft.column() && column <= bottomRight.column()) {
-            Qt::SortOrder order = q->horizontalHeader()->sortIndicatorOrder();
-            model()->ensureSorted(column, order, topLeft.row(), bottomRight.row());
+            Qt::SortOrder order = horizontalHeader->sortIndicatorOrder();
+            tableModel()->ensureSorted(column, order, topLeft.row(), bottomRight.row());
         }
     }
 }
@@ -1882,7 +1862,7 @@ QTableWidget::~QTableWidget()
 void QTableWidget::setRowCount(int rows)
 {
     Q_D(QTableWidget);
-    d->model()->setRowCount(rows);
+    d->tableModel()->setRowCount(rows);
 }
 
 /*!
@@ -1892,7 +1872,7 @@ void QTableWidget::setRowCount(int rows)
 int QTableWidget::rowCount() const
 {
     Q_D(const QTableWidget);
-    return d->model()->rowCount();
+    return d->model->rowCount();
 }
 
 /*!
@@ -1905,7 +1885,7 @@ int QTableWidget::rowCount() const
 void QTableWidget::setColumnCount(int columns)
 {
     Q_D(QTableWidget);
-    d->model()->setColumnCount(columns);
+    d->tableModel()->setColumnCount(columns);
 }
 
 /*!
@@ -1915,7 +1895,7 @@ void QTableWidget::setColumnCount(int columns)
 int QTableWidget::columnCount() const
 {
     Q_D(const QTableWidget);
-    return d->model()->columnCount();
+    return d->model->columnCount();
 }
 
 /*!
@@ -1924,7 +1904,7 @@ int QTableWidget::columnCount() const
 int QTableWidget::row(const QTableWidgetItem *item) const
 {
     Q_D(const QTableWidget);
-    return d->model()->index(item).row();
+    return d->tableModel()->index(item).row();
 }
 
 /*!
@@ -1933,7 +1913,7 @@ int QTableWidget::row(const QTableWidgetItem *item) const
 int QTableWidget::column(const QTableWidgetItem *item) const
 {
     Q_D(const QTableWidget);
-    return d->model()->index(item).column();
+    return d->tableModel()->index(item).column();
 }
 
 
@@ -1946,7 +1926,7 @@ int QTableWidget::column(const QTableWidgetItem *item) const
 QTableWidgetItem *QTableWidget::item(int row, int column) const
 {
     Q_D(const QTableWidget);
-    return d->model()->item(row, column);
+    return d->tableModel()->item(row, column);
 }
 
 /*!
@@ -1975,7 +1955,7 @@ void QTableWidget::setItem(int row, int column, QTableWidgetItem *item)
             qWarning("QTableWidget: cannot insert an item that is already owned by another QTableWidget");
         } else {
             item->view = this;
-            d->model()->setItem(row, column, item);
+            d->tableModel()->setItem(row, column, item);
         }
     } else {
         delete takeItem(row, column);
@@ -1988,7 +1968,7 @@ void QTableWidget::setItem(int row, int column, QTableWidgetItem *item)
 QTableWidgetItem *QTableWidget::takeItem(int row, int column)
 {
     Q_D(QTableWidget);
-    QTableWidgetItem *item = d->model()->takeItem(row, column);
+    QTableWidgetItem *item = d->tableModel()->takeItem(row, column);
     if (item)
         item->view = 0;
     return item;
@@ -2000,7 +1980,7 @@ QTableWidgetItem *QTableWidget::takeItem(int row, int column)
 QTableWidgetItem *QTableWidget::verticalHeaderItem(int row) const
 {
     Q_D(const QTableWidget);
-    return d->model()->verticalHeaderItem(row);
+    return d->tableModel()->verticalHeaderItem(row);
 }
 
 /*!
@@ -2011,7 +1991,7 @@ void QTableWidget::setVerticalHeaderItem(int row, QTableWidgetItem *item)
     Q_D(QTableWidget);
     if (item) {
         item->view = this;
-        d->model()->setVerticalHeaderItem(row, item);
+        d->tableModel()->setVerticalHeaderItem(row, item);
     } else {
         delete takeVerticalHeaderItem(row);
     }
@@ -2024,7 +2004,7 @@ void QTableWidget::setVerticalHeaderItem(int row, QTableWidgetItem *item)
 QTableWidgetItem *QTableWidget::takeVerticalHeaderItem(int row)
 {
     Q_D(QTableWidget);
-    QTableWidgetItem *itm = d->model()->takeVerticalHeaderItem(row);
+    QTableWidgetItem *itm = d->tableModel()->takeVerticalHeaderItem(row);
     if (itm)
         itm->view = 0;
     return itm;
@@ -2037,7 +2017,7 @@ QTableWidgetItem *QTableWidget::takeVerticalHeaderItem(int row)
 QTableWidgetItem *QTableWidget::horizontalHeaderItem(int column) const
 {
     Q_D(const QTableWidget);
-    return d->model()->horizontalHeaderItem(column);
+    return d->tableModel()->horizontalHeaderItem(column);
 }
 
 /*!
@@ -2048,7 +2028,7 @@ void QTableWidget::setHorizontalHeaderItem(int column, QTableWidgetItem *item)
     Q_D(QTableWidget);
     if (item) {
         item->view = this;
-        d->model()->setHorizontalHeaderItem(column, item);
+        d->tableModel()->setHorizontalHeaderItem(column, item);
     } else {
         delete takeHorizontalHeaderItem(column);
     }
@@ -2061,7 +2041,7 @@ void QTableWidget::setHorizontalHeaderItem(int column, QTableWidgetItem *item)
 QTableWidgetItem *QTableWidget::takeHorizontalHeaderItem(int column)
 {
     Q_D(QTableWidget);
-    QTableWidgetItem *itm = d->model()->takeHorizontalHeaderItem(column);
+    QTableWidgetItem *itm = d->tableModel()->takeHorizontalHeaderItem(column);
     if (itm)
         itm->view = 0;
     return itm;
@@ -2073,7 +2053,7 @@ QTableWidgetItem *QTableWidget::takeHorizontalHeaderItem(int column)
 void QTableWidget::setVerticalHeaderLabels(const QStringList &labels)
 {
     Q_D(QTableWidget);
-    QTableModel *model = d->model();
+    QTableModel *model = d->tableModel();
     QTableWidgetItem *item = 0;
     for (int i = 0; i < model->rowCount() && i < labels.count(); ++i) {
         item = model->verticalHeaderItem(i);
@@ -2091,7 +2071,7 @@ void QTableWidget::setVerticalHeaderLabels(const QStringList &labels)
 void QTableWidget::setHorizontalHeaderLabels(const QStringList &labels)
 {
     Q_D(QTableWidget);
-    QTableModel *model = d->model();
+    QTableModel *model = d->tableModel();
     QTableWidgetItem *item = 0;
     for (int i = 0; i < model->columnCount() && i < labels.count(); ++i) {
         item = model->horizontalHeaderItem(i);
@@ -2131,7 +2111,7 @@ int QTableWidget::currentColumn() const
 QTableWidgetItem *QTableWidget::currentItem() const
 {
     Q_D(const QTableWidget);
-    return d->model()->item(currentIndex());
+    return d->tableModel()->item(currentIndex());
 }
 
 /*!
@@ -2145,7 +2125,7 @@ QTableWidgetItem *QTableWidget::currentItem() const
 void QTableWidget::setCurrentItem(QTableWidgetItem *item)
 {
     Q_D(QTableWidget);
-    setCurrentIndex(d->model()->index(item));
+    setCurrentIndex(d->tableModel()->index(item));
 }
 
 /*!
@@ -2158,7 +2138,7 @@ void QTableWidget::setCurrentItem(QTableWidgetItem *item)
 void QTableWidget::setCurrentItem(QTableWidgetItem *item, QItemSelectionModel::SelectionFlags command)
 {
     Q_D(QTableWidget);
-    d->selectionModel->setCurrentIndex(d->model()->index(item), command);
+    d->selectionModel->setCurrentIndex(d->tableModel()->index(item), command);
 }
 
 /*!
@@ -2197,7 +2177,7 @@ void QTableWidget::setCurrentCell(int row, int column, QItemSelectionModel::Sele
 void QTableWidget::sortItems(int column, Qt::SortOrder order)
 {
     Q_D(QTableWidget);
-    d->model()->sort(column, order);
+    d->model->sort(column, order);
     horizontalHeader()->setSortIndicator(column, order);
 }
 
@@ -2226,7 +2206,7 @@ void QTableWidget::editItem(QTableWidgetItem *item)
     Q_D(QTableWidget);
     if (!item)
         return;
-    edit(d->model()->index(item));
+    edit(d->tableModel()->index(item));
 }
 
 /*!
@@ -2239,7 +2219,7 @@ void QTableWidget::openPersistentEditor(QTableWidgetItem *item)
     Q_D(QTableWidget);
     if (!item)
         return;
-    QModelIndex index = d->model()->index(item);
+    QModelIndex index = d->tableModel()->index(item);
     QAbstractItemView::openPersistentEditor(index);
 }
 
@@ -2253,7 +2233,7 @@ void QTableWidget::closePersistentEditor(QTableWidgetItem *item)
     Q_D(QTableWidget);
     if (!item)
         return;
-    QModelIndex index = d->model()->index(item);
+    QModelIndex index = d->tableModel()->index(item);
     QAbstractItemView::closePersistentEditor(index);
 }
 
@@ -2303,7 +2283,7 @@ void QTableWidget::setCellWidget(int row, int column, QWidget *widget)
 bool QTableWidget::isItemSelected(const QTableWidgetItem *item) const
 {
     Q_D(const QTableWidget);
-    QModelIndex index = d->model()->index(item);
+    QModelIndex index = d->tableModel()->index(item);
     return selectionModel()->isSelected(index);
 }
 
@@ -2317,7 +2297,7 @@ bool QTableWidget::isItemSelected(const QTableWidgetItem *item) const
 void QTableWidget::setItemSelected(const QTableWidgetItem *item, bool select)
 {
     Q_D(QTableWidget);
-    QModelIndex index = d->model()->index(item);
+    QModelIndex index = d->tableModel()->index(item);
     selectionModel()->select(index, select ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
 }
 
@@ -2374,7 +2354,7 @@ QList<QTableWidgetItem*> QTableWidget::selectedItems()
         QModelIndex index = indexes.at(i);
         if (isIndexHidden(index))
             continue;
-        QTableWidgetItem *item = d->model()->item(index);
+        QTableWidgetItem *item = d->tableModel()->item(index);
         if (item)
             items.append(item);
     }
@@ -2390,11 +2370,11 @@ QList<QTableWidgetItem*> QTableWidget::findItems(const QString &text, Qt::MatchF
     Q_D(const QTableWidget);
     QModelIndexList indexes;
     for (int column = 0; column < columnCount(); ++column)
-        indexes += d->model()->match(model()->index(0, column, QModelIndex()),
+        indexes += d->model->match(model()->index(0, column, QModelIndex()),
                                      Qt::DisplayRole, text, -1, flags);
     QList<QTableWidgetItem*> items;
     for (int i = 0; i < indexes.size(); ++i)
-        items.append(d->model()->item(indexes.at(i)));
+        items.append(d->tableModel()->item(indexes.at(i)));
     return items;
 }
 
@@ -2428,7 +2408,7 @@ int QTableWidget::visualColumn(int logicalColumn) const
 QTableWidgetItem *QTableWidget::itemAt(const QPoint &p) const
 {
     Q_D(const QTableWidget);
-    return d->model()->item(indexAt(p));
+    return d->tableModel()->item(indexAt(p));
 }
 
 /*!
@@ -2439,7 +2419,7 @@ QRect QTableWidget::visualItemRect(const QTableWidgetItem *item) const
     Q_D(const QTableWidget);
     if (!item)
         return QRect();
-    QModelIndex index = d->model()->index(const_cast<QTableWidgetItem*>(item));
+    QModelIndex index = d->tableModel()->index(const_cast<QTableWidgetItem*>(item));
     Q_ASSERT(index.isValid());
     return visualRect(index);
 }
@@ -2455,7 +2435,7 @@ void QTableWidget::scrollToItem(const QTableWidgetItem *item, QAbstractItemView:
     Q_D(QTableWidget);
     if (!item)
         return;
-    QModelIndex index = d->model()->index(const_cast<QTableWidgetItem*>(item));
+    QModelIndex index = d->tableModel()->index(const_cast<QTableWidgetItem*>(item));
     Q_ASSERT(index.isValid());
     QTableView::scrollTo(index, hint);
 }
@@ -2468,7 +2448,7 @@ void QTableWidget::scrollToItem(const QTableWidgetItem *item, QAbstractItemView:
 const QTableWidgetItem *QTableWidget::itemPrototype() const
 {
     Q_D(const QTableWidget);
-    return d->model()->itemPrototype();
+    return d->tableModel()->itemPrototype();
 }
 
 /*!
@@ -2487,7 +2467,7 @@ const QTableWidgetItem *QTableWidget::itemPrototype() const
 void QTableWidget::setItemPrototype(const QTableWidgetItem *item)
 {
     Q_D(QTableWidget);
-    d->model()->setItemPrototype(item);
+    d->tableModel()->setItemPrototype(item);
 }
 
 /*!
@@ -2496,7 +2476,7 @@ void QTableWidget::setItemPrototype(const QTableWidgetItem *item)
 void QTableWidget::insertRow(int row)
 {
     Q_D(QTableWidget);
-    d->model()->insertRows(row);
+    d->tableModel()->insertRows(row);
 }
 
 /*!
@@ -2505,7 +2485,7 @@ void QTableWidget::insertRow(int row)
 void QTableWidget::insertColumn(int column)
 {
     Q_D(QTableWidget);
-    d->model()->insertColumns(column);
+    d->tableModel()->insertColumns(column);
 }
 
 /*!
@@ -2514,7 +2494,7 @@ void QTableWidget::insertColumn(int column)
 void QTableWidget::removeRow(int row)
 {
     Q_D(QTableWidget);
-    d->model()->removeRows(row);
+    d->tableModel()->removeRows(row);
 }
 
 /*!
@@ -2523,7 +2503,7 @@ void QTableWidget::removeRow(int row)
 void QTableWidget::removeColumn(int column)
 {
     Q_D(QTableWidget);
-    d->model()->removeColumns(column);
+    d->tableModel()->removeColumns(column);
 }
 
 /*!
@@ -2536,7 +2516,7 @@ void QTableWidget::clear()
 {
     Q_D(QTableWidget);
     selectionModel()->clear();
-    d->model()->clear();
+    d->tableModel()->clear();
 }
 
 /*!
@@ -2550,7 +2530,7 @@ void QTableWidget::clearContents()
 {
     Q_D(QTableWidget);
     selectionModel()->clear();
-    d->model()->clearContents();
+    d->tableModel()->clearContents();
 }
 
 /*!
@@ -2561,7 +2541,7 @@ void QTableWidget::clearContents()
 */
 QStringList QTableWidget::mimeTypes() const
 {
-    return d_func()->model()->QAbstractTableModel::mimeTypes();
+    return d_func()->tableModel()->QAbstractTableModel::mimeTypes();
 }
 
 /*!
@@ -2574,7 +2554,7 @@ QStringList QTableWidget::mimeTypes() const
 */
 QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*>) const
 {
-    return d_func()->model()->internalMimeData();
+    return d_func()->tableModel()->internalMimeData();
 }
 
 /*!
@@ -2596,7 +2576,7 @@ bool QTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::
         column = -1;
     }
 #endif
-    return d_func()->model()->QAbstractTableModel::dropMimeData(data, action , row, column, idx);
+    return d_func()->tableModel()->QAbstractTableModel::dropMimeData(data, action , row, column, idx);
 }
 
 /*!
@@ -2606,7 +2586,7 @@ bool QTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::
 */
 Qt::DropActions QTableWidget::supportedDropActions() const
 {
-    return d_func()->model()->QAbstractTableModel::supportedDropActions() | Qt::MoveAction;
+    return d_func()->tableModel()->QAbstractTableModel::supportedDropActions() | Qt::MoveAction;
 }
 
 /*!
@@ -2630,7 +2610,7 @@ QList<QTableWidgetItem*> QTableWidget::items(const QMimeData *data) const
 QModelIndex QTableWidget::indexFromItem(QTableWidgetItem *item) const
 {
     Q_D(const QTableWidget);
-    return d->model()->index(item);
+    return d->tableModel()->index(item);
 }
 
 /*!
@@ -2640,7 +2620,7 @@ QModelIndex QTableWidget::indexFromItem(QTableWidgetItem *item) const
 QTableWidgetItem *QTableWidget::itemFromIndex(const QModelIndex &index) const
 {
     Q_D(const QTableWidget);
-    return d->model()->item(index);
+    return d->tableModel()->item(index);
 }
 
 /*!

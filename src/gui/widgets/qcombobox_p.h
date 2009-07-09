@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -290,7 +290,7 @@ public:
     QComboBoxDelegate(QObject *parent, QComboBox *cmb) : QItemDelegate(parent), mCombo(cmb) {}
 
     static bool isSeparator(const QModelIndex &index) {
-        return index.data(Qt::AccessibleDescriptionRole).toString() == QString::fromLatin1("separator");
+        return index.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
     }
     static void setSeparator(QAbstractItemModel *model, const QModelIndex &index) {
         model->setData(index, QString::fromLatin1("separator"), Qt::AccessibleDescriptionRole);
@@ -370,6 +370,7 @@ public:
     void updateDelegate(bool force = false);
     void keyboardSearchString(const QString &text);
     void modelChanged();
+    void updateViewContainerPaletteAndOpacity();
 
     QAbstractItemModel *model;
     QLineEdit *lineEdit;

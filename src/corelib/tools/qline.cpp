@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -260,7 +260,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QLine &p)
 {
-    d << "QLine(" << p.p1() << "," << p.p2() << ")";
+    d << "QLine(" << p.p1() << ',' << p.p2() << ')';
     return d;
 }
 #endif
@@ -822,7 +822,7 @@ qreal QLineF::angle(const QLineF &l) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QLineF &p)
 {
-    d << "QLineF(" << p.p1() << "," << p.p2() << ")";
+    d << "QLineF(" << p.p1() << ',' << p.p2() << ')';
     return d;
 }
 #endif

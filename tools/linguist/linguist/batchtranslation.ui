@@ -3,7 +3,7 @@
  <comment>*********************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -36,7 +36,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 *********************************************************************</comment>
@@ -104,7 +104,7 @@
       <item>
        <widget class="QCheckBox" name="ckTranslateFinished">
         <property name="toolTip">
-         <string>Note that the modified entries will be reset to unfinished if 'Set translated entries to finished' above is unchecked.</string>
+         <string>Note that the modified entries will be reset to unfinished if 'Set translated entries to finished' above is unchecked</string>
         </property>
         <property name="text">
          <string>Translate also finished entries</string>
@@ -189,7 +189,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>The batch translator will search through the selected phrase books in the order given above.</string>
+         <string>The batch translator will search through the selected phrase books in the order given above</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
  *               2007 Rob Buis <buis@kde.org>
+ *               2008 Dirk Schulze <krit@webkit.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +36,10 @@
 #include "SVGPaintServerSolid.h"
 #include "SVGStyledElement.h"
 #include "SVGURIReference.h"
+
+#if PLATFORM(SKIA)
+#include "PlatformContextSkia.h"
+#endif
 
 namespace WebCore {
 
@@ -81,7 +86,7 @@ SVGPaintServer* SVGPaintServer::fillPaintServer(const RenderStyle* style, const 
         AtomicString id(SVGURIReference::getTarget(fill->uri()));
         fillPaintServer = getPaintServerById(item->document(), id);
 
-        SVGElement* svgElement = static_cast<SVGElement*>(item->element());
+        SVGElement* svgElement = static_cast<SVGElement*>(item->node());
         ASSERT(svgElement && svgElement->document() && svgElement->isStyled());
 
         if (item->isRenderPath() && fillPaintServer)
@@ -122,7 +127,7 @@ SVGPaintServer* SVGPaintServer::strokePaintServer(const RenderStyle* style, cons
         AtomicString id(SVGURIReference::getTarget(stroke->uri()));
         strokePaintServer = getPaintServerById(item->document(), id);
 
-        SVGElement* svgElement = static_cast<SVGElement*>(item->element());
+        SVGElement* svgElement = static_cast<SVGElement*>(item->node());
         ASSERT(svgElement && svgElement->document() && svgElement->isStyled());
  
         if (item->isRenderPath() && strokePaintServer)
@@ -157,6 +162,44 @@ void applyStrokeStyleToContext(GraphicsContext* context, RenderStyle* style, con
     float dashOffset = SVGRenderStyle::cssPrimitiveToLength(object, style->svgStyle()->strokeDashOffset(), 0.0f);
     context->setLineDash(dashes, dashOffset);
 }
+
+void SVGPaintServer::draw(GraphicsContext*& context, const RenderObject* path, SVGPaintTargetType type) const
+{
+    if (!setup(context, path, type))
+        return;
+
+    renderPath(context, path, type);
+    teardown(context, path, type);
+}
+
+void SVGPaintServer::renderPath(GraphicsContext*& context, const RenderObject* path, SVGPaintTargetType type) const
+{
+    const SVGRenderStyle* style = path ? path->style()->svgStyle() : 0;
+
+    if ((type & ApplyToFillTargetType) && (!style || style->hasFill()))
+        context->fillPath();
+
+    if ((type & ApplyToStrokeTargetType) && (!style || style->hasStroke()))
+        context->strokePath();
+}
+
+#if PLATFORM(SKIA)
+void SVGPaintServer::teardown(GraphicsContext*& context, const RenderObject*, SVGPaintTargetType, bool) const
+{
+    // FIXME: Move this into the GraphicsContext
+    // WebKit implicitly expects us to reset the path.
+    // For example in fillAndStrokePath() of RenderPath.cpp the path is 
+    // added back to the context after filling. This is because internally it
+    // calls CGContextFillPath() which closes the path.
+    context->beginPath();
+    context->platformContext()->setGradient(0);
+    context->platformContext()->setPattern(0);
+}
+#else
+void SVGPaintServer::teardown(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool) const
+{
+}
+#endif
 
 DashArray dashArrayFromRenderingStyle(const RenderStyle* style)
 {

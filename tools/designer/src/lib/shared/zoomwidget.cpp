@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -143,9 +143,10 @@ ZoomView::ZoomView(QWidget *parent) :
     m_zoom(100),
     m_zoomFactor(1.0),
     m_zoomContextMenuEnabled(false),
-    m_autoScrollSuppressed(true),
     m_zoomMenu(0)
 {
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFrameShape(QFrame::NoFrame);
     setScene(m_scene);
     if (debugZoomWidget)
@@ -187,8 +188,6 @@ void ZoomView::setZoom(int percent)
 
     resetTransform();
     scale(m_zoomFactor, m_zoomFactor);
-    if (m_autoScrollSuppressed)
-        scrollToOrigin();
 }
 
 void ZoomView::applyZoom()
@@ -208,16 +207,6 @@ bool ZoomView::isZoomContextMenuEnabled() const
 void ZoomView::setZoomContextMenuEnabled(bool e)
 {
     m_zoomContextMenuEnabled = e;
-}
-
-bool ZoomView::isAutoScrollSuppressed() const
-{
-    return m_autoScrollSuppressed;
-}
-
-void ZoomView::setAutoScrollSuppressed(bool s)
-{
-    m_autoScrollSuppressed = s;
 }
 
 ZoomMenu *ZoomView::zoomMenu()
@@ -469,13 +458,16 @@ void ZoomWidget::resizeEvent(QResizeEvent *event)
      * and the use the size ZoomView::resizeEvent(event); */
     if (m_proxy && !m_viewResizeBlocked) {
         if (debugZoomWidget > 1)
-            qDebug() << ">ZoomWidget (" << size() << ")::resizeEvent from " << event->oldSize() << " to " << event->size();
+            qDebug() << '>' << Q_FUNC_INFO << size() << ")::resizeEvent from " << event->oldSize() << " to " << event->size();
         const QSizeF newViewPortSize = size() - viewPortMargin();
         const QSizeF widgetSizeF = newViewPortSize / zoomFactor() - widgetDecorationSizeF();
         m_widgetResizeBlocked = true;
         m_proxy->widget()->resize(widgetSizeF.toSize());
+        setSceneRect(QRectF(QPointF(0, 0), widgetSizeF));
         scrollToOrigin();
         m_widgetResizeBlocked = false;
+        if (debugZoomWidget > 1)
+            qDebug() << '<' << Q_FUNC_INFO << widgetSizeF << m_proxy->widget()->size() << m_proxy->size();
     }
 }
 
@@ -559,7 +551,7 @@ QGraphicsProxyWidget *ZoomWidget::createProxyWidget(QGraphicsItem *parent, Qt::W
 void ZoomWidget::dump() const
 {
 
-    qDebug() << "ZoomWidget " << geometry() << " Viewport " << viewport()->geometry()
+    qDebug() << "ZoomWidget::dump " << geometry() << " Viewport " << viewport()->geometry()
         << "Scroll: " << scrollPosition() << "Matrix: " << matrix() << " SceneRect: " << sceneRect();
     if (m_proxy) {
         qDebug() << "Proxy Pos: " << m_proxy->pos() << "Proxy " << m_proxy->size()

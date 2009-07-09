@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,6 +72,7 @@ Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QMatrix)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QPointF)
+Q_DECLARE_METATYPE(QPolygonF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
@@ -159,6 +160,7 @@ private slots:
     void itemAt2();
     void mapToScene();
     void mapToScenePoint();
+    void mapToSceneRect_data();
     void mapToSceneRect();
     void mapToScenePoly();
     void mapToScenePath();
@@ -186,7 +188,13 @@ private slots:
     void embeddedViews();
     void scrollAfterResize_data();
     void scrollAfterResize();
+    void moveItemWhileScrolling_data();
+    void moveItemWhileScrolling();
     void centerOnDirtyItem();
+    void mouseTracking();
+    void mouseTracking2();
+    void render();
+    void exposeRegion();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -1612,23 +1620,51 @@ void tst_QGraphicsView::mapToScenePoint()
              view.mapToScene(center) + QPointF(0, -10));
 }
 
+void tst_QGraphicsView::mapToSceneRect_data()
+{
+    QTest::addColumn<QRect>("viewRect");
+    QTest::addColumn<QPolygonF>("scenePoly");
+    QTest::addColumn<qreal>("rotation");
+
+    QTest::newRow("nil") << QRect() << QPolygonF() << qreal(0);
+    QTest::newRow("0, 0, 1, 1") << QRect(0, 0, 1, 1) << QPolygonF(QRectF(0, 0, 1, 1)) << qreal(0);
+    QTest::newRow("0, 0, 10, 10") << QRect(0, 0, 10, 10) << QPolygonF(QRectF(0, 0, 10, 10)) << qreal(0);
+    QTest::newRow("nil") << QRect() << QPolygonF() << qreal(90);
+    QPolygonF p;
+    p << QPointF(0, 0) << QPointF(0, -1) << QPointF(1, -1) << QPointF(1, 0) << QPointF(0, 0);
+    QTest::newRow("0, 0, 1, 1") << QRect(0, 0, 1, 1)
+                                << p
+                                << qreal(90);
+    p.clear();
+    p << QPointF(0, 0) << QPointF(0, -10) << QPointF(10, -10) << QPointF(10, 0) << QPointF(0, 0);
+    QTest::newRow("0, 0, 10, 10") << QRect(0, 0, 10, 10)
+                                  << p
+                                  << qreal(90);
+}
+
 void tst_QGraphicsView::mapToSceneRect()
 {
-    QGraphicsScene scene;
+    QFETCH(QRect, viewRect);
+    QFETCH(QPolygonF, scenePoly);
+    QFETCH(qreal, rotation);
+
+    QGraphicsScene scene(-1000, -1000, 2000, 2000);
+    scene.addRect(25, -25, 50, 50);
     QGraphicsView view(&scene);
-    view.rotate(90);
-    view.setFixedSize(117, 117);
+    view.setFrameStyle(0);
+    view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    view.setFixedSize(200, 200);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    view.setResizeAnchor(QGraphicsView::NoAnchor);
     view.show();
-    QPoint center = view.viewport()->rect().center();
-    QRect rect(center + QPoint(10, 0), QSize(10, 10));
 
-    QPolygonF poly;
-    poly << view.mapToScene(rect.topLeft());
-    poly << view.mapToScene(rect.topRight());
-    poly << view.mapToScene(rect.bottomRight());
-    poly << view.mapToScene(rect.bottomLeft());
+    view.rotate(rotation);
 
-    QCOMPARE(view.mapToScene(rect), poly);
+    QPolygonF poly = view.mapToScene(viewRect);
+    if (!poly.isEmpty())
+        poly << poly[0];
+
+    QCOMPARE(poly, scenePoly);
 }
 
 void tst_QGraphicsView::mapToScenePoly()
@@ -2343,7 +2379,7 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *viewport)
     {
-        lastLod = option->levelOfDetail;
+        lastLod = option->levelOfDetailFromTransform(painter->worldTransform());
         QGraphicsRectItem::paint(painter, option, viewport);
     }
 
@@ -2497,6 +2533,8 @@ void tst_QGraphicsView::acceptMousePressEvent()
 
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
 
+    qApp->processEvents(); // ensure scene rect is updated
+
     QApplication::sendEvent(view.viewport(), &event);
     QVERIFY(view.accepted);
 }
@@ -2516,7 +2554,8 @@ void tst_QGraphicsView::replayMouseMove()
 
     // One mouse event should be translated into one scene event.
     for (int i = 0; i < 3; ++i) {
-        sendMouseMove(view.viewport(), view.viewport()->rect().center());
+        sendMouseMove(view.viewport(), view.viewport()->rect().center(),
+                      Qt::LeftButton, Qt::MouseButtons(Qt::LeftButton));
         QCOMPARE(viewSpy.count(), i + 1);
         QCOMPARE(sceneSpy.count(), i + 1);
     }
@@ -2706,6 +2745,7 @@ void tst_QGraphicsView::task186827_deleteReplayedItem()
     MouseMoveCounter view;
     view.setScene(&scene);
     view.show();
+    view.viewport()->setMouseTracking(true);
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
@@ -3012,6 +3052,67 @@ void tst_QGraphicsView::scrollAfterResize()
     QCOMPARE(view.viewportTransform(), x3);
 }
 
+void tst_QGraphicsView::moveItemWhileScrolling_data()
+{
+    QTest::addColumn<bool>("adjustForAntialiasing");
+
+    QTest::newRow("no adjust") << false;
+    QTest::newRow("adjust") << true;
+}
+
+void tst_QGraphicsView::moveItemWhileScrolling()
+{
+    QFETCH(bool, adjustForAntialiasing);
+
+    class MoveItemScrollView : public QGraphicsView
+    {
+    public:
+        MoveItemScrollView()
+        {
+            setScene(new QGraphicsScene(0, 0, 1000, 1000));
+            rect = scene()->addRect(0, 0, 10, 10);
+            rect->setPos(50, 50);
+        }
+        QRegion lastPaintedRegion;
+        QGraphicsItem *rect;
+    protected:
+        void paintEvent(QPaintEvent *event)
+        {
+            lastPaintedRegion = event->region();
+            QGraphicsView::paintEvent(event);
+        }
+    };
+
+    MoveItemScrollView view;
+    view.setFrameStyle(0);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setResizeAnchor(QGraphicsView::NoAnchor);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    if (!adjustForAntialiasing)
+        view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
+    view.show();
+    view.resize(200, 200);
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    view.lastPaintedRegion = QRegion();
+    view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
+    view.rect->moveBy(0, 10);
+    QTest::qWait(100);
+
+    QRegion expectedRegion;
+    expectedRegion += QRect(0, 0, 200, 200);
+    expectedRegion -= QRect(0, 0, 190, 200);
+    int a = adjustForAntialiasing ? 2 : 1;
+    expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
+    expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+
+    QCOMPARE(view.lastPaintedRegion, expectedRegion);
+}
+
 void tst_QGraphicsView::centerOnDirtyItem()
 {
     QGraphicsView view;
@@ -3047,6 +3148,217 @@ void tst_QGraphicsView::centerOnDirtyItem()
     QPixmap after = QPixmap::grabWindow(view.viewport()->winId());
 
     QCOMPARE(before, after);
+}
+
+void tst_QGraphicsView::mouseTracking()
+{
+    // Mouse tracking should only be automatically enabled if items either accept hover events
+    // or have a cursor set. We never disable mouse tracking if it is already enabled.
+
+    { // Make sure mouse tracking is disabled by default.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+    }
+
+    { // Make sure we don't disable mouse tracking in setupViewport/setScene.
+        QGraphicsView view;
+        QWidget *viewport = new QWidget;
+        viewport->setMouseTracking(true);
+        view.setViewport(viewport);
+        QVERIFY(viewport->hasMouseTracking());
+
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        view.setScene(&scene);
+        QVERIFY(viewport->hasMouseTracking());
+    }
+
+    // Make sure we enable mouse tracking when having items that accept hover events.
+    {
+        // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setAcceptHoverEvents(true);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+    {
+        // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setAcceptHoverEvents(true);
+        scene.addItem(item);
+
+        QGraphicsView view(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+    {
+        // QGraphicsWidget implicitly accepts hover if it has window decoration.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+
+        QGraphicsWidget *widget = new QGraphicsWidget;
+        scene.addItem(widget);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+        // Enable window decoraton.
+        widget->setWindowFlags(Qt::Window | Qt::WindowTitleHint);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    // Make sure we enable mouse tracking when having items with a cursor set.
+    {
+        // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setCursor(Qt::CrossCursor);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+    {
+        // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setCursor(Qt::CrossCursor);
+        scene.addItem(item);
+
+        QGraphicsView view(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    // Make sure we propagate mouse tracking to all views.
+    {
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view1(&scene);
+        QGraphicsView view2(&scene);
+        QGraphicsView view3(&scene);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setCursor(Qt::CrossCursor);
+        scene.addItem(item);
+
+        QVERIFY(view1.viewport()->hasMouseTracking());
+        QVERIFY(view2.viewport()->hasMouseTracking());
+        QVERIFY(view3.viewport()->hasMouseTracking());
+    }
+}
+
+void tst_QGraphicsView::mouseTracking2()
+{
+    // Make sure mouse move events propagates to the scene when
+    // mouse tracking is explicitly enabled on the view,
+    // even when all items ignore hover events / use default cursor.
+
+    QGraphicsScene scene;
+    scene.addRect(0, 0, 100, 100);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(!view.viewport()->hasMouseTracking());
+    view.viewport()->setMouseTracking(true); // Explicitly enable mouse tracking.
+    QVERIFY(view.viewport()->hasMouseTracking());
+
+    EventSpy spy(&scene, QEvent::GraphicsSceneMouseMove);
+    QCOMPARE(spy.count(), 0);
+    sendMouseMove(view.viewport(), view.viewport()->rect().center());
+    QCOMPARE(spy.count(), 1);
+}
+
+class RenderTester : public QGraphicsRectItem
+{
+public:
+    RenderTester(const QRectF &rect)
+        : QGraphicsRectItem(rect), paints(0)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget)
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        ++paints;
+    }
+    
+    int paints;
+};
+
+void tst_QGraphicsView::render()
+{
+    // ### This test can be much more thorough - see QGraphicsScene::render.
+    QGraphicsScene scene;
+    RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
+    RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
+    RenderTester *r3 = new RenderTester(QRectF(0, 50, 50, 50));
+    RenderTester *r4 = new RenderTester(QRectF(50, 0, 50, 50));
+    scene.addItem(r1);
+    scene.addItem(r2);
+    scene.addItem(r3);
+    scene.addItem(r4);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
+    QCOMPARE(r1->paints, 1);
+    QCOMPARE(r2->paints, 1);
+    QCOMPARE(r3->paints, 1);
+    QCOMPARE(r4->paints, 1);
+
+    QPixmap pix(200, 200);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    view.render(&painter);
+    painter.end();
+
+    QCOMPARE(r1->paints, 2);
+    QCOMPARE(r2->paints, 2);
+    QCOMPARE(r3->paints, 2);
+    QCOMPARE(r4->paints, 2);
+}
+
+void tst_QGraphicsView::exposeRegion()
+{
+    RenderTester *item = new RenderTester(QRectF(0, 0, 20, 20));
+    QGraphicsScene scene;
+    scene.addItem(item);
+
+    CustomView view;
+    view.setScene(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    item->paints = 0;
+    view.lastUpdateRegions.clear();
+
+    // Update a small area in the viewport's topLeft() and bottomRight().
+    // (the boundingRect() of this area covers the entire viewport).
+    QWidget *viewport = view.viewport();
+    QRegion expectedExposeRegion = QRect(0, 0, 5, 5);
+    expectedExposeRegion += QRect(viewport->rect().bottomRight() - QPoint(5, 5), QSize(5, 5));
+    viewport->update(expectedExposeRegion);
+    qApp->processEvents();
+
+    // Make sure it triggers correct repaint on the view.
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+
+    // Make sure the item didn't get any repaints.
+    QCOMPARE(item->paints, 0);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

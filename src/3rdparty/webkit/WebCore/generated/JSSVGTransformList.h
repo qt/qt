@@ -21,10 +21,10 @@
 #ifndef JSSVGTransformList_h
 #define JSSVGTransformList_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
@@ -37,25 +37,25 @@ class JSSVGTransformList : public DOMObject {
 public:
     JSSVGTransformList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGTransformList>, SVGElement* context);
     virtual ~JSSVGTransformList();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom functions
-    JSC::JSValuePtr clear(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr initialize(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr getItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr replaceItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr appendItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue clear(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue initialize(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue replaceItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue appendItem(JSC::ExecState*, const JSC::ArgList&);
     SVGTransformList* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -64,16 +64,17 @@ private:
     RefPtr<SVGTransformList > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGTransformList*, SVGElement* context);
-SVGTransformList* toSVGTransformList(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGTransformList*, SVGElement* context);
+SVGTransformList* toSVGTransformList(JSC::JSValue);
 
 class JSSVGTransformListPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -82,18 +83,18 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionClear(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionInitialize(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionGetItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionInsertItemBefore(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionReplaceItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionRemoveItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionCreateSVGTransformFromMatrix(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGTransformListPrototypeFunctionConsolidate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionClear(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInitialize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionGetItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInsertItemBefore(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionReplaceItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionRemoveItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionCreateSVGTransformFromMatrix(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionConsolidate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGTransformListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTransformListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

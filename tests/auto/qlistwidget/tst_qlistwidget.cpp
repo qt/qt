@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -883,31 +883,46 @@ void tst_QListWidget::itemStreaming()
 void tst_QListWidget::sortItems_data()
 {
     QTest::addColumn<int>("order");
-    QTest::addColumn<QStringList>("initialList");
-    QTest::addColumn<QStringList>("expectedList");
+    QTest::addColumn<QVariantList>("initialList");
+    QTest::addColumn<QVariantList>("expectedList");
     QTest::addColumn<IntList>("expectedRows");
 
-    QTest::newRow("ascending order")
+    QTest::newRow("ascending strings")
         << static_cast<int>(Qt::AscendingOrder)
-        << (QStringList() << "c" << "d" << "a" << "b")
-        << (QStringList() << "a" << "b" << "c" << "d")
+        << (QVariantList() << QString("c") << QString("d") << QString("a") << QString("b"))
+        << (QVariantList() << QString("a") << QString("b") << QString("c") << QString("d"))
         << (IntList() << 2 << 3 << 0 << 1);
 
-    QTest::newRow("descending order")
+    QTest::newRow("descending strings")
         << static_cast<int>(Qt::DescendingOrder)
-        << (QStringList() << "c" << "d" << "a" << "b")
-        << (QStringList() << "d" << "c" << "b" << "a")
+        << (QVariantList() << QString("c") << QString("d") << QString("a") << QString("b"))
+        << (QVariantList() << QString("d") << QString("c") << QString("b") << QString("a"))
         << (IntList() << 1 << 0 << 3 << 2);
+
+    QTest::newRow("ascending numbers")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QVariantList() << 1 << 11 << 2 << 22)
+        << (QVariantList() << 1 << 2 << 11 << 22)
+        << (IntList() << 0 << 2 << 1 << 3);
+
+    QTest::newRow("descending numbers")
+        << static_cast<int>(Qt::DescendingOrder)
+        << (QVariantList() << 1 << 11 << 2 << 22)
+        << (QVariantList() << 22 << 11 << 2 << 1)
+        << (IntList() << 3 << 1 << 2 << 0);
 }
 
 void tst_QListWidget::sortItems()
 {
     QFETCH(int, order);
-    QFETCH(QStringList, initialList);
-    QFETCH(QStringList, expectedList);
+    QFETCH(QVariantList, initialList);
+    QFETCH(QVariantList, expectedList);
     QFETCH(IntList, expectedRows);
 
-    testWidget->addItems(initialList);
+    foreach (const QVariant &data, initialList) {
+        QListWidgetItem *item = new QListWidgetItem(testWidget);
+        item->setData(Qt::DisplayRole, data);
+    }
 
     QAbstractItemModel *model = testWidget->model();
     QList<QPersistentModelIndex> persistent;
@@ -918,7 +933,7 @@ void tst_QListWidget::sortItems()
 
     QCOMPARE(testWidget->count(), expectedList.count());
     for (int i = 0; i < testWidget->count(); ++i)
-        QCOMPARE(testWidget->item(i)->text(), expectedList.at(i));
+        QCOMPARE(testWidget->item(i)->text(), expectedList.at(i).toString());
 
     for (int k = 0; k < testWidget->count(); ++k)
         QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
@@ -1420,6 +1435,10 @@ public:
 
 void tst_QListWidget::fastScroll()
 {
+    if (qstrcmp(QApplication::style()->metaObject()->className(), "QS60Style") == 0) {
+        QSKIP("S60 style doesn't support fast scrolling", SkipAll);
+    }
+
     MyListWidget widget;
     for (int i = 0; i < 50; ++i)
         widget.addItem(QString("Item %1").arg(i));

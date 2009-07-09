@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,11 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QtCore>
+#include <QtGui/QPixmap>
 #include <qtest.h>
 
 #define ITERATION_COUNT 1e5
@@ -47,64 +49,73 @@ class tst_qvariant : public QObject
 {
     Q_OBJECT
 private slots:
+    void testBound();
+
     void doubleVariantCreation();
     void floatVariantCreation();
     void rectVariantCreation();
     void stringVariantCreation();
+    void pixmapVariantCreation();
+
     void doubleVariantSetValue();
     void floatVariantSetValue();
     void rectVariantSetValue();
     void stringVariantSetValue();
+
     void doubleVariantAssignment();
     void floatVariantAssignment();
     void rectVariantAssignment();
     void stringVariantAssignment();
 };
 
+void tst_qvariant::testBound()
+{
+    qreal d = qreal(.5);
+    QBENCHMARK {
+        for(int i = 0; i < ITERATION_COUNT; ++i) {
+            d = qBound<qreal>(0, d, 1);
+        }
+    }
+}
+
+template <typename T>
+static void variantCreation(T val)
+{
+    QBENCHMARK {
+        for(int i = 0; i < ITERATION_COUNT; ++i) {
+            QVariant v(val);
+        }
+    }
+}
 
 void tst_qvariant::doubleVariantCreation()
 {
-    double d = 0;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            QVariant v(d);
-        }
-    }
+    variantCreation<double>(0.0);
 }
 
 void tst_qvariant::floatVariantCreation()
 {
-    float f = 0;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            QVariant v(f);
-        }
-    }
+    variantCreation<float>(0.0f);
 }
 
 void tst_qvariant::rectVariantCreation()
 {
-    QRect r(1,2,3,4);
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            QVariant v(r);
-        }
-    }
+    variantCreation<QRect>(QRect(1, 2, 3, 4));
 }
 
 void tst_qvariant::stringVariantCreation()
 {
-    QString s;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            QVariant v(s);
-        }
-    }
+    variantCreation<QString>(QString());
 }
 
-void tst_qvariant::doubleVariantSetValue()
+void tst_qvariant::pixmapVariantCreation()
 {
-    double d = 0;
+    variantCreation<QPixmap>(QPixmap());
+}
+
+template <typename T>
+static void variantSetValue(T d)
+{
     QVariant v;
     QBENCHMARK {
         for(int i = 0; i < ITERATION_COUNT; ++i) {
@@ -113,42 +124,29 @@ void tst_qvariant::doubleVariantSetValue()
     }
 }
 
+void tst_qvariant::doubleVariantSetValue()
+{
+    variantSetValue<double>(0.0);
+}
+
 void tst_qvariant::floatVariantSetValue()
 {
-    float f = 0;
-    QVariant v;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            qVariantSetValue(v, f);
-        }
-    }
+    variantSetValue<float>(0.0f);
 }
 
 void tst_qvariant::rectVariantSetValue()
 {
-    QRect r;
-    QVariant v;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            qVariantSetValue(v, r);
-        }
-    }
+    variantSetValue<QRect>(QRect());
 }
 
 void tst_qvariant::stringVariantSetValue()
 {
-    QString s;
-    QVariant v;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            qVariantSetValue(v, s);
-        }
-    }
+    variantSetValue<QString>(QString());
 }
 
-void tst_qvariant::doubleVariantAssignment()
+template <typename T>
+static void variantAssignment(T d)
 {
-    double d = 0;
     QVariant v;
     QBENCHMARK {
         for(int i = 0; i < ITERATION_COUNT; ++i) {
@@ -157,37 +155,24 @@ void tst_qvariant::doubleVariantAssignment()
     }
 }
 
+void tst_qvariant::doubleVariantAssignment()
+{
+    variantAssignment<double>(0.0);
+}
+
 void tst_qvariant::floatVariantAssignment()
 {
-    float f = 0;
-    QVariant v;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            v = f;
-        }
-    }
+    variantAssignment<float>(0.0f);
 }
 
 void tst_qvariant::rectVariantAssignment()
 {
-    QRect r;
-    QVariant v;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            v = r;
-        }
-    }
+    variantAssignment<QRect>(QRect());
 }
 
 void tst_qvariant::stringVariantAssignment()
 {
-    QString s;
-    QVariant v;
-    QBENCHMARK {
-        for(int i = 0; i < ITERATION_COUNT; ++i) {
-            v = s;
-        }
-    }
+    variantAssignment<QString>(QString());
 }
 
 QTEST_MAIN(tst_qvariant)

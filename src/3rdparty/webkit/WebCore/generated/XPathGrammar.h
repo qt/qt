@@ -98,7 +98,7 @@ typedef union YYSTYPE
     LocationPath* locationPath;
 }
 /* Line 1489 of yacc.c.  */
-#line 102 "XPathGrammar.tab.h"
+#line 102 "WebCore/tmp/../generated/XPathGrammar.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

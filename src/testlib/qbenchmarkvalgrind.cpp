@@ -1,8 +1,7 @@
-
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -35,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +50,8 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qset.h>
 #include "3rdparty/callgrind_p.h"
+
+QT_BEGIN_NAMESPACE
 
 // Returns true iff a sufficiently recent valgrind is available.
 bool QBenchmarkValgrindUtils::haveValgrind()
@@ -132,12 +133,12 @@ QString QBenchmarkValgrindUtils::getNewestFileName()
     QString base = QBenchmarkGlobalData::current->callgrindOutFileBase;
     Q_ASSERT(!base.isEmpty());
 
-    nameFilters << QString(QLatin1String("%1.*")).arg(base);
+    nameFilters << QString::fromLatin1("%1.*").arg(base);
     QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     Q_ASSERT(!fiList.empty());
     int hiSuffix = -1;
     QFileInfo lastFileInfo;
-    const QString pattern = QString(QLatin1String("%1.(\\d+)")).arg(base);
+    const QString pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
     const QRegExp rx(pattern);
     foreach (QFileInfo fileInfo, fiList) {
         const int index = rx.indexIn(fileInfo.fileName());
@@ -167,8 +168,8 @@ void QBenchmarkValgrindUtils::cleanup()
     QString base = QBenchmarkGlobalData::current->callgrindOutFileBase;
     Q_ASSERT(!base.isEmpty());
     nameFilters
-        << QString(QLatin1String("%1")).arg(base) // overall summary
-        << QString(QLatin1String("%1.*")).arg(base); // individual dumps
+        << base // overall summary
+        << QString::fromLatin1("%1.*").arg(base); // individual dumps
     QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     foreach (QFileInfo fileInfo, fiList) {
         const bool removeOk = QFile::remove(fileInfo.fileName());
@@ -179,7 +180,7 @@ void QBenchmarkValgrindUtils::cleanup()
 
 QString QBenchmarkValgrindUtils::outFileBase(qint64 pid)
 {
-    return QString(QLatin1String("callgrind.out.%1")).arg(
+    return QString::fromLatin1("callgrind.out.%1").arg(
         pid != -1 ? pid : QCoreApplication::applicationPid());
 }
 
@@ -271,5 +272,7 @@ QString QBenchmarkCallgrindMeasurer::metricText()
 {
     return QLatin1String("callgrind");
 }
+
+QT_END_NAMESPACE
 
 #endif // QTESTLIB_USE_VALGRIND

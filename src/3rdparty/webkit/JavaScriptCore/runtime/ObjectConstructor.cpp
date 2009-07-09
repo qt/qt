@@ -21,6 +21,7 @@
 #include "config.h"
 #include "ObjectConstructor.h"
 
+#include "JSFunction.h"
 #include "JSGlobalObject.h"
 #include "ObjectPrototype.h"
 
@@ -41,10 +42,10 @@ ObjectConstructor::ObjectConstructor(ExecState* exec, PassRefPtr<Structure> stru
 // ECMA 15.2.2
 static ALWAYS_INLINE JSObject* constructObject(ExecState* exec, const ArgList& args)
 {
-    JSValuePtr arg = args.at(exec, 0);
-    if (arg->isUndefinedOrNull())
+    JSValue arg = args.at(0);
+    if (arg.isUndefinedOrNull())
         return new (exec) JSObject(exec->lexicalGlobalObject()->emptyObjectStructure());
-    return arg->toObject(exec);
+    return arg.toObject(exec);
 }
 
 static JSObject* constructWithObjectConstructor(ExecState* exec, JSObject*, const ArgList& args)
@@ -58,7 +59,7 @@ ConstructType ObjectConstructor::getConstructData(ConstructData& constructData)
     return ConstructTypeHost;
 }
 
-static JSValuePtr callObjectConstructor(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callObjectConstructor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     return constructObject(exec, args);
 }

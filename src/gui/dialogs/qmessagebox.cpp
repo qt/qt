@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 
 #include <QtGui/qdialogbuttonbox.h>
 #include "private/qlabel_p.h"
+#include "private/qapplication_p.h"
 #include <QtCore/qlist.h>
 #include <QtCore/qdebug.h>
 #include <QtGui/qstyle.h>
@@ -63,7 +64,7 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone();//defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
@@ -72,8 +73,6 @@ extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
 #endif
 
 QT_BEGIN_NAMESPACE
-
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash();
 
 enum Button { Old_Ok = 1, Old_Cancel = 2, Old_Yes = 3, Old_No = 4, Old_Abort = 5, Old_Retry = 6,
               Old_Ignore = 7, Old_YesAll = 8, Old_NoAll = 9, Old_ButtonMask = 0xFF,
@@ -152,7 +151,7 @@ public:
     int layoutMinimumWidth();
     void retranslateStrings();
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void hideSpecial();
 #endif
 
@@ -258,10 +257,8 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
 
 int QMessageBoxPrivate::layoutMinimumWidth()
 {
-    Q_Q(QMessageBox);
-
-    q->layout()->activate();
-    return q->layout()->totalMinimumSize().width();
+    layout->activate();
+    return layout->totalMinimumSize().width();
 }
 
 void QMessageBoxPrivate::updateSize()
@@ -272,10 +269,7 @@ void QMessageBoxPrivate::updateSize()
         return;
 
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-#ifdef Q_WS_QWS
-    // the width of the screen, less the window border.
-    int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
-#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_QWS) || defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
     // the width of the screen, less the window border.
     int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
 #else
@@ -290,11 +284,11 @@ void QMessageBoxPrivate::updateSize()
     int softLimit = qMin(hardLimit, 500);
 #else
     // note: ideally on windows, hard and soft limits but it breaks compat
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     int softLimit = qMin(screenSize.width()/2, 500);
 #else
     int softLimit = qMin(screenSize.width() * 3 / 4, 500);
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 #endif
 
     if (informativeLabel)
@@ -337,21 +331,21 @@ void QMessageBoxPrivate::updateSize()
         label->setSizePolicy(policy);
     }
 
-    QFontMetrics fm(qApp->font("QWorkspaceTitleBar"));
+    QFontMetrics fm(QApplication::font("QWorkspaceTitleBar"));
     int windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
     if (windowTitleWidth > width)
         width = windowTitleWidth;
 
-    q->layout()->activate();
-    int height = (q->layout()->hasHeightForWidth())
-                     ? q->layout()->totalHeightForWidth(width)
-                     : q->layout()->totalMinimumSize().height();
+    layout->activate();
+    int height = (layout->hasHeightForWidth())
+                     ? layout->totalHeightForWidth(width)
+                     : layout->totalMinimumSize().height();
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);
 }
 
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 /*!
   \internal
   Hides special buttons which are rather shown in the title bar
@@ -366,7 +360,7 @@ void QMessageBoxPrivate::hideSpecial()
             QPushButton *pb = list.at(i);
             QString text = pb->text();
             text.remove(QChar::fromLatin1('&'));
-            if (text == qApp->translate("QMessageBox", "OK" ))
+            if (text == QApplication::translate("QMessageBox", "OK" ))
                 pb->setFixedSize(0,0);
         }
 }
@@ -1208,13 +1202,13 @@ bool QMessageBox::event(QEvent *e)
         case QEvent::LanguageChange:
             d_func()->retranslateStrings();
             break;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         case QEvent::OkRequest:
         case QEvent::HelpRequest: {
           QString bName =
               (e->type() == QEvent::OkRequest)
-              ? qApp->translate("QMessageBox", "OK")
-              : qApp->translate("QMessageBox", "Help");
+              ? QApplication::translate("QMessageBox", "OK")
+              : QApplication::translate("QMessageBox", "Help");
           QList<QPushButton*> list = qFindChildren<QPushButton*>(this);
           for (int i=0; i<list.size(); ++i) {
               QPushButton *pb = list.at(i);
@@ -1313,7 +1307,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
         if (e == QKeySequence::Copy) {
             QString separator = QString::fromLatin1("---------------------------\n");
             QString textToCopy = separator;
-            separator.prepend(QLatin1String("\n"));
+            separator.prepend(QLatin1Char('\n'));
             textToCopy += windowTitle() + separator; // title
             textToCopy += d->label->text() + separator; // text
 
@@ -1327,7 +1321,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             }
             textToCopy += buttonTexts + separator;
 
-            qApp->clipboard()->setText(textToCopy);
+            QApplication::clipboard()->setText(textToCopy);
             return;
         }
 #endif //QT_NO_SHORTCUT QT_NO_CLIPBOARD Q_OS_WIN
@@ -1351,7 +1345,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
     QDialog::keyPressEvent(e);
 }
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 /*!
     \reimp
 */
@@ -1420,7 +1414,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     Q_D(QMessageBox);
     if (d->autoAddOkButton) {
         addButton(Ok);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         d->hideSpecial();
 #endif
     }
@@ -1687,10 +1681,13 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     }
 #endif
 
-    QString translatedTextAboutQt;
-    translatedTextAboutQt = QMessageBox::tr(
+    QString translatedTextAboutQtCaption;
+    translatedTextAboutQtCaption = QMessageBox::tr(
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
+        ).arg(QLatin1String(QT_VERSION_STR));
+    QString translatedTextAboutQtText;
+    translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
         "<p>Qt provides single-source portability across MS&nbsp;Windows, "
@@ -1699,7 +1696,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "and Qt for Windows CE.</p>"
         "<p>Qt is available under three different licensing options designed "
         "to accommodate the needs of our various users.</p>"
-        "Qt licensed under our commercial license agreement is appropriate "
+        "<p>Qt licensed under our commercial license agreement is appropriate "
         "for development of proprietary/commercial software where you do not "
         "want to share any source code with third parties or otherwise cannot "
         "comply with the terms of the GNU LGPL version 2.1 or GNU GPL version "
@@ -1718,17 +1715,17 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
         "for more information.</p>"
-       ).arg(QLatin1String(QT_VERSION_STR));
-
+        );
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
-    msgBox->setInformativeText(translatedTextAboutQt);
+    msgBox->setText(translatedTextAboutQtCaption);
+    msgBox->setInformativeText(translatedTextAboutQtText);
 
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())
         msgBox->setIconPixmap(pm);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     msgBox->setDefaultButton(msgBox->addButton(QMessageBox::Ok));
 #endif
 

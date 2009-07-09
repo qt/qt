@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,13 +62,13 @@
 #include <QDesktopWidget>
 #include <QSettings>
 
-#if defined(Q_OS_WINCE) && !defined(STANDARDSHELL_UI_MODEL)
+#if defined(Q_WS_WINCE) && !defined(STANDARDSHELL_UI_MODEL)
 #   include <streams.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 static const UINT q_uNOTIFYICONID = 13;     // IDs from 0 to 12 are reserved on WinCE.
 #else
 static const UINT q_uNOTIFYICONID = 0;
@@ -331,7 +331,7 @@ bool QSystemTrayIconSys::showMessageA(const QString &title, const QString &messa
 
 bool QSystemTrayIconSys::trayMessageA(DWORD msg)
 {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     NOTIFYICONDATAA tnd;
     memset(&tnd, 0, notifyIconSizeA);
     tnd.uID = q_uNOTIFYICONID;
@@ -462,7 +462,7 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
                 emit q->activated(QSystemTrayIcon::Trigger);
                 break;
 
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
             case WM_LBUTTONDBLCLK:
                 emit q->activated(QSystemTrayIcon::DoubleClick);
                 break;
@@ -518,7 +518,7 @@ void QSystemTrayIconPrivate::install_sys()
 QRect QSystemTrayIconSys::findTrayGeometry()
 {
     //Use lower right corner as fallback
-    QPoint brCorner = qApp->desktop()->screenGeometry().bottomRight();
+    QPoint brCorner = QApplication::desktop()->screenGeometry().bottomRight();
     QRect ret(brCorner.x() - 10, brCorner.y() - 10, 10, 10);
 #if defined(Q_OS_WINCE)
     HWND trayHandle = FindWindowW(L"Shell_TrayWnd", NULL);
@@ -662,7 +662,7 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
     //message is limited to 255 chars + NULL
     QString messageString;
     if (message.isEmpty() && !title.isEmpty())
-        messageString = QLatin1String(" "); //ensures that the message shows when only title is set
+        messageString = QLatin1Char(' '); //ensures that the message shows when only title is set
     else
         messageString = message.left(255) + QChar();
 
@@ -726,7 +726,7 @@ void QSystemTrayIconPrivate::updateMenu_sys()
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     // Calling sys->trayMessage(NIM_MODIFY) on an existing icon is broken on Windows CE.
     // So we need to call updateIcon_sys() which creates a new icon handle.
     updateIcon_sys();

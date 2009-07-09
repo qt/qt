@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -269,19 +269,20 @@ bool ItemBase::isInResizeArea(const QPointF &pos)
 QtBox::QtBox(int size, int x, int y) : ItemBase(size, x, y), m_texture(0)
 {
     for (int i = 0; i < 8; ++i) {
-        m_vertices[i][0] = (i & 1 ? 0.5f : -0.5f);
-        m_vertices[i][1] = (i & 2 ? 0.5f : -0.5f);
-        m_vertices[i][2] = (i & 4 ? 0.5f : -0.5f);
+        m_vertices[i].setX(i & 1 ? 0.5f : -0.5f);
+        m_vertices[i].setY(i & 2 ? 0.5f : -0.5f);
+        m_vertices[i].setZ(i & 4 ? 0.5f : -0.5f);
     }
     for (int i = 0; i < 4; ++i) {
-        m_texCoords[i][0] = (i & 1 ? 1.0f : 0.0f);
-        m_texCoords[i][1] = (i & 2 ? 1.0f : 0.0f);
+        m_texCoords[i].setX(i & 1 ? 1.0f : 0.0f);
+        m_texCoords[i].setY(i & 2 ? 1.0f : 0.0f);
     }
-    memset(m_normals, 0, sizeof(m_normals));
-    for (int i = 0; i < 3; ++i) {
-        m_normals[2 * i + 0][i] = -1.0f;
-        m_normals[2 * i + 1][i] = 1.0f;
-    }
+    m_normals[0] = QVector3D(-1.0f, 0.0f, 0.0f);
+    m_normals[1] = QVector3D(1.0f, 0.0f, 0.0f);
+    m_normals[2] = QVector3D(0.0f, -1.0f, 0.0f);
+    m_normals[3] = QVector3D(0.0f, 1.0f, 0.0f);
+    m_normals[4] = QVector3D(0.0f, 0.0f, -1.0f);
+    m_normals[5] = QVector3D(0.0f, 0.0f, 1.0f);
 }
 
 QtBox::~QtBox()
@@ -351,21 +352,21 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
         glColor4f(1.0f, 1.0f, 1.0f, 1.0);
 
         glBegin(GL_TRIANGLE_STRIP);
-        glNormal3fv(m_normals[2 * dir + 0].bits());
+        glNormal3fv(reinterpret_cast<float *>(&m_normals[2 * dir + 0]));
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 2; ++j) {
-                glTexCoord2fv(m_texCoords[(j << 1) | i].bits());
-                glVertex3fv(m_vertices[(i << ((dir + 2) % 3)) | (j << ((dir + 1) % 3))].bits());
+                glTexCoord2fv(reinterpret_cast<float *>(&m_texCoords[(j << 1) | i]));
+                glVertex3fv(reinterpret_cast<float *>(&m_vertices[(i << ((dir + 2) % 3)) | (j << ((dir + 1) % 3))]));
             }
         }
         glEnd();
 
         glBegin(GL_TRIANGLE_STRIP);
-        glNormal3fv(m_normals[2 * dir + 1].bits());
+        glNormal3fv(reinterpret_cast<float *>(&m_normals[2 * dir + 1]));
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 2; ++j) {
-                glTexCoord2fv(m_texCoords[(j << 1) | i].bits());
-                glVertex3fv(m_vertices[(1 << dir) | (i << ((dir + 1) % 3)) | (j << ((dir + 2) % 3))].bits());
+                glTexCoord2fv(reinterpret_cast<float *>(&m_texCoords[(j << 1) | i]));
+                glVertex3fv(reinterpret_cast<float *>(&m_vertices[(1 << dir) | (i << ((dir + 1) % 3)) | (j << ((dir + 2) % 3))]));
             }
         }
         glEnd();

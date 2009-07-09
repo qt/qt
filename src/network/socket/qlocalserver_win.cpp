@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,68 +44,26 @@
 #include "qlocalsocket.h"
 
 #include <qdebug.h>
-#include <qdatetime.h>
-#include <qcoreapplication.h>
-#include <QMetaType>
 
 // The buffer size need to be 0 otherwise data could be
 // lost if the socket that has written data closes the connection
 // before it is read.  Pipewriter is used for write buffering.
 #define BUFSIZE 0
 
+// ###: This should be a property. Should replace the insane 50 on unix as well.
+#define SYSTEM_MAX_PENDING_SOCKETS 8
+
 QT_BEGIN_NAMESPACE
 
-QLocalServerThread::QLocalServerThread(QObject *parent) : QThread(parent),
-    maxPendingConnections(1)
+bool QLocalServerPrivate::addListener()
 {
-    stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    gotConnectionEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-}
+    // The object must not change its address once the
+    // contained OVERLAPPED struct is passed to Windows.
+    listeners << Listener();
+    Listener &listener = listeners.last();
 
-QLocalServerThread::~QLocalServerThread()
-{
-    stop();
-    closeServer();
-    CloseHandle(stopEvent);
-    CloseHandle(gotConnectionEvent);
-}
-
-void QLocalServerThread::stop()
-{
-    if (isRunning()) {
-        SetEvent(stopEvent);
-        wait();
-        ResetEvent(stopEvent);
-    }
-}
-
-void QLocalServerThread::closeServer()
-{
-    while (!pendingHandles.isEmpty())
-        CloseHandle(pendingHandles.dequeue());
-}
-
-QString QLocalServerThread::setName(const QString &name)
-{
-    QString pipePath = QLatin1String("\\\\.\\pipe\\");
-    if (name.startsWith(pipePath))
-        fullServerName = name;
-    else
-        fullServerName = pipePath + name;
-    for (int i = pendingHandles.count(); i < maxPendingConnections; ++i)
-        if (!makeHandle())
-            break;
-    return fullServerName;
-}
-
-bool QLocalServerThread::makeHandle()
-{
-    if (pendingHandles.count() >= maxPendingConnections)
-        return false;
-
-    HANDLE handle = INVALID_HANDLE_VALUE;
     QT_WA({
-    handle = CreateNamedPipeW(
+    listener.handle = CreateNamedPipeW(
                  (TCHAR*)fullServerName.utf16(), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
                  PIPE_TYPE_MESSAGE |       // message type pipe
@@ -117,7 +75,7 @@ bool QLocalServerThread::makeHandle()
                  3000,                     // client time-out
                  NULL);
     }, {
-    handle = CreateNamedPipeA(
+    listener.handle = CreateNamedPipeA(
                  fullServerName.toLocal8Bit().constData(), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
                  PIPE_TYPE_MESSAGE |       // message type pipe
@@ -129,68 +87,43 @@ bool QLocalServerThread::makeHandle()
                  3000,                     // client time-out
                  NULL);
     });
-
-    if (INVALID_HANDLE_VALUE == handle) {
+    if (listener.handle == INVALID_HANDLE_VALUE) {
+        setError(QLatin1String("QLocalServerPrivate::addListener"));
+        listeners.removeLast();
         return false;
     }
-    pendingHandles.enqueue(handle);
+
+    memset(&listener.overlapped, 0, sizeof(listener.overlapped));
+    listener.overlapped.hEvent = eventHandle;
+    if (!ConnectNamedPipe(listener.handle, &listener.overlapped)) {
+        switch (GetLastError()) {
+        case ERROR_IO_PENDING:
+            break;
+        case ERROR_PIPE_CONNECTED:
+            SetEvent(eventHandle);
+            break;
+        default:
+            CloseHandle(listener.handle);
+            setError(QLatin1String("QLocalServerPrivate::addListener"));
+            listeners.removeLast();
+            return false;
+        }
+    } else {
+        Q_ASSERT_X(false, "QLocalServerPrivate::addListener", "The impossible happened");
+        SetEvent(eventHandle);
+    }
     return true;
 }
 
-void QLocalServerThread::run()
+void QLocalServerPrivate::setError(const QString &function)
 {
-    OVERLAPPED  op;
-    HANDLE      handleArray[2];
-    memset(&op, 0, sizeof(op));
-    handleArray[0] = op.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    handleArray[1] = stopEvent;
-    HANDLE handle = INVALID_HANDLE_VALUE;
-
-    forever {
-        if (INVALID_HANDLE_VALUE == handle) {
-            makeHandle();
-            if (!pendingHandles.isEmpty())
-                handle = pendingHandles.dequeue();
-        }
-        if (INVALID_HANDLE_VALUE == handle) {
-            int windowsError = GetLastError();
-            QString function = QLatin1String("QLocalServer::run");
-            QString errorString = QLocalServer::tr("%1: Unknown error %2").arg(function).arg(windowsError);
-            emit error(QAbstractSocket::UnknownSocketError, errorString);
-            CloseHandle(handleArray[0]);
-            SetEvent(gotConnectionEvent);
-            return;
-        }
-
-        BOOL isConnected = ConnectNamedPipe(handle, &op) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-        if (!isConnected) {
-            switch (WaitForMultipleObjects(2, handleArray, FALSE, INFINITE))
-            {
-            case WAIT_OBJECT_0 + 1:
-                CloseHandle(handle);
-                CloseHandle(handleArray[0]);
-                return;
-            }
-        }
-        emit connected(handle);
-        handle = INVALID_HANDLE_VALUE;
-        ResetEvent(handleArray[0]);
-        SetEvent(gotConnectionEvent);
-    }
+    int windowsError = GetLastError();
+    errorString = QString::fromLatin1("%1: %2").arg(function).arg(qt_error_string(windowsError));
+    error = QAbstractSocket::UnknownSocketError;
 }
 
 void QLocalServerPrivate::init()
 {
-    Q_Q(QLocalServer);
-    qRegisterMetaType<HANDLE>("HANDLE");
-    q->connect(&waitForConnection, SIGNAL(connected(HANDLE)),
-               q, SLOT(_q_openSocket(HANDLE)), Qt::QueuedConnection);
-    q->connect(&waitForConnection, SIGNAL(finished()),
-               q, SLOT(_q_stoppedListening()), Qt::QueuedConnection);
-    q->connect(&waitForConnection, SIGNAL(terminated()),
-               q, SLOT(_q_stoppedListening()), Qt::QueuedConnection);
-    q->connect(&waitForConnection, SIGNAL(error(QAbstractSocket::SocketError, const QString &)),
-               q, SLOT(_q_setError(QAbstractSocket::SocketError, const QString &)));
 }
 
 bool QLocalServerPrivate::removeServer(const QString &name)
@@ -201,35 +134,71 @@ bool QLocalServerPrivate::removeServer(const QString &name)
 
 bool QLocalServerPrivate::listen(const QString &name)
 {
-    fullServerName = waitForConnection.setName(name);
-    serverName = name;
-    waitForConnection.start();
+    Q_Q(QLocalServer);
+
+    QString pipePath = QLatin1String("\\\\.\\pipe\\");
+    if (name.startsWith(pipePath))
+        fullServerName = name;
+    else
+        fullServerName = pipePath + name;
+
+    // Use only one event for all listeners of one socket.
+    // The idea is that listener events are rare, so polling all listeners once in a while is
+    // cheap compared to waiting for N additional events in each iteration of the main loop.
+    eventHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
+    connectionEventNotifier = new QWinEventNotifier(eventHandle , q);
+    q->connect(connectionEventNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_onNewConnection()));
+
+    for (int i = 0; i < SYSTEM_MAX_PENDING_SOCKETS; ++i)
+        if (!addListener())
+            return false;
     return true;
 }
 
-void QLocalServerPrivate::_q_setError(QAbstractSocket::SocketError e, const QString &eString)
-{
-    error = e;
-    errorString = eString;
-}
-
-void QLocalServerPrivate::_q_stoppedListening()
+void QLocalServerPrivate::_q_onNewConnection()
 {
     Q_Q(QLocalServer);
-    if (!inWaitingFunction)
-        q->close();
-}
+    DWORD dummy;
 
-void QLocalServerPrivate::_q_openSocket(HANDLE handle)
-{
-    Q_Q(QLocalServer);
-    q->incomingConnection((int)handle);
+    // Reset first, otherwise we could reset an event which was asserted
+    // immediately after we checked the conn status.
+    ResetEvent(eventHandle);
+
+    // Testing shows that there is indeed absolutely no guarantee which listener gets
+    // a client connection first, so there is no way around polling all of them.
+    for (int i = 0; i < listeners.size(); ) {
+        HANDLE handle = listeners[i].handle;
+        if (GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE)) {
+            listeners.removeAt(i);
+
+            addListener();
+
+            if (pendingConnections.size() > maxPendingConnections)
+                connectionEventNotifier->setEnabled(false);
+
+            // Make this the last thing so connected slots can wreak the least havoc
+            q->incomingConnection((quintptr)handle);
+        } else {
+            if (GetLastError() != ERROR_IO_INCOMPLETE) {
+                setError(QLatin1String("QLocalServerPrivate::_q_onNewConnection"));
+                closeServer();
+                return;
+            }
+
+            ++i;
+        }
+    }
 }
 
 void QLocalServerPrivate::closeServer()
 {
-    waitForConnection.stop();
-    waitForConnection.closeServer();
+    connectionEventNotifier->setEnabled(false); // Otherwise, closed handle is checked before deleter runs
+    connectionEventNotifier->deleteLater();
+    connectionEventNotifier = 0;
+    CloseHandle(eventHandle);
+    for (int i = 0; i < listeners.size(); ++i)
+        CloseHandle(listeners[i].handle);
+    listeners.clear();
 }
 
 void QLocalServerPrivate::waitForNewConnection(int msecs, bool *timedOut)
@@ -238,14 +207,12 @@ void QLocalServerPrivate::waitForNewConnection(int msecs, bool *timedOut)
     if (!pendingConnections.isEmpty() || !q->isListening())
         return;
 
-    DWORD result = WaitForSingleObject(waitForConnection.gotConnectionEvent,
-                                       (msecs == -1) ? INFINITE : msecs);
+    DWORD result = WaitForSingleObject(eventHandle, (msecs == -1) ? INFINITE : msecs);
     if (result == WAIT_TIMEOUT) {
         if (timedOut)
             *timedOut = true;
     } else {
-        ResetEvent(waitForConnection.gotConnectionEvent);
-        QCoreApplication::instance()->processEvents();
+        _q_onNewConnection();
     }
 }
 

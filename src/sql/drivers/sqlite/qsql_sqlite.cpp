@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -115,13 +115,10 @@ public:
     uint skipRow: 1; // skip the next fetchNext()?
     uint utf8: 1;
     QSqlRecord rInf;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
-static const uint initial_cache_size = 128;
-
 QSQLiteResultPrivate::QSQLiteResultPrivate(QSQLiteResult* res) : q(res), access(0),
-    stmt(0), skippedStatus(false), skipRow(false), utf8(false), precisionPolicy(QSql::HighPrecision)
+    stmt(0), skippedStatus(false), skipRow(false), utf8(false)
 {
 }
 
@@ -212,7 +209,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                 values[i + idx] = sqlite3_column_int64(stmt, i);
                 break;
             case SQLITE_FLOAT:
-                switch(precisionPolicy) {
+                switch(q->numericalPrecisionPolicy()) {
                     case QSql::LowPrecisionInt32:
                         values[i + idx] = sqlite3_column_int(stmt, i);
                         break;
@@ -289,12 +286,8 @@ void QSQLiteResult::virtual_hook(int id, void *data)
         if (d->stmt)
             sqlite3_reset(d->stmt);
         break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
-        break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 
@@ -481,11 +474,11 @@ bool QSQLiteDriver::hasFeature(DriverFeature f) const
     case PositionalPlaceholders:
     case SimpleLocking:
     case FinishQuery:
+    case LowPrecisionNumbers:
         return true;
     case QuerySize:
     case NamedPlaceholders:
     case BatchOperations:
-    case LowPrecisionNumbers:
     case EventNotifications:
     case MultipleResultSets:
         return false;
@@ -631,9 +624,9 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
 {
     QString schema;
     QString table(tableName);
-    int indexOfSeparator = tableName.indexOf(QLatin1String("."));
+    int indexOfSeparator = tableName.indexOf(QLatin1Char('.'));
     if (indexOfSeparator > -1) {
-        schema = tableName.left(indexOfSeparator).append(QLatin1String("."));
+        schema = tableName.left(indexOfSeparator).append(QLatin1Char('.'));
         table = tableName.mid(indexOfSeparator + 1);
     }
     q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info ('") + table + QLatin1String("')"));

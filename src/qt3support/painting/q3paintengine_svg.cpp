@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -263,7 +263,7 @@ void Q3SVGPaintEngine::updateClipPath(const QPainterPath &path, Qt::ClipOperatio
     QDomElement e;
     d->currentClip++;
     e = d->doc.createElement(QLatin1String("clipPath"));
-    e.setAttribute(QLatin1String("id"), QString(QLatin1String("clip%1")).arg(d->currentClip));
+    e.setAttribute(QLatin1String("id"), QString::fromLatin1("clip%1").arg(d->currentClip));
 
     QDomElement path_element = d->doc.createElement(QLatin1String("path"));
     path_element.setAttribute(QLatin1String("d"), qt_svg_compose_path(path));
@@ -509,14 +509,14 @@ bool Q3SVGPaintEngine::save(const QString &fileName)
     int icount = 0;
     ImageList::Iterator iit = d->images.begin();
     for (; iit != d->images.end(); ++iit) {
-        QString href = QString(QLatin1String("%1_%2.png")).arg(svgName).arg(icount);
+        QString href = QString::fromLatin1("%1_%2.png").arg(svgName).arg(icount);
         (*iit).image.save(href, "PNG");
         (*iit).element.setAttribute(QLatin1String("xlink:href"), href);
         icount++;
     }
     PixmapList::Iterator pit = d->pixmaps.begin();
     for (; pit != d->pixmaps.end(); ++pit) {
-        QString href = QString(QLatin1String("%1_%2.png")).arg(svgName).arg(icount);
+        QString href = QString::fromLatin1("%1_%2.png").arg(svgName).arg(icount);
         (*pit).pixmap.save(href, "PNG");
         (*pit).element.setAttribute(QLatin1String("xlink:href"), href);
         icount++;
@@ -592,7 +592,7 @@ void Q3SVGPaintEnginePrivate::appendChild(QDomElement &e, QPicturePrivate::Paint
         if (c == QPicturePrivate::PdcSetClipRegion || c == QPicturePrivate::PdcSetClipPath) {
             QDomElement ne;
             ne = doc.createElement(QLatin1String("g"));
-            ne.setAttribute(QLatin1String("style"), QString(QLatin1String("clip-path:url(#clip%1)")).arg(currentClip));
+            ne.setAttribute(QLatin1String("style"), QString::fromLatin1("clip-path:url(#clip%1)").arg(currentClip));
             if (dirtyTransform) {
                 applyTransform(&ne);
                 dirtyTransform = false;
@@ -621,12 +621,12 @@ void Q3SVGPaintEnginePrivate::applyStyle(QDomElement *e, QPicturePrivate::PaintC
     if (c == QPicturePrivate::PdcDrawText2 || c == QPicturePrivate::PdcDrawText2Formatted) {
         // QPainter has a reversed understanding of pen/stroke vs.
         // brush/fill for text
-        s += QString(QLatin1String("fill:rgb(%1,%2,%3);")).arg(pcol.red()).arg(pcol.green()).arg(pcol.blue());
-        s += QString(QLatin1String("stroke-width:0;"));
+        s += QString::fromLatin1("fill:rgb(%1,%2,%3);").arg(pcol.red()).arg(pcol.green()).arg(pcol.blue());
+        s += QLatin1String("stroke-width:0;");
         QFont f = cfont;
         QFontInfo fi(f);
-        s += QString(QLatin1String("font-size:%1;")).arg(fi.pointSize());
-        s += QString(QLatin1String("font-style:%1;")).arg(f.italic() ? QLatin1String("italic") : QLatin1String("normal"));
+        s += QString::fromLatin1("font-size:%1;").arg(fi.pointSize());
+        s += QString::fromLatin1("font-style:%1;").arg(f.italic() ? QLatin1String("italic") : QLatin1String("normal"));
         // not a very scientific distribution
         QString fw;
         if (f.weight() <= QFont::Light)
@@ -641,32 +641,32 @@ void Q3SVGPaintEnginePrivate::applyStyle(QDomElement *e, QPicturePrivate::PaintC
             fw = QLatin1String("800");
         else
             fw = QLatin1String("900");
-        s += QString(QLatin1String("font-weight:%1;")).arg(fw);
-        s += QString(QLatin1String("font-family:%1;")).arg(f.family());
+        s += QString::fromLatin1("font-weight:%1;").arg(fw);
+        s += QString::fromLatin1("font-family:%1;").arg(f.family());
     } else {
-        s += QString(QLatin1String("stroke:rgb(%1,%2,%3);")).arg(pcol.red()).arg(pcol.green()).arg(pcol.blue());
+        s += QString::fromLatin1("stroke:rgb(%1,%2,%3);").arg(pcol.red()).arg(pcol.green()).arg(pcol.blue());
         if (pcol.alpha() != 255)
-            s += QString(QLatin1String("stroke-opacity:%1;")).arg(pcol.alpha()/255.0);
+            s += QString::fromLatin1("stroke-opacity:%1;").arg(pcol.alpha()/255.0);
         if (bcol.alpha() != 255)
-            s += QString(QLatin1String("fill-opacity:%1;")).arg(bcol.alpha()/255.0);
+            s += QString::fromLatin1("fill-opacity:%1;").arg(bcol.alpha()/255.0);
         double pw = cpen.width();
         if (pw == 0 && cpen.style() != Qt::NoPen)
             pw = 0.9;
         if (c == QPicturePrivate::PdcDrawLine)
             pw /= (qAbs(worldMatrix.m11()) + qAbs(worldMatrix.m22())) / 2.0;
-        s += QString(QLatin1String("stroke-width:%1;")).arg(pw);
+        s += QString::fromLatin1("stroke-width:%1;").arg(pw);
         if (cpen.style() == Qt::DashLine)
-            s+= QString(QLatin1String("stroke-dasharray:18,6;"));
+            s+= QLatin1String("stroke-dasharray:18,6;");
         else if (cpen.style() == Qt::DotLine)
-            s+= QString(QLatin1String("stroke-dasharray:3;"));
+            s+= QLatin1String("stroke-dasharray:3;");
         else if (cpen.style() == Qt::DashDotLine)
-            s+= QString(QLatin1String("stroke-dasharray:9,6,3,6;"));
+            s+= QLatin1String("stroke-dasharray:9,6,3,6;");
         else if (cpen.style() == Qt::DashDotDotLine)
-            s+= QString(QLatin1String("stroke-dasharray:9,3,3;"));
+            s+= QLatin1String("stroke-dasharray:9,3,3;");
         if (cbrush.style() == Qt::NoBrush || c == QPicturePrivate::PdcDrawPolyline || c == QPicturePrivate::PdcDrawCubicBezier)
             s += QLatin1String("fill:none;"); // Qt polylines use no brush, neither do Beziers
         else
-            s += QString(QLatin1String("fill:rgb(%1,%2,%3);")).arg(bcol.red()).arg(bcol.green()).arg(bcol.blue());
+            s += QString::fromLatin1("fill:rgb(%1,%2,%3);").arg(bcol.red()).arg(bcol.green()).arg(bcol.blue());
     }
     e->setAttribute(QLatin1String("style"), s);
 }
@@ -679,13 +679,13 @@ void Q3SVGPaintEnginePrivate::applyTransform(QDomElement *e) const
     bool rot = (m.m11() != 1.0 || m.m12() != 0.0 ||
                  m.m21() != 0.0 || m.m22() != 1.0);
     if (!rot && (m.dx() != 0.0 || m.dy() != 0.0)) {
-        s = QString(QLatin1String("translate(%1,%2)")).arg(m.dx()).arg(m.dy());
+        s = QString::fromLatin1("translate(%1,%2)").arg(m.dx()).arg(m.dy());
     } else if (rot) {
         if (m.m12() == 0.0 && m.m21() == 0.0 &&
              m.dx() == 0.0 && m.dy() == 0.0)
-            s = QString(QLatin1String("scale(%1,%2)")).arg(m.m11()).arg(m.m22());
+             s = QString::fromLatin1("scale(%1,%2)").arg(m.m11()).arg(m.m22());
         else
-            s = QString(QLatin1String("matrix(%1,%2,%3,%4,%5,%6)"))
+            s = QString::fromLatin1("matrix(%1,%2,%3,%4,%5,%6)")
                 .arg(m.m11()).arg(m.m12())
                 .arg(m.m21()).arg(m.m22())
                 .arg(m.dx()).arg(m.dy());
@@ -730,9 +730,9 @@ bool Q3SVGPaintEngine::play(QPainter *pt)
     d->brect.setX(x);
     d->brect.setY(y);
     QString wstr = attr.contains(QLatin1String("width"))
-                   ? attr.namedItem(QLatin1String("width")).nodeValue() : QString(QLatin1String("100%"));
+        ? attr.namedItem(QLatin1String("width")).nodeValue() : QString::fromLatin1("100%");
     QString hstr = attr.contains(QLatin1String("height"))
-                   ? attr.namedItem(QLatin1String("height")).nodeValue() : QString(QLatin1String("100%"));
+        ? attr.namedItem(QLatin1String("height")).nodeValue() : QString::fromLatin1("100%");
     double width = d->parseLen(wstr, 0, true);
     double height = d->parseLen(hstr, 0, false);
     // SVG doesn't respect x and y. But we want a proper bounding rect.

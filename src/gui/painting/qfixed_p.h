@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -181,8 +181,10 @@ inline bool operator<(int i, const QFixed &f) { return (i<<6) < f.value(); }
 inline bool operator>(const QFixed &f, int i) { return f.value() > (i<<6); }
 inline bool operator>(int i, const QFixed &f) { return (i<<6) > f.value(); }
 
+#ifndef QT_NO_DEBUG_STREAM
 inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
 { return dbg << f.toReal(); }
+#endif
 
 struct QFixedPoint {
     QFixed x;

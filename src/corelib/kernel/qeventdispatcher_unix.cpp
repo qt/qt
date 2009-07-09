@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -263,7 +263,7 @@ QTimerInfoList::QTimerInfoList()
 #  if (_POSIX_MONOTONIC_CLOCK == 0)
     // detect if the system support monotonic timers
     long x = sysconf(_SC_MONOTONIC_CLOCK);
-    useMonotonicTimers = x >= 200112L;
+    useMonotonicTimers = x != -1;
 #  endif
 
     getTime(currentTime);

@@ -62,7 +62,7 @@ void RenderTheme::adjustStyle(CSSStyleSelector* selector, RenderStyle* style, El
     else if (style->display() == COMPACT || style->display() == RUN_IN || style->display() == LIST_ITEM || style->display() == TABLE)
         style->setDisplay(BLOCK);
 
-    if (UAHasAppearance && theme()->isControlStyled(style, border, background, backgroundColor)) {
+    if (UAHasAppearance && isControlStyled(style, border, background, backgroundColor)) {
         if (part == MenulistPart) {
             style->setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
@@ -268,6 +268,12 @@ bool RenderTheme::paint(RenderObject* o, const RenderObject::PaintInfo& paintInf
             if (o->parent()->isSlider())
                 return paintMediaSliderThumb(o, paintInfo, r);
             break;
+        case MediaTimeRemainingPart:
+            return paintMediaTimeRemaining(o, paintInfo, r);
+        case MediaCurrentTimePart:
+            return paintMediaCurrentTime(o, paintInfo, r);
+        case MediaTimelineContainerPart:
+            return paintMediaTimelineContainer(o, paintInfo, r);
         case MenulistButtonPart:
         case TextFieldPart:
         case TextAreaPart:
@@ -365,24 +371,68 @@ bool RenderTheme::paintDecorations(RenderObject* o, const RenderObject::PaintInf
 #if ENABLE(VIDEO)
 bool RenderTheme::hitTestMediaControlPart(RenderObject* o, const IntPoint& absPoint)
 {
-    FloatPoint localPoint = o->absoluteToLocal(absPoint, false, true);  // respect transforms
+    if (!o->isBox())
+        return false;
 
-    return o->borderBox().contains(roundedIntPoint(localPoint));
+    FloatPoint localPoint = o->absoluteToLocal(absPoint, false, true);  // respect transforms
+    return toRenderBox(o)->borderBoxRect().contains(roundedIntPoint(localPoint));
 }
 #endif
 
 Color RenderTheme::activeSelectionBackgroundColor() const
 {
-    if (!m_activeSelectionColor.isValid())
-        m_activeSelectionColor = platformActiveSelectionBackgroundColor().blendWithWhite();
-    return m_activeSelectionColor;
+    if (!m_activeSelectionBackgroundColor.isValid())
+        m_activeSelectionBackgroundColor = platformActiveSelectionBackgroundColor().blendWithWhite();
+    return m_activeSelectionBackgroundColor;
 }
 
 Color RenderTheme::inactiveSelectionBackgroundColor() const
 {
-    if (!m_inactiveSelectionColor.isValid())
-        m_inactiveSelectionColor = platformInactiveSelectionBackgroundColor().blendWithWhite();
-    return m_inactiveSelectionColor;
+    if (!m_inactiveSelectionBackgroundColor.isValid())
+        m_inactiveSelectionBackgroundColor = platformInactiveSelectionBackgroundColor().blendWithWhite();
+    return m_inactiveSelectionBackgroundColor;
+}
+
+Color RenderTheme::activeSelectionForegroundColor() const
+{
+    if (!m_activeSelectionForegroundColor.isValid() && supportsSelectionForegroundColors())
+        m_activeSelectionForegroundColor = platformActiveSelectionForegroundColor();
+    return m_activeSelectionForegroundColor;
+}
+
+Color RenderTheme::inactiveSelectionForegroundColor() const
+{
+    if (!m_inactiveSelectionForegroundColor.isValid() && supportsSelectionForegroundColors())
+        m_inactiveSelectionForegroundColor = platformInactiveSelectionForegroundColor();
+    return m_inactiveSelectionForegroundColor;
+}
+
+Color RenderTheme::activeListBoxSelectionBackgroundColor() const
+{
+    if (!m_activeListBoxSelectionBackgroundColor.isValid())
+        m_activeListBoxSelectionBackgroundColor = platformActiveListBoxSelectionBackgroundColor();
+    return m_activeListBoxSelectionBackgroundColor;
+}
+
+Color RenderTheme::inactiveListBoxSelectionBackgroundColor() const
+{
+    if (!m_inactiveListBoxSelectionBackgroundColor.isValid())
+        m_inactiveListBoxSelectionBackgroundColor = platformInactiveListBoxSelectionBackgroundColor();
+    return m_inactiveListBoxSelectionBackgroundColor;
+}
+
+Color RenderTheme::activeListBoxSelectionForegroundColor() const
+{
+    if (!m_activeListBoxSelectionForegroundColor.isValid() && supportsListBoxSelectionForegroundColors())
+        m_activeListBoxSelectionForegroundColor = platformActiveListBoxSelectionForegroundColor();
+    return m_activeListBoxSelectionForegroundColor;
+}
+
+Color RenderTheme::inactiveListBoxSelectionForegroundColor() const
+{
+    if (!m_inactiveListBoxSelectionForegroundColor.isValid() && supportsListBoxSelectionForegroundColors())
+        m_inactiveListBoxSelectionForegroundColor = platformInactiveListBoxSelectionForegroundColor();
+    return m_inactiveListBoxSelectionForegroundColor;
 }
 
 Color RenderTheme::platformActiveSelectionBackgroundColor() const
@@ -391,50 +441,56 @@ Color RenderTheme::platformActiveSelectionBackgroundColor() const
     return Color(0, 0, 255);
 }
 
+Color RenderTheme::platformActiveSelectionForegroundColor() const
+{
+    // Use a white color by default if the platform theme doesn't define anything.
+    return Color::white;
+}
+
 Color RenderTheme::platformInactiveSelectionBackgroundColor() const
 {
     // Use a grey color by default if the platform theme doesn't define anything.
-    return Color(128, 128, 128);
-}
-
-Color RenderTheme::platformActiveSelectionForegroundColor() const
-{
-    return Color();
+    // This color matches Firefox's inactive color.
+    return Color(176, 176, 176);
 }
 
 Color RenderTheme::platformInactiveSelectionForegroundColor() const
 {
-    return Color();
+    // Use a black color by default.
+    return Color::black;
 }
 
-Color RenderTheme::activeListBoxSelectionBackgroundColor() const
+Color RenderTheme::platformActiveListBoxSelectionBackgroundColor() const
 {
-    return activeSelectionBackgroundColor();
+    return platformActiveSelectionBackgroundColor();
 }
 
-Color RenderTheme::activeListBoxSelectionForegroundColor() const
+Color RenderTheme::platformActiveListBoxSelectionForegroundColor() const
 {
-    // Use a white color by default if the platform theme doesn't define anything.
-    return Color(255, 255, 255);
+    return platformActiveSelectionForegroundColor();
 }
 
-Color RenderTheme::inactiveListBoxSelectionBackgroundColor() const
+Color RenderTheme::platformInactiveListBoxSelectionBackgroundColor() const
 {
-    return inactiveSelectionBackgroundColor();
+    return platformInactiveSelectionBackgroundColor();
 }
 
-Color RenderTheme::inactiveListBoxSelectionForegroundColor() const
+Color RenderTheme::platformInactiveListBoxSelectionForegroundColor() const
 {
-    // Use a black color by default if the platform theme doesn't define anything.
-    return Color(0, 0, 0);
+    return platformInactiveSelectionForegroundColor();
 }
 
 int RenderTheme::baselinePosition(const RenderObject* o) const
 {
+    if (!o->isBox())
+        return 0;
+
+    const RenderBox* box = toRenderBox(o);
+
 #if USE(NEW_THEME)
-    return o->height() + o->marginTop() + m_theme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
+    return box->height() + box->marginTop() + m_theme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
 #else
-    return o->height() + o->marginTop();
+    return box->height() + box->marginTop();
 #endif
 }
 
@@ -521,7 +577,7 @@ ControlStates RenderTheme::controlStatesForRenderer(const RenderObject* o) const
 
 bool RenderTheme::isActive(const RenderObject* o) const
 {
-    Node* node = o->element();
+    Node* node = o->node();
     if (!node)
         return false;
 
@@ -538,28 +594,39 @@ bool RenderTheme::isActive(const RenderObject* o) const
 
 bool RenderTheme::isChecked(const RenderObject* o) const
 {
-    if (!o->element())
+    if (!o->node() || !o->node()->isElementNode())
         return false;
-    return o->element()->isChecked();
+
+    InputElement* inputElement = toInputElement(static_cast<Element*>(o->node()));
+    if (!inputElement)
+        return false;
+
+    return inputElement->isChecked();
 }
 
 bool RenderTheme::isIndeterminate(const RenderObject* o) const
 {
-    if (!o->element())
+    if (!o->node() || !o->node()->isElementNode())
         return false;
-    return o->element()->isIndeterminate();
+
+    InputElement* inputElement = toInputElement(static_cast<Element*>(o->node()));
+    if (!inputElement)
+        return false;
+
+    return inputElement->isIndeterminate();
 }
 
 bool RenderTheme::isEnabled(const RenderObject* o) const
 {
-    if (!o->element())
+    Node* node = o->node();
+    if (!node || !node->isElementNode())
         return true;
-    return o->element()->isEnabled();
+    return static_cast<Element*>(node)->isEnabledFormControl();
 }
 
 bool RenderTheme::isFocused(const RenderObject* o) const
 {
-    Node* node = o->element();
+    Node* node = o->node();
     if (!node)
         return false;
     Document* document = node->document();
@@ -569,23 +636,24 @@ bool RenderTheme::isFocused(const RenderObject* o) const
 
 bool RenderTheme::isPressed(const RenderObject* o) const
 {
-    if (!o->element())
+    if (!o->node())
         return false;
-    return o->element()->active();
+    return o->node()->active();
 }
 
 bool RenderTheme::isReadOnlyControl(const RenderObject* o) const
 {
-    if (!o->element())
+    Node* node = o->node();
+    if (!node || !node->isElementNode())
         return false;
-    return o->element()->isReadOnlyControl();
+    return static_cast<Element*>(node)->isReadOnlyFormControl();
 }
 
 bool RenderTheme::isHovered(const RenderObject* o) const
 {
-    if (!o->element())
+    if (!o->node())
         return false;
-    return o->element()->hovered();
+    return o->node()->hovered();
 }
 
 bool RenderTheme::isDefault(const RenderObject* o) const
@@ -661,10 +729,6 @@ void RenderTheme::adjustMenuListButtonStyle(CSSStyleSelector*, RenderStyle*, Ele
 {
 }
 
-void RenderTheme::adjustButtonInnerStyle(RenderStyle*) const
-{
-}
-
 void RenderTheme::adjustSliderTrackStyle(CSSStyleSelector*, RenderStyle*, Element*) const
 {
 }
@@ -699,8 +763,15 @@ void RenderTheme::adjustSearchFieldResultsButtonStyle(CSSStyleSelector*, RenderS
 
 void RenderTheme::platformColorsDidChange()
 {
-    m_activeSelectionColor = Color();
-    m_inactiveSelectionColor = Color();
+    m_activeSelectionForegroundColor = Color();
+    m_inactiveSelectionForegroundColor = Color();
+    m_activeSelectionBackgroundColor = Color();
+    m_inactiveSelectionBackgroundColor = Color();
+
+    m_activeListBoxSelectionForegroundColor = Color();
+    m_inactiveListBoxSelectionForegroundColor = Color();
+    m_activeListBoxSelectionBackgroundColor = Color();
+    m_inactiveListBoxSelectionForegroundColor = Color();
 }
 
 Color RenderTheme::systemColor(int cssValueId) const
@@ -768,9 +839,19 @@ Color RenderTheme::systemColor(int cssValueId) const
     return Color();
 }
 
-Color RenderTheme::platformTextSearchHighlightColor() const
+Color RenderTheme::platformActiveTextSearchHighlightColor() const
 {
-    return Color(255, 255, 0);
+    return Color(255, 150, 50); // Orange.
+}
+
+Color RenderTheme::platformInactiveTextSearchHighlightColor() const
+{
+    return Color(255, 255, 0); // Yellow.
+}
+
+Color RenderTheme::focusRingColor() const
+{
+    return Color(0, 0, 0); // Black.
 }
 
 } // namespace WebCore

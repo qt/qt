@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include "codeparser.h"
 #include "node.h"
 #include "tree.h"
+#include "config.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_TITLE                   Doc::alias(QLatin1String("title"))
 
 QList<CodeParser *> CodeParser::parsers;
+bool CodeParser::showInternal = false;
 
 /*!
   The constructor adds this code parser to the static
@@ -87,11 +89,11 @@ CodeParser::~CodeParser()
 }
 
 /*!
-  Initializing a code parser is trivial.
+  Initialize the code parser base class.
  */
-void CodeParser::initializeParser(const Config & /* config */)
+void CodeParser::initializeParser(const Config& config)
 {
-    // nothing.
+    showInternal = config.getBool(QLatin1String(CONFIG_SHOWINTERNAL));
 }
 
 /*!
@@ -217,8 +219,10 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	node->setStatus(Node::Preliminary);
     }
     else if (command == COMMAND_INTERNAL) {
-	node->setAccess(Node::Private);
-        node->setStatus(Node::Internal);
+        if (!showInternal) {
+            node->setAccess(Node::Private);
+            node->setStatus(Node::Internal);
+        }
     }
     else if (command == COMMAND_REENTRANT) {
 	node->setThreadSafeness(Node::Reentrant);
@@ -241,19 +245,6 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	if (node->type() == Node::Fake) {
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setTitle(arg);
-#ifdef QDOC2DOX            
-            /* qdoc -> doxygen.
-               I think this must be done here, because there can be multiple
-               "\externalpage" and "\title" metacommands in a single qdoc
-               comment, which means, among other things, that the "\title"
-               commands are not inserted into the metacommand map used by
-               the Doc class. I'm sure there4 is a better way to do this in
-               the DoxWriter class using the information in the FakeNode,
-               but I don't have time to figure it out right now.
-             */
-            if (DoxWriter::isDoxPass(1))
-                DoxWriter::insertTitle(fake,arg);
-#endif            
         }
         else
 	    location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));

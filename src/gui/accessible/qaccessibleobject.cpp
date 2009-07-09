@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -212,7 +212,7 @@ QAccessibleApplication::QAccessibleApplication()
 static QWidgetList topLevelWidgets()
 {
     QWidgetList list;
-    const QWidgetList tlw(qApp->topLevelWidgets());
+    const QWidgetList tlw(QApplication::topLevelWidgets());
     for (int i = 0; i < tlw.count(); ++i) {
         QWidget *w = tlw.at(i);
         if (!(w->windowType() == Qt::Popup) && !(w->windowType() == Qt::Desktop))
@@ -308,7 +308,7 @@ int QAccessibleApplication::navigate(RelationFlag relation, int entry,
         }
         break;
     case FocusChild:
-        targetObject = qApp->activeWindow();
+        targetObject = QApplication::activeWindow();
         break;
     default:
         break;
@@ -322,11 +322,11 @@ QString QAccessibleApplication::text(Text t, int) const
 {
     switch (t) {
     case Name:
-        if (qApp->activeWindow())
-            return qApp->activeWindow()->windowTitle();
+        if (QApplication::activeWindow())
+            return QApplication::activeWindow()->windowTitle();
         break;
     case Description:
-        return qApp->applicationFilePath();
+        return QApplication::applicationFilePath();
     default:
         break;
     }
@@ -342,7 +342,7 @@ QAccessible::Role QAccessibleApplication::role(int) const
 /*! \reimp */
 QAccessible::State QAccessibleApplication::state(int) const
 {
-    return qApp->activeWindow() ? Focused : Normal;
+    return QApplication::activeWindow() ? Focused : Normal;
 }
 
 /*! \reimp */
@@ -356,7 +356,7 @@ bool QAccessibleApplication::doAction(int action, int child, const QVariantList 
 {
     if (action == 0 || action == 1) {
         QWidget *w = 0;
-        w = qApp->activeWindow();
+        w = QApplication::activeWindow();
         if (!w)
             w = topLevelWidgets().at(0);
         if (!w)

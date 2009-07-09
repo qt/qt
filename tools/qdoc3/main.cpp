@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -95,10 +95,9 @@ static const struct {
 };
 
 static bool slow = false;
+static bool showInternal = false;
 static QStringList defines;
 static QHash<QString, Tree *> trees;
-
-//static int doxygen = 0;
 
 /*!
   Find the Tree for language \a lang and return a pointer to it.
@@ -122,14 +121,16 @@ static void printHelp()
 {
     Location::information(tr("Usage: qdoc [options] file1.qdocconf ...\n"
                               "Options:\n"
-                              "    -help     "
+                              "    -help         "
                               "Display this information and exit\n"
-                              "    -version  "
+                              "    -version      "
                               "Display version of qdoc and exit\n"
-                              "    -D<name>  "
+                              "    -D<name>      "
                               "Define <name> as a macro while parsing sources\n"
-                              "    -slow     "
-                              "Turn on features that slow down qdoc") );
+                              "    -slow         "
+                              "Turn on features that slow down qdoc"
+                              "    -showinternal "
+                              "Include stuff marked internal") );
 }
 
 /*!
@@ -162,6 +163,8 @@ static void processQdocconfFile(const QString &fileName)
 	++i;
     }
     config.setStringList(CONFIG_SLOW, QStringList(slow ? "true" : "false"));
+    config.setStringList(CONFIG_SHOWINTERNAL,
+                         QStringList(showInternal ? "true" : "false"));
 
     /*
       With the default configuration values in place, load
@@ -223,18 +226,6 @@ static void processQdocconfFile(const QString &fileName)
      */
     QString lang = config.getString(CONFIG_LANGUAGE);
     Location langLocation = config.lastLocation();
-
-#ifdef QDOC2DOX    
-    // qdoc -> doxygen
-    if (doxygen == 2) {
-        qDebug() << "READING anchors.txt";
-        DoxWriter::readAnchors();
-        qDebug() << "READING title maps";
-        DoxWriter::readTitles();
-        qDebug() << "READING member multimaps";
-        DoxWriter::readMembers();
-    }
-#endif    
 
     /*
       Initialize the tree where all the parsed sources will be stored.
@@ -322,17 +313,6 @@ static void processQdocconfFile(const QString &fileName)
     tree->resolveGroups();
     tree->resolveTargets();
 
-#ifdef QDOC2DOX    
-    // qdoc -> doxygen
-    if (doxygen == 1) {
-        DoxWriter::writeAnchors();
-        DoxWriter::writeTitles();
-        DoxWriter::writeMembers();
-    }
-
-    if (doxygen == 0) {
-#endif    
-
     /*
       Now the tree has been built, and all the stuff that needed
       resolving has been resolved. Now it is time to traverse
@@ -351,17 +331,13 @@ static void processQdocconfFile(const QString &fileName)
     /*
       Generate the XML tag file, if it was requested.
      */
+
     QString tagFile = config.getString(CONFIG_TAGFILE);
     if (!tagFile.isEmpty())
         tree->generateTagFile(tagFile);
-    
+
     tree->setVersion("");
     Generator::terminate();
-
-#ifdef QDOC2DOX    
-    }
-#endif    
-
     CodeParser::terminate();
     CodeMarker::terminate();
     CppToQsConverter::terminate();
@@ -372,7 +348,6 @@ static void processQdocconfFile(const QString &fileName)
 
     foreach (QTranslator *translator, translators)
         delete translator;
-
     delete tree;
 }
 
@@ -456,26 +431,9 @@ int main(int argc, char **argv)
         else if (opt == "-slow") {
             slow = true;
 	}
-        
-#ifdef QDOC2DOX        
-        else if (opt == "-doxygen1") {
-            // qdoc -> doxygen
-            // Don't use this; it isn't ready yet.
-            // Now it's a fossil.
-            qDebug() << "doxygen pass 1";
-            doxygen = 1;
-            DoxWriter::setDoxPass(1);
+        else if (opt == "-showinternal") {
+            showInternal = true;
         }
-        else if (opt == "-doxygen2") {
-            // qdoc -> doxygen
-            // Don't use this; it isn't ready yet.
-            // Now it's a fossil.
-            qDebug() << "doxygen pass 2";
-            doxygen = 2;
-            DoxWriter::setDoxPass(2);
-        }
-#endif
-        
         else {
 	    qdocFiles.append(opt);
 	}

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
+
+#ifndef QT_NO_NETWORKDISKCACHE
 
 class QNetworkDiskCachePrivate;
 class Q_NETWORK_EXPORT QNetworkDiskCache : public QAbstractNetworkCache
@@ -86,9 +88,10 @@ private:
     Q_DISABLE_COPY(QNetworkDiskCache)
 };
 
+#endif // QT_NO_NETWORKDISKCACHE
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
 #endif // QNETWORKDISKCACHE_H
-

@@ -28,20 +28,21 @@
 
 #include "ApplyStyleCommand.h"
 #include "BeforeTextInsertedEvent.h"
-#include "BreakBlockquoteCommand.h" 
+#include "BreakBlockquoteCommand.h"
 #include "CSSComputedStyleDeclaration.h"
+#include "CSSMutableStyleDeclaration.h"
 #include "CSSProperty.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "EditingText.h"
-#include "EventNames.h"
 #include "Element.h"
+#include "EventNames.h"
 #include "Frame.h"
 #include "HTMLElement.h"
-#include "HTMLInterchange.h"
 #include "HTMLInputElement.h"
+#include "HTMLInterchange.h"
 #include "HTMLNames.h"
 #include "SelectionController.h"
 #include "SmartReplace.h"
@@ -61,7 +62,7 @@ enum EFragmentType { EmptyFragment, SingleTextNodeFragment, TreeFragment };
 
 class ReplacementFragment : Noncopyable {
 public:
-    ReplacementFragment(Document*, DocumentFragment*, bool matchStyle, const Selection&);
+    ReplacementFragment(Document*, DocumentFragment*, bool matchStyle, const VisibleSelection&);
 
     Node* firstChild() const;
     Node* lastChild() const;
@@ -80,7 +81,7 @@ private:
     void restoreTestRenderingNodesToFragment(Node*);
     void removeInterchangeNodes(Node*);
     
-    void insertNodeBefore(Node* node, Node* refNode);
+    void insertNodeBefore(PassRefPtr<Node> node, Node* refNode);
 
     RefPtr<Document> m_document;
     RefPtr<DocumentFragment> m_fragment;
@@ -103,7 +104,7 @@ static bool isInterchangeConvertedSpaceSpan(const Node *node)
            static_cast<const HTMLElement *>(node)->getAttribute(classAttr) == convertedSpaceSpanClassString;
 }
 
-ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* fragment, bool matchStyle, const Selection& selection)
+ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* fragment, bool matchStyle, const VisibleSelection& selection)
     : m_document(document),
       m_fragment(fragment),
       m_matchStyle(matchStyle), 
@@ -124,10 +125,9 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     
     Node* shadowAncestorNode = editableRoot->shadowAncestorNode();
     
-    if (!editableRoot->inlineEventListenerForType(eventNames().webkitBeforeTextInsertedEvent) &&
+    if (!editableRoot->getAttributeEventListener(eventNames().webkitBeforeTextInsertedEvent) &&
         // FIXME: Remove these checks once textareas and textfields actually register an event handler.
-        !(shadowAncestorNode && shadowAncestorNode->renderer() && shadowAncestorNode->renderer()->isTextField()) &&
-        !(shadowAncestorNode && shadowAncestorNode->renderer() && shadowAncestorNode->renderer()->isTextArea()) &&
+        !(shadowAncestorNode && shadowAncestorNode->renderer() && shadowAncestorNode->renderer()->isTextControl()) &&
         editableRoot->isContentRichlyEditable()) {
         removeInterchangeNodes(m_fragment.get());
         return;
@@ -136,7 +136,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     Node* styleNode = selection.base().node();
     RefPtr<Node> holder = insertFragmentForTestRendering(styleNode);
     
-    RefPtr<Range> range = Selection::selectionFromContentsOfNode(holder.get()).toRange();
+    RefPtr<Range> range = VisibleSelection::selectionFromContentsOfNode(holder.get()).toNormalizedRange();
     String text = plainText(range.get());
     // Give the root a chance to change the text.
     RefPtr<BeforeTextInsertedEvent> evt = BeforeTextInsertedEvent::create(text);
@@ -147,7 +147,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
         restoreTestRenderingNodesToFragment(holder.get());
         removeNode(holder);
 
-        m_fragment = createFragmentFromText(selection.toRange().get(), evt->text());
+        m_fragment = createFragmentFromText(selection.toNormalizedRange().get(), evt->text());
         if (!m_fragment->firstChild())
             return;
         holder = insertFragmentForTestRendering(styleNode);
@@ -182,7 +182,7 @@ void ReplacementFragment::removeNodePreservingChildren(Node *node)
 
     while (RefPtr<Node> n = node->firstChild()) {
         removeNode(n);
-        insertNodeBefore(n.get(), node);
+        insertNodeBefore(n.release(), node);
     }
     removeNode(node);
 }
@@ -201,12 +201,12 @@ void ReplacementFragment::removeNode(PassRefPtr<Node> node)
     ASSERT(ec == 0);
 }
 
-void ReplacementFragment::insertNodeBefore(Node *node, Node *refNode)
+void ReplacementFragment::insertNodeBefore(PassRefPtr<Node> node, Node* refNode)
 {
     if (!node || !refNode)
         return;
         
-    Node *parent = refNode->parentNode();
+    Node* parent = refNode->parentNode();
     if (!parent)
         return;
         
@@ -311,7 +311,7 @@ void ReplacementFragment::removeInterchangeNodes(Node* container)
             RefPtr<Node> n = 0;
             while ((n = node->firstChild())) {
                 removeNode(n);
-                insertNodeBefore(n.get(), node);
+                insertNodeBefore(n, node);
             }
             removeNode(node);
             if (n)
@@ -344,14 +344,22 @@ static bool hasMatchingQuoteLevel(VisiblePosition endOfExistingContent, VisibleP
     return isInsideMailBlockquote && (numEnclosingMailBlockquotes(existing) == numEnclosingMailBlockquotes(inserted));
 }
 
-bool ReplaceSelectionCommand::shouldMergeStart(bool selectionStartWasStartOfParagraph, bool fragmentHasInterchangeNewlineAtStart)
+bool ReplaceSelectionCommand::shouldMergeStart(bool selectionStartWasStartOfParagraph, bool fragmentHasInterchangeNewlineAtStart, bool selectionStartWasInsideMailBlockquote)
 {
+    if (m_movingParagraph)
+        return false;
+    
     VisiblePosition startOfInsertedContent(positionAtStartOfInsertedContent());
     VisiblePosition prev = startOfInsertedContent.previous(true);
     if (prev.isNull())
         return false;
     
-    if (!m_movingParagraph && hasMatchingQuoteLevel(prev, positionAtEndOfInsertedContent()))
+    // When we have matching quote levels, its ok to merge more frequently.
+    // For a successful merge, we still need to make sure that the inserted content starts with the beginning of a paragraph.
+    // And we should only merge here if the selection start was inside a mail blockquote.  This prevents against removing a 
+    // blockquote from newly pasted quoted content that was pasted into an unquoted position.  If that unquoted position happens 
+    // to be right after another blockquote, we don't want to merge and risk stripping a valid block (and newline) from the pasted content.
+    if (isStartOfParagraph(startOfInsertedContent) && selectionStartWasInsideMailBlockquote && hasMatchingQuoteLevel(prev, positionAtEndOfInsertedContent()))
         return true;
 
     return !selectionStartWasStartOfParagraph && 
@@ -406,6 +414,23 @@ void ReplaceSelectionCommand::removeNodeAndPruneAncestors(Node* node)
         m_firstNodeInserted = m_lastLeafInserted && m_lastLeafInserted->inDocument() ? afterFirst : 0;
 }
 
+static bool isHeaderElement(Node* a)
+{
+    if (!a)
+        return false;
+        
+    return a->hasTagName(h1Tag) ||
+           a->hasTagName(h2Tag) ||
+           a->hasTagName(h3Tag) ||
+           a->hasTagName(h4Tag) ||
+           a->hasTagName(h5Tag);
+}
+
+static bool haveSameTagName(Node* a, Node* b)
+{
+    return a && b && a->isElementNode() && b->isElementNode() && static_cast<Element*>(a)->tagName() == static_cast<Element*>(b)->tagName();
+}
+
 bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const VisiblePosition& destination)
 {
     if (source.isNull() || destination.isNull())
@@ -414,10 +439,12 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const V
     Node* sourceNode = source.deepEquivalent().node();
     Node* destinationNode = destination.deepEquivalent().node();
     Node* sourceBlock = enclosingBlock(sourceNode);
+    Node* destinationBlock = enclosingBlock(destinationNode);
     return !enclosingNodeOfType(source.deepEquivalent(), &isMailPasteAsQuotationNode) &&
            sourceBlock && (!sourceBlock->hasTagName(blockquoteTag) || isMailBlockquote(sourceBlock))  &&
            enclosingListChild(sourceBlock) == enclosingListChild(destinationNode) &&
            enclosingTableCell(source.deepEquivalent()) == enclosingTableCell(destination.deepEquivalent()) &&
+           (!isHeaderElement(sourceBlock) || haveSameTagName(sourceBlock, destinationBlock)) &&
            // Don't merge to or from a position before or after a block because it would
            // be a no-op and cause infinite recursion.
            !isBlock(sourceNode) && !isBlock(destinationNode);
@@ -491,10 +518,11 @@ void ReplaceSelectionCommand::handlePasteAsQuotationNode()
 VisiblePosition ReplaceSelectionCommand::positionAtEndOfInsertedContent()
 {
     Node* lastNode = m_lastLeafInserted.get();
-    Node* enclosingSelect = enclosingNodeWithTag(Position(lastNode, 0), selectTag);
+    // FIXME: Why is this hack here?  What's special about <select> tags?
+    Node* enclosingSelect = enclosingNodeWithTag(firstDeepEditingPositionForNode(lastNode), selectTag);
     if (enclosingSelect)
         lastNode = enclosingSelect;
-    return VisiblePosition(Position(lastNode, maxDeepOffset(lastNode)));
+    return lastDeepEditingPositionForNode(lastNode);
 }
 
 VisiblePosition ReplaceSelectionCommand::positionAtStartOfInsertedContent()
@@ -509,8 +537,9 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
 {
     Node* topNode = fragment.firstChild();
     
-    // Handling this case is more complicated (see handleStyleSpans) and doesn't receive the optimization.
-    if (isMailPasteAsQuotationNode(topNode))
+    // Handling the case where we are doing Paste as Quotation or pasting into quoted content is more complicated (see handleStyleSpans)
+    // and doesn't receive the optimization.
+    if (isMailPasteAsQuotationNode(topNode) || nearestMailBlockquote(topNode))
         return false;
     
     // Either there are no style spans in the fragment or a WebKit client has added content to the fragment
@@ -573,11 +602,12 @@ void ReplaceSelectionCommand::handleStyleSpans()
     RefPtr<CSSMutableStyleDeclaration> sourceDocumentStyle = static_cast<HTMLElement*>(sourceDocumentStyleSpan)->getInlineStyleDecl()->copy();
     Node* context = sourceDocumentStyleSpan->parentNode();
     
-    // If Mail wraps the fragment with a Paste as Quotation blockquote, styles from that element are
-    // allowed to override those from the source document, see <rdar://problem/4930986>.
-    if (isMailPasteAsQuotationNode(context)) {
-        RefPtr<CSSMutableStyleDeclaration> blockquoteStyle = computedStyle(context)->copyInheritableProperties();
-        RefPtr<CSSMutableStyleDeclaration> parentStyle = computedStyle(context->parentNode())->copyInheritableProperties();
+    // If Mail wraps the fragment with a Paste as Quotation blockquote, or if you're pasting into a quoted region,
+    // styles from blockquoteNode are allowed to override those from the source document, see <rdar://problem/4930986> and <rdar://problem/5089327>.
+    Node* blockquoteNode = isMailPasteAsQuotationNode(context) ? context : nearestMailBlockquote(context);
+    if (blockquoteNode) {
+        RefPtr<CSSMutableStyleDeclaration> blockquoteStyle = computedStyle(blockquoteNode)->copyInheritableProperties();
+        RefPtr<CSSMutableStyleDeclaration> parentStyle = computedStyle(blockquoteNode->parentNode())->copyInheritableProperties();
         parentStyle->diff(blockquoteStyle.get());
 
         CSSMutableStyleDeclaration::const_iterator end = blockquoteStyle->end();
@@ -586,7 +616,7 @@ void ReplaceSelectionCommand::handleStyleSpans()
             sourceDocumentStyle->removeProperty(property.id());
         }        
 
-        context = context->parentNode();
+        context = blockquoteNode->parentNode();
     }
     
     RefPtr<CSSMutableStyleDeclaration> contextStyle = computedStyle(context)->copyInheritableProperties();
@@ -669,7 +699,8 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination);
     // Merging forward will remove m_lastLeafInserted from the document.
     // FIXME: Maintain positions for the start and end of inserted content instead of keeping nodes.  The nodes are
-    // only ever used to create positions where inserted content starts/ends.
+    // only ever used to create positions where inserted content starts/ends.  Also, we sometimes insert content
+    // directly into text nodes already in the document, in which case tracking inserted nodes is inadequate.
     if (mergeForward) {
         m_lastLeafInserted = destination.previous().deepEquivalent().node();
         if (!m_firstNodeInserted->inDocument())
@@ -679,7 +710,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
 
 void ReplaceSelectionCommand::doApply()
 {
-    Selection selection = endingSelection();
+    VisibleSelection selection = endingSelection();
     ASSERT(selection.isCaretOrRange());
     ASSERT(selection.start().node());
     if (selection.isNone() || !selection.start().node())
@@ -689,6 +720,9 @@ void ReplaceSelectionCommand::doApply()
     
     Element* currentRoot = selection.rootEditableElement();
     ReplacementFragment fragment(document(), m_documentFragment.get(), m_matchStyle, selection);
+    
+    if (performTrivialReplace(fragment))
+        return;
     
     if (m_matchStyle)
         m_insertionStyle = styleAtPosition(selection.start());
@@ -704,9 +738,9 @@ void ReplaceSelectionCommand::doApply()
     Position insertionPos = selection.start();
     bool startIsInsideMailBlockquote = nearestMailBlockquote(insertionPos.node());
     
-    if (selectionStartWasStartOfParagraph && selectionEndWasEndOfParagraph && !startIsInsideMailBlockquote ||
+    if ((selectionStartWasStartOfParagraph && selectionEndWasEndOfParagraph && !startIsInsideMailBlockquote) ||
         startBlock == currentRoot ||
-        startBlock && startBlock->renderer() && startBlock->renderer()->isListItem() ||
+        (startBlock && startBlock->renderer() && startBlock->renderer()->isListItem()) ||
         selectionIsPlainText)
         m_preventNesting = false;
     
@@ -751,9 +785,10 @@ void ReplaceSelectionCommand::doApply()
         insertionPos = endingSelection().start();
     }
     
-    if (startIsInsideMailBlockquote && m_preventNesting) { 
-        // We don't want any of the pasted content to end up nested in a Mail blockquote, so first break 
-        // out of any surrounding Mail blockquotes. 
+    // We don't want any of the pasted content to end up nested in a Mail blockquote, so first break 
+    // out of any surrounding Mail blockquotes. Unless we're inserting in a table, in which case
+    // breaking the blockquote will prevent the content from actually being inserted in the table.
+    if (startIsInsideMailBlockquote && m_preventNesting && !(enclosingNodeOfType(insertionPos, &isTableStructureNode))) { 
         applyCommandToComposite(BreakBlockquoteCommand::create(document())); 
         // This will leave a br between the split. 
         Node* br = endingSelection().start().node(); 
@@ -800,6 +835,9 @@ void ReplaceSelectionCommand::doApply()
     
     bool handledStyleSpans = handleStyleSpansBeforeInsertion(fragment, insertionPos);
     
+    // FIXME: When pasting rich content we're often prevented from heading down the fast path by style spans.  Try
+    // again here if they've been removed.
+    
     // We're finished if there is nothing to add.
     if (fragment.isEmpty() || !fragment.firstChild())
         return;
@@ -820,12 +858,21 @@ void ReplaceSelectionCommand::doApply()
     RefPtr<Node> node = refNode->nextSibling();
     
     fragment.removeNode(refNode);
-    insertNodeAtAndUpdateNodesInserted(refNode.get(), insertionPos);
-    
+    insertNodeAtAndUpdateNodesInserted(refNode, insertionPos);
+
+    // Mutation events (bug 22634) may have already removed the inserted content
+    if (!refNode->inDocument())
+        return;
+
     while (node) {
         Node* next = node->nextSibling();
         fragment.removeNode(node);
-        insertNodeAfterAndUpdateNodesInserted(node.get(), refNode.get());
+        insertNodeAfterAndUpdateNodesInserted(node, refNode.get());
+
+        // Mutation events (bug 22634) may have already removed the inserted content
+        if (!node->inDocument())
+            return;
+
         refNode = node;
         node = next;
     }
@@ -846,7 +893,7 @@ void ReplaceSelectionCommand::doApply()
     
     // We inserted before the startBlock to prevent nesting, and the content before the startBlock wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
-    if (startBlock && insertionPos.node() == startBlock->parentNode() && (unsigned)insertionPos.offset() < startBlock->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
+    if (startBlock && insertionPos.node() == startBlock->parentNode() && (unsigned)insertionPos.deprecatedEditingOffset() < startBlock->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
         insertNodeAt(createBreakElement(document()).get(), startOfInsertedContent.deepEquivalent());
     
     Position lastPositionToSelect;
@@ -860,13 +907,7 @@ void ReplaceSelectionCommand::doApply()
     // the start merge so that the start merge doesn't effect our decision.
     m_shouldMergeEnd = shouldMergeEnd(selectionEndWasEndOfParagraph);
     
-    if (shouldMergeStart(selectionStartWasStartOfParagraph, fragment.hasInterchangeNewlineAtStart())) {
-        // Bail to avoid infinite recursion.
-        if (m_movingParagraph) {
-            // setting display:inline does not work for td elements in quirks mode
-            ASSERT(m_firstNodeInserted->hasTagName(tdTag));
-            return;
-        }
+    if (shouldMergeStart(selectionStartWasStartOfParagraph, fragment.hasInterchangeNewlineAtStart(), startIsInsideMailBlockquote)) {
         VisiblePosition destination = startOfInsertedContent.previous();
         VisiblePosition startOfParagraphToMove = startOfInsertedContent;
         
@@ -878,9 +919,13 @@ void ReplaceSelectionCommand::doApply()
         // Insert a line break just after the inserted content to separate it from what 
         // comes after and prevent that from happening.
         VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
-        if (startOfParagraph(endOfInsertedContent) == startOfParagraphToMove)
+        if (startOfParagraph(endOfInsertedContent) == startOfParagraphToMove) {
             insertNodeAt(createBreakElement(document()).get(), endOfInsertedContent.deepEquivalent());
-        
+            // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move
+            if (!startOfParagraphToMove.deepEquivalent().node()->inDocument())
+                return;
+        }
+
         // FIXME: Maintain positions for the start and end of inserted content instead of keeping nodes.  The nodes are
         // only ever used to create positions where inserted content starts/ends.
         moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination);
@@ -938,7 +983,7 @@ void ReplaceSelectionCommand::doApply()
                 insertTextIntoNode(text, text->length(), collapseWhiteSpace ? nonBreakingSpaceString() : " ");
             } else {
                 RefPtr<Node> node = document()->createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
-                insertNodeAfterAndUpdateNodesInserted(node.get(), endNode);
+                insertNodeAfterAndUpdateNodesInserted(node, endNode);
             }
         }
     
@@ -955,7 +1000,7 @@ void ReplaceSelectionCommand::doApply()
                 RefPtr<Node> node = document()->createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
                 // Don't updateNodesInserted.  Doing so would set m_lastLeafInserted to be the node containing the 
                 // leading space, but m_lastLeafInserted is supposed to mark the end of pasted content.
-                insertNodeBefore(node.get(), startNode);
+                insertNodeBefore(node, startNode);
                 // FIXME: Use positions to track the start/end of inserted content.
                 m_firstNodeInserted = node;
             }
@@ -1013,9 +1058,9 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
         return;
     
     if (m_selectReplacement)
-        setEndingSelection(Selection(start, end, SEL_DEFAULT_AFFINITY));
+        setEndingSelection(VisibleSelection(start, end, SEL_DEFAULT_AFFINITY));
     else
-        setEndingSelection(Selection(end, SEL_DEFAULT_AFFINITY));
+        setEndingSelection(VisibleSelection(end, SEL_DEFAULT_AFFINITY));
 }
 
 EditAction ReplaceSelectionCommand::editingAction() const
@@ -1023,22 +1068,25 @@ EditAction ReplaceSelectionCommand::editingAction() const
     return m_editAction;
 }
 
-void ReplaceSelectionCommand::insertNodeAfterAndUpdateNodesInserted(Node *insertChild, Node *refChild)
+void ReplaceSelectionCommand::insertNodeAfterAndUpdateNodesInserted(PassRefPtr<Node> insertChild, Node* refChild)
 {
+    Node* nodeToUpdate = insertChild.get(); // insertChild will be cleared when passed
     insertNodeAfter(insertChild, refChild);
-    updateNodesInserted(insertChild);
+    updateNodesInserted(nodeToUpdate);
 }
 
-void ReplaceSelectionCommand::insertNodeAtAndUpdateNodesInserted(Node *insertChild, const Position& p)
+void ReplaceSelectionCommand::insertNodeAtAndUpdateNodesInserted(PassRefPtr<Node> insertChild, const Position& p)
 {
+    Node* nodeToUpdate = insertChild.get(); // insertChild will be cleared when passed
     insertNodeAt(insertChild, p);
-    updateNodesInserted(insertChild);
+    updateNodesInserted(nodeToUpdate);
 }
 
-void ReplaceSelectionCommand::insertNodeBeforeAndUpdateNodesInserted(Node *insertChild, Node *refChild)
+void ReplaceSelectionCommand::insertNodeBeforeAndUpdateNodesInserted(PassRefPtr<Node> insertChild, Node* refChild)
 {
+    Node* nodeToUpdate = insertChild.get(); // insertChild will be cleared when passed
     insertNodeBefore(insertChild, refChild);
-    updateNodesInserted(insertChild);
+    updateNodesInserted(nodeToUpdate);
 }
 
 void ReplaceSelectionCommand::updateNodesInserted(Node *node)
@@ -1053,6 +1101,40 @@ void ReplaceSelectionCommand::updateNodesInserted(Node *node)
         return;
     
     m_lastLeafInserted = node->lastDescendant();
+}
+
+// During simple pastes, where we're just pasting a text node into a run of text, we insert the text node
+// directly into the text node that holds the selection.  This is much faster than the generalized code in
+// ReplaceSelectionCommand, and works around <https://bugs.webkit.org/show_bug.cgi?id=6148> since we don't 
+// split text nodes.
+bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& fragment)
+{
+    if (!fragment.firstChild() || fragment.firstChild() != fragment.lastChild() || !fragment.firstChild()->isTextNode())
+        return false;
+        
+    // FIXME: Would be nice to handle smart replace in the fast path.
+    if (m_smartReplace || fragment.hasInterchangeNewlineAtStart() || fragment.hasInterchangeNewlineAtEnd())
+        return false;
+    
+    Text* textNode = static_cast<Text*>(fragment.firstChild());
+    // Our fragment creation code handles tabs, spaces, and newlines, so we don't have to worry about those here.
+    String text(textNode->data());
+    
+    Position start = endingSelection().start();
+    Position end = endingSelection().end();
+    
+    if (start.anchorNode() != end.anchorNode() || !start.anchorNode()->isTextNode())
+        return false;
+        
+    replaceTextInNode(static_cast<Text*>(start.anchorNode()), start.offsetInContainerNode(), end.offsetInContainerNode() - start.offsetInContainerNode(), text);
+    
+    end = Position(start.anchorNode(), start.offsetInContainerNode() + text.length());
+    
+    VisibleSelection selectionAfterReplace(m_selectReplacement ? start : end, end);
+    
+    setEndingSelection(selectionAfterReplace);
+    
+    return true;
 }
 
 } // namespace WebCore

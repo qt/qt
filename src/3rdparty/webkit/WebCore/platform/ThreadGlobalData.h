@@ -36,6 +36,7 @@ namespace WebCore {
     class EventNames;
     struct ICUConverterWrapper;
     struct TECConverterWrapper;
+    class ThreadTimers;
 
     class ThreadGlobalData : Noncopyable {
     public:
@@ -45,8 +46,9 @@ namespace WebCore {
         EventNames& eventNames() { return *m_eventNames; }
         StringImpl* emptyString() { return m_emptyString; }
         HashSet<StringImpl*>& atomicStringTable() { return *m_atomicStringTable; }
+        ThreadTimers& threadTimers() { return *m_threadTimers; }
 
-#if USE(ICU_UNICODE)
+#if USE(ICU_UNICODE) || USE(GLIB_ICU_UNICODE_HYBRID)
         ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
 #endif
 
@@ -58,8 +60,13 @@ namespace WebCore {
         StringImpl* m_emptyString;
         HashSet<StringImpl*>* m_atomicStringTable;
         EventNames* m_eventNames;
+        ThreadTimers* m_threadTimers;
 
-#if USE(ICU_UNICODE)
+#ifndef NDEBUG
+        bool m_isMainThread;
+#endif
+
+#if USE(ICU_UNICODE) || USE(GLIB_ICU_UNICODE_HYBRID)
         ICUConverterWrapper* m_cachedConverterICU;
 #endif
 

@@ -21,7 +21,7 @@
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
         <source>Qt Linguist</source>
-        <translation>QT Linguist</translation>
+        <translation>Qt Linguist</translation>
     </message>
 </context>
 <context>
@@ -577,7 +577,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Open a Qt translation source file (TS file) for editing</source>
-        <translation>Öffne eine QT Übersetzungsdatei (TS Datei) zum bearbeiten</translation>
+        <translation>Qt-Übersetzungsdatei (TS-Datei) zum Bearbeiten öffnen</translation>
     </message>
     <message>
         <location/>
@@ -592,7 +592,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Close this window and exit.</source>
-        <translation>Beende das Programm.</translation>
+        <translation>Dieses Fenster schließen und das Programm beenden.</translation>
     </message>
     <message>
         <location/>
@@ -608,7 +608,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Save changes made to this Qt translation source file</source>
-        <translation>Sichere Änderungen an der Qt Übersetzungsdatei</translation>
+        <translation>Änderungen an der Qt-Übersetzungsdatei speichern</translation>
     </message>
     <message>
         <location/>
@@ -618,7 +618,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Move to the previous unfinished item.</source>
-        <translation>Gehe zum vorangehenden unerledigten Eintrag.</translation>
+        <translation>Zum vorherigen unerledigten Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
@@ -628,77 +628,77 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Move to the next unfinished item.</source>
-        <translation>Gehe zum nächsten unerledigten Eintrag.</translation>
+        <translation>Zum nächsten unerledigten Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
         <source>Move to previous item.</source>
-        <translation>Gehe zum vorigen Eintrag.</translation>
+        <translation>Zum vorigen Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
         <source>Move to the previous item.</source>
-        <translation>Gehe zum vorigen Eintrag.</translation>
+        <translation>Zum vorigen Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
         <source>Next item.</source>
-        <translation>Nächster EIntrag.</translation>
+        <translation>Nächster Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Move to the next item.</source>
-        <translation>Gehe zum nächsten Eintrag.</translation>
+        <translation>Zum nächsten Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
         <source>Mark item as done and move to the next unfinished item.</source>
-        <translation>Markiere Eintrag als erledigt und gehe zum nächsten unerledigten Eintrag.</translation>
+        <translation>Eintrag als erledigt markieren und zum nächsten unerledigten Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
         <source>Mark this item as done and move to the next unfinished item.</source>
-        <translation>Markiert diesen Eintrag als erledigt und geht zum nächsten unerledigten Eintrag.</translation>
+        <translation>Diesen Eintrag als erledigt markieren und zum nächsten unerledigten Eintrag gehen.</translation>
     </message>
     <message>
         <location/>
         <source>Copy from source text</source>
-        <translation>Übernehme &amp;Ursprungstext</translation>
+        <translation>&amp;Ursprungstext übernehmen</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of accelerators.</source>
-        <translation>Schalte Prüfung der Tastenkürzel um.</translation>
+        <translation>Prüfung der Tastenkürzel ein- bzw. ausschalten.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Schalte Prüfung der Tastenkürzel um; das heisst, die Übereinstimmung der kaufmännischen Und-Zeichen in Quelle und Übersetzung. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
+        <translation>Die Prüfung der Tastenkürzel, das heißt, die Übereinstimmung der kaufmännischen Und-Zeichen in Quelle und Übersetzung ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of ending punctuation.</source>
-        <translation>Schalte Prüfung der Satzendezeichen am Ende des Textes um.</translation>
+        <translation>Prüfung der Satzendezeichen am Ende des Textes ein- bzw. ausschalten.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Schaltet die Prüfung der Satzendezeichen am Ende des Textes um. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
+        <translation>Die Prüfung der Satzendezeichen am Ende des Textes ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Schaltet die Prüfung der Verwendung der Wörterbuchvorschläge um. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
+        <translation>Die Prüfung der Verwendung der Wörterbuchvorschläge ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of place markers.</source>
-        <translation>Schaltet die Prüfung der Platzhalter um.</translation>
+        <translation>Prüfung der Platzhalter ein- bzw. ausschalten.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Schaltet die Prüfung der Platzhalter um; das heisst, ob %1, %2,... in Quelltext und Übersetzung übereinstimmend verwendet werden. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
+        <translation>Die Prüfung der Platzhalter, das heißt, ob %1, %2 usw. in Quelltext und Übersetzung übereinstimmend verwendet werden, ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
@@ -708,7 +708,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Save All</source>
-        <translation>&amp;Alles Speichern</translation>
+        <translation>&amp;Alles speichern</translation>
     </message>
     <message>
         <location/>
@@ -730,7 +730,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Save changes made to this Qt translation source file into a new file.</source>
-        <translation>Speichere Änderungen an dieser Qt Übersetzungsdatei in einer neuen Datei.</translation>
+        <translation>Änderungen an dieser Qt-Übersetzungsdatei in einer neuen Datei speichern.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+4"/>
@@ -740,7 +740,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Create a Qt message file suitable for released applications from the current message file.</source>
-        <translation>Erzeuge eine Qt Nachrichtendatei (qm) aus der aktuellen Übersetzungsdatei.</translation>
+        <translation>Qt-Nachrichtendatei (QM-Datei) aus der aktuellen Übersetzungsdatei erzeugen.</translation>
     </message>
     <message>
         <location/>
@@ -783,7 +783,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Undo the last editing operation performed on the current translation.</source>
-        <translation>Mache die letzte Änderung an der Übersetzung rückgängig.</translation>
+        <translation>Die letzte Änderung an der Übersetzung rückgängig machen.</translation>
     </message>
     <message>
         <location/>
@@ -798,7 +798,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Redo an undone editing operation performed on the translation.</source>
-        <translation>Stelle letzte rückgängig gemachte Änderung wieder her.</translation>
+        <translation>Die letzte rückgängig gemachte Änderung wieder herstellen.</translation>
     </message>
     <message>
         <location/>
@@ -813,7 +813,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Copy the selected translation text to the clipboard and deletes it.</source>
-        <translation>Kopiere den ausgewählten Übersetzungstext in die Zwischenablage und lösche ihn.</translation>
+        <translation>Den ausgewählten Übersetzungstext in die Zwischenablage kopieren und löschen.</translation>
     </message>
     <message>
         <location/>
@@ -828,7 +828,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Copy the selected translation text to the clipboard.</source>
-        <translation>Kopiere den ausgewählten Übersetzungstext zur Zwischenablage.</translation>
+        <translation>Den ausgewählten Übersetzungstext in die Zwischenablage kopieren.</translation>
     </message>
     <message>
         <location/>
@@ -843,7 +843,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Paste the clipboard text into the translation.</source>
-        <translation>Füge den Text aus der Zwischenablage in die Übersetzung ein</translation>
+        <translation>Text aus der Zwischenablage in die Übersetzung einfügen.</translation>
     </message>
     <message>
         <location/>
@@ -858,7 +858,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Select the whole translation text.</source>
-        <translation>Den gesamte Übersetzungstext auswählen.</translation>
+        <translation>Den gesamten Übersetzungstext auswählen.</translation>
     </message>
     <message>
         <location/>
@@ -1107,7 +1107,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation>Zeige Informationen über das Qt Toolkit von Trolltech an.</translation>
+        <translation>Informationen über das Qt-Toolkit von Trolltech an.</translation>
     </message>
     <message>
         <location/>
@@ -1122,7 +1122,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Enter What&apos;s This? mode.</source>
-        <translation>Aktiviere den Direkthilfemodus.</translation>
+        <translation>Direkthilfe-Modus aktivieren.</translation>
     </message>
     <message>
         <location/>
@@ -1148,7 +1148,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Batch translate all entries using the information in the phrase books.</source>
-        <translation>Übersetze alle Einträge automatisch mit Hilfe des Wörterbuchs.</translation>
+        <translation>Alle Einträge automatisch mit Hilfe des Wörterbuchs übersetzen.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-34"/>
@@ -1160,7 +1160,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
-        <translation>Eryeuge eine Qt Nachrichtendatei aus der aktuellen Übersetzungsdatei. Der Dateiname wird automatisch aus dem Namen der .ts Datei abgeleitet.</translation>
+        <translation>Eine Qt-Nachrichtendatei aus der aktuellen Übersetzungsdatei erzeugen. Der Dateiname wird automatisch aus dem Namen der .ts-Datei abgeleitet.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
@@ -1285,7 +1285,7 @@ Soll die erstgenannte Datei übersprungen werden?</translation>
         <location line="-1163"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
-        <translation>Qt Nachrichtendateien (*.qm)
+        <translation>Qt-Nachrichtendateien (*.qm)
 Alle Dateien (*)</translation>
     </message>
     <message>
@@ -1373,7 +1373,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="-82"/>
         <source>Search And Translate in &apos;%1&apos; - Qt Linguist</source>
-        <translation>Suchen und übersetzen &apos;%1&apos; - Qt Linguist</translation>
+        <translation>Suchen und übersetzen in &apos;%1&apos; - Qt Linguist</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -1393,7 +1393,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+23"/>
         <source>No more occurrences of &apos;%1&apos;. Start over?</source>
-        <translation>Keine weiteren Fundstellen von &apos;%1&apos;. Von vorn beginnen?</translation>
+        <translation>Keine weiteren Fundstellen von &apos;%1&apos;. Von vorne beginnen?</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -1404,7 +1404,7 @@ Alle Dateien (*)</translation>
         <location line="+1"/>
         <source>Qt phrase books (*.qph)
 All files (*)</source>
-        <translation>Qt Wörterbücher (*.qph)
+        <translation>Qt-Wörterbücher (*.qph)
 Alle Dateien (*)</translation>
     </message>
     <message>
@@ -1415,12 +1415,12 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+17"/>
         <source>Open Phrase Book</source>
-        <translation>Öffne Wörterbuch</translation>
+        <translation>Wörterbuch öffnen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph);;All files (*)</source>
-        <translation>Qt Wörterbücher (*.qph);;Alle Dateien (*)</translation>
+        <translation>Qt-Wörterbücher (*.qph);;Alle Dateien (*)</translation>
     </message>
     <message numerus="yes">
         <location line="+7"/>
@@ -1455,7 +1455,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+29"/>
         <source>Unable to launch Qt Assistant (%1)</source>
-        <translation>Kann Qt Assistant nicht starten (%1)</translation>
+        <translation>Qt Assistant kann nicht gestartet werden (%1)</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -1469,7 +1469,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+6"/>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist ist ein Werkzeug zum Übersetzen von Qt Anwendungen.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist ist ein Werkzeug zum Übersetzen von Qt-Anwendungen.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -2114,22 +2114,22 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
         <source>Qt Designer form files</source>
-        <translation>Qt Designer Formulardateien</translation>
+        <translation>Formulardateien für Qt Designer</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Qt Jambi form files</source>
-        <translation>Qt Jambi Formulardateien</translation>
+        <translation>Formulardateien für Qt Jambi</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/xliff.cpp" line="+817"/>
         <source>XLIFF localization files</source>
-        <translation>XLIFF Übersetzungsdateien</translation>
+        <translation>XLIFF-Übersetzungsdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
-        <translation>Qt Linguist-Wörterbuch</translation>
+        <translation>Qt-Linguist-Wörterbuch</translation>
     </message>
 </context>
 <context>

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,18 +34,21 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /*!
     \page widgets-tutorial.html
+    \startpage {index.html}{Qt Reference Documentation}
+    \nextpage {tutorials/widgets/toplevel}{Creating a Window}
 
     \title Widgets Tutorial
     \ingroup tutorials
 
-    \brief This tutorial covers basic usage of widgets and layouts, showing how they are used to build GUI applications.
+    \brief This tutorial covers basic usage of widgets and layouts, showing how
+    they are used to build GUI applications.
 
     \section1 Introduction
 
@@ -68,7 +71,60 @@
     occupied by its parent. This means that, when a window is deleted, all
     the widgets it contains are automatically deleted.
 
-    \section1 Creating a Window
+    \section1 Writing a main Function
+
+    Many of the GUI examples in Qt follow the pattern of having a \c{main.cpp}
+    file containing code to initialize the application, and a number of other
+    source and header files containing the application logic and custom GUI
+    components.
+
+    A typical \c main() function, written in \c{main.cpp}, looks like this:
+
+    \quotefile doc/src/snippets/widgets-tutorial/template.cpp
+
+    We first construct a QApplication object which is configured using any
+    arguments passed in from the command line. After any widgets have been
+    created and shown, we call QApplication::exec() to start Qt's event loop.
+    Control passes to Qt until this function returns, at which point we return
+    the value we obtain from this function.
+
+    In each part of this tutorial, we provide an example that is written
+    entirely within a \c main() function. In more sophisticated examples, the
+    code to set up widgets and layouts is written in other parts of the
+    example. For example, the GUI for a main window may be set up in the
+    constructor of a QMainWindow subclass.
+
+    The \l{Qt Examples#Widgets}{Widgets examples} are a good place to look for
+    more complex and complete examples and applications.
+
+    \section1 Building Examples and Tutorials
+
+    If you obtained a binary package of Qt or compiled it yourself, the
+    examples described in this tutorial should already be ready to run.
+    However, if you may wish to modify them and recompile them, you need to
+    perform the following steps:
+
+    \list 1
+    \o At the command line, enter the directory containing the example you
+       wish to recompile.
+    \o Type \c qmake and press \key{Return}. If this doesn't work, make sure
+       that the executable is on your path, or enter its full location.
+    \o On Linux/Unix and Mac OS X, type \c make and press \key{Return};
+       on Windows with Visual Studio, type \c nmake and press \key{Return}.
+    \endlist
+
+    An executable file should have been created within the current directory.
+    On Windows, this file may be located within a \c debug or \c release
+    subdirectory. You can run this file to see the example code at work.
+*/
+
+/*!
+    \page widgets-tutorial-toplevel.html
+    \contentspage {Widgets Tutorial}{Contents}
+    \previouspage {Widgets Tutorial}
+    \nextpage {Widgets Tutorial - Child Widgets}
+    \example tutorials/widgets/toplevel
+    \title Widgets Tutorial - Creating a Window
 
     If a widget is created without a parent, it is treated as a window, or
     \e{top-level widget}, when it is shown. Since it has no parent object to
@@ -82,7 +138,7 @@
     <table align="left" width="100%">
     <tr class="qt-code"><td>
     \endraw
-    \snippet snippets/widgets-tutorial/toplevel/main.cpp create, resize and show
+    \snippet tutorials/widgets/toplevel/main.cpp main program
     \raw HTML
     </td><td align="right">
     \endraw
@@ -92,15 +148,28 @@
     </table>
     \endraw
 
-    We can add a child widget to this window by passing \c window as the
-    parent to its constructor. In this case, we add a button to the window
-    and place it in a specific location:
+    To create a real GUI, we need to place widgets inside the window. To do
+    this, we pass a QWidget instance to a widget's constructor, as we will
+    demonstrate in the next part of this tutorial.
+*/
+
+/*!
+    \page widgets-tutorial-childwidget.html
+    \contentspage {Widgets Tutorial}{Contents}
+    \previouspage {Widgets Tutorial - Creating a Window}
+    \nextpage {Widgets Tutorial - Using Layouts}
+    \example tutorials/widgets/childwidget
+    \title Widgets Tutorial - Child Widgets
+
+    We can add a child widget to the window created in the previous example by
+    passing \c window as the parent to its constructor. In this case, we add a
+    button to the window and place it in a specific location:
 
     \raw HTML
     <table align="left" width="100%">
     <tr class="qt-code"><td>
     \endraw
-    \snippet snippets/widgets-tutorial/childwidget/main.cpp create, position and show
+    \snippet tutorials/widgets/childwidget/main.cpp main program
     \raw HTML
     </td><td align="right">
     \endraw
@@ -112,9 +181,16 @@
 
     The button is now a child of the window and will be deleted when the
     window is destroyed. Note that hiding or closing the window does not
-    automatically destroy it.
+    automatically destroy it. It will be destroyed when the example exits.
+*/
 
-    \section1 Using Layouts
+/*!
+    \page widgets-tutorial-windowlayout.html
+    \contentspage {Widgets Tutorial}{Contents}
+    \previouspage {Widgets Tutorial - Child Widgets}
+    \nextpage {Widgets Tutorial - Nested Layouts}
+    \example tutorials/widgets/windowlayout
+    \title Widgets Tutorial - Using Layouts
 
     Usually, child widgets are arranged inside a window using layout objects
     rather than by specifying positions and sizes explicitly. Here, we
@@ -125,7 +201,7 @@
     <table align="left" width="100%">
     <tr class="qt-code"><td>
     \endraw
-    \snippet snippets/widgets-tutorial/windowlayout/main.cpp create, lay out widgets and show
+    \snippet tutorials/widgets/windowlayout/main.cpp main program
     \raw HTML
     </td><td align="right">
     \endraw
@@ -149,17 +225,31 @@
     manage the label and line edit and set the layout on the window, both the
     widgets and the layout itself are ''reparented'' to become children of
     the window.
+*/
+
+/*!
+    \page widgets-tutorial-nestedlayouts.html
+    \contentspage {Widgets Tutorial}{Contents}
+    \previouspage {Widgets Tutorial - Using Layouts}
+    \example tutorials/widgets/nestedlayouts
+    \title Widgets Tutorial - Nested Layouts
 
     Just as widgets can contain other widgets, layouts can be used to provide
     different levels of grouping for widgets. Here, we want to display a
     label alongside a line edit at the top of a window, above a table view
     showing the results of a query.
 
+    We achieve this by creating two layouts: \c{queryLayout} is a QHBoxLayout
+    that contains QLabel and QLineEdit widgets placed side-by-side;
+    \c{mainLayout} is a QVBoxLayout that contains \c{queryLayout} and a
+    QTableView arranged vertically.
+
     \raw HTML
     <table align="left" width="100%">
     <tr class="qt-code"><td>
     \endraw
-    \snippet snippets/widgets-tutorial/nestedlayouts/main.cpp create, lay out widgets and show
+    \snippet tutorials/widgets/nestedlayouts/main.cpp first part
+    \snippet tutorials/widgets/nestedlayouts/main.cpp last part
     \raw HTML
     </td><td align="right">
     \endraw
@@ -169,6 +259,26 @@
     </table>
     \endraw
 
+    Note that we call the \c{mainLayout}'s \l{QBoxLayout::}{addLayout()}
+    function to insert the \c{queryLayout} above the \c{resultView} table.
+
+    We have omitted the code that sets up the model containing the data shown
+    by the QTableView widget, \c resultView. For completeness, we show this below.
+
     As well as QHBoxLayout and QVBoxLayout, Qt also provides QGridLayout
     and QFormLayout classes to help with more complex user interfaces.
+    These can be seen if you run \l{Qt Designer}.
+
+    \section1 Setting up the Model
+
+    In the code above, we did not show where the table's data came from
+    because we wanted to concentrate on the use of layouts. Here, we see
+    that the model holds a number of items corresponding to rows, each of
+    which is set up to contain data for two columns.
+
+    \snippet tutorials/widgets/nestedlayouts/main.cpp set up the model
+
+    The use of models and views is covered in the
+    \l{Qt Examples#Item Views}{item view examples} and in the
+    \l{Model/View Programming} overview.
 */

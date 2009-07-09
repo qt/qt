@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -226,9 +226,9 @@ namespace QTest {
     template <typename T> QString formatResult(T number, int significantDigits)
     {
         if (number < T(0))
-            return QString(QLatin1String("NAN"));
+            return QLatin1String("NAN");
         if (number == T(0))
-            return QString(QLatin1String("0"));
+            return QLatin1String("0");
 
         QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);

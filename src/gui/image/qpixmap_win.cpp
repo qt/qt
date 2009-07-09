@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,7 @@
 #include "qdebug.h"
 #include "qt_windows.h"
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include <winbase.h>
 #include "qguifunctions_wince.h"
 extern bool qt_wince_is_high_dpi();
@@ -80,7 +80,7 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
     if (w < 0) w = r.right - r.left;
     if (h < 0) h = r.bottom - r.top;
 
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
     if (qt_wince_is_pocket_pc()) {
         QWidget *widget = QWidget::find(winId);
         if (qobject_cast<QDesktopWidget *>(widget)) {
@@ -101,7 +101,7 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
     // copy data
     HDC window_dc = GetDC(winId);
     BitBlt(bitmap_dc, 0, 0, w, h, window_dc, x, y, SRCCOPY
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
                                     | CAPTUREBLT
 #endif
             );
@@ -243,7 +243,7 @@ QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
 }
 
 #ifdef Q_WS_WIN
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 
 static QImage qt_fromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
 {
@@ -347,7 +347,7 @@ QPixmap convertHIconToPixmap( const HICON icon)
     DeleteDC(hdc);
     return QPixmap::fromImage(image);
 }
-#else //ifndef Q_OS_WINCE
+#else //ifndef Q_WS_WINCE
 QPixmap convertHIconToPixmap( const HICON icon, bool large)
 {
     HDC screenDevice = GetDC(0);
@@ -412,7 +412,7 @@ QPixmap convertHIconToPixmap( const HICON icon, bool large)
     DeleteDC(hdc);
     return QPixmap::fromImage(image);
 }
-#endif //ifndef Q_OS_WINCE
+#endif //ifndef Q_WS_WINCE
 
 QPixmap loadIconFromShell32( int resourceId, int size )
 {

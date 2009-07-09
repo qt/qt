@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -450,19 +450,19 @@ QString QProgressBar::text() const
     qint64 totalSteps = qint64(d->maximum) - qint64(d->minimum);
 
     QString result = d->format;
-    result.replace(QLatin1String("%m"), QString::fromLatin1("%1").arg(totalSteps));
-    result.replace(QLatin1String("%v"), QString::fromLatin1("%1").arg(d->value));
+    result.replace(QLatin1String("%m"), QString::number(totalSteps));
+    result.replace(QLatin1String("%v"), QString::number(d->value));
 
     // If max and min are equal and we get this far, it means that the
     // progress bar has one step and that we are on that step. Return
     // 100% here in order to avoid division by zero further down.
     if (totalSteps == 0) {
-        result.replace(QLatin1String("%p"), QString::fromLatin1("%1").arg(100));
+        result.replace(QLatin1String("%p"), QString::number(100));
         return result;
     }
 
     int progress = int(((qreal(d->value) - qreal(d->minimum)) * 100.0) / totalSteps);
-    result.replace(QLatin1String("%p"), QString::fromLatin1("%1").arg(progress));
+    result.replace(QLatin1String("%p"), QString::number(progress));
     return result;
 }
 

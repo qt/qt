@@ -28,6 +28,11 @@ while [ "$#" -gt 0 ]; do
         MAC_ARCH_LFLAGS="$MAC_ARCH_LFLAGS -arch $2"
         shift
         ;;
+    -sdk)
+        LFLAGS="$LFLAGS -Wl,-syslibroot,$2"
+        CXXFLAGS="$CXXFLAGS -isysroot $2"
+        shift
+        ;;
     -F*|-m*|-x*)
         LFLAGS="$LFLAGS $PARAM"
         CXXFLAGS="$CXXFLAGS $PARAM"
@@ -59,7 +64,8 @@ test -d "$OUTDIR/$TEST" || mkdir -p "$OUTDIR/$TEST"
 
 cd "$OUTDIR/$TEST"
 
-make distclean >/dev/null 2>&1
+test -r Makefile && make distclean >/dev/null 2>&1
+
 "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "LIBS*=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 
 if [ "$VERBOSE" = "yes" ]; then

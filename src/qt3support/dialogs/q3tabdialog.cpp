@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,7 @@
 #include "qapplication.h"
 #include "q3widgetstack.h"
 #include "qlayout.h"
+#include "qevent.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -958,6 +959,16 @@ void Q3TabDialog::resizeEvent(QResizeEvent * e)
 */
 void Q3TabDialog::paintEvent(QPaintEvent *)
 {
+}
+
+
+/*!\reimp
+*/
+void Q3TabDialog::showEvent(QShowEvent *e)
+{
+    if (!e->spontaneous())
+        show();
+    QDialog::showEvent(e);
 }
 
 

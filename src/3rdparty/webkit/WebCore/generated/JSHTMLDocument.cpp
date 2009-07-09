@@ -19,10 +19,7 @@
 */
 
 #include "config.h"
-
 #include "JSHTMLDocument.h"
-
-#include <wtf/GetPtr.h>
 
 #include "AtomicString.h"
 #include "Element.h"
@@ -31,16 +28,16 @@
 #include "JSElement.h"
 #include "JSHTMLCollection.h"
 #include "KURL.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLDocument)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLDocument);
 
 /* Hash table */
 
@@ -91,13 +88,13 @@ public:
     JSHTMLDocumentConstructor(ExecState* exec)
         : DOMObject(JSHTMLDocumentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -134,9 +131,9 @@ static const HashTable JSHTMLDocumentPrototypeTable =
 
 const ClassInfo JSHTMLDocumentPrototype::s_info = { "HTMLDocumentPrototype", 0, &JSHTMLDocumentPrototypeTable, 0 };
 
-JSObject* JSHTMLDocumentPrototype::self(ExecState* exec)
+JSObject* JSHTMLDocumentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLDocument>(exec);
+    return getDOMPrototype<JSHTMLDocument>(exec, globalObject);
 }
 
 bool JSHTMLDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -151,9 +148,9 @@ JSHTMLDocument::JSHTMLDocument(PassRefPtr<Structure> structure, PassRefPtr<HTMLD
 {
 }
 
-JSObject* JSHTMLDocument::createPrototype(ExecState* exec)
+JSObject* JSHTMLDocument::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLDocumentPrototype(JSHTMLDocumentPrototype::createStructure(JSDocumentPrototype::self(exec)));
+    return new (exec) JSHTMLDocumentPrototype(JSHTMLDocumentPrototype::createStructure(JSDocumentPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLDocument::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -165,167 +162,183 @@ bool JSHTMLDocument::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSHTMLDocument, Base>(exec, &JSHTMLDocumentTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLDocumentEmbeds(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentEmbeds(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->embeds()));
 }
 
-JSValuePtr jsHTMLDocumentPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->plugins()));
 }
 
-JSValuePtr jsHTMLDocumentScripts(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentScripts(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->scripts()));
 }
 
-JSValuePtr jsHTMLDocumentAll(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentAll(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->all(exec);
 }
 
-JSValuePtr jsHTMLDocumentWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->width());
 }
 
-JSValuePtr jsHTMLDocumentHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->height());
 }
 
-JSValuePtr jsHTMLDocumentDir(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentDir(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->dir());
 }
 
-JSValuePtr jsHTMLDocumentDesignMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentDesignMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->designMode());
 }
 
-JSValuePtr jsHTMLDocumentCompatMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentCompatMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->compatMode());
 }
 
-JSValuePtr jsHTMLDocumentActiveElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentActiveElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->activeElement()));
 }
 
-JSValuePtr jsHTMLDocumentBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->bgColor());
 }
 
-JSValuePtr jsHTMLDocumentFgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentFgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->fgColor());
 }
 
-JSValuePtr jsHTMLDocumentAlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentAlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->alinkColor());
 }
 
-JSValuePtr jsHTMLDocumentLinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentLinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->linkColor());
 }
 
-JSValuePtr jsHTMLDocumentVlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentVlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->vlinkColor());
 }
 
-JSValuePtr jsHTMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLDocument::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLDocument::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLDocument, Base>(exec, propertyName, value, &JSHTMLDocumentTable, this, slot);
 }
 
-void setJSHTMLDocumentAll(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentAll(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSHTMLDocument*>(thisObject)->setAll(exec, value);
 }
 
-void setJSHTMLDocumentDir(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentDir(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setDir(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLDocumentDesignMode(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentDesignMode(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setDesignMode(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLDocumentBgColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentBgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setBgColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLDocumentFgColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentFgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setFgColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLDocumentAlinkColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentAlinkColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setAlinkColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLDocumentLinkColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentLinkColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setLinkColor(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLDocumentVlinkColor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDocumentVlinkColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setVlinkColor(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLDocument::getConstructor(ExecState* exec)
+JSValue JSHTMLDocument::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLDocumentConstructor>(exec);
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionOpen(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionOpen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     return castedThisObj->open(exec, args);
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionClose(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionClose(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -334,25 +347,28 @@ JSValuePtr jsHTMLDocumentPrototypeFunctionClose(ExecState* exec, JSObject*, JSVa
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionWrite(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionWrite(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     return castedThisObj->write(exec, args);
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionWriteln(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionWriteln(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     return castedThisObj->writeln(exec, args);
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionClear(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -361,9 +377,10 @@ JSValuePtr jsHTMLDocumentPrototypeFunctionClear(ExecState* exec, JSObject*, JSVa
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionCaptureEvents(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionCaptureEvents(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -372,9 +389,10 @@ JSValuePtr jsHTMLDocumentPrototypeFunctionCaptureEvents(ExecState* exec, JSObjec
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionReleaseEvents(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionReleaseEvents(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -383,15 +401,16 @@ JSValuePtr jsHTMLDocumentPrototypeFunctionReleaseEvents(ExecState* exec, JSObjec
     return jsUndefined();
 }
 
-JSValuePtr jsHTMLDocumentPrototypeFunctionHasFocus(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionHasFocus(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLDocument::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasFocus());
+    JSC::JSValue result = jsBoolean(imp->hasFocus());
     return result;
 }
 

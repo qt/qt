@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,18 +34,19 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qhttpnetworkrequest_p.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
-    : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), data(0),
+    : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
       autoDecompress(false)
 {
 }
@@ -55,7 +56,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
 {
     operation = other.operation;
     priority = other.priority;
-    data = other.data;
+    uploadByteDevice = other.uploadByteDevice;
     autoDecompress = other.autoDecompress;
 }
 
@@ -67,7 +68,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 {
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
-        && (data == other.data);
+        && (uploadByteDevice == other.uploadByteDevice);
 }
 
 QByteArray QHttpNetworkRequestPrivate::methodName() const
@@ -109,7 +110,7 @@ QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
     QUrl::FormattingOptions format(QUrl::RemoveFragment);
 
     // for POST, query data is send as content
-    if (operation == QHttpNetworkRequest::Post && !data)
+    if (operation == QHttpNetworkRequest::Post && !uploadByteDevice)
         format |= QUrl::RemoveQuery;
     // for requests through proxy, the Request-URI contains full url
     if (throughProxy)
@@ -126,11 +127,11 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
 {
     QByteArray ba = request.d->methodName();
     QByteArray uri = request.d->uri(throughProxy);
-    ba += " " + uri;
+    ba += ' ' + uri;
 
     QString majorVersion = QString::number(request.majorVersion());
     QString minorVersion = QString::number(request.minorVersion());
-    ba += " HTTP/" + majorVersion.toLatin1() + "." + minorVersion.toLatin1() + "\r\n";
+    ba += " HTTP/" + majorVersion.toLatin1() + '.' + minorVersion.toLatin1() + "\r\n";
 
     QList<QPair<QByteArray, QByteArray> > fields = request.header();
     QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
@@ -140,7 +141,7 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
         // add content type, if not set in the request
         if (request.headerField("content-type").isEmpty())
             ba += "Content-Type: application/x-www-form-urlencoded\r\n";
-        if (!request.d->data && request.d->url.hasQuery()) {
+        if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
             QByteArray query = request.d->url.encodedQuery();
             ba += "Content-Length: "+ QByteArray::number(query.size()) + "\r\n";
             ba += "\r\n";
@@ -236,14 +237,14 @@ void QHttpNetworkRequest::setPriority(Priority priority)
     d->priority = priority;
 }
 
-QIODevice *QHttpNetworkRequest::data() const
+void QHttpNetworkRequest::setUploadByteDevice(QNonContiguousByteDevice *bd)
 {
-    return d->data;
+    d->uploadByteDevice = bd;
 }
 
-void QHttpNetworkRequest::setData(QIODevice *data)
+QNonContiguousByteDevice* QHttpNetworkRequest::uploadByteDevice() const
 {
-    d->data = data;
+    return d->uploadByteDevice;
 }
 
 int QHttpNetworkRequest::majorVersion() const

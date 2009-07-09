@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
  **
  ** This file is part of the QtGui module of the Qt Toolkit.
  **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
  **
  ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
@@ -134,7 +134,7 @@ QColor qcolorForThemeTextColor(ThemeTextColor themeColor)
 #ifdef Q_OS_MAC32
     RGBColor c;
     GetThemeTextColor(themeColor, 32, true, &c);
-    QColor color = QColor(c.red / 265, c.green / 256, c.blue / 256);
+    QColor color = QColor(c.red / 256, c.green / 256, c.blue / 256);
     return color;
 #else
     // There is no equivalent to GetThemeTextColor in 64-bit and it was rather bad that
@@ -156,13 +156,13 @@ QColor qcolorForThemeTextColor(ThemeTextColor themeColor)
     case kThemeTextColorAlertInactive:
     case kThemeTextColorDialogInactive:
     case kThemeTextColorPlacardInactive:
-        return QColor(67, 69, 69, 255);
+        return QColor(69, 69, 69, 255);
     case kThemeTextColorPopupButtonInactive:
     case kThemeTextColorPopupLabelInactive:
     case kThemeTextColorPushButtonInactive:
     case kThemeTextColorTabFrontInactive:
     case kThemeTextColorBevelButtonInactive:
-        return QColor(123, 127, 127, 255);
+        return QColor(127, 127, 127, 255);
     default: {
         QNativeImage nativeImage(16,16, QNativeImage::systemFormat());
         CGRect cgrect = CGRectMake(0, 0, 16, 16);

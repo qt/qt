@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -434,13 +434,13 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     titleLabel->setText(title);
     QFont f = titleLabel->font();
     f.setBold(true);
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     f.setPointSize(f.pointSize() - 2);
 #endif
     titleLabel->setFont(f);
     titleLabel->setTextFormat(Qt::PlainText); // to maintain compat with windows
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize);
     const int closeButtonSize = style()->pixelMetric(QStyle::PM_SmallIconSize) - 2;
 #else
@@ -456,7 +456,7 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
     QLabel *msgLabel = new QLabel;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     f.setBold(false);
     msgLabel->setFont(f);
 #endif
@@ -466,7 +466,7 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     msgLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     // smart size for the message label
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 2;
 #else
     int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 3;
@@ -481,7 +481,7 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
                 control->document()->setDefaultTextOption(opt);
             }
         }
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         // Make sure that the text isn't wrapped "somewhere" in the balloon widget
         // in the case that we have a long title label.
         setMaximumWidth(limit);

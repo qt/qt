@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,6 +107,8 @@ private slots:
     void operators();
 
     void connectPathDuplicatePoint();
+
+    void translate();
 };
 
 // Testing get/set functions
@@ -1165,6 +1167,44 @@ void tst_QPainterPath::connectPathDuplicatePoint()
     c.lineTo(30, 10);
 
     QCOMPARE(c, a);
+}
+
+void tst_QPainterPath::translate()
+{
+    QPainterPath path;
+
+    // Path with no elements.
+    QCOMPARE(path.currentPosition(), QPointF());
+    path.translate(50.5, 50.5);
+    QCOMPARE(path.currentPosition(), QPointF());
+    QCOMPARE(path.translated(50.5, 50.5).currentPosition(), QPointF());
+
+    // path.isEmpty(), but we have one MoveTo element that should be translated.
+    path.moveTo(50, 50);
+    QCOMPARE(path.currentPosition(), QPointF(50, 50));
+    path.translate(99.9, 99.9);
+    QCOMPARE(path.currentPosition(), QPointF(149.9, 149.9));
+    path.translate(-99.9, -99.9);
+    QCOMPARE(path.currentPosition(), QPointF(50, 50));
+    QCOMPARE(path.translated(-50, -50).currentPosition(), QPointF(0, 0));
+
+    // Complex path.
+    QRegion shape(100, 100, 300, 200, QRegion::Ellipse);
+    shape -= QRect(225, 175, 50, 50);
+    QPainterPath complexPath;
+    complexPath.addRegion(shape);
+    QVector<QPointF> untranslatedElements;
+    for (int i = 0; i < complexPath.elementCount(); ++i)
+        untranslatedElements.append(QPointF(complexPath.elementAt(i)));
+
+    const QPainterPath untranslatedComplexPath(complexPath);
+    const QPointF offset(100, 100);
+    complexPath.translate(offset);
+
+    for (int i = 0; i < complexPath.elementCount(); ++i)
+        QCOMPARE(QPointF(complexPath.elementAt(i)) - offset, untranslatedElements.at(i));
+
+    QCOMPARE(complexPath.translated(-offset), untranslatedComplexPath);
 }
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)

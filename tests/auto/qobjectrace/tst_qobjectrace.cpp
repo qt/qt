@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,11 @@
 #include <QtCore>
 #include <QtTest/QtTest>
 
-enum { OneMinute = 60 * 1000, TwoMinutes = OneMinute * 2 };
+
+enum { OneMinute = 60 * 1000, 
+       TwoMinutes = OneMinute * 2, 
+       TenMinutes = OneMinute * 10,
+       TwentyFiveMinutes = OneMinute * 25 };
 
 class tst_QObjectRace: public QObject
 {
@@ -70,12 +74,18 @@ public:
 public slots:
     void theSlot()
     {
-        enum { step = 1000 };
+        enum { step = 35 };
         if ((++count % step) == 0) {
             QThread *nextThread = threads.at((count / step) % threads.size());
             moveToThread(nextThread);
         }
     }
+
+    void destroSlot() {
+        emit theSignal();
+    }
+signals:
+    void theSignal();
 };
 
 class RaceThread : public QThread
@@ -120,11 +130,20 @@ private slots:
         if (stopWatch.elapsed() >= OneMinute / 2)
 #endif
             quit();
+
+        QObject o;
+        connect(&o, SIGNAL(destroyed()) , object, SLOT(destroSlot()));
+        connect(object, SIGNAL(destroyed()) , &o, SLOT(deleteLater()));
     }
 };
 
 void tst_QObjectRace::moveToThreadRace()
 {
+#if defined(Q_OS_SYMBIAN)
+    // ### FIXME: task 257411 - remove xfail once this is fixed
+    QEXPECT_FAIL("", "Symbian event dispatcher can't handle this kind of race, see task: 257411", Abort);
+    QVERIFY(false);
+#endif    
     RaceObject *object = new RaceObject;
 
     enum { ThreadCount = 10 };
@@ -138,10 +157,17 @@ void tst_QObjectRace::moveToThreadRace()
 
     for (int i = 0; i < ThreadCount; ++i)
         threads[i]->start();
-    QVERIFY(threads[0]->wait(TwoMinutes));
+
+    while(!threads[0]->isFinished()) {
+        QPointer<RaceObject> foo (object);
+        QObject o;
+        connect(&o, SIGNAL(destroyed()) , object, SLOT(destroSlot()));
+        connect(object, SIGNAL(destroyed()) , &o, SLOT(deleteLater()));
+        QTest::qWait(10);
+    }
     // the other threads should finish pretty quickly now
     for (int i = 1; i < ThreadCount; ++i)
-        QVERIFY(threads[i]->wait(30000));
+        QVERIFY(threads[i]->wait(300));
 
     for (int i = 0; i < ThreadCount; ++i)
         delete threads[i];
@@ -192,8 +218,24 @@ public:
     }
 };
 
+#if defined(Q_OS_SYMBIAN)
+// Symbian needs "a bit" more time
+# define EXTRA_THREAD_WAIT TenMinutes
+# define MAIN_THREAD_WAIT TwentyFiveMinutes
+#else    
+# define EXTRA_THREAD_WAIT 3000
+# define MAIN_THREAD_WAIT TwoMinutes
+#endif
+
 void tst_QObjectRace::destroyRace()
 {
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    // ### FIXME: task 257411 - remove xfail once this is fixed. 
+	// Oddly enough, this seems to work properly in HW, if given enough time and memory.
+    QEXPECT_FAIL("", "Symbian event dispatcher can't handle this kind of race on emulator, see task: 257411", Abort);
+    QVERIFY(false);
+#endif    
+
     enum { ThreadCount = 10, ObjectCountPerThread = 733, 
            ObjectCount = ThreadCount * ObjectCountPerThread };
 
@@ -226,10 +268,10 @@ void tst_QObjectRace::destroyRace()
     for (int i = 0; i < ThreadCount; ++i)
         threads[i]->start();
 
-    QVERIFY(threads[0]->wait(TwoMinutes));
+    QVERIFY(threads[0]->wait(MAIN_THREAD_WAIT));
     // the other threads should finish pretty quickly now
     for (int i = 1; i < ThreadCount; ++i)
-        QVERIFY(threads[i]->wait(3000));
+        QVERIFY(threads[i]->wait(EXTRA_THREAD_WAIT));
 
     for (int i = 0; i < ThreadCount; ++i)
         delete threads[i];

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1301,6 +1301,27 @@ void tst_QScriptValue::toVariant()
         QCOMPARE(str.toVariant(), QVariant(QString("ciao")));
         QCOMPARE(qscriptvalue_cast<QVariant>(str), QVariant(QString("ciao")));
     }
+
+    // array
+    {
+        QVariantList listIn;
+        listIn << 123 << "hello";
+        QScriptValue array = qScriptValueFromValue(&eng, listIn);
+        QVERIFY(array.isArray());
+        QCOMPARE(array.property("length").toInt32(), 2);
+        QVariant ret = array.toVariant();
+        QCOMPARE(ret.type(), QVariant::List);
+        QVariantList listOut = ret.toList();
+        QCOMPARE(listOut.size(), listIn.size());
+        for (int i = 0; i < listIn.size(); ++i)
+            QVERIFY(listOut.at(i) == listIn.at(i));
+        // round-trip conversion
+        QScriptValue array2 = qScriptValueFromValue(&eng, ret);
+        QVERIFY(array2.isArray());
+        QCOMPARE(array2.property("length").toInt32(), array.property("length").toInt32());
+        for (int i = 0; i < array.property("length").toInt32(); ++i)
+            QVERIFY(array2.property(i).strictlyEquals(array.property(i)));
+    }
 }
 
 // unfortunately, this is necessary in order to do qscriptvalue_cast<QPushButton*>(...)
@@ -1461,21 +1482,43 @@ void tst_QScriptValue::toObject()
     {
         QScriptValue undefined = QScriptValue(QScriptValue::UndefinedValue);
         QVERIFY(!undefined.toObject().isValid());
+        QVERIFY(!eng.toObject(undefined).isValid());
 
         QScriptValue null = QScriptValue(QScriptValue::NullValue);
         QVERIFY(!null.toObject().isValid());
+        QVERIFY(!eng.toObject(null).isValid());
 
         QScriptValue falskt = QScriptValue(false);
         QVERIFY(!falskt.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(falskt);
+            QVERIFY(tmp.isObject());
+            QVERIFY(tmp.toBool());
+        }
 
         QScriptValue sant = QScriptValue(true);
         QVERIFY(!sant.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(sant);
+            QVERIFY(tmp.isObject());
+            QVERIFY(tmp.toBool());
+        }
 
         QScriptValue number = QScriptValue(123.0);
         QVERIFY(!number.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(number);
+            QVERIFY(tmp.isObject());
+            QCOMPARE(tmp.toInt32(), number.toInt32());
+        }
 
-        QScriptValue str = QScriptValue(QString("ciao"));
+        QScriptValue str = QScriptValue(QString::fromLatin1("ciao"));
         QVERIFY(!str.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(str);
+            QVERIFY(tmp.isObject());
+            QCOMPARE(tmp.toString(), QString::fromLatin1("ciao"));
+        }
     }
 }
 
@@ -2338,6 +2381,16 @@ void tst_QScriptValue::call()
             QCOMPARE(ret.isNumber(), true);
             QCOMPARE(qIsNaN(ret.toNumber()), true);
         }
+    }
+    {
+        QScriptValue fun = eng.evaluate("Object");
+        QVERIFY(fun.isFunction());
+        QScriptEngine eng2;
+        QScriptValue objectInDifferentEngine = eng2.newObject();
+        QScriptValueList args;
+        args << objectInDifferentEngine;
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call() failed: cannot call function with argument created in a different engine");
+        fun.call(QScriptValue(), args);
     }
 
     // test that invalid return value is handled gracefully

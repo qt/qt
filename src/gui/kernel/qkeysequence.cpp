@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -105,20 +105,39 @@ static bool operator<(int key, const MacSpecialKey &entry)
 
 static const MacSpecialKey * const MacSpecialKeyEntriesEnd = entries + NumEntries;
 
-static QChar macSymbolForQtKey(int key)
+QChar qt_macSymbolForQtKey(int key)
 {
     const MacSpecialKey *i = qBinaryFind(entries, MacSpecialKeyEntriesEnd, key);
     if (i == MacSpecialKeyEntriesEnd)
         return QChar();
-    return QChar(i->macSymbol);
+    ushort macSymbol = i->macSymbol;
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)
+            && (macSymbol == kControlUnicode || macSymbol == kCommandUnicode)) {
+        if (macSymbol == kControlUnicode)
+            macSymbol = kCommandUnicode;
+        else
+            macSymbol = kControlUnicode;
+    }
+
+    return QChar(macSymbol);
 }
 
 static int qtkeyForMacSymbol(const QChar ch)
 {
+    const ushort unicode = ch.unicode();
     for (int i = 0; i < NumEntries; ++i) {
         const MacSpecialKey &entry = entries[i];
-        if (entry.macSymbol == ch.unicode())
-            return entry.key;
+        if (entry.macSymbol == unicode) {
+            int key = entry.key;
+            if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)
+                    && (unicode == kControlUnicode || unicode == kCommandUnicode)) {
+                if (unicode == kControlUnicode)
+                    key = Qt::Key_Control;
+                else
+                    key = Qt::Key_Meta;
+            }
+            return key;
+        }
     }
     return -1;
 }
@@ -126,7 +145,7 @@ static int qtkeyForMacSymbol(const QChar ch)
 #else
 static bool qt_sequence_no_mnemonics = false;
 #endif
-void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemonics = !b; }
+void Q_AUTOTEST_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemonics = !b; }
 
 /*!
     \class QKeySequence
@@ -213,12 +232,14 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \i Open             \i Ctrl+O                               \i Ctrl+O                   \i Ctrl+O       \i Ctrl+O
     \row    \i Close            \i Ctrl+F4, Ctrl+W                      \i Ctrl+W, Ctrl+F4          \i Ctrl+W       \i Ctrl+W
     \row    \i Save             \i Ctrl+S                               \i Ctrl+S                   \i Ctrl+S       \i Ctrl+S
+    \row    \i Quit             \i                                      \i Ctrl+Q                   \i Qtrl+Q       \i Qtrl+Q
     \row    \i SaveAs           \i                                      \i Ctrl+Shift+S             \i              \i Ctrl+Shift+S
     \row    \i New              \i Ctrl+N                               \i Ctrl+N                   \i Ctrl+N       \i Ctrl+N
     \row    \i Delete           \i Del                                  \i Del, Meta+D              \i Del, Ctrl+D  \i Del, Ctrl+D
     \row    \i Cut              \i Ctrl+X, Shift+Del                    \i Ctrl+X                   \i Ctrl+X, F20, Shift+Del \i Ctrl+X, F20, Shift+Del 
     \row    \i Copy             \i Ctrl+C, Ctrl+Ins                     \i Ctrl+C                   \i Ctrl+C, F16, Ctrl+Ins  \i Ctrl+C, F16, Ctrl+Ins
     \row    \i Paste            \i Ctrl+V, Shift+Ins                    \i Ctrl+V                   \i Ctrl+V, F18, Shift+Ins \i Ctrl+V, F18, Shift+Ins
+    \row    \i Preferences      \i                                      \i Ctrl+,                   \i              \i
     \row    \i Undo             \i Ctrl+Z, Alt+Backspace                \i Ctrl+Z                   \i Ctrl+Z, F14  \i Ctrl+Z, F14
     \row    \i Redo             \i Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \i Ctrl+Shift+Z, Ctrl+Y     \i Ctrl+Shift+Z \i Ctrl+Shift+Z
     \row    \i Back             \i Alt+Left, Backspace                  \i Ctrl+[                   \i Alt+Left     \i Alt+Left
@@ -521,6 +542,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::FindPrevious,            1,          Qt::SHIFT | Qt::Key_F3,                 QApplicationPrivate::KB_Win},
     {QKeySequence::ZoomIn,                  1,          Qt::CTRL | Qt::Key_Plus,                QApplicationPrivate::KB_All},
     {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Comma,               QApplicationPrivate::KB_KDE},
+    {QKeySequence::Preferences,             0,          Qt::CTRL | Qt::Key_Comma,               QApplicationPrivate::KB_Mac},
     {QKeySequence::ZoomOut,                 1,          Qt::CTRL | Qt::Key_Minus,               QApplicationPrivate::KB_All},
     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::Key_Period,              QApplicationPrivate::KB_KDE},
     {QKeySequence::HelpContents,            1,          Qt::CTRL | Qt::Key_Question,            QApplicationPrivate::KB_Mac},
@@ -538,6 +560,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::New,                     1,          Qt::CTRL | Qt::Key_N,                   QApplicationPrivate::KB_All},
     {QKeySequence::Open,                    1,          Qt::CTRL | Qt::Key_O,                   QApplicationPrivate::KB_All},
     {QKeySequence::Print,                   1,          Qt::CTRL | Qt::Key_P,                   QApplicationPrivate::KB_All},
+    {QKeySequence::Quit,                    0,          Qt::CTRL | Qt::Key_Q,                   QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_KDE | QApplicationPrivate::KB_Mac},
     {QKeySequence::Refresh,                 1,          Qt::CTRL | Qt::Key_R,                   QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
     {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_R,                   QApplicationPrivate::KB_KDE},
     {QKeySequence::Save,                    1,          Qt::CTRL | Qt::Key_S,                   QApplicationPrivate::KB_All},
@@ -669,12 +692,14 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
     \value NextChild        Navigate to next tab or child window.
     \value Open             Open document.
     \value Paste            Paste.
+    \value Preferences      Open the preferences dialog.
     \value PreviousChild    Navigate to previous tab or child window.
     \value Print            Print document.
+    \value Quit             Quit the application.
     \value Redo             Redo.
     \value Refresh          Refresh or reload current document.
     \value Replace          Find and replace.
-    \value SaveAs                   Save document after prompting the user for a file name.
+    \value SaveAs           Save document after prompting the user for a file name.
     \value Save             Save document.
     \value SelectAll        Select all text.
     \value SelectEndOfBlock         Extend selection to the end of a text block. This shortcut is only used on OS X.
@@ -780,6 +805,21 @@ QKeySequence::QKeySequence(const QKeySequence& keysequence)
     d->ref.ref();
 }
 
+#ifdef Q_WS_MAC
+static inline int maybeSwapShortcut(int shortcut)
+{
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        uint oldshortcut = shortcut;
+        shortcut &= ~(Qt::CTRL | Qt::META);
+        if (oldshortcut & Qt::CTRL)
+            shortcut |= Qt::META;
+        if (oldshortcut & Qt::META)
+            shortcut |= Qt::CTRL;
+    }
+    return shortcut;
+}
+#endif
+
 /*!
     \since 4.2
 
@@ -796,10 +836,16 @@ QList<QKeySequence> QKeySequence::keyBindings(StandardKey key)
     for (uint i = 0; i < QKeySequencePrivate::numberOfKeyBindings ; ++i) {
         QKeyBinding keyBinding = QKeySequencePrivate::keyBindings[i];
         if (keyBinding.standardKey == key && (keyBinding.platform & platform)) {
-            if (keyBinding.priority > 0) 
-                list.prepend(QKeySequence(QKeySequencePrivate::keyBindings[i].shortcut));    
-            else 
-                list.append(QKeySequence(QKeySequencePrivate::keyBindings[i].shortcut));    
+            uint shortcut =
+#ifdef Q_WS_MAC
+                    maybeSwapShortcut(QKeySequencePrivate::keyBindings[i].shortcut);
+#else
+                    QKeySequencePrivate::keyBindings[i].shortcut;
+#endif
+            if (keyBinding.priority > 0)
+                list.prepend(QKeySequence(shortcut));
+            else
+                list.append(QKeySequence(shortcut));
         }
     }
     return list;
@@ -967,9 +1013,16 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         gmodifs = globalModifs();
         if (gmodifs->isEmpty()) {
 #ifdef Q_WS_MAC
-            *gmodifs << QModifKeyName(Qt::CTRL, QChar(kCommandUnicode));
+            const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
+            if (dontSwap)
+                *gmodifs << QModifKeyName(Qt::META, QChar(kCommandUnicode));
+            else
+                *gmodifs << QModifKeyName(Qt::CTRL, QChar(kCommandUnicode));
             *gmodifs << QModifKeyName(Qt::ALT, QChar(kOptionUnicode));
-            *gmodifs << QModifKeyName(Qt::META, QChar(kControlUnicode));
+            if (dontSwap)
+                *gmodifs << QModifKeyName(Qt::CTRL, QChar(kControlUnicode));
+            else
+                *gmodifs << QModifKeyName(Qt::META, QChar(kControlUnicode));
             *gmodifs << QModifKeyName(Qt::SHIFT, QChar(kShiftUnicode));
 #endif
             *gmodifs << QModifKeyName(Qt::CTRL, QLatin1String("ctrl+"))
@@ -1067,8 +1120,6 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
             if (found)
                 break;
         }
-#ifdef Q_WS_MAC
-#endif
     }
     return ret;
 }
@@ -1097,15 +1148,30 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     QString s;
 #if defined(Q_WS_MAC)
     if (nativeText) {
-        // On MAC the order is Meta, Alt, Shift, Control.
-        if ((key & Qt::META) == Qt::META)
-            s += macSymbolForQtKey(Qt::Key_Meta);
-        if ((key & Qt::ALT) == Qt::ALT)
-            s += macSymbolForQtKey(Qt::Key_Alt);
-        if ((key & Qt::SHIFT) == Qt::SHIFT)
-            s += macSymbolForQtKey(Qt::Key_Shift);
-        if ((key & Qt::CTRL) == Qt::CTRL)
-            s += macSymbolForQtKey(Qt::Key_Control);
+        // On Mac OS X the order (by default) is Meta, Alt, Shift, Control.
+        // If the AA_MacDontSwapCtrlAndMeta is enabled, then the order
+        // is Ctrl, Alt, Shift, Meta. The macSymbolForQtKey does this swap
+        // for us, which means that we have to adjust our order here.
+        // The upshot is a lot more infrastructure to keep the number of
+        // if tests down and the code relatively clean.
+        static const int ModifierOrder[] = { Qt::META, Qt::ALT, Qt::SHIFT, Qt::CTRL, 0 };
+        static const int QtKeyOrder[] = { Qt::Key_Meta, Qt::Key_Alt, Qt::Key_Shift, Qt::Key_Control, 0 };
+        static const int DontSwapModifierOrder[] = { Qt::CTRL, Qt::ALT, Qt::SHIFT, Qt::META, 0 };
+        static const int DontSwapQtKeyOrder[] = { Qt::Key_Control, Qt::Key_Alt, Qt::Key_Shift, Qt::Key_Meta, 0 };
+        const int *modifierOrder;
+        const int *qtkeyOrder;
+        if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+            modifierOrder = DontSwapModifierOrder;
+            qtkeyOrder = DontSwapQtKeyOrder;
+        } else {
+            modifierOrder = ModifierOrder;
+            qtkeyOrder = QtKeyOrder;
+        }
+
+        for (int i = 0; modifierOrder[i] != 0; ++i) {
+            if (key & modifierOrder[i])
+                s += qt_macSymbolForQtKey(qtkeyOrder[i]);
+        }
     } else
 #endif
     {
@@ -1138,7 +1204,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
         int i=0;
 #if defined(Q_WS_MAC)
         if (nativeText) {
-            QChar ch = macSymbolForQtKey(key);
+            QChar ch = qt_macSymbolForQtKey(key);
             if (!ch.isNull())
                 p = ch;
             else

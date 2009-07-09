@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,6 +90,7 @@ public:
           highlightSelected(false),
           stretchLastSection(false),
           cascadingResizing(false),
+          resizeRecursionBlock(false),
           stretchSections(0),
           contentsSections(0),
           minimumSectionSize(-1),
@@ -169,10 +170,6 @@ public:
         if (!sectionHidden.isEmpty()) sectionHidden.setBit(visual, hidden);
     }
 
-    inline QHeaderView::ResizeMode visualIndexResizeMode(int visual) const {
-        return headerSectionResizeMode(visual);
-    }
-
     inline bool hasAutoResizeSections() const {
         return stretchSections || stretchLastSection || contentsSections;
     }
@@ -210,7 +207,7 @@ public:
     }
 
     inline bool sectionIsCascadable(int visual) const {
-        return visualIndexResizeMode(visual) == QHeaderView::Interactive;
+        return headerSectionResizeMode(visual) == QHeaderView::Interactive;
     }
 
     inline int modelSectionCount() const {
@@ -230,7 +227,6 @@ public:
 
     inline void executePostedResize() const {
         if (delayedResize.isActive() && state == NoState) {
-            delayedResize.stop();
             const_cast<QHeaderView*>(q_func())->resizeSections();
         }
     }
@@ -274,6 +270,7 @@ public:
     bool highlightSelected;
     bool stretchLastSection;
     bool cascadingResizing;
+    bool resizeRecursionBlock;
     int stretchSections;
     int contentsSections;
     int defaultSectionSize;

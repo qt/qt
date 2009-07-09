@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -101,8 +101,9 @@ public:
     void applyInternalProperties() const;
     static bool applyBuddy(const QString &buddyName, BuddyMode applyMode, QLabel *label);
 
-    const QPointer<QWidget> &rootWidget() const;
-    void setRootWidget(const QPointer<QWidget> &w);
+    const QPointer<QWidget> &parentWidget() const;
+    bool parentWidgetIsSet() const;
+    void setParentWidget(const QPointer<QWidget> &w);
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     QFormScriptRunner &formScriptRunner();
@@ -182,7 +183,8 @@ private:
     QResourceBuilder *m_resourceBuilder;
     QTextBuilder *m_textBuilder;
 
-    QPointer<QWidget> m_rootWidget;
+    QPointer<QWidget> m_parentWidget;
+    bool m_parentWidgetIsSet;
 };
 
 void uiLibWarning(const QString &message);

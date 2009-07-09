@@ -34,43 +34,44 @@ class JSClipboard : public DOMObject {
 public:
     JSClipboard(PassRefPtr<JSC::Structure>, PassRefPtr<Clipboard>);
     virtual ~JSClipboard();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom attributes
-    JSC::JSValuePtr types(JSC::ExecState*) const;
+    JSC::JSValue types(JSC::ExecState*) const;
 
     // Custom functions
-    JSC::JSValuePtr clearData(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr getData(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr setData(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr setDragImage(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue clearData(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getData(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue setData(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue setDragImage(JSC::ExecState*, const JSC::ArgList&);
     Clipboard* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<Clipboard> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, Clipboard*);
-Clipboard* toClipboard(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, Clipboard*);
+Clipboard* toClipboard(JSC::JSValue);
 
 class JSClipboardPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -79,18 +80,19 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsClipboardPrototypeFunctionClearData(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsClipboardPrototypeFunctionGetData(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsClipboardPrototypeFunctionSetData(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsClipboardPrototypeFunctionSetDragImage(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsClipboardPrototypeFunctionClearData(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsClipboardPrototypeFunctionGetData(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsClipboardPrototypeFunctionSetData(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsClipboardPrototypeFunctionSetDragImage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsClipboardDropEffect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSClipboardDropEffect(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsClipboardEffectAllowed(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSClipboardEffectAllowed(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsClipboardTypes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsClipboardConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardDropEffect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSClipboardDropEffect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsClipboardEffectAllowed(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSClipboardEffectAllowed(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsClipboardTypes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardFiles(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

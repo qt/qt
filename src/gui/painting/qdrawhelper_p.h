@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -110,6 +110,7 @@ struct QSpanData;
 class QGradient;
 class QRasterBuffer;
 class QClipData;
+class QRasterPaintEngineState;
 
 typedef QT_FT_SpanFunc ProcessSpans;
 typedef void (*BitmapBlitFunc)(QRasterBuffer *rasterBuffer,
@@ -293,7 +294,7 @@ struct QSpanData
     };
 
     void init(QRasterBuffer *rb, const QRasterPaintEngine *pe);
-    void setup(const QBrush &brush, int alpha);
+    void setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode);
     void setupMatrix(const QTransform &matrix, int bilinear);
     void initTexture(const QImage *image, int alpha, QTextureData::Type = QTextureData::Plain, const QRect &sourceRect = QRect());
     void adjustSpanMethods();
@@ -453,6 +454,7 @@ public:
     inline bool operator==(const qargb8565 &v) const;
 
     inline quint32 rawValue() const;
+    inline quint16 rawValue16() const;
 
 private:
     friend class qrgb565;
@@ -469,7 +471,7 @@ public:
 
     inline explicit qrgb565(quint32p v);
     inline explicit qrgb565(quint32 v);
-    inline explicit qrgb565(qargb8565 v);
+    inline explicit qrgb565(const qargb8565 &v);
 
     inline operator quint32() const;
     inline operator quint16() const;
@@ -575,6 +577,11 @@ quint32 qargb8565::rawValue() const
     return (data[2] << 16) | (data[1] << 8) | data[0];
 }
 
+quint16 qargb8565::rawValue16() const
+{
+    return (data[2] << 8) | data[1];
+}
+
 qrgb565::qrgb565(quint32p v)
 {
     *this = qrgb565(quint32(v));
@@ -589,7 +596,7 @@ qrgb565::qrgb565(quint32 v)
     data = (r & 0xf800) | (g & 0x07e0)| (b & 0x001f);
 }
 
-qrgb565::qrgb565(qargb8565 v)
+qrgb565::qrgb565(const qargb8565 &v)
 {
     data = (v.data[2] << 8) | v.data[1];
 }

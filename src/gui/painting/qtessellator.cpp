@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1080,7 +1080,7 @@ void QTessellatorPrivate::addIntersection(const Edge *e1, const Edge *e2)
         yi = y;
     }
     QDEBUG() << "   between edges " << e1->edge << "and" << e2->edge << "at point ("
-             << Q27Dot5ToDouble(yi) << ")";
+             << Q27Dot5ToDouble(yi) << ')';
 
     Intersection i1;
     i1.y = yi;
@@ -1173,7 +1173,7 @@ void QTessellatorPrivate::addIntersections()
         for (int i = 0; i < scanline.size; ++i) {
             Edge *e = scanline.edges[i];
             QDEBUG() << "    " << i << e->edge << "isect=(" << e->intersect_left << e->intersect_right
-                     << ")";
+                     << ')';
         }
 #endif
 
@@ -1239,8 +1239,8 @@ QRectF QTessellator::tessellate(const QPointF *points, int nPoints)
         QDEBUG() << "    " << i << ": "
                  << "point=" << d->vertices.position(d->vertices.sorted[i])
                  << "flags=" << d->vertices.sorted[i]->flags
-                 << "pos=(" << Q27Dot5ToDouble(d->vertices.sorted[i]->x) << "/"
-                 << Q27Dot5ToDouble(d->vertices.sorted[i]->y) << ")";
+                 << "pos=(" << Q27Dot5ToDouble(d->vertices.sorted[i]->x) << '/'
+                 << Q27Dot5ToDouble(d->vertices.sorted[i]->y) << ')';
     }
 #endif
 
@@ -1270,9 +1270,9 @@ QRectF QTessellator::tessellate(const QPointF *points, int nPoints)
         for (int i = 0; i < d->scanline.size; ++i) {
             QDEBUG() << "   " << d->scanline.edges[i]->edge
                      << "p0= (" << Q27Dot5ToDouble(d->scanline.edges[i]->v0->x)
-                     << "/" << Q27Dot5ToDouble(d->scanline.edges[i]->v0->y)
+                     << '/' << Q27Dot5ToDouble(d->scanline.edges[i]->v0->y)
                      << ") p1= (" << Q27Dot5ToDouble(d->scanline.edges[i]->v1->x)
-                     << "/" << Q27Dot5ToDouble(d->scanline.edges[i]->v1->y) << ")"
+                     << '/' << Q27Dot5ToDouble(d->scanline.edges[i]->v1->y) << ')'
                      << "x=" << Q27Dot5ToDouble(d->scanline.edges[i]->positionAt(d->y))
                      << "isLeftOfNext="
                      << ((i < d->scanline.size - 1)
@@ -1435,7 +1435,7 @@ void QTessellator::tessellateRect(const QPointF &a_, const QPointF &b_, qreal wi
         QPointF perp(pb.y() - pa.y(), pa.x() - pb.x());
         qreal length = qSqrt(perp.x() * perp.x() + perp.y() * perp.y());
 
-        if (qFuzzyCompare(length + 1, static_cast<qreal>(1)))
+        if (qFuzzyIsNull(length))
             return;
 
         // need the half of the width

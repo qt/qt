@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,6 +72,7 @@ private slots:
     void scopeChain();
     void pushAndPopScope();
     void getSetActivationObject();
+    void toString();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -438,6 +439,7 @@ void tst_QScriptContext::pushAndPopContext()
     QCOMPARE(ctx->isCalledAsConstructor(), false);
     QCOMPARE(ctx->argumentCount(), 0);
     QCOMPARE(ctx->argument(0).isUndefined(), true);
+    QVERIFY(!ctx->argument(-1).isValid());
     QCOMPARE(ctx->argumentsObject().isObject(), true);
     QCOMPARE(ctx->activationObject().isObject(), true);
     QCOMPARE(ctx->callee().isValid(), false);
@@ -685,6 +687,22 @@ void tst_QScriptContext::getSetActivationObject()
         QVERIFY(ret.property("arguments").isObject());
         QCOMPARE(ret.property("arguments").property("length").toInt32(), 3);
     }
+}
+
+static QScriptValue parentContextToString(QScriptContext *ctx, QScriptEngine *)
+{
+    return ctx->parentContext()->toString();
+}
+
+void tst_QScriptContext::toString()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("parentContextToString", eng.newFunction(parentContextToString));
+    QScriptValue ret = eng.evaluate("function foo(first, second, third) {\n"
+                                    "    return parentContextToString();\n"
+                                    "}; foo(1, 2, 3)", "script.qs");
+    QVERIFY(ret.isString());
+    QCOMPARE(ret.toString(), QString::fromLatin1("foo (first=1, second=2, third=3) at script.qs:2"));
 }
 
 QTEST_MAIN(tst_QScriptContext)

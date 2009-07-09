@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -188,14 +188,25 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect, const QRegion &mask)
             if (!dfbWindow)
                 createWindow();
 
-            if (isResize && isMove)
+#if (Q_DIRECTFB_VERSION >= 0x010000)
+            if (isResize && isMove) {
                 result = dfbWindow->SetBounds(dfbWindow, rect.x(), rect.y(),
                                               rect.width(), rect.height());
-            else if (isResize)
+            } else if (isResize) {
                 result = dfbWindow->Resize(dfbWindow,
                                            rect.width(), rect.height());
-            else if (isMove)
+            } else if (isMove) {
                 result = dfbWindow->MoveTo(dfbWindow, rect.x(), rect.y());
+            }
+#else
+            if (isResize) {
+                result = dfbWindow->Resize(dfbWindow,
+                                           rect.width(), rect.height());
+            }
+            if (isMove) {
+                result = dfbWindow->MoveTo(dfbWindow, rect.x(), rect.y());
+            }
+#endif
 #endif
         }
 
@@ -241,7 +252,6 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 
 static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
 {
-    surface->SetBlittingFlags(surface, DSBLIT_NOFX);
     const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
     surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
 }
@@ -354,6 +364,7 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         if (winOpacity != opacity)
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
+#endif
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
@@ -375,7 +386,6 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
             dfbSurface->Flip(dfbSurface, &dfbReg, flipFlags);
         }
     }
-#endif
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
     ++frames;

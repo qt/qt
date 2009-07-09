@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -197,6 +197,10 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
   QMatrix member functions
  *****************************************************************************/
+/*!
+    \fn QMatrix::QMatrix(Qt::Initialization)
+    \internal
+*/
 
 /*!
     Constructs an identity matrix.
@@ -208,9 +212,13 @@ QT_BEGIN_NAMESPACE
 */
 
 QMatrix::QMatrix()
+    : _m11(1.)
+    , _m12(0.)
+    , _m21(0.)
+    , _m22(1.)
+    , _dx(0.)
+    , _dy(0.)
 {
-    _m11 = _m22 = 1.0;
-    _m12 = _m21 = _dx = _dy = 0.0;
 }
 
 /*!
@@ -220,12 +228,14 @@ QMatrix::QMatrix()
     \sa setMatrix()
 */
 
-QMatrix::QMatrix(qreal m11, qreal m12, qreal m21, qreal m22,
-                    qreal dx, qreal dy)
+QMatrix::QMatrix(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy)
+    : _m11(m11)
+    , _m12(m12)
+    , _m21(m21)
+    , _m22(m22)
+    , _dx(dx)
+    , _dy(dy)
 {
-    _m11 = m11;         _m12 = m12;
-    _m21 = m21;         _m22 = m22;
-    _dx         = dx;         _dy  = dy;
 }
 
 
@@ -233,8 +243,13 @@ QMatrix::QMatrix(qreal m11, qreal m12, qreal m21, qreal m22,
      Constructs a matrix that is a copy of the given \a matrix.
  */
 QMatrix::QMatrix(const QMatrix &matrix)
+    : _m11(matrix._m11)
+    , _m12(matrix._m12)
+    , _m21(matrix._m21)
+    , _m22(matrix._m22)
+    , _dx(matrix._dx)
+    , _dy(matrix._dy)
 {
-    *this = matrix;
 }
 
 /*!
@@ -249,12 +264,14 @@ QMatrix::QMatrix(const QMatrix &matrix)
     \sa QMatrix()
 */
 
-void QMatrix::setMatrix(qreal m11, qreal m12, qreal m21, qreal m22,
-                          qreal dx, qreal dy)
+void QMatrix::setMatrix(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy)
 {
-    _m11 = m11;         _m12 = m12;
-    _m21 = m21;         _m22 = m22;
-    _dx         = dx;         _dy  = dy;
+    _m11 = m11;
+    _m12 = m12;
+    _m21 = m21;
+    _m22 = m22;
+    _dx  = dx;
+    _dy  = dy;
 }
 
 
@@ -968,18 +985,17 @@ QMatrix QMatrix::inverted(bool *invertible) const
     if (determinant == 0.0) {
         if (invertible)
             *invertible = false;                // singular matrix
-        QMatrix defaultMatrix;
-        return defaultMatrix;
+        return QMatrix(true);
     }
     else {                                        // invertible matrix
         if (invertible)
             *invertible = true;
         qreal dinv = 1.0/determinant;
-        QMatrix imatrix((_m22*dinv),        (-_m12*dinv),
-                          (-_m21*dinv), (_m11*dinv),
-                          ((_m21*_dy - _m22*_dx)*dinv),
-                          ((_m12*_dx - _m11*_dy)*dinv));
-        return imatrix;
+        return QMatrix((_m22*dinv),        (-_m12*dinv),
+                       (-_m21*dinv), (_m11*dinv),
+                       ((_m21*_dy - _m22*_dx)*dinv),
+                       ((_m12*_dx - _m11*_dy)*dinv),
+                       true);
     }
 }
 
@@ -1054,9 +1070,14 @@ QMatrix &QMatrix::operator *=(const QMatrix &m)
 
 QMatrix QMatrix::operator *(const QMatrix &m) const
 {
-    QMatrix result = *this;
-    result *= m;
-    return result;
+    qreal tm11 = _m11*m._m11 + _m12*m._m21;
+    qreal tm12 = _m11*m._m12 + _m12*m._m22;
+    qreal tm21 = _m21*m._m11 + _m22*m._m21;
+    qreal tm22 = _m21*m._m12 + _m22*m._m22;
+
+    qreal tdx  = _dx*m._m11  + _dy*m._m21 + m._dx;
+    qreal tdy =  _dx*m._m12  + _dy*m._m22 + m._dy;
+    return QMatrix(tm11, tm12, tm21, tm22, tdx, tdy, true);
 }
 
 /*!
@@ -1161,7 +1182,7 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
                   << " 22=" << m.m22()
                   << " dx=" << m.dx()
                   << " dy=" << m.dy()
-                  << ")";
+                  << ')';
     return dbg.space();
 }
 #endif
@@ -1175,6 +1196,17 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
     matrix.
 
     Use the mapRect() function instead.
+*/
+
+
+/*!
+    \fn bool qFuzzyCompare(const QMatrix& m1, const QMatrix& m2)
+
+    \relates QMatrix
+    \since 4.6
+
+    Returns true if \a m1 and \a m2 are equal, allowing for a small
+    fuzziness factor for floating-point comparisons; false otherwise.
 */
 
 QT_END_NAMESPACE

@@ -844,7 +844,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
         case QS60StyleEnums::SP_QsnCpScrollHandleTop:
             result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
-            result.setWidth(pixelMetric(QStyle::PM_ScrollBarExtent));
+            result.setWidth(pixelMetric(QStyle::PM_ScrollBarSliderMin));
             break;
         default:
             // Generic frame part size gathering.
@@ -1802,27 +1802,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
     case CE_Header:
         if ( const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            QS60StylePrivate::SkinElementFlags adjFlags = flags;
-            QRect mtyRect = header->rect;
-            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-            if (header->orientation == Qt::Horizontal) {
-                if (header->position == QStyleOptionHeader::OnlyOneSection)
-                    mtyRect.adjust(frameWidth,1,frameWidth,-frameWidth);
-                else
-                    mtyRect.adjust(-frameWidth,1,frameWidth,-frameWidth);
-            } else {
-                if ( header->direction == Qt::LeftToRight ) {
-                    mtyRect.adjust(1,-frameWidth,0,frameWidth);
-                    adjFlags |= QS60StylePrivate::SF_PointWest;
-                } else {
-                    mtyRect.adjust(-1,frameWidth,0,-frameWidth);
-                    adjFlags |= QS60StylePrivate::SF_PointEast;
-                }
-            }
-            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, mtyRect, adjFlags);
-
-            QRegion clipRegion = painter->clipRegion();
-            painter->setClipRect(option->rect);
             drawControl(CE_HeaderSection, header, painter, widget);
             QStyleOptionHeader subopt = *header;
             subopt.rect = subElementRect(SE_HeaderLabel, header, widget);
@@ -1832,7 +1811,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 subopt.rect = subElementRect(SE_HeaderArrow, option, widget);
                 drawPrimitive(PE_IndicatorHeaderArrow, &subopt, painter, widget);
             }
-            painter->setClipRegion(clipRegion);
         }
         break;
 #ifndef QT_NO_TOOLBAR
@@ -1881,9 +1859,19 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ShapedFrame:
         if (qobject_cast<const QTextEdit *>(widget)) {
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
-        } else if (qobject_cast<const QAbstractScrollArea *>(widget) && qobject_cast<const QTableView *>(widget)) {
+        } else if (qobject_cast<const QTableView *>(widget)) {
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableItem, painter, option->rect, flags);
+        } else if (const QHeaderView *header = qobject_cast<const QHeaderView *>(widget)) {
+            if (header->orientation() == Qt::Horizontal) {
+                QRect headerRect = option->rect;
+                const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                headerRect.adjust(0,frameWidth,-2*frameWidth,0);
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, headerRect, flags);
+            } else {
+                //todo: update to horizontal table graphic
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
             }
+        }
         if (option->state & State_HasFocus)
             drawPrimitive(PE_FrameFocusRect, option, painter, widget);
         break;
@@ -2351,12 +2339,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 const uint range = scrollbarOption->maximum - scrollbarOption->minimum;
                 sliderlen = (qint64(scrollbarOption->pageStep) * maxlen) / (range + scrollbarOption->pageStep);
 
-                int slidermin = pixelMetric(PM_ScrollBarSliderMin, scrollbarOption, widget);
-                if (isHorizontal && slidermin < scrollBarRect.height())
-                    slidermin = scrollBarRect.height();
-                else if (!isHorizontal && slidermin < scrollBarRect.width())
-                    slidermin = scrollBarRect.width();
-
+                const int slidermin = pixelMetric(PM_ScrollBarSliderMin, scrollbarOption, widget);
                 if (sliderlen < slidermin || range > (INT_MAX>>1))
                     sliderlen = slidermin;
                 if (sliderlen > maxlen)

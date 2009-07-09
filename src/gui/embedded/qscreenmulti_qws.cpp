@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -221,9 +221,9 @@ bool QMultiScreen::connect(const QString &displaySpec)
 {
     QString dSpec = displaySpec;
     if (dSpec.startsWith(QLatin1String("Multi:"), Qt::CaseInsensitive))
-        dSpec = dSpec.mid(QString(QLatin1String("Multi:")).size());
+        dSpec = dSpec.mid(QString::fromLatin1("Multi:").size());
 
-    const QString displayIdSpec = QString(QLatin1String(" :%1")).arg(displayId);
+    const QString displayIdSpec = QString::fromLatin1(" :%1").arg(displayId);
     if (dSpec.endsWith(displayIdSpec))
         dSpec = dSpec.left(dSpec.size() - displayIdSpec.size());
 

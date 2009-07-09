@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,7 +96,7 @@ OSType translateLocation(QDesktopServices::StandardLocation type)
 
 static bool lsOpen(const QUrl &url)
 {
-    if (!url.isValid())
+    if (!url.isValid() || url.scheme().isEmpty())
         return false;
 
     QCFType<CFURLRef> cfUrl = CFURLCreateWithString(0, QCFString(QString::fromLatin1(url.toEncoded())), 0);
@@ -134,13 +134,15 @@ static QString getFullPath(const FSRef &ref)
 
 QString QDesktopServices::storageLocation(StandardLocation type)
 {
-     if (QDesktopServices::HomeLocation == type)
+     if (type == HomeLocation)
         return QDir::homePath();
+
+     if (type == TempLocation)
+         return QDir::tempPath();
 
     short domain = kOnAppropriateDisk;
 
-    if (QDesktopServices::DataLocation == type
-        || QDesktopServices::CacheLocation == type)
+    if (type == DataLocation || type == CacheLocation)
         domain = kUserDomain;
 
      // http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/Reference/reference.html
@@ -152,9 +154,8 @@ QString QDesktopServices::storageLocation(StandardLocation type)
     QString path = getFullPath(ref);
 
     QString appName = QCoreApplication::applicationName();
-    if (!appName.isEmpty() &&
-        (QDesktopServices::DataLocation == type || QDesktopServices::CacheLocation == type))
-        path += QLatin1String("/") + appName;
+    if (!appName.isEmpty() && (type == DataLocation || type == CacheLocation))
+        path += QLatin1Char('/') + appName;
 
     return path;
 }

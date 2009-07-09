@@ -50,6 +50,7 @@ public:
     virtual PassRefPtr<CSSMutableStyleDeclaration> makeMutable();
 
     PassRefPtr<CSSValue> getPropertyCSSValue(int propertyID, EUpdateLayout) const;
+    PassRefPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
 #if ENABLE(SVG)
     PassRefPtr<CSSValue> getSVGPropertyCSSValue(int propertyID, EUpdateLayout) const;
 #endif
@@ -57,6 +58,9 @@ public:
     PassRefPtr<CSSMutableStyleDeclaration> copyInheritableProperties() const;
 
     static void removeComputedInheritablePropertiesFrom(CSSMutableStyleDeclaration*);
+
+protected:
+    virtual bool cssPropertyMatches(const CSSProperty*) const;
 
 private:
     CSSComputedStyleDeclaration(PassRefPtr<Node>);

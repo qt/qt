@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qnativeimage_p.h>
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qguifunctions_wince.h"
 #endif
 
@@ -205,7 +205,7 @@ QFixed QFontEngineWin::lineThickness() const
     return QFontEngine::lineThickness();
 }
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 static OUTLINETEXTMETRICW *getOutlineTextMetric(HDC hdc)
 {
     int size;
@@ -249,7 +249,7 @@ void QFontEngineWin::getCMap()
     designToDevice = 1;
     _faceId.index = 0;
     if(cmap) {
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         OUTLINETEXTMETRICW *otm = getOutlineTextMetric(hdc);
 #else
         OUTLINETEXTMETRICA *otm = getOutlineTextMetric(hdc);
@@ -286,7 +286,7 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
     int i = 0;
     int glyph_pos = 0;
     if (mirrored) {
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         {
 #else
         if (symbol) {
@@ -314,7 +314,7 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
             for (; i < numChars; ++i, ++glyph_pos) {
                 uint ucs = QChar::mirroredChar(getChar(str, i, numChars));
                 if (
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
                     tm.w.tmFirstChar > 60000 || // see line 375
 #endif
                         ucs >= first && ucs <= last)
@@ -324,7 +324,7 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
             }
         }
     } else {
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         {
 #else
         if (symbol) {
@@ -352,7 +352,7 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
             for (; i < numChars; ++i, ++glyph_pos) {
                 uint uc = getChar(str, i, numChars);
                 if (
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
                     tm.w.tmFirstChar > 60000 || // see comment in QFontEngineWin
 #endif
                         uc >= first && uc <= last)
@@ -482,7 +482,7 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     if (flags & QTextEngine::GlyphIndicesOnly)
         return true;
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     HDC hdc = shared_dc();
     if (flags & QTextEngine::DesignMetrics) {
         HGDIOBJ oldFont = 0;
@@ -585,7 +585,7 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
 
                     designAdvances[glyph] = QFixed(width) / designToDevice;
                 } else {
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
                     GLYPHMETRICS gm;
                     DWORD res = GDI_ERROR;
                     MAT2 mat;
@@ -647,7 +647,7 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
 
                     width -= overhang;
                 } else {
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
                     GLYPHMETRICS gm;
                     DWORD res = GDI_ERROR;
                     MAT2 mat;
@@ -693,14 +693,14 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
 
 
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 typedef HRESULT (WINAPI *pGetCharABCWidthsFloat)(HDC, UINT, UINT, LPABCFLOAT);
 static pGetCharABCWidthsFloat qt_GetCharABCWidthsFloat = 0;
 #endif
 
 glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 {
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     GLYPHMETRICS gm;
 
     HDC hdc = shared_dc();
@@ -871,7 +871,7 @@ qreal QFontEngineWin::minLeftBearing() const
 
 qreal QFontEngineWin::minRightBearing() const
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (rbearing == SHRT_MIN) {
         int ml = 0;
         int mr = 0;
@@ -1047,7 +1047,7 @@ static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale) {
 static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
                            QPainterPath *path, bool ttf, glyph_metrics_t *metric = 0, qreal scale = 1)
 {
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     Q_UNUSED(glyph);
     Q_UNUSED(hdc);
 #endif
@@ -1064,7 +1064,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
     GLYPHMETRICS gMetric;
     memset(&gMetric, 0, sizeof(GLYPHMETRICS));
     int bufferSize = GDI_ERROR;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     QT_WA( {
         bufferSize = GetGlyphOutlineW(hdc, glyph, glyphFormat, &gMetric, 0, 0, &mat);
     }, {
@@ -1077,7 +1077,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
 
     void *dataBuffer = new char[bufferSize];
     DWORD ret = GDI_ERROR;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     QT_WA( {
         ret = GetGlyphOutlineW(hdc, glyph, glyphFormat, &gMetric, bufferSize,
                             dataBuffer, &mat);
@@ -1199,7 +1199,7 @@ void QFontEngineWin::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, in
 void QFontEngineWin::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
                                       QPainterPath *path, QTextItem::RenderFlags flags)
 {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     if(tm.w.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) {
         hasOutline = true;
         QFontEngine::addOutlineToPath(x, y, glyphs, path, flags);
@@ -1267,7 +1267,7 @@ QFontEngine::Properties QFontEngineWin::properties() const
     });
     HDC hdc = shared_dc();
     HGDIOBJ oldfont = SelectObject(hdc, hf);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     OUTLINETEXTMETRICW *otm = getOutlineTextMetric(hdc);
 #else
     OUTLINETEXTMETRICA *otm = getOutlineTextMetric(hdc);
@@ -1333,6 +1333,7 @@ bool QFontEngineWin::getSfntTableData(uint tag, uchar *buffer, uint *length) con
 #    define CLEARTYPE_QUALITY       5
 #endif
 
+extern bool qt_cleartype_enabled;
 
 QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin,
                                            const QTransform &t, QImage::Format mask_format)
@@ -1351,7 +1352,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 
     bool has_transformation = t.type() > QTransform::TxTranslate;
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     unsigned int options = ttf ? ETO_GLYPH_INDEX : 0;
     XFORM xform;
 
@@ -1408,7 +1409,11 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 
     QNativeImage *ni = new QNativeImage(iw + 2 * margin + 4,
                                         ih + 2 * margin + 4,
-                                        mask_format, true);
+                                        QNativeImage::systemFormat(), !qt_cleartype_enabled);
+
+    /*If cleartype is enabled we use the standard system format even on Windows CE 
+      and not the special textbuffer format we have to use if cleartype is disabled*/
+
     ni->image.fill(0xffffffff);
 
     HDC hdc = ni->hdc;
@@ -1437,7 +1442,6 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 }
 
 
-extern bool qt_cleartype_enabled;
 extern uint qt_pow_gamma[256];
 
 QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)

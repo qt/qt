@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -383,7 +383,7 @@ public:
     bool eventTranslated : 1;
 
 private:
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     struct OleMenuItem {
         OleMenuItem(HMENU hm = 0, int ID = 0, QMenu *menu = 0)
             : hMenu(hm), id(ID), subMenu(menu)
@@ -408,7 +408,7 @@ private:
     bool canHostDocument : 1;
 
     DWORD m_dwOleObject;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     HWND m_menuOwner;
 #endif
     CONTROLINFO control_info;
@@ -417,7 +417,7 @@ private:
     unsigned long ref;
     QAxWidget *widget;
     QAxHostWidget *host;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     QPointer<QMenuBar> menuBar;
     QMap<QAction*,OleMenuItem> menuItemMap;
 #endif
@@ -467,7 +467,7 @@ static QAbstractEventDispatcher::EventFilter previous_filter = 0;
 #if QT_VERSION >= 0x050000
 #error "Fix QAbstractEventDispatcher::setEventFilter"
 #endif
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 static int filter_ref = 0;
 #else
 static const char *qaxatom = "QAxContainer4_Atom";
@@ -551,7 +551,7 @@ QAxClientSite::QAxClientSite(QAxWidget *c)
     canHostDocument = false;
 
     m_dwOleObject = 0;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     m_menuOwner = 0;
     menuBar = 0;
 #endif
@@ -1132,7 +1132,7 @@ HRESULT WINAPI QAxClientSite::OnPosRectChange(LPCRECT /*lprcPosRect*/)
 }
 
 //**** IOleInPlaceFrame
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 HRESULT WINAPI QAxClientSite::InsertMenus(HMENU /*hmenuShared*/, LPOLEMENUGROUPWIDTHS /*lpMenuWidths*/)
 {
     return E_NOTIMPL;

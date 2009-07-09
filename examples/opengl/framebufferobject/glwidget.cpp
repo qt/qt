@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,18 @@ GLWidget::GLWidget(QWidget *parent)
 {
     setWindowTitle(tr("OpenGL framebuffer objects"));
     makeCurrent();
-    fbo = new QGLFramebufferObject(1024, 1024);
+
+    if (QGLFramebufferObject::hasOpenGLFramebufferBlit()) {
+        QGLFramebufferObjectFormat format;
+        format.setSamples(4);
+
+        render_fbo = new QGLFramebufferObject(512, 512, format);
+        texture_fbo = new QGLFramebufferObject(512, 512);
+    } else {
+        render_fbo = new QGLFramebufferObject(1024, 1024);
+        texture_fbo = render_fbo;
+    }
+
     rot_x = rot_y = rot_z = 0.0f;
     scale = 0.1f;
     anim = new QTimeLine(750, this);
@@ -113,7 +124,9 @@ GLWidget::~GLWidget()
 {
     delete[] wave;
     glDeleteLists(tile_list, 1);
-    delete fbo;
+    delete texture_fbo;
+    if (render_fbo != texture_fbo)
+        delete render_fbo;
 }
 
 void GLWidget::paintEvent(QPaintEvent *)
@@ -129,9 +142,15 @@ void GLWidget::draw()
     saveGLState();
 
     // render the 'bubbles.svg' file into our framebuffer object
-    QPainter fbo_painter(fbo);
+    QPainter fbo_painter(render_fbo);
     svg_renderer->render(&fbo_painter);
     fbo_painter.end();
+
+    if (render_fbo != texture_fbo) {
+        QRect rect(0, 0, render_fbo->width(), render_fbo->height());
+        QGLFramebufferObject::blitFramebuffer(texture_fbo, rect,
+                                              render_fbo, rect);
+    }
 
     // draw into the GL widget
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -145,8 +164,9 @@ void GLWidget::draw()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glBindTexture(GL_TEXTURE_2D, fbo->texture());
+    glBindTexture(GL_TEXTURE_2D, texture_fbo->texture());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_CULL_FACE);

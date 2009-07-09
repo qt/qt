@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -114,13 +114,12 @@ public:
     uint skipRow: 1; // skip the next fetchNext()?
     uint utf8: 1;
     QSqlRecord rInf;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 static const uint initial_cache_size = 128;
 
 QSQLite2ResultPrivate::QSQLite2ResultPrivate(QSQLite2Result* res) : q(res), access(0), currentTail(0),
-    currentMachine(0), skippedStatus(false), skipRow(false), utf8(false), precisionPolicy(QSql::HighPrecision)
+    currentMachine(0), skippedStatus(false), skipRow(false), utf8(false)
 {
 }
 
@@ -170,8 +169,8 @@ void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
         
         //remove quotations around the field name if any
         QString fieldStr = QString::fromAscii(fieldName);
-        QString quote = QString::fromLatin1("\"");
-        if ( fieldStr.length() > 2 && fieldStr.left(1) == quote && fieldStr.right(1) == quote) {
+        QLatin1Char quote('\"');
+        if ( fieldStr.length() > 2 && fieldStr.startsWith(quote) && fieldStr.endsWith(quote)) {
             fieldStr = fieldStr.mid(1);
             fieldStr.chop(1);
         }
@@ -260,12 +259,8 @@ void QSQLite2Result::virtual_hook(int id, void *data)
     case QSqlResult::DetachFromResultSet:
         d->finalize();
         break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
-        break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 
@@ -561,7 +556,7 @@ QVariant QSQLite2Driver::handle() const
 QString QSQLite2Driver::escapeIdentifier(const QString &identifier, IdentifierType /*type*/) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

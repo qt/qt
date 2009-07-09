@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,10 +26,12 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "NodeList.h"
 #include "RenderStyle.h"
 #include "WMLDocument.h"
 #include "WMLDoElement.h"
+#include "WMLInputElement.h"
 #include "WMLIntrinsicEventHandler.h"
 #include "WMLNames.h"
 #include "WMLTemplateElement.h"
@@ -41,13 +43,14 @@ namespace WebCore {
 using namespace WMLNames;
 
 WMLCardElement::WMLCardElement(const QualifiedName& tagName, Document* doc)
-    : WMLEventHandlingElement(tagName, doc)
+    : WMLElement(tagName, doc)
     , m_isNewContext(false)
     , m_isOrdered(false)
     , m_isVisible(false)
     , m_eventTimer(0)
     , m_template(0)
 {
+    ASSERT(hasTagName(cardTag));
 }
 
 WMLCardElement::~WMLCardElement()
@@ -162,16 +165,18 @@ void WMLCardElement::handleIntrinsicEventIfNeeded()
     if (m_eventTimer)
         m_eventTimer->start();
 
-    // FIXME: Initialize input/select  elements in this card
-    /*
-    Node* node = this;
-    while (node = node->traverseNextNode()) {
+    // FIXME: Initialize select elements in this card
+    for (Node* node = traverseNextNode(); node != 0; node = node->traverseNextNode()) {
+        if (!node->isElementNode())
+            continue;
+
         if (node->hasTagName(inputTag))
-            static_cast<WMLInputElement*>(node)->init();
+            static_cast<WMLInputElement*>(node)->initialize();
+        /*
         else if (node->hasTagName(selectTag))
             static_cast<WMLSelectElement*>(node)->selectInitialOptions();
+        */
     }
-    */
 }
 
 void WMLCardElement::handleDeckLevelTaskOverridesIfNeeded()
@@ -201,6 +206,11 @@ void WMLCardElement::handleDeckLevelTaskOverridesIfNeeded()
         (*it)->setActive(!cardDoElementNames.contains((*it)->name()));
 }
 
+String WMLCardElement::title() const
+{
+    return parseValueSubstitutingVariableReferences(getAttribute(HTMLNames::titleAttr));
+}
+
 void WMLCardElement::parseMappedAttribute(MappedAttribute* attr)
 {
     WMLIntrinsicEventType eventType = WMLIntrinsicEventUnknown;
@@ -216,7 +226,7 @@ void WMLCardElement::parseMappedAttribute(MappedAttribute* attr)
     else if (attr->name() == orderedAttr)
         m_isOrdered = (attr->value() == "true");
     else {
-        WMLEventHandlingElement::parseMappedAttribute(attr);
+        WMLElement::parseMappedAttribute(attr);
         return;
     }
 
@@ -232,7 +242,7 @@ void WMLCardElement::parseMappedAttribute(MappedAttribute* attr)
 
 void WMLCardElement::insertedIntoDocument()
 {
-    WMLEventHandlingElement::insertedIntoDocument();
+    WMLElement::insertedIntoDocument();
 
     // The first card inserted into a document, is visible by default.
     if (!m_isVisible) {

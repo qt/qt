@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,15 @@
 QT_BEGIN_NAMESPACE
 
 typedef QList<QPair<QModelIndex, QPersistentModelIndex> > QModelIndexPairList;
+
+static inline QSet<int> qVectorToSet(const QVector<int> &vector)
+{
+    QSet<int> set;
+    set.reserve(vector.size());
+    for(int i=0; i < vector.size(); ++i)
+        set << vector.at(i);
+    return set;
+}
 
 class QSortFilterProxyModelLessThan
 {
@@ -224,8 +233,8 @@ public:
     QModelIndexPairList store_persistent_indexes();
     void update_persistent_indexes(const QModelIndexPairList &source_indexes);
 
-    void filter_changed();
-    void handle_filter_changed(
+    void filter_changed(const QModelIndex &source_parent = QModelIndex());
+    QSet<int> handle_filter_changed(
         QVector<int> &source_to_proxy, QVector<int> &proxy_to_source,
         const QModelIndex &source_parent, Qt::Orientation orient);
 
@@ -875,8 +884,8 @@ void QSortFilterProxyModelPrivate::proxy_item_range(
 {
     proxy_low = INT_MAX;
     proxy_high = INT_MIN;
-    foreach (int source_item, source_items) {
-        int proxy_item = source_to_proxy.at(source_item);
+    for (int i = 0; i < source_items.count(); ++i) {
+        int proxy_item = source_to_proxy.at(source_items.at(i));
         Q_ASSERT(proxy_item != -1);
         if (proxy_item < proxy_low)
             proxy_low = proxy_item;
@@ -937,34 +946,47 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
     q->changePersistentIndexList(from, to);
 }
 
+
 /*!
   \internal
 
   Updates the proxy model (adds/removes rows) based on the
   new filter.
 */
-void QSortFilterProxyModelPrivate::filter_changed()
+void QSortFilterProxyModelPrivate::filter_changed(const QModelIndex &source_parent)
 {
-    QMap<QModelIndex, Mapping *>::const_iterator it;
-    for (it = source_index_mapping.constBegin(); it != source_index_mapping.constEnd(); ++it) {
-        QModelIndex source_parent = it.key();
-        Mapping *m = it.value();
-        handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical);
-        handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal);
+    IndexMap::const_iterator it = source_index_mapping.constFind(source_parent);
+    if (it == source_index_mapping.constEnd())
+        return;
+    Mapping *m = it.value();
+    QSet<int> rows_removed = handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical);
+    QSet<int> columns_removed = handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal);
+    QVector<QModelIndex>::iterator it2 = m->mapped_children.end();
+    while (it2 != m->mapped_children.begin()) {
+        --it2;
+        const QModelIndex source_child_index = *it2;
+        if (rows_removed.contains(source_child_index.row()) || columns_removed.contains(source_child_index.column())) {
+            it2 = m->mapped_children.erase(it2);
+            remove_from_mapping(source_child_index);
+        } else {
+            filter_changed(source_child_index);
+        }
     }
 }
 
 /*!
   \internal
+  returns the removed items indexes
 */
-void QSortFilterProxyModelPrivate::handle_filter_changed(
+QSet<int> QSortFilterProxyModelPrivate::handle_filter_changed(
     QVector<int> &source_to_proxy, QVector<int> &proxy_to_source,
     const QModelIndex &source_parent, Qt::Orientation orient)
 {
     Q_Q(QSortFilterProxyModel);
     // Figure out which mapped items to remove
     QVector<int> source_items_remove;
-    foreach (int source_item, proxy_to_source) {
+    for (int i = 0; i < proxy_to_source.count(); ++i) {
+        const int source_item = proxy_to_source.at(i);
         if ((orient == Qt::Vertical)
             ? !q->filterAcceptsRow(source_item, source_parent)
             : !q->filterAcceptsColumn(source_item, source_parent)) {
@@ -994,6 +1016,7 @@ void QSortFilterProxyModelPrivate::handle_filter_changed(
         insert_source_items(source_to_proxy, proxy_to_source,
                             source_items_insert, source_parent, orient);
     }
+    return qVectorToSet(source_items_remove);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &source_top_left,
@@ -1044,15 +1067,14 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
     if (!source_rows_remove.isEmpty()) {
         remove_source_items(m->proxy_rows, m->source_rows,
                             source_rows_remove, source_parent, Qt::Vertical);
-        QSet<int> source_rows_remove_set = source_rows_remove.toList().toSet();
-        QVector<QModelIndex>::iterator it = m->mapped_children.begin();
-        while (it != m->mapped_children.end()) {
+        QSet<int> source_rows_remove_set = qVectorToSet(source_rows_remove);
+        QVector<QModelIndex>::iterator it = m->mapped_children.end();
+        while (it != m->mapped_children.begin()) {
+            --it;
             const QModelIndex source_child_index = *it;
             if (source_rows_remove_set.contains(source_child_index.row())) {
                 it = m->mapped_children.erase(it);
                 remove_from_mapping(source_child_index);
-            } else {
-                ++it;
             }
         }
     }

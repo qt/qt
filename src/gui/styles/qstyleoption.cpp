@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,6 +48,7 @@
 #ifndef QT_NO_DEBUG
 #include <qdebug.h>
 #endif
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -3541,7 +3542,8 @@ QStyleOptionQ3DockWindow::QStyleOptionQ3DockWindow(int version)
 */
 
 QStyleOptionDockWidget::QStyleOptionDockWidget()
-    : QStyleOption(Version, SO_DockWidget), movable(false)
+    : QStyleOption(Version, SO_DockWidget), closable(false),
+      movable(false), floatable(false)
 {
 }
 
@@ -4998,6 +5000,34 @@ QStyleOptionGraphicsItem::QStyleOptionGraphicsItem(int version)
 }
 
 /*!
+    \since 4.6
+
+    Returns the level of detail from the \a worldTransform.
+
+    Its value represents the maximum value of the height and
+    width of a unity rectangle, mapped using the \a worldTransform
+    of the painter used to draw the item. By default, if no
+    transformations are applied, its value is 1. If zoomed out 1:2, the level
+    of detail will be 0.5, and if zoomed in 2:1, its value is 2.
+
+    For more advanced level-of-detail metrics, use
+    QStyleOptionGraphicsItem::matrix directly.
+
+    \sa QStyleOptionGraphicsItem::matrix
+*/
+qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &worldTransform)
+{
+    if (worldTransform.type() <= QTransform::TxTranslate)
+        return 1; // Translation only? The LOD is 1.
+
+    // Two unit vectors.
+    QLineF v1(0, 0, 1, 0);
+    QLineF v2(0, 0, 0, 1);
+    // LOD is the transformed area of a 1x1 rectangle.
+    return qSqrt(worldTransform.map(v1).length() * worldTransform.map(v2).length());
+}
+
+/*!
     \fn QStyleOptionGraphicsItem::QStyleOptionGraphicsItem(const QStyleOptionGraphicsItem &other)
 
     Constructs a copy of \a other.
@@ -5029,19 +5059,10 @@ QStyleOptionGraphicsItem::QStyleOptionGraphicsItem(int version)
 
 /*!
     \variable QStyleOptionGraphicsItem::levelOfDetail
-    \brief a simple metric for determining an item's level of detail
+    \obsolete
 
-    This simple metric provides an easy way to determine the level of detail
-    for an item. Its value represents the maximum value of the height and
-    width of a unity rectangle, mapped using the complete transformation
-    matrix of the painter used to draw the item. By default, if no
-    transformations are applied, its value is 1. If zoomed out 1:2, the level
-    of detail will be 0.5, and if zoomed in 2:1, its value is 2.
-
-    For more advanced level-of-detail metrics, use
-    QStyleOptionGraphicsItem::matrix directly.
-
-    \sa QStyleOptionGraphicsItem::matrix
+    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform
+    together with QPainter::worldTransform() instead.
 */
 
 /*!
@@ -5342,10 +5363,10 @@ QDebug operator<<(QDebug debug, const QStyleOption &option)
 {
     debug << "QStyleOption(";
     debug << QStyleOption::OptionType(option.type);
-    debug << "," << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
-    debug << "," << option.state;
-    debug << "," << option.rect;
-    debug << ")";
+    debug << ',' << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
+    debug << ',' << option.state;
+    debug << ',' << option.rect;
+    debug << ')';
     return debug;
 }
 #endif

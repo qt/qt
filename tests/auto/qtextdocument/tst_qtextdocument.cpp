@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -160,6 +160,10 @@ private slots:
     void revisions();
 
     void testUndoCommandAdded();
+
+    void testUndoBlocks();
+
+    void receiveCursorPositionChangedAfterContentsChange();
 
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
@@ -2433,6 +2437,52 @@ void tst_QTextDocument::testUndoCommandAdded()
     cf.setFontItalic(true);
     cursor.mergeCharFormat(cf);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QTextDocument::testUndoBlocks()
+{
+    QVERIFY(doc);
+    cursor.insertText("Hello World");
+    cursor.insertText("period");
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
+    cursor.insertText("Hello World");
+    cursor.insertText("One\nTwo\nThree");
+    QCOMPARE(doc->toPlainText(), QString("Hello WorldOne\nTwo\nThree"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("Hello World"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
+}
+
+class Receiver : public QObject
+{
+    Q_OBJECT
+ public:
+    QString first;
+ public slots:
+    void cursorPositionChanged() {
+        if (first.isEmpty())
+            first = QLatin1String("cursorPositionChanged");
+    }
+
+    void contentsChange() {
+        if (first.isEmpty())
+            first = QLatin1String("contentsChanged");
+    }
+};
+
+void tst_QTextDocument::receiveCursorPositionChangedAfterContentsChange()
+{
+    QVERIFY(doc);
+    doc->setDocumentLayout(new MyAbstractTextDocumentLayout(doc));
+    Receiver rec;
+    connect(doc, SIGNAL(cursorPositionChanged(QTextCursor)),
+            &rec, SLOT(cursorPositionChanged()));
+    connect(doc, SIGNAL(contentsChange(int,int,int)),
+            &rec, SLOT(contentsChange()));
+    cursor.insertText("Hello World");
+    QCOMPARE(rec.first, QString("contentsChanged"));
 }
 
 QTEST_MAIN(tst_QTextDocument)

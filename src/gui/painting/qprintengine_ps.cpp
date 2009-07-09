@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -167,7 +167,7 @@ static QByteArray wrapDSC(const QByteArray &str)
         }
         wrapped += "\n%%+" + tmp;
     }
-    return wrapped + "\n";
+    return wrapped + '\n';
 }
 
 // ----------------------------- Internal class declarations -----------------------------
@@ -422,7 +422,7 @@ void QPSPrintEnginePrivate::drawImageHelper(qreal x, qreal y, qreal w, qreal h, 
                  << size << " string readstring\n";
     ps_r7(*currentPage, out, out.size());
     *currentPage << " pop def\n";
-    *currentPage << width << ' ' << height << "[" << scaleX << " 0 0 " << scaleY << " 0 0]sl "
+    *currentPage << width << ' ' << height << '[' << scaleX << " 0 0 " << scaleY << " 0 0]sl "
                  << bits << (!mask.isNull() ? "mask " : "false ")
                  << x << ' ' << y << " di\n";
 }
@@ -529,7 +529,7 @@ void QPSPrintEnginePrivate::emitHeader(bool finished)
         else
             s << "\n%%BoundingBox: 0 0 " << w << h;
     }
-    s << "\n" << wrapDSC("%%Creator: " + creator.toUtf8());
+    s << '\n' << wrapDSC("%%Creator: " + creator.toUtf8());
     if (!title.isEmpty())
         s << wrapDSC("%%Title: " + title.toUtf8());
 #ifndef QT_NO_DATESTRING
@@ -549,7 +549,7 @@ void QPSPrintEnginePrivate::emitHeader(bool finished)
         "% Prolog copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).\n"
         "% You may copy this prolog in any way that is directly related to this document.\n"
         "% For other use of this prolog, see your licensing agreement for Qt.\n"
-      << ps_header << "\n";
+      << ps_header << '\n';
 
 
     s << "/pageinit {\n";
@@ -560,12 +560,12 @@ void QPSPrintEnginePrivate::emitHeader(bool finished)
             s << mtop*scale << mleft*scale << "translate\n";
     }
     if (orientation == QPrinter::Portrait) {
-        s << "% " << printer->widthMM() << "*" << printer->heightMM()
+        s << "% " << printer->widthMM() << '*' << printer->heightMM()
           << "mm (portrait)\n0 " << height*scale
-          << "translate " << scale << "-" << scale << "scale } def\n";
+          << "translate " << scale << '-' << scale << "scale } def\n";
     } else {
-        s << "% " << printer->heightMM() << "*" << printer->widthMM()
-          << " mm (landscape)\n 90 rotate " << scale << "-" << scale << "scale } def\n";
+        s << "% " << printer->heightMM() << '*' << printer->widthMM()
+          << " mm (landscape)\n 90 rotate " << scale << '-' << scale << "scale } def\n";
     }
     s << "%%EndProlog\n";
 
@@ -619,8 +619,8 @@ void QPSPrintEnginePrivate::flushPage(bool last)
     QPdf::ByteStream e(&trailer);
     buffer << "%%Page: "
            << pageCount << pageCount << "\n"
-           << "%%BeginPageSetup\n"
-           << "QI\n";
+           "%%BeginPageSetup\n"
+           "QI\n";
     if (hugeDocument) {
         for (QHash<QFontEngine::FaceId, QFontSubset *>::const_iterator it = fonts.constBegin();
              it != fonts.constEnd(); ++it) {
@@ -776,8 +776,8 @@ bool QPSPrintEngine::end()
     d->flushPage(true);
     QByteArray trailer;
     QPdf::ByteStream s(&trailer);
-    s << "%%Trailer\n";
-    s << "%%Pages: " << d->pageCount - 1 << "\n" <<
+    s << "%%Trailer\n"
+         "%%Pages: " << d->pageCount - 1 << '\n' <<
         wrapDSC("%%DocumentFonts: " + d->fontsUsed);
     s << "%%EOF\n";
     d->outDevice->write(trailer);

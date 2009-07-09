@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -763,7 +763,7 @@ template <class Iterator> bool qt_stroke_side(Iterator *it,
 
 qreal qt_t_for_arc_angle(qreal angle)
 {
-    if (qFuzzyCompare(angle + 1, qreal(1)))
+    if (qFuzzyIsNull(angle))
         return 0;
 
     if (qFuzzyCompare(angle, qreal(90)))
@@ -904,13 +904,13 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
     }
 
     // avoid empty start segment
-    if (qFuzzyCompare(startT, qreal(1))) {
+    if (qFuzzyIsNull(startT - qreal(1))) {
         startT = 0;
         startSegment += delta;
     }
 
     // avoid empty end segment
-    if (qFuzzyCompare(endT + 1, qreal(1))) {
+    if (qFuzzyIsNull(endT)) {
         endT = 1;
         endSegment -= delta;
     }
@@ -918,8 +918,8 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
     startT = qt_t_for_arc_angle(startT * 90);
     endT = qt_t_for_arc_angle(endT * 90);
 
-    const bool splitAtStart = !qFuzzyCompare(startT + 1, qreal(1));
-    const bool splitAtEnd = !qFuzzyCompare(endT, qreal(1));
+    const bool splitAtStart = !qFuzzyIsNull(startT);
+    const bool splitAtEnd = !qFuzzyIsNull(endT - qreal(1));
 
     const int end = endSegment + delta;
 
@@ -1018,7 +1018,7 @@ void QDashStroker::processCurrentSubpath()
         sumLength += dashes[i];
     }
 
-    if (qFuzzyCompare(sumLength + 1, qreal(1)))
+    if (qFuzzyIsNull(sumLength))
         return;
 
     Q_ASSERT(dashCount > 0);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -179,13 +179,13 @@ void QPixelTool::paintEvent(QPaintEvent *)
 
     if (m_displayZoom) {
         render_string(&p, w, h,
-                      QString(QLatin1String("Zoom: x%1")).arg(m_zoom),
+            QString::fromLatin1("Zoom: x%1").arg(m_zoom),
                       Qt::AlignTop | Qt::AlignRight);
     }
 
     if (m_displayGridSize) {
         render_string(&p, w, h,
-                      QString(QLatin1String("Grid size: %1")).arg(m_gridSize),
+            QString::fromLatin1("Grid size: %1").arg(m_gridSize),
                       Qt::AlignBottom | Qt::AlignLeft);
     }
 

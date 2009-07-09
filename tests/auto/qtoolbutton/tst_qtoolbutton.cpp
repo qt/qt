@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,6 +65,7 @@ private slots:
     void getSetCheck();
     void triggered();
     void task230994_iconSize();
+    void task176137_autoRepeatOfAction();
 
 protected slots:
     void sendMouseClick();
@@ -177,6 +178,25 @@ void tst_QToolButton::task230994_iconSize()
     QStyleOptionToolButton option;
     button.initStyleOption(&option);
     QVERIFY(option.iconSize.isValid());
+}
+
+void tst_QToolButton::task176137_autoRepeatOfAction()
+{
+    QAction action(0);
+    QToolButton tb;
+    tb.setDefaultAction (&action);
+    tb.show();
+    QSignalSpy spy(&action,SIGNAL(triggered()));
+    QTest::mousePress ( &tb, Qt::LeftButton);
+    QTest::mouseRelease ( &tb, Qt::LeftButton, 0, QPoint (), 2000);
+    QCOMPARE(spy.count(),1);
+
+    // try again with auto repeat
+    tb.setAutoRepeat (true);
+    QSignalSpy repeatSpy(&action,SIGNAL(triggered())); // new spy
+    QTest::mousePress ( &tb, Qt::LeftButton);
+    QTest::mouseRelease ( &tb, Qt::LeftButton, 0, QPoint (), 2000);
+    QCOMPARE (repeatSpy.count(), (2000 - tb.autoRepeatDelay()) / tb.autoRepeatInterval() + 1);
 }
 
 

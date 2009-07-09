@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -468,7 +468,7 @@ bool Q3HttpHeader::parse( const QString& str )
 	if ( !(*it).isEmpty() ) {
 	    if ( (*it)[0].isSpace() ) {
 		if ( !lines.isEmpty() ) {
-		    lines.last() += QLatin1String(" ");
+		    lines.last() += QLatin1Char(' ');
 		    lines.last() += (*it).stripWhiteSpace();
 		}
 	    } else {
@@ -562,7 +562,7 @@ void Q3HttpHeader::removeValue( const QString& key )
 */
 bool Q3HttpHeader::parseLine( const QString& line, int )
 {
-    int i = line.find( QLatin1String(":") );
+    int i = line.find( QLatin1Char(':') );
     if ( i == -1 )
 	return false;
 
@@ -647,7 +647,7 @@ QString Q3HttpHeader::contentType() const
     if ( type.isEmpty() )
 	return QString();
 
-    int pos = type.find( QLatin1String(";") );
+    int pos = type.find( QLatin1Char(';') );
     if ( pos == -1 )
 	return type;
 
@@ -2210,7 +2210,7 @@ void Q3Http::clientReply( const Q3HttpResponseHeader &rep )
 	if ( rep.statusCode() >= 400 && rep.statusCode() < 600 ) {
 	    op->setState( StFailed );
 	    op->setProtocolDetail(
-		    QString(QLatin1String("%1 %2")).arg(rep.statusCode()).arg(rep.reasonPhrase())
+            QString::fromLatin1("%1 %2").arg(rep.statusCode()).arg(rep.reasonPhrase())
 						    );
 	    switch ( rep.statusCode() ) {
 		case 401:

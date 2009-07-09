@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -148,6 +148,7 @@ class tst_MediaObject : public QObject
         void testPlayBeforeFinish();
         void testPauseOnFinish();
         void testReconnectBetweenTwoMediaObjects();
+        void volumeSliderMuteVisibility();
         void cleanupTestCase();
     private:
         void _startPlayback(Phonon::State currentState = Phonon::StoppedState);
@@ -936,6 +937,28 @@ void tst_MediaObject::_testOneSeek(qint64 seekTo)
     }
     m_success = true;
 }
+
+void tst_MediaObject::volumeSliderMuteVisibility()
+{
+    //this test doesn't really belong to mediaobject
+    // ### see if we should create a realy Phonon::VolumeSlider autotest
+    Phonon::VolumeSlider slider;
+    QVERIFY(slider.isMuteVisible()); // that is the default value
+    slider.setMuteVisible(true);
+    QVERIFY(slider.isMuteVisible());
+
+    //let's check that changing the visibility of the slider itself
+    //doesn't change what the slider reports
+    slider.setVisible(false);
+    QVERIFY(slider.isMuteVisible());
+    slider.setVisible(true);
+
+    slider.setMuteVisible(false);
+    QVERIFY(!slider.isMuteVisible());
+    slider.setMuteVisible(true);
+    QVERIFY(slider.isMuteVisible());
+}
+
 
 #endif //QT_NO_PHONON
 

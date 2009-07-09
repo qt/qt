@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,7 @@
 #include "qfileinfo.h"
 #include "qurlinfo.h"
 #include "qdir.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 
 #include <QtCore/QCoreApplication>
 
@@ -77,7 +78,7 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
 }
 
 QNetworkAccessFileBackend::QNetworkAccessFileBackend()
-    : totalBytes(0)
+    : uploadByteDevice(0), totalBytes(0), hasUploadFinished(false)
 {
 }
 
@@ -108,7 +109,7 @@ void QNetworkAccessFileBackend::open()
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         if (url.scheme() == QLatin1String("qrc"))
-            fileName = QLatin1String(":") + url.path();
+            fileName = QLatin1Char(':') + url.path();
         else
             fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
     }
@@ -126,6 +127,9 @@ void QNetworkAccessFileBackend::open()
         break;
     case QNetworkAccessManager::PutOperation:
         mode = QIODevice::WriteOnly | QIODevice::Truncate;
+        uploadByteDevice = createUploadByteDevice();
+        QObject::connect(uploadByteDevice, SIGNAL(readyRead()), this, SLOT(uploadReadyReadSlot()));
+        QMetaObject::invokeMethod(this, "uploadReadyReadSlot", Qt::QueuedConnection);
         break;
     default:
         Q_ASSERT_X(false, "QNetworkAccessFileBackend::open",
@@ -152,19 +156,50 @@ void QNetworkAccessFileBackend::open()
     }
 }
 
+void QNetworkAccessFileBackend::uploadReadyReadSlot()
+{
+    if (hasUploadFinished)
+        return;
+
+    forever {
+        qint64 haveRead;
+        const char *readPointer = uploadByteDevice->readPointer(-1, haveRead);
+        if (haveRead == -1) {
+            // EOF
+            hasUploadFinished = true;
+            file.flush();
+            file.close();
+            finished();
+            break;
+        } else if (haveRead == 0 || readPointer == 0) {
+            // nothing to read right now, we will be called again later
+            break;
+        } else {
+            qint64 haveWritten;
+            haveWritten = file.write(readPointer, haveRead);
+
+            if (haveWritten < 0) {
+                // write error!
+                QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Write error writing to %1: %2")
+                              .arg(url().toString(), file.errorString());
+                error(QNetworkReply::ProtocolFailure, msg);
+
+                finished();
+                return;
+            } else {
+                uploadByteDevice->advanceReadPointer(haveWritten);
+            }
+
+
+            file.flush();
+        }
+    }
+}
+
 void QNetworkAccessFileBackend::closeDownstreamChannel()
 {
     if (operation() == QNetworkAccessManager::GetOperation) {
         file.close();
-        //downstreamChannelClosed();
-    }
-}
-
-void QNetworkAccessFileBackend::closeUpstreamChannel()
-{
-    if (operation() == QNetworkAccessManager::PutOperation) {
-        file.close();
-        finished();
     }
 }
 
@@ -172,40 +207,6 @@ bool QNetworkAccessFileBackend::waitForDownstreamReadyRead(int)
 {
     Q_ASSERT(operation() == QNetworkAccessManager::GetOperation);
     return readMoreFromFile();
-}
-
-bool QNetworkAccessFileBackend::waitForUpstreamBytesWritten(int)
-{
-    Q_ASSERT_X(false, "QNetworkAccessFileBackend::waitForUpstreamBytesWritten",
-               "This function should never have been called, since there is never anything "
-               "left to be written!");
-    return false;
-}
-
-void QNetworkAccessFileBackend::upstreamReadyRead()
-{
-    Q_ASSERT_X(operation() == QNetworkAccessManager::PutOperation, "QNetworkAccessFileBackend",
-               "We're being told to upload data but operation isn't PUT!");
-
-    // there's more data to be written to the file
-    while (upstreamBytesAvailable()) {
-        // write everything and let QFile handle it
-        int written = file.write(readUpstream());
-
-        if (written < 0) {
-            // write error!
-            QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Write error writing to %1: %2")
-                                                    .arg(url().toString(), file.errorString());
-            error(QNetworkReply::ProtocolFailure, msg);
-
-            finished();
-            return;
-        }
-
-        // successful write
-        file.flush();
-        upstreamBytesConsumed(written);
-    }
 }
 
 void QNetworkAccessFileBackend::downstreamReadyWrite()

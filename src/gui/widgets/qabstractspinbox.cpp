@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -193,6 +193,7 @@ void QAbstractSpinBox::setButtonSymbols(ButtonSymbols buttonSymbols)
     Q_D(QAbstractSpinBox);
     if (d->buttonSymbols != buttonSymbols) {
         d->buttonSymbols = buttonSymbols;
+        d->updateEditFieldGeometry();
         update();
     }
 }
@@ -1706,6 +1707,8 @@ void QAbstractSpinBoxPrivate::updateEdit()
 
 void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
 {
+    Q_Q(QAbstractSpinBox);
+
     clearCache();
     minimum = min;
     maximum = (variantCompare(min, max) < 0 ? max : min);
@@ -1717,6 +1720,8 @@ void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
     } else if (value == minimum && !specialValueText.isEmpty()) {
         updateEdit();
     }
+
+    q->updateGeometry();
 }
 
 /*!
@@ -1791,8 +1796,8 @@ void QAbstractSpinBoxPrivate::interpret(EmitPolicy ep)
         q->fixup(tmp);
         QASBDEBUG() << "QAbstractSpinBoxPrivate::interpret() text '"
                     << edit->displayText()
-                    << "' >> '" << copy << "'"
-                    << "' >> '" << tmp << "'";
+                    << "' >> '" << copy << '\''
+                    << "' >> '" << tmp << '\'';
 
         doInterpret = tmp != copy && (q->validate(tmp, pos) == QValidator::Acceptable);
         if (!doInterpret) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2368,6 +2368,7 @@ void DomCustomWidget::clear(bool clear_all)
     delete m_script;
     delete m_properties;
     delete m_slots;
+    delete m_propertyspecifications;
 
     if (clear_all) {
     m_text.clear();
@@ -2381,6 +2382,7 @@ void DomCustomWidget::clear(bool clear_all)
     m_script = 0;
     m_properties = 0;
     m_slots = 0;
+    m_propertyspecifications = 0;
 }
 
 DomCustomWidget::DomCustomWidget()
@@ -2393,6 +2395,7 @@ DomCustomWidget::DomCustomWidget()
     m_script = 0;
     m_properties = 0;
     m_slots = 0;
+    m_propertyspecifications = 0;
 }
 
 DomCustomWidget::~DomCustomWidget()
@@ -2403,6 +2406,7 @@ DomCustomWidget::~DomCustomWidget()
     delete m_script;
     delete m_properties;
     delete m_slots;
+    delete m_propertyspecifications;
 }
 
 void DomCustomWidget::read(QXmlStreamReader &reader)
@@ -2466,6 +2470,12 @@ void DomCustomWidget::read(QXmlStreamReader &reader)
                 DomSlots *v = new DomSlots();
                 v->read(reader);
                 setElementSlots(v);
+                continue;
+            }
+            if (tag == QLatin1String("propertyspecifications")) {
+                DomPropertySpecifications *v = new DomPropertySpecifications();
+                v->read(reader);
+                setElementPropertyspecifications(v);
                 continue;
             }
             reader.raiseError(QLatin1String("Unexpected element ") + tag);
@@ -2548,6 +2558,12 @@ void DomCustomWidget::read(const QDomElement &node)
                 setElementSlots(v);
                 continue;
             }
+            if (tag == QLatin1String("propertyspecifications")) {
+                DomPropertySpecifications *v = new DomPropertySpecifications();
+                v->read(e);
+                setElementPropertyspecifications(v);
+                continue;
+            }
     }
     m_text.clear();
     for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
@@ -2603,6 +2619,10 @@ void DomCustomWidget::write(QXmlStreamWriter &writer, const QString &tagName) co
 
     if (m_children & Slots) {
         m_slots->write(writer, QLatin1String("slots"));
+    }
+
+    if (m_children & Propertyspecifications) {
+        m_propertyspecifications->write(writer, QLatin1String("propertyspecifications"));
     }
 
     if (!m_text.isEmpty())
@@ -2731,6 +2751,21 @@ void DomCustomWidget::setElementSlots(DomSlots* a)
     m_slots = a;
 }
 
+DomPropertySpecifications* DomCustomWidget::takeElementPropertyspecifications() 
+{
+    DomPropertySpecifications* a = m_propertyspecifications;
+    m_propertyspecifications = 0;
+    m_children ^= Propertyspecifications;
+    return a;
+}
+
+void DomCustomWidget::setElementPropertyspecifications(DomPropertySpecifications* a)
+{
+    delete m_propertyspecifications;
+    m_children |= Propertyspecifications;
+    m_propertyspecifications = a;
+}
+
 void DomCustomWidget::clearElementClass()
 {
     m_children &= ~Class;
@@ -2796,6 +2831,13 @@ void DomCustomWidget::clearElementSlots()
     delete m_slots;
     m_slots = 0;
     m_children &= ~Slots;
+}
+
+void DomCustomWidget::clearElementPropertyspecifications()
+{
+    delete m_propertyspecifications;
+    m_propertyspecifications = 0;
+    m_children &= ~Propertyspecifications;
 }
 
 void DomProperties::clear(bool clear_all)
@@ -10881,6 +10923,209 @@ void DomSlots::setElementSlot(const QStringList& a)
 {
     m_children |= Slot;
     m_slot = a;
+}
+
+void DomPropertySpecifications::clear(bool clear_all)
+{
+    qDeleteAll(m_stringpropertyspecification);
+    m_stringpropertyspecification.clear();
+
+    if (clear_all) {
+    m_text.clear();
+    }
+
+    m_children = 0;
+}
+
+DomPropertySpecifications::DomPropertySpecifications()
+{
+    m_children = 0;
+}
+
+DomPropertySpecifications::~DomPropertySpecifications()
+{
+    qDeleteAll(m_stringpropertyspecification);
+    m_stringpropertyspecification.clear();
+}
+
+void DomPropertySpecifications::read(QXmlStreamReader &reader)
+{
+
+    for (bool finished = false; !finished && !reader.hasError();) {
+        switch (reader.readNext()) {
+        case QXmlStreamReader::StartElement : {
+            const QString tag = reader.name().toString().toLower();
+            if (tag == QLatin1String("stringpropertyspecification")) {
+                DomStringPropertySpecification *v = new DomStringPropertySpecification();
+                v->read(reader);
+                m_stringpropertyspecification.append(v);
+                continue;
+            }
+            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+        }
+            break;
+        case QXmlStreamReader::EndElement :
+            finished = true;
+            break;
+        case QXmlStreamReader::Characters :
+            if (!reader.isWhitespace())
+                m_text.append(reader.text().toString());
+            break;
+        default :
+            break;
+        }
+    }
+}
+
+#ifdef QUILOADER_QDOM_READ
+void DomPropertySpecifications::read(const QDomElement &node)
+{
+    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
+        if (!n.isElement())
+            continue;
+        QDomElement e = n.toElement();
+        QString tag = e.tagName().toLower();
+            if (tag == QLatin1String("stringpropertyspecification")) {
+                DomStringPropertySpecification *v = new DomStringPropertySpecification();
+                v->read(e);
+                m_stringpropertyspecification.append(v);
+                continue;
+            }
+    }
+    m_text.clear();
+    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
+        if (child.isText())
+            m_text.append(child.nodeValue());
+     }
+}
+#endif
+
+void DomPropertySpecifications::write(QXmlStreamWriter &writer, const QString &tagName) const
+{
+    writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("propertyspecifications") : tagName.toLower());
+
+    for (int i = 0; i < m_stringpropertyspecification.size(); ++i) {
+        DomStringPropertySpecification* v = m_stringpropertyspecification[i];
+        v->write(writer, QLatin1String("stringpropertyspecification"));
+    }
+    if (!m_text.isEmpty())
+        writer.writeCharacters(m_text);
+
+    writer.writeEndElement();
+}
+
+void DomPropertySpecifications::setElementStringpropertyspecification(const QList<DomStringPropertySpecification*>& a)
+{
+    m_children |= Stringpropertyspecification;
+    m_stringpropertyspecification = a;
+}
+
+void DomStringPropertySpecification::clear(bool clear_all)
+{
+
+    if (clear_all) {
+    m_text.clear();
+    m_has_attr_name = false;
+    m_has_attr_type = false;
+    m_has_attr_notr = false;
+    }
+
+    m_children = 0;
+}
+
+DomStringPropertySpecification::DomStringPropertySpecification()
+{
+    m_children = 0;
+    m_has_attr_name = false;
+    m_has_attr_type = false;
+    m_has_attr_notr = false;
+}
+
+DomStringPropertySpecification::~DomStringPropertySpecification()
+{
+}
+
+void DomStringPropertySpecification::read(QXmlStreamReader &reader)
+{
+
+    foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
+        QStringRef name = attribute.name();
+        if (name == QLatin1String("name")) {
+            setAttributeName(attribute.value().toString());
+            continue;
+        }
+        if (name == QLatin1String("type")) {
+            setAttributeType(attribute.value().toString());
+            continue;
+        }
+        if (name == QLatin1String("notr")) {
+            setAttributeNotr(attribute.value().toString());
+            continue;
+        }
+        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+    }
+
+    for (bool finished = false; !finished && !reader.hasError();) {
+        switch (reader.readNext()) {
+        case QXmlStreamReader::StartElement : {
+            const QString tag = reader.name().toString().toLower();
+            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+        }
+            break;
+        case QXmlStreamReader::EndElement :
+            finished = true;
+            break;
+        case QXmlStreamReader::Characters :
+            if (!reader.isWhitespace())
+                m_text.append(reader.text().toString());
+            break;
+        default :
+            break;
+        }
+    }
+}
+
+#ifdef QUILOADER_QDOM_READ
+void DomStringPropertySpecification::read(const QDomElement &node)
+{
+    if (node.hasAttribute(QLatin1String("name")))
+        setAttributeName(node.attribute(QLatin1String("name")));
+    if (node.hasAttribute(QLatin1String("type")))
+        setAttributeType(node.attribute(QLatin1String("type")));
+    if (node.hasAttribute(QLatin1String("notr")))
+        setAttributeNotr(node.attribute(QLatin1String("notr")));
+
+    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
+        if (!n.isElement())
+            continue;
+        QDomElement e = n.toElement();
+        QString tag = e.tagName().toLower();
+    }
+    m_text.clear();
+    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
+        if (child.isText())
+            m_text.append(child.nodeValue());
+     }
+}
+#endif
+
+void DomStringPropertySpecification::write(QXmlStreamWriter &writer, const QString &tagName) const
+{
+    writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("stringpropertyspecification") : tagName.toLower());
+
+    if (hasAttributeName())
+        writer.writeAttribute(QLatin1String("name"), attributeName());
+
+    if (hasAttributeType())
+        writer.writeAttribute(QLatin1String("type"), attributeType());
+
+    if (hasAttributeNotr())
+        writer.writeAttribute(QLatin1String("notr"), attributeNotr());
+
+    if (!m_text.isEmpty())
+        writer.writeCharacters(m_text);
+
+    writer.writeEndElement();
 }
 
 QT_END_NAMESPACE

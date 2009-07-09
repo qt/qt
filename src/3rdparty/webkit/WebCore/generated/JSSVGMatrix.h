@@ -21,14 +21,14 @@
 #ifndef JSSVGMatrix_h
 #define JSSVGMatrix_h
 
-
 #if ENABLE(SVG)
 
 #include "JSDOMBinding.h"
+#include "JSSVGPODTypeWrapper.h"
+#include "SVGElement.h"
+#include "TransformationMatrix.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
-#include "TransformationMatrix.h"
-#include "JSSVGPODTypeWrapper.h"
 
 namespace WebCore {
 
@@ -37,30 +37,21 @@ class JSSVGMatrix : public DOMObject {
 public:
     JSSVGMatrix(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<TransformationMatrix> >, SVGElement* context);
     virtual ~JSSVGMatrix();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom functions
-    JSC::JSValuePtr multiply(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr inverse(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr translate(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr scale(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr scaleNonUniform(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr rotate(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr rotateFromVector(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr flipX(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr flipY(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr skewX(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr skewY(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue inverse(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue rotateFromVector(JSC::ExecState*, const JSC::ArgList&);
     JSSVGPODTypeWrapper<TransformationMatrix>* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -69,16 +60,17 @@ private:
     RefPtr<JSSVGPODTypeWrapper<TransformationMatrix> > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, JSSVGPODTypeWrapper<TransformationMatrix>*, SVGElement* context);
-TransformationMatrix toSVGMatrix(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<TransformationMatrix>*, SVGElement* context);
+TransformationMatrix toSVGMatrix(JSC::JSValue);
 
 class JSSVGMatrixPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -87,31 +79,31 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionMultiply(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionInverse(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionTranslate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionScale(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionScaleNonUniform(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionRotate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionRotateFromVector(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionFlipX(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionFlipY(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionSkewX(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGMatrixPrototypeFunctionSkewY(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionMultiply(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionInverse(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionTranslate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionScale(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionScaleNonUniform(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionRotate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionRotateFromVector(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionFlipX(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionFlipY(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionSkewX(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGMatrixPrototypeFunctionSkewY(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGMatrixA(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGMatrixA(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGMatrixB(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGMatrixB(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGMatrixC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGMatrixC(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGMatrixD(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGMatrixD(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGMatrixE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGMatrixE(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGMatrixF(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGMatrixF(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsSVGMatrixA(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGMatrixA(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGMatrixB(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGMatrixB(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGMatrixC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGMatrixC(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGMatrixD(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGMatrixD(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGMatrixE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGMatrixE(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGMatrixF(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGMatrixF(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -99,29 +99,8 @@ void PageItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     QRectF paperRect(0,0, paperSize.width(), paperSize.height());
 
-    painter->setClipRect(paperRect & option->exposedRect);
-    painter->fillRect(paperRect, Qt::white);
-    if (!pagePicture)
-        return;
-    painter->drawPicture(pageRect.topLeft(), *pagePicture);
-
-    // Effect: make anything drawn in the margins look washed out.
-    QPainterPath path;
-    path.addRect(paperRect);
-    path.addRect(pageRect);
-    painter->setPen(QPen(Qt::NoPen));
-    painter->setBrush(QColor(255, 255, 255, 180));
-    painter->drawPath(path);
-
-    painter->setClipRect(option->exposedRect);
-#if 0
-    // Draw frame around paper.
-    painter->setPen(QPen(Qt::black, 0));
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(paperRect);
-#endif
-
     // Draw shadow
+    painter->setClipRect(option->exposedRect);
     qreal shWidth = paperRect.width()/100;
     QRectF rshadow(paperRect.topRight() + QPointF(0, shWidth),
                    paperRect.bottomRight() + QPointF(shWidth, 0));
@@ -141,6 +120,27 @@ void PageItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     cgrad.setColorAt(0.0, QColor(0,0,0,255));
     cgrad.setColorAt(1.0, QColor(0,0,0,0));
     painter->fillRect(cshadow, QBrush(cgrad));
+
+    painter->setClipRect(paperRect & option->exposedRect);
+    painter->fillRect(paperRect, Qt::white);
+    if (!pagePicture)
+        return;
+    painter->drawPicture(pageRect.topLeft(), *pagePicture);
+
+    // Effect: make anything drawn in the margins look washed out.
+    QPainterPath path;
+    path.addRect(paperRect);
+    path.addRect(pageRect);
+    painter->setPen(QPen(Qt::NoPen));
+    painter->setBrush(QColor(255, 255, 255, 180));
+    painter->drawPath(path);
+
+#if 0
+    // Draw frame around paper.
+    painter->setPen(QPen(Qt::black, 0));
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(paperRect);
+#endif
 
     // todo: drawtext "Page N" below paper
 }

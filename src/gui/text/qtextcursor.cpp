@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -145,7 +145,6 @@ void QTextCursorPrivate::remove()
 {
     if (anchor == position)
         return;
-    priv->beginEditBlock();
     currentCharFormat = -1;
     int pos1 = position;
     int pos2 = adjusted_anchor;
@@ -159,15 +158,18 @@ void QTextCursorPrivate::remove()
     // deleting inside table? -> delete only content
     QTextTable *table = complexSelectionTable();
     if (table) {
+        priv->beginEditBlock();
         int startRow, startCol, numRows, numCols;
         selectedTableCells(&startRow, &numRows, &startCol, &numCols);
         clearCells(table, startRow, startCol, numRows, numCols, op);
+        adjusted_anchor = anchor = position;
+        priv->endEditBlock();
     } else {
         priv->remove(pos1, pos2-pos1, op);
+        adjusted_anchor = anchor = position;
+        priv->finishEdit();
     }
 
-    adjusted_anchor = anchor = position;
-    priv->endEditBlock();
 }
 
 void QTextCursorPrivate::clearCells(QTextTable *table, int startRow, int startCol, int numRows, int numCols, QTextUndoCommand::Operation op)
@@ -1291,9 +1293,14 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
     QTextCharFormat format = _format;
     format.clearProperty(QTextFormat::ObjectIndex);
 
-    d->priv->beginEditBlock();
+    bool hasEditBlock = false;
 
-    d->remove();
+    if (d->anchor != d->position) {
+        hasEditBlock = true;
+        d->priv->beginEditBlock();
+        d->remove();
+    }
+
     if (!text.isEmpty()) {
         QTextFormatCollection *formats = d->priv->formatCollection();
         int formatIdx = formats->indexForFormat(format);
@@ -1323,6 +1330,11 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
                 || ch == QChar::ParagraphSeparator
                 || ch == QLatin1Char('\r')) {
 
+                if (!hasEditBlock) {
+                    hasEditBlock = true;
+                    d->priv->beginEditBlock();
+                }
+
                 if (blockEnd > blockStart)
                     d->priv->insert(d->position, textStart + blockStart, blockEnd - blockStart, formatIdx);
 
@@ -1333,7 +1345,8 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
         if (textStart + blockStart < textEnd)
             d->priv->insert(d->position, textStart + blockStart, textEnd - textStart - blockStart, formatIdx);
     }
-    d->priv->endEditBlock();
+    if (hasEditBlock)
+        d->priv->endEditBlock();
     d->setX();
 }
 
@@ -1348,12 +1361,15 @@ void QTextCursor::deleteChar()
     if (!d || !d->priv)
         return;
 
-    if (d->position == d->anchor) {
-        if (!d->canDelete(d->position))
-            return;
-        d->adjusted_anchor = d->anchor =
-                             d->priv->nextCursorPosition(d->anchor, QTextLayout::SkipCharacters);
+    if (d->position != d->anchor) {
+        removeSelectedText();
+        return;
     }
+
+    if (!d->canDelete(d->position))
+        return;
+    d->adjusted_anchor = d->anchor =
+                         d->priv->nextCursorPosition(d->anchor, QTextLayout::SkipCharacters);
     d->remove();
     d->setX();
 }
@@ -1368,27 +1384,29 @@ void QTextCursor::deletePreviousChar()
 {
     if (!d || !d->priv)
         return;
-
-    if (d->position == d->anchor) {
-        if (d->anchor < 1 || !d->canDelete(d->anchor-1))
-            return;
-        d->anchor--;
-
-        QTextDocumentPrivate::FragmentIterator fragIt = d->priv->find(d->anchor);
-        const QTextFragmentData * const frag = fragIt.value();
-        int fpos = fragIt.position();
-        QChar uc = d->priv->buffer().at(d->anchor - fpos + frag->stringPosition);
-        if (d->anchor > fpos && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
-            // second half of a surrogate, check if we have the first half as well,
-            // if yes delete both at once
-            uc = d->priv->buffer().at(d->anchor - 1 - fpos + frag->stringPosition);
-            if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
-                --d->anchor;
-        }
-
-        d->adjusted_anchor = d->anchor;
+    
+    if (d->position != d->anchor) {
+        removeSelectedText();
+        return;
     }
-
+    
+    if (d->anchor < 1 || !d->canDelete(d->anchor-1))
+        return;
+    d->anchor--;
+    
+    QTextDocumentPrivate::FragmentIterator fragIt = d->priv->find(d->anchor);
+    const QTextFragmentData * const frag = fragIt.value();
+    int fpos = fragIt.position();
+    QChar uc = d->priv->buffer().at(d->anchor - fpos + frag->stringPosition);
+    if (d->anchor > fpos && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
+        // second half of a surrogate, check if we have the first half as well,
+        // if yes delete both at once
+        uc = d->priv->buffer().at(d->anchor - 1 - fpos + frag->stringPosition);
+        if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
+            --d->anchor;
+    }
+    
+    d->adjusted_anchor = d->anchor;
     d->remove();
     d->setX();
 }
@@ -1504,7 +1522,9 @@ void QTextCursor::removeSelectedText()
     if (!d || !d->priv || d->position == d->anchor)
         return;
 
+    d->priv->beginEditBlock();
     d->remove();
+    d->priv->endEditBlock();
     d->setX();
 }
 

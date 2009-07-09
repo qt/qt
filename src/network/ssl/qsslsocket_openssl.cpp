@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -276,7 +276,7 @@ init_context:
         if (first)
             first = false;
         else
-            cipherString.append(":");
+            cipherString.append(':');
         cipherString.append(cipher.name().toLatin1());
     }
 
@@ -500,7 +500,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
 
     // Start connecting. This will place outgoing data in the BIO, so we
     // follow up with calling transmit().
-    testConnection();
+    startHandshake();
     transmit();
 }
 
@@ -513,7 +513,7 @@ void QSslSocketBackendPrivate::startServerEncryption()
 
     // Start connecting. This will place outgoing data in the BIO, so we
     // follow up with calling transmit().
-    testConnection();
+    startHandshake();
     transmit();
 }
 
@@ -601,7 +601,7 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
             qDebug() << "QSslSocketBackendPrivate::transmit: testing encryption";
 #endif
-            if (testConnection()) {
+            if (startHandshake()) {
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: encryption established";
 #endif
@@ -620,7 +620,7 @@ void QSslSocketBackendPrivate::transmit()
         }
 
         // If the request is small and the remote host closes the transmission
-        // after sending, there's a chance that testConnection() will already
+        // after sending, there's a chance that startHandshake() will already
         // have triggered a shutdown.
         if (!ssl)
             continue;
@@ -720,7 +720,7 @@ static QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &c
     return error;
 }
 
-bool QSslSocketBackendPrivate::testConnection()
+bool QSslSocketBackendPrivate::startHandshake()
 {
     Q_Q(QSslSocket);
 
@@ -761,7 +761,7 @@ bool QSslSocketBackendPrivate::testConnection()
             q->setErrorString(QSslSocket::tr("Error during SSL handshake: %1").arg(SSL_ERRORSTR()));
             q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
 #ifdef QSSLSOCKET_DEBUG
-            qDebug() << "QSslSocketBackendPrivate::testConnection: error!" << q->errorString();
+            qDebug() << "QSslSocketBackendPrivate::startHandshake: error!" << q->errorString();
 #endif
             emit q->error(QAbstractSocket::SslHandshakeFailedError);
             q->abort();
@@ -792,7 +792,7 @@ bool QSslSocketBackendPrivate::testConnection()
         // but only if we're a client connecting to a server
         // if we're the server, don't check CN
         if (mode == QSslSocket::SslClientMode) {
-            QString peerName = q->peerName();
+            QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
             QString commonName = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
 
             QRegExp regexp(commonName, Qt::CaseInsensitive, QRegExp::Wildcard);
@@ -888,7 +888,14 @@ QSslCipher QSslSocketBackendPrivate::sessionCipher() const
 {
     if (!ssl || !ctx)
         return QSslCipher();
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+    // FIXME This is fairly evil, but needed to keep source level compatibility
+    // with the OpenSSL 0.9.x implementation at maximum -- some other functions
+    // don't take a const SSL_CIPHER* when they should
+    SSL_CIPHER *sessionCipher = const_cast<SSL_CIPHER *>(q_SSL_get_current_cipher(ssl));
+#else
     SSL_CIPHER *sessionCipher = q_SSL_get_current_cipher(ssl);
+#endif
     return sessionCipher ? QSslCipher_from_SSL_CIPHER(sessionCipher) : QSslCipher();
 }
 

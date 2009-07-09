@@ -31,14 +31,15 @@
 
 #include "AtomicString.h"
 
+#include "ImplicitAnimation.h"
+#include "KeyframeAnimation.h"
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {
 
-class CompositeAnimationPrivate;
+class AnimationControllerPrivate;
 class AnimationController;
-class KeyframeAnimation;
 class RenderObject;
 class RenderStyle;
 
@@ -46,7 +47,7 @@ class RenderStyle;
 // on a single RenderObject, such as a number of properties transitioning at once.
 class CompositeAnimation : public RefCounted<CompositeAnimation> {
 public:
-    static PassRefPtr<CompositeAnimation> create(AnimationController* animationController)
+    static PassRefPtr<CompositeAnimation> create(AnimationControllerPrivate* animationController)
     {
         return adoptRef(new CompositeAnimation(animationController));
     };
@@ -56,26 +57,24 @@ public:
     void clearRenderer();
 
     PassRefPtr<RenderStyle> animate(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
-    double willNeedService() const;
-    
-    AnimationController* animationController();
+    PassRefPtr<RenderStyle> getAnimatedStyle() const;
 
-    void setWaitingForStyleAvailable(bool);
-    bool isWaitingForStyleAvailable() const;
+    double timeToNextService() const;
+    
+    AnimationControllerPrivate* animationController() const { return m_animationController; }
 
     void suspendAnimations();
     void resumeAnimations();
-    bool isSuspended() const;
+    bool isSuspended() const { return m_isSuspended; }
+    
+    bool hasAnimations() const  { return !m_transitions.isEmpty() || !m_keyframeAnimations.isEmpty(); }
 
-    void styleAvailable();
     void setAnimating(bool);
     bool isAnimatingProperty(int property, bool isRunningNow) const;
     
-    PassRefPtr<KeyframeAnimation> getAnimationForProperty(int property);
+    PassRefPtr<KeyframeAnimation> getAnimationForProperty(int property) const;
 
-
-    void setAnimationStartTime(double t);
-    void setTransitionStartTime(int property, double t);
+    void cleanupFinishedAnimations();
 
     void overrideImplicitAnimations(int property);
     void resumeOverriddenImplicitAnimations(int property);
@@ -85,9 +84,25 @@ public:
     unsigned numberOfActiveAnimations() const;
 
 private:
-    CompositeAnimation(AnimationController* animationController);
+    CompositeAnimation(AnimationControllerPrivate* animationController)
+        : m_animationController(animationController)
+        , m_numStyleAvailableWaiters(0)
+        , m_isSuspended(false)
+    {
+    }
+
+    void updateTransitions(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
+    void updateKeyframeAnimations(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
     
-    CompositeAnimationPrivate* m_data;
+    typedef HashMap<int, RefPtr<ImplicitAnimation> > CSSPropertyTransitionsMap;
+    typedef HashMap<AtomicStringImpl*, RefPtr<KeyframeAnimation> >  AnimationNameMap;
+
+    AnimationControllerPrivate* m_animationController;
+    CSSPropertyTransitionsMap m_transitions;
+    AnimationNameMap m_keyframeAnimations;
+    Vector<AtomicStringImpl*> m_keyframeAnimationOrderMap;
+    unsigned m_numStyleAvailableWaiters;
+    bool m_isSuspended;
 };
 
 } // namespace WebCore

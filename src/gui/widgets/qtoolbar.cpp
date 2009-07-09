@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -198,7 +198,7 @@ void QToolBarPrivate::initDrag(const QPoint &pos)
     if (state != 0)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
@@ -224,7 +224,7 @@ void QToolBarPrivate::startDrag(bool moving)
     if ((moving && state->moving) || state->dragging)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
@@ -274,14 +274,16 @@ void QToolBarPrivate::endDrag()
 
 bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
 {
-    if (layout->handleRect().contains(event->pos()) == false) {
+    Q_Q(QToolBar);
+    QStyleOptionToolBar opt;
+    q->initStyleOption(&opt);
+    if (q->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, q).contains(event->pos()) == false) {
 #ifdef Q_WS_MAC
-        Q_Q(QToolBar);
         // When using the unified toolbar on Mac OS X the user can can click and
         // drag between toolbar contents to move the window. Make this work by
         // implementing the standard mouse-dragging code and then call
         // window->move() in mouseMoveEvent below.
-        if (QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q->parentWidget())) {
+        if (QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parent)) {
             if (mainWindow->toolBarArea(q) == Qt::TopToolBarArea
                     && mainWindow->unifiedTitleAndToolBarOnMac()
                     && q->childAt(event->pos()) == 0) {
@@ -335,7 +337,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
         return false;
     }
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     if (win == 0)
         return true;
 
@@ -1041,7 +1043,7 @@ void QToolBar::paintEvent(QPaintEvent *)
         style->drawControl(QStyle::CE_ToolBar, &opt, &p, this);
     }
 
-    opt.rect = d->layout->handleRect();
+    opt.rect = style->subElementRect(QStyle::SE_ToolBarHandle, &opt, this);
     if (opt.rect.isValid())
         style->drawPrimitive(QStyle::PE_IndicatorToolBarHandle, &opt, &p, this);
 }
@@ -1142,7 +1144,9 @@ bool QToolBar::event(QEvent *event)
     case QEvent::HoverMove: {
 #ifndef QT_NO_CURSOR
         QHoverEvent *e = static_cast<QHoverEvent*>(event);
-        if (d->layout->handleRect().contains(e->pos()))
+        QStyleOptionToolBar opt;
+        initStyleOption(&opt);
+        if (style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, this).contains(e->pos()))
             setCursor(Qt::SizeAllCursor);
         else
             unsetCursor();
@@ -1153,7 +1157,7 @@ bool QToolBar::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent*>(event)))
             return true;
         break;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     case QEvent::ContextMenu:
         {
             QContextMenuEvent* contextMenuEvent = static_cast<QContextMenuEvent*>(event);
@@ -1177,7 +1181,7 @@ bool QToolBar::event(QEvent *event)
             if (!d->layout->expanded)
                 break;
 
-            QWidget *w = qApp->activePopupWidget();
+            QWidget *w = QApplication::activePopupWidget();
             if (waitForPopup(this, w)) {
                 d->waitForPopupTimer->start();
                 break;
@@ -1197,7 +1201,7 @@ void QToolBarPrivate::_q_waitForPopup()
 {
     Q_Q(QToolBar);
 
-    QWidget *w = qApp->activePopupWidget();
+    QWidget *w = QApplication::activePopupWidget();
     if (!waitForPopup(q, w)) {
         waitForPopupTimer->stop();
         if (!q->underMouse())

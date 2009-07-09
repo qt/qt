@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2218,7 +2218,7 @@ void QWSServer::sendMouseEvent(const QPoint& pos, int state, int wheel)
 {
     bool block = qwsServerPrivate->screensaverblockevent(MOUSE, qwsServerPrivate->screensaverinterval, state);
 #ifdef EVENT_BLOCK_DEBUG
-    qDebug() << "sendMouseEvent" << pos.x() << pos.y() << state << (block?"block":"pass");
+    qDebug() << "sendMouseEvent" << pos.x() << pos.y() << state << (block ? "block" : "pass");
 #endif
 
     if (state || wheel)
@@ -4124,7 +4124,7 @@ void QWSServer::processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers 
         block = qwsServerPrivate->screensaverblockevent(KEY, qwsServerPrivate->screensaverinterval, isPress);
 
 #ifdef EVENT_BLOCK_DEBUG
-    qDebug() << "processKeyEvent" << unicode << keycode << modifiers << isPress << autoRepeat << (block?"block":"pass");
+    qDebug() << "processKeyEvent" << unicode << keycode << modifiers << isPress << autoRepeat << (block ? "block" : "pass");
 #endif
 
     // If we press a key and it's going to be blocked, wake up the screen

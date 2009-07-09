@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -208,10 +208,15 @@ QPolygon::QPolygon(int nPoints, const int *points)
 
 /*!
     Translates all points in the polygon by (\a{dx}, \a{dy}).
+
+    \sa translated()
 */
 
 void QPolygon::translate(int dx, int dy)
 {
+    if (dx == 0 && dy == 0)
+        return;
+
     register QPoint *p = data();
     register int i = size();
     QPoint pt(dx, dy);
@@ -226,8 +231,32 @@ void QPolygon::translate(int dx, int dy)
     \overload
 
     Translates all points in the polygon by the given \a offset.
+
+    \sa translated()
 */
 
+/*!
+    Returns a copy of the polygon that is translated by (\a{dx}, \a{dy}).
+
+    \since 4.6
+    \sa translate()
+*/
+QPolygon QPolygon::translated(int dx, int dy) const
+{
+    QPolygon copy(*this);
+    copy.translate(dx, dy);
+    return copy;
+}
+
+/*!
+    \fn void QPolygon::translated(const QPoint &offset) const
+    \overload
+    \since 4.6
+
+    Returns a copy of the polygon that is translated by the given \a offset.
+
+    \sa translate()
+*/
 
 /*!
     Extracts the coordinates of the point at the given \a index to
@@ -565,10 +594,15 @@ QPolygonF::QPolygonF(const QPolygon &a)
 
 /*!
     Translate all points in the polygon by the given \a offset.
+
+    \sa translated()
 */
 
 void QPolygonF::translate(const QPointF &offset)
 {
+    if (offset.isNull())
+        return;
+
     register QPointF *p = data();
     register int i = size();
     while (i--) {
@@ -582,6 +616,31 @@ void QPolygonF::translate(const QPointF &offset)
     \overload
 
     Translates all points in the polygon by (\a{dx}, \a{dy}).
+
+    \sa translated()
+*/
+
+/*!
+    Returns a copy of the polygon that is translated by the given \a offset.
+
+    \since 4.6
+    \sa translate()
+*/
+QPolygonF QPolygonF::translated(const QPointF &offset) const
+{
+    QPolygonF copy(*this);
+    copy.translate(offset);
+    return copy;
+}
+
+/*!
+    \fn void QPolygonF::translated(qreal dx, qreal dy) const
+    \overload
+    \since 4.6
+
+    Returns a copy of the polygon that is translated by (\a{dx}, \a{dy}).
+
+    \sa translate()
 */
 
 /*!
@@ -683,7 +742,7 @@ QDataStream &operator>>(QDataStream &s, QPolygon &a)
     QVector<QPoint> &v = a;
     return s >> v;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*****************************************************************************
   QPolygonF stream functions

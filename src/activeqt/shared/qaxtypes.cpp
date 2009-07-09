@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the ActiveQt framework of the Qt Toolkit.
 **
@@ -1111,7 +1111,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
                 if (iface) {
                     QObject *qObj = iface->qObject();
                     iface->Release();
-                    var = QVariant(qRegisterMetaType<QObject*>(qObj ? QByteArray(qObj->metaObject()->className()) + "*" : typeName), &qObj);
+                    var = QVariant(qRegisterMetaType<QObject*>(qObj ? QByteArray(qObj->metaObject()->className()) + '*' : typeName), &qObj);
                 } else
 #endif
                 {
