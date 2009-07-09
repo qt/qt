@@ -55,7 +55,7 @@ symbian: {
     codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
     codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
  
-    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins
+    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {	
        qtlibraries.sources += QtSvg.dll
