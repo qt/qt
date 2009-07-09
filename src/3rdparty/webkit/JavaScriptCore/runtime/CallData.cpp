@@ -47,7 +47,7 @@ JSValue call(ExecState* exec, JSValue functionObject, CallType callType, const C
         ArgList::const_iterator it;
         for (it = args.begin(); it != args.end(); ++it)
             newCallFrame[++dst] = *it;
-        newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
+        newCallFrame += argc + RegisterFile::CallFrameHeaderSize;
         newCallFrame->init(0, /*vPC=*/0, scopeChain, exec, 0, argc, asObject(functionObject));
         JSValue result = callData.native.function(newCallFrame, asObject(functionObject), thisValue, args);
         interp->registerFile().shrink(oldEnd);
