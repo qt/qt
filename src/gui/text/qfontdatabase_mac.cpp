@@ -152,7 +152,7 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
 } else 
 #endif
     {
-#ifndef Q_WS_MAC64
+#ifndef QT_MAC_USE_COCOA
         FMFontIterator it;
         if (!FMCreateFontIterator(0, 0, kFMUseGlobalScopeOption, &it)) {
             while (true) {

@@ -19,14 +19,11 @@
 */
 
 #include "config.h"
-
 #include "JSXMLHttpRequestProgressEvent.h"
 
-#include <wtf/GetPtr.h>
-
 #include "XMLHttpRequestProgressEvent.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

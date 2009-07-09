@@ -284,7 +284,11 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <private/qt_x11_p.h>
 #endif
 
+#include <private/qevent_p.h>
+
 QT_BEGIN_NAMESPACE
+
+bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
 inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for single precision
 {
@@ -293,6 +297,23 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
     else if (d >= (qreal) INT_MAX)
         return INT_MAX;
     return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1);
+}
+
+void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
+{
+    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+    for (int i = 0; i < touchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
+        // an item, but for now those functions are returning the view's local coordinates
+        touchPoint.setSceneRect(d->mapToScene(touchPoint.rect()));
+        touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
+        touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
+
+        // screenPos, startScreenPos, lastScreenPos, and screenRect are already set
+    }
+
+    touchEvent->setTouchPoints(touchPoints);
 }
 
 /*!
@@ -591,7 +612,10 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
-    QApplication::sendEvent(scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    else
+        QApplication::sendEvent(scene, &mouseEvent);
 
     // Remember whether the last event was accepted or not.
     lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -1488,7 +1512,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateScene(QList<QRectF>)));
         disconnect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                    this, SLOT(updateSceneRect(QRectF)));
-        d->scene->d_func()->views.removeAll(this);
+        d->scene->d_func()->removeView(this);
         d->connectedToScene = false;
     }
 
@@ -1497,7 +1521,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         connect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                 this, SLOT(updateSceneRect(QRectF)));
         d->updateSceneSlotReimplementedChecked = false;
-        d->scene->d_func()->views << this;
+        d->scene->d_func()->addView(this);
         d->recalculateContentSize();
         d->lastCenterPoint = sceneRect().center();
         d->keepLastCenterPoint = true;
@@ -1507,6 +1531,10 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
             || !d->scene->d_func()->allItemsUseDefaultCursor) {
             d->viewport->setMouseTracking(true);
         }
+
+        // enable touch events if any items is interested in them
+        if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
+            d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
     } else {
         d->recalculateContentSize();
     }
@@ -2589,6 +2617,11 @@ void QGraphicsView::setupViewport(QWidget *widget)
                      || !d->scene->d_func()->allItemsUseDefaultCursor)) {
         widget->setMouseTracking(true);
     }
+
+    // enable touch events if any items is interested in them
+    if (d->scene && !d->scene->d_func()->allItemsIgnoreTouchEvents)
+        widget->setAttribute(Qt::WA_AcceptTouchEvents);
+
     widget->setAcceptDrops(acceptDrops());
 }
 
@@ -2625,6 +2658,9 @@ bool QGraphicsView::event(QEvent *event)
                 }
             }
             break;
+        case QEvent::Gesture:
+            viewportEvent(event);
+            return true;
         default:
             break;
         }
@@ -2706,6 +2742,34 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             d->scene->d_func()->updateAll = false;
         }
         break;
+    case QEvent::Gesture: {
+        QGraphicsSceneGestureEvent gestureEvent;
+        gestureEvent.setWidget(this);
+        QGestureEvent *ev = static_cast<QGestureEvent*>(event);
+        gestureEvent.setGestures(ev->gestures());
+        gestureEvent.setCancelledGestures(ev->cancelledGestures());
+        QApplication::sendEvent(d->scene, &gestureEvent);
+        event->setAccepted(gestureEvent.isAccepted());
+        return true;
+    }
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        if (!isEnabled())
+            return false;
+
+        if (d->scene && d->sceneInteractionAllowed) {
+            // Convert and deliver the touch event to the scene.
+            QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+            touchEvent->setWidget(viewport());
+            QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
+            (void) QApplication::sendEvent(d->scene, touchEvent);
+        }
+
+        return true;
+    }
     default:
         break;
     }
@@ -2964,7 +3028,10 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setAccepted(false);
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
-    QApplication::sendEvent(d->scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+    else
+        QApplication::sendEvent(d->scene, &mouseEvent);
 }
 
 /*!
@@ -3003,7 +3070,10 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setButton(event->button());
             mouseEvent.setModifiers(event->modifiers());
             mouseEvent.setAccepted(false);
-            QApplication::sendEvent(d->scene, &mouseEvent);
+            if (event->spontaneous())
+                qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+            else
+                QApplication::sendEvent(d->scene, &mouseEvent);
 
             // Update the original mouse event accepted state.
             bool isAccepted = mouseEvent.isAccepted();
@@ -3173,7 +3243,10 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setAccepted(false);
-    QApplication::sendEvent(d->scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+    else
+        QApplication::sendEvent(d->scene, &mouseEvent);
 
     // Update the last mouse event selected state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -3304,7 +3377,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         // Find all exposed items
         bool allItems = false;
         QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems);
-        
+
         if (!itemList.isEmpty()) {
             // Generate the style options.
             const int numItems = itemList.size();
@@ -3630,6 +3703,39 @@ void QGraphicsView::setTransform(const QTransform &matrix, bool combine )
 void QGraphicsView::resetTransform()
 {
     setTransform(QTransform());
+}
+
+QPointF QGraphicsViewPrivate::mapToScene(const QPointF &point) const
+{
+    QPointF p = point;
+    p.rx() += horizontalScroll();
+    p.ry() += verticalScroll();
+    return identityMatrix ? p : matrix.inverted().map(p);
+}
+
+QRectF QGraphicsViewPrivate::mapToScene(const QRectF &rect) const
+{
+    QPointF scrollOffset(horizontalScroll(), verticalScroll());
+    QPointF tl = scrollOffset + rect.topLeft();
+    QPointF tr = scrollOffset + rect.topRight();
+    QPointF br = scrollOffset + rect.bottomRight();
+    QPointF bl = scrollOffset + rect.bottomLeft();
+
+    QPolygonF poly;
+    poly.resize(4);
+    if (!identityMatrix) {
+        QTransform x = matrix.inverted();
+        poly[0] = x.map(tl);
+        poly[1] = x.map(tr);
+        poly[2] = x.map(br);
+        poly[3] = x.map(bl);
+    } else {
+        poly[0] = tl;
+        poly[1] = tr;
+        poly[2] = br;
+        poly[3] = bl;
+    }
+    return poly.boundingRect();
 }
 
 QT_END_NAMESPACE

@@ -13,9 +13,9 @@ Rect { id: page; width: 800; height: 800; color:"black"
         MouseRegion { anchors.fill:parent; onClicked: 
             { 
                 if(fourthBox == null) {
-                    a = createWithEvalQml();
+                    a = createQml(targetItem2);
                     if(a!=null) {
-                        a.parent = targetItem2;
+                        a.parent = targetItem2;//BUG: this should happen automatically
                         fourthBox = a;
                         extendStars = true;
                     }

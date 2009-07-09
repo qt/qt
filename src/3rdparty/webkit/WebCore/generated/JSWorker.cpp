@@ -20,12 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorker.h"
-
-#include <wtf/GetPtr.h>
 
 #include "Event.h"
 #include "EventListener.h"
@@ -34,8 +31,8 @@
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "Worker.h"
-
 #include <runtime/Error.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

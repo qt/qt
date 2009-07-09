@@ -55,7 +55,7 @@
 #include <QCoreApplication>
 #include <QtDebug>
 
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -537,6 +537,12 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 
         bool typeFound = false;
         Object::DynamicProperty::Type type;
+
+        if (memberType == QLatin1String("alias")) {
+            type = Object::DynamicProperty::Alias;
+            typeFound = true;
+        }
+
         for(int ii = 0; !typeFound && ii < propTypeNameToTypesCount; ++ii) {
             if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) {
                 type = propTypeNameToTypes[ii].type;
@@ -720,20 +726,19 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 
         if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
 
-            if(funDecl->formals) {
-                QmlError error;
-                error.setDescription(QCoreApplication::translate("QmlParser","Slot declarations must be parameterless"));
-                error.setLine(funDecl->lparenToken.startLine);
-                error.setColumn(funDecl->lparenToken.startColumn);
-                _parser->_errors << error;
-                return false;
+            Object::DynamicSlot slot;
+
+            AST::FormalParameterList *f = funDecl->formals;
+            while (f) {
+                slot.parameterNames << f->name->asString().toUtf8();
+                f = f->finish();
             }
 
             QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
-            Object::DynamicSlot slot;
             slot.name = funDecl->name->asString().toUtf8();
             slot.body = body;
             obj->dynamicSlots << slot;
+
         } else {
             QmlError error;
             error.setDescription(QCoreApplication::translate("QmlParser","QmlJS declaration outside Script element"));

@@ -141,7 +141,7 @@ protected:
     }
 };
 
-class EventSpy : public QObject
+class EventSpy : public QGraphicsWidget
 {
     Q_OBJECT
 public:
@@ -151,10 +151,25 @@ public:
         watched->installEventFilter(this);
     }
 
+    EventSpy(QGraphicsScene *scene, QGraphicsItem *watched, QEvent::Type type)
+        : _count(0), spied(type)
+    {
+        scene->addItem(this);
+        watched->installSceneEventFilter(this);
+    }
+
     int count() const { return _count; }
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event)
+    {
+        Q_UNUSED(watched);
+        if (event->type() == spied)
+            ++_count;
+        return false;
+    }
+
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     {
         Q_UNUSED(watched);
         if (event->type() == spied)
@@ -236,6 +251,7 @@ private slots:
     void changedSignal();
     void stickyFocus_data();
     void stickyFocus();
+    void sendEvent();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -3585,6 +3601,17 @@ void tst_QGraphicsScene::stickyFocus()
     qApp->sendEvent(&scene, &event);
 
     QCOMPARE(text->hasFocus(), sticky);
+}
+
+void tst_QGraphicsScene::sendEvent()
+{
+    QGraphicsScene scene;
+    QGraphicsTextItem *item = scene.addText(QString());
+    EventSpy *spy = new EventSpy(&scene, item, QEvent::User);
+    QCOMPARE(spy->count(), 0);
+    QEvent event(QEvent::User);
+    scene.sendEvent(item, &event);
+    QCOMPARE(spy->count(), 1);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

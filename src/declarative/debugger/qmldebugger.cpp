@@ -50,6 +50,7 @@
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
+#include <private/qmlexpression_p.h>
 #include <private/qmlobjecttree_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
@@ -262,7 +263,7 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
         delete item;
         return false;
 
-    } else if(QmlBoundSignal *bs = qobject_cast<QmlBoundSignal *>(obj)) {
+    } else if(qobject_cast<QmlBoundSignal *>(obj)) {
         delete item;
         return false;
     } else {

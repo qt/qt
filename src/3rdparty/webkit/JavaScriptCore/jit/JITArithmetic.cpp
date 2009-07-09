@@ -116,18 +116,19 @@ void JIT::emit_op_rshift(Instruction* currentInstruction)
 #endif
     } else {
         emitGetVirtualRegisters(op1, regT0, op2, regT2);
-        if (supportsFloatingPoint()) {
+        if (supportsFloatingPointTruncate()) {
             Jump lhsIsInt = emitJumpIfImmediateInteger(regT0);
 #if USE(ALTERNATE_JSIMMEDIATE)
             // supportsFloatingPoint() && USE(ALTERNATE_JSIMMEDIATE) => 3 SlowCases
             addSlowCase(emitJumpIfNotImmediateNumber(regT0));
+            addPtr(tagTypeNumberRegister, regT0);
             movePtrToDouble(regT0, fpRegT0);
             addSlowCase(branchTruncateDoubleToInt32(fpRegT0, regT0));
 #else
             // supportsFloatingPoint() && !USE(ALTERNATE_JSIMMEDIATE) => 5 SlowCases (of which 1 IfNotJSCell)
             emitJumpSlowCaseIfNotJSCell(regT0, op1);
             addSlowCase(checkStructure(regT0, m_globalData->numberStructure.get()));
-            loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+            loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
             addSlowCase(branchTruncateDoubleToInt32(fpRegT0, regT0));
             addSlowCase(branchAdd32(Overflow, regT0, regT0));
 #endif
@@ -171,7 +172,7 @@ void JIT::emitSlow_op_rshift(Instruction* currentInstruction, Vector<SlowCaseEnt
         stubCall.addArgument(regT0);
         stubCall.addArgument(op2, regT2);
     } else {
-        if (supportsFloatingPoint()) {
+        if (supportsFloatingPointTruncate()) {
 #if USE(ALTERNATE_JSIMMEDIATE)
             linkSlowCase(iter);
             linkSlowCase(iter);
@@ -262,7 +263,7 @@ void JIT::emitSlow_op_jnless(Instruction* currentInstruction, Vector<SlowCaseEnt
                 fail1 = emitJumpIfNotJSCell(regT0);
 
             Jump fail2 = checkStructure(regT0, m_globalData->numberStructure.get());
-            loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+            loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
 #endif
             
             int32_t op2imm = getConstantOperand(op2).getInt32Fast();;
@@ -303,7 +304,7 @@ void JIT::emitSlow_op_jnless(Instruction* currentInstruction, Vector<SlowCaseEnt
                 fail1 = emitJumpIfNotJSCell(regT1);
             
             Jump fail2 = checkStructure(regT1, m_globalData->numberStructure.get());
-            loadDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT1);
+            loadDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT1);
 #endif
             
             int32_t op1imm = getConstantOperand(op1).getInt32Fast();;
@@ -353,8 +354,8 @@ void JIT::emitSlow_op_jnless(Instruction* currentInstruction, Vector<SlowCaseEnt
 
             Jump fail3 = checkStructure(regT0, m_globalData->numberStructure.get());
             Jump fail4 = checkStructure(regT1, m_globalData->numberStructure.get());
-            loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
-            loadDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT1);
+            loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
+            loadDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT1);
 #endif
 
             emitJumpSlowToHot(branchDouble(DoubleLessThanOrEqual, fpRegT1, fpRegT0), target + 3);
@@ -447,7 +448,7 @@ void JIT::emitSlow_op_jnlesseq(Instruction* currentInstruction, Vector<SlowCaseE
                 fail1 = emitJumpIfNotJSCell(regT0);
 
             Jump fail2 = checkStructure(regT0, m_globalData->numberStructure.get());
-            loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+            loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
 #endif
             
             int32_t op2imm = getConstantOperand(op2).getInt32Fast();;
@@ -488,7 +489,7 @@ void JIT::emitSlow_op_jnlesseq(Instruction* currentInstruction, Vector<SlowCaseE
                 fail1 = emitJumpIfNotJSCell(regT1);
             
             Jump fail2 = checkStructure(regT1, m_globalData->numberStructure.get());
-            loadDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT1);
+            loadDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT1);
 #endif
             
             int32_t op1imm = getConstantOperand(op1).getInt32Fast();;
@@ -538,8 +539,8 @@ void JIT::emitSlow_op_jnlesseq(Instruction* currentInstruction, Vector<SlowCaseE
 
             Jump fail3 = checkStructure(regT0, m_globalData->numberStructure.get());
             Jump fail4 = checkStructure(regT1, m_globalData->numberStructure.get());
-            loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
-            loadDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT1);
+            loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
+            loadDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT1);
 #endif
 
             emitJumpSlowToHot(branchDouble(DoubleLessThan, fpRegT1, fpRegT0), target + 3);
@@ -1105,7 +1106,7 @@ void JIT::compileBinaryArithOp(OpcodeID opcodeID, unsigned dst, unsigned src1, u
         }
 
         // (1a) if we get here, src1 is also a number cell
-        loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+        loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
         Jump loadedDouble = jump();
         // (1b) if we get here, src1 is an immediate
         op1imm.link(this);
@@ -1114,16 +1115,16 @@ void JIT::compileBinaryArithOp(OpcodeID opcodeID, unsigned dst, unsigned src1, u
         // (1c) 
         loadedDouble.link(this);
         if (opcodeID == op_add)
-            addDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+            addDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
         else if (opcodeID == op_sub)
-            subDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+            subDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
         else {
             ASSERT(opcodeID == op_mul);
-            mulDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+            mulDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
         }
 
         // Store the result to the JSNumberCell and jump.
-        storeDouble(fpRegT0, Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)));
+        storeDouble(fpRegT0, Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)));
         move(regT1, regT0);
         emitPutVirtualRegister(dst);
         wasJSNumberCell2 = jump();
@@ -1151,7 +1152,7 @@ void JIT::compileBinaryArithOp(OpcodeID opcodeID, unsigned dst, unsigned src1, u
         }
 
         // (1a) if we get here, src2 is also a number cell
-        loadDouble(Address(regT1, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT1);
+        loadDouble(Address(regT1, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT1);
         Jump loadedDouble = jump();
         // (1b) if we get here, src2 is an immediate
         op2imm.link(this);
@@ -1159,7 +1160,7 @@ void JIT::compileBinaryArithOp(OpcodeID opcodeID, unsigned dst, unsigned src1, u
         convertInt32ToDouble(regT1, fpRegT1);
         // (1c) 
         loadedDouble.link(this);
-        loadDouble(Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)), fpRegT0);
+        loadDouble(Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)), fpRegT0);
         if (opcodeID == op_add)
             addDouble(fpRegT1, fpRegT0);
         else if (opcodeID == op_sub)
@@ -1168,11 +1169,11 @@ void JIT::compileBinaryArithOp(OpcodeID opcodeID, unsigned dst, unsigned src1, u
             ASSERT(opcodeID == op_mul);
             mulDouble(fpRegT1, fpRegT0);
         }
-        storeDouble(fpRegT0, Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)));
+        storeDouble(fpRegT0, Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)));
         emitPutVirtualRegister(dst);
 
         // Store the result to the JSNumberCell and jump.
-        storeDouble(fpRegT0, Address(regT0, FIELD_OFFSET(JSNumberCell, m_value)));
+        storeDouble(fpRegT0, Address(regT0, OBJECT_OFFSETOF(JSNumberCell, m_value)));
         emitPutVirtualRegister(dst);
         wasJSNumberCell1 = jump();
 

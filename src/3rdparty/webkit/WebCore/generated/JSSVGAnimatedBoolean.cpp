@@ -20,15 +20,11 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAnimatedBoolean.h"
 
 #include <wtf/GetPtr.h>
-
-
 
 using namespace JSC;
 

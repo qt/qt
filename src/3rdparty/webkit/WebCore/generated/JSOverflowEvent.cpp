@@ -19,15 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSOverflowEvent.h"
 
-#include <wtf/GetPtr.h>
-
 #include "OverflowEvent.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

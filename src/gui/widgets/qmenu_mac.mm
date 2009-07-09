@@ -1180,7 +1180,7 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
 #endif
         }
 
-        QWidget *widget = qmenu ? qmenu->widgetItems.value(action->action) : 0;
+        QWidget *widget = qmenu ? qmenu->widgetItems.value(qmenu->actions.indexOf(action->action)) : 0;
         if (widget) {
 #ifndef QT_MAC_USE_COCOA
             ChangeMenuAttributes(action->menu, kMenuAttrDoNotCacheImage, 0);

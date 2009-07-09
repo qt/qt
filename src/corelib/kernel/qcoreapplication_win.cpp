@@ -45,14 +45,15 @@
 #include "qt_windows.h"
 #include "qvector.h"
 #include "qmutex.h"
+#include "qfileinfo.h"
 #include "qcorecmdlineargs_p.h"
 #include <private/qthread_p.h>
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
 
-char         appFileName[MAX_PATH+1];                // application file name
-char         theAppName[MAX_PATH+1];                        // application name
+char         appFileName[MAX_PATH];                // application file name
+char         theAppName[MAX_PATH];                        // application name
 HINSTANCE appInst        = 0;                // handle to app instance
 HINSTANCE appPrevInst        = 0;                // handle to prev app instance
 int appCmdShow = 0;
@@ -73,48 +74,69 @@ Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window sho
     return appCmdShow;
 }
 
+Q_CORE_EXPORT QString qAppFileName()                // get application file name
+{
+    // We do MAX_PATH + 2 here, and request with MAX_PATH + 1, so we can handle all paths
+    // up to, and including MAX_PATH size perfectly fine with string termination, as well
+    // as easily detect if the file path is indeed larger than MAX_PATH, in which case we
+    // need to use the heap instead. This is a work-around, since contrary to what the
+    // MSDN documentation states, GetModuleFileName sometimes doesn't set the
+    // ERROR_INSUFFICIENT_BUFFER error number, and we thus cannot rely on this value if
+    // GetModuleFileName(0, buffer, MAX_PATH) == MAX_PATH.
+    // GetModuleFileName(0, buffer, MAX_PATH + 1) == MAX_PATH just means we hit the normal
+    // file path limit, and we handle it normally, if the result is MAX_PATH + 1, we use
+    // heap (even if the result _might_ be exactly MAX_PATH + 1, but that's ok).
+    wchar_t buffer[MAX_PATH + 2];
+    DWORD v = GetModuleFileName(0, buffer, MAX_PATH + 1);
+    buffer[MAX_PATH + 1] = 0;
+
+    if (v == 0)
+        return QString();
+    else if (v <= MAX_PATH)
+        return QString::fromWCharArray(buffer);
+
+    // MAX_PATH sized buffer wasn't large enough to contain the full path, use heap
+    wchar_t *b = 0;
+    int i = 1;
+    size_t size;
+    do {
+        ++i;
+        size = MAX_PATH * i;
+        b = reinterpret_cast<wchar_t *>(realloc(b, (size + 1) * sizeof(wchar_t)));
+        if (b)
+            v = GetModuleFileName(NULL, b, size);
+    } while (b && v == size);
+
+    if (b)
+        *(b + size) = 0;
+    QString res = QString::fromWCharArray(b);
+    free(b);
+
+    return res;
+}
 
 void set_winapp_name()
 {
     static bool already_set = false;
     if (!already_set) {
         already_set = true;
-#ifndef Q_OS_WINCE
-        GetModuleFileNameA(0, appFileName, sizeof(appFileName));
-        appFileName[sizeof(appFileName)-1] = 0;
-#else
-        QString afm;
-        afm.resize(sizeof(appFileName));
-        afm.resize(GetModuleFileName(0, (wchar_t *) (afm.unicode()), sizeof(appFileName)));
-        memcpy(appFileName, afm.toLatin1(), sizeof(appFileName));
-#endif
-        const char *p = strrchr(appFileName, '\\');        // skip path
-        if (p)
-            memcpy(theAppName, p+1, qstrlen(p));
-        int l = qstrlen(theAppName);
-        if ((l > 4) && !qstricmp(theAppName + l - 4, ".exe"))
-            theAppName[l-4] = '\0';                // drop .exe extension
 
-        if (appInst == 0) {
-            QT_WA({
-                appInst = GetModuleHandle(0);
-            }, {
-                appInst = GetModuleHandleA(0);
-            });
-        }
+        QString moduleName = qAppFileName();
+
+        QByteArray filePath = moduleName.toLocal8Bit();
+        QByteArray fileName = QFileInfo(moduleName).baseName().toLocal8Bit();
+
+        memcpy(appFileName, filePath.constData(), filePath.length());
+        memcpy(theAppName, fileName.constData(), fileName.length());
+
+        if (appInst == 0)
+            appInst = GetModuleHandle(0);
     }
-}
-
-Q_CORE_EXPORT QString qAppFileName()                // get application file name
-{
-    return QString::fromLatin1(appFileName);
 }
 
 QString QCoreApplicationPrivate::appName() const
 {
-    if (!theAppName[0])
-        set_winapp_name();
-    return QString::fromLatin1(theAppName);
+    return QFileInfo(qAppFileName()).baseName();
 }
 
 class QWinMsgHandlerCriticalSection
@@ -145,15 +167,11 @@ Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
         str = "(null)";
 
     staticCriticalSection.lock();
-    QT_WA({
-        QString s(QString::fromLocal8Bit(str));
-        s += QLatin1Char('\n');
-        OutputDebugStringW((TCHAR*)s.utf16());
-    }, {
-        QByteArray s(str);
-        s += '\n';
-        OutputDebugStringA(s.data());
-    })
+
+    QString s(QString::fromLocal8Bit(str));
+    s += QLatin1Char('\n');
+    OutputDebugString((wchar_t*)s.utf16());
+
     staticCriticalSection.unlock();
 }
 

@@ -395,7 +395,10 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
             const QString prefix = QLatin1String(isObsolete ? "#~ " : "");
             while (true) {
                 int idx = line.indexOf(QLatin1Char(' '), prefix.length());
-                item.msgStr.append(slurpEscapedString(lines, l, idx, prefix, cd));
+                QString str = slurpEscapedString(lines, l, idx, prefix, cd);
+                str.replace(QChar(Translator::TextVariantSeparator),
+                            QChar(Translator::BinaryVariantSeparator));
+                item.msgStr.append(str);
                 if (l + 1 >= lines.size() || !isTranslationLine(lines.at(l + 1)))
                     break;
                 ++l;
@@ -635,8 +638,11 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
             out << poEscapedString(prefix, QLatin1String("msgid_plural"), noWrap, plural);
             QStringList translations = translator.normalizedTranslations(msg, cd, &ok);
             for (int i = 0; i != translations.size(); ++i) {
+                QString str = translations.at(i);
+                str.replace(QChar(Translator::BinaryVariantSeparator),
+                            QChar(Translator::TextVariantSeparator));
                 out << poEscapedString(prefix, QString::fromLatin1("msgstr[%1]").arg(i), noWrap,
-                                       translations.at(i));
+                                       str);
             }
         }
         first = false;

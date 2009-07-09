@@ -237,6 +237,8 @@ struct QGLEngineShaderProg
     QGLShader*          maskFragShader;        // Can be null for no mask
     QGLShader*          compositionFragShader; // Can be null for GL-handled mode
     QGLShaderProgram*   program;
+
+    QVector<uint> uniformLocations;
 };
 
 /*
@@ -282,6 +284,9 @@ public:
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+
+    uint getUniformIdentifier(const char *uniformName);
+    uint getUniformLocation(uint id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
@@ -374,9 +379,9 @@ private:
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
 
-    QGLShaderProgram*   blitShaderProg;
-    QGLShaderProgram*   simpleShaderProg;
-    QGLShaderProgram*   currentShaderProg;
+    QGLShaderProgram*     blitShaderProg;
+    QGLShaderProgram*     simpleShaderProg;
+    QGLEngineShaderProg*  currentShaderProg;
 
     // TODO: Possibly convert to a LUT
     QList<QGLEngineShaderProg> cachedPrograms;
@@ -386,6 +391,8 @@ private:
     void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
 
     static const char* qglEngineShaderSourceCode[TotalShaderCount];
+
+    QVector<const char *> uniformIdentifiers;
 };
 
 QT_END_NAMESPACE

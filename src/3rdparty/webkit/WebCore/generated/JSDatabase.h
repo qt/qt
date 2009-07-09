@@ -21,7 +21,6 @@
 #ifndef JSDatabase_h
 #define JSDatabase_h
 
-
 #if ENABLE(DATABASE)
 
 #include "JSDOMBinding.h"

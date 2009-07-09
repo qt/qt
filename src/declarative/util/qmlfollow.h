@@ -64,8 +64,10 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource,
     Q_PROPERTY(qreal spring READ spring WRITE setSpring)
     Q_PROPERTY(qreal damping READ damping WRITE setDamping)
     Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
+    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged)
+    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
 
 public:
     QmlFollow(QObject *parent=0);
@@ -83,6 +85,8 @@ public:
     void setDamping(qreal damping);
     qreal epsilon() const;
     void setEpsilon(qreal epsilon);
+    qreal modulus() const;
+    void setModulus(qreal modulus);
     bool enabled() const;
     void setEnabled(bool enabled);
 

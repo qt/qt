@@ -1251,13 +1251,7 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
         extraHeight = vistaHelper->titleBarSize() + vistaHelper->topOffset();
 #endif
     QSize minimumSize = mainLayout->totalMinimumSize() + QSize(0, extraHeight);
-    QSize maximumSize;
-    bool skipMaxSize = false;
-#if defined(Q_WS_WIN)
-    if (QSysInfo::WindowsVersion <= QSysInfo::WV_Me) // ### See Tasks 164078 and 161660
-        skipMaxSize = true;
-#endif
-    maximumSize = mainLayout->totalMaximumSize();
+    QSize maximumSize = mainLayout->totalMaximumSize();
     if (info.header && headerWidget->maximumWidth() != QWIDGETSIZE_MAX) {
         minimumSize.setWidth(headerWidget->maximumWidth());
         maximumSize.setWidth(headerWidget->maximumWidth());
@@ -1276,13 +1270,11 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     }
     if (q->maximumWidth() == maximumWidth) {
         maximumWidth = maximumSize.width();
-        if (!skipMaxSize)
-            q->setMaximumWidth(maximumWidth);
+        q->setMaximumWidth(maximumWidth);
     }
     if (q->maximumHeight() == maximumHeight) {
         maximumHeight = maximumSize.height();
-        if (!skipMaxSize)
-            q->setMaximumHeight(maximumHeight);
+        q->setMaximumHeight(maximumHeight);
     }
 }
 

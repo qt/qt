@@ -960,7 +960,7 @@ bool QSqlDatabase::rollback()
     connection, set the database name, and call open() again.  \note
     The \e{database name} is not the \e{connection name}. The
     connection name must be passed to addDatabase() at connection
-    object create time. 
+    object create time.
 
     For the QOCI (Oracle) driver, the database name is the TNS
     Service Name.

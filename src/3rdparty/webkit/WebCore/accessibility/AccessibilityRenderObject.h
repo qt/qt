@@ -177,6 +177,7 @@ public:
     virtual Widget* widgetForAttachmentView() const;
     virtual void getDocumentLinks(AccessibilityChildrenVector&);
     virtual FrameView* documentFrameView() const;
+    virtual String language() const;
     
     virtual const AccessibilityChildrenVector& children();
     
@@ -226,6 +227,7 @@ protected:
 private:
     void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
     void ariaListboxVisibleChildren(AccessibilityChildrenVector&);
+    bool ariaIsHidden() const;
 
     Element* menuElementForMenuButton() const;
     Element* menuItemElementForMenu() const; 

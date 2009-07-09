@@ -21,7 +21,6 @@
 #ifndef JSMediaError_h
 #define JSMediaError_h
 
-
 #if ENABLE(VIDEO)
 
 #include "JSDOMBinding.h"

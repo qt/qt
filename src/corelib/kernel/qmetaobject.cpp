@@ -160,7 +160,8 @@ enum PropertyFlags  {
     User = 0x00100000,
     ResolveUser = 0x00200000,
     Notify = 0x00400000,
-    Dynamic = 0x00800000
+    Dynamic = 0x00800000,
+    Constant = 0x00000400
 };
 
 enum MethodFlags  {
@@ -224,8 +225,14 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    QByteArray constructorName = className();
+    {
+        int idx = constructorName.lastIndexOf(':');
+        if (idx != -1)
+            constructorName.remove(0, idx+1); // remove qualified part
+    }
     QVarLengthArray<char, 512> sig;
-    sig.append(className(), qstrlen(className()));
+    sig.append(constructorName.constData(), constructorName.length());
     sig.append('(');
 
     enum { MaximumParamCount = 10 };
@@ -2470,6 +2477,20 @@ bool QMetaProperty::isDynamic() const
         return false;
     int flags = mobj->d.data[handle + 2];
     return flags & Dynamic;
+}
+
+/*!
+    Returns true if the property is constant; otherwise returns false.
+
+    A property is constant if the \c{Q_PROPERTY()}'s \c CONSTANT attribute
+    is set.
+*/
+bool QMetaProperty::isConstant() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Constant;
 }
 
 /*!

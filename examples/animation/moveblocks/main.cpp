@@ -42,6 +42,7 @@
 #include <QtCore>
 #include <QtGui>
 
+//![15]
 class StateSwitchEvent: public QEvent
 {
 public:
@@ -63,8 +64,9 @@ public:
 private:
     int m_rand;
 };
+//![15]
 
-
+//![16]
 class QGraphicsRectWidget : public QGraphicsWidget
 {
 public:
@@ -74,6 +76,7 @@ public:
         painter->fillRect(rect(), Qt::blue);
     }
 };
+//![16]
 
 class StateSwitchTransition: public QAbstractTransition
 {
@@ -85,11 +88,13 @@ public:
     }
 
 protected:
+//![14]
     virtual bool eventTest(QEvent *event)
     {
         return (event->type() == QEvent::Type(StateSwitchEvent::StateSwitchType))
             && (static_cast<StateSwitchEvent *>(event)->rand() == m_rand);
     }
+//![14]
 
     virtual void onTransition(QEvent *) {}
 
@@ -97,6 +102,7 @@ private:
     int m_rand;
 };
 
+//![10]
 class StateSwitcher : public QState
 {
     Q_OBJECT
@@ -105,7 +111,9 @@ public:
         : QState(machine->rootState()), m_machine(machine),
           m_stateCount(0), m_lastIndex(0)
     { }
+//![10]
 
+//![11]
     virtual void onEntry(QEvent *)
     {
         int n;
@@ -115,14 +123,16 @@ public:
         m_machine->postEvent(new StateSwitchEvent(n));
     }
     virtual void onExit(QEvent *) {}
+//![11]
 
+//![12]
     void addState(QState *state, QAbstractAnimation *animation) {
         StateSwitchTransition *trans = new StateSwitchTransition(++m_stateCount);
         trans->setTargetState(state);
         addTransition(trans);
         trans->addAnimation(animation);
     }
-
+//![12]
 
 private:
     QStateMachine *m_machine;
@@ -130,6 +140,7 @@ private:
     int m_lastIndex;
 };
 
+//![13]
 QState *createGeometryState(QObject *w1, const QRect &rect1,
                             QObject *w2, const QRect &rect2,
                             QObject *w3, const QRect &rect3,
@@ -145,6 +156,7 @@ QState *createGeometryState(QObject *w1, const QRect &rect1,
 
     return result;
 }
+//![13]
 
 int main(int argc, char **argv)
 {
@@ -165,6 +177,7 @@ int main(int argc, char **argv)
     button3->setObjectName("button3");
     button4->setObjectName("button4");
 #else
+//![1]
     QGraphicsRectWidget *button1 = new QGraphicsRectWidget;
     QGraphicsRectWidget *button2 = new QGraphicsRectWidget;
     QGraphicsRectWidget *button3 = new QGraphicsRectWidget;
@@ -178,13 +191,14 @@ int main(int argc, char **argv)
     scene.addItem(button2);
     scene.addItem(button3);
     scene.addItem(button4);
-
+//![1]
     QGraphicsView window(&scene);
     window.setFrameStyle(0);
     window.setAlignment(Qt::AlignLeft | Qt::AlignTop);
     window.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     window.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #endif
+//![2]
     QStateMachine machine;
 
     QState *group = new QState();
@@ -193,7 +207,9 @@ int main(int argc, char **argv)
     timer.setInterval(1250);
     timer.setSingleShot(true);
     QObject::connect(group, SIGNAL(entered()), &timer, SLOT(start()));
+//![2]
 
+//![3]
     QState *state1;
     QState *state2;
     QState *state3;
@@ -207,6 +223,7 @@ int main(int argc, char **argv)
                                  button3, QRect(200, 0, 50, 50),
                                  button4, QRect(250, 0, 50, 50),
                                  group);
+//![3]
     state2 = createGeometryState(button1, QRect(250, 100, 50, 50),
                                  button2, QRect(250, 150, 50, 50),
                                  button3, QRect(250, 200, 50, 50),
@@ -232,13 +249,16 @@ int main(int argc, char **argv)
                                  button3, QRect(50, 200, 50, 50),
                                  button4, QRect(200, 200, 50, 50),
                                  group);
+//![4]
     state7 = createGeometryState(button1, QRect(0, 0, 50, 50),
                                  button2, QRect(250, 0, 50, 50),
                                  button3, QRect(0, 250, 50, 50),
                                  button4, QRect(250, 250, 50, 50),
                                  group);
     group->setInitialState(state1);
+//![4]
 
+//![5]
     QParallelAnimationGroup animationGroup;
     QSequentialAnimationGroup *subGroup;
 
@@ -246,13 +266,16 @@ int main(int argc, char **argv)
     anim->setDuration(1000);
     anim->setEasingCurve(QEasingCurve::OutElastic);
     animationGroup.addAnimation(anim);
+//![5]
 
+//![6]
     subGroup = new QSequentialAnimationGroup(&animationGroup);
     subGroup->addPause(100);
     anim = new QPropertyAnimation(button3, "geometry");
     anim->setDuration(1000);
     anim->setEasingCurve(QEasingCurve::OutElastic);
     subGroup->addAnimation(anim);
+//![6]
 
     subGroup = new QSequentialAnimationGroup(&animationGroup);
     subGroup->addPause(150);
@@ -268,21 +291,26 @@ int main(int argc, char **argv)
     anim->setEasingCurve(QEasingCurve::OutElastic);
     subGroup->addAnimation(anim);
 
+//![7]
     StateSwitcher *stateSwitcher = new StateSwitcher(&machine);
     stateSwitcher->setObjectName("stateSwitcher");
     group->addTransition(&timer, SIGNAL(timeout()), stateSwitcher);
     stateSwitcher->addState(state1, &animationGroup);
     stateSwitcher->addState(state2, &animationGroup);
+//![7]
     stateSwitcher->addState(state3, &animationGroup);
     stateSwitcher->addState(state4, &animationGroup);
     stateSwitcher->addState(state5, &animationGroup);
     stateSwitcher->addState(state6, &animationGroup);
+//![8]
     stateSwitcher->addState(state7, &animationGroup);
+//![8]
 
+//![9]
     machine.addState(group);
     machine.setInitialState(group);
     machine.start();
-
+//![9]
 
     window.resize(300, 300);
     window.show();

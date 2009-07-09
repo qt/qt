@@ -41,12 +41,12 @@
 
 #include <qmlcontext.h>
 #include <private/qmlcontext_p.h>
+#include <private/qmlexpression_p.h>
 #include <private/qmlengine_p.h>
 #include <qmlengine.h>
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
-
-#include <qdebug.h>
+#include <QtCore/qdebug.h>
 
 // 6-bits
 #define MAXIMUM_DEFAULT_OBJECTS 63

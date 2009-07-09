@@ -88,6 +88,7 @@ private slots:
     void rename();
     void renameFdLeak();
     void reOpenThroughQFile();
+    void keepOpenMode();
 
 public:
 };
@@ -437,6 +438,38 @@ void tst_QTemporaryFile::reOpenThroughQFile()
     file.close();
     QVERIFY(file.open());
     QCOMPARE(file.readAll(), data);
+}
+
+void tst_QTemporaryFile::keepOpenMode()
+{
+    QByteArray data("abcdefghij");
+
+    {
+        QTemporaryFile file;
+        QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+        QVERIFY(QIODevice::WriteOnly == file.openMode());
+
+        QCOMPARE(file.write(data), (qint64)data.size());
+        file.close();
+
+        QVERIFY(((QFile &)file).open(QIODevice::ReadOnly));
+        QVERIFY(QIODevice::ReadOnly == file.openMode());
+        QCOMPARE(file.readAll(), data);
+    }
+
+    {
+        QTemporaryFile file;
+        QVERIFY(file.open());
+        QCOMPARE(file.write(data), (qint64)data.size());
+        QVERIFY(file.rename("temporary-file.txt"));
+
+        QVERIFY(((QFile &)file).open(QIODevice::ReadOnly));
+        QVERIFY(QIODevice::ReadOnly == file.openMode());
+        QCOMPARE(file.readAll(), data);
+
+        QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+        QVERIFY(QIODevice::WriteOnly == file.openMode());
+    }
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

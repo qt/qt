@@ -26,6 +26,8 @@
 #ifndef LocalStorageThread_h
 #define LocalStorageThread_h
 
+#if ENABLE(DOM_STORAGE)
+
 #include <wtf/HashSet.h>
 #include <wtf/MessageQueue.h>
 #include <wtf/PassRefPtr.h>
@@ -33,20 +35,18 @@
 
 namespace WebCore {
 
-    class LocalStorage;
-    class LocalStorageArea;
+    class StorageAreaSync;
     class LocalStorageTask;
 
+    // FIXME: Rename this class to StorageThread
     class LocalStorageThread : public ThreadSafeShared<LocalStorageThread> {
     public:
         static PassRefPtr<LocalStorageThread> create();
 
         bool start();
 
-        void scheduleImport(PassRefPtr<LocalStorage>);
-        void scheduleSync(PassRefPtr<LocalStorage>);
-        void scheduleImport(PassRefPtr<LocalStorageArea>);
-        void scheduleSync(PassRefPtr<LocalStorageArea>);
+        void scheduleImport(PassRefPtr<StorageAreaSync>);
+        void scheduleSync(PassRefPtr<StorageAreaSync>);
 
         // Called from the main thread to synchronously shut down this thread
         void terminate();
@@ -70,5 +70,7 @@ namespace WebCore {
     };
 
 } // namespace WebCore
+
+#endif // ENABLE(DOM_STORAGE)
 
 #endif // LocalStorageThread_h

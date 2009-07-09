@@ -267,7 +267,7 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
                                    localProgress);
     qSwap(currentValue, ret);
     q->updateCurrentValue(currentValue);
-    if ((connectedSignals & changedSignalMask) && currentValue != ret) {
+    if ((connectedSignals[0] & changedSignalMask) && currentValue != ret) {
         //the value has changed
         emit q->valueChanged(currentValue);
     }

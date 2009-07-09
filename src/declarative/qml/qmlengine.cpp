@@ -57,7 +57,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include "qml.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QStack>
 #include "private/qmlbasicscript_p.h"
 #include "private/qmlcompiledcomponent_p.h"
@@ -194,8 +194,8 @@ void QmlEnginePrivate::init()
     //###needed for the other funcs, but should it be exposed?
     scriptEngine.globalObject().setProperty(QLatin1String("qmlEngine"),
             scriptEngine.newQObject(q));
-    scriptEngine.globalObject().setProperty(QLatin1String("evalQml"),
-            scriptEngine.newFunction(QmlEngine::createQMLObject, 1));
+    scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
+            scriptEngine.newFunction(QmlEngine::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEngine::createComponent, 1));
 }
@@ -208,7 +208,7 @@ QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
 }
 
 QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
-: object(p.object()), notifyIndex(p.property().notifySignalIndex())
+: object(p.object()), coreIndex(p.coreIndex()), notifyIndex(p.property().notifySignalIndex())
 {
 }
 
@@ -357,7 +357,7 @@ bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &
             cache.type = QmlBasicScriptNodeCache::Variant;
             cache.context = context;
             cache.contextIndex = *iter;
-            capturedProperties << CapturedProperty(context->q_ptr, *iter + context->notifyIndex);
+            capturedProperties << CapturedProperty(context->q_ptr, -1, *iter + context->notifyIndex);
             return true;
         }
 
@@ -512,6 +512,36 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 }
 
 /*!
+    Return the base URL for this engine.  The base URL is only used to resolve
+    components when a relative URL is passed to the QmlComponent constructor.
+
+    If a base URL has not been explicitly set, this method returns the 
+    application's current working directory.
+
+    \sa setBaseUrl()
+*/
+QUrl QmlEngine::baseUrl() const
+{
+    Q_D(const QmlEngine);
+    if (d->baseUrl.isEmpty()) {
+        return QUrl::fromLocalFile(QDir::currentPath() + QDir::separator());
+    } else {
+        return d->baseUrl;
+    }
+}
+
+/*!
+    Set the  base URL for this engine to \a url.  
+
+    \sa baseUrl()
+*/
+void QmlEngine::setBaseUrl(const QUrl &url)
+{
+    Q_D(QmlEngine);
+    d->baseUrl = url;
+}
+
+/*!
   Returns the QmlContext for the \a object, or 0 if no context has been set.
 
   When the QmlEngine instantiates a QObject, the context is set automatically.
@@ -581,13 +611,13 @@ QmlEngine *qmlEngine(const QObject *obj)
     return context?context->engine():0;
 }
 
-QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
+QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
     QmlExtendedDeclarativeData *edata = 
         QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
 
     QObject *rv = edata->attachedProperties.value(id);
-    if (rv)
+    if (rv || !create)
         return rv;
 
     QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
@@ -718,8 +748,8 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
     \endcode
 
     If you want to just create an arbitrary string of QML, instead of
-    loading a qml file, consider the evalQML() function.
-    \sa QmlComponent::createObject(), QmlEngine::createQMLObject()
+    loading a qml file, consider the createQmlObject() function.
+    \sa QmlComponent::createObject(), QmlEngine::createQmlObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -729,21 +759,31 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     if(ctxt->argumentCount() != 1 || !activeEngine){
         c = new QmlComponent(activeEngine);
     }else{
-        //### This url needs to be resolved in the context that the function
-        //### is called - it can't be done here.
-        QUrl url = QUrl(ctxt->argument(0).toString());
+        QUrl url = QUrl(activeEngine->d_func()->currentExpression->context()
+                ->resolvedUrl(ctxt->argument(0).toString()));
+        if(!url.isValid()){
+            qDebug() << "Error A:" << url << activeEngine->activeContext() << QmlEngine::activeEngine() << activeEngine;
+            url = QUrl(ctxt->argument(0).toString());
+        }
         c = new QmlComponent(activeEngine, url, activeEngine);
     }
     return engine->newQObject(c);
 }
 
 /*!
-    Creates a new object from the specified string of qml. If a second argument
-    is provided, this is treated as the filepath that the qml came from.
+    Creates a new object from the specified string of QML. It requires a
+    second argument, which is the id of an existing QML object to use as
+    the new object's parent. If a third argument is provided, this is used
+    as the filepath that the qml came from.
+
+    Example (where targetItem is the id of an existing QML item):
+    \code
+    newObject = createQmlObject('Rect {color: "red"; width: 20; height: 20}',
+        targetItem, "dynamicSnippet1");
+    \endcode
 
     This function is intended for use inside QML only. It is intended to behave
-    similarly to eval, but for creating QML elements. Thus, it is called as
-    evalQml() in QtScript.
+    similarly to eval, but for creating QML elements.
 
     Returns the created object, or null if there is an error. In the case of an
     error, details of the error are output using qWarning().
@@ -752,503 +792,58 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     the QML loads new components. If you are trying to load a new component,
     for example from a QML file, consider the createComponent() function
     instead. 'New components' refers to external QML files that have not yet
-    been loaded, and so it is safe to use evalQml to load built-in components.
+    been loaded, and so it is safe to use createQmlObject to load built-in
+    components.
 
     \sa QmlEngine::createComponent()
 */
-QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *engine)
+QScriptValue QmlEngine::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
             engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
-    if(ctxt->argumentCount() < 1 || !activeEngine){
-        if(ctxt->argumentCount() < 1){
-            qWarning() << "createQMLObject requires a string argument.";
+    if(ctxt->argumentCount() < 2 || !activeEngine){
+        if(ctxt->argumentCount() < 2){
+            qWarning() << "createQmlObject requires two arguments, A QML string followed by an existing QML item id.";
         }else{
-            qWarning() << "createQMLObject cannot find engine.";
+            qWarning() << "createQmlObject cannot find engine.";
         }
         return engine->nullValue();
     }
 
     QString qml = ctxt->argument(0).toString();
     QUrl url;
-    if(ctxt->argumentCount() > 1)
-        url = QUrl(ctxt->argument(1).toString());
+    if(ctxt->argumentCount() > 2)
+        url = QUrl(ctxt->argument(2).toString());
+    QObject *parentArg = ctxt->argument(1).data().toQObject();
+    QmlContext *qmlCtxt = qmlContext(parentArg);
+    url = qmlCtxt->resolvedUrl(url);
     QmlComponent component(activeEngine, qml.toUtf8(), url);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         foreach (const QmlError &error, errors) {
-            qWarning() << error;
+            qWarning() <<"Error in createQmlObject(): "<< error;
         }
 
         return engine->nullValue();
     }
 
-    QObject *obj = component.create();
+    QObject *obj = component.create(qmlCtxt);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         foreach (const QmlError &error, errors) {
-            qWarning() << error;
+            qWarning() <<"Error in createQmlObject(): "<< error;
         }
 
         return engine->nullValue();
     }
 
     if(obj){
+        obj->setParent(parentArg);
+        obj->setProperty("parent", QVariant::fromValue<QObject*>(parentArg));
         return qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();
 }
-
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
-{
-}
-
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
-{
-}
-
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr)
-: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
-{
-}
-
-QmlExpressionPrivate::~QmlExpressionPrivate()
-{
-    sse.deleteScriptState(sseData);
-    sseData = 0;
-    delete proxy;
-    delete log;
-}
-
-/*!
-    Create an invalid QmlExpression.
-
-    As the expression will not have an associated QmlContext, this will be a 
-    null expression object and its value will always be an invalid QVariant.
- */
-QmlExpression::QmlExpression()
-: d(new QmlExpressionPrivate(this))
-{
-}
-
-/*! \internal */
-QmlExpression::QmlExpression(QmlContext *ctxt, void *expr, 
-                             QmlRefCount *rc, QObject *me)
-: d(new QmlExpressionPrivate(this, expr, rc))
-{
-    d->ctxt = ctxt;
-    if(ctxt && ctxt->engine())
-        d->id = ctxt->engine()->d_func()->getUniqueId();
-    if(ctxt)
-        ctxt->d_func()->childExpressions.insert(this);
-    d->me = me;
-}
-
-/*!
-    Create a QmlExpression object.
-
-    The \a expression ECMAScript will be executed in the \a ctxt QmlContext.
-    If specified, the \a scope object's properties will also be in scope during
-    the expression's execution.
-*/
-QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression, 
-                             QObject *scope)
-: d(new QmlExpressionPrivate(this, expression))
-{
-    d->ctxt = ctxt;
-    if(ctxt && ctxt->engine())
-        d->id = ctxt->engine()->d_func()->getUniqueId();
-    if(ctxt)
-        ctxt->d_func()->childExpressions.insert(this);
-    d->me = scope;
-}
-
-/*!
-    Destroy the QmlExpression instance.
-*/
-QmlExpression::~QmlExpression()
-{
-    if (d->ctxt)
-        d->ctxt->d_func()->childExpressions.remove(this);
-    delete d; d = 0;
-}
-
-/*!
-    Returns the QmlEngine this expression is associated with, or 0 if there
-    is no association or the QmlEngine has been destroyed.
-*/
-QmlEngine *QmlExpression::engine() const
-{
-    return d->ctxt?d->ctxt->engine():0;
-}
-
-/*!
-    Returns the QmlContext this expression is associated with, or 0 if there
-    is no association or the QmlContext has been destroyed.
-*/
-QmlContext *QmlExpression::context() const
-{
-    return d->ctxt;
-}
-
-/*!
-    Returns the expression string.
-*/
-QString QmlExpression::expression() const
-{
-    if (d->sse.isValid())
-        return QLatin1String(d->sse.expression());
-    else
-        return d->expression;
-}
-
-/*!
-    Clear the expression.
-*/
-void QmlExpression::clearExpression()
-{
-    setExpression(QString());
-}
-
-/*!
-    Set the expression to \a expression.
-*/
-void QmlExpression::setExpression(const QString &expression)
-{
-    if (d->sseData) {
-        d->sse.deleteScriptState(d->sseData);
-        d->sseData = 0;
-    }
-
-    delete d->proxy; d->proxy = 0;
-
-    d->expression = expression;
-
-    d->sse.clear();
-}
-
-/*!
-    Called by QmlExpression each time the expression value changes from the
-    last time it was evaluated.  The expression must have been evaluated at 
-    least once (by calling QmlExpression::value()) before this callback will
-    be made.
-
-    The default implementation does nothing.
-*/
-void QmlExpression::valueChanged()
-{
-}
-
-void BindExpressionProxy::changed()
-{
-    e->valueChanged();
-}
-
-/*!
-    Returns the value of the expression, or an invalid QVariant if the 
-    expression is invalid or has an error.
-*/
-QVariant QmlExpression::value()
-{
-    QVariant rv;
-    if (!d->ctxt || !engine() || (!d->sse.isValid() && d->expression.isEmpty()))
-        return rv;
-
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindValue> perf;
-#endif
-
-    QmlBasicScript::CacheState cacheState = QmlBasicScript::Reset;
-
-    QmlEnginePrivate *ep = engine()->d_func();
-    QmlExpression *lastCurrentExpression = ep->currentExpression;
-    ep->currentExpression = this;
-    if (d->sse.isValid()) {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-        QFxPerfTimer<QFxPerf::BindValueSSE> perfsse;
-#endif
-
-        context()->d_func()->defaultObjects.insert(context()->d_func()->highPriorityCount, d->me);
-
-        if (!d->sseData)
-            d->sseData = d->sse.newScriptState();
-        rv = d->sse.run(context(), d->sseData, &cacheState);
-
-        context()->d_func()->defaultObjects.removeAt(context()->d_func()->highPriorityCount);
-    } else {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-        QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
-#endif
-        context()->d_func()->defaultObjects.insert(context()->d_func()->highPriorityCount, d->me);
-
-        QScriptEngine *scriptEngine = engine()->scriptEngine();
-        QScriptValueList oldScopeChain = scriptEngine->currentContext()->scopeChain();
-        for (int i = 0; i < oldScopeChain.size(); ++i) {
-            scriptEngine->currentContext()->popScope();
-        }
-        for (int i = context()->d_func()->scopeChain.size() - 1; i > -1; --i) {
-            scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
-        }
-        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName.toString(), d->line);
-        if (scriptEngine->hasUncaughtException()) {
-            if (scriptEngine->uncaughtException().isError()){
-                QScriptValue exception = scriptEngine->uncaughtException();
-                if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
-                    qWarning() << exception.property(QLatin1String("fileName")).toString()
-                            << scriptEngine->uncaughtExceptionLineNumber()
-                            << exception.toString();
-
-                } else {
-                    qWarning() << exception.toString();
-                }
-            }
-        }
-
-        context()->d_func()->defaultObjects.removeAt(context()->d_func()->highPriorityCount);
-        if (svalue.isArray()) {
-            int length = svalue.property(QLatin1String("length")).toInt32();
-            if (length && svalue.property(0).isObject()) {
-                QList<QObject *> list;
-                for (int ii = 0; ii < length; ++ii) {
-                    QScriptValue arrayItem = svalue.property(ii);
-                    QObject *d = qvariant_cast<QObject *>(arrayItem.data().toVariant());
-                    if (d) {
-                        list << d;
-                    } else {
-                        list << 0;
-                    }
-                }
-                rv = QVariant::fromValue(list);
-            }
-        } else if (svalue.isObject() && 
-                   !svalue.isNumber() &&
-                   !svalue.isString() &&
-                   !svalue.isDate() && 
-                   !svalue.isError() && 
-                   !svalue.isFunction() &&
-                   !svalue.isNull() &&
-                   !svalue.isQMetaObject() &&
-                   !svalue.isQObject() &&
-                   !svalue.isRegExp()) {
-            QScriptValue objValue = svalue.data();
-            if (objValue.isValid()) {
-                QVariant var = objValue.toVariant();
-                if (var.userType() >= (int)QVariant::UserType &&
-                    QmlMetaType::isObject(var.userType()))
-                    rv = var;
-            }
-        }
-        if (rv.isNull()) 
-            rv = svalue.toVariant();
-
-        for (int i = 0; i < context()->d_func()->scopeChain.size(); ++i) {
-            scriptEngine->currentContext()->popScope();
-        }
-        for (int i = oldScopeChain.size() - 1; i > -1; --i) {
-            scriptEngine->currentContext()->pushScope(oldScopeChain.at(i));
-        }
-    }
-    ep->currentExpression = lastCurrentExpression;
-
-    if (cacheState != QmlBasicScript::NoChange) {
-        if (cacheState != QmlBasicScript::Incremental && d->proxy) {
-            delete d->proxy;
-            d->proxy = 0;
-        }
-
-        if (trackChange() && ep->capturedProperties.count()) {
-            if (!d->proxy)
-                d->proxy = new BindExpressionProxy(this);
-
-            static int changedIndex = -1;
-            if (changedIndex == -1)
-                changedIndex = BindExpressionProxy::staticMetaObject.indexOfSlot("changed()");
-
-            if(qmlDebugger()) {
-                QmlExpressionLog log;
-                log.setTime(engine()->d_func()->getUniqueId());
-                log.setExpression(expression());
-                log.setResult(rv);
-
-                for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                    const QmlEnginePrivate::CapturedProperty &prop =
-                        ep->capturedProperties.at(ii);
-
-                    if (prop.notifyIndex != -1) {
-                        QMetaObject::connect(prop.object, prop.notifyIndex,
-                                             d->proxy, changedIndex);
-                    } else {
-                        // ### FIXME
-                        //QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
-                        //log.addWarning(warn);
-                    }
-                }
-                d->addLog(log);
-
-            } else {
-                for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                    const QmlEnginePrivate::CapturedProperty &prop =
-                        ep->capturedProperties.at(ii);
-
-                    if (prop.notifyIndex != -1) 
-                        QMetaObject::connect(prop.object, prop.notifyIndex,
-                                             d->proxy, changedIndex);
-                }
-            }
-        } else {
-            QmlExpressionLog log;
-            log.setTime(engine()->d_func()->getUniqueId());
-            log.setExpression(expression());
-            log.setResult(rv);
-            d->addLog(log);
-        }
-
-    } else {
-        if(qmlDebugger()) {
-            QmlExpressionLog log;
-            log.setTime(engine()->d_func()->getUniqueId());
-            log.setExpression(expression());
-            log.setResult(rv);
-            d->addLog(log);
-        }
-    }
-
-    ep->capturedProperties.clear();
-
-    return rv;
-}
-
-/*!
-    Returns true if the expression results in a constant value.
-    QmlExpression::value() must have been invoked at least once before the
-    return from this method is valid.
- */
-bool QmlExpression::isConstant() const
-{
-    return d->proxy == 0;
-}
-
-/*!
-    Returns true if the changes are tracked in the expression's value.
-*/
-bool QmlExpression::trackChange() const
-{
-    return d->trackChange;
-}
-
-/*!
-    Set whether changes are tracked in the expression's value to \a trackChange.
-
-    If true, the QmlExpression will monitor properties involved in the 
-    expression's evaluation, and call QmlExpression::valueChanged() if they have
-    changed.  This allows an application to ensure that any value associated
-    with the result of the expression remains up to date.
-
-    If false, the QmlExpression will not montitor properties involved in the
-    expression's evaluation, and QmlExpression::valueChanged() will never be
-    called.  This is more efficient if an application wants a "one off" 
-    evaluation of the expression.
-
-    By default, trackChange is true.
-*/
-void QmlExpression::setTrackChange(bool trackChange)
-{
-    d->trackChange = trackChange;
-}
-
-/*!
-    Set the location of this expression to \a line of \a fileName. This information
-    is used by the script engine.
-*/
-void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
-{
-    d->fileName = fileName;
-    d->line = line;
-}
-
-/*!
-    Returns the expression's scope object, if provided, otherwise 0.
-
-    In addition to data provided by the expression's QmlContext, the scope 
-    object's properties are also in scope during the expression's evaluation.
-*/
-QObject *QmlExpression::scopeObject() const
-{
-    return d->me;
-}
-
-/*!
-    \internal
-*/
-quint32 QmlExpression::id() const
-{
-    return d->id;
-}
-
-/*!
-    \class QmlExpression
-    \brief The QmlExpression class evaluates ECMAScript in a QML context.
-*/
-
-/*!
-    \class QmlExpressionObject
-    \brief The QmlExpressionObject class extends QmlExpression with signals and slots.
-
-    To remain as lightweight as possible, QmlExpression does not inherit QObject
-    and consequently cannot use signals or slots.  For the cases where this is
-    more convenient in an application, QmlExpressionObject can be used instead.
-
-    QmlExpressionObject behaves identically to QmlExpression, except that the
-    QmlExpressionObject::value() method is a slot, and the 
-    QmlExpressionObject::valueChanged() callback is a signal.
-*/
-/*!
-    Create a QmlExpression with the specified \a parent.
-
-    As the expression will not have an associated QmlContext, this will be a 
-    null expression object and its value will always be an invalid QVariant.
-*/
-QmlExpressionObject::QmlExpressionObject(QObject *parent)
-: QObject(parent)
-{
-}
-
-/*!
-    Create a QmlExpressionObject with the specified \a parent.
-
-    The \a expression ECMAScript will be executed in the \a ctxt QmlContext.
-    If specified, the \a scope object's properties will also be in scope during
-    the expression's execution.
-*/
-QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, const QString &expression, QObject *scope, QObject *parent)
-: QObject(parent), QmlExpression(ctxt, expression, scope)
-{
-}
-
-/*!  \internal */
-QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, void *d, QmlRefCount *rc, QObject *me)
-: QmlExpression(ctxt, d, rc, me)
-{
-}
-
-/*!
-    Returns the value of the expression, or an invalid QVariant if the 
-    expression is invalid or has an error.
-*/
-QVariant QmlExpressionObject::value()
-{
-    return QmlExpression::value();
-}
-
-/*!
-    \fn void QmlExpressionObject::valueChanged()
-
-    Emitted each time the expression value changes from the last time it was
-    evaluated.  The expression must have been evaluated at least once (by 
-    calling QmlExpressionObject::value()) before this signal will be emitted.  
-*/
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
 : QScriptClass(bindengine->scriptEngine()), engine(bindengine)
@@ -1333,7 +928,7 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
         } else {
             rv = scriptEngine->newVariant(value);
         }
-        engine->d_func()->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, index + bindContext->d_func()->notifyIndex);
+        engine->d_func()->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, -1, index + bindContext->d_func()->notifyIndex);
         return rv;
     }
     default:
@@ -1502,77 +1097,6 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
     scriptEngine->currentContext()->setActivationObject(oldact);
 }
 
-void QmlExpressionPrivate::addLog(const QmlExpressionLog &l)
-{
-    if (!log)
-        log = new QList<QmlExpressionLog>();
-    log->append(l);
-}
-
-QmlExpressionLog::QmlExpressionLog()
-{
-}
-
-QmlExpressionLog::QmlExpressionLog(const QmlExpressionLog &o)
-: m_time(o.m_time),
-  m_expression(o.m_expression),
-  m_result(o.m_result),
-  m_warnings(o.m_warnings)
-{
-}
-
-QmlExpressionLog::~QmlExpressionLog()
-{
-}
-
-QmlExpressionLog &QmlExpressionLog::operator=(const QmlExpressionLog &o)
-{
-    m_time = o.m_time;
-    m_expression = o.m_expression;
-    m_result = o.m_result;
-    m_warnings = o.m_warnings;
-    return *this;
-}
-
-void QmlExpressionLog::setTime(quint32 time)
-{
-    m_time = time;
-}
-
-quint32 QmlExpressionLog::time() const
-{
-    return m_time;
-}
-
-QString QmlExpressionLog::expression() const
-{
-    return m_expression;
-}
-
-void QmlExpressionLog::setExpression(const QString &e)
-{
-    m_expression = e;
-}
-
-QStringList QmlExpressionLog::warnings() const
-{
-    return m_warnings;
-}
-
-void QmlExpressionLog::addWarning(const QString &w)
-{
-    m_warnings << w;
-}
-
-QVariant QmlExpressionLog::result() const
-{
-    return m_result;
-}
-
-void QmlExpressionLog::setResult(const QVariant &r)
-{
-    m_result = r;
-}
 
 class QmlImportsPrivate {
 public:
@@ -1687,6 +1211,5 @@ QmlType* QmlEngine::resolveBuiltInType(const Imports& imports, const QByteArray&
 {
     return imports.d->findBuiltin(imports.base,type);
 }
-
 
 QT_END_NAMESPACE

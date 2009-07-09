@@ -58,15 +58,17 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_ENUMS(HAlignment)
     Q_ENUMS(VAlignment)
     Q_ENUMS(TextStyle)
+    Q_ENUMS(TextFormat)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QmlFont *font READ font)
+    Q_PROPERTY(QmlFont *font READ font CONSTANT)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(TextStyle style READ style WRITE setStyle)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)
     Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
     Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign)
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
+    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode)
     Q_PROPERTY(QString activeLink READ activeLink)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
@@ -85,6 +87,9 @@ public:
                       Outline,
                       Raised,
                       Sunken };
+    enum TextFormat { AutoText,
+                      PlainText,
+                      RichText };
 
     QString text() const;
     void setText(const QString &);
@@ -108,6 +113,9 @@ public:
 
     bool wrap() const;
     void setWrap(bool w);
+
+    TextFormat textFormat() const;
+    void setTextFormat(TextFormat format);
 
     Qt::TextElideMode elideMode() const;
     void setElideMode(Qt::TextElideMode);

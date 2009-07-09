@@ -70,6 +70,8 @@
 
 #include  "qdebug.h"
 
+#define POPUP_TIMER_INTERVAL 500
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_MAC
@@ -87,14 +89,6 @@ static void qt_mac_updateToolBarButtonHint(QWidget *parentWidget)
 void QToolBarPrivate::init()
 {
     Q_Q(QToolBar);
-
-    waitForPopupTimer = new QTimer(q);
-    waitForPopupTimer->setSingleShot(false);
-    waitForPopupTimer->setInterval(500);
-    QObject::connect(waitForPopupTimer, SIGNAL(timeout()), q, SLOT(_q_waitForPopup()));
-
-    floatable = true;
-    movable = true;
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
     q->setBackgroundRole(QPalette::Button);
     q->setAttribute(Qt::WA_Hover);
@@ -1086,6 +1080,16 @@ bool QToolBar::event(QEvent *event)
     Q_D(QToolBar);
 
     switch (event->type()) {
+    case QEvent::Timer:
+        if (d->waitForPopupTimer.timerId() == static_cast<QTimerEvent*>(event)->timerId()) {
+            QWidget *w = QApplication::activePopupWidget();
+            if (!waitForPopup(this, w)) {
+                d->waitForPopupTimer.stop();
+                if (!this->underMouse())
+                    d->layout->setExpanded(false);
+            }
+        }
+        break;
     case QEvent::Hide:
         if (!isHidden())
             break;
@@ -1183,11 +1187,11 @@ bool QToolBar::event(QEvent *event)
 
             QWidget *w = QApplication::activePopupWidget();
             if (waitForPopup(this, w)) {
-                d->waitForPopupTimer->start();
+                d->waitForPopupTimer.start(POPUP_TIMER_INTERVAL, this);
                 break;
             }
 
-            d->waitForPopupTimer->stop();
+            d->waitForPopupTimer.stop();
             d->layout->setExpanded(false);
             break;
         }
@@ -1195,18 +1199,6 @@ bool QToolBar::event(QEvent *event)
         break;
     }
     return QWidget::event(event);
-}
-
-void QToolBarPrivate::_q_waitForPopup()
-{
-    Q_Q(QToolBar);
-
-    QWidget *w = QApplication::activePopupWidget();
-    if (!waitForPopup(q, w)) {
-        waitForPopupTimer->stop();
-        if (!q->underMouse())
-            layout->setExpanded(false);
-    }
 }
 
 /*!

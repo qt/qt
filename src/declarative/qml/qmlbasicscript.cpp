@@ -45,7 +45,7 @@
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
 #include <QStack>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <private/qmlrefcount_p.h>
 #include <private/qmljsast_p.h>
 #include <private/qmljsengine_p.h>
@@ -603,7 +603,10 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node,
                 instr.type = ScriptInstruction::FetchD0Constant;
                 instr.constant.idx = d0Idx;
                 QMetaProperty prop = context->metaObject()->property(d0Idx);
-                instr.constant.notify = prop.notifySignalIndex(); 
+                if (prop.isConstant())
+                    instr.constant.notify = 0;
+                else
+                    instr.constant.notify = prop.notifySignalIndex(); 
                 instr.constant.type = prop.userType();
 
             } else if (d1Idx != -1) {
@@ -611,7 +614,10 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node,
                 instr.type = ScriptInstruction::FetchD1Constant;
                 instr.constant.idx = d1Idx;
                 QMetaProperty prop = component->metaObject()->property(d1Idx);
-                instr.constant.notify = prop.notifySignalIndex(); 
+                if (prop.isConstant())
+                    instr.constant.notify = 0;
+                else
+                    instr.constant.notify = prop.notifySignalIndex(); 
                 instr.constant.type = prop.userType();
 
             }  else {
@@ -635,7 +641,10 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node,
             instr.type = ScriptInstruction::FetchConstant;
             instr.constant.idx = idx;
             QMetaProperty prop = loadedType->metaObject()->property(idx);
-            instr.constant.notify = prop.notifySignalIndex(); 
+            if (prop.isConstant())
+                instr.constant.notify = 0;
+            else
+                instr.constant.notify = prop.notifySignalIndex(); 
             instr.constant.type = prop.userType();
         } else {
             int nref = data.count();
@@ -804,7 +813,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
             {
                 stack.push(contextPrivate->propertyValues.at(instr.fetch.idx));
                 enginePrivate->capturedProperties <<
-                    QmlEnginePrivate::CapturedProperty(context, contextPrivate->notifyIndex + instr.fetch.idx); 
+                    QmlEnginePrivate::CapturedProperty(context, -1, contextPrivate->notifyIndex + instr.fetch.idx); 
                 state = Reset;
             }
                 break;
@@ -814,8 +823,9 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 QObject *obj = contextPrivate->defaultObjects.at(0);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                enginePrivate->capturedProperties <<
-                    QmlEnginePrivate::CapturedProperty(obj, instr.constant.notify); 
+                if (instr.constant.notify != 0)
+                    enginePrivate->capturedProperties <<
+                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
                 state = Reset;
             }
                 break;
@@ -825,8 +835,9 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 QObject *obj = contextPrivate->defaultObjects.at(1);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                enginePrivate->capturedProperties <<
-                    QmlEnginePrivate::CapturedProperty(obj, instr.constant.notify); 
+                if (instr.constant.notify != 0)
+                    enginePrivate->capturedProperties <<
+                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
                 state = Reset;
             }
                 break;
@@ -837,8 +848,9 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 QObject *obj = qvariant_cast<QObject *>(o);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                enginePrivate->capturedProperties <<
-                    QmlEnginePrivate::CapturedProperty(obj, instr.constant.notify); 
+                if (instr.constant.notify != 0)
+                    enginePrivate->capturedProperties <<
+                        QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
                 state = Reset;
             }
                 break;

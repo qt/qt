@@ -70,10 +70,9 @@
 #endif
 
 #if ENABLE(DOM_STORAGE)
-#include "LocalStorage.h"
-#include "SessionStorage.h"
 #include "Storage.h"
 #include "StorageArea.h"
+#include "StorageNamespace.h"
 #endif
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
@@ -87,14 +86,25 @@ namespace WebCore {
 
 class PostMessageTimer : public TimerBase {
 public:
-    PostMessageTimer(DOMWindow* window, PassRefPtr<MessageEvent> event, SecurityOrigin* targetOrigin)
+    PostMessageTimer(DOMWindow* window, const String& message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannel> channel, SecurityOrigin* targetOrigin)
         : m_window(window)
-        , m_event(event)
+        , m_message(message)
+        , m_origin(sourceOrigin)
+        , m_source(source)
+        , m_channel(channel)
         , m_targetOrigin(targetOrigin)
     {
     }
 
-    MessageEvent* event() const { return m_event.get(); }
+    PassRefPtr<MessageEvent> event(ScriptExecutionContext* context)
+    {
+        RefPtr<MessagePort> messagePort;
+        if (m_channel) {
+            messagePort = MessagePort::create(*context);
+            messagePort->entangle(m_channel.release());
+        }
+        return MessageEvent::create(m_message, m_origin, "", m_source, messagePort.release());
+    }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
 
 private:
@@ -104,7 +114,10 @@ private:
     }
 
     RefPtr<DOMWindow> m_window;
-    RefPtr<MessageEvent> m_event;
+    String m_message;
+    String m_origin;
+    RefPtr<DOMWindow> m_source;
+    OwnPtr<MessagePortChannel> m_channel;
     RefPtr<SecurityOrigin> m_targetOrigin;
 };
 
@@ -564,7 +577,7 @@ Storage* DOMWindow::localStorage() const
     if (!settings || !settings->localStorageEnabled())
         return 0;
 
-    LocalStorage* localStorage = page->group().localStorage();
+    StorageNamespace* localStorage = page->group().localStorage();
     RefPtr<StorageArea> storageArea = localStorage ? localStorage->storageArea(document->securityOrigin()) : 0; 
     if (storageArea) {
         page->inspectorController()->didUseDOMStorage(storageArea.get(), true, m_frame);
@@ -591,9 +604,9 @@ void DOMWindow::postMessage(const String& message, MessagePort* messagePort, con
         }
     }
 
-    RefPtr<MessagePort> newMessagePort;
+    OwnPtr<MessagePortChannel> channel;
     if (messagePort)
-        newMessagePort = messagePort->clone(ec);
+        channel = messagePort->disentangle(ec);
     if (ec)
         return;
 
@@ -605,7 +618,7 @@ void DOMWindow::postMessage(const String& message, MessagePort* messagePort, con
     String sourceOrigin = sourceDocument->securityOrigin()->toString();
 
     // Schedule the message.
-    PostMessageTimer* timer = new PostMessageTimer(this, MessageEvent::create(message, sourceOrigin, "", source, newMessagePort), target.get());
+    PostMessageTimer* timer = new PostMessageTimer(this, message, sourceOrigin, source, channel.release(), target.get());
     timer->startOneShot(0);
 }
 
@@ -626,13 +639,8 @@ void DOMWindow::postMessageTimerFired(PostMessageTimer* t)
         }
     }
 
-    MessagePort* messagePort = timer->event()->messagePort();
-    ASSERT(!messagePort || !messagePort->scriptExecutionContext());
-    if (messagePort)
-        messagePort->attachToContext(document());
-
     ExceptionCode ec = 0;
-    dispatchEvent(timer->event(), ec);
+    dispatchEvent(timer->event(document()), ec);
 }
 
 DOMSelection* DOMWindow::getSelection()

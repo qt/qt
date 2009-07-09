@@ -124,7 +124,8 @@ public:
     Status status() const;
     qreal progress() const;
 
-    virtual void classComplete();
+    virtual void classBegin();
+    virtual void componentComplete();
 
 signals:
     void statusChanged(Status);

@@ -54,7 +54,7 @@
 #define INT_MAX 2147483647
 #endif
 #include <qfxpixmap.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <private/qmlanimation_p.h>
 
 #include "qfxparticles.h"

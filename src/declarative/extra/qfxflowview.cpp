@@ -199,8 +199,6 @@ void QFxFlowView::reflowDrag(const QPointF &dp)
     qreal maxY = 0;
     qreal x = 0;
 
-    int flowedItems = 0;
-
     clearTimeLine();
 
     QList<QFxItem *> items;
@@ -316,6 +314,7 @@ QRectF QFxFlowView::rectForItem(int idx) const
 
 void QFxFlowView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_UNUSED(event);
     if (m_dragItem) {
         m_dragItem->setZ(0);
 

@@ -20,12 +20,9 @@
 
 #include "config.h"
 
-
 #if ENABLE(XPATH)
 
 #include "JSXPathEvaluator.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSCustomXPathNSResolver.h"
 #include "JSNode.h"
@@ -37,9 +34,8 @@
 #include "XPathExpression.h"
 #include "XPathNSResolver.h"
 #include "XPathResult.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

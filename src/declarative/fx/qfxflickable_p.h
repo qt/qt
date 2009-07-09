@@ -57,7 +57,7 @@
 #include "qfxflickable.h"
 #include "qfxitem_p.h"
 #include "qml.h"
-#include "qmltimelinevalueproxy.h"
+#include "private/qmltimeline_p.h"
 #include "private/qmlanimation_p.h"
 
 QT_BEGIN_NAMESPACE

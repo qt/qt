@@ -47,7 +47,7 @@
 #include <QNetworkRequest>
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 
 #include "qmlengine.h"
 #include "qmlstate.h"

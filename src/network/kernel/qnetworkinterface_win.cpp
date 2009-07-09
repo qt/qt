@@ -66,19 +66,14 @@ static void resolveLibs()
     if (!done) {
         done = true;
 
-        HINSTANCE iphlpapiHnd;
-        QT_WA({
-                iphlpapiHnd = LoadLibraryW(L"iphlpapi");
-            }, {
-                iphlpapiHnd = LoadLibraryA("iphlpapi");
-            });
+        HINSTANCE iphlpapiHnd = LoadLibrary(L"iphlpapi");
         if (iphlpapiHnd == NULL)
-            return;             // failed to load, probably Windows 95
+            return;
 
 #if defined(Q_OS_WINCE)
-        ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddressW(iphlpapiHnd, L"GetAdaptersInfo");
-        ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddressW(iphlpapiHnd, L"GetAdaptersAddresses");
-        ptrGetNetworkParams = (PtrGetNetworkParams)GetProcAddressW(iphlpapiHnd, L"GetNetworkParams");
+        ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddress(iphlpapiHnd, L"GetAdaptersInfo");
+        ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddress(iphlpapiHnd, L"GetAdaptersAddresses");
+        ptrGetNetworkParams = (PtrGetNetworkParams)GetProcAddress(iphlpapiHnd, L"GetNetworkParams");
 #else
         ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddress(iphlpapiHnd, "GetAdaptersInfo");
         ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddress(iphlpapiHnd, "GetAdaptersAddresses");

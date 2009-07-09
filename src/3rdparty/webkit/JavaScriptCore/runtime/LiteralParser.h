@@ -34,27 +34,31 @@ namespace JSC {
 
     class LiteralParser {
     public:
-        LiteralParser(ExecState* exec, const UString& s)
+        typedef enum { StrictJSON, NonStrictJSON } ParserMode;
+        LiteralParser(ExecState* exec, const UString& s, ParserMode mode)
             : m_exec(exec)
-            , m_lexer(s)
-            , m_depth(0)
-            , m_aborted(false)
+            , m_lexer(s, mode)
+            , m_mode(mode)
         {
         }
         
         JSValue tryLiteralParse()
         {
             m_lexer.next();
-            JSValue result = parseStatement();
-            if (m_aborted || m_lexer.currentToken().type != TokEnd)
+            JSValue result = parse(m_mode == StrictJSON ? StartParseExpression : StartParseStatement);
+            if (m_lexer.currentToken().type != TokEnd)
                 return JSValue();
             return result;
         }
     private:
-        
+        enum ParserState { StartParseObject, StartParseArray, StartParseExpression, 
+                           StartParseStatement, StartParseStatementEndStatement, 
+                           DoParseObjectStartExpression, DoParseObjectEndExpression,
+                           DoParseArrayStartExpression, DoParseArrayEndExpression };
         enum TokenType { TokLBracket, TokRBracket, TokLBrace, TokRBrace, 
                          TokString, TokIdentifier, TokNumber, TokColon, 
-                         TokLParen, TokRParen, TokComma, TokEnd, TokError };
+                         TokLParen, TokRParen, TokComma, TokTrue, TokFalse,
+                         TokNull, TokEnd, TokError };
 
         class Lexer {
         public:
@@ -62,9 +66,12 @@ namespace JSC {
                 TokenType type;
                 const UChar* start;
                 const UChar* end;
+                UString stringToken;
+                double numberToken;
             };
-            Lexer(const UString& s)
+            Lexer(const UString& s, ParserMode mode)
                 : m_string(s)
+                , m_mode(mode)
                 , m_ptr(s.data())
                 , m_end(s.data() + s.size())
             {
@@ -82,30 +89,21 @@ namespace JSC {
             
         private:
             TokenType lex(LiteralParserToken&);
-            TokenType lexString(LiteralParserToken&);
+            template <ParserMode parserMode> TokenType lexString(LiteralParserToken&);
             TokenType lexNumber(LiteralParserToken&);
             LiteralParserToken m_currentToken;
             UString m_string;
+            ParserMode m_mode;
             const UChar* m_ptr;
             const UChar* m_end;
         };
         
         class StackGuard;
-        JSValue parseStatement();
-        JSValue parseExpression();
-        JSValue parseArray();
-        JSValue parseObject();
-
-        JSValue abortParse()
-        {
-            m_aborted = true;
-            return JSValue();
-        }
+        JSValue parse(ParserState);
 
         ExecState* m_exec;
         LiteralParser::Lexer m_lexer;
-        int m_depth;
-        bool m_aborted;
+        ParserMode m_mode;
     };
 }
 

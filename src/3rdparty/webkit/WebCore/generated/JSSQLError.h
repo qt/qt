@@ -21,7 +21,6 @@
 #ifndef JSSQLError_h
 #define JSSQLError_h
 
-
 #if ENABLE(DATABASE)
 
 #include "JSDOMBinding.h"

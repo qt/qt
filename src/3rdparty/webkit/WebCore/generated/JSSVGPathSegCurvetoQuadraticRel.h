@@ -21,10 +21,10 @@
 #ifndef JSSVGPathSegCurvetoQuadraticRel_h
 #define JSSVGPathSegCurvetoQuadraticRel_h
 
-
 #if ENABLE(SVG)
 
 #include "JSSVGPathSeg.h"
+#include "SVGElement.h"
 
 namespace WebCore {
 

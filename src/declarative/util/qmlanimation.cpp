@@ -58,12 +58,6 @@
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
 
-/* TODO:
-    Check for any memory leaks
-    easing should be a QEasingCurve-type property
-    All other XXXs and ###s
-*/
-
 QT_BEGIN_NAMESPACE
 
 QEasingCurve stringToCurve(const QString &curve)
@@ -1108,7 +1102,7 @@ void QmlParentChangeActionPrivate::init()
 
 void QmlParentChangeActionPrivate::doAction()
 {
-    //XXX property.write(value);
+    //### property.write(value);
 }
 
 void QmlParentChangeAction::prepare(QmlMetaProperty &p)
@@ -1120,7 +1114,7 @@ void QmlParentChangeAction::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
-    //XXX
+    //###
 }
 
 QAbstractAnimation *QmlParentChangeAction::qtAnimation()
@@ -1239,7 +1233,7 @@ QmlNumberAnimation::~QmlNumberAnimation()
 qreal QmlNumberAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
-    return d->from.toDouble();    //### toFloat?
+    return d->from.toDouble();
 }
 
 void QmlNumberAnimation::setFrom(qreal f)
@@ -1259,7 +1253,7 @@ void QmlNumberAnimation::setFrom(qreal f)
 qreal QmlNumberAnimation::to() const
 {
     Q_D(const QmlPropertyAnimation);
-    return d->to.toDouble();    //### toFloat?
+    return d->to.toDouble();
 }
 
 void QmlNumberAnimation::setTo(qreal t)
@@ -1346,7 +1340,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
         from = d->animations.count() - 1;
     }
     
-    //### needed for Behavior
+    //needed for Behavior
     if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
         for (int i = 0; i < d->animations.count(); ++i)
             d->animations.at(i)->setTarget(d->userProperty);
@@ -1428,7 +1422,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 {
     Q_D(QmlAnimationGroup);
 
-     //### needed for Behavior
+     //needed for Behavior
     if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
         for (int i = 0; i < d->animations.count(); ++i)
             d->animations.at(i)->setTarget(d->userProperty);
@@ -1441,26 +1435,12 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 
 QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation)
 
-//### profile and optimize
-QVariant QmlPropertyAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
-{
-    if (from.userType() != to.userType())
-        return QVariant();
-
-    QVariantAnimation::Interpolator interpolator = QVariantAnimationPrivate::getInterpolator(from.userType());
-    if (interpolator)
-        return interpolator(from.constData(), to.constData(), progress);
-    else
-        return QVariant();
-}
-
 //convert a variant from string type to another animatable type
-//### should use any registered string convertor
-//### profile and optimize
-void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, QVariant::Type type)
+void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 {
     if (variant.type() != QVariant::String) {
-        variant.convert(type);
+        if ((uint)type < QVariant::UserType)
+            variant.convert((QVariant::Type)type);
         return;
     }
 
@@ -1494,7 +1474,12 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, QVariant::Ty
         break;
     }
     default:
-        variant.convert(type);
+        if ((uint)type >= QVariant::UserType) {
+            QmlMetaType::StringConverter converter = QmlMetaType::customStringConverter(type);
+            if (converter)
+                variant = converter(variant.toString());
+        } else
+            variant.convert((QVariant::Type)type);
         break;
     }
 }
@@ -1742,7 +1727,8 @@ void QmlPropertyAnimationPrivate::valueChanged(qreal r)
     if (!fromSourced) {
         if (!fromIsDefined) {
             from = property.read();
-            convertVariant(from, (QVariant::Type)(interpolatorType ? interpolatorType : property.propertyType()));
+            convertVariant(from, interpolatorType ? interpolatorType : property.propertyType());
+            //### check for invalid variant if using property type
         }
         fromSourced = true;
     }
@@ -1752,8 +1738,6 @@ void QmlPropertyAnimationPrivate::valueChanged(qreal r)
     } else {
         if (interpolator)
             property.write(interpolator(from.constData(), to.constData(), r));
-        else
-            property.write(interpolateVariant(from, to, r));    //### optimize
     }
 }
 
@@ -1771,9 +1755,15 @@ void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
-    d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
+    int propType = d->property.propertyType();
+    d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : propType);
     if (d->fromIsDefined)
-        d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : d->property.propertyType()));
+        d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : propType);
+
+    if (!d->interpolatorType) {
+        //### check for invalid variants
+        d->interpolator = QVariantAnimationPrivate::getInterpolator(propType);
+    }
 
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
@@ -1810,7 +1800,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                     if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
                         if (interpolatorType)
-                            QmlPropertyAnimationPrivate::convertVariant(action.fromValue, (QVariant::Type)interpolatorType);
+                            QmlPropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
                     }
                     if (!interpolatorType) {
                         int propType = action.property.propertyType();
@@ -1871,8 +1861,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             if (d->toIsDefined)
                 myAction.toValue = d->to;
 
-            d->convertVariant(myAction.fromValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
-            d->convertVariant(myAction.toValue, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+            d->convertVariant(myAction.fromValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+            d->convertVariant(myAction.toValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
 
             modified << action.property;
 
@@ -1890,10 +1880,10 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                 continue;
 
             if (d->fromIsDefined) {
-                d->convertVariant(d->from, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+                d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
                 myAction.fromValue = d->from;
             }
-            d->convertVariant(d->to, (QVariant::Type)(d->interpolatorType ? d->interpolatorType : myAction.property.propertyType()));
+            d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
             myAction.toValue = d->to;
             data->actions << myAction;
         }
