@@ -2322,6 +2322,13 @@ void tst_QScriptValue::call()
             QCOMPARE(result.isNumber(), true);
             QCOMPARE(result.toNumber(), 123.0);
         }
+        {
+            QScriptValue args = eng.newArray();
+            args.setProperty(0, 123);
+            QScriptValue result = fun.call(eng.undefinedValue(), args);
+            QVERIFY(result.isNumber());
+            QCOMPARE(result.toNumber(), 123.0);
+        }
     }
 
     {
@@ -2335,6 +2342,14 @@ void tst_QScriptValue::call()
             args << QScriptValue(&eng, 123.0) << QScriptValue(&eng, 456.0);
             QScriptValue result = fun.call(eng.undefinedValue(), args);
             QCOMPARE(result.isNumber(), true);
+            QCOMPARE(result.toNumber(), 456.0);
+        }
+        {
+            QScriptValue args = eng.newArray();
+            args.setProperty(0, 123);
+            args.setProperty(1, 456);
+            QScriptValue result = fun.call(eng.undefinedValue(), args);
+            QVERIFY(result.isNumber());
             QCOMPARE(result.toNumber(), 456.0);
         }
     }
@@ -2373,6 +2388,13 @@ void tst_QScriptValue::call()
             args << QScriptValue(123.0);
             QScriptValue result = fun.call(eng.undefinedValue(), args);
             QCOMPARE(result.isNumber(), true);
+            QCOMPARE(result.toNumber(), 123.0);
+        }
+        {
+            QScriptValue args = eng.newArray();
+            args.setProperty(0, 123);
+            QScriptValue result = fun.call(eng.undefinedValue(), args);
+            QVERIFY(result.isNumber());
             QCOMPARE(result.toNumber(), 123.0);
         }
     }
