@@ -828,6 +828,8 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::GlobalObject);
 
 QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 {
+    qMetaTypeId<QScriptValue>();
+
     JSC::initializeThreading(); // ### hmmm
 
     JSC::JSGlobalData *data = JSC::JSGlobalData::create().releaseRef();
