@@ -58,6 +58,9 @@
 #  include "qfilesystemwatcher_inotify_p.h"
 #  include "qfilesystemwatcher_dnotify_p.h"
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
+#  if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+#  include "qfilesystemwatcher_fsevents_p.h"
+#  endif //MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 #  include "qfilesystemwatcher_kqueue_p.h"
 #endif
 
@@ -243,7 +246,12 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine()
         eng = QDnotifyFileSystemWatcherEngine::create();
     return eng;
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
-    return QKqueueFileSystemWatcherEngine::create();
+#  if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
+        return QFSEventsFileSystemWatcherEngine::create();
+    else
+#  endif
+        return QKqueueFileSystemWatcherEngine::create();
 #else
     return 0;
 #endif
