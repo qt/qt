@@ -43,38 +43,6 @@ private:
     QmlEngine engine;
 };
 
-/*
-   Find an item with the specified id.  If index is supplied then the
-   item must also evaluate the {index} expression equal to index
-
-   Copied from ListView test
-*/
-template<typename T>
-T *findItem(QFxItem *parent, const QString &id, int index=0)
-{
-    const QMetaObject &mo = T::staticMetaObject;
-    qDebug() << parent->children()->count() << "children";
-    for (int i = 0; i < parent->children()->count(); ++i) {
-        QFxItem *item = parent->children()->at(i);
-        qDebug() << "try" << item;
-        if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
-            if (index != -1) {
-                QmlExpression e(qmlContext(item), "index", item);
-                e.setTrackChange(false);
-                if (e.value().toInt() == index)
-                    return static_cast<T*>(item);
-            } else {
-                return static_cast<T*>(item);
-            }
-        }
-        item = findItem<T>(item, id, index);
-        if (item)
-            return static_cast<T*>(item);
-    }
-
-    return 0;
-}
-
 tst_qfxtextedit::tst_qfxtextedit()
 {
     standard << "the quick brown fox jumped over the lazy dog"
@@ -456,21 +424,22 @@ void tst_qfxtextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
+#include <QFxView>
 void tst_qfxtextedit::cursorDelegate()
 {
-    QString componentStr = "TextEdit {  text: \""+ standard[1] +"\"; focusable: true; resources: [ Component { id:cursor; Item { id:cursorInstance } } ] cursorDelegate: cursor}";
-    QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
-    QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
+    QFxView* view = new QFxView(0);
+    view->show();
+    view->setUrl(QUrl("data/cursorTest.qml"));
+    view->execute();
+    QFxTextEdit *textEditObject = view->root()->findChild<QFxTextEdit*>("textEditObject");
     QVERIFY(textEditObject != 0);
-    QVERIFY(!findItem<QFxItem>(textEditObject, "cursorInstance"));
+    QVERIFY(textEditObject->findChild<QFxItem*>("cursorInstance"));
     //Test Delegate gets created
     textEditObject->setFocus(true);
-    //TODO:To get focus you also need to be in a focused window - switch this to a QFxView
-    return;
-    QFxItem* delegateObject = findItem<QFxItem>(textEditObject, "cursorInstance");
+    QFxItem* delegateObject = textEditObject->findChild<QFxItem*>("cursorInstance");
     QVERIFY(delegateObject);
     //Test Delegate gets moved
-    for(int i=0; i<= standard[1].size(); i++){
+    for(int i=0; i<= textEditObject->text().length(); i++){
         textEditObject->setCursorPosition(i);
         QCOMPARE(textEditObject->cursorRect().x(), qRound(delegateObject->x()));
         QCOMPARE(textEditObject->cursorRect().y(), qRound(delegateObject->y()));
@@ -480,7 +449,7 @@ void tst_qfxtextedit::cursorDelegate()
     QCOMPARE(textEditObject->cursorRect().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
-    QVERIFY(!findItem<QFxItem>(textEditObject, "cursorInstance"));
+    QVERIFY(!textEditObject->findChild<QFxItem*>("cursorInstance"));
 }
 
 QTEST_MAIN(tst_qfxtextedit)

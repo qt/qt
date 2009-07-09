@@ -521,8 +521,9 @@ void QFxTextEdit::setCursorDelegate(QmlComponent* c)
     if(c && c->isReady()){
         loadCursorDelegate();
     }else{
-        connect(c, SIGNAL(statusChanged()),
-                this, SLOT(loadCursorDelegate()));
+        if(c)
+            connect(c, SIGNAL(statusChanged()),
+                    this, SLOT(loadCursorDelegate()));
     }
 }
 
