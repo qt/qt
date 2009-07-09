@@ -95,25 +95,18 @@ public:
         int item;
         QPixmap before;
         QPixmap after;
-        QTreeView *view;
+        QWidget *viewport;
         AnimatedOperation() : item(0) { setEasingCurve(QEasingCurve::InOutQuad); }
         int top() const { return startValue().toInt(); }
-        QRect rect() const { QRect rect = view->viewport()->rect(); rect.moveTop(top()); return rect; }
-        void updateCurrentValue(const QVariant &) { view->viewport()->update(rect()); }
-        void updateState(State, State state)
-        {
-            if (state == Stopped) {
-                before = after = QPixmap();
-                view->setState(QAbstractItemView::NoState);
-                view->updateGeometries();
-                view->viewport()->update();
-            }
-        }
+        QRect rect() const { QRect rect = viewport->rect(); rect.moveTop(top()); return rect; }
+        void updateCurrentValue(const QVariant &) { viewport->update(rect()); }
+        void updateState(State, State state) { if (state == Stopped) before = after = QPixmap(); }
     } animatedOperation;
     void prepareAnimatedOperation(int item, QVariantAnimation::Direction d);
     void beginAnimatedOperation();
     void drawAnimatedOperation(QPainter *painter) const;
     QPixmap renderTreeToPixmapForAnimation(const QRect &rect) const;
+    void _q_endAnimatedOperation();
 #endif //QT_NO_ANIMATION
 
     void expand(int item, bool emitSignal);

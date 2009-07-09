@@ -2837,6 +2837,9 @@ void QTreeViewPrivate::initialize()
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);
+#ifndef QT_NO_ANIMATION
+    QObject::connect(&animatedOperation, SIGNAL(finished()), q, SLOT(_q_endAnimatedOperation()));
+#endif //QT_NO_ANIMATION
 }
 
 void QTreeViewPrivate::expand(int item, bool emitSignal)
@@ -2920,7 +2923,7 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
 void QTreeViewPrivate::prepareAnimatedOperation(int item, QVariantAnimation::Direction direction)
 {
     animatedOperation.item = item;
-    animatedOperation.view = q_func();
+    animatedOperation.viewport = viewport;
     animatedOperation.setDirection(direction);
 
     int top = coordinateForItem(item) + itemHeight(item);
@@ -3007,6 +3010,14 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
 
 
     return pixmap;
+}
+
+void QTreeViewPrivate::_q_endAnimatedOperation()
+{
+    Q_Q(QTreeView);
+    q->setState(QAbstractItemView::NoState);
+    q->updateGeometries();
+    viewport->update();
 }
 #endif //QT_NO_ANIMATION
 
