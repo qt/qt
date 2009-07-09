@@ -152,7 +152,7 @@ void QmlBindableValue::update()
             }
 
             if (d->property.propertyType() == QVariant::Url && 
-                value.canConvert(QVariant::String) && !value.isNull()) 
+                (value.type() == QVariant::String || value.type() == QVariant::ByteArray) && !value.isNull()) 
                 value.setValue(context()->resolvedUrl(QUrl(value.toString())));
 
             d->property.write(value);
