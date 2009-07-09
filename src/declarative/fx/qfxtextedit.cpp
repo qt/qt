@@ -551,7 +551,8 @@ void QFxTextEdit::loadCursorDelegate()
     text edit.
 
     Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    selection. If you attempt to set selectionStart to a value outside of
+    the current text, selectionStart will not be changed.
 
     \sa selectionEnd, cursorPosition, selectedText
 */
@@ -564,7 +565,7 @@ int QFxTextEdit::selectionStart() const
 void QFxTextEdit::setSelectionStart(int s)
 {
     Q_D(QFxTextEdit);
-    if(d->lastSelectionStart == s)
+    if(d->lastSelectionStart == s || s < 0 || s > text().length())
         return;
     d->lastSelectionStart = s;
     d->updateSelection();// Will emit the relevant signals
@@ -578,7 +579,8 @@ void QFxTextEdit::setSelectionStart(int s)
     text edit.
 
     Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    selection. If you attempt to set selectionEnd to a value outside of
+    the current text, selectionEnd will not be changed.
 
     \sa selectionStart, cursorPosition, selectedText
 */
@@ -591,7 +593,7 @@ int QFxTextEdit::selectionEnd() const
 void QFxTextEdit::setSelectionEnd(int s)
 {
     Q_D(QFxTextEdit);
-    if(d->lastSelectionEnd == s)
+    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
         return;
     d->lastSelectionEnd = s;
     d->updateSelection();// Will emit the relevant signals
@@ -1075,21 +1077,13 @@ void QFxTextEdit::moveCursorDelegate()
 void QFxTextEditPrivate::updateSelection()
 {
     Q_Q(QFxTextEdit);
-    bool startChange = (lastSelectionStart != control->textCursor().selectionStart());
-    bool endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
-    if(startChange){
-        //### Does this generate spurious intermediate signals?
-        control->textCursor().setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
-        control->textCursor().setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
-    }else if(endChange){
-        int n = lastSelectionEnd - control->textCursor().selectionEnd();
-        if(n > 0)
-            control->textCursor().movePosition(QTextCursor::NextCharacter,
-                    QTextCursor::KeepAnchor, n);
-        else
-            control->textCursor().movePosition(QTextCursor::PreviousCharacter,
-                    QTextCursor::KeepAnchor, -n);
-    }
+    QTextCursor cursor = control->textCursor();
+    bool startChange = (lastSelectionStart != cursor.selectionStart());
+    bool endChange = (lastSelectionEnd != cursor.selectionEnd());
+    //### Is it worth calculating a more minimal set of movements?
+    cursor.setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
+    cursor.setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
+    control->setTextCursor(cursor);
     if(startChange)
         q->selectionStartChanged();
     if(endChange)
