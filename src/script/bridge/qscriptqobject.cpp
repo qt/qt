@@ -1037,7 +1037,6 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
         }
     } else {
         // set
-        Q_ASSERT_X(false, Q_FUNC_INFO, "check me");
         JSC::JSValue arg = args.at(0);
         QVariant v;
         if (prop.isEnumType() && arg.isString()
@@ -1251,23 +1250,43 @@ void QObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& prop
 
     index = meta->indexOfProperty(name);
     if (index != -1) {
-        if (GeneratePropertyFunctions) {
-            // ### the setter should be called
-        }
         QMetaProperty prop = meta->property(index);
         if (prop.isScriptable()) {
             if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
                 || (index >= meta->propertyOffset())) {
-                QVariant v;
-                if (prop.isEnumType() && value.isString()
-                    && !eng->hasDemarshalFunction(prop.userType())) {
-                    // give QMetaProperty::write() a chance to convert from
-                    // string to enum value
-                    v = qtStringFromJSCUString(value.toString(exec));
+                if (GeneratePropertyFunctions) {
+                    // ### ideally JSC would do this for us already, i.e. find out
+                    // that the property is a setter and call the setter.
+                    // Maybe QtPropertyFunction needs to inherit JSC::GetterSetter.
+                    JSC::JSValue fun;
+                    QHash<QByteArray, JSC::JSValue>::const_iterator it;
+                    it = data->cachedMembers.constFind(name);
+                    if (it != data->cachedMembers.constEnd()) {
+                        fun = it.value();
+                    } else {
+                        fun = new (exec)QtPropertyFunction(
+                            meta, index, &exec->globalData(),
+                            exec->lexicalGlobalObject()->functionStructure(),
+                            propertyName);
+                        data->cachedMembers.insert(name, fun);
+                    }
+                    JSC::CallData callData;
+                    JSC::CallType callType = fun.getCallData(callData);
+                    JSC::JSValue argv[1] = { value };
+                    JSC::ArgList args(argv, 1);
+                    (void)JSC::call(exec, fun, callType, callData, this, args);
                 } else {
-                    v = eng->jscValueToVariant(value, prop.userType());
+                    QVariant v;
+                    if (prop.isEnumType() && value.isString()
+                        && !eng->hasDemarshalFunction(prop.userType())) {
+                        // give QMetaProperty::write() a chance to convert from
+                        // string to enum value
+                        v = qtStringFromJSCUString(value.toString(exec));
+                    } else {
+                        v = eng->jscValueToVariant(value, prop.userType());
+                    }
+                    (void)prop.write(qobject, v);
                 }
-                (void)prop.write(qobject, v);
                 return;
             }
         }
