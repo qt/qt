@@ -2455,6 +2455,9 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
     actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
     expectedFocusWidget.sprintf("%p %s %s", edit2, edit2->objectName().toLatin1().constData(), edit2->metaObject()->className());
     QCOMPARE(actualFocusWidget, expectedFocusWidget);
+
+    delete edit2;
+    delete parentWidget;
 }
 
 void tst_QWidget::normalGeometry()
