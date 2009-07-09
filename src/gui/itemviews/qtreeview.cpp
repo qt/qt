@@ -1267,10 +1267,13 @@ void QTreeView::paintEvent(QPaintEvent *event)
     Q_D(QTreeView);
     d->executePostedLayout();
     QPainter painter(viewport());
+#ifndef QT_NO_ANIMATION
     if (d->isAnimating()) {
-        drawTree(&painter, event->region() - d->animationRect());
+        drawTree(&painter, event->region() - d->animatedOperation.rect());
         d->drawAnimatedOperation(&painter);
-    } else {
+    } else
+#endif //QT_NO_ANIMATION
+    {
         drawTree(&painter, event->region());
 #ifndef QT_NO_DRAGANDDROP
         d->paintDropIndicator(&painter);
@@ -2851,10 +2854,6 @@ void QTreeViewPrivate::initialize()
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);
-
-    // animation
-    QObject::connect(&timeline, SIGNAL(frameChanged(int)), q, SLOT(_q_animate()));
-    QObject::connect(&timeline, SIGNAL(finished()), q, SLOT(_q_endAnimatedOperation()), Qt::QueuedConnection);
 }
 
 void QTreeViewPrivate::expand(int item, bool emitSignal)
@@ -2864,9 +2863,10 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (item == -1 || viewItems.at(item).expanded)
         return;
 
+#ifndef QT_NO_ANIMATION
     if (emitSignal && animationsEnabled)
-        prepareAnimatedOperation(item, AnimatedOperation::Expand);
-
+        prepareAnimatedOperation(item, QVariantAnimation::Forward);
+#endif //QT_NO_ANIMATION
     QAbstractItemView::State oldState = q->state();
     q->setState(QAbstractItemView::ExpandingState);
     const QModelIndex index = viewItems.at(item).index;
@@ -2877,8 +2877,10 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 
     if (emitSignal) {
         emit q->expanded(index);
+#ifndef QT_NO_ANIMATION
         if (animationsEnabled)
             beginAnimatedOperation();
+#endif //QT_NO_ANIMATION
     }
     if (model->canFetchMore(index))
         model->fetchMore(index);
@@ -2902,8 +2904,10 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
     if (it == expandedIndexes.end() || viewItems.at(item).expanded == false)
         return; // nothing to do
 
+#ifndef QT_NO_ANIMATION
     if (emitSignal && animationsEnabled)
-        prepareAnimatedOperation(item, AnimatedOperation::Collapse);
+        prepareAnimatedOperation(item, QVariantAnimation::Backward);
+#endif //QT_NO_ANIMATION
 
     QAbstractItemView::State oldState = q->state();
     q->setState(QAbstractItemView::CollapsingState);
@@ -2922,29 +2926,33 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
 
     if (emitSignal) {
         emit q->collapsed(modelIndex);
+#ifndef QT_NO_ANIMATION
         if (animationsEnabled)
             beginAnimatedOperation();
+#endif //QT_NO_ANIMATION
     }
 }
 
-void QTreeViewPrivate::prepareAnimatedOperation(int item, AnimatedOperation::Type type)
+#ifndef QT_NO_ANIMATION
+void QTreeViewPrivate::prepareAnimatedOperation(int item, QVariantAnimation::Direction direction)
 {
     animatedOperation.item = item;
-    animatedOperation.type = type;
+    animatedOperation.view = q_func();
+    animatedOperation.setDirection(direction);
 
     int top = coordinateForItem(item) + itemHeight(item);
     QRect rect = viewport->rect();
     rect.setTop(top);
-    if (type == AnimatedOperation::Collapse) {
+    if (direction == QVariantAnimation::Backward) {
         const int limit = rect.height() * 2;
         int h = 0;
         int c = item + viewItems.at(item).total + 1;
         for (int i = item + 1; i < c && h < limit; ++i)
             h += itemHeight(i);
         rect.setHeight(h);
-        animatedOperation.duration = h;
+        animatedOperation.setEndValue(top + h);
     }
-    animatedOperation.top = top;
+    animatedOperation.setStartValue(top);
     animatedOperation.before = renderTreeToPixmapForAnimation(rect);
 }
 
@@ -2953,50 +2961,29 @@ void QTreeViewPrivate::beginAnimatedOperation()
     Q_Q(QTreeView);
 
     QRect rect = viewport->rect();
-    rect.setTop(animatedOperation.top);
-    if (animatedOperation.type == AnimatedOperation::Expand) {
+    rect.setTop(animatedOperation.top());
+    if (animatedOperation.direction() == QVariantAnimation::Forward) {
         const int limit = rect.height() * 2;
         int h = 0;
         int c = animatedOperation.item + viewItems.at(animatedOperation.item).total + 1;
         for (int i = animatedOperation.item + 1; i < c && h < limit; ++i)
             h += itemHeight(i);
         rect.setHeight(h);
-        animatedOperation.duration = h;
+        animatedOperation.setEndValue(animatedOperation.top() + h);
     }
 
     animatedOperation.after = renderTreeToPixmapForAnimation(rect);
 
     q->setState(QAbstractItemView::AnimatingState);
-
-    timeline.stop();
-    timeline.setDuration(250);
-    timeline.setFrameRange(animatedOperation.top, animatedOperation.top + animatedOperation.duration);
-    timeline.start();
-}
-
-void QTreeViewPrivate::_q_endAnimatedOperation()
-{
-    Q_Q(QTreeView);
-    animatedOperation.before = QPixmap();
-    animatedOperation.after = QPixmap();
-    q->setState(QAbstractItemView::NoState);
-    q->updateGeometries();
-    viewport->update();
-}
-
-void QTreeViewPrivate::_q_animate()
-{
-    QRect rect = viewport->rect();
-    rect.moveTop(animatedOperation.top);
-    viewport->repaint(rect);
+    animatedOperation.start(); //let's start the animation
 }
 
 void QTreeViewPrivate::drawAnimatedOperation(QPainter *painter) const
 {
-    int start = timeline.startFrame();
-    int end = timeline.endFrame();
-    bool collapsing = animatedOperation.type == AnimatedOperation::Collapse;
-    int current = collapsing ? end - timeline.currentFrame() + start : timeline.currentFrame();
+    const int start = animatedOperation.startValue().toInt(),
+        end = animatedOperation.endValue().toInt(),
+        current = animatedOperation.currentValue().toInt();
+    bool collapsing = animatedOperation.direction() == QVariantAnimation::Backward;
     const QPixmap top = collapsing ? animatedOperation.before : animatedOperation.after;
     painter->drawPixmap(0, start, top, 0, end - current - 1, top.width(), top.height());
     const QPixmap bottom = collapsing ? animatedOperation.after : animatedOperation.before;
@@ -3038,6 +3025,7 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
 
     return pixmap;
 }
+#endif //QT_NO_ANIMATION
 
 void QTreeViewPrivate::_q_currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {

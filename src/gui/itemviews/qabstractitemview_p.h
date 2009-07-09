@@ -61,8 +61,6 @@
 #include "QtGui/qmime.h"
 #include "QtGui/qpainter.h"
 #include "QtCore/qpair.h"
-#include "QtCore/qtimer.h"
-#include "QtCore/qtimeline.h"
 #include "QtGui/qregion.h"
 #include "QtCore/qdebug.h"
 #include "QtGui/qpainter.h"
@@ -376,7 +374,6 @@ public:
     QBasicTimer updateTimer;
     QBasicTimer delayedEditing;
     QBasicTimer delayedAutoScroll; //used when an item is clicked
-    QTimeLine timeline;
 
     QAbstractItemView::ScrollMode verticalScrollMode;
     QAbstractItemView::ScrollMode horizontalScrollMode;
