@@ -279,6 +279,9 @@ public:
 #ifdef Q_WS_S60
     void s60UpdateIsOpaque();
 #endif
+#ifdef Q_OS_SYMBIAN
+    void handleSymbianDeferredFocusChanged();
+#endif
 
     void raise_sys();
     void lower_sys();

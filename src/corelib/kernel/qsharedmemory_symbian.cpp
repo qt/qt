@@ -131,7 +131,7 @@ bool QSharedMemoryPrivate::create(int size)
     return true;
 }
 
-bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
+bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode /* mode */)
 {
     // Grab a pointer to the memory block
     if (!chunk.Handle()) {
