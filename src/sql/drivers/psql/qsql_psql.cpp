@@ -626,10 +626,9 @@ static QPSQLDriver::Protocol getPSQLVersion(PGconn* connection)
 {
     QPSQLDriver::Protocol serverVersion = QPSQLDriver::Version6;
     PGresult* result = PQexec(connection, "select version()");
-    int status =  PQresultStatus(result);
+    int status = PQresultStatus(result);
     if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK) {
         QString val = QString::fromAscii(PQgetvalue(result, 0, 0));
-        PQclear(result);
         QRegExp rx(QLatin1String("(\\d+)\\.(\\d+)"));
         rx.setMinimal(true); // enforce non-greedy RegExp
         if (rx.indexIn(val) != -1) {
@@ -670,6 +669,7 @@ static QPSQLDriver::Protocol getPSQLVersion(PGconn* connection)
             }
         }
     }
+    PQclear(result);
 
     if (serverVersion < QPSQLDriver::Version71)
         qWarning("This version of PostgreSQL is not supported and may not work.");
