@@ -64,6 +64,7 @@
 #include "QtGui/qregion.h"
 #include "QtCore/qdebug.h"
 #include "QtGui/qpainter.h"
+#include "QtCore/qbasictimer.h"
 
 #ifndef QT_NO_ITEMVIEWS
 
