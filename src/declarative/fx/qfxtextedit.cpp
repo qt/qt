@@ -324,6 +324,36 @@ void QFxTextEdit::setHighlightColor(const QColor &color)
 }
 
 /*!
+    \qmlproperty color TextEdit::highlightedTextColor
+
+    The highlighted text color, used in selections.
+*/
+
+/*!
+    \property QFxTextEdit::highlightedTextColor
+    \brief the text edit's default highlighted text color
+*/
+QColor QFxTextEdit::highlightedTextColor() const
+{
+    Q_D(const QFxTextEdit);
+    return d->highlightColor;
+}
+
+void QFxTextEdit::setHighlightedTextColor(const QColor &color)
+{
+    Q_D(QFxTextEdit);
+    if (d->highlightedTextColor == color)
+        return;
+
+    clearCache();
+    d->highlightedTextColor = color;
+    QPalette pal = d->control->palette();
+    pal.setColor(QPalette::HighlightedText, color);
+    d->control->setPalette(pal);
+    update();
+}
+
+/*!
     \qmlproperty enumeration TextEdit::hAlign
     \qmlproperty enumeration TextEdit::vAlign
 
@@ -451,6 +481,145 @@ void QFxTextEdit::setCursorPosition(int pos)
     if (cursor.position() == pos)
         return;
     cursor.setPosition(pos);
+    d->control->setTextCursor(cursor);
+}
+
+/*!
+    \qmlproperty TextEdit::cursorDelegate
+    \brief The delegate for the cursor in the TextEdit.
+
+    If you set a cursorDelegate for a TextEdit, this delegate will be used for
+    drawing the cursor instead of the standard cursor. An instance of the
+    delegate will be created and managed by the text edit when a cursor is
+    needed, and the x and y properties of delegate instance will be set so as
+    to be one pixel before the top left of the current character.
+
+    Note that the root item of the delegate component must be a QFxItem or
+    QFxItem derived item.
+*/
+QmlComponent* QFxTextEdit::cursorDelegate() const
+{
+    Q_D(const QFxTextEdit);
+    return d->cursorComponent;
+}
+
+void QFxTextEdit::setCursorDelegate(QmlComponent* c)
+{
+    Q_D(QFxTextEdit);
+    if(d->cursorComponent){
+        delete d->cursorComponent;
+        if(d->cursor){
+            disconnect(d->control, SIGNAL(cursorPositionChanged()),
+                    this, SLOT(moveCursorDelegate()));
+            d->control->setCursorWidth(-1);
+            dirtyCache(cursorRect());
+            delete d->cursor;
+            d->cursor = 0;
+        }
+    }
+    d->cursorComponent = c;
+    if(c && c->isReady()){
+        loadCursorDelegate();
+    }else{
+        if(c)
+            connect(c, SIGNAL(statusChanged()),
+                    this, SLOT(loadCursorDelegate()));
+    }
+}
+
+void QFxTextEdit::loadCursorDelegate()
+{
+    Q_D(QFxTextEdit);
+    if(d->cursorComponent->isLoading())
+        return;
+    d->cursor = qobject_cast<QFxItem*>(d->cursorComponent->create(qmlContext(this)));
+    if(d->cursor){
+        connect(d->control, SIGNAL(cursorPositionChanged()),
+                this, SLOT(moveCursorDelegate()));
+        d->control->setCursorWidth(0);
+        dirtyCache(cursorRect());
+        d->cursor->setItemParent(this);
+        d->cursor->setHeight(QFontMetrics(d->font.font()).height());
+        moveCursorDelegate();
+    }else{
+        qWarning() << "Error loading cursor delegate for TextEdit:" + objectName();
+    }
+}
+
+/*!
+    \qmlproperty int TextEdit::selectionStart
+
+    The cursor position before the first character in the current selection.
+    Setting this and selectionEnd allows you to specify a selection in the
+    text edit.
+
+    Note that if selectionStart == selectionEnd then there is no current
+    selection. If you attempt to set selectionStart to a value outside of
+    the current text, selectionStart will not be changed.
+
+    \sa selectionEnd, cursorPosition, selectedText
+*/
+int QFxTextEdit::selectionStart() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().selectionStart();
+}
+
+void QFxTextEdit::setSelectionStart(int s)
+{
+    Q_D(QFxTextEdit);
+    if(d->lastSelectionStart == s || s < 0 || s > text().length())
+        return;
+    d->lastSelectionStart = s;
+    d->updateSelection();// Will emit the relevant signals
+}
+
+/*!
+    \qmlproperty int TextEdit::selectionEnd
+
+    The cursor position after the last character in the current selection.
+    Setting this and selectionStart allows you to specify a selection in the
+    text edit.
+
+    Note that if selectionStart == selectionEnd then there is no current
+    selection. If you attempt to set selectionEnd to a value outside of
+    the current text, selectionEnd will not be changed.
+
+    \sa selectionStart, cursorPosition, selectedText
+*/
+int QFxTextEdit::selectionEnd() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().selectionEnd();
+}
+
+void QFxTextEdit::setSelectionEnd(int s)
+{
+    Q_D(QFxTextEdit);
+    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
+        return;
+    d->lastSelectionEnd = s;
+    d->updateSelection();// Will emit the relevant signals
+}
+
+/*!
+    \qmlproperty string TextEdit::selectedText
+
+    This read-only property provides the text currently selected in the
+    text edit.
+
+    It is equivalent to the following snippet, but is faster and easier
+    to use.
+    \code
+    //myTextEdit is the id of the TextEdit
+    myTextEdit.text.toString().substring(myTextEdit.selectionStart,
+            myTextEdit.selectionEnd);
+    \endcode
+*/
+QString QFxTextEdit::selectedText() const
+{
+    Q_D(const QFxTextEdit);
+    return d->control->textCursor().selectedText();
 }
 
 /*!
@@ -853,6 +1022,10 @@ void QFxTextEdit::fontChanged()
     Q_D(QFxTextEdit);
     clearCache();
     d->document->setDefaultFont(d->font.font());
+    if(d->cursor){
+        d->cursor->setHeight(QFontMetrics(d->font.font()).height());
+        moveCursorDelegate();
+    }
     updateSize();
     emit update();
 }
@@ -879,6 +1052,9 @@ void QFxTextEditPrivate::init()
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(q_textChanged()));
+    QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
+    QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
+    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
     document = control->document();
@@ -894,6 +1070,51 @@ void QFxTextEdit::q_textChanged()
     if (!widthValid())
         updateSize();   //### optimize: we get 3 calls to updateSize every time a letter is typed
     emit textChanged(text());
+}
+
+void QFxTextEdit::moveCursorDelegate()
+{
+    Q_D(QFxTextEdit);
+    if(!d->cursor)
+        return;
+    QRectF cursorRect = d->control->cursorRect();
+    d->cursor->setX(cursorRect.x());
+    d->cursor->setY(cursorRect.y());
+}
+
+void QFxTextEditPrivate::updateSelection()
+{
+    Q_Q(QFxTextEdit);
+    QTextCursor cursor = control->textCursor();
+    bool startChange = (lastSelectionStart != cursor.selectionStart());
+    bool endChange = (lastSelectionEnd != cursor.selectionEnd());
+    //### Is it worth calculating a more minimal set of movements?
+    cursor.beginEditBlock();
+    cursor.setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
+    cursor.setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    control->setTextCursor(cursor);
+    if(startChange)
+        q->selectionStartChanged();
+    if(endChange)
+        q->selectionEndChanged();
+    startChange = (lastSelectionStart != control->textCursor().selectionStart());
+    endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
+    if(startChange || endChange)
+        qWarning() << "QFxTextEditPrivate::updateSelection() has failed you.";
+}
+
+void QFxTextEdit::updateSelectionMarkers()
+{
+    Q_D(QFxTextEdit);
+    if(d->lastSelectionStart != d->control->textCursor().selectionStart()){
+        d->lastSelectionStart = d->control->textCursor().selectionStart();
+        emit selectionStartChanged();
+    }
+    if(d->lastSelectionEnd != d->control->textCursor().selectionEnd()){
+        d->lastSelectionEnd = d->control->textCursor().selectionEnd();
+        emit selectionEndChanged();
+    }
 }
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
