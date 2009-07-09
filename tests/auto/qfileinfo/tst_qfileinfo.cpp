@@ -432,6 +432,9 @@ void tst_QFileInfo::canonicalFilePath()
         if (file.link(link)) {
             QFileInfo info1("tst_qfileinfo.cpp");
             QFileInfo info2(link + QDir::separator() + "tst_qfileinfo.cpp");
+
+            QVERIFY2(info1.exists(), "If this fails, one reason might be the test system has failed to copy the files.");
+            QVERIFY2(info2.exists(), "If this fails, one reason might be the test system has failed to copy the files.");
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
 
             QFileInfo info3(link + QDir::separator() + "link.lnk");
