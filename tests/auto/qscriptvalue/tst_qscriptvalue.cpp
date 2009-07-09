@@ -2525,18 +2525,56 @@ void tst_QScriptValue::call()
     }
 }
 
+static QScriptValue ctorReturningUndefined(QScriptContext *ctx, QScriptEngine *)
+{
+    ctx->thisObject().setProperty("foo", 123);
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+static QScriptValue ctorReturningNewObject(QScriptContext *, QScriptEngine *eng)
+{
+    QScriptValue result = eng->newObject();
+    result.setProperty("bar", 456);
+    return result;
+}
+
 void tst_QScriptValue::construct()
 {
     QScriptEngine eng;
 
     {
-        QScriptValue fun = eng.evaluate("function () { }");
+        QScriptValue fun = eng.evaluate("function () { this.foo = 123; }");
         QEXPECT_FAIL("", "JSC parser doesn't understand function expressions", Continue);
         QVERIFY(fun.isFunction());
-        fun = eng.evaluate("(function () { })");
+        fun = eng.evaluate("(function () { this.foo = 123; })");
         QScriptValue ret = fun.construct();
         QVERIFY(ret.isObject());
         QVERIFY(ret.instanceOf(fun));
+        QCOMPARE(ret.property("foo").toInt32(), 123);
+    }
+    // returning a different object overrides the default-constructed one
+    {
+        QScriptValue fun = eng.evaluate("(function () { return { bar: 456 }; })");
+        QVERIFY(fun.isFunction());
+        QScriptValue ret = fun.construct();
+        QVERIFY(ret.isObject());
+        QVERIFY(!ret.instanceOf(fun));
+        QCOMPARE(ret.property("bar").toInt32(), 456);
+    }
+
+    {
+        QScriptValue fun = eng.newFunction(ctorReturningUndefined);
+        QScriptValue ret = fun.construct();
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.instanceOf(fun));
+        QCOMPARE(ret.property("foo").toInt32(), 123);
+    }
+    {
+        QScriptValue fun = eng.newFunction(ctorReturningNewObject);
+        QScriptValue ret = fun.construct();
+        QVERIFY(ret.isObject());
+        QVERIFY(!ret.instanceOf(fun));
+        QCOMPARE(ret.property("bar").toInt32(), 456);
     }
 
     QScriptValue Number = eng.evaluate("Number");

@@ -70,19 +70,17 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
                                                const JSC::ArgList &args)
 {
     FunctionWrapper *self = static_cast<FunctionWrapper*>(callee);
-    QScriptValue object = self->data->engine->newObject();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
     eng_p->currentFrame = exec;
+    QScriptValue defaultObject = ctx->thisObject();
     QScriptValue result = self->data->function(ctx, self->data->engine);
-    if (!result.isValid())
-        result = QScriptValue(QScriptValue::UndefinedValue);
+    if (!result.isObject())
+        result = defaultObject;
     eng_p->currentFrame = previousFrame;
     eng_p->releaseContextForFrame(exec);
-    if (result.isObject())
-        return JSC::asObject(eng_p->scriptValueToJSCValue(result));
-    return JSC::asObject(eng_p->scriptValueToJSCValue(object));
+    return JSC::asObject(eng_p->scriptValueToJSCValue(result));
 }
 
 FunctionWithArgWrapper::FunctionWithArgWrapper(QScriptEngine *engine, int length, const JSC::Identifier &name,
@@ -124,17 +122,17 @@ JSC::JSObject* FunctionWithArgWrapper::proxyConstruct(JSC::ExecState *exec, JSC:
                                                       const JSC::ArgList &args)
 {
     FunctionWithArgWrapper *self = static_cast<FunctionWithArgWrapper*>(callee);
-    QScriptValue object = self->data->engine->newObject();
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(self->data->engine);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     QScriptContext *ctx = eng_p->contextForFrame(exec);
     eng_p->currentFrame = exec;
+    QScriptValue defaultObject = ctx->thisObject();
     QScriptValue result = self->data->function(ctx, self->data->engine, self->data->arg);
+    if (!result.isObject())
+        result = defaultObject;
     eng_p->currentFrame = previousFrame;
     eng_p->releaseContextForFrame(exec);
-    if (result.isObject())
-        return JSC::asObject(eng_p->scriptValueToJSCValue(result));
-    return JSC::asObject(eng_p->scriptValueToJSCValue(object));
+    return JSC::asObject(eng_p->scriptValueToJSCValue(result));
 }
 
 } // namespace QScript
