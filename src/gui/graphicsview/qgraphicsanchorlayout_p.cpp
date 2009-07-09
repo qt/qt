@@ -505,6 +505,64 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
               QGraphicsAnchorLayout::Bottom, data);
 }
 
+void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
+    QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge)
+{
+    Orientation orientation;
+    switch (centerEdge) {
+    case QGraphicsAnchorLayout::HCenter:
+        orientation = Horizontal;
+        break;
+    case QGraphicsAnchorLayout::VCenter:
+        orientation = Vertical;
+        break;
+    default:
+        // Don't create center edges unless needed
+        return;
+    }
+
+    // Check if vertex already exists
+    if (internalVertex(item, centerEdge))
+        return;
+
+    // Orientation code
+    QGraphicsAnchorLayout::Edge firstEdge;
+    QGraphicsAnchorLayout::Edge lastEdge;
+
+    if (orientation == Horizontal) {
+        firstEdge = QGraphicsAnchorLayout::Left;
+        lastEdge = QGraphicsAnchorLayout::Right;
+    } else {
+        firstEdge = QGraphicsAnchorLayout::Top;
+        lastEdge = QGraphicsAnchorLayout::Bottom;
+    }
+
+    AnchorVertex *first = internalVertex(item, firstEdge);
+    AnchorVertex *last = internalVertex(item, lastEdge);
+    Q_ASSERT(first && last);
+
+    // Create new anchors
+    AnchorData *oldData = graph[orientation].edgeData(first, last);
+
+    int minimumSize = oldData->minSize / 2;
+    int preferredSize = oldData->prefSize / 2;
+    int maximumSize = oldData->maxSize / 2;
+
+    QSimplexConstraint *c = new QSimplexConstraint;
+    AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
+    c->variables.insert(data, 1.0);
+    addAnchor(item, firstEdge, item, centerEdge, data);
+
+    data = new AnchorData(minimumSize, preferredSize, maximumSize);
+    c->variables.insert(data, -1.0);
+    addAnchor(item, centerEdge, item, lastEdge, data);
+
+    itemCenterConstraints[orientation].append(c);
+
+    // Remove old one
+    removeAnchor(item, firstEdge, item, lastEdge);
+}
+
 void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *item,
                                                            Orientation orientation)
 {
@@ -579,6 +637,10 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
         createItemEdges(secondItem);
         addChildLayoutItem(secondItem);
     }
+
+    // Create center edges if needed
+    createCenterAnchors(firstItem, firstEdge);
+    createCenterAnchors(secondItem, secondEdge);
 
     // Use heuristics to find out what the user meant with this anchor.
     correctEdgeDirection(firstItem, firstEdge, secondItem, secondEdge);
