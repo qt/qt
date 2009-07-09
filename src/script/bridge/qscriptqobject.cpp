@@ -1527,7 +1527,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec,
                                                            JSC::JSValue thisValue, const JSC::ArgList&)
 {
     if (!thisValue.isObject(&QObjectWrapperObject::info))
-        return throwError(exec, JSC::TypeError, "this object is not a QObject");
+        return JSC::jsUndefined();
     QObject *obj = static_cast<QObjectWrapperObject*>(JSC::asObject(thisValue))->value();
     const QMetaObject *meta = obj ? obj->metaObject() : &QObject::staticMetaObject;
     QString name = obj ? obj->objectName() : QString::fromUtf8("unnamed");
