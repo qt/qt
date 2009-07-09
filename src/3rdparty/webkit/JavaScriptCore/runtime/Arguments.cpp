@@ -271,4 +271,14 @@ bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return JSObject::deleteProperty(exec, propertyName);
 }
 
+bool Arguments::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
+{
+    if ((propertyName == exec->propertyNames().length)
+        || (propertyName == exec->propertyNames().callee)) {
+        attributes = DontEnum;
+        return true;
+    }
+    return JSObject::getPropertyAttributes(exec, propertyName, attributes);
+}
+
 } // namespace JSC
