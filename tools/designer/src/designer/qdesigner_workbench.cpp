@@ -410,6 +410,12 @@ void QDesignerWorkbench::switchToDockedMode()
 
     switchToNeutralMode();
 
+#ifndef Q_WS_MAC
+    QDesignerToolWindow *widgetBoxWrapper = widgetBoxToolWindow();
+    widgetBoxWrapper->action()->setVisible(true);
+    widgetBoxWrapper->setWindowTitle(tr("Widget Box"));
+#endif
+
     m_mode = DockedMode;
     const QDesignerSettings settings(m_core);
     m_dockedMainWindow = new DockedMainWindow(this, m_toolbarMenu, m_toolWindows);
