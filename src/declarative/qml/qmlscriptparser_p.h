@@ -72,9 +72,13 @@ public:
     class Import
     {
     public:
-        Import() {}
+        Import() : type(Library) {}
+
+        enum Type { Library, File };
+        Type type;
 
         QString uri;
+        QString as;
         QmlParser::LocationSpan location;
     };
 

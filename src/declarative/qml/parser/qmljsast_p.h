@@ -2221,15 +2221,23 @@ public:
     QMLJS_DECLARE_AST_NODE(UiImport)
 
     UiImport(NameId *fileName)
-        : fileName(fileName)
+        : fileName(fileName), importUri(0), importId(0)
+    { kind = K; }
+
+    UiImport(UiQualifiedId *uri)
+        : fileName(0), importUri(uri), importId(0)
     { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
     NameId *fileName;
+    UiQualifiedId *importUri;
+    NameId *importId;
     SourceLocation importToken;
     SourceLocation fileNameToken;
+    SourceLocation asToken;
+    SourceLocation importIdToken;
     SourceLocation semicolonToken;
 };
 
