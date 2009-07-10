@@ -49,6 +49,7 @@
 #endif
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qobject.h>    // for qobject_cast
 
 QT_BEGIN_HEADER
 
@@ -82,6 +83,11 @@ template <class X, class T>
 QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &ptr);
 template <class X, class T>
 QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &ptr);
+
+#ifndef QT_NO_QOBJECT
+template <class X, class T>
+QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &ptr);
+#endif
 
 namespace QtSharedPointer {
     template <class T> class InternalRefCount;
@@ -122,7 +128,7 @@ namespace QtSharedPointer {
         inline T *operator->() const { return data(); }
 
     protected:
-        inline Basic() : value(0 * sizeof(T)) { }
+        inline Basic() : value(0) { }
         // ~Basic();
 
         inline void verifyReconstruction(const T *ptr)
@@ -329,6 +335,14 @@ public:
     {
         return qSharedPointerConstCast<X, T>(*this);
     }
+
+#ifndef QT_NO_QOBJECT
+    template <class X>
+    QSharedPointer<X> objectCast() const
+    {
+        return qSharedPointerObjectCast<X, T>(*this);
+    }
+#endif
 
     inline void clear() { *this = QSharedPointer<T>(); }
 
@@ -544,6 +558,43 @@ QWeakPointer<X> qWeakPointerCast(const QSharedPointer<T> &src)
 {
     return qSharedPointerCast<X, T>(src).toWeakRef();
 }
+
+#ifndef QT_NO_QOBJECT
+template <class X, class T>
+Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src)
+{
+    register X *ptr = qobject_cast<X *>(src.data());
+    return QtSharedPointer::copyAndSetPointer(ptr, src);
+}
+template <class X, class T>
+Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &src)
+{
+    return qSharedPointerObjectCast<X>(src.toStrongRef());
+}
+
+# ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+namespace QtSharedPointer {
+    template <class T> struct RemovePointer;
+    template <class T> struct RemovePointer<T *> { typedef T Type; };
+    template <class T> struct RemovePointer<QSharedPointer<T> > { typedef T Type; };
+    template <class T> struct RemovePointer<QWeakPointer<T> > { typedef T Type; };
+}
+
+template <class X, class T>
+inline QSharedPointer<typename QtSharedPointer::RemovePointer<X>::Type>
+qobject_cast(const QSharedPointer<T> &src)
+{
+    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
+}
+template <class X, class T>
+inline QSharedPointer<typename QtSharedPointer::RemovePointer<X>::Type>
+qobject_cast(const QWeakPointer<T> &src)
+{
+    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
+}
+# endif
+
+#endif
 
 QT_END_NAMESPACE
 

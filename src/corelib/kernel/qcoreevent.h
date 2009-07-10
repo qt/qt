@@ -276,8 +276,7 @@ public:
         TouchUpdate = 195,
         TouchEnd = 196,
 
-        Gesture = 197,
-        GraphicsSceneGesture = 198,
+        WinGesture = 197,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

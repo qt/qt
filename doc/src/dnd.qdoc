@@ -141,15 +141,17 @@
     types of data that the widget accepts.
     You must reimplement this function if you want to receive either
     QDragMoveEvent or QDropEvent in your reimplementations of
-    \l{QWidget::dragMoveEvent()}{dragMoveEvent()} and dropEvent().
+    \l{QWidget::dragMoveEvent()}{dragMoveEvent()} and
+    \l{QWidget::dropEvent()}{dropEvent()}.
 
-    The following code shows how dragEnterEvent() can be reimplemented to
+    The following code shows how \l{QWidget::dragEnterEvent()}{dragEnterEvent()}
+    can be reimplemented to
     tell the drag and drop system that we can only handle plain text:
 
     \snippet doc/src/snippets/dropevents/window.cpp 3
 
-    The dropEvent() is used to unpack dropped data and handle it in way that
-    is suitable for your application.
+    The \l{QWidget::dropEvent()}{dropEvent()} is used to unpack dropped data
+    and handle it in way that is suitable for your application.
 
     In the following code, the text supplied in the event is passed to a
     QTextBrowser and a QComboBox is filled with the list of MIME types that
@@ -159,7 +161,8 @@
 
     In this case, we accept the proposed action without checking what it is.
     In a real world application, it may be necessary to return from the
-    dropEvent() function without accepting the proposed action or handling
+    \l{QWidget::dropEvent()}{dropEvent()} function without accepting the
+    proposed action or handling
     the data if the action is not relevant. For example, we may choose to
     ignore Qt::LinkAction actions if we do not support
     links to external sources in our application.
@@ -435,7 +438,7 @@
     \title Porting to Qt 4 - Drag and Drop
     \contentspage {Porting Guides}{Contents}
     \previouspage Porting to Qt 4 - Virtual Functions
-    \nextpage Porting .ui Files to Qt 4
+    \nextpage Porting UI Files to Qt 4
     \ingroup porting
     \brief An overview of the porting process for applications that use drag and drop.
 

@@ -663,7 +663,7 @@ void QTabBarPrivate::refresh()
     if (pressedIndex != -1
         && movable
         && QApplication::mouseButtons() == Qt::NoButton) {
-        _q_moveTabFinished(pressedIndex);
+        moveTabFinished(pressedIndex);
         if (!validIndex(pressedIndex))
             pressedIndex = -1;
     }
@@ -1662,26 +1662,17 @@ void QTabBarPrivate::slide(int from, int to)
     q->setUpdatesEnabled(true);
     int postLocation = vertical ? q->tabRect(to).y() : q->tabRect(to).x();
     int length = postLocation - preLocation;
-    tabList[to].makeTimeLine(q);
-    tabList[to].dragOffset += -1 * length;
-    tabList[to].timeLine->setFrameRange(tabList[to].dragOffset, 0);
-    animations[tabList[to].timeLine] = to;
-    tabList[to].timeLine->setDuration(ANIMATION_DURATION);
-    if (tabList[to].timeLine->state() != QTimeLine::Running)
-        tabList[to].timeLine->start();
+    tabList[to].dragOffset -= length;
+    tabList[to].startAnimation(this, ANIMATION_DURATION);
 }
 
-void QTabBarPrivate::_q_moveTab(int offset)
+void QTabBarPrivate::moveTab(int index, int offset)
 {
-    Q_Q(QTabBar);
-    if (QTimeLine *timeLine = qobject_cast<QTimeLine *>(q->sender())) {
-        int index = animations[timeLine];
-        if (!validIndex(index))
-            return;
-        tabList[index].dragOffset = offset;
-        layoutTab(index); // Make buttons follow tab
-        q->update();
-    }
+    if (!validIndex(index))
+        return;
+    tabList[index].dragOffset = offset;
+    layoutTab(index); // Make buttons follow tab
+    q_func()->update();
 }
 
 /*!\reimp
@@ -1695,7 +1686,7 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
     }
     // Be safe!
     if (d->pressedIndex != -1 && d->movable)
-        d->_q_moveTabFinished(d->pressedIndex);
+        d->moveTabFinished(d->pressedIndex);
 
     d->pressedIndex = d->indexAtPos(event->pos());
     if (d->validIndex(d->pressedIndex)) {
@@ -1721,7 +1712,7 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
         // Be safe!
         if (d->pressedIndex != -1
             && event->buttons() == Qt::NoButton)
-            d->_q_moveTabFinished(d->pressedIndex);
+            d->moveTabFinished(d->pressedIndex);
         
         // Start drag
         if (!d->dragInProgress && d->pressedIndex != -1) {
@@ -1789,16 +1780,6 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
     optTabBase.documentMode = d->documentMode;
 }
 
-void QTabBarPrivate::_q_moveTabFinished()
-{
-    Q_Q(QTabBar);
-    if (QTimeLine *timeLine = qobject_cast<QTimeLine *>(q->sender())) {
-        int index = animations[timeLine];
-        animations.remove(timeLine);
-        _q_moveTabFinished(index);
-    }
-}
-
 void QTabBarPrivate::setupMovableTab()
 {
     Q_Q(QTabBar);
@@ -1838,11 +1819,19 @@ void QTabBarPrivate::setupMovableTab()
     movingTab->setVisible(true);
 }
 
-void QTabBarPrivate::_q_moveTabFinished(int index)
+void QTabBarPrivate::moveTabFinished(int index)
 {
     Q_Q(QTabBar);
     bool cleanup = (pressedIndex == index) || (pressedIndex == -1) || !validIndex(index);
-    if (animations.isEmpty() && cleanup) {
+    bool allAnimationsFinished = true;
+#ifndef QT_NO_ANIMATION
+    for(int i = 0; allAnimationsFinished && i < tabList.count(); ++i) {
+        const Tab &t = tabList.at(i);
+        if (t.animation && t.animation->state() == QAbstractAnimation::Running)
+            allAnimationsFinished = false;
+    }
+#endif //QT_NO_ANIMATION
+    if (allAnimationsFinished && cleanup) {
         movingTab->setVisible(false); // We might not get a mouse release
         for (int i = 0; i < tabList.count(); ++i) {
             tabList[i].dragOffset = 0;
@@ -1877,17 +1866,8 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
             ? tabRect(d->pressedIndex).height()
             : tabRect(d->pressedIndex).width();
         int duration = qMin(ANIMATION_DURATION,
-                ((length < 0 ? (-1 * length) : length) * ANIMATION_DURATION) / width);
-        if (duration > 0) {
-            d->tabList[d->pressedIndex].makeTimeLine(this);
-            d->tabList[d->pressedIndex].timeLine->setFrameRange(length, 0);
-            d->animations[d->tabList[d->pressedIndex].timeLine] = d->pressedIndex;
-            d->tabList[d->pressedIndex].timeLine->setDuration(duration);
-            if (d->tabList[d->pressedIndex].timeLine->state() != QTimeLine::Running)
-                d->tabList[d->pressedIndex].timeLine->start();
-        } else {
-            d->_q_moveTabFinished(d->pressedIndex);
-        }
+                (qAbs(length) * ANIMATION_DURATION) / width);
+        d->tabList[d->pressedIndex].startAnimation(d, duration);
         d->dragInProgress = false;
         d->movingTab->setVisible(false);
         d->dragStartPosition = QPoint();

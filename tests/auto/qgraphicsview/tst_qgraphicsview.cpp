@@ -63,6 +63,7 @@
 #include <QtGui/QBoxLayout>
 #include <QtGui/QStyle>
 #include <QtGui/QPushButton>
+#include <QtGui/QInputContext>
 #include <private/qgraphicsview_p.h>
 
 //TESTED_CLASS=
@@ -199,6 +200,8 @@ private slots:
     void exposeRegion();
     void update_data();
     void update();
+    void inputMethodSensitivity();
+    void inputContextReset();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -3427,6 +3430,7 @@ void tst_QGraphicsView::update_data()
     QTest::newRow("large3") << QRect(-100, -100, 400, 400);
     QTest::newRow("viewport rect") << QRect(0, 0, 200, 200);
 }
+
 void tst_QGraphicsView::update()
 {
     QFETCH(QRect, updateRect);
@@ -3464,6 +3468,121 @@ void tst_QGraphicsView::update()
         QCOMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect.adjusted(-2, -2, 2, 2) & viewportRect));
     }
     QVERIFY(!viewPrivate->fullUpdatePending);
+}
+
+void tst_QGraphicsView::inputMethodSensitivity()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QGraphicsRectItem *item = new QGraphicsRectItem;
+
+    view.setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    scene.addItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.removeItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
+    scene.addItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.removeItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.addItem(item);
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.removeItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(item);
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    // introduce another item that is focusable but does not accept input methods
+    QGraphicsRectItem *item2 = new QGraphicsRectItem;
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(item2);
+    scene.setFocusItem(item2);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    view.setScene(0);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    view.setScene(&scene);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+
+    scene.setFocusItem(item2);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    view.setScene(0);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    scene.setFocusItem(item);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+
+    view.setScene(&scene);
+    QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+}
+
+class InputContextTester : public QInputContext
+{
+    QString identifierName() { return QString(); }
+    bool isComposing() const { return false; }
+    QString language() { return QString(); }
+    void reset() { ++resets; }
+public:
+    int resets;
+};
+
+void tst_QGraphicsView::inputContextReset()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    InputContextTester inputContext;
+    view.setInputContext(&inputContext);
+
+    QGraphicsItem *item1 = new QGraphicsRectItem;
+    item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
+
+    inputContext.resets = 0;
+    scene.addItem(item1);
+    QCOMPARE(inputContext.resets, 0);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(item1);
+    QCOMPARE(inputContext.resets, 0);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(0);
+    QCOMPARE(inputContext.resets, 1);
+
+    // introduce another item that is focusable but does not accept input methods
+    QGraphicsItem *item2 = new QGraphicsRectItem;
+    item1->setFlags(QGraphicsItem::ItemIsFocusable);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(item2);
+    QCOMPARE(inputContext.resets, 0);
+
+    inputContext.resets = 0;
+    scene.setFocusItem(item1);
+    QCOMPARE(inputContext.resets, 0);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

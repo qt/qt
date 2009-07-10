@@ -225,8 +225,6 @@ QT_BEGIN_NAMESPACE
     \value TouchBegin                       Beginning of a sequence of touch-screen and/or track-pad events (QTouchEvent)
     \value TouchUpdate                      Touch-screen event (QTouchEvent)
     \value TouchEnd                         End of touch-event sequence (QTouchEvent)
-    \value Gesture                          A gesture has occured.
-    \value GraphicsSceneGesture             A gesture has occured on a graphics scene.
 
     User events should have values between \c User and \c{MaxUser}:
 
@@ -271,6 +269,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue CocoaRequestModal
     \omitvalue Wrapped
     \omitvalue Signal
+    \omitvalue WinGesture
 */
 
 /*!

@@ -13,3 +13,4 @@ contains(QT_CONFIG, qt3support): QT += qt3support
 # Input
 SOURCES += tst_qstylesheetstyle.cpp
 RESOURCES += resources.qrc
+requires(contains(QT_CONFIG,private_tests))

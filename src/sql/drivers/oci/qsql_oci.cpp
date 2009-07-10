@@ -609,7 +609,7 @@ static QSqlField qFromOraInf(const OraFieldInfo &ofi)
     QSqlField f(ofi.name, ofi.type);
     f.setRequired(ofi.oraIsNull == 0);
 
-    if (ofi.type == QVariant::String)
+    if (ofi.type == QVariant::String && ofi.oraType != SQLT_NUM && ofi.oraType != SQLT_VNU)
         f.setLength(ofi.oraFieldLength);
     else
         f.setLength(ofi.oraPrecision == 0 ? 38 : int(ofi.oraPrecision));
@@ -1586,9 +1586,12 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
                 } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
                         && (fld.typ == QVariant::LongLong)) {
                     qint64 qll = 0;
-                    OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
+                    int r = OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
                                    OCI_NUMBER_SIGNED, &qll);
-                    v[index + i] = qll;
+                    if(r == OCI_SUCCESS)
+                        v[index + i] = qll;
+                    else
+                        v[index + i] = QVariant();
                     break;
                 } else if ((d->q->numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
                         && (fld.typ == QVariant::Int)) {

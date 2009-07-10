@@ -55,6 +55,7 @@
 
 #include <qatomic.h>
 #include <qstring.h>
+#include <qdbusmessage.h>
 
 struct DBusMessage;
 
@@ -69,7 +70,11 @@ public:
     ~QDBusMessagePrivate();
 
     QList<QVariant> arguments;
+
+    // the following parameters are "const": they are not changed after the constructors
+    // the parametersValidated member below controls whether they've been validated already
     QString service, path, interface, name, message, signature;
+
     DBusMessage *msg;
     DBusMessage *reply;
     int type;
@@ -79,8 +84,12 @@ public:
 
     mutable uint delayedReply : 1;
     uint localMessage : 1;
+    mutable uint parametersValidated : 1;
 
-    static DBusMessage *toDBusMessage(const QDBusMessage &message);
+    static void setParametersValidated(QDBusMessage &msg, bool enable)
+    { msg.d_ptr->parametersValidated = enable; }
+
+    static DBusMessage *toDBusMessage(const QDBusMessage &message, QDBusError *error);
     static QDBusMessage fromDBusMessage(DBusMessage *dmsg);
 
     static bool isLocal(const QDBusMessage &msg);

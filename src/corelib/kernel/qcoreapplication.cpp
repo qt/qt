@@ -1675,6 +1675,12 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     return result;
 }
 
+// Declared in qglobal.h
+QString qtTrId(const char *id, int n)
+{
+    return QCoreApplication::translate(0, id, 0, QCoreApplication::UnicodeUTF8, n);
+}
+
 bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 {
     return QCoreApplication::self
@@ -2177,21 +2183,37 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 /*!
     \fn EventFilter QCoreApplication::setEventFilter(EventFilter filter)
 
-    Sets the event filter \a filter. Returns a pointer to the filter
-    function previously defined.
+    Replaces the event filter function for the QCoreApplication with
+    \a filter and returns the pointer to the replaced event filter
+    function. Only the current event filter function is called. If you
+    want to use both filter functions, save the replaced EventFilter
+    in a place where yours can call it.
 
-    The event filter is a function that is called for every message
-    received in all threads. This does \e not include messages to
+    The event filter function set here is called for all messages
+    received by all threads meant for all Qt objects. It is \e not
+    called for messages that are not meant for Qt objects.
+
+    The event filter function should return true if the message should
+    be filtered, (i.e. stopped). It should return false to allow
+    processing the message to continue.
+
+    By default, no event filter function is set (i.e., this function
+    returns a null EventFilter the first time it is called).
+    
+    \note The filter function set here receives native messages,
+    i.e. MSG or XEvent structs, that are going to Qt objects. It is
+    called by QCoreApplication::filterEvent(). If the filter function
+    returns false to indicate the message should be processed further,
+    the native message can then be translated into a QEvent and
+    handled by the standard Qt \l{QEvent} {event} filering, e.g.
+    QObject::installEventFilter().
+
+    \note The filter function set here is different form the filter
+    function set via QAbstractEventDispatcher::setEventFilter(), which
+    gets all messages received by its thread, even messages meant for
     objects that are not handled by Qt.
 
-    The function can return true to stop the event to be processed by
-    Qt, or false to continue with the standard event processing.
-
-    Only one filter can be defined, but the filter can use the return
-    value to call the previously set event filter. By default, no
-    filter is set (i.e., the function returns 0).
-
-    \sa installEventFilter()
+    \sa QObject::installEventFilter(), QAbstractEventDispatcher::setEventFilter()
 */
 QCoreApplication::EventFilter
 QCoreApplication::setEventFilter(QCoreApplication::EventFilter filter)

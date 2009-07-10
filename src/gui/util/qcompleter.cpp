@@ -1582,6 +1582,10 @@ QString QCompleter::currentCompletion() const
     that contains all the possible matches for the current completion prefix.
     The completion model is auto-updated to reflect the current completions.
 
+    \note The return value of this function is defined to be an QAbstractItemModel
+    purely for generality. This actual kind of model returned is an instance of an
+    QAbstractProxyModel subclass.
+
     \sa completionPrefix, model()
 */
 QAbstractItemModel *QCompleter::completionModel() const

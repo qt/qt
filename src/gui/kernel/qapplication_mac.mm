@@ -1316,8 +1316,13 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
+#else
     if (qApp && qApp->activeWindow())
         qt_mac_set_cursor(&qApp->d_func()->cursor_list.first(), QCursor::pos());
+#endif
 }
 
 void QApplication::restoreOverrideCursor()
@@ -1326,12 +1331,17 @@ void QApplication::restoreOverrideCursor()
         return;
     qApp->d_func()->cursor_list.removeFirst();
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [NSCursor pop];
+#else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
         qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first(), QCursor::pos());
     }
-}
 #endif
+}
+#endif // QT_NO_CURSOR
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
@@ -1365,29 +1375,6 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
     }
     return 0; // Couldn't find a window at this point
 #endif
-}
-
-static QWidget *qt_mac_recursive_widgetAt(QWidget *widget, int x, int y)
-{
-    if (!widget)
-        return 0;
-    const QObjectList kids = widget->children();
-    for(int i = kids.size()-1; i >= 0; --i) {
-        if ( QWidget *kid = qobject_cast<QWidget*>(kids.at(i)) ) {
-            if (kid->isVisible() && !kid->isTopLevel() &&
-                    !kid->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-                const int wx=kid->x(), wy=kid->y(),
-                      wx2=wx+kid->width(), wy2=wy+kid->height();
-                if (x >= wx && y >= wy && x < wx2 && y < wy2) {
-                    const QRegion mask = kid->mask();
-                    if (!mask.isEmpty() && !mask.contains(QPoint(x-wx, y-wy)))
-                        continue;
-                    return qt_mac_recursive_widgetAt(kid, x-wx, y-wy);
-                }
-            }
-        }
-    }
-    return widget;
 }
 
 /*****************************************************************************

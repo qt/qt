@@ -323,6 +323,10 @@
     performance reasons, these notifications are disabled by default. You must
     enable this flag to receive notifications for position and transform
     changes. This flag was introduced in Qt 4.6.
+
+    \value ItemAcceptsInputMethod The item supports input methods typically
+    used for Asian languages.
+    This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -575,7 +579,6 @@
 #include <private/qtextcontrol_p.h>
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
-#include <private/qgesturemanager_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -604,8 +607,6 @@ public:
     QMap<const QGraphicsItem *, QMap<int, QVariant> > data;
 };
 Q_GLOBAL_STATIC(QGraphicsItemCustomDataStore, qt_dataStore)
-
-QString qt_getStandardGestureTypeName(Qt::GestureType type);
 
 /*!
     \internal
@@ -1156,7 +1157,6 @@ QGraphicsItem::~QGraphicsItem()
 {
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
-    d_ptr->removeExtraGestures();
 
     clearFocus();
     if (!d_ptr->children.isEmpty()) {
@@ -1515,6 +1515,12 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
             d_ptr->parent->d_ptr->needSortChildren = 1;
         else if (d_ptr->scene)
             d_ptr->scene->d_func()->needSortTopLevelItems = 1;
+    }
+
+    if ((flags & ItemAcceptsInputMethod) != (oldFlags & ItemAcceptsInputMethod)) {
+        // Update input method sensitivity in any views.
+        if (d_ptr->scene)
+            d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
     }
 
     if (d_ptr->scene) {
@@ -6323,104 +6329,6 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 /*!
-    \since 4.6
-
-    Subscribes the graphics item to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QGraphicsItem::grabGesture(Qt::GestureType gesture)
-{
-    /// TODO: if we are QGraphicsProxyWidget we should subscribe the widget to gesture as well.
-    return grabGesture(qt_getStandardGestureTypeName(gesture));
-}
-
-/*!
-    \since 4.6
-
-    Subscribes the graphics item to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QGraphicsItem::grabGesture(const QString &gesture)
-{
-    int id = QGestureManager::instance()->makeGestureId(gesture);
-    d_ptr->grabGesture(id);
-    return id;
-}
-
-void QGraphicsItemPrivate::grabGesture(int id)
-{
-    Q_Q(QGraphicsItem);
-    extraGestures()->gestures << id;
-    if (scene)
-        scene->d_func()->grabGesture(q, id);
-}
-
-bool QGraphicsItemPrivate::releaseGesture(int id)
-{
-    Q_Q(QGraphicsItem);
-    QGestureExtraData *extra = maybeExtraGestures();
-    if (extra && extra->gestures.contains(id)) {
-        if (scene)
-            scene->d_func()->releaseGesture(q, id);
-        extra->gestures.remove(id);
-        return true;
-    }
-    return false;
-}
-
-/*!
-    \since 4.6
-
-    Unsubscribes the graphics item from a gesture, which is specified
-    by the \a gestureId.
-
-    \sa grabGesture(), setGestureEnabled()
-*/
-void QGraphicsItem::releaseGesture(int gestureId)
-{
-    /// TODO: if we are QGraphicsProxyWidget we should unsubscribe the widget from gesture as well.
-    if (d_ptr->releaseGesture(gestureId))
-        QGestureManager::instance()->releaseGestureId(gestureId);
-}
-
-/*!
-    \since 4.6
-
-    If \a enable is true, the gesture with the given \a gestureId is
-    enabled; otherwise the gesture is disabled.
-
-    The id of the gesture is returned by the grabGesture().
-
-    \sa grabGesture(), releaseGesture()
-*/
-void QGraphicsItem::setGestureEnabled(int gestureId, bool enable)
-{
-    Q_UNUSED(gestureId);
-    Q_UNUSED(enable);
-    //###
-}
-
-bool QGraphicsItemPrivate::hasGesture(const QString &name) const
-{
-    if (QGestureExtraData *extra = maybeExtraGestures()) {
-        QGestureManager *gm = QGestureManager::instance();
-        QSet<int>::const_iterator it = extra->gestures.begin(),
-                                   e = extra->gestures.end();
-        for (; it != e; ++it) {
-            if (gm->gestureNameFromId(*it) == name)
-                return true;
-        }
-    }
-    return false;
-}
-
-/*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
     function, your can react to a change, and in some cases, (depending on \a
@@ -6444,23 +6352,6 @@ bool QGraphicsItemPrivate::hasGesture(const QString &name) const
 QVariant QGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     Q_UNUSED(change);
-    if (change == QGraphicsItem::ItemSceneChange) {
-        QGestureExtraData *extra = d_ptr->maybeExtraGestures();
-        if (!qVariantValue<QGraphicsScene*>(value) && extra) {
-            // the item has been removed from a scene, unsubscribe gestures.
-            Q_ASSERT(d_ptr->scene);
-            foreach(int id, extra->gestures)
-                d_ptr->scene->d_func()->releaseGesture(this, id);
-        }
-    } else if (change == QGraphicsItem::ItemSceneHasChanged) {
-        QGraphicsScene *scene = qVariantValue<QGraphicsScene*>(value);
-        QGestureExtraData *extra = d_ptr->maybeExtraGestures();
-        if (scene && extra) {
-            // item has been added to the scene
-            foreach(int id, extra->gestures)
-                scene->d_func()->grabGesture(this, id);
-        }
-    }
     return value;
 }
 
@@ -10029,6 +9920,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemSendsGeometryChanges:
         str = "ItemSendsGeometryChanges";
+        break;
+    case QGraphicsItem::ItemAcceptsInputMethod:
+        str = "ItemAcceptsInputMethod";
         break;
     }
     debug << str;

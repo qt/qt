@@ -300,15 +300,15 @@ void MediaObject::enqueue(const MediaSource &source)
 
 void MediaObject::enqueue(const QList<MediaSource> &sources)
 {
-    foreach (const MediaSource &m, sources) {
-        enqueue(m);
+    for (int i = 0; i < sources.count(); ++i) {
+        enqueue(sources.at(i));
     }
 }
 
 void MediaObject::enqueue(const QList<QUrl> &urls)
 {
-    foreach (const QUrl &url, urls) {
-        enqueue(url);
+    for (int i = 0; i < urls.count(); ++i) {
+        enqueue(urls.at(i));
     }
 }
 
@@ -502,8 +502,8 @@ void MediaObjectPrivate::setupBackendObject()
     }
 
 #ifndef QT_NO_PHONON_MEDIACONTROLLER
-    foreach (FrontendInterfacePrivate *f, interfaceList) {
-        f->_backendObjectChanged();
+    for (int i = 0 ; i < interfaceList.count(); ++i) {
+        interfaceList.at(i)->_backendObjectChanged();
     }
 #endif //QT_NO_PHONON_MEDIACONTROLLER
 

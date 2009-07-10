@@ -280,6 +280,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtGui/qpainter.h>
 #include <QtGui/qscrollbar.h>
 #include <QtGui/qstyleoption.h>
+#include <QtGui/qinputcontext.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -1001,6 +1002,22 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 }
 
 /*!
+    \internal
+
+    Enables input methods for the view if and only if the current focus item of
+    the scene accepts input methods. Call function whenever that condition has
+    potentially changed.
+*/
+void QGraphicsViewPrivate::updateInputMethodSensitivity()
+{
+    Q_Q(QGraphicsView);
+    q->setAttribute(
+        Qt::WA_InputMethodEnabled,
+        scene && scene->focusItem()
+        && scene->focusItem()->flags() & QGraphicsItem::ItemAcceptsInputMethod);
+}
+
+/*!
     Constructs a QGraphicsView. \a parent is passed to QWidget's constructor.
 */
 QGraphicsView::QGraphicsView(QWidget *parent)
@@ -1522,6 +1539,8 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
     } else {
         d->recalculateContentSize();
     }
+
+    d->updateInputMethodSensitivity();
 }
 
 /*!
@@ -2578,9 +2597,6 @@ bool QGraphicsView::event(QEvent *event)
                 }
             }
             break;
-        case QEvent::Gesture:
-            viewportEvent(event);
-            return true;
         default:
             break;
         }
@@ -2661,17 +2677,6 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             }
             d->scene->d_func()->updateAll = false;
         }
-        break;
-    case QEvent::Gesture: {
-        QGraphicsSceneGestureEvent gestureEvent;
-        gestureEvent.setWidget(this);
-        QGestureEvent *ev = static_cast<QGestureEvent*>(event);
-        gestureEvent.setGestures(ev->gestures());
-        gestureEvent.setCancelledGestures(ev->cancelledGestures());
-        QApplication::sendEvent(d->scene, &gestureEvent);
-        event->setAccepted(gestureEvent.isAccepted());
-        return true;
-    }
         break;
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
@@ -2863,6 +2868,7 @@ void QGraphicsView::dragMoveEvent(QDragMoveEvent *event)
 void QGraphicsView::focusInEvent(QFocusEvent *event)
 {
     Q_D(QGraphicsView);
+    d->updateInputMethodSensitivity();
     QAbstractScrollArea::focusInEvent(event);
     if (d->scene)
         QApplication::sendEvent(d->scene, event);

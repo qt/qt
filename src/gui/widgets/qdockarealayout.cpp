@@ -1488,7 +1488,7 @@ bool QDockAreaLayoutInfo::hasFixedSize() const
 
 void QDockAreaLayoutInfo::apply(bool animate)
 {
-    QWidgetAnimator *widgetAnimator = mainWindowLayout()->widgetAnimator;
+    QWidgetAnimator &widgetAnimator = mainWindowLayout()->widgetAnimator;
 
 #ifndef QT_NO_TABBAR
     if (tabbed) {
@@ -1521,7 +1521,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
             }
         }
 
-        widgetAnimator->animate(tabBar, tab_rect, animate);
+        widgetAnimator.animate(tabBar, tab_rect, animate);
     }
 #endif // QT_NO_TABBAR
 
@@ -1544,7 +1544,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
         QWidget *w = item.widgetItem->widget();
 
         QRect geo = w->geometry();
-        widgetAnimator->animate(w, r, animate);
+        widgetAnimator.animate(w, r, animate);
         if (!w->isHidden()) {
             QDockWidget *dw = qobject_cast<QDockWidget*>(w);
             if (!r.isValid() && geo.right() >= 0 && geo.bottom() >= 0) {
@@ -1707,7 +1707,7 @@ QDockAreaLayoutItem &QDockAreaLayoutInfo::item(const QList<int> &path)
     Q_ASSERT(!path.isEmpty());
     const int index = path.first();
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(index);
+        const QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
         return item.subinfo->item(path.mid(1));
     }
@@ -3064,13 +3064,13 @@ void QDockAreaLayout::splitDockWidget(QDockWidget *after,
 
 void QDockAreaLayout::apply(bool animate)
 {
-    QWidgetAnimator *widgetAnimator
+    QWidgetAnimator &widgetAnimator
         = qobject_cast<QMainWindowLayout*>(mainWindow->layout())->widgetAnimator;
 
     for (int i = 0; i < QInternal::DockCount; ++i)
         docks[i].apply(animate);
     if (centralWidgetItem != 0 && !centralWidgetItem->isEmpty()) {
-        widgetAnimator->animate(centralWidgetItem->widget(), centralWidgetRect,
+        widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect,
                                 animate);
     }
 

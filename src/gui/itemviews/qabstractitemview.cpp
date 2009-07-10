@@ -1602,7 +1602,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     d->checkMouseMove(index);
 
 #ifndef QT_NO_DRAGANDDROP
-    if (index.isValid()
+    if (d->pressedIndex.isValid()
         && d->dragEnabled
         && (state() != DragSelectingState)
         && (event->buttons() != Qt::NoButton)
@@ -2200,6 +2200,8 @@ void QAbstractItemView::resizeEvent(QResizeEvent *event)
 void QAbstractItemView::timerEvent(QTimerEvent *event)
 {
     Q_D(QAbstractItemView);
+    if (event->timerId() == d->fetchMoreTimer.timerId())
+        d->fetchMore();
     if (event->timerId() == d->autoScrollTimer.timerId())
         doAutoScroll();
     else if (event->timerId() == d->updateTimer.timerId())
@@ -2415,7 +2417,7 @@ void QAbstractItemView::updateEditorGeometries()
 void QAbstractItemView::updateGeometries()
 {
     updateEditorGeometries();
-    QMetaObject::invokeMethod(this, "_q_fetchMore", Qt::QueuedConnection);
+    d_func()->fetchMoreTimer.start(0, this); //fetch more later
 }
 
 /*!
@@ -2960,7 +2962,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
 void QAbstractItemView::rowsInserted(const QModelIndex &, int, int)
 {
     if (!isVisible())
-        QMetaObject::invokeMethod(this, "_q_fetchMore", Qt::QueuedConnection);
+        d_func()->fetchMoreTimer.start(0, this); //fetch more later
     else
         updateEditorGeometries();
 }
@@ -3183,7 +3185,7 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
             update(current);
             edit(current, CurrentChanged, 0);
             if (current.row() == (d->model->rowCount(d->root) - 1))
-                d->_q_fetchMore();
+                d->fetchMore();
         } else {
             d->shouldScrollToCurrentOnShow = d->autoScroll;
         }
@@ -3604,8 +3606,9 @@ QAbstractItemViewPrivate::contiguousSelectionCommand(const QModelIndex &index,
     }
 }
 
-void QAbstractItemViewPrivate::_q_fetchMore()
+void QAbstractItemViewPrivate::fetchMore()
 {
+    fetchMoreTimer.stop();
     if (!model->canFetchMore(root))
         return;
     int last = model->rowCount(root) - 1;
@@ -3880,28 +3883,35 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
 
 QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
 {
+    Q_ASSERT(r);
     Q_Q(const QAbstractItemView);
-    QRect rect = q->visualRect(indexes.at(0));
+    QRect &rect = *r;
+    const QRect viewportRect = viewport->rect();
     QList<QRect> rects;
+    QModelIndexList paintedIndexes;
     for (int i = 0; i < indexes.count(); ++i) {
-        rects.append(q->visualRect(indexes.at(i)));
-        rect |= rects.at(i);
+        const QModelIndex &index = indexes.at(i);
+        const QRect current = q->visualRect(index);
+        if (current.intersects(viewportRect)) {
+            paintedIndexes += index;
+            rects += current;
+            rect |= current;
+        }
     }
-    rect = rect.intersected(viewport->rect());
-    if (rect.width() <= 0 || rect.height() <= 0)
+    rect = rect.intersected(viewportRect);
+    if (rect.isEmpty())
         return QPixmap();
-    QImage image(rect.size(), QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
-    QPainter painter(&image);
+    QPixmap pixmap(rect.size());
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
     QStyleOptionViewItemV4 option = viewOptionsV4();
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < indexes.count(); ++j) {
+    for (int j = 0; j < paintedIndexes.count(); ++j) {
+        const QModelIndex &current = paintedIndexes.at(j);
         option.rect = QRect(rects.at(j).topLeft() - rect.topLeft(), rects.at(j).size());
-        delegateForIndex(indexes.at(j))->paint(&painter, option, indexes.at(j));
+        delegateForIndex(current)->paint(&painter, option, current);
     }
-    painter.end();
-    if (r) *r = rect;
-    return QPixmap::fromImage(image);
+    return pixmap;
 }
 
 void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)

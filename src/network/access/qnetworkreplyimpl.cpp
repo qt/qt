@@ -393,8 +393,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
     if (!q->isOpen())
         return;
 
-    char *ptr = readBuffer.reserve(data.size());
-    memcpy(ptr, data.constData(), data.size());
+    readBuffer.append(data);
 
     if (cacheEnabled && !cacheSaveDevice) {
         // save the meta data

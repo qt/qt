@@ -14,7 +14,7 @@
     <message>
         <location line="-14"/>
         <source>Warning</source>
-        <translation>Warnung</translation>
+        <translation>Achtung</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -68,12 +68,12 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="-69"/>
         <source>Delete Folder</source>
-        <translation>Verzeichnis löschen</translation>
+        <translation>Ordner löschen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Rename Folder</source>
-        <translation>Verzeichnis umbenennen</translation>
+        <translation>Ordner umbenennen</translation>
     </message>
 </context>
 <context>
@@ -91,7 +91,7 @@
     <message>
         <location line="+1"/>
         <source>You are going to delete a Folder, this will also&lt;br&gt;remove it&apos;s content. Are you sure to continue?</source>
-        <translation>Wenn Sie dieses Verzeichnis löschen, wird auch&lt;br&gt;dessen kompletter Inhalt gelöscht! Fortfahren?</translation>
+        <translation>Wenn Sie diesen Ordner löschen, wird auch&lt;br&gt;dessen kompletter Inhalt gelöscht. Möchten Sie wirklich fortfahren?</translation>
     </message>
     <message>
         <location line="+109"/>
@@ -123,12 +123,12 @@
     <message>
         <location line="-78"/>
         <source>Delete Folder</source>
-        <translation>Verzeichnis löschen</translation>
+        <translation>Ordner löschen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Rename Folder</source>
-        <translation>Verzeichnis umbenennen</translation>
+        <translation>Ordner umbenennen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -201,7 +201,7 @@
     <message>
         <location line="+5"/>
         <source>Add Bookmark for this Page...</source>
-        <translation>Lesezeichen für diese Seite hinzufügen...</translation>
+        <translation>Lesezeichen für diese Seite hinzufügen ...</translation>
     </message>
     <message>
         <location line="+259"/>
@@ -236,7 +236,7 @@
     <message>
         <location/>
         <source>Filter Name:</source>
-        <translation>Filter Name:</translation>
+        <translation>Filtername:</translation>
     </message>
 </context>
 <context>
@@ -244,22 +244,22 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-899"/>
         <source>Previous</source>
-        <translation>Vorherige</translation>
+        <translation>Zurück</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Next</source>
-        <translation>Nächste</translation>
+        <translation>Weiter</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Case Sensitive</source>
-        <translation>Gross/ Kleinschreibung beachten</translation>
+        <translation>Groß-/Kleinschreibung beachten</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Whole words</source>
-        <translation>Gesamte Worte</translation>
+        <translation>Ganze Wörter</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -316,12 +316,12 @@
     <message>
         <location line="-62"/>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
-        <translation>&lt;title&gt;Fehler 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Die Seite konnte nicht gefunden werden!&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
+        <translation>&lt;title&gt;Fehler 404 ...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Die Seite kann nicht gefunden werden.&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
         <location line="+125"/>
         <source>Copy &amp;Link Location</source>
-        <translation>&amp;Link Adresse kopieren</translation>
+        <translation>&amp;Link-Adresse kopieren</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -346,7 +346,7 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+66"/>
         <source>&amp;Look for:</source>
-        <translation>Suche &amp;nach:</translation>
+        <translation>Suchen &amp;nach:</translation>
     </message>
     <message>
         <location line="+68"/>
@@ -370,7 +370,7 @@
     <message>
         <location line="+30"/>
         <source>Downloading documentation info...</source>
-        <translation>Dokumentationsinformation herunterladen...</translation>
+        <translation>Dokumentationsinformation herunterladen ...</translation>
     </message>
     <message>
         <location line="+48"/>
@@ -387,12 +387,12 @@
     <message>
         <location line="-90"/>
         <source>The file %1 already exists. Do you want to overwrite it?</source>
-        <translation>Die Datei %1 existiert bereits. Überschreiben?</translation>
+        <translation>Die Datei %1 existiert bereits. Möchten Sie sie überschreiben?</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Unable to save the file %1: %2.</source>
-        <translation>Die Datei %1 konnte nicht gespeichert werden! Ursache: %2</translation>
+        <translation>Die Datei %1 kann nicht gespeichert werden: %2.</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -404,7 +404,7 @@
         <location line="+42"/>
         <location line="+38"/>
         <source>Download failed: %1.</source>
-        <translation>Herunterladen fehlgeschlagen: %1</translation>
+        <translation>Herunterladen fehlgeschlagen: %1.</translation>
     </message>
     <message>
         <location line="-70"/>
@@ -431,7 +431,7 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
         <source>Available Documentation:</source>
-        <translation>Verfügbare Dokumentationen:</translation>
+        <translation>Verfügbare Dokumentation:</translation>
     </message>
     <message>
         <location/>
@@ -451,7 +451,7 @@
     <message>
         <location/>
         <source>Installation Path:</source>
-        <translation>Installationsverzeichnis:</translation>
+        <translation>Installationsordner:</translation>
     </message>
     <message>
         <location/>
@@ -504,17 +504,17 @@
     <message>
         <location line="+84"/>
         <source>Page Set&amp;up...</source>
-        <translation>S&amp;eite einrichten...</translation>
+        <translation>S&amp;eite einrichten ...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Print Preview...</source>
-        <translation>Druckvorschau...</translation>
+        <translation>Druckvorschau ...</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Print...</source>
-        <translation>&amp;Drucken...</translation>
+        <translation>&amp;Drucken ...</translation>
     </message>
     <message>
         <source>CTRL+P</source>
@@ -523,7 +523,7 @@
     <message>
         <location line="+6"/>
         <source>New &amp;Tab</source>
-        <translation>Neue &amp;Seite</translation>
+        <translation>Neuer &amp;Tab</translation>
     </message>
     <message>
         <source>CTRL+T</source>
@@ -532,7 +532,7 @@
     <message>
         <location line="+3"/>
         <source>&amp;Close Tab</source>
-        <translation>&amp;Seite schließen</translation>
+        <translation>Tab &amp;schließen</translation>
     </message>
     <message>
         <source>CTRL+W</source>
@@ -555,7 +555,7 @@
     <message>
         <location line="+4"/>
         <source>&amp;Copy selected Text</source>
-        <translation>&amp;Kopieren</translation>
+        <translation>Ausgewählten Text &amp;kopieren</translation>
     </message>
     <message>
         <source>Ctrl+C</source>
@@ -564,7 +564,7 @@
     <message>
         <location line="+6"/>
         <source>&amp;Find in Text...</source>
-        <translation>&amp;Textsuche...</translation>
+        <translation>&amp;Textsuche ...</translation>
     </message>
     <message>
         <source>Ctrl+F</source>
@@ -591,7 +591,7 @@
     <message>
         <location line="+5"/>
         <source>Preferences...</source>
-        <translation>Einstellungen...</translation>
+        <translation>Einstellungen ...</translation>
     </message>
     <message>
         <source>View</source>
@@ -656,7 +656,7 @@
     <message>
         <location line="+1"/>
         <source>Ctrl+Home</source>
-        <translation>Strg+Pos1</translation>
+        <translation>Ctrl+Home</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -671,7 +671,7 @@
     <message>
         <location line="+5"/>
         <source>Sync with Table of Contents</source>
-        <translation>Seite mit Inhalt Tab syncronisieren</translation>
+        <translation>Seite mit Inhalt-Tab abgleichen</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -696,7 +696,7 @@
     <message>
         <location line="+4"/>
         <source>Add Bookmark...</source>
-        <translation>Lesezeichen hinzufügen...</translation>
+        <translation>Lesezeichen hinzufügen ...</translation>
     </message>
     <message>
         <source>CTRL+B</source>
@@ -709,7 +709,7 @@
     <message>
         <location line="+4"/>
         <source>About...</source>
-        <translation>Über...</translation>
+        <translation>Über ...</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -775,7 +775,7 @@
     <message>
         <location line="-601"/>
         <source>Looking for Qt Documentation...</source>
-        <translation>Suche nach Qt-Dokumentation...</translation>
+        <translation>Suche nach Qt-Dokumentation ...</translation>
     </message>
     <message>
         <location line="+195"/>
@@ -790,7 +790,7 @@
     <message>
         <location line="+1"/>
         <source>Ctrl+M</source>
-        <translation>CTRL+M</translation>
+        <translation>Ctrl+M</translation>
     </message>
     <message>
         <location line="-2"/>
@@ -823,7 +823,7 @@
     <message>
         <location line="+27"/>
         <source>&amp;Go</source>
-        <translation>&amp;Gehe</translation>
+        <translation>&amp;Gehe zu</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -869,12 +869,12 @@
     <message>
         <location line="-43"/>
         <source>Qt Compressed Help Files (*.qch)</source>
-        <translation>Komprimierte Hilfe-Dateien (*.qch)</translation>
+        <translation>Komprimierte Hilfedateien (*.qch)</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>The specified file is not a valid Qt Help File!</source>
-        <translation>Die angegebene Datei ist keine Qt-Hilfe-Datei.</translation>
+        <translation>Die angegebene Datei ist keine Qt-Hilfedatei.</translation>
     </message>
     <message>
         <location line="-8"/>
@@ -889,7 +889,7 @@
     <message>
         <location line="+1"/>
         <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
-        <translation>Einige der gegenwärtig geöffneten Dokumente stammen aus der Dokumentation, die Sie gerade zu löschen versuchen. Sie werden beim Löschen geschlossen.</translation>
+        <translation>Einige der derzeit geöffneten Dokumente stammen aus der Dokumentation, die Sie gerade zu löschen versuchen. Sie werden beim Löschen geschlossen.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -904,7 +904,7 @@
     <message>
         <location line="+86"/>
         <source>Use custom settings</source>
-        <translation>Benutze erweiterte Einstellungen</translation>
+        <translation>Benutzerdefinierte Einstellungen verwenden</translation>
     </message>
 </context>
 <context>
@@ -972,12 +972,12 @@
     <message>
         <location/>
         <source>Registered Documentation:</source>
-        <translation>Registrierte Dokumentationen:</translation>
+        <translation>Registrierte Dokumentation:</translation>
     </message>
     <message>
         <location/>
         <source>Add...</source>
-        <translation>Hinzufügen...</translation>
+        <translation>Hinzufügen ...</translation>
     </message>
     <message>
         <source>Network</source>
@@ -1008,7 +1008,7 @@
     <message>
         <location/>
         <source>Restore to default</source>
-        <translation>Vorgabe wiederherstellen</translation>
+        <translation>Voreinstellung wiederherstellen</translation>
     </message>
     <message>
         <location/>
@@ -1035,7 +1035,7 @@
     <message>
         <location line="+9"/>
         <source>Invalid URL!</source>
-        <translation>Unbekannte URL.</translation>
+        <translation>Ungültige URL.</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1091,7 +1091,10 @@
 
 Reason:
 %2</source>
-        <translation>Could not register documentation file%1Reason:%2</translation>
+        <translation>Dokumentationsdatei %1 kann nicht registriert werden
+
+Grund:
+%2</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1105,7 +1108,10 @@ Reason:
 
 Reason:
 %2</source>
-        <translation>Could not unregister documentation file%1Reason:%2</translation>
+        <translation>Registrierung der Dokumentationsdatei %1 kann nicht aufgehoben werden
+
+Grund:
+%2</translation>
     </message>
     <message>
         <location line="-3"/>
@@ -1152,7 +1158,7 @@ Reason:
     <message>
         <location line="+4"/>
         <source>Copy &amp;Link Location</source>
-        <translation>&amp;Link Adresse kopieren</translation>
+        <translation>&amp;Link-Adresse kopieren</translation>
     </message>
     <message>
         <location line="+4"/>

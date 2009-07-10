@@ -1726,8 +1726,6 @@ void Q3DataTable::repaintCell( int row, int col )
     the content coordinate system. If \a selected is true the cell has
     been selected and would normally be rendered differently than an
     unselected cell.
-
-    \sa QSql::isNull()
 */
 
 void Q3DataTable::paintCell( QPainter * p, int row, int col, const QRect & cr,

@@ -42,6 +42,7 @@
 //#define QNATIVESOCKETENGINE_DEBUG
 
 #include "qnativesocketengine_p.h"
+#include "private/qnet_unix_p.h"
 #include "qiodevice.h"
 #include "qhostaddress.h"
 #include "qvarlengtharray.h"
@@ -161,7 +162,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int protocol = AF_INET;
 #endif
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
-    int socket = qt_socket_socket(protocol, type, 0);
+    int socket = qt_safe_socket(protocol, type, 0);
 
     if (socket <= 0) {
         switch (errno) {
@@ -466,7 +467,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 
 bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 {
-    if (qt_socket_listen(socketDescriptor, backlog) < 0) {
+    if (qt_safe_listen(socketDescriptor, backlog) < 0) {
         switch (errno) {
         case EADDRINUSE:
             setError(QAbstractSocket::AddressInUseError,
@@ -493,7 +494,7 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 
 int QNativeSocketEnginePrivate::nativeAccept()
 {
-    int acceptedDescriptor = qt_socket_accept(socketDescriptor, 0, 0);
+    int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
 #endif
@@ -833,33 +834,11 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
-    QTime timer;
-    timer.start();
-
     int retval;
-    do {
-        if (selectForRead)
-            retval = select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
-        else
-            retval = select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
-
-        if (retval != -1 || errno != EINTR)
-            break;
-
-        if (timeout > 0) {
-            // recalculate the timeout
-            int t = timeout - timer.elapsed();
-            if (t < 0) {
-                // oops, timeout turned negative?
-                retval = -1;
-                break;
-            }
-
-            tv.tv_sec = t / 1000;
-            tv.tv_usec = (t % 1000) * 1000;
-        }
-    } while (true);
-
+    if (selectForRead)
+        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
+    else
+        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
     return retval;
 }
 
@@ -880,28 +859,8 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
-    QTime timer;
-    timer.start();
-
     int ret;
-    do {
-        ret = select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
-        if (ret != -1 || errno != EINTR)
-            break;
-
-        if (timeout > 0) {
-            // recalculate the timeout
-            int t = timeout - timer.elapsed();
-            if (t < 0) {
-                // oops, timeout turned negative?
-                ret = -1;
-                break;
-            }
-
-            tv.tv_sec = t / 1000;
-            tv.tv_usec = (t % 1000) * 1000;
-        }
-    } while (true);
+    ret = qt_safe_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
     if (ret <= 0)
         return ret;
 
