@@ -1184,6 +1184,24 @@ void QGraphicsScenePrivate::removeSceneEventFilter(QGraphicsItem *watched, QGrap
 }
 
 /*!
+  \internal
+*/
+bool QGraphicsScenePrivate::filterDescendantEvent(QGraphicsItem *item, QEvent *event)
+{
+    if (item && (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorFiltersChildEvents)) {
+        QGraphicsItem *parent = item->parentItem();
+        while (parent) {
+            if (parent->d_ptr->filtersDescendantEvents && parent->sceneEventFilter(item, event))
+                return true;
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorFiltersChildEvents))
+                return false;
+            parent = parent->parentItem();
+        }
+    }
+    return false;
+}
+
+/*!
     \internal
 */
 bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
@@ -1215,7 +1233,9 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
     if (filterEvent(item, event))
         return false;
-    return (item && item->isEnabled()) ? item->sceneEvent(event) : false;
+    if (filterDescendantEvent(item, event))
+        return false;
+    return (item && item->isEnabled() ? item->sceneEvent(event) : false);
 }
 
 /*!

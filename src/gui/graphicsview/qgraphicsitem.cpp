@@ -660,6 +660,10 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         // For root items only. This is the item that has either enabled or
         // disabled \a childFlag, or has been reparented.
         switch (int(childFlag)) {
+        case -2:
+            flag = AncestorFiltersChildEvents;
+            enabled = q->filtersChildEvents();
+            break;
         case -1:
             flag = AncestorHandlesChildEvents;
             enabled = q->handlesChildEvents();
@@ -680,7 +684,8 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         // Inherit the enabled-state from our parents.
         if ((parent && ((parent->d_ptr->ancestorFlags & flag)
                         || (int(parent->d_ptr->flags & childFlag) == childFlag)
-                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)))) {
+                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)
+                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)))) {
             enabled = true;
             ancestorFlags |= flag;
         }
@@ -701,7 +706,9 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             ancestorFlags &= ~flag;
 
         // Don't process children if the item has the main flag set on itself.
-        if ((childFlag != -1 &&  int(flags & childFlag) == childFlag) || (int(childFlag) == -1 && handlesChildEvents))
+        if ((childFlag != -1 &&  int(flags & childFlag) == childFlag)
+            || (int(childFlag) == -1 && handlesChildEvents)
+            || (int(childFlag) == -2 && filtersDescendantEvents))
             return;
     }
 
@@ -922,6 +929,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
 
         // Inherit ancestor flags from the new parent.
+        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -938,6 +946,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     } else {
         // Inherit ancestor flags from the new parent.
+        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -2323,6 +2332,40 @@ void QGraphicsItem::setAcceptTouchEvents(bool enabled)
 }
 
 /*!
+    Returns true if this item filters child events (i.e., all events
+    intended for any of its children are instead sent to this item);
+    otherwise, false is returned.
+
+    The default value is false; child events are not filtered.
+
+    \sa setFiltersChildEvents()
+*/
+bool QGraphicsItem::filtersChildEvents() const
+{
+    return d_ptr->filtersDescendantEvents;
+}
+
+/*!
+    If \a enabled is true, this item is set to filter all events for
+    all its children (i.e., all events intented for any of its
+    children are instead sent to this item); otherwise, if \a enabled
+    is false, this item will only handle its own events. The default
+    value is false.
+
+  \sa filtersChildEvents()
+*/
+void QGraphicsItem::setFiltersChildEvents(bool enabled)
+{
+    if (d_ptr->filtersDescendantEvents == enabled)
+        return;
+
+    d_ptr->filtersDescendantEvents = enabled;
+    d_ptr->updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
+}
+
+/*!
+    \obsolete
+
     Returns true if this item handles child events (i.e., all events
     intended for any of its children are instead sent to this item);
     otherwise, false is returned.
@@ -2343,6 +2386,8 @@ bool QGraphicsItem::handlesChildEvents() const
 }
 
 /*!
+    \obsolete
+
     If \a enabled is true, this item is set to handle all events for
     all its children (i.e., all events intented for any of its
     children are instead sent to this item); otherwise, if \a enabled
