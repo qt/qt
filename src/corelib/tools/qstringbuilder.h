@@ -211,7 +211,7 @@ template <> struct QConcatenable<QByteArray>
     {
         const char *data = ba.constData();
         while (*data)
-            *out++ = *data++;
+            *out++ = QLatin1Char(*data++);
     }
 };
 #endif
