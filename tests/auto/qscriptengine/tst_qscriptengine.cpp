@@ -963,7 +963,6 @@ void tst_QScriptEngine::checkSyntax_data()
 
 void tst_QScriptEngine::checkSyntax()
 {
-    QSKIP("Not implemented", SkipAll);
     QFETCH(QString, code);
     QFETCH(int, expectedState);
     QFETCH(int, errorLineNumber);

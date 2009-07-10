@@ -118,6 +118,7 @@ private:
 
     Q_DECLARE_PRIVATE(QScriptSyntaxCheckResult)
     friend class QScriptEngine;
+    friend class QScriptEnginePrivate;
 };
 
 class Q_SCRIPT_EXPORT QScriptEngine

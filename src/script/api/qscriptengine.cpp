@@ -282,6 +282,19 @@ QT_BEGIN_NAMESPACE
     \value SkipMethodsInEnumeration Don't include methods (signals and slots) when enumerating the object's properties.
 */
 
+class QScriptSyntaxCheckResultPrivate
+{
+public:
+    QScriptSyntaxCheckResultPrivate() { ref = 0; }
+    ~QScriptSyntaxCheckResultPrivate() {}
+
+    QScriptSyntaxCheckResult::State state;
+    int errorColumnNumber;
+    int errorLineNumber;
+    QString errorMessage;
+    QBasicAtomicInt ref;
+};
+
 class QScriptTypeInfo
 {
 public:
@@ -1961,11 +1974,32 @@ bool QScriptEnginePrivate::canEvaluate(const QString &program)
 */
 QScriptSyntaxCheckResult QScriptEngine::checkSyntax(const QString &program)
 {
-    qWarning("QScriptEngine::checkSyntax() not implemented");
-    // use our own parser or JSC::Interpreter::checkSyntax()
-    Q_UNUSED(program);
-    return QScriptSyntaxCheckResult();
+    return QScriptEnginePrivate::checkSyntax(program);
 }
+
+QScriptSyntaxCheckResult QScriptEnginePrivate::checkSyntax(const QString &program)
+{
+    QScript::SyntaxChecker checker;
+    QScript::SyntaxChecker::Result result = checker.checkSyntax(program);
+    QScriptSyntaxCheckResultPrivate *p = new QScriptSyntaxCheckResultPrivate();
+    switch (result.state) {
+    case QScript::SyntaxChecker::Error:
+        p->state = QScriptSyntaxCheckResult::Error;
+        break;
+    case QScript::SyntaxChecker::Intermediate:
+        p->state = QScriptSyntaxCheckResult::Intermediate;
+        break;
+    case QScript::SyntaxChecker::Valid:
+        p->state = QScriptSyntaxCheckResult::Valid;
+        break;
+    }
+    p->errorLineNumber = result.errorLineNumber;
+    p->errorColumnNumber = result.errorColumnNumber;
+    p->errorMessage = result.errorMessage;
+    return QScriptSyntaxCheckResult(p);
+}
+
+
 
 /*!
   Evaluates \a program, using \a lineNumber as the base line number,
@@ -3443,19 +3477,6 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
     \value Intermediate The program is incomplete.
     \value Valid The program is a syntactically correct Qt Script program.
 */
-
-class QScriptSyntaxCheckResultPrivate
-{
-public:
-    QScriptSyntaxCheckResultPrivate() { ref = 0; }
-    ~QScriptSyntaxCheckResultPrivate() {}
-
-    QScriptSyntaxCheckResult::State state;
-    int errorColumnNumber;
-    int errorLineNumber;
-    QString errorMessage;
-    QBasicAtomicInt ref;
-};
 
 /*!
   Constructs a new QScriptSyntaxCheckResult from the \a other result.

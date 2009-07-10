@@ -64,6 +64,8 @@ class QScriptValuePrivate;
 class QScriptTypeInfo;
 class QScriptEngineAgent;
 
+class QScriptSyntaxCheckResult;
+
 class QScriptEngine;
 class QScriptEnginePrivate
 #ifndef QT_NO_QOBJECT
@@ -116,6 +118,7 @@ public:
     JSC::JSValue newQMetaObject(const QMetaObject *metaObject,
                                 JSC::JSValue ctor);
 
+    static QScriptSyntaxCheckResult checkSyntax(const QString &program);
     static bool canEvaluate(const QString &program);
     static bool convertToNativeQObject(const QScriptValue &value,
                                        const QByteArray &targetType,
