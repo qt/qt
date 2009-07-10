@@ -4568,7 +4568,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 if (!item->d_ptr->dirty)
                     continue;
 
-                if (!item->d_ptr->geometryChanged
+                if (!item->d_ptr->paintedViewBoundingRectsNeedRepaint
                     && paintedViewBoundingRect.x() == -1 && paintedViewBoundingRect.y() == -1
                     && paintedViewBoundingRect.width() == -1 && paintedViewBoundingRect.height() == -1) {
                     continue; // Outside viewport.
@@ -4587,7 +4587,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     continue; // Discard updates outside the bounding rect.
 
                 if (!updateHelper(viewPrivate, item->d_ptr, dirtyRect, itemIsUntransformable)
-                    && item->d_ptr->geometryChanged) {
+                    && item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     paintedViewBoundingRect = QRect(-1, -1, -1, -1); // Outside viewport.
                 }
             }

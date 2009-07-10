@@ -6614,9 +6614,9 @@ void tst_QGraphicsItem::update()
     qApp->processEvents();
     QCOMPARE(item->repaints, 1);
     QCOMPARE(view.repaints, 1);
-    const QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
-                                         .mapRect(item->boundingRect()).toRect();
-    const QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+    QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
+                                                         .mapRect(item->boundingRect()).toRect();
+    QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
     QCOMPARE(view.paintedRegion, expectedRegion);
 
@@ -6684,6 +6684,33 @@ void tst_QGraphicsItem::update()
     QCOMPARE(item->repaints, 1);
     QCOMPARE(view.repaints, 1);
     QCOMPARE(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
+
+    // Make sure moving a parent item triggers an update on the children
+    // (even though the parent itself is outside the viewport).
+    QGraphicsRectItem *parent = new QGraphicsRectItem(0, 0, 10, 10);
+    parent->setPos(-400, 0);
+    item->setParentItem(parent);
+    item->setPos(400, 0);
+    scene.addItem(parent);
+    QTest::qWait(50);
+    itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
+                                                   .mapRect(item->boundingRect()).toRect();
+    expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+    view.reset();
+    item->repaints = 0;
+    parent->translate(-400, 0);
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 0);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(view.paintedRegion, expectedRegion);
+    view.reset();
+    item->repaints = 0;
+    parent->translate(400, 0);
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(view.paintedRegion, expectedRegion);
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::setTransformProperties_data()
