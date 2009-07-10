@@ -98,6 +98,7 @@ public:
 protected:
     virtual void paintEvent(QPaintEvent *);
     virtual void focusInEvent(QFocusEvent *);
+    virtual void resizeEvent(QResizeEvent *);
 
 private:
     QSimpleCanvasPrivate *canvas;

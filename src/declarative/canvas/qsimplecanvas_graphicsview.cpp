@@ -64,6 +64,12 @@ QSimpleCanvasGraphicsView::~QSimpleCanvasGraphicsView()
     sceneMap.remove(&_scene);
 }
 
+void QSimpleCanvasGraphicsView::resizeEvent(QResizeEvent *e)
+{
+    _scene.setSceneRect(QRect(QPoint(0, 0), e->size()));
+    QGraphicsView::resizeEvent(e);
+}
+
 QSimpleGraphicsItem::QSimpleGraphicsItem(QSimpleCanvasItem *canvasItem)
 : /*scene(0),*/ owner(canvasItem)
 {
