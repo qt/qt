@@ -231,6 +231,7 @@ private slots:
     void sorting_data();
     void sorting();
     void itemHasNoContents();
+    void hitTestUntransformableItem();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7129,6 +7130,56 @@ void tst_QGraphicsItem::itemHasNoContents()
     view.viewport()->repaint();
 
     QCOMPARE(_paintedItems, QList<QGraphicsItem *>() << item2);
+}
+
+void tst_QGraphicsItem::hitTestUntransformableItem()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(-100, -100, 200, 200);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    // Confuse the BSP with dummy items.
+    QGraphicsRectItem *dummy = new QGraphicsRectItem(0, 0, 20, 20);
+    dummy->setPos(-100, -100);
+    scene.addItem(dummy);
+    for (int i = 0; i < 100; ++i) {
+        QGraphicsItem *parent = dummy;
+        dummy = new QGraphicsRectItem(0, 0, 20, 20);
+        dummy->setPos(-100 + i, -100 + i);
+        dummy->setParentItem(parent);
+    }
+
+    QGraphicsRectItem *item1 = new QGraphicsRectItem(0, 0, 20, 20);
+    item1->setPos(-200, -200);
+
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(0, 0, 20, 20);
+    item2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    item2->setParentItem(item1);
+    item2->setPos(200, 200);
+
+    QGraphicsRectItem *item3 = new QGraphicsRectItem(0, 0, 20, 20);
+    item3->setParentItem(item2);
+    item3->setPos(80, 80);
+
+    scene.addItem(item1);
+    QTest::qWait(100);
+
+    QList<QGraphicsItem *> items = scene.items(QPointF(80, 80));
+    QCOMPARE(items.size(), 1);
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
+
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    QTest::qWait(100);
+
+    items = scene.items(QPointF(80, 80));
+    QCOMPARE(items.size(), 1);
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

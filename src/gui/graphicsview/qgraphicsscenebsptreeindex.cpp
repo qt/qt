@@ -387,8 +387,13 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndexPrivate::estimateItems(const QR
     if (onlyTopLevelItems) {
         for (int i = 0; i < untransformableItems.size(); ++i) {
             QGraphicsItem *item = untransformableItems.at(i);
-            if (!item->d_ptr->parent)
+            if (!item->d_ptr->parent) {
                 rectItems << item;
+            } else {
+                item = item->topLevelItem();
+                if (!rectItems.contains(item))
+                    rectItems << item;
+            }
         }
     } else {
         rectItems += untransformableItems;
