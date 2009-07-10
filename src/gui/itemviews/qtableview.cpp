@@ -1528,6 +1528,8 @@ void QTableView::updateGeometries()
             ++columnsInViewport;
         }
     }
+    columnsInViewport = qMax(columnsInViewport, 1); //there must be always at least 1 column
+
     if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem) {
         const int visibleColumns = columnCount - d->horizontalHeader->hiddenSectionCount();
         horizontalScrollBar()->setRange(0, visibleColumns - columnsInViewport);
@@ -1554,6 +1556,8 @@ void QTableView::updateGeometries()
             ++rowsInViewport;
         }
     }
+    rowsInViewport = qMax(rowsInViewport, 1); //there must be always at least 1 row
+
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
         const int visibleRows = rowCount - d->verticalHeader->hiddenSectionCount();
         verticalScrollBar()->setRange(0, visibleRows - rowsInViewport);

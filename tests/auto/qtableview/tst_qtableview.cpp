@@ -175,6 +175,7 @@ private slots:
     // task-specific tests:
     void task173773_updateVerticalHeader();
     void task227953_setRootIndex();
+    void task240266_veryBigColumn();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3127,6 +3128,31 @@ void tst_QTableView::task227953_setRootIndex()
     QVERIFY(!tableView.verticalHeader()->isHidden());
 }
 
+void tst_QTableView::task240266_veryBigColumn()
+{
+    QTableView table;
+    table.setFixedSize(500, 300); //just to make sure we have the 2 first columns visible
+    QStandardItemModel model(1, 3);
+    table.setModel(&model);
+    table.setColumnWidth(0, 100); //normal column
+    table.setColumnWidth(1, 100); //normal column
+    table.setColumnWidth(2, 9000); //very big column
+    table.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    QScrollBar *scroll = table.horizontalScrollBar();
+    QCOMPARE(scroll->minimum(), 0);
+    QCOMPARE(scroll->maximum(), model.columnCount() - 1);
+    QCOMPARE(scroll->singleStep(), 1);
+    
+    //1 is not always a very correct value for pageStep. Ideally this should be dynamic.
+    //Maybe something for Qt 5 ;-)
+    QCOMPARE(scroll->pageStep(), 1);
+
+}
 
 void tst_QTableView::mouseWheel_data()
 {
