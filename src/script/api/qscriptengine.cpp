@@ -10,6 +10,8 @@
 ****************************************************************************/
 
 #include "qscriptengine.h"
+#include "qscriptsyntaxchecker_p.h"
+#include "qnumeric.h"
 
 #ifndef QT_NO_SCRIPT
 
@@ -294,6 +296,75 @@ public:
 
 namespace QScript
 {
+static int toDigit(char c)
+{
+    if ((c >= '0') && (c <= '9'))
+        return c - '0';
+    else if ((c >= 'a') && (c <= 'z'))
+        return 10 + c - 'a';
+    else if ((c >= 'A') && (c <= 'Z'))
+        return 10 + c - 'A';
+    return -1;
+}
+
+qsreal integerFromString(const char *buf, int size, int radix)
+{
+    if (size == 0)
+        return qSNaN();
+
+    qsreal sign = 1.0;
+    int i = 0;
+    if (buf[0] == '+') {
+        ++i;
+    } else if (buf[0] == '-') {
+        sign = -1.0;
+        ++i;
+    }
+
+    if (((size-i) >= 2) && (buf[i] == '0')) {
+        if (((buf[i+1] == 'x') || (buf[i+1] == 'X'))
+            && (radix < 34)) {
+            if ((radix != 0) && (radix != 16))
+                return 0;
+            radix = 16;
+            i += 2;
+        } else {
+            if (radix == 0) {
+                radix = 8;
+                ++i;
+            }
+        }
+    } else if (radix == 0) {
+        radix = 10;
+    }
+
+    int j = i;
+    for ( ; i < size; ++i) {
+        int d = toDigit(buf[i]);
+        if ((d == -1) || (d >= radix))
+            break;
+    }
+    qsreal result;
+    if (j == i) {
+        if (!qstrcmp(buf, "Infinity"))
+            result = qInf();
+        else
+            result = qSNaN();
+    } else {
+        result = 0;
+        qsreal multiplier = 1;
+        for (--i ; i >= j; --i, multiplier *= radix)
+            result += toDigit(buf[i]) * multiplier;
+    }
+    result *= sign;
+    return result;
+}
+
+qsreal integerFromString(const QString &str, int radix)
+{
+    QByteArray ba = str.trimmed().toUtf8();
+    return integerFromString(ba.constData(), ba.size(), radix);
+}
 
 JSC::UString qtStringToJSCUString(const QString &str)
 {
@@ -1871,10 +1942,15 @@ QScriptValue QScriptEngine::newQMetaObject(
 */
 bool QScriptEngine::canEvaluate(const QString &program) const
 {
-    qWarning("QScriptEngine::canEvaluate() not implemented");
-    // ### use our own parser or JSC::Interpreter::checkSyntax()
-    Q_UNUSED(program);
-    return true;
+    return QScriptEnginePrivate::canEvaluate(program);
+}
+
+
+bool QScriptEnginePrivate::canEvaluate(const QString &program)
+{
+    QScript::SyntaxChecker checker;
+    QScript::SyntaxChecker::Result result = checker.checkSyntax(program);
+    return (result.state != QScript::SyntaxChecker::Intermediate);
 }
 
 /*!

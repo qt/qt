@@ -115,7 +115,8 @@ public:
         const QScriptEngine:: QObjectWrapOptions &options = 0);
     JSC::JSValue newQMetaObject(const QMetaObject *metaObject,
                                 JSC::JSValue ctor);
-    
+
+    static bool canEvaluate(const QString &program);
     static bool convertToNativeQObject(const QScriptValue &value,
                                        const QByteArray &targetType,
                                        void **result);

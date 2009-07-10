@@ -1027,7 +1027,6 @@ void tst_QScriptEngine::canEvaluate_data()
 
 void tst_QScriptEngine::canEvaluate()
 {
-    QSKIP("Not implemented", SkipAll);
     QFETCH(QString, code);
     QFETCH(bool, expectSuccess);
 

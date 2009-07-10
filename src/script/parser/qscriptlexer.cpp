@@ -1074,8 +1074,16 @@ bool QScript::Lexer::scanRegExp(RegExpBodyPrefix prefix)
 
     flags = 0;
     while (isIdentLetter(current)) {
-        Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-        int flag = 0; // QScript::Ecma::RegExp::flagFromChar(current);
+        // current version was remade from this line:
+        //int flag = QScript::Ecma::RegExp::flagFromChar(current);
+        //code was "inlined" because it was only one call to this function
+        int flag;
+        switch (current) {
+            case 'g': flag = 0x01; break;
+            case 'm': flag = 0x02; break;
+            case 'i': flag = 0x04; break;
+            default: flag = 0;
+        }
         if (flag == 0) {
             errmsg = QString::fromLatin1("Invalid regular expression flag '%0'")
                      .arg(QChar(current));
