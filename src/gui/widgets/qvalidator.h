@@ -120,7 +120,7 @@ public:
 #endif
 
 private:
-    /*Q_DISABLE_COPY(QIntValidator)*/
+    Q_DISABLE_COPY(QIntValidator)
 
     int b;
     int t;

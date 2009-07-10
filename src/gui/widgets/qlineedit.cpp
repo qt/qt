@@ -1409,7 +1409,7 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
     if (d->tripleClickTimer.isActive() && (e->pos() - d->tripleClick).manhattanLength() <
          QApplication::startDragDistance()) {
         selectAll();
-             return;
+        return;
     }
     bool mark = e->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(e->pos().x());
@@ -1593,8 +1593,6 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
         clear();
     }
 
-    d->control->processInputMethodEvent(e);
-
 #ifdef QT_KEYPAD_NAVIGATION
     // Focus in if currently in navigation focus on the widget
     // Only focus in on preedits, to allow input methods to
@@ -1606,6 +1604,8 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
         selectAll();        // so text is replaced rather than appended to
     }
 #endif
+
+    d->control->processInputMethodEvent(e);
 
 #ifndef QT_NO_COMPLETER
     if (!e->commitString().isEmpty())
