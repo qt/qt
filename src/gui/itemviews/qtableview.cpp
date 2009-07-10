@@ -2040,7 +2040,7 @@ void QTableView::scrollTo(const QModelIndex &index, ScrollHint hint)
         if (positionAtRight || hint == PositionAtCenter || positionAtLeft) {
             int hiddenSections = 0;
             if (d->horizontalHeader->sectionsHidden()) {
-                for (int s = horizontalIndex; s >= 0; --s) {
+                for (int s = horizontalIndex - 1; s >= 0; --s) {
                     int column = d->horizontalHeader->logicalIndex(s);
                     if (d->horizontalHeader->isSectionHidden(column))
                         ++hiddenSections;
@@ -2095,7 +2095,7 @@ void QTableView::scrollTo(const QModelIndex &index, ScrollHint hint)
         if (hint == PositionAtBottom || hint == PositionAtCenter || hint == PositionAtTop) {
             int hiddenSections = 0;
             if (d->verticalHeader->sectionsHidden()) {
-                for (int s = verticalIndex; s >= 0; --s) {
+                for (int s = verticalIndex - 1; s >= 0; --s) {
                     int row = d->verticalHeader->logicalIndex(s);
                     if (d->verticalHeader->isSectionHidden(row))
                         ++hiddenSections;
