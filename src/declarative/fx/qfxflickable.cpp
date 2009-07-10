@@ -1047,7 +1047,7 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
         grabber = static_cast<QFxItem*>(mouseGrabberItem());
-        if (grabber && d->stealMouse && !grabber->keepMouseGrab())
+        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this)
             grabMouse();
 
         return d->stealMouse;

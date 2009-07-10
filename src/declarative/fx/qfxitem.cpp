@@ -2428,7 +2428,7 @@ bool QFxItem::hasFocus() const
     return false;
 }
 
-bool QFxItem::eventFilter(QObject *o, QEvent *e)
+bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
 {
     switch(e->type()) {
     case QEvent::GraphicsSceneMouseDoubleClick:
@@ -2442,7 +2442,7 @@ bool QFxItem::eventFilter(QObject *o, QEvent *e)
         break;
     }
 
-    return QObject::eventFilter(o, e);
+    return QGraphicsItem::sceneEventFilter(w, e);
 }
 
 void QFxItem::setOptions(Options options, bool set)
@@ -2461,6 +2461,7 @@ void QFxItem::setOptions(Options options, bool set)
     }
 
     setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
+    setFiltersChildEvents(d->options & ChildMouseFilter);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->options & MouseFilter)
@@ -2510,17 +2511,15 @@ void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 void QFxItemPrivate::gvRemoveMouseFilter()
 {
     Q_Q(QFxItem);
-    if (!canvas) return;
-
-    canvas->removeEventFilter(q);
+    if (q->scene())
+        q->removeSceneEventFilter(q);
 }
 
 void QFxItemPrivate::gvAddMouseFilter()
 {
     Q_Q(QFxItem);
-    if (!canvas) return;
-
-    canvas->installEventFilter(q);
+    if (q->scene())
+        q->installSceneEventFilter(q);
 }
 
 QPixmap QFxItem::string(const QString &str, const QColor &c, const QFont &f)

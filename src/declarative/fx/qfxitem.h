@@ -302,7 +302,7 @@ Q_SIGNALS:
 protected:
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void childrenChanged();
-    virtual bool eventFilter(QObject *, QEvent *);
+    virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
     virtual bool sceneEvent(QEvent *);
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
