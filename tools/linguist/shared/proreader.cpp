@@ -39,57 +39,70 @@
 **
 ****************************************************************************/
 
-#ifndef PROFILEEVALUATOR_H
-#define PROFILEEVALUATOR_H
+#include "profileevaluator.h"
 
-#include "proitems.h"
-#include "abstractproitemvisitor.h"
-
-#include <QtCore/QIODevice>
-#include <QtCore/QHash>
-#include <QtCore/QStringList>
-#include <QtCore/QStack>
+#include <QtCore/QFileInfo>
 
 QT_BEGIN_NAMESPACE
 
-class ProFileEvaluator
+void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap)
 {
-public:
-    enum TemplateType {
-        TT_Unknown = 0,
-        TT_Application,
-        TT_Library,
-        TT_Subdirs
-    };
+    QStringList sourceFiles;
+    QString codecForTr;
+    QString codecForSource;
+    QStringList tsFileNames;
 
-    ProFileEvaluator();
-    virtual ~ProFileEvaluator();
+    // app/lib template
+    sourceFiles += visitor.values(QLatin1String("SOURCES"));
+    sourceFiles += visitor.values(QLatin1String("HEADERS"));
+    tsFileNames = visitor.values(QLatin1String("TRANSLATIONS"));
 
-    ProFileEvaluator::TemplateType templateType();
-    virtual bool contains(const QString &variableName) const;
-    void setVerbose(bool on);
+    QStringList trcodec = visitor.values(QLatin1String("CODEC"))
+        + visitor.values(QLatin1String("DEFAULTCODEC"))
+        + visitor.values(QLatin1String("CODECFORTR"));
+    if (!trcodec.isEmpty())
+        codecForTr = trcodec.last();
 
-    bool queryProFile(ProFile *pro);
-    bool accept(ProFile *pro);
+    QStringList srccodec = visitor.values(QLatin1String("CODECFORSRC"));
+    if (!srccodec.isEmpty())
+        codecForSource = srccodec.last();
 
-    void addVariables(const QHash<QString, QStringList> &variables);
-    void addProperties(const QHash<QString, QString> &properties);
-    QStringList values(const QString &variableName) const;
-    QStringList values(const QString &variableName, const ProFile *pro) const;
-    QString propertyValue(const QString &val) const;
+    QStringList forms = visitor.values(QLatin1String("INTERFACES"))
+        + visitor.values(QLatin1String("FORMS"))
+        + visitor.values(QLatin1String("FORMS3"));
+    sourceFiles << forms;
 
-    // for our descendents
-    virtual ProFile *parsedProFile(const QString &fileName);
-    virtual void releaseParsedProFile(ProFile *proFile);
-    virtual void logMessage(const QString &msg);
-    virtual void errorMessage(const QString &msg); // .pro parse errors
-    virtual void fileMessage(const QString &msg); // error() and message() from .pro file
+    sourceFiles.sort();
+    sourceFiles.removeDuplicates();
+    tsFileNames.sort();
+    tsFileNames.removeDuplicates();
 
-private:
-    class Private;
-    Private *d;
-};
+    varMap->insert("SOURCES", sourceFiles);
+    varMap->insert("CODECFORTR", QStringList() << codecForTr);
+    varMap->insert("CODECFORSRC", QStringList() << codecForSource);
+    varMap->insert("TRANSLATIONS", tsFileNames);
+}
+
+bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QStringList> *varMap)
+{
+    QFileInfo fi(fileName);
+    if (!fi.exists())
+        return false;
+
+    ProFile pro(fi.absoluteFilePath());
+
+    ProFileEvaluator visitor;
+    visitor.setVerbose(verbose);
+
+    if (!visitor.queryProFile(&pro))
+        return false;
+
+    if (!visitor.accept(&pro))
+        return false;
+
+    evaluateProFile(visitor, varMap);
+
+    return true;
+}
 
 QT_END_NAMESPACE
-
-#endif // PROFILEEVALUATOR_H

@@ -41,7 +41,7 @@
 
 #include "translator.h"
 #include "translatortools.h"
-#include "profileevaluator.h"
+#include "proreader.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
