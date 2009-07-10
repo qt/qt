@@ -176,6 +176,7 @@ private slots:
     void task173773_updateVerticalHeader();
     void task227953_setRootIndex();
     void task240266_veryBigColumn();
+    void task248688_autoScrollNavigation();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -587,7 +588,7 @@ void tst_QTableView::keyboardNavigation()
     QModelIndex index = model.index(rowCount - 1, columnCount - 1);
     view.setCurrentIndex(index);
 
-    QApplication::instance()->processEvents();
+    QApplication::processEvents();
 
     int row = rowCount - 1;
     int column = columnCount - 1;
@@ -619,7 +620,7 @@ void tst_QTableView::keyboardNavigation()
         }
 
         QTest::keyClick(&view, key);
-        QApplication::instance()->processEvents();
+        QApplication::processEvents();
 
         QModelIndex index = model.index(row, column);
         QCOMPARE(view.currentIndex(), index);
@@ -3153,6 +3154,31 @@ void tst_QTableView::task240266_veryBigColumn()
     QCOMPARE(scroll->pageStep(), 1);
 
 }
+
+void tst_QTableView::task248688_autoScrollNavigation()
+{
+    //we make sure that when navigating with the keyboard the view is correctly scrolled
+    //to the current item
+    QStandardItemModel model(16, 16);
+    QTableView view;
+    view.setModel(&model);
+
+	view.hideColumn(8);
+	view.hideRow(8);
+    view.show();
+    for (int r = 0; r < model.rowCount(); ++r) {
+        if (view.isRowHidden(r))
+            continue;
+        for (int c = 0; c < model.columnCount(); ++c) {
+            if (view.isColumnHidden(c))
+                continue;
+            QModelIndex index = model.index(r, c);
+            view.setCurrentIndex(index);
+            QVERIFY(view.viewport()->rect().contains(view.visualRect(index)));
+        }
+    }
+}
+
 
 void tst_QTableView::mouseWheel_data()
 {
