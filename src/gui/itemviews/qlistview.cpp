@@ -1633,14 +1633,16 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
 QModelIndexList QListView::selectedIndexes() const
 {
     Q_D(const QListView);
-    QModelIndexList viewSelected;
-    QModelIndexList modelSelected;
-    if (d->selectionModel)
-        modelSelected = d->selectionModel->selectedIndexes();
-    for (int i = 0; i < modelSelected.count(); ++i) {
-        QModelIndex index = modelSelected.at(i);
+    if (!d->selectionModel)
+        return QModelIndexList();
+
+    QModelIndexList viewSelected = d->selectionModel->selectedIndexes();
+    for (int i = 0; i < viewSelected.count(); ++i) {
+        const QModelIndex &index = viewSelected.at(i);
         if (!isIndexHidden(index) && index.parent() == d->root && index.column() == d->column)
-            viewSelected.append(index);
+            ++i;
+        else
+            viewSelected.removeAt(i);
     }
     return viewSelected;
 }
