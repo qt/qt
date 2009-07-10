@@ -1322,6 +1322,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
             delete s->clip;
 
         s->clip = clip;
+        s->clip->enabled = true;
         s->flags.has_clip_ownership = true;
 
     } else { // intersect clip with current clip
@@ -1338,6 +1339,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 s->clip->setClipRect(base->clipRect & clipRect);
             else
                 s->clip->setClipRegion(base->clipRegion & clipRect);
+            s->clip->enabled = true;
         } else {
             QPaintEngineEx::clip(rect, op);
             return;
@@ -3351,6 +3353,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         break;
     default:
         Q_ASSERT(false);
+        depth = 0;
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
@@ -3378,6 +3381,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
             break;
         default:
             Q_ASSERT(false);
+            pitch = 0;
         };
 
         alphaPenBlt(glyph->data, pitch, depth,

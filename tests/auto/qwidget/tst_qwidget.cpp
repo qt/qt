@@ -106,7 +106,7 @@
 // taken from qguifunctions_wce.cpp
 #define SPI_GETPLATFORMTYPE 257
 bool qt_wince_is_platform(const QString &platformString) {
-    TCHAR tszPlatform[64];
+    wchar_t tszPlatform[64];
     if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
                              sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
       if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
@@ -252,6 +252,7 @@ private slots:
 
     void moveChild_data();
     void moveChild();
+    void showAndMoveChild();
 
     void subtractOpaqueSiblings();
 
@@ -3432,9 +3433,9 @@ static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::W
 #ifdef Q_WS_WIN
     Q_UNUSED(state);
     const size_t maxTitleLength = 256;
-    WCHAR title[maxTitleLength];
-    GetWindowTextW(window->winId(), title, maxTitleLength);
-    vTitle = QString::fromUtf16((ushort *)title);
+    wchar_t title[maxTitleLength];
+    GetWindowText(window->winId(), title, maxTitleLength);
+    vTitle = QString::fromWCharArray(title);
 #elif defined(Q_WS_X11)
     /*
       We can't check what the window manager displays, but we can
@@ -3978,6 +3979,7 @@ public:
     :QWidget(parent)
     {
         setAttribute(Qt::WA_StaticContents);
+        setAttribute(Qt::WA_OpaquePaintEvent);
         setPalette(Qt::red); // Make sure we have an opaque palette.
         setAutoFillBackground(true);
         gotPaintEvent = false;
@@ -5316,6 +5318,33 @@ void tst_QWidget::moveChild()
                  child.color);
     VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
                  parent.color);
+}
+
+void tst_QWidget::showAndMoveChild()
+{
+    QWidget parent(0, Qt::FramelessWindowHint);
+    parent.resize(300, 300);
+    parent.setPalette(Qt::red);
+    parent.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parent);
+#endif
+    QTest::qWait(200);
+
+    const QPoint tlwOffset = parent.geometry().topLeft();
+    QWidget child(&parent);
+    child.resize(100, 100);
+    child.setPalette(Qt::blue);
+    child.setAutoFillBackground(true);
+
+    // Ensure that the child is repainted correctly when moved right after show.
+    // NB! Do NOT processEvents() (or qWait()) in between show() and move().
+    child.show();
+    child.move(150, 150);
+    qApp->processEvents();
+
+    VERIFY_COLOR(child.geometry().translated(tlwOffset), Qt::blue);
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
 }
 
 void tst_QWidget::subtractOpaqueSiblings()

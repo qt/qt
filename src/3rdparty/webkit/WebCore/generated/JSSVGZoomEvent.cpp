@@ -20,19 +20,15 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGZoomEvent.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGPoint.h"
 #include "JSSVGRect.h"
 #include "SVGZoomEvent.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

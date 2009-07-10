@@ -44,6 +44,7 @@
 
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/QListModelInterface>
+#include <QtDeclarative/qmlinfo.h>
 
 QT_BEGIN_HEADER
 
@@ -66,13 +67,23 @@ public:
     void setName(const QString &name) { m_name = name; }
 
     QString query() const { return m_query; }
-    void setQuery(const QString &query) { m_query = query; }
+    void setQuery(const QString &query)
+    {
+        if (query.startsWith(QLatin1Char('/'))) {
+            qmlInfo(this) << "An XmlRole query must not start with '/'";
+            return;
+        }
+        m_query = query;
+    }
+
+    bool isValid() {
+        return !m_name.isEmpty() && !m_query.isEmpty();
+    }
 
 private:
     QString m_name;
     QString m_query;
 };
-QML_DECLARE_TYPE(XmlListModelRole)
 
 class QmlXmlListModelPrivate;
 class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public QmlParserStatus
@@ -88,6 +99,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
     Q_PROPERTY(QmlList<XmlListModelRole *> *roles READ roleObjects)
     Q_CLASSINFO("DefaultProperty", "roles")
+
 public:
     QmlXmlListModel(QObject *parent = 0);
     ~QmlXmlListModel();
@@ -112,7 +124,8 @@ public:
     Status status() const;
     qreal progress() const;
 
-    virtual void classComplete();
+    virtual void classBegin();
+    virtual void componentComplete();
 
 signals:
     void statusChanged(Status);
@@ -131,9 +144,10 @@ private:
     Q_DISABLE_COPY(QmlXmlListModel)
 };
 
-QML_DECLARE_TYPE(QmlXmlListModel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(XmlListModelRole)
+QML_DECLARE_TYPE(QmlXmlListModel)
 
 QT_END_HEADER
 

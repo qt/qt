@@ -59,9 +59,12 @@
 
 #include "QtGui/qlayout.h"
 #include "QtGui/qtabbar.h"
+#include "QtGui/qrubberband.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qset.h"
+#include "QtCore/qbasictimer.h"
 #include "private/qlayoutengine_p.h"
+#include "private/qwidgetanimator_p.h"
 
 #include "qdockarealayout_p.h"
 #include "qtoolbararealayout_p.h"
@@ -88,7 +91,6 @@ typedef const struct __CFString * CFStringRef;
 QT_BEGIN_NAMESPACE
 
 class QToolBar;
-class QWidgetAnimator;
 class QRubberBand;
 
 /* This data structure represents the state of all the tool-bars and dock-widgets. It's value based
@@ -164,6 +166,8 @@ public:
     QMainWindow::DockOptions dockOptions;
     void setDockOptions(QMainWindow::DockOptions opts);
     bool usesHIToolBar(QToolBar *toolbar) const;
+
+    void timerEvent(QTimerEvent *e);
 
     // status bar
 
@@ -243,8 +247,7 @@ public:
 
     QList<int> movingSeparator;
     QPoint movingSeparatorOrigin, movingSeparatorPos;
-    QTimer *separatorMoveTimer;
-    QVector<QLayoutStruct> separatorMoveCache;
+    QBasicTimer separatorMoveTimer;
 
     bool startSeparatorMove(const QPoint &pos);
     bool separatorMove(const QPoint &pos);
@@ -276,12 +279,12 @@ public:
 
     // animations
 
-    QWidgetAnimator *widgetAnimator;
+    QWidgetAnimator widgetAnimator;
     QList<int> currentGapPos;
     QRect currentGapRect;
     QWidget *pluggingWidget;
 #ifndef QT_NO_RUBBERBAND
-    QRubberBand *gapIndicator;
+    QRubberBand gapIndicator;
 #endif
 
     QList<int> hover(QLayoutItem *widgetItem, const QPoint &mousePos);
@@ -293,12 +296,11 @@ public:
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
     void updateHIToolBarStatus();
-
-private slots:
     void animationFinished(QWidget *widget);
     void allAnimationsFinished();
+
+private slots:
 #ifndef QT_NO_DOCKWIDGET
-    void doSeparatorMove();
 #ifndef QT_NO_TABBAR
     void tabChanged();
 #endif

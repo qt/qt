@@ -151,7 +151,6 @@ void QFxPaintedItem::setSmooth(bool smooth)
     Q_D(QFxPaintedItem);
     if (d->smooth == smooth) return;
     d->smooth = smooth;
-    clearCache();
     update();
 }
 
@@ -272,7 +271,8 @@ void QFxPaintedItem::paintContents(QPainter &p)
         for (int i = 0; i < rects.count(); ++i) {
             const QRect &r = rects.at(i);
             QPixmap img(r.size());
-            img.fill(Qt::transparent);
+            if (d->fillColor.isValid())
+                img.fill(d->fillColor);
             {
                 QPainter qp(&img);
                 qp.translate(-r.x(),-r.y());
@@ -338,5 +338,31 @@ void QFxPaintedItem::setCacheSize(int pixels)
     }
     d->max_imagecache_size = pixels;
 }
+
+/*!
+    \property QFxPaintedItem::fillColor
+
+    The color to be used to fill the item prior to calling drawContents().
+    By default, this is Qt::transparent.
+
+    Performance improvements can be achieved if subclasses call this with either an
+    invalid color (QColor()), or an appropriate solid color.
+*/
+void QFxPaintedItem::setFillColor(const QColor& c)
+{
+    Q_D(QFxPaintedItem);
+    if (d->fillColor == c)
+        return;
+    d->fillColor = c;
+    emit fillColorChanged();
+    update();
+}
+
+QColor QFxPaintedItem::fillColor() const
+{
+    Q_D(const QFxPaintedItem);
+    return d->fillColor;
+}
+
 
 QT_END_NAMESPACE

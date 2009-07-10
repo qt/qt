@@ -560,6 +560,7 @@ public:
     void enableUpdates();
     void _q_emitCustomButtonClicked();
     void _q_updateButtonStates();
+    void _q_handleFieldObjectDestroyed(QObject *);
     void setStyle(QStyle *style);
 #ifdef Q_WS_MAC
     static QPixmap findDefaultBackgroundPixmap();
@@ -731,6 +732,8 @@ void QWizardPrivate::cleanupPagesNotInHistory()
 
 void QWizardPrivate::addField(const QWizardField &field)
 {
+    Q_Q(QWizard);
+
     QWizardField myField = field;
     myField.resolve(defaultPropertyTable);
 
@@ -744,15 +747,23 @@ void QWizardPrivate::addField(const QWizardField &field)
     if (myField.mandatory && !myField.changedSignal.isEmpty())
         QObject::connect(myField.object, myField.changedSignal,
                          myField.page, SLOT(_q_maybeEmitCompleteChanged()));
+    QObject::connect(
+        myField.object, SIGNAL(destroyed(QObject *)), q,
+        SLOT(_q_handleFieldObjectDestroyed(QObject *)));
 }
 
 void QWizardPrivate::removeFieldAt(int index)
 {
+    Q_Q(QWizard);
+
     const QWizardField &field = fields.at(index);
     fieldIndexMap.remove(field.name);
     if (field.mandatory && !field.changedSignal.isEmpty())
         QObject::disconnect(field.object, field.changedSignal,
                             field.page, SLOT(_q_maybeEmitCompleteChanged()));
+    QObject::disconnect(
+        field.object, SIGNAL(destroyed(QObject *)), q,
+        SLOT(_q_handleFieldObjectDestroyed(QObject *)));
     fields.remove(index);
 }
 
@@ -1240,13 +1251,7 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
         extraHeight = vistaHelper->titleBarSize() + vistaHelper->topOffset();
 #endif
     QSize minimumSize = mainLayout->totalMinimumSize() + QSize(0, extraHeight);
-    QSize maximumSize;
-    bool skipMaxSize = false;
-#if defined(Q_WS_WIN)
-    if (QSysInfo::WindowsVersion <= QSysInfo::WV_Me) // ### See Tasks 164078 and 161660
-        skipMaxSize = true;
-#endif
-    maximumSize = mainLayout->totalMaximumSize();
+    QSize maximumSize = mainLayout->totalMaximumSize();
     if (info.header && headerWidget->maximumWidth() != QWIDGETSIZE_MAX) {
         minimumSize.setWidth(headerWidget->maximumWidth());
         maximumSize.setWidth(headerWidget->maximumWidth());
@@ -1265,13 +1270,11 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     }
     if (q->maximumWidth() == maximumWidth) {
         maximumWidth = maximumSize.width();
-        if (!skipMaxSize)
-            q->setMaximumWidth(maximumWidth);
+        q->setMaximumWidth(maximumWidth);
     }
     if (q->maximumHeight() == maximumHeight) {
         maximumHeight = maximumSize.height();
-        if (!skipMaxSize)
-            q->setMaximumHeight(maximumHeight);
+        q->setMaximumHeight(maximumHeight);
     }
 }
 
@@ -1595,6 +1598,20 @@ void QWizardPrivate::_q_updateButtonStates()
     enableUpdates();
 }
 
+void QWizardPrivate::_q_handleFieldObjectDestroyed(QObject *object)
+{
+    QVector<QWizardField>::iterator it = fields.begin();
+    while (it != fields.end()) {
+        const QWizardField &field = *it;
+        if (field.object == object) {
+            fieldIndexMap.remove(field.name);
+            it = fields.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void QWizardPrivate::setStyle(QStyle *style)
 {
     for (int i = 0; i < QWizard::NButtons; i++)
@@ -1607,66 +1624,6 @@ void QWizardPrivate::setStyle(QStyle *style)
 
 #ifdef Q_WS_MAC
 
-#ifdef Q_WS_MAC32
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QuickTime/QuickTime.h>
-QT_END_INCLUDE_NAMESPACE
-typedef OSErr (*PtrQTNewDataReferenceFromCFURL)(CFURLRef, UInt32, Handle*, OSType*);
-typedef OSErr (*PtrGetGraphicsImporterForDataRefWithFlags)(Handle, OSType, ComponentInstance*, long);
-typedef ComponentResult (*PtrGraphicsImportSetFlags)(GraphicsImportComponent, long);
-typedef ComponentResult (*PtrGraphicsImportCreateCGImage)(GraphicsImportComponent, CGImageRef*, UInt32);
-
-static PtrQTNewDataReferenceFromCFURL ptrQTNewDataReferenceFromCFURL = 0;
-static PtrGetGraphicsImporterForDataRefWithFlags ptrGetGraphicsImporterForDataRefWithFlags = 0;
-static PtrGraphicsImportSetFlags ptrGraphicsImportSetFlags = 0;
-static PtrGraphicsImportCreateCGImage ptrGraphicsImportCreateCGImage = 0;
-
-static bool resolveQuickTimeSymbols()
-{
-    if (ptrQTNewDataReferenceFromCFURL == 0) {
-        QLibrary library(QLatin1String("/System/Library/Frameworks/QuickTime.framework/QuickTime"));
-        ptrQTNewDataReferenceFromCFURL = reinterpret_cast<PtrQTNewDataReferenceFromCFURL>(library.resolve("QTNewDataReferenceFromCFURL"));
-        ptrGetGraphicsImporterForDataRefWithFlags = reinterpret_cast<PtrGetGraphicsImporterForDataRefWithFlags>(library.resolve("GetGraphicsImporterForDataRefWithFlags"));
-        ptrGraphicsImportSetFlags = reinterpret_cast<PtrGraphicsImportSetFlags>(library.resolve("GraphicsImportSetFlags"));
-        ptrGraphicsImportCreateCGImage = reinterpret_cast<PtrGraphicsImportCreateCGImage>(library.resolve("GraphicsImportCreateCGImage"));
-    }
-
-    return ptrQTNewDataReferenceFromCFURL != 0 && ptrGetGraphicsImporterForDataRefWithFlags != 0
-           && ptrGraphicsImportSetFlags != 0 && ptrGraphicsImportCreateCGImage != 0;
-}
-
-
-static QPixmap quicktimeTiff(const CFURLRef url)
-{
-    if (!resolveQuickTimeSymbols())
-        return QPixmap();
-
-    QCFType <CGImageRef> imageRef = 0;
-    Handle dataRef;
-    OSType dataRefType;
-    GraphicsImportComponent gi;
-    ComponentResult result;
-    result = ptrQTNewDataReferenceFromCFURL(url, 0, &dataRef, &dataRefType);
-    if (dataRef != 0) {
-        OSStatus err = ptrGetGraphicsImporterForDataRefWithFlags(dataRef, dataRefType, &gi, 0);
-        if (err == noErr && gi) {
-            result = ptrGraphicsImportSetFlags(gi, (kGraphicsImporterDontDoGammaCorrection
-                                                    + kGraphicsImporterDontUseColorMatching));
-            if (!result)
-                result = ptrGraphicsImportCreateCGImage(gi, &imageRef, 0);
-            if (result)
-                qWarning("Qt: Problem reading TIFF image %ld(%s:%d)", result, __FILE__, __LINE__);
-            DisposeHandle(dataRef);
-            CloseComponent(gi);
-        }
-    }
-
-    if (imageRef)
-        return QPixmap::fromMacCGImageRef(imageRef);
-    return QPixmap();
-}
-#endif // Q_WS_MAC32
-
 QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
 {
     QCFType<CFURLRef> url;
@@ -1678,22 +1635,13 @@ QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
         if (bundle) {
             url = CFBundleCopyResourceURL(bundle, CFSTR("Background"), CFSTR("tif"), 0);
             if (url) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-                if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-                    QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithURL(url, 0);
-                    QCFType<CGImageRef> image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-                    if (image) {
-                        int width = CGImageGetWidth(image);
-                        int height = CGImageGetHeight(image);
-                        if (width == ExpectedImageWidth && height == ExpectedImageHeight)
-                            return QPixmap::fromMacCGImageRef(image);
-                    }
-                } else
-#endif
-                {
-#ifdef Q_WS_MAC32
-                    return quicktimeTiff(url);
-#endif
+                QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithURL(url, 0);
+                QCFType<CGImageRef> image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
+                if (image) {
+                    int width = CGImageGetWidth(image);
+                    int height = CGImageGetHeight(image);
+                    if (width == ExpectedImageWidth && height == ExpectedImageHeight)
+                        return QPixmap::fromMacCGImageRef(image);
                 }
             }
         }

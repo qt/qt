@@ -418,12 +418,6 @@ void QFxWebView::setInteractive(bool i)
     emit interactiveChanged();
 }
 
-void QFxWebView::updateCacheForVisibility()
-{
-    if (!isVisible())
-        clearCache();
-}
-
 void QFxWebView::expandToWebPage()
 {
     Q_D(QFxWebView);
@@ -875,7 +869,6 @@ void QFxWebView::setPage(QWebPage *page)
         d->idealheight>0 ? d->idealheight : -1));
     d->page->mainFrame()->setScrollBarPolicy(Qt::Horizontal,Qt::ScrollBarAlwaysOff);
     d->page->mainFrame()->setScrollBarPolicy(Qt::Vertical,Qt::ScrollBarAlwaysOff);
-    connect(this,SIGNAL(visibleChanged()),this,SLOT(updateCacheForVisibility()));
     connect(d->page,SIGNAL(repaintRequested(QRect)),this,SLOT(paintPage(QRect)));
     connect(d->page->mainFrame(),SIGNAL(urlChanged(QUrl)),this,SIGNAL(urlChanged()));
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
@@ -1047,6 +1040,6 @@ QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStrin
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 
-#include "qfxwebview.moc"
-
 QT_END_NAMESPACE
+
+#include "qfxwebview.moc"

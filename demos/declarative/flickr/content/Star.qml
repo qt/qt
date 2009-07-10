@@ -18,7 +18,7 @@ Item {
     }
     MouseRegion {
         anchors.fill: Container
-        onClicked: { Container.clicked.emit() }
+        onClicked: { Container.clicked() }
     }
     states: [
         State {
@@ -35,7 +35,7 @@ Item {
     ]
     transitions: [
         Transition {
-            NumericAnimation {
+            NumberAnimation {
                 properties: "opacity,scale,x,y"
                 easing: "easeOutBounce"
             }

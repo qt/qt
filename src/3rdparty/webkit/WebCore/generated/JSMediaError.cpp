@@ -20,16 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(VIDEO)
 
 #include "JSMediaError.h"
 
-#include <wtf/GetPtr.h>
-
 #include "MediaError.h"
-
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

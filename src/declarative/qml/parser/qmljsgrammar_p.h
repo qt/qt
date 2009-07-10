@@ -2,7 +2,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,7 +35,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,11 +59,12 @@ class QmlJSGrammar
 public:
   enum {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 90,
-    SHIFT_THERE = 89,
+    REDUCE_HERE = 91,
+    SHIFT_THERE = 90,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
+    T_AS = 89,
     T_AUTOMATIC_SEMICOLON = 62,
     T_BREAK = 4,
     T_CASE = 5,
@@ -150,15 +151,15 @@ public:
     T_XOR = 78,
     T_XOR_EQ = 79,
 
-    ACCEPT_STATE = 588,
-    RULE_COUNT = 323,
-    STATE_COUNT = 589,
-    TERMINAL_COUNT = 91,
-    NON_TERMINAL_COUNT = 102,
+    ACCEPT_STATE = 608,
+    RULE_COUNT = 334,
+    STATE_COUNT = 609,
+    TERMINAL_COUNT = 92,
+    NON_TERMINAL_COUNT = 104,
 
-    GOTO_INDEX_OFFSET = 589,
-    GOTO_INFO_OFFSET = 2092,
-    GOTO_CHECK_OFFSET = 2092
+    GOTO_INDEX_OFFSET = 609,
+    GOTO_INFO_OFFSET = 2136,
+    GOTO_CHECK_OFFSET = 2136
   };
 
   static const char  *const spell [];

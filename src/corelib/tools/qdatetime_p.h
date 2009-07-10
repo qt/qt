@@ -138,13 +138,6 @@ public:
         PossibleBoth = 4
     };
 
-    enum {
-        NoSectionIndex = -1,
-        FirstSectionIndex = -2,
-        LastSectionIndex = -3,
-        CalendarPopupIndex = -4
-    };
-
     enum Section {
         NoSection = 0x00000,
         AmPmSection = 0x00001,
@@ -163,7 +156,12 @@ public:
         DateSectionMask = (DaySection|MonthSection|YearSection|YearSection2Digits|DayOfWeekSection),
         FirstSection = 0x02000|Internal,
         LastSection = 0x04000|Internal,
-        CalendarPopupSection = 0x08000|Internal
+        CalendarPopupSection = 0x08000|Internal,
+
+        NoSectionIndex = -1,
+        FirstSectionIndex = -2,
+        LastSectionIndex = -3,
+        CalendarPopupIndex = -4
     }; // duplicated from qdatetimeedit.h
     Q_DECLARE_FLAGS(Sections, Section)
 

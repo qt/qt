@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxComponentInstancePrivate;
 class Q_DECLARATIVE_EXPORT QFxComponentInstance : public QFxItem
 {
@@ -80,9 +80,10 @@ protected:
 private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxComponentInstance)
 };
-QML_DECLARE_TYPE(QFxComponentInstance)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxComponentInstance)
 
 QT_END_HEADER
 

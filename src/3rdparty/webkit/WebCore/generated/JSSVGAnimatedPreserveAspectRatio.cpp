@@ -20,17 +20,13 @@
 
 #include "config.h"
 
-
 #if ENABLE(SVG)
 
-#include "SVGElement.h"
 #include "JSSVGAnimatedPreserveAspectRatio.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSSVGPreserveAspectRatio.h"
 #include "SVGPreserveAspectRatio.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

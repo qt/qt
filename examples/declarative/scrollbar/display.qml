@@ -16,23 +16,15 @@ Rect {
             State {
                 name: "ShowBars"
                 when: View.moving
-                SetProperty {
-                    target: SBV
-                    property: "opacity"
-                    value: 1
-                }
-                SetProperty {
-                    target: SBH
-                    property: "opacity"
-                    value: 1
-                }
+                SetProperties { target: SBV; opacity: 1 }
+                SetProperties { target: SBH; opacity: 1 }
             }
         ]
         transitions: [
             Transition {
                 fromState: "*"
                 toState: "*"
-                NumericAnimation {
+                NumberAnimation {
                     properties: "opacity"
                     duration: 400
                 }

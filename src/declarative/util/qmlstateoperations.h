@@ -70,7 +70,6 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlParentChange)
 
 class QmlRunScriptPrivate;
 class Q_DECLARATIVE_EXPORT QmlRunScript : public QmlStateOperation, public ActionEvent
@@ -95,37 +94,11 @@ public:
 
     virtual void execute();
 };
-QML_DECLARE_TYPE(QmlRunScript)
-
-class QmlSetPropertyPrivate;
-class Q_DECLARATIVE_EXPORT QmlSetProperty : public QmlStateOperation
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetProperty)
-
-    Q_PROPERTY(QObject *target READ object WRITE setObject)
-    Q_PROPERTY(QString property READ property WRITE setProperty)
-    Q_PROPERTY(QVariant value READ value WRITE setValue)
-    Q_PROPERTY(QString binding READ binding WRITE setBinding)
-
-public:
-    QmlSetProperty(QObject *parent=0);
-    ~QmlSetProperty();
-
-    QObject *object();
-    void setObject(QObject *);
-    QString property() const;
-    void setProperty(const QString &);
-    QVariant value() const;
-    void setValue(const QVariant &);
-    QString binding() const;
-    void setBinding(const QString&);
-
-    virtual ActionList actions();
-};
-QML_DECLARE_TYPE(QmlSetProperty)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlParentChange)
+QML_DECLARE_TYPE(QmlRunScript)
 
 QT_END_HEADER
 

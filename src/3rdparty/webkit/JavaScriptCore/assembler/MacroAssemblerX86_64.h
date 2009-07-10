@@ -436,7 +436,16 @@ public:
         return label;
     }
 
+    Label loadPtrWithPatchToLEA(Address address, RegisterID dest)
+    {
+        Label label(this);
+        loadPtr(address, dest);
+        return label;
+    }
+
     bool supportsFloatingPoint() const { return true; }
+    // See comment on MacroAssemblerARMv7::supportsFloatingPointTruncate()
+    bool supportsFloatingPointTruncate() const { return true; }
 };
 
 } // namespace JSC

@@ -46,6 +46,7 @@
 #include "qmlstateoperations.h"
 #include "qmlanimation.h"
 #include "qmlanimation_p.h"
+#include "qmltransitionmanager_p.h"
 #include <QParallelAnimationGroup>
 
 QT_BEGIN_NAMESPACE
@@ -92,7 +93,7 @@ public:
     bool reversed;
     bool reversible;
     ParallelAnimationWrapper *group;
-    QmlState *endState;
+    QmlTransitionManager *endState;
 
     void init()
     {
@@ -103,7 +104,7 @@ public:
 
     void complete()
     {
-        endState->d_func()->complete();
+        endState->complete();
     }
 
     class AnimationList : public QmlConcreteList<QmlAbstractAnimation *>
@@ -161,7 +162,7 @@ void QmlTransition::setReversed(bool r)
 
 void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
                             QList<QmlMetaProperty> &after,
-                            QmlState *endState)
+                            QmlTransitionManager *endState)
 {
     Q_D(QmlTransition);
 
@@ -176,6 +177,7 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
     }
 
     d->endState = endState;
+    d->group->setDirection(d->reversed ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
     d->group->start();
 }
 

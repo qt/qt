@@ -181,7 +181,7 @@ public:
     virtual void setFrameRect(const IntRect&);
 
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
-    Scrollbar* scrollbarUnderMouse(const PlatformMouseEvent& mouseEvent);
+    Scrollbar* scrollbarUnderPoint(const IntPoint& windowPoint);
 
     // This method exists for scrollviews that need to handle wheel events manually.
     // On Mac the underlying NSScrollView just does the scrolling, but on other platforms
@@ -214,7 +214,8 @@ public:
     virtual void hide();
     virtual void setParentVisible(bool);
     
-    // Pan scrolling methods.
+    // Pan scrolling.
+    static const int noPanScrollRadius = 15;
     void addPanScrollIcon(const IntPoint&);
     void removePanScrollIcon();
 

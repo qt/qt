@@ -63,14 +63,14 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int height READ height NOTIFY heightChanged)
-    Q_PROPERTY(int width READ width NOTIFY widthChanged)
+    Q_PROPERTY(qreal height READ height NOTIFY heightChanged)
+    Q_PROPERTY(qreal width READ width NOTIFY widthChanged)
 public:
     QFxContents();
 
-    int height() const;
+    qreal height() const;
 
-    int width() const;
+    qreal width() const;
 
     void setItem(QFxItem *item);
 
@@ -83,11 +83,10 @@ Q_SIGNALS:
     void widthChanged();
 
 private:
-    QFxItem *_item;
-    int _height;
-    int _width;
+    QFxItem *m_item;
+    qreal m_height;
+    qreal m_width;
 };
-QML_DECLARE_TYPE(QFxContents)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
 
 class QmlState;
@@ -105,27 +104,27 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
-    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false)
+    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT)
     Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
-    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false)
+    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(qreal z READ z WRITE setZ)
-    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
-    Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
-    Q_PROPERTY(QFxAnchorLine left READ left)
-    Q_PROPERTY(QFxAnchorLine right READ right)
-    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter)
-    Q_PROPERTY(QFxAnchorLine top READ top)
-    Q_PROPERTY(QFxAnchorLine bottom READ bottom)
-    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter)
-    Q_PROPERTY(QFxAnchorLine baseline READ baseline)
+    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged)
+    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged)
+    Q_PROPERTY(QFxAnchorLine left READ left CONSTANT)
+    Q_PROPERTY(QFxAnchorLine right READ right CONSTANT)
+    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter CONSTANT)
+    Q_PROPERTY(QFxAnchorLine top READ top CONSTANT)
+    Q_PROPERTY(QFxAnchorLine bottom READ bottom CONSTANT)
+    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter CONSTANT)
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline CONSTANT)
+    Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
@@ -196,8 +195,8 @@ public:
     QUrl qml() const;
     void setQml(const QUrl &);
 
-    int baselineOffset() const;
-    void setBaselineOffset(int);
+    qreal baselineOffset() const;
+    void setBaselineOffset(qreal);
 
     qreal rotation() const;
     void setRotation(qreal);
@@ -282,10 +281,10 @@ public Q_SLOTS:
     void newChild(const QString &url);
 
 Q_SIGNALS:
-    void leftChanged();
+    void xChanged();
+    void yChanged();
     void widthChanged();
     void heightChanged();
-    void topChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
@@ -343,7 +342,7 @@ private:
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxItem)
 };
-QML_DECLARE_TYPE(QFxItem)
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFxItem::Options)
 
 template<typename T>
@@ -354,8 +353,11 @@ T qobject_cast(QGraphicsItem *item)
     return qobject_cast<T>(o);
 }
 
-
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxContents)
+QML_DECLARE_TYPE(QFxItem)
+
 QT_END_HEADER
+
 #endif // QFXITEM_H

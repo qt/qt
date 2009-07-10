@@ -46,7 +46,7 @@
 #include "qmlvme_p.h"
 #include "qml.h"
 #include <QStack>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QStringList>
 #include <qmlengine.h>
 #include <QFileInfo>
@@ -58,6 +58,7 @@
 #include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
+
 class QByteArray;
 int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
 
@@ -269,10 +270,25 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 }
 
 /*!
+    Create a QmlComponent from the given \a fileName and give it the specified 
+    \a parent and \a engine.
+
+    \sa loadUrl()
+*/
+QmlComponent::QmlComponent(QmlEngine *engine, const QString &fileName, 
+                           QObject *parent)
+: QObject(*(new QmlComponentPrivate), parent)
+{
+    Q_D(QmlComponent);
+    d->engine = engine;
+    loadUrl(QUrl::fromLocalFile(fileName));
+}
+
+/*!
     Create a QmlComponent from the given QML \a data and give it the
-    specified \a parent and \a engine.  If \a url is provided, it is used to set
-    the component name, and to provide a base path for items resolved
-    by this component.
+    specified \a parent and \a engine.  \a url is used to provide a base path
+    for items resolved by this component, and may be an empty url if the 
+    component contains no items to resolve.
 
     \sa setData()
 */
@@ -296,6 +312,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int star
     cc->addref();
     d->start = start;
     d->count = count;
+    d->url = cc->url;
 }
 
 /*!
@@ -337,10 +354,13 @@ void QmlComponent::loadUrl(const QUrl &url)
 
     d->clear();
 
-    d->url = url;
+    if (url.isRelative())
+        d->url = d->engine->baseUrl().resolved(url);
+    else
+        d->url = url;
 
     QmlCompositeTypeData *data = 
-        d->engine->d_func()->typeManager.get(url);
+        d->engine->d_func()->typeManager.get(d->url);
 
     if (data->status == QmlCompositeTypeData::Waiting) {
 
@@ -367,6 +387,29 @@ QList<QmlError> QmlComponent::errors() const
         return d->errors;
     else
         return QList<QmlError>();
+}
+
+/*!
+    Return the list of errors that occured during the last compile or create
+    operation, as a single string.  An empty string is returned if isError()
+    is not set.
+
+    This function is similar to errors(), except more useful when called from
+    QML. C++ code should usually use errors().
+
+    \sa errors()
+*/
+QString QmlComponent::errorsString() const
+{
+    Q_D(const QmlComponent);
+    QString ret;
+    if(!isError())
+        return ret;
+    foreach(const QmlError &e, d->errors){
+        ret += e.url().toString() + ":" + QString::number(e.line()) + " "
+                + e.description() + "\n";
+    }
+    return ret;
 }
 
 /*!
@@ -563,4 +606,5 @@ void QmlComponent::completeCreate()
         d->completePending = false;
     }
 }
+
 QT_END_NAMESPACE

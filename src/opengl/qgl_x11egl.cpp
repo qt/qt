@@ -77,7 +77,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
-    d->eglContext->setApi(QEglContext::OpenGL);
+    d->eglContext->setApi(QEgl::OpenGL);
     if (!d->eglContext->openDisplay(device())) {
         delete d->eglContext;
         d->eglContext = 0;
@@ -88,11 +88,11 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     QEglProperties configProps;
     qt_egl_set_format(configProps, devType, d->glFormat);
     qt_egl_add_platform_config(configProps, device());
-    configProps.setRenderableType(QEglContext::OpenGL);
+    configProps.setRenderableType(QEgl::OpenGL);
 
     // Search for a matching configuration, reducing the complexity
     // each time until we get something that matches.
-    if (!d->eglContext->chooseConfig(configProps, QEglContext::BestPixelFormat)) {
+    if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;

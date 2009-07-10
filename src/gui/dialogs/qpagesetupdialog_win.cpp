@@ -81,8 +81,7 @@ int QPageSetupDialog::exec()
     HGLOBAL hDevMode;
     int devModeSize;
     if (!ep->globalDevMode) {
-        QT_WA( { devModeSize = sizeof(DEVMODEW) + ((DEVMODEW *) ep->devMode)->dmDriverExtra; },
-               { devModeSize = sizeof(DEVMODEA) + ((DEVMODEA *) ep->devMode)->dmDriverExtra; });
+        devModeSize = sizeof(DEVMODE) + ep->devMode->dmDriverExtra;
         hDevMode = GlobalAlloc(GHND, devModeSize);
         if (hDevMode) {
             void *dest = GlobalLock(hDevMode);

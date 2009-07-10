@@ -42,6 +42,17 @@
 #ifndef QMLCOMPILER_P_H
 #define QMLCOMPILER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
 #include <QtDeclarative/qml.h>
@@ -50,9 +61,8 @@
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>
 
-class QStringList;
-
 QT_BEGIN_NAMESPACE
+
 class QmlEngine;
 class QmlComponent;
 class QmlCompiledComponent;
@@ -108,6 +118,7 @@ private:
     int indexForLocation(const QmlParser::LocationSpan &);
 };
 
+class QMetaObjectBuilder;
 class Q_DECLARATIVE_EXPORT QmlCompiler 
 {
 public:
@@ -171,13 +182,19 @@ private:
                                  const QMetaProperty &prop, 
                                  QmlParser::Value *value);
 
-    bool compileDynamicMeta(QmlParser::Object *obj);
+    bool compileDynamicMeta(QmlParser::Object *obj, int preAlias = -1);
+    bool compileAlias(QMetaObjectBuilder &, 
+                      QByteArray &data,
+                      QmlParser::Object *obj, 
+                      const QmlParser::Object::DynamicProperty &);
     bool compileBinding(QmlParser::Value *, QmlParser::Property *prop,
                         const BindingContext &ctxt);
 
-    void finalizeComponent(int patch);
+    bool finalizeComponent(int patch);
     struct BindingReference;
     void finalizeBinding(const BindingReference &); 
+    struct AliasReference;
+    bool finalizeAlias(const AliasReference &);
 
     bool canConvert(int, QmlParser::Object *);
     QStringList deferredProperties(QmlParser::Object *);
@@ -187,6 +204,11 @@ private:
         QmlParser::Object *object;
         int instructionIdx;
         int idx;
+    };
+
+    struct AliasReference {
+        QmlParser::Object *object;
+        int instructionIdx;
     };
 
     struct BindingReference {
@@ -205,6 +227,7 @@ private:
         int savedObjects;
         int pushedProperties;
         QList<BindingReference> bindings;
+        QList<AliasReference> aliases;
         QmlParser::Object *root;
     };
     ComponentCompileState compileState;
@@ -215,4 +238,5 @@ private:
 };
 
 QT_END_NAMESPACE
+
 #endif // QMLCOMPILER_P_H

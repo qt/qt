@@ -60,7 +60,7 @@ Rect {
 //! [use signal]
         MouseRegion {
             anchors.fill: parent
-            onClicked: { toggle(); removeButton.confirmed.emit() }
+            onClicked: { toggle(); removeButton.confirmed() }
         }
 //! [use signal]
     }
@@ -81,31 +81,26 @@ Rect {
         State {
             name: "opened"
 //! [use width]
-            SetProperty {
+            SetProperties {
                 target: removeButton
-                property: "width"
-                value: removeButton.expandedWidth
+                width: removeButton.expandedWidth
             }
 //! [use width]
-            SetProperty {
+            SetProperties {
                 target: text
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: confirmIcon
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: cancelIcon
-                property: "opacity"
-                value: 1
+                opacity: 1
             }
-            SetProperty {
+            SetProperties {
                 target: trashIcon
-                property: "opacity"
-                value: 0
+                opacity: 0
             }
         }
     ]
@@ -114,7 +109,7 @@ Rect {
             fromState: "*"
             toState: "opened"
             reversible: true
-            NumericAnimation {
+            NumberAnimation {
                 properties: "opacity,x,width"
                 duration: 200
             }

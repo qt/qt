@@ -217,7 +217,7 @@ public:
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "iceblink.nokia.troll.no" ); // MySQL 5.0.13 Windows
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql4-nokia.trolltech.com.au" ); // MySQL 4.1.22-2.el4  linux
-//        addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
 
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no" ); // V7.2 NOT SUPPORTED!
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5434 ); // V7.2 NOT SUPPORTED! Multi-byte
@@ -238,8 +238,8 @@ public:
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird2-nokia.trolltech.com.au" ); // Firebird 2.1.1
 
 //      use in-memory database to prevent local files
-        addDb("QSQLITE", ":memory:");
-//        addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
+//         addDb("QSQLITE", ":memory:");
+         addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
 //         addDb( "QSQLITE2", QDir::toNativeSeparators(QDir::tempPath()+"/foo2.db") );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
@@ -251,6 +251,8 @@ public:
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2003" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2008" );
+//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
     }
 
     void open()
@@ -316,21 +318,34 @@ public:
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
 
-        foreach(QString tableName, tableNames)
+        foreach(const QString &tableName, tableNames)
         {
             wasDropped = true;
             QString table=tableName;
             if ( db.driver()->isIdentifierEscaped(table, QSqlDriver::TableName))
                 table = db.driver()->stripDelimiters(table, QSqlDriver::TableName);
 
-            if ( dbtables.contains( table, Qt::CaseSensitive ) )
-                wasDropped = q.exec( "drop table " + tableName);
-            else if ( dbtables.contains( table, Qt::CaseInsensitive ) )
-                wasDropped = q.exec( "drop table " + tableName);
-
-            if ( !wasDropped )
-                qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError().text() << "tables:" << dbtables;
+            if ( dbtables.contains( table, Qt::CaseInsensitive ) ) {
+                foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
+                    if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
+                        table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
+                        wasDropped = q.exec( "drop table " + table);
+                        dbtables.removeAll(table);
+                    }
+                }
+            }
+            if ( !wasDropped ) {
+                qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError();
+//              qWarning() << "last query:" << q.lastQuery();
+//              qWarning() << "dbtables:" << dbtables;
+//              qWarning() << "db.tables():" << db.tables();
+            }
         }
+    }
+
+    static void safeDropTable( QSqlDatabase db, const QString& tableName )
+    {
+        safeDropTables(db, QStringList() << tableName);
     }
 
     static void safeDropViews( QSqlDatabase db, const QStringList &viewNames )
@@ -338,20 +353,38 @@ public:
         if ( isMSAccess( db ) ) // Access is sooo stupid.
             safeDropTables( db, viewNames );
 
+        bool wasDropped;
+        QSqlQuery q( db );
         QStringList dbtables=db.tables(QSql::Views);
 
         foreach(QString viewName, viewNames)
         {
-            if ( dbtables.contains( viewName, Qt::CaseInsensitive ) ) {
-                QSqlQuery q( "drop view " + viewName, db );
+            wasDropped = true;
+            QString view=viewName;
+            if ( db.driver()->isIdentifierEscaped(view, QSqlDriver::TableName))
+                view = db.driver()->stripDelimiters(view, QSqlDriver::TableName);
 
-                if ( !q.isActive() )
-                    qWarning() << "unable to drop view" << viewName << ':' << q.lastError().text();
-            } else if ( db.driverName().startsWith( "QMYSQL" )
-                    && dbtables.contains( viewName, Qt::CaseInsensitive ) ) {  // MySql is a bit stupid too
-                QSqlQuery q( "drop view " + viewName, db );
+            if ( dbtables.contains( view, Qt::CaseInsensitive ) ) {
+                foreach(const QString &view2, dbtables.filter(view, Qt::CaseInsensitive)) {
+                    if(view2.compare(view.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
+                        view=db.driver()->escapeIdentifier(view2, QSqlDriver::TableName);
+                        wasDropped = q.exec( "drop view " + view);
+                        dbtables.removeAll(view);
+                    }
+                }
             }
+
+            if ( !wasDropped )
+                qWarning() << dbToString(db) << "unable to drop view" << viewName << ':' << q.lastError();
+//                  << "\nlast query:" << q.lastQuery()
+//                  << "\ndbtables:" << dbtables
+//                  << "\ndb.tables(QSql::Views):" << db.tables(QSql::Views);
         }
+    }
+
+    static void safeDropView( QSqlDatabase db, const QString& tableName )
+    {
+        safeDropViews(db, QStringList() << tableName);
     }
 
     // returns the type name of the blob datatype for the database db.

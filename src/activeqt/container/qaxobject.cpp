@@ -37,10 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #include "qaxobject.h"
 
 #ifndef QT_NO_WIN_ACTIVEQT

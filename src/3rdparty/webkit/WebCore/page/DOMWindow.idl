@@ -133,8 +133,8 @@ module window {
         attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow frames;
 
         attribute [Replaceable, DoNotCheckDomainSecurityOnGet, V8CustomSetter] DOMWindow opener;
-        attribute [Replaceable, DoNotCheckDomainSecurity] DOMWindow parent;
-        attribute [Replaceable, DoNotCheckDomainSecurity, V8DisallowShadowing, V8ReadOnly] DOMWindow top;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow parent;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet, V8DisallowShadowing, V8ReadOnly] DOMWindow top;
 
         // DOM Level 2 AbstractView Interface
         readonly attribute Document document;
@@ -247,7 +247,6 @@ module window {
         // Not implemented yet.
         // attribute EventListener onafterprint;
         // attribute EventListener onbeforeprint;
-        // attribute EventListener ondataunavailable;
         // attribute EventListener onformchange;
         // attribute EventListener onforminput;
         // attribute EventListener onhashchange;
@@ -309,7 +308,7 @@ module window {
 
         // FIXME: Implement the commented-out global constructors for interfaces listed in DOM Level 3 Core specification.
         attribute DOMCoreExceptionConstructor DOMException;
-        attribute DOMStringListConstructor DOMStringList;
+//        attribute DOMStringListConstructor DOMStringList;
 //        attribute NameListConstructor NameList;
 //        attribute DOMImplementationListConstructor DOMImplementationList;
 //        attribute DOMImplementationSourceConstructor DOMImplementationSource;
@@ -350,6 +349,8 @@ module window {
         attribute HTMLBodyElementConstructor HTMLBodyElement;
         attribute HTMLButtonElementConstructor HTMLButtonElement;
         attribute HTMLCanvasElementConstructor HTMLCanvasElement;
+        attribute HTMLDataGridElementConstructor HTMLDataGridElement;
+        attribute HTMLDataGridColElementConstructor HTMLDataGridColElement;
         attribute HTMLDListElementConstructor HTMLDListElement;
         attribute HTMLDirectoryElementConstructor HTMLDirectoryElement;
         attribute HTMLDivElementConstructor HTMLDivElement;

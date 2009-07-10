@@ -254,8 +254,15 @@ void QGLPixmapData::fill(const QColor &color)
     if (!isValid())
         return;
 
-    if (!m_textureId)
+    bool hasAlpha = color.alpha() != 255;
+    if (hasAlpha && !m_hasAlpha) {
+        if (m_textureId) {
+            glDeleteTextures(1, &m_textureId);
+            m_textureId = 0;
+            m_dirty = true;
+        }
         m_hasAlpha = color.alpha() != 255;
+    }
 
     if (useFramebufferObjects()) {
         m_source = QImage();

@@ -89,6 +89,7 @@ private:
     friend class QmlEngine;
     friend class QmlEnginePrivate;
     friend class QmlExpression;
+    friend class QmlExpressionPrivate;
     friend class QmlBasicScript;
     friend class QmlContextScriptClass;
     friend class QmlObjectScriptClass;
@@ -98,7 +99,6 @@ private:
     friend class QmlSimpleDeclarativeData;
     QmlContext(QmlEngine *);
 };
-
 
 QT_END_NAMESPACE
 

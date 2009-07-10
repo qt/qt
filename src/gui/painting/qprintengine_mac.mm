@@ -92,16 +92,8 @@ bool QMacPrintEngine::begin(QPaintDevice *dev)
     }
     OSStatus status = noErr;
 #ifndef QT_MAC_USE_COCOA
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        status = d->shouldSuppressStatus() ? PMSessionBeginCGDocumentNoDialog(d->session, d->settings, d->format)
-                                           : PMSessionBeginCGDocument(d->session, d->settings, d->format);
-    } else
-#  endif
-    {
-        status = d->shouldSuppressStatus() ? PMSessionBeginDocumentNoDialog(d->session, d->settings, d->format)
-                                           : PMSessionBeginDocument(d->session, d->settings, d->format);
-    }
+    status = d->shouldSuppressStatus() ? PMSessionBeginCGDocumentNoDialog(d->session, d->settings, d->format)
+                                       : PMSessionBeginCGDocument(d->session, d->settings, d->format);
 #else
     status = PMSessionBeginCGDocumentNoDialog(d->session, d->settings, d->format);
 #endif
@@ -468,23 +460,6 @@ void QMacPrintEnginePrivate::initialize()
 #endif
 
 #ifndef QT_MAC_USE_COCOA
-# if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_4)
-# endif
-    {
-        if(paintEngine->type() == QPaintEngine::CoreGraphics) {
-            CFStringRef strings[1] = { kPMGraphicsContextCoreGraphics };
-            QCFType<CFArrayRef> contextArray = CFArrayCreate(kCFAllocatorDefault,
-                    reinterpret_cast<const void **>(strings),
-                    1, &kCFTypeArrayCallBacks);
-            OSStatus err = PMSessionSetDocumentFormatGeneration(session, kPMDocumentFormatPDF,
-                    contextArray, 0);
-            if(err != noErr) {
-                qWarning("QMacPrintEngine::initialize: Cannot set format generation to PDF: %ld", err);
-                state = QPrinter::Error;
-            }
-        }
-    }
     if (!settingsOK || !formatOK) {
         qWarning("QMacPrintEngine::initialize: Unable to initialize QPainter");
         state = QPrinter::Error;
@@ -551,19 +526,7 @@ bool QMacPrintEnginePrivate::newPage_helper()
 
     CGContextRef cgContext;
     OSStatus err = noErr;
-#ifndef QT_MAC_USE_COCOA
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        err = PMSessionGetCGGraphicsContext(session, &cgContext);
-    } else
-#  endif
-    {
-        err = PMSessionGetGraphicsContext(session, kPMGraphicsContextCoreGraphics,
-                                          reinterpret_cast<void **>(&cgContext));
-    }
-#else
     err = PMSessionGetCGGraphicsContext(session, &cgContext);
-#endif
     if(err != noErr) {
         qWarning("QMacPrintEngine::newPage: Cannot retrieve CoreGraphics context: %ld", long(err));
         state = QPrinter::Error;

@@ -108,6 +108,7 @@ class tst_QMetaObject : public QObject
     Q_PROPERTY(int value6 READ value6 NOTIFY value6Changed)
     Q_PROPERTY(MyStruct value7 READ value7 WRITE setVal7 NOTIFY value7Changed)
     Q_PROPERTY(int value8 READ value8 NOTIFY value8Changed)
+    Q_PROPERTY(int value9 READ value9 CONSTANT)
 
 public:
     enum EnumType { EnumType1 };
@@ -137,6 +138,8 @@ public:
 
     int value8() const { return 1; }
 
+    int value9() const { return 1; }
+
     QList<QVariant> value4;
     QVariantList value5;
 
@@ -159,6 +162,7 @@ private slots:
     void customPropertyType();
     void checkScope();
     void propertyNotify();
+    void propertyConstant();
 
     void stdSet();
     void classInfo();
@@ -605,6 +609,19 @@ void tst_QMetaObject::invokeCustomTypes()
     QCOMPARE(obj.sum, 3);
 }
 
+namespace NamespaceWithConstructibleClass
+{
+
+class ConstructibleClass : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE ConstructibleClass(QObject *parent = 0)
+        : QObject(parent) {}
+};
+
+}
+
 void tst_QMetaObject::invokeMetaConstructor()
 {
     const QMetaObject *mo = &QtTestObject::staticMetaObject;
@@ -618,6 +635,15 @@ void tst_QMetaObject::invokeMetaConstructor()
         QVERIFY(obj2 != 0);
         QCOMPARE(obj2->parent(), (QObject*)&obj);
         QVERIFY(qobject_cast<QtTestObject*>(obj2) != 0);
+    }
+    // class in namespace
+    const QMetaObject *nsmo = &NamespaceWithConstructibleClass::ConstructibleClass::staticMetaObject;
+    {
+        QtTestObject obj;
+        QObject *obj2 = nsmo->newInstance(Q_ARG(QObject*, &obj));
+        QVERIFY(obj2 != 0);
+        QCOMPARE(obj2->parent(), (QObject*)&obj);
+        QVERIFY(qobject_cast<NamespaceWithConstructibleClass::ConstructibleClass*>(obj2) != 0);
     }
 }
 
@@ -761,6 +787,19 @@ void tst_QMetaObject::propertyNotify()
     QVERIFY(!prop.hasNotifySignal());
     signal = prop.notifySignal();
     QCOMPARE(signal.signature(), (const char *)0);
+}
+
+void tst_QMetaObject::propertyConstant()
+{
+    const QMetaObject *mo = metaObject();
+
+    QMetaProperty prop = mo->property(mo->indexOfProperty("value8"));
+    QVERIFY(prop.isValid());
+    QVERIFY(!prop.isConstant());
+
+    prop = mo->property(mo->indexOfProperty("value9"));
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.isConstant());
 }
 
 class ClassInfoTestObjectA : public QObject

@@ -59,6 +59,7 @@ class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
 
     Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
     Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth)
+    Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
     Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
 
 public:
@@ -76,10 +77,16 @@ public:
     int cacheSize() const;
     void setCacheSize(int pixels);
 
+    QColor fillColor() const;
+    void setFillColor(const QColor&);
+
 protected:
     QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);
 
     virtual void drawContents(QPainter *p, const QRect &) = 0;
+
+Q_SIGNALS:
+    void fillColorChanged();
 
 protected Q_SLOTS:
     void dirtyCache(const QRect &);
@@ -90,10 +97,11 @@ private:
     Q_DISABLE_COPY(QFxPaintedItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPaintedItem)
 };
-QML_DECLARE_TYPE(QFxPaintedItem)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxPaintedItem)
+
 QT_END_HEADER
+
 #endif

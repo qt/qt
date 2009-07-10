@@ -70,6 +70,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
+    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor)
     Q_PROPERTY(QmlFont * font READ font)
     Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
     Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign)
@@ -77,6 +78,11 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
+    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
     Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
@@ -117,6 +123,9 @@ public:
     QColor highlightColor() const;
     void setHighlightColor(const QColor &c);
 
+    QColor highlightedTextColor() const;
+    void setHighlightedTextColor(const QColor &c);
+
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
 
@@ -128,6 +137,20 @@ public:
 
     bool isCursorVisible() const;
     void setCursorVisible(bool on);
+
+    int cursorPosition() const;
+    void setCursorPosition(int pos);
+
+    QmlComponent* cursorDelegate() const;
+    void setCursorDelegate(QmlComponent*);
+
+    int selectionStart() const;
+    void setSelectionStart(int);
+
+    int selectionEnd() const;
+    void setSelectionEnd(int);
+
+    QString selectedText() const;
 
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
@@ -163,6 +186,9 @@ public:
 Q_SIGNALS:
     void textChanged(const QString &);
     void cursorPositionChanged();
+    void selectionStartChanged();
+    void selectionEndChanged();
+    void selectionChanged();
 
 public Q_SLOTS:
     void selectAll();
@@ -171,6 +197,9 @@ private Q_SLOTS:
     void fontChanged();
     void updateImgCache(const QRectF &rect);
     void q_textChanged();
+    void updateSelectionMarkers();
+    void moveCursorDelegate();
+    void loadCursorDelegate();
 
 private:
     void updateSize();
@@ -201,10 +230,11 @@ private:
     Q_DISABLE_COPY(QFxTextEdit)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextEdit)
 };
-QML_DECLARE_TYPE(QFxTextEdit)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxTextEdit)
+
 QT_END_HEADER
+
 #endif

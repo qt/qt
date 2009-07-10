@@ -444,7 +444,7 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     else
         QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     if (trackedItem == item) {
-        const char *notifier1 = orient == Qt::Vertical ? SIGNAL(topChanged()) : SIGNAL(leftChanged());
+        const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
         const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
@@ -588,7 +588,7 @@ void QFxListViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
-    const char *notifier1 = orient == Qt::Vertical ? SIGNAL(topChanged()) : SIGNAL(leftChanged());
+    const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
     const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
     if (trackedItem && item != trackedItem) {

@@ -19,15 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSTimeRanges.h"
 
-#include <wtf/GetPtr.h>
-
 #include "TimeRanges.h"
-
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

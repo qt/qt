@@ -69,8 +69,9 @@ class QFxTextEditPrivate : public QFxPaintedItemPrivate
 public:
     QFxTextEditPrivate()
       : font(0), color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop),
-      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false), preserveSelection(true),
-      textMargin(0.0), format(QFxTextEdit::AutoText), document(0)
+      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
+      preserveSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
+      cursor(0), cursorComponent(0), format(QFxTextEdit::AutoText), document(0)
     {
     }
 
@@ -78,11 +79,13 @@ public:
 
     void updateDefaultTextOption();
     void relayoutDocument();
+    void updateSelection();
 
     QString text;
     QmlFont font;
     QColor  color;
     QColor  highlightColor;
+    QColor  highlightedTextColor;
     QString style;
     QColor  styleColor;
     bool imgDirty;
@@ -97,6 +100,10 @@ public:
     bool focusOnPress;
     bool preserveSelection;
     qreal textMargin;
+    int lastSelectionStart;
+    int lastSelectionEnd;
+    QmlComponent* cursorComponent;
+    QFxItem* cursor;
     QFxTextEdit::TextFormat format;
     QTextDocument *document;
     QTextControl *control;

@@ -50,6 +50,7 @@
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
+#include <private/qmlexpression_p.h>
 #include <private/qmlobjecttree_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
@@ -61,6 +62,8 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <private/qmlpropertyview_p.h>
 #include <private/qmlwatches_p.h>
+
+QT_BEGIN_NAMESPACE
 
 QmlDebugger::QmlDebugger(QWidget *parent)
 : QWidget(parent), m_tree(0), m_warnings(0), m_watchTable(0), m_watches(0), 
@@ -260,7 +263,7 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
         delete item;
         return false;
 
-    } else if(QmlBoundSignal *bs = qobject_cast<QmlBoundSignal *>(obj)) {
+    } else if(qobject_cast<QmlBoundSignal *>(obj)) {
         delete item;
         return false;
     } else {
@@ -353,3 +356,4 @@ void QmlDebugger::setDebugObject(QObject *obj)
     item->setExpanded(true);
 }
 
+QT_END_NAMESPACE

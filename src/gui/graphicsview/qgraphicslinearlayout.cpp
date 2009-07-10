@@ -323,7 +323,11 @@ void QGraphicsLinearLayout::removeItem(QGraphicsLayoutItem *item)
 void QGraphicsLinearLayout::removeAt(int index)
 {
     Q_D(QGraphicsLinearLayout);
-    if (QGridLayoutItem *gridItem = d->engine.itemAt(d->gridRow(index), d->gridColumn(index))) {
+    if (index < 0 || index >= d->engine.itemCount()) {
+        qWarning("QGraphicsLinearLayout::removeAt: invalid index %d", index);
+        return;
+    }
+    if (QGridLayoutItem *gridItem = d->engine.itemAt(index)) {
         if (QGraphicsLayoutItem *layoutItem = gridItem->layoutItem())
             layoutItem->setParentLayoutItem(0);
         d->removeGridItem(gridItem);
@@ -463,7 +467,7 @@ QSizePolicy::ControlTypes QGraphicsLinearLayout::controlTypes(LayoutSide side) c
 int QGraphicsLinearLayout::count() const
 {
     Q_D(const QGraphicsLinearLayout);
-    return d->engine.rowCount(d->orientation);
+    return d->engine.itemCount();
 }
 
 /*!
@@ -472,8 +476,12 @@ int QGraphicsLinearLayout::count() const
 QGraphicsLayoutItem *QGraphicsLinearLayout::itemAt(int index) const
 {
     Q_D(const QGraphicsLinearLayout);
+    if (index < 0 || index >= d->engine.itemCount()) {
+        qWarning("QGraphicsLinearLayout::itemAt: invalid index %d", index);
+        return 0;
+    }
     QGraphicsLayoutItem *item = 0;
-    if (QGridLayoutItem *gridItem = d->engine.itemAt(d->gridRow(index), d->gridColumn(index)))
+    if (QGridLayoutItem *gridItem = d->engine.itemAt(index))
         item = gridItem->layoutItem();
     return item;
 }

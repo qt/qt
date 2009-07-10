@@ -89,36 +89,32 @@ Item {
                 states: [
                     State {
                         name: "opened"
-                        SetProperty {
+                        SetProperties {
                             target: wrapper
-                            property: "height"
-                            value: contactListView.height
+                            height: contactListView.height
                         }
-                        SetProperty {
+                        SetProperties {
                             target: contactListView
-                            property: "yPosition"
-                            value: wrapper.y
+                            explicit: true
+                            yPosition: wrapper.y
                         }
-                        SetProperty {
+                        SetProperties {
                             target: contactListView
-                            property: "locked"
-                            value: 1
+                            locked: 1
                         }
-                        SetProperty {
+                        SetProperties {
                             target: label
-                            property: "opacity"
-                            value: 0
+                            opacity: 0
                         }
-                        SetProperty {
+                        SetProperties {
                             target: Details
-                            property: "opacity"
-                            value: 1
+                            opacity: 1
                         }
                     }
                 ]
                 transitions: [
                     Transition {
-                        NumericAnimation {
+                        NumberAnimation {
                             duration: 500
                             properties: "yPosition,height,opacity"
                         }

@@ -216,7 +216,6 @@ public:
     void drag();
 #endif
 
-    void _q_clipboardChanged();
     void _q_handleWindowActivate();
     void _q_deleteSelected();
     bool userInput;

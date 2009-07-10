@@ -113,9 +113,10 @@ private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
 };
-QML_DECLARE_TYPE(QFxImage)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxImage)
 
 QT_END_HEADER
 

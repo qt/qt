@@ -85,13 +85,16 @@ public:
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;
 
+    QUrl baseUrl() const;
+    void setBaseUrl(const QUrl &);
+
     static QmlContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QmlContext *);
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
 
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
-    static QScriptValue createQMLObject(QScriptContext*, QScriptEngine*);
+    static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
 
 private:
     // LK: move to the private class
@@ -104,6 +107,7 @@ private:
     friend class QmlContext;
     friend class QmlContextPrivate;
     friend class QmlExpression;
+    friend class QmlExpressionPrivate;
     friend class QmlBasicScript;
     friend class QmlVME;
     friend class QmlComponent;

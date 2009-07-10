@@ -42,11 +42,48 @@
 #ifndef QMLSTATE_P_H
 #define QMLSTATE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtDeclarative/qmlstate.h>
 #include <private/qobject_p.h>
 #include <private/qmlanimation_p.h>
+#include <private/qmltransitionmanager_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class SimpleAction
+{
+public:
+    enum State { StartState, EndState };
+    SimpleAction(const Action &a, State state = StartState) 
+    {
+        property = a.property;
+        specifiedObject = a.specifiedObject;
+        specifiedProperty = a.specifiedProperty;
+        if (state == StartState) {
+            value = a.fromValue;
+            binding = property.binding();
+        } else {
+            value = a.toValue;
+            binding = a.toBinding;
+        }
+    }
+
+    QmlMetaProperty property;
+    QVariant value;
+    QmlBindableValue *binding;
+    QObject *specifiedObject;
+    QString specifiedProperty;
+};
 
 class QmlStatePrivate : public QObjectPrivate
 {
@@ -54,22 +91,23 @@ class QmlStatePrivate : public QObjectPrivate
 
 public:
     QmlStatePrivate()
-    : when(0), transition(0), inState(false), group(0) {}
+    : when(0), inState(false), group(0) {}
+
+    typedef QList<SimpleAction> SimpleActionList;
 
     QString name;
     QmlBindableValue *when;
     QmlConcreteList<QmlStateOperation *> operations;
-    QmlTransition *transition;
-    QmlStateOperation::RevertActionList revertList;
+
+    QmlTransitionManager transitionManager;
+
+    SimpleActionList revertList;
     QList<QmlMetaProperty> reverting;
-    QmlStateOperation::RevertActionList completeList;
-    QmlStateOperation::ActionList bindingsList;
     QString extends;
     mutable bool inState;
     QmlStateGroup *group;
 
     QmlStateOperation::ActionList generateActionList(QmlStateGroup *) const;
-    void applyBindings();
     void complete();
 };
 

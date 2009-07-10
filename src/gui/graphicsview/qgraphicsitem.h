@@ -212,6 +212,8 @@ public:
     void setAcceptsHoverEvents(bool enabled); // obsolete
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
+    bool acceptTouchEvents() const;
+    void setAcceptTouchEvents(bool enabled);
 
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);
@@ -376,6 +378,11 @@ public:
     // Custom data
     QVariant data(int key) const;
     void setData(int key, const QVariant &value);
+
+    int grabGesture(Qt::GestureType gesture);
+    int grabGesture(const QString &gesture);
+    void releaseGesture(int gestureId);
+    void setGestureEnabled(int gestureId, bool enable = true);
 
     enum {
         Type = 1,

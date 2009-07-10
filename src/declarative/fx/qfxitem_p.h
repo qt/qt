@@ -143,7 +143,7 @@ public:
     QList<QUrl> _qmlnewloading;
     QList<QmlComponent*> _qmlnewcomp;
 
-    QmlNullableValue<int> _baselineOffset;
+    QmlNullableValue<qreal> _baselineOffset;
     float _rotation;
 
     bool _classComplete:1;

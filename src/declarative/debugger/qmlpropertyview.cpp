@@ -47,6 +47,8 @@
 #include <QtDeclarative/qmlbindablevalue.h>
 #include <private/qmlboundsignal_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QmlPropertyView::QmlPropertyView(QmlWatches *watches, QWidget *parent)
 : QWidget(parent), m_tree(0), m_watches(watches)
 {
@@ -220,5 +222,7 @@ void QmlPropertyView::refresh()
 {
     setObject(m_object);
 }
+
+QT_END_NAMESPACE
 
 #include "qmlpropertyview.moc"

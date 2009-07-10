@@ -3746,4 +3746,9 @@ void QApplication::setArgs(int c, char **v)
     d->argv = v;
 }
 
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
+
 QT_END_NAMESPACE

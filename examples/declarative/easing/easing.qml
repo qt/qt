@@ -63,7 +63,7 @@ Rect {
                     font.italic: true
                     x: SequentialAnimation {
                         id: Anim
-                        NumericAnimation {
+                        NumberAnimation {
                             from: 0
                             to: Window.width / 2
                             easing: type
@@ -72,7 +72,7 @@ Rect {
                         PauseAnimation {
                             duration: 300
                         }
-                        NumericAnimation {
+                        NumberAnimation {
                             to: 0
                             from: Window.width / 2
                             easing: type

@@ -67,7 +67,8 @@ enum PropertyFlags  {
     User = 0x00100000,
     ResolveUser = 0x00200000,
     Notify = 0x00400000,
-    Dynamic = 0x00800000
+    Dynamic = 0x00800000,
+    Constant = 0x00000400
 };
 enum MethodFlags {
     AccessPrivate = 0x00,
@@ -601,6 +602,9 @@ void Generator::generateProperties()
         if (p.notifyId != -1)
             flags |= Notify;
 
+        if (p.constant)
+            flags |= Constant;
+
         fprintf(out, "    %4d, %4d, ",
                 strreg(p.name),
                 strreg(p.type));
@@ -932,7 +936,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "        switch (_id) {\n");
     for (int ctorindex = 0; ctorindex < cdef->constructorList.count(); ++ctorindex) {
         fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
-                cdef->classname.constData(), cdef->classname.constData());
+                cdef->qualified.constData(), cdef->qualified.constData());
         const FunctionDef &f = cdef->constructorList.at(ctorindex);
         int offset = 1;
         for (int j = 0; j < f.arguments.count(); ++j) {
@@ -950,7 +954,7 @@ void Generator::generateStaticMetacall(const QByteArray &prefix)
     fprintf(out, "    }\n");
 
     if (!isQObject)
-        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->classname.constData());
+        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->qualified.constData());
 
     fprintf(out, "    if (_id < 0)\n        return _id;\n");
 

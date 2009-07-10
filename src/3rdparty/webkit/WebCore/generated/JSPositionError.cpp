@@ -19,16 +19,13 @@
 */
 
 #include "config.h"
-
 #include "JSPositionError.h"
-
-#include <wtf/GetPtr.h>
 
 #include "KURL.h"
 #include "PositionError.h"
-
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

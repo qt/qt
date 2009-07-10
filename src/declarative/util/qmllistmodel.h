@@ -51,15 +51,42 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qlistmodelinterface.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+struct ModelNode;
+class QmlListModel : public QListModelInterface
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ count)
+
+public:
+    QmlListModel(QObject *parent=0);
+    ~QmlListModel();
+
+    virtual QList<int> roles() const;
+    virtual QString toString(int role) const;
+    virtual int count() const;
+    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
+
+private:
+    QVariant valueForNode(ModelNode *) const;
+    mutable QStringList roleStrings;
+    friend class QmlListModelParser;
+    friend struct ModelNode;
+
+    void checkRoles() const;
+    void addRole(const QString &) const;
+    mutable bool _rolesOk;
+    ModelNode *_root;
+};
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlListModel)
 
 QT_END_HEADER
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtScript module of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -159,6 +159,8 @@ int Lexer::findReservedWord(const QChar *c, int size) const
             return QmlJSGrammar::T_IF;
         else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('n'))
             return QmlJSGrammar::T_IN;
+        else if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('s'))
+            return QmlJSGrammar::T_AS;
     }   break;
 
     case 3: {

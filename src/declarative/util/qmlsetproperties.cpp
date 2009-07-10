@@ -47,9 +47,10 @@
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
 #include <QtDeclarative/qmlexpression.h>
-
+#include <QtDeclarative/qmlbindablevalue.h>
 
 QT_BEGIN_NAMESPACE
+
 /*!
     \qmlclass SetProperties QmlSetProperties
     \brief The SetProperties element describes new property values for a state.
@@ -113,7 +114,8 @@ class QmlSetPropertiesPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlSetProperties)
 public:
-    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true) {}
+    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true), 
+                                isExplicit(false) {}
 
     QObject *object;
     QByteArray data;
@@ -121,6 +123,7 @@ public:
     void decode();
 
     bool restore;
+    bool isExplicit;
 
     QList<QPair<QByteArray, QVariant> > properties;
     QList<QPair<QByteArray, QmlExpression *> > expressions;
@@ -205,6 +208,7 @@ QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props,
 
 void QmlSetPropertiesPrivate::decode()
 {
+    Q_Q(QmlSetProperties);
     if (decoded)
         return;
 
@@ -221,7 +225,7 @@ void QmlSetPropertiesPrivate::decode()
         ds >> data;
 
         if (isScript) {
-            QmlExpression *expression = new QmlExpression(qmlContext(object), data.toString(), object);
+            QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
             expression->setTrackChange(false);
             expressions << qMakePair(name, expression);
         } else {
@@ -278,39 +282,19 @@ void QmlSetProperties::setRestoreEntryValues(bool v)
     d->restore = v;
 }
 
-QmlMetaProperty 
-QmlSetPropertiesPrivate::property(const QByteArray &property) 
+QmlMetaProperty
+QmlSetPropertiesPrivate::property(const QByteArray &property)
 {
     Q_Q(QmlSetProperties);
-    QList<QByteArray> path = property.split('.');
-
-    QObject *obj = this->object;
-
-    for (int jj = 0; jj < path.count() - 1; ++jj) {
-        const QByteArray &pathName = path.at(jj);
-        QmlMetaProperty prop(obj, QLatin1String(pathName));
-        QObject *objVal = QmlMetaType::toQObject(prop.read());
-        if (!objVal) {
-            qmlInfo(q) << obj->metaObject()->className()
-                       << "has no object property named" << pathName;
-            return QmlMetaProperty();
-        }
-        obj = objVal;
-    }
-
-    const QByteArray &name = path.last();
-    QmlMetaProperty prop(obj, QLatin1String(name));
+    QmlMetaProperty prop = QmlMetaProperty::createProperty(object, QString::fromLatin1(property));
     if (!prop.isValid()) {
-        qmlInfo(q) << obj->metaObject()->className()
-                   << "has no property named" << name;
+        qmlInfo(q) << "Cannot assign to non-existant property" << property;
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
-        qmlInfo(q) << obj->metaObject()->className()
-                   << name << "is not writable, and cannot be set.";
+        qmlInfo(q) << "Cannot assign to read-only property" << property;
         return QmlMetaProperty();
-    } else {
-        return prop;
     }
+    return prop;
 }
 
 QmlSetProperties::ActionList QmlSetProperties::actions()
@@ -324,15 +308,12 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
     for (int ii = 0; ii < d->properties.count(); ++ii) {
 
         QByteArray property = d->properties.at(ii).first;
-        QmlMetaProperty prop = d->property(property);
 
-        if (prop.isValid()) {
-            Action a;
+        Action a(d->object, QString::fromLatin1(property), 
+                 d->properties.at(ii).second);
+
+        if (a.property.isValid()) {
             a.restore = restoreEntryValues();
-            a.property = prop;
-            a.fromValue = a.property.read();
-            a.toValue = d->properties.at(ii).second;
-
             list << a;
         }
     }
@@ -347,14 +328,33 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
             a.restore = restoreEntryValues();
             a.property = prop;
             a.fromValue = a.property.read();
-            a.toValue = d->expressions.at(ii).second->value();
+            a.specifiedObject = d->object;
+            a.specifiedProperty = QString::fromLatin1(property);
+
+            if (d->isExplicit) {
+                a.toValue = d->expressions.at(ii).second->value();
+            } else {
+                a.toBinding = new QmlBindableValue(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                a.toBinding->setTarget(prop);
+            }
 
             list << a;
         }
-
     }
 
     return list;
+}
+
+bool QmlSetProperties::isExplicit() const
+{
+    Q_D(const QmlSetProperties);
+    return d->isExplicit;
+}
+
+void QmlSetProperties::setIsExplicit(bool e)
+{
+    Q_D(QmlSetProperties);
+    d->isExplicit = e;
 }
 
 QML_DEFINE_CUSTOM_TYPE(QmlSetProperties,SetProperties,QmlSetPropertiesParser)

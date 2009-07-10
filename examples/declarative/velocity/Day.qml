@@ -100,7 +100,7 @@ Rect {
             ]
             transitions: [
                 Transition {
-                    NumericAnimation {
+                    NumberAnimation {
                         properties: "rotation,scale"
                         duration: 200
                     }

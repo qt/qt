@@ -45,7 +45,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QObject>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -88,8 +87,8 @@ inline void QFx_setParent_noEvent(QObject *object, QObject *parent)
     static_cast<QFx_DerivedObject *>(object)->setParent_noEvent(parent);
 }
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif // QFXGLOBAL_H

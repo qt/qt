@@ -41,6 +41,7 @@
 
 #include "qwindowsvistastyle.h"
 #include "qwindowsvistastyle_p.h"
+#include <private/qstylehelper_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA) || defined(QT_PLUGIN)
 
@@ -195,17 +196,15 @@ void Animation::paint(QPainter *painter, const QStyleOption *option)
     Q_UNUSED(painter);
 }
 
-/*
-* ! \internal
-*
-* Helperfunction to paint the current transition state
-* between two animation frames.
-*
-* The result is a blended image consisting of
-* ((alpha)*_primaryImage) + ((1-alpha)*_secondaryImage)
-*
-*/
+/*! \internal
 
+  Helperfunction to paint the current transition state between two
+  animation frames.
+
+  The result is a blended image consisting of ((alpha)*_primaryImage)
+  + ((1-alpha)*_secondaryImage)
+
+*/
 void Animation::drawBlendedImage(QPainter *painter, QRect rect, float alpha) {
     if (_secondaryImage.isNull() || _primaryImage.isNull())
         return;
@@ -247,14 +246,11 @@ void Animation::drawBlendedImage(QPainter *painter, QRect rect, float alpha) {
     painter->drawImage(rect, _tempImage);
 }
 
-/*
-* ! \internal
-*
-* Paints a transition state. The result will be a mix between the
-* initial and final state of the transition, depending on the
-* time difference between _startTime and current time.
+/*! \internal
+  Paints a transition state. The result will be a mix between the
+  initial and final state of the transition, depending on the time
+  difference between _startTime and current time.
 */
-
 void Transition::paint(QPainter *painter, const QStyleOption *option)
 {
     float alpha = 1.0;
@@ -277,15 +273,11 @@ void Transition::paint(QPainter *painter, const QStyleOption *option)
     drawBlendedImage(painter, option->rect, alpha);
 }
 
-/*
-* ! \internal
-*
-* Paints a pulse. The result will be a mix between the
-* primary and secondary pulse images depending on the
-* time difference between _startTime and current time.
+/*! \internal
+  Paints a pulse. The result will be a mix between the primary and
+  secondary pulse images depending on the time difference between
+  _startTime and current time.
 */
-
-
 void Pulse::paint(QPainter *painter, const QStyleOption *option)
 {
     float alpha = 1.0;
@@ -307,31 +299,37 @@ void Pulse::paint(QPainter *painter, const QStyleOption *option)
 
 
 /*!
- \reimp
- *
- * Animations are used for some state transitions on specific widgets.
- *
- * Only one running animation can exist for a widget at any specific time.
- * Animations can be added through QWindowsVistaStylePrivate::startAnimation(Animation *)
- * and any existing animation on a widget can be retrieved with
- * QWindowsVistaStylePrivate::widgetAnimation(Widget *).
- *
- * Once an animation has been started, QWindowsVistaStylePrivate::timerEvent(QTimerEvent *)
- * will continuously call update() on the widget until it is stopped, meaning that drawPrimitive
- * will be called many times until the transition has completed. During this time, the result
- * will be retrieved by the Animation::paint(...) function and not by the style itself.
- *
- * To determine if a transition should occur, the style needs to know the previous state of the
- * widget as well as the current one. This is solved by updating dynamic properties on the widget
- * every time the function is called.
- *
- * Transitions interrupting existing transitions should always be smooth, so whenever a hover-transition
- * is started on a pulsating button, it uses the current frame of the pulse-animation as the
- * starting image for the hover transition.
- *
+ \internal
+ 
+  Animations are used for some state transitions on specific widgets.
+ 
+  Only one running animation can exist for a widget at any specific
+  time.  Animations can be added through
+  QWindowsVistaStylePrivate::startAnimation(Animation *) and any
+  existing animation on a widget can be retrieved with
+  QWindowsVistaStylePrivate::widgetAnimation(Widget *).
+ 
+  Once an animation has been started,
+  QWindowsVistaStylePrivate::timerEvent(QTimerEvent *) will
+  continuously call update() on the widget until it is stopped,
+  meaning that drawPrimitive will be called many times until the
+  transition has completed. During this time, the result will be
+  retrieved by the Animation::paint(...) function and not by the style
+  itself.
+ 
+  To determine if a transition should occur, the style needs to know
+  the previous state of the widget as well as the current one. This is
+  solved by updating dynamic properties on the widget every time the
+  function is called.
+ 
+  Transitions interrupting existing transitions should always be
+  smooth, so whenever a hover-transition is started on a pulsating
+  button, it uses the current frame of the pulse-animation as the
+  starting image for the hover transition.
+ 
  */
 void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-                                    QPainter *painter, const QWidget *widget) const
+                                       QPainter *painter, const QWidget *widget) const
 {
     QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate*>(d_func());
 
@@ -487,7 +485,12 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
     case PE_IndicatorBranch:
         {
             XPThemeData theme(d->treeViewHelper(), painter, QLatin1String("TREEVIEW"));
-            static const int decoration_size = 16;
+            static int decoration_size = 0;
+            if (theme.isValid() && !decoration_size) {
+                SIZE size;
+                pGetThemePartSize(theme.handle(), 0, TVP_HOTGLYPH, GLPS_OPENED, 0, TS_TRUE, &size);
+                decoration_size = qMax(size.cx, size.cy);
+            }
             int mid_h = option->rect.x() + option->rect.width() / 2;
             int mid_v = option->rect.y() + option->rect.height() / 2;
             int bef_h = mid_h;
@@ -532,17 +535,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             } else {
                 QWindowsXPStyle::drawPrimitive(element, option, painter, widget);
             }
-        }
-        break;
-
-    case PE_IndicatorToolBarHandle:
-        {
-            XPThemeData theme;
-            if (option->state & State_Horizontal)
-                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPER, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
-            else
-                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPERVERT, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
-            d->drawBackground(theme);
         }
         break;
 
@@ -691,6 +683,24 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 d->drawBackground(theme);
                 painter->restore();
             }
+        }
+        break;
+
+    case PE_IndicatorToolBarHandle:
+        {
+            XPThemeData theme;
+            QRect rect;
+            if (option->state & State_Horizontal) {
+                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPER, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
+                rect = option->rect.adjusted(0, 1, 0, -2);
+                rect.setWidth(4);
+            } else {
+                theme = XPThemeData(widget, painter, QLatin1String("REBAR"), RP_GRIPPERVERT, ETS_NORMAL, option->rect.adjusted(0, 1, -2, -2));
+                rect = option->rect.adjusted(1, 0, -1, 0);
+                rect.setHeight(4);
+            }
+            theme.rect = rect;
+            d->drawBackground(theme);
         }
         break;
 
@@ -864,11 +874,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
 
 /*!
-
- \reimp
+ \internal
 
  see drawPrimitive for comments on the animation support
-
  */
 void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption *option,
                                   QPainter *painter, const QWidget *widget) const
@@ -1047,7 +1055,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 QRect ir = subElementRect(SE_PushButtonContents, option, 0);
                 QStyleOptionButton newBtn = *btn;
                 newBtn.rect = QStyle::visualRect(option->direction, option->rect,
-                                                QRect(ir.right() - mbiw - 2, (option->rect.height()/2) - (mbih/2),
+                                                QRect(ir.right() - mbiw - 2,
+                                                      option->rect.top() + (option->rect.height()/2) - (mbih/2),
                                                       mbiw + 1, mbih + 1));
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, painter, widget);
             }
@@ -1229,7 +1238,15 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = qMax(menuitem->maxIconWidth, 28);
+            int checkcol = 28;
+            {
+                SIZE    size;
+                MARGINS margins;
+                XPThemeData theme(widget, 0, QLatin1String("MENU"), MENU_POPUPCHECKBACKGROUND, MBI_HOT);
+                pGetThemePartSize(theme.handle(), NULL, MENU_POPUPCHECK, 0, NULL,TS_TRUE, &size);
+                pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &margins);
+                checkcol = qMax(menuitem->maxIconWidth, int(6 + size.cx + margins.cxLeftWidth + margins.cxRightWidth));
+            }
             QColor darkLine = option->palette.background().color().darker(108);
             QColor lightLine = option->palette.background().color().lighter(107);
             QRect rect = option->rect;
@@ -1274,8 +1291,23 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (checked) {
                 XPThemeData theme(widget, painter, QLatin1String("MENU"), MENU_POPUPCHECKBACKGROUND,
                                   menuitem->icon.isNull() ? MBI_HOT : MBI_PUSHED, vCheckRect);
+                SIZE    size;
+                MARGINS margins;
+                pGetThemePartSize(theme.handle(), NULL, MENU_POPUPCHECK, 0, NULL,TS_TRUE, &size);
+                pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0,
+                                TMT_CONTENTMARGINS, NULL, &margins);
+                QRect checkRect(0, 0, size.cx + margins.cxLeftWidth + margins.cxRightWidth ,
+                                size.cy + margins.cyBottomHeight + margins.cyTopHeight);
+                checkRect.moveCenter(vCheckRect.center());
+                theme.rect = checkRect;
+
                 d->drawBackground(theme);
+
                 if (menuitem->icon.isNull()) {
+                    checkRect = QRect(0, 0, size.cx, size.cy);
+                    checkRect.moveCenter(theme.rect.center());
+                    theme.rect = checkRect;
+
                     theme.partId = MENU_POPUPCHECK;
                     bool bullet = menuitem->checkType & QStyleOptionMenuItem::Exclusive;
                     if (dis)
@@ -1504,7 +1536,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 }
 
 /*!
-  \reimp
+  \internal
 
   see drawPrimitive for comments on the animation support
 
@@ -1655,7 +1687,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                 if (sub & SC_ComboBoxArrow) {
                     QRect subRect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
                     XPThemeData theme(widget, painter, QLatin1String("COMBOBOX"));
-                    theme.rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
+                    theme.rect = subRect;
                     partId = option->direction == Qt::RightToLeft ? CP_DROPDOWNBUTTONLEFT : CP_DROPDOWNBUTTONRIGHT;
 
                     if (!(cmb->state & State_Enabled))
@@ -1890,7 +1922,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
 }
 
 /*!
- \reimp
+ \internal
  */
 QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
                                         const QSize &size, const QWidget *widget) const
@@ -1925,9 +1957,18 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
         return sz;
     case CT_MenuItem:
         sz = QWindowsXPStyle::sizeFromContents(type, option, size, widget);
-        sz.rwidth() += 28;
+        int minimumHeight;
+        {
+            SIZE    size;
+            MARGINS margins;
+            XPThemeData theme(widget, 0, QLatin1String("MENU"), MENU_POPUPCHECKBACKGROUND, MBI_HOT);
+            pGetThemePartSize(theme.handle(), NULL, MENU_POPUPCHECK, 0, NULL,TS_TRUE, &size);
+            pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &margins);
+            minimumHeight = qMax<qint32>(size.cy + margins.cyBottomHeight+ margins.cyTopHeight, sz.height());
+            sz.rwidth() += size.cx + margins.cxLeftWidth + margins.cxRightWidth;
+        }
+        
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            int minimumHeight = qMax<qint32>(22, sz.height());
             if (menuitem->menuItemType != QStyleOptionMenuItem::Separator)
                 sz.setHeight(minimumHeight);
         }
@@ -1958,7 +1999,7 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
 }
 
 /*!
- \reimp
+ \internal
  */
 QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const
 {
@@ -2129,7 +2170,7 @@ static bool buttonVisible(const QStyle::SubControl sc, const QStyleOptionTitleBa
 }
 
 
-/*! \reimp */
+/*! \internal */
 int QWindowsVistaStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget,
                              QStyleHintReturn *returnData) const
 {
@@ -2163,7 +2204,7 @@ int QWindowsVistaStyle::styleHint(StyleHint hint, const QStyleOption *option, co
 
 
 /*!
- \reimp
+ \internal
  */
 QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOptionComplex *option,
                                   SubControl subControl, const QWidget *widget) const
@@ -2272,7 +2313,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
 }
 
 /*!
- \reimp
+ \internal
  */
 bool QWindowsVistaStyle::event(QEvent *e)
 {
@@ -2295,7 +2336,7 @@ bool QWindowsVistaStyle::event(QEvent *e)
 }
 
 /*!
- \reimp
+ \internal
  */
 QStyle::SubControl QWindowsVistaStyle::hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
                                                           const QPoint &pos, const QWidget *widget) const
@@ -2307,7 +2348,7 @@ QStyle::SubControl QWindowsVistaStyle::hitTestComplexControl(ComplexControl cont
 }
 
 /*!
- \reimp
+ \internal
  */
 int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
@@ -2317,9 +2358,9 @@ int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *opti
     switch (metric) {
 
     case PM_DockWidgetTitleBarButtonMargin:
-        return 5;
+        return int(QStyleHelper::dpiScaled(5.));
     case PM_ScrollBarSliderMin:
-        return 18;
+        return int(QStyleHelper::dpiScaled(18.));
     case PM_MenuHMargin:
     case PM_MenuVMargin:
         return 0;
@@ -2332,7 +2373,7 @@ int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *opti
 }
 
 /*!
- \reimp
+ \internal
  */
 QPalette QWindowsVistaStyle::standardPalette() const
 {
@@ -2340,7 +2381,7 @@ QPalette QWindowsVistaStyle::standardPalette() const
 }
 
 /*!
- \reimp
+ \internal
  */
 void QWindowsVistaStyle::polish(QApplication *app)
 {
@@ -2348,7 +2389,7 @@ void QWindowsVistaStyle::polish(QApplication *app)
 }
 
 /*!
- \reimp
+ \internal
  */
 void QWindowsVistaStyle::polish(QWidget *widget)
 {
@@ -2402,7 +2443,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
 }
 
 /*!
- \reimp
+ \internal
  */
 void QWindowsVistaStyle::unpolish(QWidget *widget)
 {
@@ -2444,7 +2485,7 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 
 
 /*!
- \reimp
+ \internal
  */
 void QWindowsVistaStyle::unpolish(QApplication *app)
 {
@@ -2452,7 +2493,7 @@ void QWindowsVistaStyle::unpolish(QApplication *app)
 }
 
 /*!
- \reimp
+ \internal
  */
 void QWindowsVistaStyle::polish(QPalette &pal)
 {
@@ -2461,7 +2502,7 @@ void QWindowsVistaStyle::polish(QPalette &pal)
 }
 
 /*!
- \reimp
+ \internal
  */
 QPixmap QWindowsVistaStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option,
                                       const QWidget *widget) const
@@ -2530,9 +2571,7 @@ void QWindowsVistaStylePrivate::startAnimation(Animation *t)
 bool QWindowsVistaStylePrivate::transitionsEnabled() const
 {
     BOOL animEnabled = false;
-    if (QT_WA_INLINE(SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &animEnabled, 0),
-                     SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION, 0, &animEnabled, 0)
-    ))
+    if (SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &animEnabled, 0))
     {
         if (animEnabled)
             return true;

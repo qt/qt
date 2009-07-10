@@ -223,7 +223,7 @@ static quintptr tabId(const QDockAreaLayoutItem &item)
 QDockAreaLayoutInfo::QDockAreaLayoutInfo()
     : sep(0), dockPos(QInternal::LeftDock), o(Qt::Horizontal), mainWindow(0)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth)
+    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth), tabBarVisible(false)
 #endif
 {
 }
@@ -233,7 +233,7 @@ QDockAreaLayoutInfo::QDockAreaLayoutInfo(int _sep, QInternal::DockPosition _dock
                                             QMainWindow *window)
     : sep(_sep), dockPos(_dockPos), o(_o), mainWindow(window)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape))
+    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape)), tabBarVisible(false)
 #endif
 {
 #ifdef QT_NO_TABBAR
@@ -924,43 +924,41 @@ static int separatorMoveHelper(QVector<QLayoutStruct> &list, int index, int delt
     return delta;
 }
 
-int QDockAreaLayoutInfo::separatorMove(int index, int delta, QVector<QLayoutStruct> *cache)
+int QDockAreaLayoutInfo::separatorMove(int index, int delta)
 {
 #ifndef QT_NO_TABBAR
     Q_ASSERT(!tabbed);
 #endif
 
-    if (cache->isEmpty()) {
-        QVector<QLayoutStruct> &list = *cache;
-        list.resize(item_list.size());
-        for (int i = 0; i < item_list.size(); ++i) {
-            const QDockAreaLayoutItem &item = item_list.at(i);
-            QLayoutStruct &ls = list[i];
-            Q_ASSERT(!(item.flags & QDockAreaLayoutItem::GapItem));
-            if (item.skip()) {
-                ls.empty = true;
-            } else {
-                ls.empty = false;
-                ls.pos = item.pos;
-                ls.size = item.size;
-                ls.minimumSize = pick(o, item.minimumSize());
-                ls.maximumSize = pick(o, item.maximumSize());
-            }
+    QVector<QLayoutStruct> list(item_list.size());
+    for (int i = 0; i < list.size(); ++i) {
+        const QDockAreaLayoutItem &item = item_list.at(i);
+        QLayoutStruct &ls = list[i];
+        Q_ASSERT(!(item.flags & QDockAreaLayoutItem::GapItem));
+        if (item.skip()) {
+            ls.empty = true;
+        } else {
+            const int separatorSpace = item.hasFixedSize(o) ? 0 : sep;
+            ls.empty = false;
+            ls.pos = item.pos;
+            ls.size = item.size + separatorSpace;
+            ls.minimumSize = pick(o, item.minimumSize()) + separatorSpace;
+            ls.maximumSize = pick(o, item.maximumSize()) + separatorSpace;
+
         }
     }
 
-    QVector<QLayoutStruct> list = *cache;
+    //the separator space has been added to the size, so we pass 0 as a parameter
+    delta = separatorMoveHelper(list, index, delta, 0 /*separator*/);
 
-    delta = separatorMoveHelper(list, index, delta, sep);
-
-    for (int i = 0; i < item_list.size(); ++i) {
+    for (int i = 0; i < list.size(); ++i) {
         QDockAreaLayoutItem &item = item_list[i];
         if (item.skip())
             continue;
         QLayoutStruct &ls = list[i];
-        item.size = ls.size;
+        const int separatorSpace = item.hasFixedSize(o) ? 0 : sep;
+        item.size = ls.size - separatorSpace;
         item.pos = ls.pos;
-
         if (item.subinfo != 0) {
             item.subinfo->rect = itemRect(i);
             item.subinfo->fitItems();
@@ -996,15 +994,15 @@ void QDockAreaLayoutInfo::unnest(int index)
     }
 }
 
-void QDockAreaLayoutInfo::remove(QList<int> path)
+void QDockAreaLayoutInfo::remove(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
 
     if (path.count() > 1) {
-        int index = path.takeFirst();
+        const int index = path.first();
         QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
-        item.subinfo->remove(path);
+        item.subinfo->remove(path.mid(1));
         unnest(index);
     } else {
         int index = path.first();
@@ -1012,18 +1010,18 @@ void QDockAreaLayoutInfo::remove(QList<int> path)
     }
 }
 
-QLayoutItem *QDockAreaLayoutInfo::plug(QList<int> path)
+QLayoutItem *QDockAreaLayoutInfo::plug(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
 
-    int index = path.takeFirst();
+    int index = path.first();
     if (index < 0)
         index = -index - 1;
 
-    if (!path.isEmpty()) {
+    if (path.count() > 1) {
         const QDockAreaLayoutItem &item = item_list.at(index);
         Q_ASSERT(item.subinfo != 0);
-        return item.subinfo->plug(path);
+        return item.subinfo->plug(path.mid(1));
     }
 
     QDockAreaLayoutItem &item = item_list[index];
@@ -1061,18 +1059,17 @@ QLayoutItem *QDockAreaLayoutInfo::plug(QList<int> path)
     return item.widgetItem;
 }
 
-QLayoutItem *QDockAreaLayoutInfo::unplug(QList<int> path)
+QLayoutItem *QDockAreaLayoutInfo::unplug(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
 
+    const int index = path.first();
     if (path.count() > 1) {
-        int index = path.takeFirst();
         const QDockAreaLayoutItem &item = item_list.at(index);
         Q_ASSERT(item.subinfo != 0);
-        return item.subinfo->unplug(path);
+        return item.subinfo->unplug(path.mid(1));
     }
 
-    int index = path.first();
     QDockAreaLayoutItem &item = item_list[index];
     int prev = this->prev(index);
     int next = this->next(index);
@@ -1144,12 +1141,12 @@ static QRect dockedGeometry(QWidget *widget)
     return result;
 }
 
-bool QDockAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *dockWidgetItem)
+bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem)
 {
     Q_ASSERT(!path.isEmpty());
 
     bool insert_tabbed = false;
-    int index = path.takeFirst();
+    int index = path.first();
     if (index < 0) {
         insert_tabbed = true;
         index = -index - 1;
@@ -1157,7 +1154,7 @@ bool QDockAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *dockWidgetItem
 
 //    dump(qDebug() << "insertGap() before:" << index << tabIndex, *this, QString());
 
-    if (!path.isEmpty()) {
+    if (path.count() > 1) {
         QDockAreaLayoutItem &item = item_list[index];
 
         if (item.subinfo == 0
@@ -1196,8 +1193,7 @@ bool QDockAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *dockWidgetItem
 #endif
         }
 
-        bool result = item.subinfo->insertGap(path, dockWidgetItem);
-        return result;
+        return item.subinfo->insertGap(path.mid(1), dockWidgetItem);
     }
 
     // create the gap item
@@ -1297,16 +1293,16 @@ QDockAreaLayoutInfo *QDockAreaLayoutInfo::info(QWidget *widget)
     return 0;
 }
 
-QDockAreaLayoutInfo *QDockAreaLayoutInfo::info(QList<int> path)
+QDockAreaLayoutInfo *QDockAreaLayoutInfo::info(const QList<int> &path)
 {
-    int index = path.takeFirst();
+    int index = path.first();
     if (index < 0)
         index = -index - 1;
     if (index >= item_list.count())
         return this;
-    if (path.isEmpty() || item_list.at(index).subinfo == 0)
+    if (path.count() == 1 || item_list.at(index).subinfo == 0)
         return this;
-    return item_list.at(index).subinfo->info(path);
+    return item_list.at(index).subinfo->info(path.mid(1));
 }
 
 QRect QDockAreaLayoutInfo::itemRect(int index) const
@@ -1337,17 +1333,18 @@ QRect QDockAreaLayoutInfo::itemRect(int index) const
     return result;
 }
 
-QRect QDockAreaLayoutInfo::itemRect(QList<int> path) const
+QRect QDockAreaLayoutInfo::itemRect(const QList<int> &path) const
 {
     Q_ASSERT(!path.isEmpty());
 
+    const int index = path.first();
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(path.takeFirst());
+        const QDockAreaLayoutItem &item = item_list.at(index);
         Q_ASSERT(item.subinfo != 0);
-        return item.subinfo->itemRect(path);
+        return item.subinfo->itemRect(path.mid(1));
     }
 
-    return itemRect(path.first());
+    return itemRect(index);
 }
 
 QRect QDockAreaLayoutInfo::separatorRect(int index) const
@@ -1369,16 +1366,17 @@ QRect QDockAreaLayoutInfo::separatorRect(int index) const
     return QRect(pos, s);
 }
 
-QRect QDockAreaLayoutInfo::separatorRect(QList<int> path) const
+QRect QDockAreaLayoutInfo::separatorRect(const QList<int> &path) const
 {
     Q_ASSERT(!path.isEmpty());
 
+    const int index = path.first();
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(path.takeFirst());
+        const QDockAreaLayoutItem &item = item_list.at(index);
         Q_ASSERT(item.subinfo != 0);
-        return item.subinfo->separatorRect(path);
+        return item.subinfo->separatorRect(path.mid(1));
     }
-    return separatorRect(path.first());
+    return separatorRect(index);
 }
 
 QList<int> QDockAreaLayoutInfo::findSeparator(const QPoint &_pos) const
@@ -1490,7 +1488,7 @@ bool QDockAreaLayoutInfo::hasFixedSize() const
 
 void QDockAreaLayoutInfo::apply(bool animate)
 {
-    QWidgetAnimator *widgetAnimator = mainWindowLayout()->widgetAnimator;
+    QWidgetAnimator &widgetAnimator = mainWindowLayout()->widgetAnimator;
 
 #ifndef QT_NO_TABBAR
     if (tabbed) {
@@ -1523,7 +1521,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
             }
         }
 
-        widgetAnimator->animate(tabBar, tab_rect, animate);
+        widgetAnimator.animate(tabBar, tab_rect, animate);
     }
 #endif // QT_NO_TABBAR
 
@@ -1546,7 +1544,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
         QWidget *w = item.widgetItem->widget();
 
         QRect geo = w->geometry();
-        widgetAnimator->animate(w, r, animate);
+        widgetAnimator.animate(w, r, animate);
         if (!w->isHidden()) {
             QDockWidget *dw = qobject_cast<QDockWidget*>(w);
             if (!r.isValid() && geo.right() >= 0 && geo.bottom() >= 0) {
@@ -1704,15 +1702,16 @@ void QDockAreaLayoutInfo::split(int index, Qt::Orientation orientation,
     }
 }
 
-QDockAreaLayoutItem &QDockAreaLayoutInfo::item(QList<int> path)
+QDockAreaLayoutItem &QDockAreaLayoutInfo::item(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
+    const int index = path.first();
     if (path.count() > 1) {
-        QDockAreaLayoutItem &item = item_list[path.takeFirst()];
+        const QDockAreaLayoutItem &item = item_list.at(index);
         Q_ASSERT(item.subinfo != 0);
-        return item.subinfo->item(path);
+        return item.subinfo->item(path.mid(1));
     }
-    return item_list[path.first()];
+    return item_list[index];
 }
 
 QLayoutItem *QDockAreaLayoutInfo::itemAt(int *x, int index) const
@@ -1974,7 +1973,6 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 } else {
                     int dummy;
                     stream >> item.pos >> item.size >> dummy >> dummy;
-    //                qDebug() << widget << item.pos << item.size;
                     if (!testing) {
                         widget->setFloating(false);
                         widget->setVisible(flags & StateFlagVisible);
@@ -2076,7 +2074,7 @@ void QDockAreaLayoutInfo::updateTabBar() const
 
     QDockAreaLayoutInfo *that = const_cast<QDockAreaLayoutInfo*>(this);
 
-    if (tabBar == 0) {
+    if (that->tabBar == 0) {
         that->tabBar = mainWindowLayout()->getTabBar();
         that->tabBar->setShape(static_cast<QTabBar::Shape>(tabBarShape));
         that->tabBar->setDrawBase(true);
@@ -2477,37 +2475,37 @@ QDockAreaLayoutInfo *QDockAreaLayout::info(QWidget *widget)
     return 0;
 }
 
-QDockAreaLayoutInfo *QDockAreaLayout::info(QList<int> path)
+QDockAreaLayoutInfo *QDockAreaLayout::info(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
 
-    if (path.isEmpty())
+    if (path.count() == 1)
         return &docks[index];
 
-    return docks[index].info(path);
+    return docks[index].info(path.mid(1));
 }
 
-const QDockAreaLayoutInfo *QDockAreaLayout::info(QList<int> path) const
+const QDockAreaLayoutInfo *QDockAreaLayout::info(const QList<int> &path) const
 {
     return const_cast<QDockAreaLayout*>(this)->info(path);
 }
 
-QDockAreaLayoutItem &QDockAreaLayout::item(QList<int> path)
+QDockAreaLayoutItem &QDockAreaLayout::item(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    return docks[index].item(path);
+    return docks[index].item(path.mid(1));
 }
 
-QRect QDockAreaLayout::itemRect(QList<int> path) const
+QRect QDockAreaLayout::itemRect(const QList<int> &path) const
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    return docks[index].itemRect(path);
+    return docks[index].itemRect(path.mid(1));
 }
 
 QRect QDockAreaLayout::separatorRect(int index) const
@@ -2531,49 +2529,49 @@ QRect QDockAreaLayout::separatorRect(int index) const
     return QRect();
 }
 
-QRect QDockAreaLayout::separatorRect(QList<int> path) const
+QRect QDockAreaLayout::separatorRect(const QList<int> &path) const
 {
     Q_ASSERT(!path.isEmpty());
 
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
 
-    if (path.isEmpty())
+    if (path.count() == 1)
         return separatorRect(index);
     else
-        return docks[index].separatorRect(path);
+        return docks[index].separatorRect(path.mid(1));
 }
 
-bool QDockAreaLayout::insertGap(QList<int> path, QLayoutItem *dockWidgetItem)
+bool QDockAreaLayout::insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem)
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    return docks[index].insertGap(path, dockWidgetItem);
+    return docks[index].insertGap(path.mid(1), dockWidgetItem);
 }
 
-QLayoutItem *QDockAreaLayout::plug(QList<int> path)
+QLayoutItem *QDockAreaLayout::plug(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    return docks[index].plug(path);
+    return docks[index].plug(path.mid(1));
 }
 
-QLayoutItem *QDockAreaLayout::unplug(QList<int> path)
+QLayoutItem *QDockAreaLayout::unplug(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    return docks[index].unplug(path);
+    return docks[index].unplug(path.mid(1));
 }
 
-void QDockAreaLayout::remove(QList<int> path)
+void QDockAreaLayout::remove(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
-    int index = path.takeFirst();
+    const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    docks[index].remove(path);
+    docks[index].remove(path.mid(1));
 }
 
 static inline int qMin(int i1, int i2, int i3) { return qMin(i1, qMin(i2, i3)); }
@@ -3066,13 +3064,13 @@ void QDockAreaLayout::splitDockWidget(QDockWidget *after,
 
 void QDockAreaLayout::apply(bool animate)
 {
-    QWidgetAnimator *widgetAnimator
+    QWidgetAnimator &widgetAnimator
         = qobject_cast<QMainWindowLayout*>(mainWindow->layout())->widgetAnimator;
 
     for (int i = 0; i < QInternal::DockCount; ++i)
         docks[i].apply(animate);
     if (centralWidgetItem != 0 && !centralWidgetItem->isEmpty()) {
-        widgetAnimator->animate(centralWidgetItem->widget(), centralWidgetRect,
+        widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect,
                                 animate);
     }
 
@@ -3114,9 +3112,8 @@ QRegion QDockAreaLayout::separatorRegion() const
     return result;
 }
 
-int QDockAreaLayout::separatorMove(QList<int> separator, const QPoint &origin,
-                                                const QPoint &dest,
-                                                QVector<QLayoutStruct> *cache)
+int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &origin,
+                                                const QPoint &dest)
 {
     int delta = 0;
     int index = separator.last();
@@ -3125,21 +3122,18 @@ int QDockAreaLayout::separatorMove(QList<int> separator, const QPoint &origin,
         QDockAreaLayoutInfo *info = this->info(separator);
         delta = pick(info->o, dest - origin);
         if (delta != 0)
-            delta = info->separatorMove(index, delta, cache);
+            delta = info->separatorMove(index, delta);
         info->apply(false);
         return delta;
     }
 
-    if (cache->isEmpty()) {
-        QVector<QLayoutStruct> &list = *cache;
+    QVector<QLayoutStruct> list;
 
-        if (index == QInternal::LeftDock || index == QInternal::RightDock)
-            getGrid(0, &list);
-        else
-            getGrid(&list, 0);
-    }
+    if (index == QInternal::LeftDock || index == QInternal::RightDock)
+        getGrid(0, &list);
+    else
+        getGrid(&list, 0);
 
-    QVector<QLayoutStruct> list = *cache;
     int sep_index = index == QInternal::LeftDock || index == QInternal::TopDock
                         ? 0 : 1;
     Qt::Orientation o = index == QInternal::LeftDock || index == QInternal::RightDock
@@ -3260,7 +3254,7 @@ QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
     return result;
 }
 
-QRect QDockAreaLayout::gapRect(QList<int> path) const
+QRect QDockAreaLayout::gapRect(const QList<int> &path) const
 {
     const QDockAreaLayoutInfo *info = this->info(path);
     if (info == 0)

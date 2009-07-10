@@ -10,19 +10,19 @@ Item {
             id: FeedModel
             property string tags : TagsEdit.text
             source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
-            query: "doc($src)/rss/channel/item"
+            query: "/rss/channel/item"
             namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
 
-            Role { name: "title"; query: "title/string()" }
-            Role { name: "imagePath"; query: "media:thumbnail/@url/string()" }
-            Role { name: "url"; query: "media:content/@url/string()" }
-            Role { name: "description"; query: "description/string()" }
-            Role { name: "tags"; query: "media:category/string()" }
-            Role { name: "photoWidth"; query: "media:content/@width/string()" }
-            Role { name: "photoHeight"; query: "media:content/@height/string()" }
-            Role { name: "photoType"; query: "media:content/@type/string()" }
-            Role { name: "photoAuthor"; query: "author/string()" }
-            Role { name: "photoDate"; query: "pubDate/string()" }
+            XmlRole { name: "title"; query: "title/string()" }
+            XmlRole { name: "imagePath"; query: "media:thumbnail/@url/string()" }
+            XmlRole { name: "url"; query: "media:content/@url/string()" }
+            XmlRole { name: "description"; query: "description/string()" }
+            XmlRole { name: "tags"; query: "media:category/string()" }
+            XmlRole { name: "photoWidth"; query: "media:content/@width/string()" }
+            XmlRole { name: "photoHeight"; query: "media:content/@height/string()" }
+            XmlRole { name: "photoType"; query: "media:content/@type/string()" }
+            XmlRole { name: "photoAuthor"; query: "author/string()" }
+            XmlRole { name: "photoDate"; query: "pubDate/string()" }
         },
 
         Component {
@@ -99,13 +99,13 @@ Item {
                 Transition {
                     fromState: "*"; toState: "Details"
                     ParentChangeAction { }
-                    NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                    NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                 },
                 Transition {
                     fromState: "Details"; toState: "*"
                     SequentialAnimation {
                         ParentChangeAction { }
-                        NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                         SetPropertyAction { filter: Wrapper; properties: "z" }
                     }
                 }
@@ -194,7 +194,7 @@ Item {
         transitions: [
             Transition {
                 fromState: "*"; toState: "*"
-                NumericAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
+                NumberAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]
     }

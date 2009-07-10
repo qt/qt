@@ -45,26 +45,28 @@
 #include <qmlcontext.h>
 #include <qmlinfo.h>
 #include <QVariant>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QtCore/qdebug.h>
+
+Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
 QmlBindableValuePrivate::QmlBindableValuePrivate()
-: inited(false), updating(false), mePtr(0)
+: inited(false), updating(false), enabled(true), mePtr(0)
 {
 }
 
 QML_DEFINE_NOCREATE_TYPE(QmlBindableValue);
-QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), data, rc, obj)
+QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, QObject *parent)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(ctxt, data, rc, obj)
 {
 }
 
-QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), str, obj)
+QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, QmlContext *ctxt, QObject *parent)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(ctxt, str, obj)
 {
 }
 
@@ -105,7 +107,15 @@ void QmlBindableValue::setExpression(const QString &expr)
     update();
 }
 
-Q_DECLARE_METATYPE(QList<QObject *>);
+void QmlBindableValue::forceUpdate()
+{
+    Q_D(QmlBindableValue);
+    if (!d->inited)
+        init();
+    else
+        update();
+}
+
 void QmlBindableValue::update()
 {
     Q_D(QmlBindableValue);
@@ -113,7 +123,7 @@ void QmlBindableValue::update()
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
 #endif
-    if (!d->inited)
+    if (!d->inited || !d->enabled)
         return;
 
     if (!d->updating) {
@@ -157,6 +167,20 @@ void QmlBindableValue::update()
 void QmlBindableValue::valueChanged()
 {
     update();
+}
+
+void QmlBindableValue::setEnabled(bool e)
+{
+    Q_D(QmlBindableValue);
+    d->enabled = e;
+    setTrackChange(e);
+}
+
+bool QmlBindableValue::enabled() const
+{
+    Q_D(const QmlBindableValue);
+
+    return d->enabled;
 }
 
 QT_END_NAMESPACE

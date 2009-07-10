@@ -109,10 +109,11 @@ private:
     int _b;
     QString _pix;
 };
-QML_DECLARE_TYPE(QFxScaleGrid)
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxScaleGrid)
+
 QT_END_HEADER
+
 #endif // QFXSCALEGRID_H

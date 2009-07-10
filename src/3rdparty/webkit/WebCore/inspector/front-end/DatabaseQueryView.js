@@ -58,7 +58,7 @@ WebInspector.DatabaseQueryView.prototype = {
         setTimeout(moveBackIfOutside.bind(this), 0);
     },
 
-    completions: function(wordRange, bestMatchOnly)
+    completions: function(wordRange, bestMatchOnly, completionsReadyCallback)
     {
         var prefix = wordRange.toString().toLowerCase();
         if (!prefix.length)
@@ -85,7 +85,7 @@ WebInspector.DatabaseQueryView.prototype = {
         accumulateMatches(this.database.tableNames.map(function(name) { return name + " " }));
         accumulateMatches(["SELECT ", "FROM ", "WHERE ", "LIMIT ", "DELETE FROM ", "CREATE ", "DROP ", "TABLE ", "INDEX ", "UPDATE ", "INSERT INTO ", "VALUES ("]);
 
-        return results;
+        completionsReadyCallback(results);
     },
 
     _promptKeyDown: function(event)
@@ -157,7 +157,7 @@ WebInspector.DatabaseQueryView.prototype = {
         else if (error.code == 2)
             var message = WebInspector.UIString("Database no longer has expected version.");
         else
-            var message = WebInspector.UIString("An unexpected error %s occured.", error.code);
+            var message = WebInspector.UIString("An unexpected error %s occurred.", error.code);
 
         this._appendQueryResult(query, message, "error");
     },

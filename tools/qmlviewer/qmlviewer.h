@@ -19,6 +19,7 @@
 #include <QTime>
 #include <QList>
 
+QT_BEGIN_NAMESPACE
 
 class QFxView;
 class PreviewDeviceSkin;
@@ -89,5 +90,7 @@ private:
     bool scaleSkin;
     mutable QMenuBar *mb;
 };
+
+QT_END_NAMESPACE
 
 #endif

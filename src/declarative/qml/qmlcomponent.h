@@ -54,6 +54,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlCompiledComponent;
 class QByteArray;
 class QmlComponentPrivate;
@@ -66,9 +67,10 @@ class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
 public:
     QmlComponent(QObject *parent = 0);
     QmlComponent(QmlEngine *, QObject *parent=0);
+    QmlComponent(QmlEngine *, const QString &url, QObject *parent = 0);
     QmlComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
     QmlComponent(QmlEngine *, const QByteArray &data, 
-                 const QUrl &baseUrl=QUrl(), QObject *parent=0);
+                 const QUrl &baseUrl, QObject *parent=0);
     virtual ~QmlComponent();
 
     Q_ENUMS(Status)
@@ -81,6 +83,7 @@ public:
     Q_INVOKABLE bool isLoading() const;
 
     QList<QmlError> errors() const;
+    Q_INVOKABLE QString errorsString() const;
 
     QUrl url() const;
 
@@ -90,7 +93,7 @@ public:
     virtual void completeCreate();
 
     void loadUrl(const QUrl &url);
-    void setData(const QByteArray &, const QUrl &baseUrl = QUrl());
+    void setData(const QByteArray &, const QUrl &baseUrl);
 
 Q_SIGNALS:
     void statusChanged(QmlComponent::Status);
@@ -104,10 +107,11 @@ private:
     friend class QmlVME;
     friend struct QmlCompositeTypeData;
 };
-Q_DECLARE_METATYPE(QmlComponent::Status)
-QML_DECLARE_TYPE(QmlComponent)
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlComponent::Status)
+QML_DECLARE_TYPE(QmlComponent)
 
 QT_END_HEADER
 

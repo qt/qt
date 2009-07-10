@@ -67,30 +67,18 @@ bool QLibraryPrivate::load_sys()
 
     //avoid 'Bad Image' message box
     UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
-    QT_WA({
-        pHnd = LoadLibraryW((TCHAR*)QDir::toNativeSeparators(attempt).utf16());
-    } , {
-        pHnd = LoadLibraryA(QFile::encodeName(QDir::toNativeSeparators(attempt)).data());
-    });
-    
+    pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
+
     if (pluginState != IsAPlugin) {
 #if defined(Q_OS_WINCE)
         if (!pHnd && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
             QString secondAttempt = fileName;
-            QT_WA({
-                pHnd = LoadLibraryW((TCHAR*)QDir::toNativeSeparators(secondAttempt).utf16());
-            } , {
-                pHnd = LoadLibraryA(QFile::encodeName(QDir::toNativeSeparators(secondAttempt)).data());
-            });
+            pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(secondAttempt).utf16());
         }
 #endif
         if (!pHnd && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
             attempt += QLatin1String(".dll");
-            QT_WA({
-                pHnd = LoadLibraryW((TCHAR*)QDir::toNativeSeparators(attempt).utf16());
-            } , {
-                pHnd = LoadLibraryA(QFile::encodeName(QDir::toNativeSeparators(attempt)).data());
-            });
+            pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
         }
     }
 
@@ -100,15 +88,11 @@ bool QLibraryPrivate::load_sys()
     }
     if (pHnd) {
         errorString.clear();
-        QT_WA({
-            TCHAR buffer[MAX_PATH + 1];
-            ::GetModuleFileNameW(pHnd, buffer, MAX_PATH);
-            attempt = QString::fromUtf16(reinterpret_cast<const ushort *>(&buffer));
-        }, {
-            char buffer[MAX_PATH + 1];
-            ::GetModuleFileNameA(pHnd, buffer, MAX_PATH);
-            attempt = QString::fromLocal8Bit(buffer);
-        });
+
+        wchar_t buffer[MAX_PATH];
+        ::GetModuleFileName(pHnd, buffer, MAX_PATH);
+        attempt = QString::fromWCharArray(buffer);
+
         const QDir dir =  QFileInfo(fileName).dir();
         const QString realfilename = attempt.mid(attempt.lastIndexOf(QLatin1Char('\\')) + 1);
         if (dir.path() == QLatin1String("."))

@@ -86,7 +86,7 @@ protected:
     virtual void valueChanged();
 
 private:
-    friend class BindExpressionProxy;
+    friend class QmlExpressionBindProxy;
     friend class QmlDebugger;
     friend class QmlContext;
     QmlExpressionPrivate *d;
@@ -108,7 +108,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void valueChanged();
 };
-
 
 QT_END_NAMESPACE
 

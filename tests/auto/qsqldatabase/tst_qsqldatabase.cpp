@@ -249,7 +249,7 @@ struct FieldDef {
 // excluding the primary key field
 static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
 {
-    tst_Databases::safeDropTables(db, QStringList() << qTableName("qtestfields"));
+    tst_Databases::safeDropTable(db, qTableName("qtestfields"));
     QSqlQuery q(db);
     // construct a create table statement consisting of all fieldtypes
     QString qs = "create table " + qTableName("qtestfields");
@@ -298,6 +298,7 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
         q.exec("set table_type=innodb");
     if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
 
     // please never ever change this table; otherwise fix all tests ;)
@@ -354,7 +355,7 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         q.exec("drop schema " + qTableName("qtestschema") + " cascade");
 
     if (testWhiteSpaceNames(db.driverName()))
-        tableNames <<  (qTableName("qtest") + " test");
+        tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest") + " test", QSqlDriver::TableName);
 
     tst_Databases::safeDropTables(db, tableNames);
 }
@@ -539,11 +540,6 @@ void tst_QSqlDatabase::tables()
     if (tempTables)
         QVERIFY(tables.contains(qTableName("temp_tab"), Qt::CaseInsensitive));
     QVERIFY(tables.contains(qTableName("qtest"), Qt::CaseInsensitive));
-
-    if (tst_Databases::isMSAccess(db))
-        QSqlQuery("drop table " + qTableName("qtest_view"), db);
-    else
-        QSqlQuery("drop view " + qTableName("qtest_view"), db);
 
     if (db.driverName().startsWith("QPSQL")) {
         QVERIFY(tables.contains(qTableName("qtest") + " test"));

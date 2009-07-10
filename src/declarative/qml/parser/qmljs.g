@@ -3,7 +3,7 @@
 -- Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 -- Contact: Qt Software Information (qt-info@nokia.com)
 --
--- This file is part of the QtScript module of the Qt Toolkit.
+-- This file is part of the QtDeclarative module of the Qt Toolkit.
 --
 -- $QT_BEGIN_LICENSE:LGPL$
 -- No Commercial Usage
@@ -84,6 +84,7 @@
 --- context keywords.
 %token T_PUBLIC "public"
 %token T_IMPORT "import"
+%token T_AS "as"
 
 %nonassoc SHIFT_THERE
 %nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY
@@ -254,6 +255,7 @@ public:
       AST::UiProgram *UiProgram;
       AST::UiImportList *UiImportList;
       AST::UiImport *UiImport;
+      AST::UiParameterList *UiParameterList;
       AST::UiPublicMember *UiPublicMember;
       AST::UiObjectDefinition *UiObjectDefinition;
       AST::UiObjectInitializer *UiObjectInitializer;
@@ -536,6 +538,48 @@ case $rule_number: {
 } break;
 ./
 
+UiImport: T_IMPORT T_STRING_LITERAL T_AS JsIdentifier T_AUTOMATIC_SEMICOLON;
+UiImport: T_IMPORT T_STRING_LITERAL T_AS JsIdentifier T_SEMICOLON;
+/.
+case $rule_number: {
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).sval);
+    node->importId = sym(4).sval;
+    node->importToken = loc(1);
+    node->fileNameToken = loc(2);
+    node->asToken = loc(3);
+    node->importIdToken = loc(4);
+    node->semicolonToken = loc(5);
+    sym(1).Node = node;
+} break;
+./
+
+UiImport: T_IMPORT UiQualifiedId T_AUTOMATIC_SEMICOLON;
+UiImport: T_IMPORT UiQualifiedId T_SEMICOLON;
+/.
+case $rule_number: {
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId);
+    node->importToken = loc(1);
+    node->fileNameToken = loc(2);
+    node->semicolonToken = loc(3);
+    sym(1).Node = node;
+} break;
+./
+
+UiImport: T_IMPORT UiQualifiedId T_AS JsIdentifier T_AUTOMATIC_SEMICOLON;
+UiImport: T_IMPORT UiQualifiedId T_AS JsIdentifier T_SEMICOLON;
+/.
+case $rule_number: {
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId);
+    node->importId = sym(4).sval;
+    node->importToken = loc(1);
+    node->fileNameToken = loc(2);
+    node->asToken = loc(3);
+    node->importIdToken = loc(4);
+    node->semicolonToken = loc(5);
+    sym(1).Node = node;
+} break;
+./
+
 Empty: ;
 /.
 case $rule_number: {
@@ -705,6 +749,52 @@ case $rule_number: {
 ./
 
 UiPropertyType: T_IDENTIFIER ;
+
+UiParameterListOpt: ;
+/.
+case $rule_number: {
+  sym(1).Node = 0;
+} break;
+./
+
+UiParameterListOpt: UiParameterList ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(1).UiParameterList->finish ();
+} break;
+./
+
+UiParameterList: UiPropertyType JsIdentifier ;
+/.
+case $rule_number: {
+  AST::UiParameterList *node = makeAstNode<AST::UiParameterList> (driver->nodePool(), sym(1).sval, sym(2).sval);
+  node->identifierToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+UiParameterList: UiParameterList T_COMMA UiPropertyType JsIdentifier ;
+/.
+case $rule_number: {
+  AST::UiParameterList *node = makeAstNode<AST::UiParameterList> (driver->nodePool(), sym(1).UiParameterList, sym(3).sval, sym(4).sval);
+  node->commaToken = loc(2);
+  node->identifierToken = loc(4);
+  sym(1).Node = node;
+} break;
+./
+
+UiObjectMember: T_SIGNAL T_IDENTIFIER T_LPAREN UiParameterListOpt T_RPAREN ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
+    node->type = AST::UiPublicMember::Signal;
+    node->propertyToken = loc(1);
+    node->typeToken = loc(2);
+    node->identifierToken = loc(3);
+    node->parameters = sym(4).UiParameterList;
+    sym(1).Node = node;
+}   break;
+./
 
 UiObjectMember: T_SIGNAL T_IDENTIFIER ;
 /.

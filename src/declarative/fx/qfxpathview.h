@@ -127,9 +127,10 @@ private:
     Q_DISABLE_COPY(QFxPathView)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPathView)
 };
-QML_DECLARE_TYPE(QFxPathView)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxPathView)
 
 QT_END_HEADER
 

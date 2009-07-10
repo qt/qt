@@ -54,16 +54,16 @@
 #include "qmlbindablevalue.h"
 #include "qml.h"
 #include "qfxitem.h"
-#include "qperformancelog.h"
-#include "qfxperf.h"
+#include "private/qperformancelog_p.h"
+#include "private/qfxperf_p.h"
 
 #include "qfxview.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmldebugger.h>
 
-
 QT_BEGIN_NAMESPACE
+
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
 
 static QVariant stringToPixmap(const QString &str)

@@ -1420,7 +1420,8 @@ public:
     bool addSignalHandler(QObject *sender, int signalIndex,
         const QScriptValueImpl &receiver,
         const QScriptValueImpl &slot,
-        const QScriptValueImpl &senderWrapper = QScriptValueImpl());
+        const QScriptValueImpl &senderWrapper,
+        Qt::ConnectionType type);
     bool removeSignalHandler(
         QObject *sender, int signalIndex,
         const QScriptValueImpl &receiver,
@@ -1741,13 +1742,14 @@ void QScript::QObjectConnectionManager::mark(int generation)
 
 bool QScript::QObjectConnectionManager::addSignalHandler(
     QObject *sender, int signalIndex, const QScriptValueImpl &receiver,
-    const QScriptValueImpl &function, const QScriptValueImpl &senderWrapper)
+    const QScriptValueImpl &function, const QScriptValueImpl &senderWrapper,
+    Qt::ConnectionType type)
 {
     if (connections.size() <= signalIndex)
         connections.resize(signalIndex+1);
     QVector<QObjectConnection> &cs = connections[signalIndex];
     int absSlotIndex = m_slotCounter + metaObject()->methodOffset();
-    bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex);
+    bool ok = QMetaObject::connect(sender, signalIndex, this, absSlotIndex, type);
     if (ok) {
         cs.append(QScript::QObjectConnection(m_slotCounter++, receiver, function, senderWrapper));
         QMetaMethod signal = sender->metaObject()->method(signalIndex);
@@ -2051,12 +2053,12 @@ bool ExtQMetaObjectData::resolve(const QScriptValueImpl &object,
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
-
         for (int j = 0; j < e.keyCount(); ++j) {
             const char *key = e.key(j);
-
             if (! qstrcmp (key, name.constData())) {
-                member->native(nameId, e.value(j), QScriptValue::ReadOnly);
+                member->native(nameId, e.value(j),
+                               QScriptValue::ReadOnly
+                               | QScriptValue::Undeletable);
                 *base = object;
                 return true;
             }
@@ -2176,12 +2178,13 @@ bool QScriptQObjectData::addSignalHandler(QObject *sender,
                                           int signalIndex,
                                           const QScriptValueImpl &receiver,
                                           const QScriptValueImpl &slot,
-                                          const QScriptValueImpl &senderWrapper)
+                                          const QScriptValueImpl &senderWrapper,
+                                          Qt::ConnectionType type)
 {
     if (!m_connectionManager)
         m_connectionManager = new QScript::QObjectConnectionManager();
     return m_connectionManager->addSignalHandler(
-        sender, signalIndex, receiver, slot, senderWrapper);
+        sender, signalIndex, receiver, slot, senderWrapper, type);
 }
 
 bool QScriptQObjectData::removeSignalHandler(QObject *sender,

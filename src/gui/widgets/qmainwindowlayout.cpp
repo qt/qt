@@ -1304,22 +1304,8 @@ bool QMainWindowLayout::separatorMove(const QPoint &pos)
     if (movingSeparator.isEmpty())
         return false;
     movingSeparatorPos = pos;
-    separatorMoveTimer->start();
+    separatorMoveTimer.start(0, this);
     return true;
-}
-
-void QMainWindowLayout::doSeparatorMove()
-{
-    if (movingSeparator.isEmpty())
-        return;
-    if (movingSeparatorOrigin == movingSeparatorPos)
-        return;
-
-    layoutState = savedState;
-    layoutState.dockAreaLayout.separatorMove(movingSeparator, movingSeparatorOrigin,
-                                                movingSeparatorPos,
-                                                &separatorMoveCache);
-    movingSeparatorPos = movingSeparatorOrigin;
 }
 
 bool QMainWindowLayout::endSeparatorMove(const QPoint&)
@@ -1327,7 +1313,6 @@ bool QMainWindowLayout::endSeparatorMove(const QPoint&)
     bool result = !movingSeparator.isEmpty();
     movingSeparator.clear();
     savedState.clear();
-    separatorMoveCache.clear();
     return result;
 }
 
@@ -1376,7 +1361,7 @@ QLayoutItem *QMainWindowLayout::takeAt(int index)
     if (QLayoutItem *ret = layoutState.takeAt(index, &x)) {
         // the widget might in fact have been destroyed by now
         if (QWidget *w = ret->widget()) {
-            widgetAnimator->abort(w);
+            widgetAnimator.abort(w);
             if (w == pluggingWidget)
                 pluggingWidget = 0;
         }
@@ -1557,25 +1542,9 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
             }
         }
 #endif
-        widgetAnimator->animate(widget, globalRect,
-                                dockOptions & QMainWindow::AnimatedDocks);
+        widgetAnimator.animate(widget, globalRect, true);
     } else {
-#ifndef QT_NO_DOCKWIDGET
-        if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
-            dw->d_func()->plug(currentGapRect);
-#endif
-#ifndef QT_NO_TOOLBAR
-        if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
-            tb->d_func()->plug(currentGapRect);
-#endif
-        applyState(layoutState);
-        savedState.clear();
-#ifndef QT_NO_DOCKWIDGET
-        parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
-#endif
-        currentGapPos.clear();
-        updateGapIndicator();
-        pluggingWidget = 0;
+        animationFinished(widget);
     }
 
     return true;
@@ -1682,15 +1651,16 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 #endif
 #endif
 #endif // QT_NO_DOCKWIDGET
+    , widgetAnimator(this)
+    , pluggingWidget(0)
+#ifndef QT_NO_RUBBERBAND
+    , gapIndicator(QRubberBand::Rectangle, mainwindow)
+#endif //QT_NO_RUBBERBAND
 {
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
     sep = mainwindow->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, mainwindow);
 #endif
-    separatorMoveTimer = new QTimer(this);
-    separatorMoveTimer->setSingleShot(true);
-    separatorMoveTimer->setInterval(0);
-    connect(separatorMoveTimer, SIGNAL(timeout()), this, SLOT(doSeparatorMove()));
 
 #ifndef QT_NO_TABWIDGET
     for (int i = 0; i < QInternal::DockCount; ++i)
@@ -1699,20 +1669,13 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 #endif // QT_NO_DOCKWIDGET
 
 #ifndef QT_NO_RUBBERBAND
-    gapIndicator = new QRubberBand(QRubberBand::Rectangle, mainwindow);
     // For accessibility to identify this special widget.
-    gapIndicator->setObjectName(QLatin1String("qt_rubberband"));
-
-    gapIndicator->hide();
+    gapIndicator.setObjectName(QLatin1String("qt_rubberband"));
+    gapIndicator.hide();
 #endif
     pluggingWidget = 0;
 
     setObjectName(mainwindow->objectName() + QLatin1String("_layout"));
-    widgetAnimator = new QWidgetAnimator(this);
-    connect(widgetAnimator, SIGNAL(finished(QWidget*)),
-            this, SLOT(animationFinished(QWidget*)), Qt::QueuedConnection);
-    connect(widgetAnimator, SIGNAL(finishedAll()),
-            this, SLOT(allAnimationsFinished()));
 }
 
 QMainWindowLayout::~QMainWindowLayout()
@@ -1814,13 +1777,13 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget)
 void QMainWindowLayout::updateGapIndicator()
 {
 #ifndef QT_NO_RUBBERBAND
-    if (widgetAnimator->animating() || currentGapPos.isEmpty()) {
-        gapIndicator->hide();
+    if (widgetAnimator.animating() || currentGapPos.isEmpty()) {
+        gapIndicator.hide();
     } else {
-        if (gapIndicator->geometry() != currentGapRect)
-            gapIndicator->setGeometry(currentGapRect);
-        if (!gapIndicator->isVisible())
-            gapIndicator->show();
+        if (gapIndicator.geometry() != currentGapRect)
+            gapIndicator.setGeometry(currentGapRect);
+        if (!gapIndicator.isVisible())
+            gapIndicator.show();
     }
 #endif
 }
@@ -1981,6 +1944,27 @@ bool QMainWindowLayout::usesHIToolBar(QToolBar *toolbar) const
                 && layoutState.mainWindow->unifiedTitleAndToolBarOnMac());
 #endif
 }
+
+void QMainWindowLayout::timerEvent(QTimerEvent *e)
+{
+#ifndef QT_NO_DOCKWIDGET
+    if (e->timerId() == separatorMoveTimer.timerId()) {
+        //let's move the separators
+        separatorMoveTimer.stop();
+        if (movingSeparator.isEmpty())
+            return;
+        if (movingSeparatorOrigin == movingSeparatorPos)
+            return;
+
+        layoutState = savedState;
+        layoutState.dockAreaLayout.separatorMove(movingSeparator, movingSeparatorOrigin,
+                                                    movingSeparatorPos);
+        movingSeparatorPos = movingSeparatorOrigin;
+    }
+#endif
+    QLayout::timerEvent(e);
+}
+
 
 QT_END_NAMESPACE
 

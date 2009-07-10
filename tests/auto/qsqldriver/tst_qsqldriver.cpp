@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,9 +85,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 {
     QSqlQuery q(db);
 
-    QStringList tableNames;
-    tableNames << qTableName( "relTEST1" );
-    tst_Databases::safeDropTables( db, tableNames );
+    tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
 
     QVERIFY_SQL( q, exec("create table " + qTableName("relTEST1") +
             " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
@@ -105,11 +103,9 @@ void tst_QSqlDriver::initTestCase()
 
 void tst_QSqlDriver::cleanupTestCase()
 {
-    QStringList tableNames;
-    tableNames << qTableName( "relTEST1" );
     foreach (const QString &dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        tst_Databases::safeDropTables( db, tableNames );
+        tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
     }
     dbs.close();
 }

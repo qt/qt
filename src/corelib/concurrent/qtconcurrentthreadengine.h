@@ -51,6 +51,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qtconcurrentexception.h>
 #include <QtCore/qwaitcondition.h>
+#include <QtCore/qatomic.h>
+#include <QtCore/qsemaphore.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -61,55 +63,29 @@ QT_MODULE(Core)
 
 namespace QtConcurrent {
 
-// A Semaphore that can wait until all resources are returned.
-class ThreadEngineSemaphore
+// The ThreadEngineBarrier counts worker threads, and allows one
+// thread to wait for all others to finish. Tested for its use in
+// QtConcurrent, requires more testing for use as a general class.
+class ThreadEngineBarrier
 {
-public:
-    ThreadEngineSemaphore()
-    :count(0) { }
-
-    void acquire()
-    {
-        QMutexLocker lock(&mutex);
-        ++count;
-    }
-
-    int release()
-    {
-        QMutexLocker lock(&mutex);
-        if (--count == 0)
-            waitCondition.wakeAll();
-        return count;
-    }
-
-    // Wait until all resources are released.
-    void wait()
-    {
-        QMutexLocker lock(&mutex);
-        if (count != 0)
-            waitCondition.wait(&mutex);
-    }
-
-    int currentCount()
-    {
-        return count;
-    }
-
-    // releases a resource, unless this is the last resource.
-    // returns true if a resource was released.
-    bool releaseUnlessLast()
-    {
-        QMutexLocker lock(&mutex);
-        if (count == 1)
-            return false;
-        --count;
-        return true;
-    }
-
 private:
+    // The thread count is maintained as an integer in the count atomic
+    // variable. The count can be either positive or negative - a negative
+    // count signals that a thread is waiting on the barrier.
+
+    // BC note: inlined code from Qt < 4.6 will expect to find the QMutex 
+    // and QAtomicInt here. ### Qt 5: remove.
     QMutex mutex;
-    int count;
-    QWaitCondition waitCondition;
+    QAtomicInt count;
+
+    QSemaphore semaphore;
+public:
+    ThreadEngineBarrier();
+    void acquire();
+    int release();
+    void wait();
+    int currentCount();
+    bool releaseUnlessLast();
 };
 
 enum ThreadFunctionResult { ThrottleThread, ThreadFinished };
@@ -132,6 +108,7 @@ public:
     bool isProgressReportingEnabled();
     void setProgressValue(int progress);
     void setProgressRange(int minimum, int maximum);
+    void acquireBarrierSemaphore();
 
 protected: // The user overrides these:
     virtual void start() {}
@@ -152,7 +129,7 @@ private:
 protected:
     QFutureInterfaceBase *futureInterface;
     QThreadPool *threadPool;
-    ThreadEngineSemaphore semaphore;
+    ThreadEngineBarrier barrier;
     QtConcurrent::internal::ExceptionStore exceptionStore;
 };
 
@@ -199,7 +176,7 @@ public:
         QFuture<T> future = QFuture<T>(futureInterfaceTyped());
         start();
 
-        semaphore.acquire();
+        acquireBarrierSemaphore();
         threadPool->start(this);
         return future;
     }

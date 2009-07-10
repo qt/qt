@@ -185,6 +185,6 @@ void QmlDebugClientPlugin::messageReceived(const QByteArray &)
 {
 }
 
-#include "qmldebugclient.moc"
-
 QT_END_NAMESPACE
+
+#include "qmldebugclient.moc"

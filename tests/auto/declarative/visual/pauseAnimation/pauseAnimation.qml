@@ -11,11 +11,11 @@ Rect {
         y: SequentialAnimation {
             running: true
             repeat: true
-            NumericAnimation {
+            NumberAnimation {
                 to: 0; duration: 500
                 easing: "easeInOutQuad"
             }
-            NumericAnimation {
+            NumberAnimation {
                 to: 200-img.height
                 easing: "easeOutBounce"
                 duration: 2000

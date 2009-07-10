@@ -19,17 +19,13 @@
 */
 
 #include "config.h"
-
 #include "JSCSSFontFaceRule.h"
-
-#include <wtf/GetPtr.h>
 
 #include "CSSFontFaceRule.h"
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
 #include "JSCSSStyleDeclaration.h"
-
-#include <runtime/JSNumberCell.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

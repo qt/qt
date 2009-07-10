@@ -48,7 +48,7 @@
 #include <QRectF>
 #include <private/qmlvme_p.h>
 #include <qmlbindablevalue.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <qml.h>
 #include "private/qmlcomponent_p.h"
 #include <qmlcomponent.h>
@@ -113,7 +113,8 @@ QmlParser::Object::DynamicProperty::DynamicProperty(const DynamicProperty &o)
 : isDefaultProperty(o.isDefaultProperty),
   type(o.type),
   name(o.name),
-  defaultValue(o.defaultValue)
+  defaultValue(o.defaultValue),
+  range(o.range)
 {
 }
 
@@ -122,7 +123,8 @@ QmlParser::Object::DynamicSignal::DynamicSignal()
 }
 
 QmlParser::Object::DynamicSignal::DynamicSignal(const DynamicSignal &o)
-: name(o.name)
+: name(o.name), parameterTypes(o.parameterTypes), 
+  parameterNames(o.parameterNames)
 {
 }
 
@@ -131,7 +133,7 @@ QmlParser::Object::DynamicSlot::DynamicSlot()
 }
 
 QmlParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
-: name(o.name), body(o.body)
+: name(o.name), body(o.body), parameterNames(o.parameterNames)
 {
 }
 

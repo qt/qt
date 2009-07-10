@@ -139,9 +139,9 @@ private:
     void refill();
 };
 
-QML_DECLARE_TYPE(QFxGridView)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxGridView)
 
 QT_END_HEADER
 

@@ -47,6 +47,7 @@
 #include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
@@ -73,8 +74,11 @@ public:
 private Q_SLOTS:
     void replyFinished();
 };
-QML_DECLARE_TYPE(QmlScript)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlScript)
+
 QT_END_HEADER
+
 #endif

@@ -54,8 +54,6 @@
 
 QT_BEGIN_HEADER
 
-QT_BEGIN_NAMESPACE
-
 QT_MODULE(Declarative)
 
 #define QML_DECLARE_TYPE(TYPE) \
@@ -72,6 +70,8 @@ QT_MODULE(Declarative)
 
 #define QML_DECLARE_INTERFACE_HASMETATYPE(INTERFACE) \
     QML_DECLARE_TYPE_HASMETATYPE(INTERFACE)
+
+QT_BEGIN_NAMESPACE
 
 #define QML_DEFINE_INTERFACE(INTERFACE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
@@ -93,10 +93,10 @@ class QmlEngine;
 Q_DECLARATIVE_EXPORT void qmlExecuteDeferred(QObject *);
 Q_DECLARATIVE_EXPORT QmlContext *qmlContext(const QObject *);
 Q_DECLARATIVE_EXPORT QmlEngine *qmlEngine(const QObject *);
-Q_DECLARATIVE_EXPORT QObject *qmlAttachedPropertiesObjectById(int, const QObject *);
+Q_DECLARATIVE_EXPORT QObject *qmlAttachedPropertiesObjectById(int, const QObject *, bool create = true);
 
 template<typename T>
-QObject *qmlAttachedPropertiesObject(const QObject *obj)
+QObject *qmlAttachedPropertiesObject(const QObject *obj, bool create = true)
 {
     // ### is this threadsafe?
     static int idx = -1;
@@ -107,13 +107,13 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj)
     if (idx == -1 || !obj)
         return 0;
 
-    return qmlAttachedPropertiesObjectById(idx, obj);
+    return qmlAttachedPropertiesObjectById(idx, obj, create);
 }
+
+QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QObject)
 Q_DECLARE_METATYPE(QVariant)
-
-QT_END_NAMESPACE
 
 QT_END_HEADER
 

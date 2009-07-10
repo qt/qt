@@ -20,19 +20,15 @@
 
 #include "config.h"
 
-
 #if ENABLE(WORKERS)
 
 #include "JSWorkerLocation.h"
 
-#include <wtf/GetPtr.h>
-
 #include "KURL.h"
 #include "WorkerLocation.h"
-
 #include <runtime/Error.h>
-#include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -45,7 +45,7 @@
 #include "qmlstate.h"
 #include "qmlstategroup.h"
 #include "qmlstateoperations.h"
-#include "qfxperf.h"
+#include "private/qfxperf_p.h"
 #include "qfxlayouts.h"
 #include "qfxlayouts_p.h"
 
@@ -132,7 +132,7 @@ BaseLayout {
     id: layout
     y: 0
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "y"
             ease: "easeOutBounce"
         }
@@ -161,7 +161,7 @@ BaseLayout {
     id: layout
     y: 0
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -196,7 +196,7 @@ BaseLayout {
     id: layout
     y: 0
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -310,9 +310,6 @@ void QFxBaseLayout::preLayout()
         d->_ep = true;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
-    if (d->stateGroup) {
-        delete d->stateGroup; d->stateGroup = 0;
-    }
     QSet<QFxItem *> allItems;
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
@@ -389,32 +386,29 @@ void QFxBaseLayout::preLayout()
 }
 
 //###This should be considered to move more centrally, as it seems useful
-void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& changes,
-        QFxItem* target, QmlTransition* trans)
+void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlTransition* trans)
 {
     Q_D(QFxBaseLayout);
     if (!trans||!target)//TODO: if !trans, just apply changes
         return;
     setLayoutItem(target);
-    if (d->stateGroup)
-        delete d->stateGroup;
-    d->stateGroup = new QmlStateGroup(this);
 
-    QmlState *state = new QmlState;
-    *(d->stateGroup->statesProperty()) << state;
+    QmlStateOperation::ActionList actions;
+
     for (int ii=0; ii<changes.size(); ++ii){
-            QmlSetProperty *sp = new QmlSetProperty(state);
-            sp->setObject(target);
-            QVariant val = changes[ii].second;
-            if (d->_margin &&
-                    (changes[ii].first == QLatin1String("x") || changes[ii].first == QLatin1String("y"))){
+
+        QVariant val = changes[ii].second;
+        if (d->_margin &&
+            (changes[ii].first == QLatin1String("x") || 
+             changes[ii].first == QLatin1String("y"))) {
                 val = QVariant(val.toInt() + d->_margin);
-            }
-            sp->setValue(val);
-            sp->setProperty(changes[ii].first);
-            *state << sp;
+        }
+
+        actions << Action(target, changes[ii].first, val);
+
     }
-    state->apply(d->stateGroup, trans, 0);
+
+    d->transitionManager.transition(actions, trans);
     d->_animated << target;
 }
 
@@ -513,7 +507,7 @@ VerticalLayout {
 VerticalLayout {
     id: layout
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -540,7 +534,7 @@ VerticalLayout {
 VerticalLayout {
     id: layout
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -567,7 +561,7 @@ VerticalLayout {
 VerticalLayout {
     id: layout
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "y"
             ease: "easeOutBounce"
         }
@@ -686,7 +680,7 @@ HorizontalLayout {
 HorizontalLayout {
     id: layout
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -708,7 +702,7 @@ HorizontalLayout {
 HorizontalLayout {
     id: layout
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -730,7 +724,7 @@ HorizontalLayout {
 HorizontalLayout {
     id: layout
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "x"
             ease: "easeOutBounce"
         }
@@ -879,7 +873,7 @@ GridLayout {
 GridLayout {
     id: layout
     remove: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 1
@@ -904,7 +898,7 @@ GridLayout {
 GridLayout {
     id: layout
     add: Transition {
-        NumericAnimation {
+        NumberAnimation {
             target: layout.item
             properties: "opacity"
             from: 0
@@ -927,7 +921,7 @@ GridLayout {
 GridLayout {
     id: layout
     move: Transition {
-        NumericAnimation {
+        NumberAnimation {
             properties: "x,y"
             ease: "easeOutBounce"
         }

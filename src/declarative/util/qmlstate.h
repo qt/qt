@@ -59,16 +59,23 @@ class Action
 {
 public:
     Action();
+    Action(QObject *, const QString &, const QVariant &);
+
+    bool restore:1;
+    bool actionDone:1;
 
     QmlMetaProperty property;
-    bool restore;
     QVariant fromValue;
     QVariant toValue;
-    QString fromBinding;
-    QString toBinding;
-    QmlBindableValue *bv;
+
+    QmlBindableValue *fromBinding;
+    QmlBindableValue *toBinding;
     ActionEvent *event;
-    bool actionDone;
+
+    QObject *specifiedObject;
+    QString specifiedProperty;
+
+    void deleteFromBinding();
 };
 
 class ActionEvent 
@@ -79,28 +86,6 @@ public:
     virtual void execute();
 };
 
-class RevertAction
-{
-public:
-    RevertAction(const Action &a, bool from = true) : bv(0)
-    {
-        property = a.property;
-        if (from) {
-            value = a.fromValue;
-            binding = a.fromBinding;
-        } else {
-            value = a.toValue;
-            binding = a.toBinding;
-        }
-        bv = a.bv;
-    }
-
-    QmlMetaProperty property;
-    QVariant value;
-    QString binding;
-    QmlBindableValue *bv;
-};
-
 class QmlStateGroup;
 class Q_DECLARATIVE_EXPORT QmlStateOperation : public QObject
 {
@@ -109,14 +94,12 @@ public:
     QmlStateOperation(QObject *parent = 0)
         : QObject(parent) {}
     typedef QList<Action> ActionList;
-    typedef QList<RevertAction> RevertActionList;
 
     virtual ActionList actions();
 
 protected:
     QmlStateOperation(QObjectPrivate &dd, QObject *parent = 0);
 };
-QML_DECLARE_TYPE(QmlStateOperation)
 
 typedef QmlStateOperation::ActionList QmlStateActions;
 
@@ -166,9 +149,11 @@ private:
     Q_DISABLE_COPY(QmlState)
     friend class QmlTransitionPrivate;
 };
-QML_DECLARE_TYPE(QmlState)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlStateOperation)
+QML_DECLARE_TYPE(QmlState)
 
 QT_END_HEADER
 

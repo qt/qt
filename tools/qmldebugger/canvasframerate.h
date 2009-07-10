@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
+
 class QmlDebugClient;
 class QTabWidget;
 class CanvasFrameRate : public QWidget
@@ -19,6 +21,8 @@ private:
     QTabWidget *m_tabs;
     QObject *m_plugin;
 };
+
+QT_END_NAMESPACE
 
 #endif // CANVASFRAMERATE_H
 

@@ -47,7 +47,7 @@
 #include <QNetworkRequest>
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 
 #include "qmlengine.h"
 #include "qmlstate.h"
@@ -64,10 +64,10 @@
 #include "qfxevents_p.h"
 #include <qmlcomponent.h>
 
-
 QT_BEGIN_NAMESPACE
-#ifndef INT_MAX
-#define INT_MAX 2147483647
+
+#ifndef FLT_MAX
+#define FLT_MAX 1E+37
 #endif
 
 QML_DEFINE_NOCREATE_TYPE(QFxContents)
@@ -121,86 +121,94 @@ QML_DEFINE_TYPE(QFxItem,Item)
 
 */
 
-QFxContents::QFxContents() : _height(0), _width(0)
+QFxContents::QFxContents() : m_height(0), m_width(0)
 {
 }
+
+/*!
+    \qmlproperty qreal Item::contents.width
+    \qmlproperty qreal Item::contents.height
+
+    The contents properties allow an item access to the size of its
+    children. This property is useful if you have an item that needs to be
+    sized to fit its children.    
+*/
 
 /*!
     \property QFxContents::height
     \brief The height of the contents.
 */
-int QFxContents::height() const
+qreal QFxContents::height() const
 {
-    return _height;
+    return m_height;
 }
 
 /*!
     \property QFxContents::width
     \brief The width of the contents.
 */
-int QFxContents::width() const
+qreal QFxContents::width() const
 {
-    return _width;
+    return m_width;
 }
 
 //TODO: optimization: only check sender(), if there is one
 void QFxContents::calcHeight()
 {
-    int oldheight = _height;
+    qreal oldheight = m_height;
 
-    int top = INT_MAX;
-    int bottom = 0;
+    qreal top = FLT_MAX;
+    qreal bottom = 0;
 
-    QList<QGraphicsItem *> children = _item->childItems();
-
+    QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
-        int y = int(child->y());
+        qreal y = child->y();
         if (y + child->height() > bottom)
             bottom = y + child->height();
         if (y < top)
             top = y;
     }
-    _height = bottom - top;
+    m_height = qMax(bottom - top, qreal(0.0));
 
-    if (_height != oldheight)
+    if (m_height != oldheight)
         emit heightChanged();
 }
 
 //TODO: optimization: only check sender(), if there is one
 void QFxContents::calcWidth()
 {
-    int oldwidth = _width;
+    qreal oldwidth = m_width;
 
-    int left = INT_MAX;
-    int right = 0;
-    QList<QGraphicsItem *> children = _item->childItems();
+    qreal left = FLT_MAX;
+    qreal right = 0;
 
+    QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
-        int x = int(child->x());
+        qreal x = child->x();
         if (x + child->width() > right)
             right = x + child->width();
         if (x < left)
             left = x;
     }
-    _width = right - left;
+    m_width = qMax(right - left, qreal(0.0));
 
-    if (_width != oldwidth)
+    if (m_width != oldwidth)
         emit widthChanged();
 }
 
 void QFxContents::setItem(QFxItem *item)
 {
-    _item = item;
+    m_item = item;
 
-    QList<QGraphicsItem *> children = _item->childItems();
+    QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
         connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(topChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
-        connect(child, SIGNAL(leftChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
     }
 
     calcHeight();
@@ -268,15 +276,15 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::leftChanged()
+    \fn void QFxItem::xChanged()
 
-    This signal is emitted when the left coordinate of the item changes.
+    This signal is emitted when the x coordinate of the item changes.
 */
 
 /*!
-    \fn void QFxItem::topChanged()
+    \fn void QFxItem::yChanged()
 
-    This signal is emitted when the top coordinate of the item changes.
+    This signal is emitted when the y coordinate of the item changes.
 */
 
 /*!
@@ -912,7 +920,16 @@ void QFxItem::qmlLoaded()
         QmlContext *ctxt = new QmlContext(qmlContext(this));
         ctxt->addDefaultObject(this);
 
+        if (!d->_qmlcomp->errors().isEmpty()) {
+            qWarning() << d->_qmlcomp->errors();
+            delete d->_qmlcomp;
+            d->_qmlcomp = 0;
+            emit qmlChanged();
+            return;
+        }
         QObject *obj = d->_qmlcomp->create(ctxt);
+        if (!d->_qmlcomp->errors().isEmpty())
+            qWarning() << d->_qmlcomp->errors();
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
         if (qmlChild) {
             qmlChild->setItemParent(this);
@@ -931,8 +948,8 @@ void QFxItem::qmlLoaded()
 /*!
   \qmlproperty real Item::x
   \qmlproperty real Item::y
-  \qmlproperty int Item::width
-  \qmlproperty int Item::height
+  \qmlproperty real Item::width
+  \qmlproperty real Item::height
 
   Defines the item's position and size relative to its parent.
 
@@ -1073,11 +1090,11 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     }
 
     if (newGeometry.x() != oldGeometry.x()) 
-        emit leftChanged();
+        emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
         emit widthChanged();
     if (newGeometry.y() != oldGeometry.y()) 
-        emit topChanged();
+        emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
 
@@ -1306,13 +1323,14 @@ QFxAnchorLine QFxItem::baseline() const
   \qmlproperty AnchorLine Item::anchors.baseline
 
   \qmlproperty Item Item::anchors.fill
+  \qmlproperty Item Item::anchors.centeredIn
 
-  \qmlproperty int Item::anchors.topMargin
-  \qmlproperty int Item::anchors.bottomMargin
-  \qmlproperty int Item::anchors.leftMargin
-  \qmlproperty int Item::anchors.rightMargin
-  \qmlproperty int Item::anchors.horizontalCenterOffset
-  \qmlproperty int Item::anchors.verticalCenterOffset
+  \qmlproperty real Item::anchors.topMargin
+  \qmlproperty real Item::anchors.bottomMargin
+  \qmlproperty real Item::anchors.leftMargin
+  \qmlproperty real Item::anchors.rightMargin
+  \qmlproperty real Item::anchors.horizontalCenterOffset
+  \qmlproperty real Item::anchors.verticalCenterOffset
   
   Anchors provide a way to position an item by specifying its
   relationship with other items.
@@ -1371,11 +1389,11 @@ QFxAnchorLine QFxItem::baseline() const
 
   For non-text items, a default baseline offset of 0 is used.
 */
-int QFxItem::baselineOffset() const
+qreal QFxItem::baselineOffset() const
 {
     Q_D(const QFxItem);
     if (!d->_baselineOffset.isValid()) {
-        return 0;
+        return 0.0;
     } else
         return d->_baselineOffset;
 }
@@ -1383,7 +1401,7 @@ int QFxItem::baselineOffset() const
 /*!
     \internal
 */
-void QFxItem::setBaselineOffset(int offset)
+void QFxItem::setBaselineOffset(qreal offset)
 {
     Q_D(QFxItem);
     if (offset == d->_baselineOffset)

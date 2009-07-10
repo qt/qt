@@ -25,8 +25,9 @@ QCLuceneReaderPrivate::QCLuceneReaderPrivate()
 
 QCLuceneReaderPrivate::QCLuceneReaderPrivate(const QCLuceneReaderPrivate &other)
     : QSharedData()
-{ 
+{
     reader = _CL_POINTER(other.reader); 
+    deleteCLuceneReader = other.deleteCLuceneReader;
 }
 
 QCLuceneReaderPrivate::~QCLuceneReaderPrivate() 

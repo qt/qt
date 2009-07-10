@@ -45,12 +45,12 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qnumberformat.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlNumberFormatterPrivate;
 class Q_DECLARATIVE_EXPORT QmlNumberFormatter : public QObject, public QmlParserStatus
 {
@@ -83,10 +83,10 @@ private:
     Q_DECLARE_PRIVATE(QmlNumberFormatter)
 };
 
-QML_DECLARE_TYPE(QmlNumberFormatter)
-
-
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QmlNumberFormatter)
+
 QT_END_HEADER
+
 #endif

@@ -42,7 +42,7 @@
 #include "qmlmetaproperty.h"
 #include "qmlmetaproperty_p.h"
 #include <qml.h>
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QStringList>
 #include <qmlbindablevalue.h>
 #include <qmlcontext.h>
@@ -50,6 +50,7 @@
 #include <math.h>
 #include <QtCore/qdebug.h>
 
+Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
@@ -242,15 +243,6 @@ void QmlMetaProperty::initProperty(QObject *obj, const QString &name)
     }
     if (!d->name.isEmpty())
         d->type = Property;
-
-    if (d->type == Invalid) {
-        int sig = findSignal(obj, name.toLatin1());
-        if (sig != -1) {
-            d->signal = obj->metaObject()->method(sig);
-            d->type = Signal;
-            d->coreIdx = sig;
-        } 
-    }
 }
 
 /*!
@@ -283,7 +275,6 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
   \value Invalid The property is invalid.
   \value Property The property is a regular Qt property.
   \value SignalProperty The property is a signal property.
-  \value Signal The property is a signal.
   \value Default The property is the default property.
   \value Attached The property is an attached property.
 */
@@ -519,7 +510,7 @@ QMetaProperty QmlMetaProperty::property() const
     Returns the binding associated with this property, or 0 if no binding 
     exists.
 */
-QmlBindableValue *QmlMetaProperty::binding()
+QmlBindableValue *QmlMetaProperty::binding() const
 {
     if (!isProperty() || type() & Attached)
         return 0;
@@ -537,24 +528,49 @@ QmlBindableValue *QmlMetaProperty::binding()
     return 0;
 }
 
-/*! \internal */
-int QmlMetaProperty::findSignal(const QObject *obj, const char *name)
+/*!
+    Set the binding associated with this property to \a binding.  Returns
+    the existing binding (if any), otherwise 0.
+
+    \a binding will be enabled, and the returned binding (if any) will be
+    disabled.
+*/
+QmlBindableValue *QmlMetaProperty::setBinding(QmlBindableValue *binding) const
 {
-    const QMetaObject *mo = obj->metaObject();
-    int methods = mo->methodCount();
-    for (int ii = 0; ii < methods; ++ii) {
-        QMetaMethod method = mo->method(ii);
-        if (method.methodType() != QMetaMethod::Signal)
-            continue;
+    if (!isProperty() || type() & Attached)
+        return 0;
 
-        QByteArray methodName = method.signature();
-        int idx = methodName.indexOf('(');
-        methodName = methodName.left(idx);
+    const QObjectList &children = object()->children();
+    for (QObjectList::ConstIterator iter = children.begin();
+            iter != children.end(); ++iter) {
+        QObject *child = *iter;
+        if (child->metaObject() == &QmlBindableValue::staticMetaObject) {
+            QmlBindableValue *v = static_cast<QmlBindableValue *>(child);
+            if (v->property() == *this && v->enabled()) {
 
-        if (methodName == name) 
-            return ii;
+                v->setEnabled(false);
+
+                if (binding) {
+                    binding->setParent(object());
+                    binding->setTarget(*this);
+                    binding->setEnabled(true);
+                    binding->forceUpdate();
+                }
+
+                return v;
+
+            }
+        }
     }
-    return -1;
+
+    if (binding) {
+        binding->setParent(object());
+        binding->setTarget(*this);
+        binding->setEnabled(true);
+        binding->forceUpdate();
+    }
+
+    return 0;
 }
 
 void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
@@ -562,7 +578,7 @@ void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
     const QMetaObject *mo = obj->metaObject();
 
     int methods = mo->methodCount();
-    for (int ii = 0; ii < methods; ++ii) {
+    for (int ii = methods - 1; ii >= 0; --ii) {
         QMetaMethod method = mo->method(ii);
         QString methodName = QLatin1String(method.signature());
         int idx = methodName.indexOf(QLatin1Char('('));
@@ -606,8 +622,6 @@ QVariant QmlMetaProperty::read() const
     }
     return QVariant();
 }
-
-Q_DECLARE_METATYPE(QList<QObject *>);
 
 void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
 {
@@ -868,7 +882,8 @@ bool QmlMetaProperty::hasChangedNotifier() const
 */
 bool QmlMetaProperty::needsChangedNotifier() const
 {
-    return type() & Property && !(type() & Attached);
+    return type() & Property && !(type() & Attached) && 
+           !property().isConstant();
 }
 
 /*!
@@ -911,17 +926,6 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
         return QObject::connect(d->object, signal.constData(), dest, slot);
     } else  {
         return false;
-    }
-}
-
-/*! \internal */
-void QmlMetaProperty::emitSignal()
-{
-    if (type() & Signal) {
-        if (d->signal.parameterTypes().isEmpty())
-            d->object->metaObject()->activate(d->object, d->coreIdx, 0);
-        else
-            qWarning() << "QmlMetaProperty: Cannot emit signal with parameters";
     }
 }
 
@@ -975,7 +979,7 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj)
         d->name = QLatin1String(p.name());
         d->propType = p.propertyType;
         d->coreIdx = id;
-    } else if (d->type & SignalProperty || d->type & Signal) {
+    } else if (d->type & SignalProperty) {
         d->signal = obj->metaObject()->method(id);
         d->coreIdx = id;
     } 
@@ -988,6 +992,36 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj)
 QMetaMethod QmlMetaProperty::method() const
 {
     return d->signal;
+}
+
+/*!
+    \internal
+
+    Creates a QmlMetaProperty for the property \a name of \a obj. Unlike
+    the QmlMetaProperty(QObject*, QString) constructor, this static function
+    will correctly handle dot properties.
+*/
+QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj, const QString &name)
+{
+    QStringList path = name.split(QLatin1Char('.'));
+
+    QObject *object = obj;
+
+    for (int jj = 0; jj < path.count() - 1; ++jj) {
+        const QString &pathName = path.at(jj);
+        QmlMetaProperty prop(object, pathName);
+        QObject *objVal = QmlMetaType::toQObject(prop.read());
+        if (!objVal)
+            return QmlMetaProperty();
+        object = objVal;
+    }
+
+    const QString &propName = path.last();
+    QmlMetaProperty prop(object, propName);
+    if (!prop.isValid())
+        return QmlMetaProperty();
+    else
+        return prop;
 }
 
 QT_END_NAMESPACE

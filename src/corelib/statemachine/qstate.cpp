@@ -240,7 +240,7 @@ void QState::assignProperty(QObject *object, const char *name,
 }
 
 /*!
-  Returns this state group's error state. 
+  Returns this state's error state. 
 
   \sa QStateMachine::errorState(), QStateMachine::setErrorState()
 */
@@ -253,7 +253,9 @@ QAbstractState *QState::errorState() const
 /*!
   Sets this state's error state to be the given \a state. If the error state
   is not set, or if it is set to 0, the state will inherit its parent's error
-  state recursively.
+  state recursively. If no error state is set for the state itself or any of 
+  its ancestors, an error will cause the machine to stop executing and an error
+  will be printed to the console.
 
   \sa QStateMachine::setErrorState(), QStateMachine::errorState()
 */

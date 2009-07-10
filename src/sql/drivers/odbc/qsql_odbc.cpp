@@ -91,7 +91,6 @@ public:
     : hEnv(0), hDbc(0), useSchema(false), disconnectCount(0), isMySqlServer(false),
            isMSSqlServer(false), hasSQLFetchScroll(true), hasMultiResultSets(false)
     {
-        sql_char_type = sql_varchar_type = sql_longvarchar_type = QVariant::ByteArray;
         unicode = false;
     }
 
@@ -100,9 +99,6 @@ public:
 
     uint unicode :1;
     uint useSchema :1;
-    QVariant::Type sql_char_type;
-    QVariant::Type sql_varchar_type;
-    QVariant::Type sql_longvarchar_type;
     int disconnectCount;
     bool isMySqlServer;
     bool isMSSqlServer;
@@ -129,7 +125,6 @@ public:
     QODBCPrivate()
     : hEnv(0), hDbc(0), hStmt(0), useSchema(false), hasSQLFetchScroll(true)
     {
-        sql_char_type = sql_varchar_type = sql_longvarchar_type = QVariant::ByteArray;
         unicode = false;
     }
 
@@ -142,9 +137,6 @@ public:
 
     uint unicode :1;
     uint useSchema :1;
-    QVariant::Type sql_char_type;
-    QVariant::Type sql_varchar_type;
-    QVariant::Type sql_longvarchar_type;
 
     QSqlRecord rInf;
     QVector<QVariant> fieldCache;
@@ -294,14 +286,10 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSi
         break;
 #endif
     case SQL_CHAR:
-        type = p->sql_char_type;
-        break;
     case SQL_VARCHAR:
     case SQL_GUID:
-        type = p->sql_varchar_type;
-        break;
     case SQL_LONGVARCHAR:
-        type = p->sql_longvarchar_type;
+        type = QVariant::String;
         break;
     default:
         type = QVariant::ByteArray;
@@ -572,7 +560,7 @@ static int qGetODBCVersion(const QString &connOpts)
 #ifndef Q_ODBC_VERSION_2
     if (connOpts.contains(QLatin1String("SQL_ATTR_ODBC_VERSION=SQL_OV_ODBC3"), Qt::CaseInsensitive))
         return SQL_OV_ODBC3;
-#endif 
+#endif
     return SQL_OV_ODBC2;
 }
 
@@ -818,9 +806,6 @@ QODBCResult::QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p)
     d->hDbc = p->hDbc;
     d->unicode = p->unicode;
     d->useSchema = p->useSchema;
-    d->sql_char_type = p->sql_char_type;
-    d->sql_varchar_type = p->sql_varchar_type;
-    d->sql_longvarchar_type = p->sql_longvarchar_type;
     d->disconnectCount = p->disconnectCount;
     d->hasSQLFetchScroll = p->hasSQLFetchScroll;
 }
@@ -985,7 +970,7 @@ bool QODBCResult::fetchFirst()
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_FIRST,
                        0);
-    if (r != SQL_SUCCESS) { 
+    if (r != SQL_SUCCESS) {
         if (r != SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                 "Unable to fetch first"), QSqlError::ConnectionError, d));
@@ -1004,7 +989,7 @@ bool QODBCResult::fetchPrevious()
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_PRIOR,
                        0);
-    if (r != SQL_SUCCESS) { 
+    if (r != SQL_SUCCESS) {
         if (r != SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                 "Unable to fetch previous"), QSqlError::ConnectionError, d));
@@ -1035,7 +1020,7 @@ bool QODBCResult::fetchLast()
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_LAST,
                        0);
-    if (r != SQL_SUCCESS) { 
+    if (r != SQL_SUCCESS) {
         if (r != SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                 "Unable to fetch last"), QSqlError::ConnectionError, d));
@@ -1470,7 +1455,7 @@ bool QODBCResult::exec()
                     if (*ind != SQL_NULL_DATA)
                         *ind = str.length();
                     int strSize = str.length();
-                    
+
                     r = SQLBindParameter(d->hStmt,
                                           i + 1,
                                           qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
@@ -1551,6 +1536,7 @@ bool QODBCResult::exec()
                 values[i] = QVariant(QDateTime(QDate(dt.year, dt.month, dt.day),
                                QTime(dt.hour, dt.minute, dt.second, dt.fraction / 1000000)));
                 break; }
+            case QVariant::Bool:
             case QVariant::Int:
             case QVariant::UInt:
             case QVariant::Double:
@@ -1760,7 +1746,7 @@ bool QODBCDriver::open(const QString & db,
     // support the "DRIVER={SQL SERVER};SERVER=blah" syntax
     if (db.contains(QLatin1String(".dsn"), Qt::CaseInsensitive))
         connQStr = QLatin1String("FILEDSN=") + db;
-    else if (db.contains(QLatin1String("DRIVER="), Qt::CaseInsensitive) 
+    else if (db.contains(QLatin1String("DRIVER="), Qt::CaseInsensitive)
             || db.contains(QLatin1String("SERVER="), Qt::CaseInsensitive))
         connQStr = db;
     else
@@ -1770,7 +1756,7 @@ bool QODBCDriver::open(const QString & db,
         connQStr += QLatin1String(";UID=") + user;
     if (!password.isEmpty())
         connQStr += QLatin1String(";PWD=") + password;
-    
+
     SQLSMALLINT cb;
     SQLTCHAR connOut[1024];
     r = SQLDriverConnect(d->hDbc,
@@ -1857,14 +1843,7 @@ void QODBCDriverPrivate::checkUnicode()
     unicode = false;
     return;
 #endif
-#if defined(Q_WS_WIN)
-    QT_WA(
-    {},
-    {
-        unicode = false;
-        return;
-    })
-#endif
+
     SQLRETURN   r;
     SQLUINTEGER fFunc;
 
@@ -1875,7 +1854,6 @@ void QODBCDriverPrivate::checkUnicode()
                     sizeof(fFunc),
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WCHAR)) {
-        sql_char_type = QVariant::String;
         unicode = true;
     }
 
@@ -1885,7 +1863,6 @@ void QODBCDriverPrivate::checkUnicode()
                     sizeof(fFunc),
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WVARCHAR)) {
-        sql_varchar_type = QVariant::String;
         unicode = true;
     }
 
@@ -1895,7 +1872,6 @@ void QODBCDriverPrivate::checkUnicode()
                     sizeof(fFunc),
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WLONGVARCHAR)) {
-        sql_longvarchar_type = QVariant::String;
         unicode = true;
     }
 }

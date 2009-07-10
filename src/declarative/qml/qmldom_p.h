@@ -42,15 +42,21 @@
 #ifndef QMLDOM_P_H
 #define QMLDOM_P_H
 
-#include <QtCore/QtGlobal>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include <QtCore/QtGlobal>
+#include "qmlparser_p.h"
 
 QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-#include "qmlparser_p.h"
 
 class QmlDomDocumentPrivate : public QSharedData
 {
@@ -91,6 +97,17 @@ public:
     QmlParser::Property *property;
 };
 
+class QmlDomDynamicPropertyPrivate : public QSharedData
+{
+public:
+    QmlDomDynamicPropertyPrivate();
+    QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &);
+    ~QmlDomDynamicPropertyPrivate();
+
+    bool valid;
+    QmlParser::Object::DynamicProperty property;
+};
+
 class QmlDomValuePrivate : public QSharedData
 {
 public:
@@ -113,8 +130,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMLDOM_P_H
 

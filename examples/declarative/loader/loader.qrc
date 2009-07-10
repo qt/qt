@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>loader.qml</file>
+        <file>Browser.qml</file>
+    </qresource>
+</RCC>

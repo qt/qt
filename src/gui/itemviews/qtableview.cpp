@@ -488,8 +488,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
             opt.state |= QStyle::State_HasFocus;
     }
 
-    if (opt.features & QStyleOptionViewItemV2::Alternate)
-        painter->fillRect(opt.rect, opt.palette.brush(QPalette::AlternateBase));
+    q->style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, q);
 
     if (const QWidget *widget = editorForIndex(index).editor) {
         painter->save();

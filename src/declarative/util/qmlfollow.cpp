@@ -40,13 +40,14 @@
 ****************************************************************************/
 
 #include <limits.h>
+#include <math.h>
 #include <QtCore/qdebug.h>
 #include "private/qobject_p.h"
 #include "qmlfollow.h"
 #include "private/qmlanimation_p.h"
 
-
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QmlFollow,Follow)
 
 class QmlFollowPrivate : public QObjectPrivate
@@ -55,7 +56,7 @@ class QmlFollowPrivate : public QObjectPrivate
 public:
     QmlFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
-        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.005), enabled(true), mode(Track), clock(this) {}
+        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.005), modulus(0.0), enabled(true), mode(Track), clock(this) {}
 
     QmlMetaProperty property;
     qreal currentValue;
@@ -68,6 +69,7 @@ public:
     qreal damping;
     qreal velocity;
     qreal epsilon;
+    qreal modulus;
     bool enabled;
 
     enum Mode {
@@ -92,14 +94,25 @@ void QmlFollowPrivate::tick(int time)
     int elapsed = time - lastTime;
     if (!elapsed)
         return;
+    qreal srcVal = sourceValue;
+    if (modulus != 0.0) {
+        currentValue = fmod(currentValue, modulus);
+        srcVal = fmod(srcVal, modulus);
+    }
     if (mode == Spring) {
-        if (elapsed < 10) // capped at 100fps.
+        if (elapsed < 16) // capped at 62fps.
             return;
         // Real men solve the spring DEs using RK4.
         // We'll do something much simpler which gives a result that looks fine.
-        int count = (elapsed+5) / 10;
+        int count = (elapsed+8) / 16;
         for (int i = 0; i < count; ++i) {
-            qreal diff = sourceValue - currentValue;
+            qreal diff = srcVal - currentValue;
+            if (modulus != 0.0 && qAbs(diff) > modulus / 2) {
+                if (diff < 0)
+                    diff += modulus;
+                else
+                    diff -= modulus;
+            }
             velocity = velocity + spring * diff - damping * velocity;
             // The following line supports mass.  Not sure its worth the extra divisions.
             // velocity = velocity + spring / mass * diff - damping / mass * velocity;
@@ -110,25 +123,40 @@ void QmlFollowPrivate::tick(int time)
                 else if (velocity < -maxVelocity)
                     velocity = -maxVelocity;
             }
-            currentValue += velocity * 10.0 / 1000.0;
+            currentValue += velocity * 16.0 / 1000.0;
+            if (modulus != 0.0) {
+                currentValue = fmod(currentValue, modulus);
+                if (currentValue < 0.0)
+                    currentValue += modulus;
+            }
         }
-        if (qAbs(velocity) < epsilon && qAbs(sourceValue - currentValue) < epsilon) {
+        if (qAbs(velocity) < epsilon && qAbs(srcVal - currentValue) < epsilon) {
             velocity = 0.0;
-            currentValue = sourceValue;
+            currentValue = srcVal;
             clock.stop();
         }
-        lastTime = time - (elapsed - count * 10);
+        lastTime = time - (elapsed - count * 16);
     } else {
         qreal moveBy = elapsed * velocityms;
-        qreal diff = sourceValue - currentValue;
+        qreal diff = srcVal - currentValue;
+        if (modulus != 0.0 && qAbs(diff) > modulus / 2) {
+            if (diff < 0)
+                diff += modulus;
+            else
+                diff -= modulus;
+        }
         if (diff > 0) {
             currentValue += moveBy;
+            if (modulus != 0.0)
+                currentValue = fmod(currentValue, modulus);
             if (currentValue > sourceValue) {
                 currentValue = sourceValue;
                 clock.stop();
             }
         } else {
             currentValue -= moveBy;
+            if (modulus != 0.0 && currentValue < 0.0)
+                currentValue = fmod(currentValue, modulus) + modulus;
             if (currentValue < sourceValue) {
                 currentValue = sourceValue;
                 clock.stop();
@@ -183,7 +211,7 @@ void QmlFollowPrivate::stop()
         y: SequentialAnimation {
             running: true
             repeat: true
-            NumericAnimation {
+            NumberAnimation {
                 to: 200
                 easing: "easeOutBounce(amplitude:100)"
                 duration: 2000
@@ -323,6 +351,25 @@ void QmlFollow::setEpsilon(qreal epsilon)
 {
     Q_D(QmlFollow);
     d->epsilon = epsilon;
+}
+
+/*!
+    \qmlproperty qreal Follow::modulus
+    This property holds the modulus value.
+
+    Setting a \a modulus forces the target value to "wrap around" at the modulus.
+    For example, setting the modulus to 360 will cause a value of 370 to wrap around to 10.
+*/
+qreal QmlFollow::modulus() const
+{
+    Q_D(const QmlFollow);
+    return d->modulus;
+}
+
+void QmlFollow::setModulus(qreal modulus)
+{
+    Q_D(QmlFollow);
+    d->modulus = modulus;
 }
 
 /*!

@@ -1,17 +1,13 @@
 HEADERS += \
            fx/qfxanchors.h \
            fx/qfxanchors_p.h \
-           fx/qfxanimatedimageitem.h \
            fx/qfxcomponentinstance.h \
            fx/qfxcomponentinstance_p.h \
-           fx/qfxcontentwrapper.h \
-           fx/qfxcontentwrapper_p.h \
            fx/qfxevents_p.h \
            fx/qfxflickable.h \
            fx/qfxflickable_p.h \
            fx/qfxflipable.h \
            fx/qfxgridview.h \
-           fx/qfxflowview.h \
            fx/qfximage.h \
            fx/qfxpainteditem.h \
            fx/qfxpainteditem_p.h \
@@ -24,7 +20,6 @@ HEADERS += \
            fx/qfxlayouts_p.h \
            fx/qfxmouseregion.h \
            fx/qfxmouseregion_p.h \
-           fx/qfxparticles.h \
            fx/qfxpath.h \
            fx/qfxpath_p.h \
            fx/qfxpathview.h \
@@ -46,14 +41,11 @@ HEADERS += \
 
 SOURCES += \
            fx/qfxanchors.cpp \
-           fx/qfxanimatedimageitem.cpp \
            fx/qfxcomponentinstance.cpp \
-           fx/qfxcontentwrapper.cpp \
            fx/qfxevents.cpp \
            fx/qfxflickable.cpp \
            fx/qfxflipable.cpp \
            fx/qfxgridview.cpp \
-           fx/qfxflowview.cpp \
            fx/qfximage.cpp \
            fx/qfxpainteditem.cpp \
            fx/qfxitem.cpp \
@@ -61,7 +53,6 @@ SOURCES += \
            fx/qfxkeyproxy.cpp \
            fx/qfxlayouts.cpp \
            fx/qfxmouseregion.cpp \
-           fx/qfxparticles.cpp \
            fx/qfxpath.cpp \
            fx/qfxpathview.cpp \
            fx/qfxrect.cpp \

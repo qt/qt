@@ -47,15 +47,18 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qdebug.h>
 #include <qmlexpression.h>
-
+#include <private/qmlcontext_p.h>
 
 QT_BEGIN_NAMESPACE
+
 QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    const QMetaObject *other, 
                                    QList<QString> *strData,
                                    int slotData,
+                                   const QmlVMEMetaData *meta,
                                    QmlRefCount *rc)
-: object(obj), ref(rc), slotData(strData), slotDataIdx(slotData), parent(0)
+: object(obj), ref(rc), metaData(meta), slotData(strData), 
+  slotDataIdx(slotData), parent(0)
 {
     if (ref)
         ref->addref();
@@ -68,37 +71,18 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
         parent = static_cast<QAbstractDynamicMetaObject*>(op->metaObject);
     op->metaObject = this;
 
-    baseProp = propertyOffset();
-    baseSig = methodOffset();
-    data = new QVariant[propertyCount() - baseProp];
-    vTypes.resize(propertyCount() - baseProp);
+    propOffset = QAbstractDynamicMetaObject::propertyOffset();
+    methodOffset = QAbstractDynamicMetaObject::methodOffset();
+
+    data = new QVariant[metaData->propertyCount];
+    aConnected.resize(metaData->aliasCount);
 
     // ### Optimize
-    for (int ii = baseProp; ii < propertyCount(); ++ii) {
-        QMetaProperty prop = property(ii);
-        if ((int)prop.type() != -1) {
-            data[ii - baseProp] = QVariant((QVariant::Type)prop.userType());
-        } else {
-            vTypes.setBit(ii - baseProp, true);
-        }
+    for (int ii = 0; ii < metaData->propertyCount; ++ii) {
+        int t = (metaData->propertyData() + ii)->propertyType;
+        if (t != -1)
+            data[ii] = QVariant((QVariant::Type)t);
     }
-
-    baseSlot = -1;
-    slotCount = 0;
-    for (int ii = baseSig; ii < methodCount(); ++ii) {
-        QMetaMethod m = method(ii);
-        if (m.methodType() == QMetaMethod::Slot) {
-            if (baseSlot == -1)
-                baseSlot = ii;
-        } else {
-            if (baseSlot != -1) {
-                slotCount = ii - baseSlot;
-                break;
-            }
-        }
-    }
-    if(baseSlot != -1 && !slotCount)
-        slotCount = methodCount() - baseSlot;
 }
 
 QmlVMEMetaObject::~QmlVMEMetaObject()
@@ -110,78 +94,146 @@ QmlVMEMetaObject::~QmlVMEMetaObject()
     delete [] data;
 }
 
-int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
+int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 {
+    int id = _id;
     if(c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty) {
-        if (id >= baseProp) {
-            int propId = id - baseProp;
-            bool needActivate = false;
+        if (id >= propOffset) {
+            id -= propOffset;
 
-            if (vTypes.testBit(propId)) {
-                if (c == QMetaObject::ReadProperty) {
-                    *reinterpret_cast<QVariant *>(a[0]) = data[propId];
-                } else if (c == QMetaObject::WriteProperty) {
-                    needActivate = 
-                        (data[propId] != *reinterpret_cast<QVariant *>(a[0]));
-                    data[propId] = *reinterpret_cast<QVariant *>(a[0]);
-                }
-            } else {
-                if (c == QMetaObject::ReadProperty) {
-                    switch(data[propId].type()) {
-                    case QVariant::Int:
-                        *reinterpret_cast<int *>(a[0]) = data[propId].toInt();
-                        break;
-                    case QVariant::Bool:
-                        *reinterpret_cast<bool *>(a[0]) = data[propId].toBool();
-                        break;
-                    case QVariant::Double:
-                        *reinterpret_cast<double *>(a[0]) = data[propId].toDouble();
-                        break;
-                    case QVariant::String:
-                        *reinterpret_cast<QString *>(a[0]) = data[propId].toString();
-                        break;
-                    case QVariant::Url:
-                        *reinterpret_cast<QUrl *>(a[0]) = data[propId].toUrl();
-                        break;
-                    case QVariant::Color:
-                        *reinterpret_cast<QColor *>(a[0]) = data[propId].value<QColor>();
-                        break;
-                    case QVariant::Date:
-                        *reinterpret_cast<QDate *>(a[0]) = data[propId].toDate();
-                        break;
-                    default:
-                        qFatal("Unknown type");
-                        break;
+            if (id < metaData->propertyCount) {
+                int t = (metaData->propertyData() + id)->propertyType;
+                bool needActivate = false;
+
+                if (t == -1) {
+
+                    if (c == QMetaObject::ReadProperty) {
+                        *reinterpret_cast<QVariant *>(a[0]) = data[id];
+                    } else if (c == QMetaObject::WriteProperty) {
+                        needActivate = 
+                            (data[id] != *reinterpret_cast<QVariant *>(a[0]));
+                        data[id] = *reinterpret_cast<QVariant *>(a[0]);
                     }
-                } else if (c == QMetaObject::WriteProperty) {
 
-                    QVariant value = QVariant((QVariant::Type)data[propId].type(), a[0]); 
-                    needActivate = (data[propId] != value);
-                    data[propId] = value;
+                } else {
+
+                    if (c == QMetaObject::ReadProperty) {
+                        switch(t) {
+                        case QVariant::Int:
+                            *reinterpret_cast<int *>(a[0]) = data[id].toInt();
+                            break;
+                        case QVariant::Bool:
+                            *reinterpret_cast<bool *>(a[0]) = data[id].toBool();
+                            break;
+                        case QVariant::Double:
+                            *reinterpret_cast<double *>(a[0]) = data[id].toDouble();
+                            break;
+                        case QVariant::String:
+                            *reinterpret_cast<QString *>(a[0]) = data[id].toString();
+                            break;
+                        case QVariant::Url:
+                            *reinterpret_cast<QUrl *>(a[0]) = data[id].toUrl();
+                            break;
+                        case QVariant::Color:
+                            *reinterpret_cast<QColor *>(a[0]) = data[id].value<QColor>();
+                            break;
+                        case QVariant::Date:
+                            *reinterpret_cast<QDate *>(a[0]) = data[id].toDate();
+                            break;
+                        default:
+                            break;
+                        }
+
+                    } else if (c == QMetaObject::WriteProperty) {
+
+                        QVariant value = QVariant((QVariant::Type)data[id].type(), a[0]); 
+                        needActivate = (data[id] != value);
+                        data[id] = value;
+                    }
+
+                }
+
+                if (c == QMetaObject::WriteProperty && needActivate) {
+                    activate(object, methodOffset + id, 0);
+                }
+
+                return -1;
+            }
+
+            id -= metaData->propertyCount;
+
+            if (id < metaData->aliasCount) {
+
+                QmlContext *ctxt = qmlContext(object);
+
+                if (!ctxt) return -1;
+                QmlVMEMetaData::AliasData *d = metaData->aliasData() + id;
+                QmlContextPrivate *ctxtPriv = 
+                    (QmlContextPrivate *)QObjectPrivate::get(ctxt);
+
+                QObject *target = 
+                    *(QObject **)ctxtPriv->propertyValues[d->contextIdx].data();
+                if (!target) return -1;
+
+                if (c == QMetaObject::ReadProperty && !aConnected.testBit(id)) {
+                    int sigIdx = methodOffset + id + metaData->propertyCount;
+                    QMetaObject::connect(ctxt, d->contextIdx + ctxtPriv->notifyIndex, object, sigIdx);
+
+                    QMetaProperty prop = 
+                        target->metaObject()->property(d->propertyIdx);
+                    if (prop.hasNotifySignal())
+                        QMetaObject::connect(target, prop.notifySignalIndex(), 
+                                             object, sigIdx);
+                    aConnected.setBit(id);
+                }
+                return QMetaObject::metacall(target, c, d->propertyIdx, a);
+
+            }
+            return -1;
+
+        }
+
+    } else if(c == QMetaObject::InvokeMetaMethod) {
+
+        if (id >= methodOffset) {
+
+            id -= methodOffset;
+            int plainSignals = metaData->signalCount + metaData->propertyCount +
+                               metaData->aliasCount;
+            if (id < plainSignals) {
+                QMetaObject::activate(object, _id, a);
+                return -1;
+            }
+
+            id -= plainSignals;
+
+            if (id < metaData->methodCount) {
+                QString code = slotData->at(id + slotDataIdx);
+                QmlContext *ctxt = qmlContext(object);
+
+                if (0 == (metaData->methodData() + id)->parameterCount) {
+                    QmlExpression expr(ctxt, code, object);
+                    expr.setTrackChange(false);
+                    expr.value();
+                } else {
+                    QmlContext newCtxt(ctxt);
+                    QMetaMethod m = method(_id);
+                    QList<QByteArray> names = m.parameterNames(); 
+                    for (int ii = 0; ii < names.count(); ++ii) 
+                        newCtxt.setContextProperty(names.at(ii), *(QVariant *)a[ii + 1]);
+                    QmlExpression expr(&newCtxt, code, object);
+                    expr.setTrackChange(false);
+                    expr.value();
                 }
             }
-
-            if (c == QMetaObject::WriteProperty && needActivate) {
-                activate(object, baseSig + propId, 0);
-            }
-
-            return id;
-        } 
-    } else if(c == QMetaObject::InvokeMetaMethod) {
-        if(id >= baseSlot && id < (baseSlot + slotCount)) {
-            int idx = id - baseSlot + slotDataIdx;
-            QmlContext *ctxt = qmlContext(object);
-            QmlExpression expr(ctxt, slotData->at(idx), object);
-            expr.setTrackChange(false);
-            expr.value();
-            return id;
+            return -1;
         }
     }
 
     if (parent)
-        return parent->metaCall(c, id, a);
+        return parent->metaCall(c, _id, a);
     else
-        return object->qt_metacall(c, id, a);
+        return object->qt_metacall(c, _id, a);
 }
 
 QT_END_NAMESPACE

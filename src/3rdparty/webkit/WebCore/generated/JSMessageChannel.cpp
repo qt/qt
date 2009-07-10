@@ -19,15 +19,12 @@
 */
 
 #include "config.h"
-
 #include "JSMessageChannel.h"
-
-#include <wtf/GetPtr.h>
 
 #include "JSMessagePort.h"
 #include "MessageChannel.h"
 #include "MessagePort.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 

@@ -42,6 +42,17 @@
 #ifndef QMLENGINE_P_H
 #define QMLENGINE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptValue>
 #include <QtScript/QScriptString>
@@ -61,6 +72,7 @@
 #include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
+
 class QmlContext;
 class QmlEngine;
 class QmlContextPrivate;
@@ -91,11 +103,12 @@ public:
     QScriptValue propertyObject(const QScriptString &propName, QObject *, uint id = 0);
 
     struct CapturedProperty {
-        CapturedProperty(QObject *o, int n)
-            : object(o), notifyIndex(n) {}
+        CapturedProperty(QObject *o, int c, int n)
+            : object(o), coreIndex(c), notifyIndex(n) {}
         CapturedProperty(const QmlMetaProperty &);
 
         QObject *object;
+        int coreIndex;
         int notifyIndex;
     };
     QPODVector<CapturedProperty> capturedProperties;
@@ -115,6 +128,8 @@ public:
     QStack<QmlContext *> activeContexts;
 
     QScriptEngine scriptEngine;
+
+    QUrl baseUrl;
 
     template<class T>
     struct SimpleList {
@@ -155,23 +170,6 @@ public:
     quint32 getUniqueId() const {
         return uniqueId++;
     }
-};
-
-
-class BindExpressionProxy : public QObject
-{
-Q_OBJECT
-public:
-    BindExpressionProxy(QmlExpression *be)
-    :e(be)
-    {
-    }
-
-private:
-    QmlExpression *e;
-
-private Q_SLOTS:
-    void changed();
 };
 
 class QmlScriptClass : public QScriptClass
@@ -235,60 +233,6 @@ public:
                              const QScriptValue &value);
 };
 
-class QmlExpressionLog
-{
-public:
-    QmlExpressionLog();
-    QmlExpressionLog(const QmlExpressionLog &);
-    ~QmlExpressionLog();
-
-    QmlExpressionLog &operator=(const QmlExpressionLog &);
-
-    void setTime(quint32);
-    quint32 time() const;
-
-    QString expression() const;
-    void setExpression(const QString &);
-
-    QStringList warnings() const;
-    void addWarning(const QString &);
-
-    QVariant result() const;
-    void setResult(const QVariant &);
-
-private:
-    quint32 m_time;
-    QString m_expression;
-    QVariant m_result;
-    QStringList m_warnings;
-};
-
-class QmlExpressionPrivate
-{
-public:
-    QmlExpressionPrivate(QmlExpression *);
-    QmlExpressionPrivate(QmlExpression *, const QString &expr);
-    QmlExpressionPrivate(QmlExpression *, void *expr, QmlRefCount *rc);
-    ~QmlExpressionPrivate();
-
-    QmlExpression *q;
-    QmlContext *ctxt;
-    QString expression;
-    QmlBasicScript sse;
-    void *sseData;
-    BindExpressionProxy *proxy;
-    QObject *me;
-    bool trackChange;
-
-    QUrl fileName;
-    int line;
-
-    quint32 id;
-
-    void addLog(const QmlExpressionLog &);
-    QList<QmlExpressionLog> *log;
-};
 QT_END_NAMESPACE
 
 #endif // QMLENGINE_P_H
-

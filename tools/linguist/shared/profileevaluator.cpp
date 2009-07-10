@@ -1949,9 +1949,9 @@ QStringList ProFileEvaluator::Private::values(const QString &variableName,
             ret = QLatin1String("Windows");
         } else if (type == QLatin1String("name")) {
             DWORD name_length = 1024;
-            TCHAR name[1024];
+            wchar_t name[1024];
             if (GetComputerName(name, &name_length))
-                ret = QString::fromUtf16((ushort*)name, name_length);
+                ret = QString::fromWCharArray(name);
         } else if (type == QLatin1String("version") || type == QLatin1String("version_string")) {
             QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
             if (type == QLatin1String("version"))

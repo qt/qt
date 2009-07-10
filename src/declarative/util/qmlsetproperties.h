@@ -44,7 +44,6 @@
 
 #include <QtDeclarative/qmlstateoperations.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -59,6 +58,7 @@ class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
 
     Q_PROPERTY(QObject *target READ object WRITE setObject)
     Q_PROPERTY(bool restoreEntryValues READ restoreEntryValues WRITE setRestoreEntryValues)
+    Q_PROPERTY(bool explicit READ isExplicit WRITE setIsExplicit); 
 public:
     QmlSetProperties();
     ~QmlSetProperties();
@@ -69,11 +69,15 @@ public:
     bool restoreEntryValues() const;
     void setRestoreEntryValues(bool);
 
+    bool isExplicit() const;
+    void setIsExplicit(bool);
+
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlSetProperties)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlSetProperties)
 
 QT_END_HEADER
 

@@ -56,15 +56,15 @@
 #include "qfxanchors.h"
 #include "private/qobject_p.h"
 
-
 QT_BEGIN_NAMESPACE
+
 class QFxAnchorsPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFxAnchors)
 public:
     QFxAnchorsPrivate()
-      : updatingMe(false), updatingHorizontalAnchor(false), 
-        updatingVerticalAnchor(false), item(0), usedAnchors(0), fill(0), 
+      : updatingMe(false), updatingHorizontalAnchor(0),
+        updatingVerticalAnchor(0), item(0), usedAnchors(0), fill(0),
         centeredIn(0), leftMargin(0), rightMargin(0), topMargin(0), 
         bottomMargin(0), vCenterOffset(0), hCenterOffset(0)
     {
@@ -80,9 +80,9 @@ public:
     void remDepend(QFxItem *);
     bool isItemComplete() const;
 
-    bool updatingMe:1;
-    bool updatingHorizontalAnchor:1;
-    bool updatingVerticalAnchor:1;
+    bool updatingMe;
+    int updatingHorizontalAnchor;
+    int updatingVerticalAnchor;
 
     void setItemHeight(qreal);
     void setItemWidth(qreal);
@@ -119,12 +119,12 @@ public:
     QFxAnchorLine hCenter;
     QFxAnchorLine baseline;
 
-    int leftMargin;
-    int rightMargin;
-    int topMargin;
-    int bottomMargin;
-    int vCenterOffset;
-    int hCenterOffset;
+    qreal leftMargin;
+    qreal rightMargin;
+    qreal topMargin;
+    qreal bottomMargin;
+    qreal vCenterOffset;
+    qreal hCenterOffset;
 
 };
 

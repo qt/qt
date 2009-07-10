@@ -216,7 +216,8 @@ public:
                           int signalIndex,
                           const QScriptValueImpl &receiver,
                           const QScriptValueImpl &slot,
-                          const QScriptValueImpl &senderWrapper = QScriptValueImpl());
+                          const QScriptValueImpl &senderWrapper,
+                          Qt::ConnectionType type);
     bool removeSignalHandler(QObject *sender,
                              int signalIndex,
                              const QScriptValueImpl &receiver,

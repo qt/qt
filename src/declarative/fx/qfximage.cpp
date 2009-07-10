@@ -41,7 +41,7 @@
 
 #include "qfximage.h"
 #include "qfximage_p.h"
-#include <qfxperf.h>
+#include <private/qfxperf_p.h>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>

@@ -59,7 +59,7 @@ class Q_DECLARATIVE_EXPORT QFxPen : public QObject
     Q_PROPERTY(QColor color READ color WRITE setColor)
 public:
     QFxPen(QObject *parent=0)
-        : QObject(parent), _width(0), _color("#000000"), _valid(false)
+        : QObject(parent), _width(1), _color("#000000"), _valid(false)
     {}
 
     int width() const { return _width; }
@@ -78,7 +78,6 @@ private:
     QColor _color;
     bool _valid;
 };
-QML_DECLARE_TYPE(QFxPen)
 
 class Q_DECLARATIVE_EXPORT QFxGradientStop : public QObject
 {
@@ -103,7 +102,6 @@ private:
     qreal m_position;
     QColor m_color;
 };
-QML_DECLARE_TYPE(QFxGradientStop)
 
 class Q_DECLARATIVE_EXPORT QFxGradient : public QObject
 {
@@ -131,7 +129,6 @@ private:
     mutable QGradient *m_gradient;
     friend class QFxGradientStop;
 };
-QML_DECLARE_TYPE(QFxGradient)
 
 class QFxRectPrivate;
 class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
@@ -178,9 +175,13 @@ private:
     Q_DISABLE_COPY(QFxRect)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxRect)
 };
-QML_DECLARE_TYPE(QFxRect)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxPen)
+QML_DECLARE_TYPE(QFxGradientStop)
+QML_DECLARE_TYPE(QFxGradient)
+QML_DECLARE_TYPE(QFxRect)
 
 QT_END_HEADER
 

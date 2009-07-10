@@ -39,18 +39,18 @@ Item {
     states: [
         State {
             name: "On"
-            SetProperty { target: Knob; property: "x"; value: 78 }
-            SetProperty { target: Switch; property: "on"; value: true }
+            SetProperties { target: Knob; x: 78 }
+            SetProperties { target: Switch; on: true }
         },
         State {
             name: "Off"
-            SetProperty { target: Knob; property: "x"; value: 1 }
-            SetProperty { target: Switch; property: "on"; value: false }
+            SetProperties { target: Knob; x: 1 }
+            SetProperties { target: Switch; on: false }
         }
     ]
     transitions: [
         Transition {
-            NumericAnimation { properties: "x"; easing: "easeInOutQuad"; duration: 200 }
+            NumberAnimation { properties: "x"; easing: "easeInOutQuad"; duration: 200 }
         }
     ]
 }

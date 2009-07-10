@@ -234,6 +234,8 @@ public:
                 int count = columns - 1 - (modelIndex - visibleItems.last()->index - 1) % columns;
                 return visibleItems.last()->colPos() - count * colSize();
             }
+        } else {
+            return (modelIndex % columns) * colSize();
         }
         return 0;
     }
@@ -252,6 +254,8 @@ public:
                 int rows = col / (columns * colSize());
                 return visibleItems.last()->rowPos() + rows * rowSize();
             }
+        } else {
+             return (modelIndex / columns) * rowSize();
         }
         return 0;
     }
@@ -364,8 +368,8 @@ void QFxGridViewPrivate::releaseItem(FxGridItem *item)
     if (!item)
         return;
     if (trackedItem == item) {
-        QObject::disconnect(trackedItem->item, SIGNAL(topChanged()), q, SLOT(trackedPositionChanged()));
-        QObject::disconnect(trackedItem->item, SIGNAL(leftChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::disconnect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
     }
     if (model->release(item->item) == 0) {
@@ -544,15 +548,15 @@ void QFxGridViewPrivate::updateTrackedItem()
         item = highlight;
 
     if (trackedItem && item != trackedItem) {
-        QObject::disconnect(trackedItem->item, SIGNAL(topChanged()), q, SLOT(trackedPositionChanged()));
-        QObject::disconnect(trackedItem->item, SIGNAL(leftChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::disconnect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
     }
 
     if (!trackedItem && item) {
         trackedItem = item;
-        QObject::connect(trackedItem->item, SIGNAL(topChanged()), q, SLOT(trackedPositionChanged()));
-        QObject::connect(trackedItem->item, SIGNAL(leftChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::connect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::connect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
         q->trackedPositionChanged();
     }
     if (trackedItem)

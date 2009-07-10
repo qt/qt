@@ -438,7 +438,7 @@
     \code
     Button {
         id: MyButton
-        onClicked: NumericAnimation {
+        onClicked: NumberAnimation {
             target: MyButton
             property: "x"
             to: 100
@@ -555,72 +555,17 @@
 
     \code
     Rect {
-        x: NumericAnimation { running: true; repeat; true; from: 0; to: 100; }
+        x: NumberAnimation { running: true; repeat; true; from: 0; to: 100; }
     }
     \endcode
 
     Here the \c x property of the rectangle will be animated from 0 to 100.
-    To support this, the NumericAnimation class inherits the 
+    To support this, the NumberAnimation class inherits the 
     QmlPropertyValueSource class.  If a type inherits this class and is assigned
     to a property for which type assignment would otherwise fail (ie. the
     property itself doesn't have a type of QmlPropertyValueSource *), the QML
     engine will automatically set the property as the target of the value 
     source.
-
-    \section1 Extending types in QML
-
-    QML is designed to allow you to build fully working types without writing
-    a line of C++ code.  This is, for example, used extensively when designing
-    applications using the Fluid UI primitives.  To create new types, it is 
-    necessary to be able to define new signals, slots and properties in QML.
-
-    In this example, a Button  is extended to have an additional
-    "text2" property (which always returns "Hello world!") and an additional
-    signal "clicked2" that is also emitted when the button is clicked.  Not
-    a very useful extension, but an extension nonetheless.
-
-    \table
-    \row
-    \o
-    \code
-    QmlEngine engine;
-    QmlComponent component(&engine, qmlData);
-    QObject *object = component.create();
-    // Will print "Hello world!"
-    qDebug() << object->property("text2");
-    // Will be emitted whenever the button is clicked
-    QObject::connect(object, SIGNAL(clicked2()), this, SLOT(...));
-    \endcode
-    \o
-    \code
-    Button {
-        property string text2
-        signal clicked2
-
-        text: "Hello!"
-        text2: "Hello world!"
-        onClicked: clicked2.emit()
-    }
-    \endcode
-    \endtable
-
-    The general syntax for defining new properties and signals is:
-
-    \list
-    \o 
-    \code
-    [default] property <type> <name> [: <default value>]
-    \endcode
-
-    Where type can be one of \e int, \e bool, \e double, \e real, \e string,
-    \e color, \e date, \e var or \e variant.
-    
-    \o
-    \code
-    signal <name>
-    \endcode
-    Currently only parameterless signals are supported.
-    \endlist
 
     \section1 Parser Status
 

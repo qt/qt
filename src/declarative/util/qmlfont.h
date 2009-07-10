@@ -83,9 +83,10 @@ public:
 Q_SIGNALS:
     void updated();
 };
-QML_DECLARE_TYPE(QmlFont)
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlFont)
 
 QT_END_HEADER
 

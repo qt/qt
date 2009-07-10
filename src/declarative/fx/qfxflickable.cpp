@@ -112,8 +112,8 @@ void QFxFlickablePrivate::init()
     QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setOptions(QFxItem::ChildMouseFilter | QFxItem::MouseEvents);
-    QObject::connect(_flick, SIGNAL(leftChanged()), q, SIGNAL(positionChanged()));
-    QObject::connect(_flick, SIGNAL(topChanged()), q, SIGNAL(positionChanged()));
+    QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionChanged()));
+    QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&elasticY, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(heightChange()));
@@ -597,7 +597,13 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
         int dx = int(event->pos().x() - pressPos.x());
         if (qAbs(dx) > FlickThreshold || pressTime.elapsed() > 200) {
             qreal newX = dx + pressX;
-            if (q->overShoot() || (newX <= q->minXExtent() && newX >= q->maxXExtent())) {
+            const qreal minX = q->minXExtent();
+            const qreal maxX = q->maxXExtent();
+            if (newX > minX)
+                newX = minX + (newX - minX) / 2;
+            if (newX < maxX && maxX - minX < 0)
+                newX = maxX + (newX - maxX) / 2;
+            if (q->overShoot() || (newX <= minX && newX >= maxX)) {
                 if (dragMode == QFxFlickable::Hard)
                     _moveX.setValue(newX);
                 else

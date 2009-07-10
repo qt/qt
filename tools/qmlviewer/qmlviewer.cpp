@@ -18,7 +18,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include "qml.h"
-#include "qperformancelog.h"
+#include <private/qperformancelog_p.h>
 #include "deviceskin.h"
 
 #include <QNetworkDiskCache>
@@ -40,6 +40,8 @@
 #include <QTimer>
 #include <QNetworkProxyFactory>
 #include <QKeyEvent>
+
+QT_BEGIN_NAMESPACE
 
 class PreviewDeviceSkin : public DeviceSkin
 {
@@ -698,5 +700,7 @@ void QmlViewer::setCacheEnabled(bool on)
         nam->setCache(0);
     }
 }
+
+QT_END_NAMESPACE
 
 #include "qmlviewer.moc"

@@ -28,6 +28,7 @@ QCLuceneQueryParserPrivate::QCLuceneQueryParserPrivate(const QCLuceneQueryParser
     : QSharedData()
 {
     queryParser = _CL_POINTER(other.queryParser);
+    deleteCLuceneQueryParser = other.deleteCLuceneQueryParser;
 }
 
 QCLuceneQueryParserPrivate::~QCLuceneQueryParserPrivate()

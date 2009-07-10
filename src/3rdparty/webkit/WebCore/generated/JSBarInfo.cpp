@@ -19,13 +19,10 @@
 */
 
 #include "config.h"
-
 #include "JSBarInfo.h"
 
-#include <wtf/GetPtr.h>
-
 #include "BarInfo.h"
-
+#include <wtf/GetPtr.h>
 
 using namespace JSC;
 
