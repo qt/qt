@@ -79,7 +79,7 @@ private:
 void tst_lconvert::initTestCase()
 {
     if (!QFile::exists(QLatin1String("data/plural-1.po")))
-        QProcess::execute(QLatin1String("data/makeplurals.sh"), QStringList() << QLatin1String("data/"));
+        QProcess::execute(QLatin1String("perl"), QStringList() << QLatin1String("data/makeplurals.pl") << QLatin1String("data/"));
     QVERIFY(QFile::exists(QLatin1String("data/plural-1.po")));
 }
 
