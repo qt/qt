@@ -132,6 +132,10 @@ inline qreal qPow(qreal x, qreal y)
         return pow(x, y);
 }
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

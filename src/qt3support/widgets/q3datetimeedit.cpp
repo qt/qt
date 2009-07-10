@@ -2648,13 +2648,12 @@ Q3DateTimeEdit::~Q3DateTimeEdit()
 }
 
 
-/*!
+/*! \fn void Q3DateTimeEdit::resizeEvent(QResizeEvent *event)
     \reimp
 
-    Intercepts and handles resize events which have special meaning
-    for the Q3DateTimeEdit.
+    Intercepts and handles the resize \a event, which hase a
+    special meaning for the Q3DateTimeEdit.
 */
-
 void Q3DateTimeEdit::resizeEvent(QResizeEvent *)
 {
     int dw = de->sizeHint().width();

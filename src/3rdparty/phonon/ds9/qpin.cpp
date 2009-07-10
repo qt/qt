@@ -28,20 +28,7 @@ namespace Phonon
     namespace DS9
     {
 
-        static const AM_MEDIA_TYPE defaultMediaType()
-        {
-            AM_MEDIA_TYPE ret;
-            ret.majortype = MEDIATYPE_NULL;
-            ret.subtype = MEDIASUBTYPE_NULL;
-            ret.bFixedSizeSamples = TRUE;
-            ret.bTemporalCompression = FALSE;
-            ret.lSampleSize = 1;
-            ret.formattype = GUID_NULL;
-            ret.pUnk = 0;
-            ret.cbFormat = 0;
-            ret.pbFormat = 0;
-            return ret;
-        }
+        static const AM_MEDIA_TYPE defaultMediaType = { MEDIATYPE_NULL, MEDIASUBTYPE_NULL, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
 
         class QEnumMediaTypes : public IEnumMediaTypes
         {
@@ -159,7 +146,7 @@ namespace Phonon
 
         QPin::QPin(QBaseFilter *parent, PIN_DIRECTION dir, const QVector<AM_MEDIA_TYPE> &mt) :
         m_memAlloc(0), m_parent(parent), m_refCount(1),  m_connected(0),
-            m_direction(dir), m_mediaTypes(mt), m_connectedType(defaultMediaType()),
+            m_direction(dir), m_mediaTypes(mt), m_connectedType(defaultMediaType),
             m_flushing(false)
         {
             Q_ASSERT(m_parent);
@@ -273,7 +260,7 @@ namespace Phonon
 
             if (FAILED(hr)) {
                 setConnected(0);
-                setConnectedType(defaultMediaType());
+                setConnectedType(defaultMediaType);
             } else {
                 ComPointer<IMemInputPin> input(pin, IID_IMemInputPin);
                 if (input) {
@@ -315,7 +302,7 @@ namespace Phonon
             }
 
             setConnected(0);
-            setConnectedType(defaultMediaType());
+            setConnectedType(defaultMediaType);
             if (m_direction == PINDIR_INPUT) {
                 setMemoryAllocator(0);
             }
@@ -470,7 +457,7 @@ namespace Phonon
                         freeMediaType(type);
                         return S_OK;
                     } else {
-                        setConnectedType(defaultMediaType());
+                        setConnectedType(defaultMediaType);
                         freeMediaType(type);
                     }
                 }

@@ -436,6 +436,7 @@ xmlpatternsxslts.depends = xmlpatternsxqts
 
 unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusabstractadaptor \
+           qdbusabstractinterface \
            qdbusconnection \
            qdbusinterface \
            qdbuslocalcalls \

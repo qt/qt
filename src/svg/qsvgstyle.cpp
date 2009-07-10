@@ -81,12 +81,12 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false), m_gradientResolved (true)
+    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false), m_fillRule(Qt::WindingFill), m_fillOpacity(1.0), m_gradientResolved (true)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false), m_gradientResolved (true)
+    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false), m_fillRule(Qt::WindingFill), m_fillOpacity(1.0), m_gradientResolved (true)
 {
 }
 
@@ -100,6 +100,16 @@ void QSvgFillStyle::setFillOpacity(qreal opacity)
 {
     m_fillOpacitySet = true;
     m_fillOpacity = opacity;
+}
+
+void QSvgFillStyle::setFillStyle(QSvgStyleProperty* style)
+{
+    m_style = style;
+}
+
+void QSvgFillStyle::setBrush(QBrush brush)
+{
+    m_fill = brush;
 }
 
 static void recursivelySetFill(QSvgNode *node, Qt::FillRule f)
@@ -195,14 +205,18 @@ void QSvgFontStyle::revert(QPainter *p, QSvgExtraStates &)
 }
 
 QSvgStrokeStyle::QSvgStrokeStyle(const QPen &pen)
-    : m_stroke(pen)
+    : m_stroke(pen), m_strokePresent(true)
 {
 }
 
 void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
 {
     m_oldStroke = p->pen();
-    p->setPen(m_stroke);
+    if (!m_strokePresent || !m_stroke.widthF() || !m_stroke.color().alphaF()) {
+        p->setPen(Qt::NoPen);
+    } else {
+        p->setPen(m_stroke);
+    }
 }
 
 void QSvgStrokeStyle::revert(QPainter *p, QSvgExtraStates &)

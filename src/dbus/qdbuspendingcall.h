@@ -78,6 +78,9 @@ public:
     QDBusMessage reply() const;
 #endif
 
+    static QDBusPendingCall fromError(const QDBusError &error);
+    static QDBusPendingCall fromCompletedCall(const QDBusMessage &message);
+
 protected:
     QExplicitlySharedDataPointer<QDBusPendingCallPrivate> d;
     friend class QDBusPendingCallPrivate;

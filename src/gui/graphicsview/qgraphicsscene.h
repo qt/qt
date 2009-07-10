@@ -79,7 +79,6 @@ class QGraphicsSceneHelpEvent;
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
-class QGraphicsSceneGestureEvent;
 class QGraphicsSimpleTextItem;
 class QGraphicsTextItem;
 class QGraphicsView;

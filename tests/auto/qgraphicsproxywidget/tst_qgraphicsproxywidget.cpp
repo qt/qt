@@ -179,6 +179,7 @@ private slots:
     void windowFlags();
     void comboboxWindowFlags();
     void updateAndDelete();
+    void inputMethod();
 };
 
 // Subclass that exposes the protected functions.
@@ -1573,7 +1574,7 @@ void tst_QGraphicsProxyWidget::resize_simple()
 
     QGraphicsProxyWidget proxy;
     QWidget *widget = new QWidget;
-    widget->setGeometry(0, 0, size.width(), size.height());
+    widget->setGeometry(0, 0, (int)size.width(), (int)size.height());
     proxy.setWidget(widget);
     widget->show();
     QCOMPARE(widget->pos(), QPoint());
@@ -3256,10 +3257,51 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     QCOMPARE(view.paintEventRegion, expectedRegion);
 }
 
+class InputMethod_LineEdit : public QLineEdit
+{
+    bool event(QEvent *e)
+    {
+        if (e->type() == QEvent::InputMethod)
+            ++inputMethodEvents;
+        return QLineEdit::event(e);
+    }
+public:
+    int inputMethodEvents;
+};
+
+void tst_QGraphicsProxyWidget::inputMethod()
+{
+    QGraphicsScene scene;
+
+    // check that the proxy is initialized with the correct input method sensitivity
+    for (int i = 0; i < 2; ++i)
+    {
+        QLineEdit *lineEdit = new QLineEdit;
+        lineEdit->setAttribute(Qt::WA_InputMethodEnabled, !!i);
+        QGraphicsProxyWidget *proxy = scene.addWidget(lineEdit);
+        QCOMPARE(!!(proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod), !!i);
+    }
+
+    // check that input method events are only forwarded to widgets with focus
+    for (int i = 0; i < 2; ++i)
+    {
+        InputMethod_LineEdit *lineEdit = new InputMethod_LineEdit;
+        lineEdit->setAttribute(Qt::WA_InputMethodEnabled, true);
+        QGraphicsProxyWidget *proxy = scene.addWidget(lineEdit);
+
+        if (i)
+            lineEdit->setFocus();
+
+        lineEdit->inputMethodEvents = 0;
+        QInputMethodEvent event;
+        qApp->sendEvent(proxy, &event);
+        QCOMPARE(lineEdit->inputMethodEvents, i);
+    }
+}
+
 QTEST_MAIN(tst_QGraphicsProxyWidget)
 #include "tst_qgraphicsproxywidget.moc"
 
 #else // QT_NO_STYLE_CLEANLOOKS
 QTEST_NOOP_MAIN
 #endif
-

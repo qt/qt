@@ -254,8 +254,17 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     int oldCurrentLoop = currentLoop;
     QAbstractAnimation::Direction oldDirection = direction;
 
-    state = newState;
+    // check if we should Rewind
+    if ((newState == QAbstractAnimation::Paused || newState == QAbstractAnimation::Running)
+        && oldState == QAbstractAnimation::Stopped) {
+            //here we reset the time if needed
+            //we don't call setCurrentTime because this might change the way the animation
+            //behaves: changing the state or changing the current value
+            totalCurrentTime = currentTime =(direction == QAbstractAnimation::Forward) ?
+                0 : (loopCount == -1 ? q->duration() : q->totalDuration());
+    }
 
+    state = newState;
     QPointer<QAbstractAnimation> guard(q);
 
     guard->updateState(oldState, newState);
@@ -268,36 +277,22 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     if (guard)
         emit guard->stateChanged(oldState, newState);
 
-    // Enter running state.
     switch (state)
     {
     case QAbstractAnimation::Paused:
     case QAbstractAnimation::Running:
-        {
-            // Rewind
-            if (oldState == QAbstractAnimation::Stopped) {
-                if (guard) {
-                    if (direction == QAbstractAnimation::Forward)
-                        q->setCurrentTime(0);
-                    else
-                        q->setCurrentTime(loopCount == -1 ? q->duration() : q->totalDuration());
-                }
+        //this ensures that the value is updated now that the animation is running
+        if(oldState == QAbstractAnimation::Stopped && guard)
+            guard->setCurrentTime(currentTime);
 
-                // Check if the setCurrentTime() function called stop().
-                // This can happen for a 0-duration animation
-                if (state == QAbstractAnimation::Stopped)
-                    return;
+        // Register timer if our parent is not running.
+        if (state == QAbstractAnimation::Running && guard) {
+            if (!group || group->state() == QAbstractAnimation::Stopped) {
+                QUnifiedTimer::instance()->registerAnimation(q);
             }
-
-            // Register timer if our parent is not running.
-            if (state == QAbstractAnimation::Running && guard) {
-                if (!group || group->state() == QAbstractAnimation::Stopped) {
-                    QUnifiedTimer::instance()->registerAnimation(q);
-                }
-            } else {
-                //new state is paused
-                QUnifiedTimer::instance()->unregisterAnimation(q);
-            }
+        } else {
+            //new state is paused
+            QUnifiedTimer::instance()->unregisterAnimation(q);
         }
         break;
     case QAbstractAnimation::Stopped:

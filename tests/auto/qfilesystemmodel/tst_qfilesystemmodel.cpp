@@ -254,6 +254,7 @@ void tst_QFileSystemModel::naturalCompare_data()
 
 void tst_QFileSystemModel::naturalCompare()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, s1);
     QFETCH(QString, s2);
     QFETCH(int, caseSensitive);
@@ -270,6 +271,7 @@ void tst_QFileSystemModel::naturalCompare()
     // On Windows CE we need to wait after each test, otherwise no new threads can be
     // created. The scheduler takes its time to recognize ended threads.
     QTest::qWait(300);
+#endif
 #endif
 }
 

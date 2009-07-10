@@ -421,6 +421,10 @@ public:
         removeShare(oldContext);
     }
 
+    QList<const QGLContext *> shares(const QGLContext *context) {
+        return reg.values(context);
+    }
+
 private:
     QGLSharingHash reg;
 };

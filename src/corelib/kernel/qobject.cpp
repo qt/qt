@@ -565,7 +565,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l uic generates code that invokes this function to enable
     auto-connection to be performed between widgets on forms created
     with \QD. More information about using auto-connection with \QD is
-    given in the \l{Using a Designer .ui File in Your Application} section of
+    given in the \l{Using a Designer UI File in Your Application} section of
     the \QD manual.
 
     \section2 Dynamic Properties
@@ -2085,6 +2085,34 @@ void QObject::deleteLater()
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
+
+    \section1 Meta Data
+
+    Additional data can be attached to each translatable message.
+    The syntax:
+
+    \tt{//= <id>}
+
+    can be used to give the message a unique identifier to support tools
+    which need it.
+    The syntax:
+
+    \tt{//~ <field name> <field contents>}
+
+    can be used to attach meta data to the message. The field name should consist
+    of a domain prefix (possibly the conventional file extension of the file format
+    the field is inspired by), a hyphen and the actual field name in
+    underscore-delimited notation. For storage in TS files, the field name together
+    with the prefix "extra-" will form an XML element name. The field contents will
+    be XML-escaped, but otherwise appear verbatim as the element's contents.
+    Any number of unique fields can be added to each message.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp meta data
+
+    Meta data appearing right in front of a magic TRANSLATOR comment applies to the
+    whole TS file.
 
     \section1 Character Encodings
 

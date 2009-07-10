@@ -65,6 +65,7 @@ public:
         m_ignoreUnfinished(false),
         m_sortContexts(false),
         m_noUiLines(false),
+        m_idBased(false),
         m_saveMode(SaveEverything)
     {}
 
@@ -97,6 +98,7 @@ public:
     bool m_ignoreUnfinished;
     bool m_sortContexts;
     bool m_noUiLines;
+    bool m_idBased;
     TranslatorSaveMode m_saveMode;
 };
 

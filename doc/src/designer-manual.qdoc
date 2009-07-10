@@ -86,7 +86,7 @@
         \o  \l{Creating Main Windows in Qt Designer}
         \o  \l{Editing Resources with Qt Designer}
         \o  \l{Using Stylesheets with Qt Designer}
-        \o  \l{Using a Designer .ui File in Your Application}
+        \o  \l{Using a Designer UI File in Your Application}
     \endlist
 
     For advanced usage of \QD, you can refer to these links:
@@ -158,7 +158,7 @@
             has been introduced to aid translators in the case of two source
             texts being the same but used for different purposes. For example,
             a dialog could have two \gui{Add} buttons for two different
-            reasons. \note To maintain compatibility, comments in \c{.ui} files
+            reasons. \note To maintain compatibility, comments in UI files
             created prior to Qt 4.5 will be listed in the \gui{Disambiguation}
             field.
     \endlist
@@ -620,7 +620,7 @@
     \key{Ctrl+O}.
 
     At any point, you can save your form by selecting the \gui{Save From As...}
-    option from the \gui File menu. The \c{.ui} files saved by \QD contain
+    option from the \gui File menu. The UI files saved by \QD contain
     information about the objects used, and any details of signal and slot
     connections between them.
 
@@ -953,7 +953,7 @@
 
     \image designer-form-layout.png
 
-    The \c{.ui} file above results in the previews shown below.
+    The UI file above results in the previews shown below.
 
     \table
         \header
@@ -1226,7 +1226,7 @@
 
         The whole connection can be selected by clicking on any of its path
         segments. Once selected, a connection can be deleted with the
-        \key Delete key, ensuring that it will not be set up in the \c{.ui}
+        \key Delete key, ensuring that it will not be set up in the UI
         file.
     \endtable
 */
@@ -1795,7 +1795,7 @@ pixmap property in the property editor.
     \page designer-stylesheet.html
     \contentspage {Qt Designer Manual}{Contents}
     \previouspage Editing Resources with Qt Designer
-    \nextpage Using a Designer .ui File in Your Application
+    \nextpage Using a Designer UI File in Your Application
 
     \title Using Stylesheets with Qt Designer
 
@@ -1824,7 +1824,7 @@ pixmap property in the property editor.
     \contentspage {Qt Designer Manual}{Contents}
     \nextpage Using Custom Widgets with Qt Designer
 
-    \title Using a Designer .ui File in Your Application
+    \title Using a Designer UI File in Your Application
 
     With Qt's integrated build tools, \l{qmake Manual}{qmake} and \l uic, the
     code for user interface components created with \QD is automatically
@@ -1855,11 +1855,11 @@ pixmap property in the property editor.
 
     \section2 The Direct Approach
 
-    To demonstrate how to use user interface (\c{.ui}) files straight from
+    To demonstrate how to use user interface (UI) files straight from
     \QD, we create a simple Calculator Form application. This is based on the
     original \l{Calculator Form Example}{Calculator Form} example.
 
-    The application consists of one source file, \c main.cpp and a \c{.ui}
+    The application consists of one source file, \c main.cpp and a UI
     file.
 
     The \c{calculatorform.ui} file designed with \QD is shown below:
@@ -1882,7 +1882,7 @@ pixmap property in the property editor.
     \snippet doc/src/snippets/uitools/calculatorform/main.cpp 0
 
     This include is an additional check to ensure that we do not generate code
-    for \c .ui files that are not used.
+    for UI files that are not used.
 
     The \c main function creates the calculator widget by constructing a
     standard QWidget that we use to host the user interface described by the
@@ -2003,7 +2003,7 @@ pixmap property in the property editor.
 
     \section2 The UiTools Approach
 
-    A resource file containing a \c{.ui} file is required to process forms at
+    A resource file containing a UI file is required to process forms at
     run time. Also, the application needs to be configured to use the QtUiTools
     module. This is done by including the following declaration in a \c qmake
     project file, ensuring that the application is compiled and linked
@@ -2034,7 +2034,7 @@ pixmap property in the property editor.
     \snippet examples/uitools/textfinder/textfinder.cpp 1
 
     Processing forms at run-time gives the developer the freedom to change a
-    program's user interface, just by changing the \c{.ui} file. This is useful
+    program's user interface, just by changing the UI file. This is useful
     when customizing programs to suit various user needs, such as extra large
     icons or a different colour scheme for accessibility support.
 
@@ -2130,12 +2130,12 @@ pixmap property in the property editor.
 
     \image designer-form-settings.png
 
-    When saving a form in \QD, it is stored as an \c .ui file. Several form
+    When saving a form in \QD, it is stored as a UI file. Several form
     settings, for example the grid settings or the margin and spacing for the
     default layout, are stored along with the form's components. These settings
     are used when the \l uic generates the form's C++ code. For more
     information on how to use forms in your application, see the
-    \l{Using a Designer .ui File in Your Application} section.
+    \l{Using a Designer UI File in Your Application} section.
 
 
     \section1 Modifying the Form Settings
@@ -2168,7 +2168,7 @@ pixmap property in the property editor.
 
     You can also specify the form's \gui{Include Hints}; i.e., provide a list
     of the header files which will then be included in the form window's
-    associated \c .ui file. Header files may be local, i.e., relative to the
+    associated UI file. Header files may be local, i.e., relative to the
     project's directory, \c "mywidget.h", or global, i.e. part of Qt or the
     compilers standard libraries: \c <QtGui/QWidget>.
 
@@ -2331,7 +2331,7 @@ pixmap property in the property editor.
         \row
             \o  \c includeFile()
             \o  The header file that must be included in applications that use
-                this widget. This information is stored in .ui files and will
+                this widget. This information is stored in UI files and will
                 be used by \c uic to create a suitable \c{#includes} statement
                 in the code it generates for the form containing the custom
                 widget.
@@ -2379,12 +2379,12 @@ pixmap property in the property editor.
 
     \section2 Notes on the \c{domXml()} Function
 
-    The \c{domXml()} function returns a \c{.ui} file snippet that is used by
+    The \c{domXml()} function returns a UI file snippet that is used by
     \QD's widget factory to create a custom widget and its applicable
     properties.
 
-    Since Qt 4.4, \QD's widget box allows for a complete \c{.ui} file to
-    describe \bold one custom widget. The \c{.ui} file can be loaded using the
+    Since Qt 4.4, \QD's widget box allows for a complete UI file to
+    describe \bold one custom widget. The UI file can be loaded using the
     \c{<ui>} tag. Specifying the <ui> tag allows for adding the <customwidget>
     element that contains additional information for custom widgets. The
     \c{<widget>} tag is sufficient if no additional information is required
@@ -2800,7 +2800,7 @@ pixmap property in the property editor.
 
     \title Qt Designer's UI File Format
 
-    The \c .ui file format used by \QD is described by the
+    The \c UI file format used by \QD is described by the
     \l{http://www.w3.org/XML/Schema}{XML schema} presented below,
     which we include for your convenience. Be aware that the format
     may change in future Qt releases.

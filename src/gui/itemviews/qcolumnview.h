@@ -97,15 +97,13 @@ protected:
     QRegion visualRegionForSelection(const QItemSelection &selection) const;
     int horizontalOffset() const;
     int verticalOffset() const;
-    void scrollContentsBy(int dx, int dy);
+    void rowsInserted(const QModelIndex &parent, int start, int end);
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
     // QColumnView functions
+    void scrollContentsBy(int dx, int dy);
     virtual QAbstractItemView* createColumn(const QModelIndex &rootIndex);
     void initializeColumn(QAbstractItemView *column) const;
-
-protected Q_SLOTS:
-    // QAbstractItemView overloads
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private:
     Q_DECLARE_PRIVATE(QColumnView)

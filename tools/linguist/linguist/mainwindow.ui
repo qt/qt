@@ -747,7 +747,7 @@
     <string>Release As...</string>
    </property>
    <property name="whatsThis">
-    <string>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</string>
+    <string>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the TS file.</string>
    </property>
   </action>
   <action name="actionFile">

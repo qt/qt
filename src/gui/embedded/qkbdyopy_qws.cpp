@@ -60,6 +60,8 @@
 #include <linux/fb.h>
 #include <linux/yopy_button.h>
 
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
+
 extern "C" {
     int getpgid(int);
 }
@@ -105,7 +107,7 @@ QWSYopyKbPrivate::QWSYopyKbPrivate(QWSYopyKeyboardHandler *h, const QString &dev
     buttonFD = -1;
     notifier = 0;
 
-    buttonFD = ::open(terminalName.toLatin1().constData(), O_RDWR | O_NDELAY, 0);
+    buttonFD = QT_OPEN(terminalName.toLatin1().constData(), O_RDWR | O_NDELAY, 0);
     if (buttonFD < 0) {
         qWarning("Cannot open %s\n", qPrintable(terminalName));
         return;
@@ -177,10 +179,10 @@ void QWSYopyKbPrivate::readKeyboardData()
           case 40:       k=Qt::Key_Up;     break; // prev
           case 45:       k=Qt::Key_Down;   break; // next
           case 35:       if(!press) {
-                           fd = open("/proc/sys/pm/sleep",O_RDWR,0);
+                           fd = QT_OPEN("/proc/sys/pm/sleep",O_RDWR,0);
                            if(fd >= 0) {
-                               write(fd,&c,sizeof(c));
-                               close(fd);
+                               QT_WRITE(fd,&c,sizeof(c));
+                               QT_CLOSE(fd);
                                //
                                // Updates all widgets.
                                //

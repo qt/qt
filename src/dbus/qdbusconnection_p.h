@@ -300,6 +300,8 @@ public:
 extern int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes);
 extern int qDBusNameToTypeId(const char *name);
 extern bool qDBusCheckAsyncTag(const char *tag);
+extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);
+extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
 
 // in qdbusinternalfilters.cpp
 extern QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node);
@@ -309,9 +311,6 @@ extern QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNod
                                      const QDBusMessage &msg);
 extern QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                         const QDBusMessage &msg);
-
-// in qdbusxmlgenerator.cpp
-extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
 
 QT_END_NAMESPACE
 

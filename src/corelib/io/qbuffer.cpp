@@ -452,7 +452,7 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
 */
 void QBuffer::connectNotify(const char *signal)
 {
-    if (strcmp(signal + 1, "readyRead()") == 0 || strcmp(signal + 1, "bytesWritten(qint64)"))
+    if (strcmp(signal + 1, "readyRead()") == 0 || strcmp(signal + 1, "bytesWritten(qint64)") == 0)
         d_func()->signalConnectionCount++;
 }
 

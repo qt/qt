@@ -178,6 +178,7 @@ public:
     QPointF mapToScene(const QPointF &point) const;
     QRectF mapToScene(const QRectF &rect) const;
     static void translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent);
+    void updateInputMethodSensitivity();
 };
 
 QT_END_NAMESPACE

@@ -6,6 +6,7 @@ DEFINES += QT_NO_CAST_TO_ASCII
 
 QT = core xml
 CONFIG += console
+CONFIG -= debug_and_release_target
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release

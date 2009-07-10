@@ -221,32 +221,11 @@ public:
     void systemStateChanged();
     uint use_system_clip : 1;
 
-    enum Uniform {
-        ImageTexture,
-        PatternColor,
-        GlobalOpacity,
-        Depth,
-        PmvMatrix,
-        MaskTexture,
-        FragmentColor,
-        LinearData,
-        Angle,
-        HalfViewportSize,
-        Fmp,
-        Fmp2MRadius2,
-        Inverse2Fmp2MRadius2,
-        InvertedTextureSize,
-        BrushTransform,
-        BrushTexture,
-        NumUniforms
-    };
-
-    uint location(Uniform uniform)
+    uint location(QGLEngineShaderManager::Uniform uniform)
     {
-        return shaderManager->getUniformLocation(uniformIdentifiers[uniform]);
+        return shaderManager->getUniformLocation(uniform);
     }
 
-    uint uniformIdentifiers[NumUniforms];
     GLuint lastTexture;
 
     bool needsSync;

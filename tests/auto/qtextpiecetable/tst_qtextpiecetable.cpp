@@ -42,9 +42,7 @@
 
 #include <QtTest/QtTest>
 
-#ifdef QTEST_REDUCED_EXPORTS
 #define private public
-#endif
 
 #include <qtextdocument.h>
 #include <private/qtextdocument_p.h>
@@ -65,7 +63,6 @@ public:
     tst_QTextPieceTable();
 
 
-#ifdef QTEST_REDUCED_EXPORTS
 public slots:
     void init();
     void cleanup();
@@ -112,13 +109,7 @@ private slots:
     void removeFrameDirect();
     void removeWithChildFrame();
     void clearWithFrames();
-#else
-public slots:
-    void init();
-    void cleanup();
-private slots:
-    void skip();
-#endif
+
 private:
     QTextDocument *doc;
     QTextDocumentPrivate *table;
@@ -129,8 +120,6 @@ private:
 tst_QTextPieceTable::tst_QTextPieceTable()
 { doc = 0; table = 0; }
 
-
-#ifdef QTEST_REDUCED_EXPORTS
 
 void tst_QTextPieceTable::init()
 {
@@ -1147,25 +1136,6 @@ void tst_QTextPieceTable::clearWithFrames()
     table->remove(start, length);
     QVERIFY(true);
 }
-
-#else // QTEST_REDUCED_EXPORTS
-
-void tst_QTextPieceTable::init()
-{
-}
-
-void tst_QTextPieceTable::cleanup()
-{
-}
-
-void tst_QTextPieceTable::skip()
-{
-    QSKIP( "Not tested on win32", SkipAll );
-}
-
-
-#endif // QTEST_REDUCED_EXPORTS
-
 
 QTEST_MAIN(tst_QTextPieceTable)
 

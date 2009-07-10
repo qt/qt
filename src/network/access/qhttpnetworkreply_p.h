@@ -123,6 +123,7 @@ public:
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
     QByteArray read(qint64 maxSize = -1);
+    QByteArray readAny();
 
     bool isFinished() const;
 
@@ -197,6 +198,7 @@ public:
     qint64 contentRead;
     qint64 totalProgress;
     QByteArray fragment; // used for header, status, chunk header etc, not for reply data
+    bool chunkedTransferEncoding;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;

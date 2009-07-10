@@ -398,20 +398,23 @@ void QAbstractEventDispatcher::closingDown()
 */
 
 /*!
-    Sets the event filter \a filter. Returns a pointer to the filter
-    function previously defined.
+    Replaces the event filter function for this
+    QAbstractEventDispatcher with \a filter and returns the replaced
+    event filter function. Only the current event filter function is
+    called. If you want to use both filter functions, save the
+    replaced EventFilter in a place where yours can call it.
 
-    The event filter is a function that receives all messages taken
-    from the system event loop before the event is dispatched to the
-    respective target. This includes messages that are not sent to Qt
+    The event filter function set here is called for all messages
+    taken from the system event loop before the event is dispatched to
+    the respective target, including the messages not meant for Qt
     objects.
 
-    The function can return true to stop the event to be processed by
-    Qt, or false to continue with the standard event processing.
+    The event filter function should return true if the message should
+    be filtered, (i.e. stopped). It should return false to allow
+    processing the message to continue.
 
-    Only one filter can be defined, but the filter can use the return
-    value to call the previously set event filter. By default, no
-    filter is set (i.e. the function returns 0).
+    By default, no event filter function is set (i.e., this function
+    returns a null EventFilter the first time it is called).
 */
 QAbstractEventDispatcher::EventFilter QAbstractEventDispatcher::setEventFilter(EventFilter filter)
 {

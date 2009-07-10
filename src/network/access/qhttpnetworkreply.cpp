@@ -185,6 +185,12 @@ QByteArray QHttpNetworkReply::read(qint64 maxSize)
     return data;
 }
 
+QByteArray QHttpNetworkReply::readAny()
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.read();
+}
+
 bool QHttpNetworkReply::isFinished() const
 {
     return d_func()->state == QHttpNetworkReplyPrivate::AllDoneState;
@@ -195,8 +201,9 @@ bool QHttpNetworkReply::isFinished() const
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
+      chunkedTransferEncoding(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
-      autoDecompress(false), requestIsPrepared(false)
+      autoDecompress(false), responseData(0), requestIsPrepared(false)
 {
 }
 
@@ -500,6 +507,9 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         state = ReadingDataState;
         fragment.clear(); // next fragment
         bodyLength = contentLength(); // cache the length
+
+        // cache isChunked() since it is called often
+        chunkedTransferEncoding = headerField("transfer-encoding").toLower().contains("chunked");
     }
     return bytes;
 }
@@ -540,7 +550,7 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
 
 bool QHttpNetworkReplyPrivate::isChunked()
 {
-    return headerField("transfer-encoding").toLower().contains("chunked");
+    return chunkedTransferEncoding;
 }
 
 bool QHttpNetworkReplyPrivate::connectionCloseEnabled()

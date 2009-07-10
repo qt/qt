@@ -48,6 +48,10 @@
 #include "qprinterinfo.h"
 #include <qnumeric.h>
 
+#ifdef Q_OS_UNIX
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern int qt_defaultDpi();
@@ -1647,7 +1651,7 @@ static void closeAllOpenFds()
 #endif
     // leave stdin/out/err untouched
     while(--i > 2)
-        ::close(i);
+        QT_CLOSE(i);
 }
 #endif
 
@@ -1681,7 +1685,7 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
         if (!printerName.isEmpty())
             pr = printerName;
         int fds[2];
-        if (pipe(fds) != 0) {
+        if (qt_safe_pipe(fds) != 0) {
             qWarning("QPdfPrinter: Could not open pipe to print");
             return false;
         }
@@ -1700,9 +1704,9 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
                 (void)execlp("true", "true", (char *)0);
                 (void)execl("/bin/true", "true", (char *)0);
                 (void)execl("/usr/bin/true", "true", (char *)0);
-                ::exit(0);
+                ::_exit(0);
             }
-            dup2(fds[0], 0);
+            qt_safe_dup2(fds[0], 0, 0);
 
             closeAllOpenFds();
 
@@ -1769,14 +1773,14 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
             // wait for a second so the parent process (the
             // child of the GUI process) has exited.  then
             // exit.
-            ::close(0);
+            QT_CLOSE(0);
             (void)::sleep(1);
-            ::exit(0);
+            ::_exit(0);
         }
         // parent process
-        ::close(fds[0]);
+        QT_CLOSE(fds[0]);
         fd = fds[1];
-        (void)::waitpid(pid, 0, 0);
+        (void)qt_safe_waitpid(pid, 0, 0);
 
         if (fd < 0)
             return false;

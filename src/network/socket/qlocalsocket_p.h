@@ -65,6 +65,7 @@
 #elif defined(Q_OS_WIN)
 #   include "private/qwindowspipewriter_p.h"
 #   include "private/qringbuffer_p.h"
+#   include <private/qwineventnotifier_p.h>
 #else
 #   include "private/qnativesocketengine_p.h"
 #   include <qtcpsocket.h>
@@ -73,43 +74,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#if !defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
-static inline int qSocket(int af, int socketype, int proto)
-{
-    int ret;
-    while((ret = qt_socket_socket(af, socketype, proto)) == -1 && errno == EINTR){}
-    return ret;
-}
-
-static inline int qBind(int fd, const sockaddr *sa, int len)
-{
-    int ret;
-    while((ret = QT_SOCKET_BIND(fd, (sockaddr*)sa, len)) == -1 && errno == EINTR){}
-    return ret;
-}
-
-static inline int qConnect(int fd, const sockaddr *sa, int len)
-{
-    int ret;
-    while((ret = QT_SOCKET_CONNECT(fd, (sockaddr*)sa, len)) == -1 && errno == EINTR){}
-    return ret;
-}
-
-static inline int qListen(int fd, int backlog)
-{
-    int ret;
-    while((ret = qt_socket_listen(fd, backlog)) == -1 && errno == EINTR){}
-    return ret;
-}
-
-static inline int qAccept(int fd, struct sockaddr *addr, QT_SOCKLEN_T *addrlen)
-{
-    int ret;
-    while((ret = qt_socket_accept(fd, addr, addrlen)) == -1 && errno == EINTR){}
-    return ret;
-}
-#endif //#if !defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
 
 #if !defined(Q_OS_WIN) || defined(QT_LOCALSOCKET_TCP)
 class QLocalUnixSocket : public QTcpSocket
@@ -172,18 +136,23 @@ public:
     void _q_notified();
     void _q_canWrite();
     void _q_pipeClosed();
-    qint64 readData(char *data, qint64 maxSize);
-    qint64 bytesAvailable();
-    bool readFromSocket();
+    void _q_emitReadyRead();
+    DWORD bytesAvailable();
+    void startAsyncRead();
+    void completeAsyncRead();
+    void checkReadyRead();
     HANDLE handle;
     OVERLAPPED overlapped;
     QWindowsPipeWriter *pipeWriter;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
-    QTimer dataNotifier;
+    int actualReadBufferSize;
+    QWinEventNotifier *dataReadNotifier;
     QLocalSocket::LocalSocketError error;
-    bool readyReadEmitted;
+    bool readSequenceStarted;
+    bool pendingReadyRead;
     bool pipeClosed;
+    static const qint64 initialReadBufferSize = 4096;
 #else
     QLocalUnixSocket unixSocket;
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;

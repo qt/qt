@@ -111,6 +111,7 @@ private slots:
     void operationsInStates();
     void oneKeyValue();
     void updateOnSetKeyValues();
+    void restart();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -395,8 +396,13 @@ void tst_QPropertyAnimation::duration0()
     animation.setEndValue(43);
     QVERIFY(!animation.currentValue().isValid());
     QCOMPARE(animation.currentValue().toInt(), 0);
+    animation.setStartValue(42);
+    QVERIFY(animation.currentValue().isValid());
+    QCOMPARE(animation.currentValue().toInt(), 42);
+    
     QCOMPARE(o.property("ole").toInt(), 42);
     animation.setDuration(0);
+    QCOMPARE(animation.currentValue().toInt(), 43); //it is at the end
     animation.start();
     QCOMPARE(animation.state(), QAnimationGroup::Stopped);
     QCOMPARE(animation.currentTime(), 0);
@@ -559,6 +565,9 @@ void tst_QPropertyAnimation::startWithoutStartValue()
 
     QTest::qWait(200);
     QCOMPARE(anim.state(), QVariantAnimation::Stopped);
+    current = anim.currentValue().toInt();
+    QCOMPARE(current, 100);
+    QCOMPARE(o.property("ole").toInt(), current);
 
     anim.setEndValue(110);
     anim.start();
@@ -953,6 +962,54 @@ void tst_QPropertyAnimation::updateOnSetKeyValues()
 
     QCOMPARE(animation2.currentValue().toInt(), animation.currentValue().toInt());
 }
+
+
+//this class will 'throw' an error in the test lib
+// if the property ole is set to ErrorValue
+class MyErrorObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int ole READ ole WRITE setOle)
+public:
+
+    static const int ErrorValue = 10000;
+
+    MyErrorObject() : m_ole(0) { }
+    int ole() const { return m_ole; }
+    void setOle(int o)
+    {
+        QVERIFY(o != ErrorValue);
+        m_ole = o;
+    }
+
+private:
+    int m_ole;
+
+
+};
+
+void tst_QPropertyAnimation::restart()
+{
+    //here we check that be restarting an animation
+    //it doesn't get an bogus intermediate value (end value)
+    //because the time is not yet reset to 0
+    MyErrorObject o;
+    o.setOle(100);
+    QCOMPARE(o.property("ole").toInt(), 100);
+
+    QPropertyAnimation anim(&o, "ole");
+    anim.setEndValue(200);
+    anim.start();
+    anim.setCurrentTime(anim.duration());
+    QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(o.property("ole").toInt(), 200);
+
+    //we'll check that the animation never gets a wrong value when starting it
+    //after having changed the end value
+    anim.setEndValue(MyErrorObject::ErrorValue);
+    anim.start();
+}
+
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"
