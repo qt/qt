@@ -1321,7 +1321,7 @@ QPainterState *QVGPaintEngine::createState(QPainterState *orig) const
         return new QVGPainterState();
     } else {
         QVGPaintEnginePrivate *d =
-            static_cast<QVGPaintEnginePrivate *>(d_ptr);
+            static_cast<QVGPaintEnginePrivate *>(d_ptr.data());
         QVGPainterState *origState = static_cast<QVGPainterState *>(orig);
         origState->savedDirty = d->dirty;
         d->dirty = 0;
