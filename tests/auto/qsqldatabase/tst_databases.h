@@ -245,6 +245,7 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
 //         addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql4-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk;TDS_Version=8.0", "troll", "trondk", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond;TDS_Version=8.0", "troll", "trond", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "testuser", "Ee4Gabf6_", "" );
@@ -467,6 +468,16 @@ public:
     static bool isMSAccess( QSqlDatabase db )
     {
         return db.databaseName().contains( "Access Driver", Qt::CaseInsensitive );
+    }
+
+    static bool isPostgreSQL( QSqlDatabase db )
+    {
+        return db.driverName().startsWith("QPSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("PostgreSQL") );
+    }
+
+    static bool isMySQL( QSqlDatabase db )
+    {
+        return db.driverName().startsWith("QMYSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("MySQL") );
     }
 
     // -1 on fail, else Oracle version

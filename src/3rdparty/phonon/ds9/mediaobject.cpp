@@ -207,12 +207,14 @@ namespace Phonon
 
             HRESULT hr = S_OK;
 
-            m_currentRender = w.graph;
-			m_currentRenderId = w.id;
+            {
+                QMutexLocker locker(&m_mutex);
+                m_currentRender = w.graph;
+			    m_currentRenderId = w.id;
+            }
+
             if (w.task == ReplaceGraph) {
                 QMutexLocker locker(&m_mutex);
-                HANDLE h;
-
                 int index = -1;
                 for(int i = 0; i < FILTER_COUNT; ++i) {
                     if (m_graphHandle[i].graph == w.oldGraph) {
@@ -228,6 +230,7 @@ namespace Phonon
                 Q_ASSERT(index != -1);
 
                 //add the new graph
+                HANDLE h;
                 if (SUCCEEDED(ComPointer<IMediaEvent>(w.graph, IID_IMediaEvent)
                     ->GetEventHandle(reinterpret_cast<OAEVENT*>(&h)))) {
                     m_graphHandle[index].graph = w.graph;
@@ -324,8 +327,11 @@ namespace Phonon
                 }
             }
 
-            m_currentRender = Graph();
-			m_currentRenderId = 0;
+            {
+                QMutexLocker locker(&m_mutex);
+                m_currentRender = Graph();
+			    m_currentRenderId = 0;
+            }
 
         }
 

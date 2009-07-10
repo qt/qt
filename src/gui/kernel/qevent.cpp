@@ -54,8 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QString qt_getStandardGestureTypeName(Qt::GestureType type);
-
 /*!
     \class QInputEvent
     \ingroup events
@@ -116,6 +114,10 @@ QInputEvent::~QInputEvent()
     the mouse event is not handled by your widget. A mouse event is
     propagated up the parent widget chain until a widget accepts it
     with accept(), or an event filter consumes it.
+
+    \note If a mouse event is propagated to a \l{QWidget}{widget} for
+    which Qt::WA_NoMousePropagation has been set, that mouse event
+    will not be propagated further up the parent widget chain.
 
     The state of the keyboard modifier keys can be found by calling the
     \l{QInputEvent::modifiers()}{modifiers()} function, inhertied from
@@ -3371,9 +3373,6 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
         dbg.nospace() << "QChildEvent(" << n << ", " << (static_cast<const QChildEvent*>(e))->child();
         return dbg.space();
-    case QEvent::Gesture:
-        n = "Gesture";
-        break;
     default:
         dbg.nospace() << "QEvent(" << (const void *)e << ", type = " << e->type() << ')';
         return dbg.space();
@@ -3569,153 +3568,6 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 */
 
 #endif
-
-/*!
-    \class QGestureEvent
-    \since 4.6
-    \ingroup events
-
-    \brief The QGestureEvent class provides the parameters used for
-    gesture recognition.
-
-    The QGestureEvent class contains a list of gestures that are being
-    executed right now (\l{QGestureEvent::}{gestureTypes()}) and a
-    list of gestures that are cancelled (the gesture might be
-    cancelled because the window lost focus, or because of timeout,
-    etc).
-
-    \sa QGesture
-*/
-
-/*!
-    Creates new QGestureEvent containing a list of \a gestures that
-    are being executed and a list of gesture that were cancelled (\a
-    cancelledGestures).
-*/
-QGestureEvent::QGestureEvent(const QSet<QGesture*> &gestures,
-                             const QSet<QString> &cancelledGestures)
-    : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
-{
-    setAccepted(false);
-    foreach(QGesture *r, gestures)
-        m_gestures.insert(r->type(), r);
-}
-
-/*!
-    Destroys the QGestureEvent object.
-*/
-QGestureEvent::~QGestureEvent()
-{
-}
-
-/*!
-    Returns true if the gesture event contains gesture of specific \a
-    type; returns false otherwise.
-*/
-bool QGestureEvent::contains(Qt::GestureType type) const
-{
-    return contains(qt_getStandardGestureTypeName(type));
-}
-
-/*!
-    Returns true if the gesture event contains gesture of specific \a
-    type; returns false otherwise.
-*/
-bool QGestureEvent::contains(const QString &type) const
-{
-    return gesture(type) != 0;
-}
-
-/*!
-    Returns a list of gesture names that this event contains.
-*/
-QList<QString> QGestureEvent::gestureTypes() const
-{
-    return m_gestures.keys();
-}
-
-/*!
-    Returns extended information about a gesture of specific \a type.
-*/
-const QGesture* QGestureEvent::gesture(Qt::GestureType type) const
-{
-    return gesture(qt_getStandardGestureTypeName(type));
-}
-
-/*!
-    Returns extended information about a gesture of specific \a type.
-*/
-const QGesture* QGestureEvent::gesture(const QString &type) const
-{
-    return m_gestures.value(type, 0);
-}
-
-/*!
-    Returns extended information about all gestures in the event.
-*/
-QList<QGesture*> QGestureEvent::gestures() const
-{
-    return m_gestures.values();
-}
-
-/*!
-    Returns a set of gesture names that used to be executed, but were
-    cancelled (i.e. they were not finished properly).
-*/
-QSet<QString> QGestureEvent::cancelledGestures() const
-{
-    return m_cancelledGestures;
-}
-
-/*!
-    Sets the accept flag of the all gestures inside the event object,
-    the equivalent of calling \l{QEvent::accept()}{accept()} or
-    \l{QEvent::setAccepted()}{setAccepted(true)}.
-
-    Setting the accept parameter indicates that the event receiver
-    wants the gesture. Unwanted gestures might be propagated to the parent
-    widget.
-*/
-void QGestureEvent::acceptAll()
-{
-    QHash<QString, QGesture*>::iterator it = m_gestures.begin(),
-                                         e = m_gestures.end();
-    for(; it != e; ++it)
-        it.value()->accept();
-    setAccepted(true);
-}
-
-/*!
-    Sets the accept flag of the gesture specified by \a type.
-    This is equivalent to calling
-    \l{QGestureEvent::gesture()}{gesture(type)}->
-    \l{QGesture::accept()}{accept()}
-
-    Setting the accept flag indicates that the event receiver wants
-    the gesture. Unwanted gestures might be propagated to the parent
-    widget.
-*/
-void QGestureEvent::accept(Qt::GestureType type)
-{
-    if (QGesture *g = m_gestures.value(qt_getStandardGestureTypeName(type), 0))
-        g->accept();
-}
-
-/*!
-    Sets the accept flag of the gesture specified by \a type.
-    This is equivalent to calling
-    \l{QGestureEvent::gesture()}{gesture(type)}->
-    \l{QGesture::accept()}{accept()}
-
-    Setting the accept flag indicates that the event receiver wants
-    the gesture. Unwanted gestures might be propagated to the parent
-    widget.
-*/
-void QGestureEvent::accept(const QString &type)
-{
-    if (QGesture *g = m_gestures.value(type, 0))
-        g->accept();
-}
 
 /*! \class QTouchEvent
     \brief The QTouchEvent class contains parameters that describe a touch event

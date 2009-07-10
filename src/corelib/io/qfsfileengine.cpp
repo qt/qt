@@ -50,6 +50,9 @@
 #if !defined(Q_OS_WINCE)
 #include <errno.h>
 #endif
+#if defined(Q_OS_UNIX)
+#include "private/qcore_unix_p.h"
+#endif
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE

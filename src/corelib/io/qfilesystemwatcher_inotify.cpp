@@ -44,6 +44,8 @@
 
 #ifndef QT_NO_FILESYSTEMWATCHER
 
+#include "private/qcore_unix_p.h"
+
 #include <qdebug.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -62,60 +64,78 @@
 # define __NR_inotify_init      291
 # define __NR_inotify_add_watch 292
 # define __NR_inotify_rm_watch  293
+# define __NR_inotify_init1     332
 #elif defined(__x86_64__)
 # define __NR_inotify_init      253
 # define __NR_inotify_add_watch 254
 # define __NR_inotify_rm_watch  255
+# define __NR_inotify_init1     294
 #elif defined(__powerpc__) || defined(__powerpc64__)
 # define __NR_inotify_init      275
 # define __NR_inotify_add_watch 276
 # define __NR_inotify_rm_watch  277
+# define __NR_inotify_init1     318
 #elif defined (__ia64__)
 # define __NR_inotify_init      1277
 # define __NR_inotify_add_watch 1278
 # define __NR_inotify_rm_watch  1279
+# define __NR_inotify_init1     1318
 #elif defined (__s390__) || defined (__s390x__)
 # define __NR_inotify_init      284
 # define __NR_inotify_add_watch 285
 # define __NR_inotify_rm_watch  286
+# define __NR_inotify_init1     324
 #elif defined (__alpha__)
 # define __NR_inotify_init      444
 # define __NR_inotify_add_watch 445
 # define __NR_inotify_rm_watch  446
+// no inotify_init1 for the Alpha
 #elif defined (__sparc__) || defined (__sparc64__)
 # define __NR_inotify_init      151
 # define __NR_inotify_add_watch 152
 # define __NR_inotify_rm_watch  156
+# define __NR_inotify_init1     322
 #elif defined (__arm__)
 # define __NR_inotify_init      316
 # define __NR_inotify_add_watch 317
 # define __NR_inotify_rm_watch  318
+# define __NR_inotify_init1     360
 #elif defined (__sh__)
 # define __NR_inotify_init      290
 # define __NR_inotify_add_watch 291
 # define __NR_inotify_rm_watch  292
+# define __NR_inotify_init1     332
 #elif defined (__sh64__)
 # define __NR_inotify_init      318
 # define __NR_inotify_add_watch 319
 # define __NR_inotify_rm_watch  320
+# define __NR_inotify_init1     360
 #elif defined (__mips__)
 # define __NR_inotify_init      284
 # define __NR_inotify_add_watch 285
 # define __NR_inotify_rm_watch  286
+# define __NR_inotify_init1     329
 #elif defined (__hppa__)
 # define __NR_inotify_init      269
 # define __NR_inotify_add_watch 270
 # define __NR_inotify_rm_watch  271
+# define __NR_inotify_init1     314
 #elif defined (__avr32__)
 # define __NR_inotify_init	240
 # define __NR_inotify_add_watch	241
 # define __NR_inotify_rm_watch	242
+// no inotify_init1 for AVR32
 #elif defined (__mc68000__)
 # define __NR_inotify_init      284
 # define __NR_inotify_add_watch 285
 # define __NR_inotify_rm_watch  286
+# define __NR_inotify_init1     328
 #else
 # error "This architecture is not supported. Please talk to qt-bugs@trolltech.com"
+#endif
+
+#if !defined(IN_CLOEXEC) && defined(O_CLOEXEC) && defined(__NR_inotify_init1)
+# define IN_CLOEXEC              O_CLOEXEC
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -139,6 +159,13 @@ static inline int inotify_rm_watch(int fd, __u32 wd)
 {
     return syscall(__NR_inotify_rm_watch, fd, wd);
 }
+
+#ifdef IN_CLOEXEC
+static inline int inotify_init1(int flags)
+{
+    return syscall(__NR_inotify_init1, flags);
+}
+#endif
 
 // the following struct and values are documented in linux/inotify.h
 extern "C" {
@@ -185,9 +212,16 @@ QT_BEGIN_NAMESPACE
 
 QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create()
 {
-    int fd = inotify_init();
-    if (fd <= 0)
-        return 0;
+    register int fd = -1;
+#ifdef IN_CLOEXEC
+    fd = inotify_init1(IN_CLOEXEC);
+#endif
+    if (fd == -1) {
+        fd = inotify_init();
+        if (fd == -1)
+            return 0;
+        ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+    }
     return new QInotifyFileSystemWatcherEngine(fd);
 }
 

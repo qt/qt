@@ -140,10 +140,10 @@
     QLocale::system() can be influenced by setting the \c LANG
     environment variable, for example. Notice that the use of a naming
     convention that incorporates the locale for \c .qm message files,
-    (and \c .ts files), makes it easy to implement choosing the
+    (and TS files), makes it easy to implement choosing the
     translation file according to locale.
 
-    If there is no \c .qm message file for the locale chosen the original
+    If there is no QM message file for the locale chosen the original
     source text will be used and no error raised.
 
     \section1 Translating to French and Dutch
@@ -194,9 +194,9 @@
     \endlist
 
     We have to convert the \c tt1_fr.ts and \c tt1_nl.ts translation source
-    files into \c .qm files. We could use \e {Qt Linguist} as we've done
+    files into QM files. We could use \e {Qt Linguist} as we've done
     before; however using the command line tool \c lrelease ensures that
-    \e all the \c .qm files for the application are created without us
+    \e all the QM files for the application are created without us
     having to remember to load and \gui File|Release each one
     individually from \e {Qt Linguist}.
 

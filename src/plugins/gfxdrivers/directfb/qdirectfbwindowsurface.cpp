@@ -364,6 +364,7 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         if (winOpacity != opacity)
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
+#endif
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
@@ -385,7 +386,6 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
             dfbSurface->Flip(dfbSurface, &dfbReg, flipFlags);
         }
     }
-#endif
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
     ++frames;

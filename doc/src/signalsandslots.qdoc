@@ -190,7 +190,7 @@
     know any information about each other. To enable this, the objects only
     need to be connected together, and this can be achieved with some simple
     QObject::connect() function calls, or with \c{uic}'s
-    \l{Using a Designer .ui File in Your Application#Automatic Connections}
+    \l{Using a Designer UI File in Your Application#Automatic Connections}
     {automatic connections} feature.
 
     \section1 Building the Example

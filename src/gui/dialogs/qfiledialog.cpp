@@ -209,25 +209,30 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
 /*!
     \enum QFileDialog::Option
 
-    \value ShowDirsOnly Only show directories in the file dialog. By default both files and
-    directories are shown. (Valid only in the \l Directory file mode.)
-    \value DontResolveSymlinks Don't resolve symlinks in the file dialog. By default symlinks
-    are resolved.
-    \value DontConfirmOverwrite Don't ask for confirmation if an existing file is selected.
-    By default confirmation is requested.
-    \value DontUseNativeDialog Don't use the native file dialog. By default on Mac OS X,
-    the native file dialog is used unless you use a subclass of QFileDialog that contains the
-    Q_OBJECT macro.
-    \value ReadOnly Indicates that the model is readonly.
-    \value HideNameFilterDetails Indicates if the is hidden or not.
+    \value ShowDirsOnly Only show directories in the file dialog. By
+    default both files and directories are shown. (Valid only in the
+    \l Directory file mode.)
 
+    \value DontResolveSymlinks Don't resolve symlinks in the file
+    dialog. By default symlinks are resolved.
+
+    \value DontConfirmOverwrite Don't ask for confirmation if an
+    existing file is selected.  By default confirmation is requested.
+
+    \value DontUseNativeDialog Don't use the native file dialog. By
+    default, the native file dialog is used unless you use a subclass
+    of QFileDialog that contains the Q_OBJECT macro.
+
+    \value ReadOnly Indicates that the model is readonly.
+
+    \value HideNameFilterDetails Indicates if the is hidden or not.
     This value is obsolete and does nothing since Qt 4.5:
 
-    \value DontUseSheet In previous versions of Qt, the static functions would
-    create a sheet by default if the static function was given a parent. This
-    is no longer supported in Qt 4.5, The static functions will always be an
-    application modal dialog. If you want to use sheets, use
-    QFileDialog::open() instead.
+    \value DontUseSheet In previous versions of Qt, the static
+    functions would create a sheet by default if the static function
+    was given a parent. This is no longer supported in Qt 4.5, The
+    static functions will always be an application modal dialog. If
+    you want to use sheets, use QFileDialog::open() instead.
 
 */
 

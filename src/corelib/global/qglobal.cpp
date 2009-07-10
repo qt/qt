@@ -2459,6 +2459,62 @@ int qrand()
 */
 
 /*!
+    \fn QString qtTrId(const char *id, int n = -1)
+    \relates <QtGlobal>
+    \reentrant
+    \since 4.6
+
+    Returns a translated string identified by \a id.
+    If no matching string is found, the id itself is returned. This
+    should not happen under normal conditions.
+
+    If \a n >= 0, all occurrences of \c %n in the resulting string
+    are replaced with a decimal representation of \a n. In addition,
+    depending on \a n's value, the translation text may vary.
+
+    Meta data and comments can be passed as documented for QObject::tr().
+    In addition, it is possible to supply a source string template like that:
+
+    \tt{//% <C string>}
+
+    or
+
+    \tt{\begincomment% <C string> \endcomment}
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qttrid
+
+    Creating QM files suitable for use with this function requires passing
+    the \c -idbased option to the \c lrelease tool.
+
+    \warning This method is reentrant only if all translators are
+    installed \e before calling this method. Installing or removing
+    translators while performing translations is not supported. Doing
+    so will probably result in crashes or other undesirable behavior.
+
+    \sa QObject::tr(), QCoreApplication::translate(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRID_NOOP(id)
+    \relates <QtGlobal>
+    \since 4.6
+
+    Marks \a id for dynamic translation.
+    The only purpose of this macro is to provide an anchor for attaching
+    meta data like to qtTrId().
+
+    The macro expands to \a id.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qttrid_noop
+
+    \sa qtTrId(), {Internationalization with Qt}
+*/
+
+/*!
     \macro QT_POINTER_SIZE
     \relates <QtGlobal>
 

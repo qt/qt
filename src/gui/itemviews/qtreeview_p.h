@@ -54,6 +54,7 @@
 //
 
 #include "private/qabstractitemview_p.h"
+#include <QtCore/qvariantanimation.h>
 
 #ifndef QT_NO_TREEVIEW
 
@@ -81,42 +82,39 @@ public:
           uniformRowHeights(false), rootDecoration(true),
           itemsExpandable(true), sortingEnabled(false),
           expandsOnDoubleClick(true),
-          allColumnsShowFocus(false),
+          allColumnsShowFocus(false), current(0),
           animationsEnabled(false), columnResizeTimerID(0),
           autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false) {}
 
     ~QTreeViewPrivate() {}
     void initialize();
 
-    struct AnimatedOperation
+#ifndef QT_NO_ANIMATION
+    struct AnimatedOperation : public QVariantAnimation
     {
-        enum Type { Expand, Collapse };
         int item;
-        int top;
-        int duration;
-        Type type;
         QPixmap before;
         QPixmap after;
-    };
+        QWidget *viewport;
+        AnimatedOperation() : item(0) { setEasingCurve(QEasingCurve::InOutQuad); }
+        int top() const { return startValue().toInt(); }
+        QRect rect() const { QRect rect = viewport->rect(); rect.moveTop(top()); return rect; }
+        void updateCurrentValue(const QVariant &) { viewport->update(rect()); }
+        void updateState(State, State state) { if (state == Stopped) before = after = QPixmap(); }
+    } animatedOperation;
+    void prepareAnimatedOperation(int item, QVariantAnimation::Direction d);
+    void beginAnimatedOperation();
+    void drawAnimatedOperation(QPainter *painter) const;
+    QPixmap renderTreeToPixmapForAnimation(const QRect &rect) const;
+    void _q_endAnimatedOperation();
+#endif //QT_NO_ANIMATION
 
     void expand(int item, bool emitSignal);
     void collapse(int item, bool emitSignal);
 
-    void prepareAnimatedOperation(int item, AnimatedOperation::Type type);
-    void beginAnimatedOperation();
-    void _q_endAnimatedOperation();
-    void drawAnimatedOperation(QPainter *painter) const;
-    QPixmap renderTreeToPixmapForAnimation(const QRect &rect) const;
-
-    inline QRect animationRect() const
-        { return QRect(0, animatedOperation.top, viewport->width(),
-                       viewport->height() - animatedOperation.top); }
-
-    void _q_currentChanged(const QModelIndex&, const QModelIndex&);
     void _q_columnsAboutToBeRemoved(const QModelIndex &, int, int);
     void _q_columnsRemoved(const QModelIndex &, int, int);
     void _q_modelAboutToBeReset();
-    void _q_animate();
     void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
     void _q_modelDestroyed();
 
@@ -177,8 +175,6 @@ public:
 
     // used when expanding and collapsing items
     QSet<QPersistentModelIndex> expandedIndexes;
-    QStack<bool> expandParent;
-    AnimatedOperation animatedOperation;
     bool animationsEnabled;
 
     inline bool storeExpanded(const QPersistentModelIndex &idx) {

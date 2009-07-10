@@ -119,7 +119,9 @@ Q_INLINE_TEMPLATE QGenericMatrix<N, M, T, InnerT>::QGenericMatrix()
 template <int N, int M, typename T, typename InnerT>
 Q_INLINE_TEMPLATE QGenericMatrix<N, M, T, InnerT>::QGenericMatrix(const QGenericMatrix<N, M, T, InnerT>& other)
 {
-    qMemCopy(m, other.m, sizeof(m));
+    for (int col = 0; col < N; ++col)
+        for (int row = 0; row < M; ++row)
+            m[col][row] = other.m[col][row];
 }
 
 template <int N, int M, typename T, typename InnerT>
