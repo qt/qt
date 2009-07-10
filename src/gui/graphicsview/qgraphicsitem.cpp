@@ -1821,6 +1821,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         if (q_ptr->isSelected())
             q_ptr->setSelected(false);
     } else {
+        geometryChanged = 1;
         if (isWidget && scene) {
             QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
             if (widget->windowType() == Qt::Popup)

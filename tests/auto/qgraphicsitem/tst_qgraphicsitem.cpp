@@ -6580,6 +6580,7 @@ public:
 void tst_QGraphicsItem::update()
 {
     QGraphicsScene scene;
+    scene.setSceneRect(-100, -100, 200, 200);
     MyGraphicsView view(&scene);
 
     view.show();
@@ -6636,6 +6637,52 @@ void tst_QGraphicsItem::update()
     QCOMPARE(view.repaints, 1);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
     QCOMPARE(view.paintedRegion, expectedRegion);
+
+    // Make sure item is repainted when shown (after being hidden).
+    view.reset();
+    item->repaints = 0;
+    item->show();
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
+    QCOMPARE(view.paintedRegion, expectedRegion);
+
+    item->repaints = 0;
+    item->hide();
+    qApp->processEvents();
+    view.reset();
+    const QPointF originalPos = item->pos();
+    item->setPos(5000, 5000);
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 0);
+    QCOMPARE(view.repaints, 0);
+    qApp->processEvents();
+
+    item->setPos(originalPos);
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 0);
+    QCOMPARE(view.repaints, 0);
+    item->show();
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
+    QCOMPARE(view.paintedRegion, expectedRegion);
+
+    QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
+    item->setPos(originalPos + QPoint(50, 50));
+    viewPrivate->updateAll();
+    QVERIFY(viewPrivate->fullUpdatePending);
+    QTest::qWait(50);
+    item->repaints = 0;
+    view.reset();
+    item->setPos(originalPos);
+    QTest::qWait(50);
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
 }
 
 void tst_QGraphicsItem::setTransformProperties_data()

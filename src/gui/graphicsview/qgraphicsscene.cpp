@@ -4517,17 +4517,14 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
     }
 
-    if (item->d_ptr->geometryChanged) {
+    if (!hasSceneRect && item->d_ptr->geometryChanged && item->d_ptr->visible) {
         // Update growingItemsBoundingRect.
-        if (!hasSceneRect) {
-            if (item->d_ptr->sceneTransformTranslateOnly) {
-                growingItemsBoundingRect |= item->boundingRect().translated(item->d_ptr->sceneTransform.dx(),
-                                                                            item->d_ptr->sceneTransform.dy());
-            } else {
-                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
-            }
+        if (item->d_ptr->sceneTransformTranslateOnly) {
+            growingItemsBoundingRect |= item->boundingRect().translated(item->d_ptr->sceneTransform.dx(),
+                                                                        item->d_ptr->sceneTransform.dy());
+        } else {
+            growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(item->boundingRect());
         }
-        item->d_ptr->geometryChanged = 0;
     }
 
     // Process item.
@@ -4552,28 +4549,30 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             for (int j = 0; j < views.size(); ++j) {
                 QGraphicsView *view = views.at(j);
                 QGraphicsViewPrivate *viewPrivate = view->d_func();
-                if (viewPrivate->fullUpdatePending)
+                QRect &paintedViewBoundingRect = item->d_ptr->paintedViewBoundingRects[viewPrivate->viewport];
+                if (viewPrivate->fullUpdatePending
+                    || viewPrivate->viewportUpdateMode == QGraphicsView::NoViewportUpdate) {
+                    // Okay, if we have a full update pending or no viewport update, this item's
+                    // paintedViewBoundingRect  will be updated correctly in the next paintEvent if
+                    // it is inside the viewport, but for now we can pretend that it is outside.
+                    paintedViewBoundingRect = QRect(-1, -1, -1, -1);
                     continue;
-                switch (viewPrivate->viewportUpdateMode) {
-                case QGraphicsView::NoViewportUpdate:
-                    continue;
-                case QGraphicsView::FullViewportUpdate:
-                    view->viewport()->update();
-                    viewPrivate->fullUpdatePending = 1;
-                    continue;
-                default:
-                    break;
                 }
 
-                QRect &paintedViewBoundingRect = item->d_ptr->paintedViewBoundingRects[viewPrivate->viewport];
-                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
+                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint && !paintedViewBoundingRect.isEmpty()) {
                     paintedViewBoundingRect.translate(viewPrivate->dirtyScrollOffset);
                     if (!viewPrivate->updateRect(paintedViewBoundingRect))
-                        paintedViewBoundingRect = QRect();
+                        paintedViewBoundingRect = QRect(-1, -1, -1, -1); // Outside viewport.
                 }
 
                 if (!item->d_ptr->dirty)
                     continue;
+
+                if (!item->d_ptr->geometryChanged
+                    && paintedViewBoundingRect.x() == -1 && paintedViewBoundingRect.y() == -1
+                    && paintedViewBoundingRect.width() == -1 && paintedViewBoundingRect.height() == -1) {
+                    continue; // Outside viewport.
+                }
 
                 if (uninitializedDirtyRect) {
                     dirtyRect = itemBoundingRect;
@@ -4587,8 +4586,10 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 if (dirtyRect.isEmpty())
                     continue; // Discard updates outside the bounding rect.
 
-                if (!updateHelper(viewPrivate, item->d_ptr, dirtyRect, itemIsUntransformable))
-                    paintedViewBoundingRect = QRect();
+                if (!updateHelper(viewPrivate, item->d_ptr, dirtyRect, itemIsUntransformable)
+                    && item->d_ptr->geometryChanged) {
+                    paintedViewBoundingRect = QRect(-1, -1, -1, -1); // Outside viewport.
+                }
             }
         }
     }
