@@ -505,8 +505,10 @@ void GlobalObject::mark()
 
     {
         QHash<int, QScriptTypeInfo*>::const_iterator it;
-        for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it)
-            (*it)->prototype.mark();
+        for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it) {
+            if ((*it)->prototype)
+                (*it)->prototype.mark();
+        }
     }
 }
 
@@ -1838,7 +1840,7 @@ QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
     qWarning("QScriptEngine::pushContext() not implemented");
-    return 0;
+    return d->contextForFrame(d->currentFrame);
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY
 //    notifyContextPush(); TODO
 #endif
@@ -2579,7 +2581,8 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
         }
 
         // if the __postInit__ function has been set, we call it
-        QScriptValue postInit = ctx->activationObject().property(QLatin1String("__postInit__"));
+        // ### enable once activationObject() works
+        QScriptValue postInit; // = ctx->activationObject().property(QLatin1String("__postInit__"));
         if (postInit.isFunction()) {
             postInit.call(globalObject());
             if (hasUncaughtException()) {
