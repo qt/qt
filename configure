@@ -6277,7 +6277,6 @@ esac
 #     debug release
 #     dll staticlib
 #
-#     internal
 #     nocrosscompiler
 #     GNUmake
 #     largefile
@@ -6756,6 +6755,9 @@ else
 fi
 if [ "$PLATFORM_MAC" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG $CFG_MAC_ARCHS"
+fi
+if [ "$CFG_DEV" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG private_tests"
 fi
 
 # Make the application arch follow the Qt arch for single arch builds.

@@ -292,8 +292,8 @@ namespace Phonon
              */
             inline void setModelData(const QList<ObjectDescription<type> > &data) { //krazy:exclude=inline
                 QList<QExplicitlySharedDataPointer<ObjectDescriptionData> > list;
-                Q_FOREACH (const ObjectDescription<type> &desc, data) {
-                    list << desc.d;
+                for (int i = 0; i < data.count(); ++i) {
+                    list += data.at(i).d;
                 }
                 d->setModelData(list);
             }
@@ -307,8 +307,8 @@ namespace Phonon
             inline QList<ObjectDescription<type> > modelData() const { //krazy:exclude=inline
                 QList<ObjectDescription<type> > ret;
                 QList<QExplicitlySharedDataPointer<ObjectDescriptionData> > list = d->modelData();
-                Q_FOREACH (const QExplicitlySharedDataPointer<ObjectDescriptionData> &data, list) {
-                    ret << ObjectDescription<type>(data);
+                for (int i = 0; i < list.count(); ++i) {
+                    ret << ObjectDescription<type>(list.at(i));
                 }
                 return ret;
             }

@@ -48,7 +48,6 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
-#include "private/qgesturemanager_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qevent.h>
@@ -452,6 +451,22 @@ void QGraphicsProxyWidgetPrivate::updateProxyGeometryFromWidget()
 
 /*!
     \internal
+*/
+void QGraphicsProxyWidgetPrivate::updateProxyInputMethodAcceptanceFromWidget()
+{
+    Q_Q(QGraphicsProxyWidget);
+    if (!widget)
+        return;
+
+    QWidget *focusWidget = widget->focusWidget();
+    if (!focusWidget)
+        focusWidget = widget;
+    q->setFlag(QGraphicsItem::ItemAcceptsInputMethod,
+               focusWidget->testAttribute(Qt::WA_InputMethodEnabled));
+}
+
+/*!
+    \internal
 
     Embeds \a subWin as a subwindow of this proxy widget. \a subWin must be a top-level
     widget and a descendant of the widget managed by this proxy. A separate subproxy
@@ -649,9 +664,6 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         q->setAttribute(Qt::WA_OpaquePaintEvent);
 
     widget = newWidget;
-    foreach(int gestureId, widget->d_func()->gestures) {
-        grabGesture(gestureId);
-    }
 
     // Changes only go from the widget to the proxy.
     enabledChangeMode = QGraphicsProxyWidgetPrivate::WidgetToProxyMode;
@@ -693,6 +705,8 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     q->setMaximumSize(sz.isNull() ? QSizeF() : QSizeF(sz));
 
     updateProxyGeometryFromWidget();
+
+    updateProxyInputMethodAcceptanceFromWidget();
 
     // Hook up the event filter to keep the state up to date.
     newWidget->installEventFilter(q);
@@ -872,15 +886,6 @@ bool QGraphicsProxyWidget::event(QEvent *event)
                 }
                 return true;
             }
-        }
-        break;
-    }
-    case QEvent::GraphicsSceneGesture: {
-        qDebug() << "QGraphicsProxyWidget: graphicsscenegesture";
-        if (d->widget && d->widget->isVisible()) {
-            //### TODO: widget->childAt(): decompose gesture event and find widget under hotspots.
-            //QGestureManager::instance()->sendGestureEvent(d->widget, ge->gestures().toSet(), ge->cancelledGestures());
-            return true;
         }
         break;
     }
@@ -1316,8 +1321,8 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
 	if (d->widget && d->widget->focusWidget()) {
 	    d->widget->focusWidget()->setFocus(event->reason());
 	    return;
-	}
-	break;
+        }
+        break;
     }
 }
 

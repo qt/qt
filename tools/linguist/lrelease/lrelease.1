@@ -51,10 +51,10 @@ This page documents the
 tool for the Qt GUI toolkit.
 .B Lrelease
 reads a qmake/tmake project file (.pro file) and converts the
-translation files (.ts files) specified in it into Qt message files
-(.qm files) used by the application to translate.
+translation files (TS files) specified in it into Qt message files
+(QM files) used by the application to translate.
 .PP
-The .qm file format is a compact binary format that provides
+The QM file format is a compact binary format that provides
 extremely fast lookups for translations and that is used by Qt.
 .SH OPTIONS
 .TP
@@ -62,7 +62,7 @@ extremely fast lookups for translations and that is used by Qt.
 Display the usage and exit.
 .TP
 .I "-compress"
-Compress the .qm files.
+Compress the QM files.
 .TP
 .I "-nounfinished"
 Do not include unfinished translations.
@@ -72,7 +72,7 @@ If the translated text is the same as
 the source text, do not include the message.
 .TP
 .I "-silent"
-Don't explain what is being done.
+Do not explain what is being done.
 .TP
 .I "-version"
 Display the version of
@@ -105,7 +105,7 @@ generated from gnomovision_dk.ts, gnomovision_fi.ts,
 gnomovision_no.ts and gnomovision_se.ts, respectively.
 .PP
 .B Lrelease
-can also be invoked with a list of .ts files to convert:
+can also be invoked with a list of TS files to convert:
 .PP
 .in +4
 .nf

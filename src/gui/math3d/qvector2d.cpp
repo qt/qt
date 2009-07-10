@@ -57,9 +57,7 @@ QT_BEGIN_NAMESPACE
     The QVector2D class can also be used to represent vertices in 2D space.
     We therefore do not need to provide a separate vertex class.
 
-    The coordinates are stored internally using the most efficient
-    representation for the GL rendering engine, which will be either
-    floating-point or fixed-point.
+    \sa QVector3D, QVector4D, QQuaternion
 */
 
 /*!

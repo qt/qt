@@ -5,7 +5,7 @@
     <message>
         <location filename="project.ui" line="27"/>
         <source>Qt Assistant - Find text</source>
-        <!--should be changed to unfinished, since we are changing the sourcetext in the ui file-->
+        <!--should be changed to unfinished, since we are changing the sourcetext in the UI file-->
         <translation>Qt Assistant - Finn tekst</translation>
     </message>
     <message>

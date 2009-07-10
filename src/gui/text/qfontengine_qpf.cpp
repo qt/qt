@@ -51,6 +51,7 @@
 #if !defined(QT_NO_FREETYPE)
 #include "private/qfontengine_ft_p.h"
 #endif
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
 
 // for mmap
 #include <stdlib.h>
@@ -252,7 +253,7 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
 
-        int fd = ::open(fileName.constData(), O_RDONLY, 0);
+        int fd = QT_OPEN(fileName.constData(), O_RDONLY, 0);
         if (fd >= 0) {
             void *header = ::mmap(0, sizeof(QFontEngineQPF::Header), PROT_READ, MAP_SHARED, fd, 0);
             if (header && header != MAP_FAILED) {
@@ -265,7 +266,7 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
 
                 ::munmap(header, sizeof(QFontEngineQPF::Header));
             }
-            ::close(fd);
+            QT_CLOSE(fd);
         }
     }
     if (!removedFonts.isEmpty())
@@ -331,15 +332,15 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
             qDebug() << "found existing qpf:" << fileName;
 #endif
             if (::access(encodedName, W_OK | R_OK) == 0)
-                fd = ::open(encodedName, O_RDWR, 0);
+                fd = QT_OPEN(encodedName, O_RDWR, 0);
             else if (::access(encodedName, R_OK) == 0)
-                fd = ::open(encodedName, O_RDONLY, 0);
+                fd = QT_OPEN(encodedName, O_RDONLY, 0);
         } else {
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "creating qpf on the fly:" << fileName;
 #endif
             if (::access(QFile::encodeName(qws_fontCacheDir()), W_OK) == 0) {
-                fd = ::open(encodedName, O_RDWR | O_EXCL | O_CREAT, 0644);
+                fd = QT_OPEN(encodedName, O_RDWR | O_EXCL | O_CREAT, 0644);
 
                 QBuffer buffer;
                 buffer.open(QIODevice::ReadWrite);

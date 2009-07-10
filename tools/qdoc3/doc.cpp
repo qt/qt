@@ -1677,10 +1677,13 @@ void DocParser::startSection(Doc::SectioningUnit unit, int cmd)
     leavePara();
 
     if (currentSectioningUnit == Doc::Book) {
+#if 0
+        // mws didn't think this was necessary.
 	if (unit > Doc::Section1)
 	    location().warning(tr("Unexpected '\\%1' without '\\%2'")
 				.arg(cmdName(cmd))
 				.arg(cmdName(CMD_SECTION1)));
+#endif        
 	currentSectioningUnit = (Doc::SectioningUnit) (unit - 1);
 	priv->constructExtra();
 	priv->extra->sectioningUnit = currentSectioningUnit;

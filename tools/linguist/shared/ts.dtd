@@ -34,7 +34,7 @@
           version CDATA #IMPLIED
           sourcelanguage CDATA #IMPLIED
           language CDATA #IMPLIED>
-<!-- The encoding to use in the .qm file by default. Default is ISO-8859-1. -->
+<!-- The encoding to use in the QM file by default. Default is ISO-8859-1. -->
 <!ELEMENT defaultcodec (#PCDATA) >
 <!ELEMENT context (name?, comment?, (context|message)+) >
 <!ATTLIST context
@@ -54,7 +54,7 @@
 <!ELEMENT message (location*, source?, oldsource?, comment?, oldcomment?, extracomment?, translatorcomment?, translation?, userdata?, extra-**) >
 <!--
  ! If utf8 is true, the defaultcodec is overridden and the message is encoded
- ! in UTF-8 in the .qm file.
+ ! in UTF-8 in the QM file.
   -->
 <!ATTLIST message
           id CDATA #IMPLIED
@@ -70,7 +70,7 @@
  ! is omitted, the "current" one is used. For the 1st location in a message,
  ! "current" is the filename used for the 1st location of the previous message.
  ! For subsequent locations, it is the filename used for the previous location.
- ! A single .ts file has either all absolute or all relative locations.
+ ! A single TS file has either all absolute or all relative locations.
   -->
 <!ATTLIST location 
           filename CDATA #IMPLIED
@@ -106,7 +106,7 @@
 <!--
  ! The translation variants have a priority between 1 ("highest") and 9 ("lowest")
  ! Typically longer translations get a higher priority.
- ! If omitted, the order of appearance of the variants in the .ts files is used.
+ ! If omitted, the order of appearance of the variants in the TS files is used.
   -->
 <!ATTLIST lengthvariant
           priority (1|2|3|4|5|6|7|8|9) #IMPLIED>

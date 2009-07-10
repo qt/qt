@@ -1316,8 +1316,13 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
+#else
     if (qApp && qApp->activeWindow())
         qt_mac_set_cursor(&qApp->d_func()->cursor_list.first(), QCursor::pos());
+#endif
 }
 
 void QApplication::restoreOverrideCursor()
@@ -1326,12 +1331,17 @@ void QApplication::restoreOverrideCursor()
         return;
     qApp->d_func()->cursor_list.removeFirst();
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [NSCursor pop];
+#else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
         qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first(), QCursor::pos());
     }
-}
 #endif
+}
+#endif // QT_NO_CURSOR
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {

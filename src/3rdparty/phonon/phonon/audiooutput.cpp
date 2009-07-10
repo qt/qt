@@ -264,8 +264,8 @@ void AudioOutputPrivate::setupBackendObject()
         if (deviceList.isEmpty()) {
             return;
         }
-        foreach (int devIndex, deviceList) {
-            const AudioOutputDevice &dev = AudioOutputDevice::fromIndex(devIndex);
+        for (int i = 0; i < deviceList.count(); ++i) {
+            const AudioOutputDevice &dev = AudioOutputDevice::fromIndex(deviceList.at(i));
             if (callSetOutputDevice(this, dev)) {
                 handleAutomaticDeviceChange(dev, AudioOutputPrivate::FallbackChange);
                 return; // found one that works
@@ -305,8 +305,9 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
     pDebug() << Q_FUNC_INFO;
     // outputDeviceIndex identifies a failing device
     // fall back in the preference list of output devices
-    QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices);
-    foreach (int devIndex, deviceList) {
+    const QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices);
+    for (int i = 0; i < deviceList.count(); ++i) {
+        const int devIndex = deviceList.at(i);
         // if it's the same device as the one that failed, ignore it
         if (device.index() != devIndex) {
             const AudioOutputDevice &info = AudioOutputDevice::fromIndex(devIndex);
@@ -326,9 +327,10 @@ void AudioOutputPrivate::_k_deviceListChanged()
 {
     pDebug() << Q_FUNC_INFO;
     // let's see if there's a usable device higher in the preference list
-    QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings);
+    const QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings);
     DeviceChangeType changeType = HigherPreferenceChange;
-    foreach (int devIndex, deviceList) {
+    for (int i = 0; i < deviceList.count(); ++i) {
+        const int devIndex = deviceList.at(i);
         const AudioOutputDevice &info = AudioOutputDevice::fromIndex(devIndex);
         if (!info.property("available").toBool()) {
             if (device.index() == devIndex) {

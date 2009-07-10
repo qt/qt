@@ -1675,6 +1675,12 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     return result;
 }
 
+// Declared in qglobal.h
+QString qtTrId(const char *id, int n)
+{
+    return QCoreApplication::translate(0, id, 0, QCoreApplication::UnicodeUTF8, n);
+}
+
 bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 {
     return QCoreApplication::self

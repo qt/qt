@@ -52,7 +52,7 @@
     that enable you to access Qt Designer's components.
 
     In addition, the QFormBuilder class provides the possibility of
-    constructing user interfaces from \c .ui files at run-time.
+    constructing user interfaces from UI files at run-time.
 
     To include the definitions of the module's classes, use the
     following directive:
@@ -155,7 +155,7 @@
 
     The \c QtDesigner module contains the QFormBuilder class that
     provides a mechanism for dynamically creating user interfaces at
-    run-time, based on \c .ui files created with \QD. This class is
+    run-time, based on UI files created with \QD. This class is
     typically used by custom components and applications that embed
     \QD. Standalone applications that need to dynamically generate
     user interfaces at run-time use the QUiLoader class, found in
@@ -1427,7 +1427,7 @@
     \fn bool QDesignerPropertySheetExtension::isAttribute(int index) const
 
     Returns true if the property at the given \a index is an attribute,
-    which will be \e excluded from the .ui file, otherwise false.
+    which will be \e excluded from the UI file, otherwise false.
 
     \sa indexOf(), setAttribute()
 */
@@ -1436,7 +1436,7 @@
     \fn void QDesignerPropertySheetExtension::setAttribute(int index, bool attribute)
 
     If \a attribute is true, the property at the given \a index is
-    made an attribute which will be \e excluded from the .ui file;
+    made an attribute which will be \e excluded from the UI file;
     otherwise it will be included.
 
     \sa indexOf(), isAttribute()

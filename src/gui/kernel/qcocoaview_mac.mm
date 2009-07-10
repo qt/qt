@@ -290,11 +290,18 @@ extern "C" {
 { 
     if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
         return NSDragOperationNone;
+    NSPoint windowPoint = [sender draggingLocation];
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // pass the drag enter event to the view underneath.
+        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+        if (candidateView && candidateView != self)
+            return [candidateView draggingEntered:sender];
+    }
+    dragEnterSequence = [sender draggingSequenceNumber];
     [self addDropData:sender];
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
         mimeData = QDragManager::self()->dragPrivate()->data;
-    NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrag(localPoint.x, localPoint.y);
@@ -318,6 +325,9 @@ extern "C" {
         [self removeDropData];
         return NSDragOperationNone;
     } else {
+        // save the mouse position, used by draggingExited handler.
+        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        dndParams->activeDragEnterPos = windowPoint;
         // send a drag move event immediately after a drag enter event (as per documentation).
         QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
         qDMEvent.setDropAction(qDEEvent.dropAction());
@@ -338,11 +348,22 @@ extern "C" {
 
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
 {
-    // drag enter event was rejected, so ignore the move event. 
+    NSPoint windowPoint = [sender draggingLocation];
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // pass the drag move event to the view underneath.
+        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+        if (candidateView && candidateView != self)
+            return [candidateView draggingUpdated:sender];
+    }
+    // in cases like QFocusFrame, the view under the mouse might
+    // not have received the drag enter. Generate a synthetic
+    // drag enter event for that view.
+    if (dragEnterSequence != [sender draggingSequenceNumber])
+        [self draggingEntered:sender];
+    // drag enter event was rejected, so ignore the move event.
     if (dropData == 0)
         return NSDragOperationNone;
     // return last value, if we are still in the answerRect.
-    NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     NSDragOperation nsActions = [sender draggingSourceOperationMask];
@@ -381,21 +402,34 @@ extern "C" {
 
 - (void)draggingExited:(id < NSDraggingInfo >)sender
 {
-    Q_UNUSED(sender)
-    // drag enter event was rejected, so ignore the move event. 
+    dragEnterSequence = -1;
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // try sending the leave event to the last view which accepted drag enter.
+        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        NSView *candidateView = [[[self window] contentView] hitTest:dndParams->activeDragEnterPos];
+        if (candidateView && candidateView != self)
+            return [candidateView draggingExited:sender];
+    }
+    // drag enter event was rejected, so ignore the move event.
     if (dropData) {
         QDragLeaveEvent de;
         QApplication::sendEvent(qwidget, &de);
         [self removeDropData];
     }
-
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
+    NSPoint windowPoint = [sender draggingLocation];
+    dragEnterSequence = -1;
+    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // pass the drop event to the view underneath.
+        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+        if (candidateView && candidateView != self)
+            return [candidateView performDragOperation:sender];
+    }
     [self addDropData:sender];
 
-    NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrop(localPoint.x, localPoint.y);
@@ -574,11 +608,15 @@ extern "C" {
             [self removeTrackingArea:t];
         }
     }
+
+    // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
+    // only be turned on if mouseTracking, hover is on or a tool tip is set.
+    // Unfortunately, Qt will send "tooltip" events on mouse moves, so we need to
+    // turn it on in ALL case. That means EVERY QCocoaView gets to pay the cost of
+    // mouse moves delivered to it (Apple recommends keeping it OFF because there
+    // is a performance hit). So it goes.
     NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
-                                 | NSTrackingInVisibleRect;
-    if (qwidget->hasMouseTracking() || !qwidgetprivate->toolTip.isEmpty()
-        || qwidget->testAttribute(Qt::WA_Hover))
-        trackingOptions |= NSTrackingMouseMoved;
+                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved;
     NSTrackingArea *ta = [[NSTrackingArea alloc] initWithRect:NSMakeRect(0, 0,
                                                                          qwidget->width(),
                                                                          qwidget->height())
@@ -641,62 +679,6 @@ extern "C" {
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
-}
-
-- (NSView *)viewUnderTransparentForMouseView:(NSView *)mouseView widget:(QWidget *)widgetToGetMouse
-                             withWindowPoint:(NSPoint)windowPoint
-{
-    NSMutableArray *viewsToLookAt = [NSMutableArray arrayWithCapacity:5];
-    [viewsToLookAt addObject:mouseView];
-    QWidget *parentWidget = widgetToGetMouse->parentWidget();
-    while (parentWidget) {
-        [viewsToLookAt addObject:qt_mac_nativeview_for(parentWidget)];
-        parentWidget = parentWidget->parentWidget();
-    }
-
-    // Now walk through the subviews of each view and determine which subview should
-    // get the event. We look through all the subviews at a given level with
-    // the assumption that the last item to be found the candidate has a higher z-order.
-    // Unfortunately, fast enumeration doesn't go backwards in 10.5, so assume go fast
-    // forward is quicker than the slow normal way backwards.
-    NSView *candidateView = nil;
-    for (NSView *lookView in viewsToLookAt) {
-        NSPoint tmpPoint = [lookView convertPoint:windowPoint fromView:nil];
-        for (NSView *view in [lookView subviews]) {
-            if (view == mouseView || [view isHidden])
-                continue;
-            NSRect frameRect = [view frame];
-            if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
-                candidateView = view;
-        }
-        if (candidateView)
-            break;
-    }
-    
-    
-    if (candidateView != nil) {
-        // Now that we've got a candidate, we have to dig into it's tree and see where it is.
-        NSView *lowerView = nil;
-        NSView *viewForDescent = candidateView;
-        while (viewForDescent) {
-            NSPoint tmpPoint = [viewForDescent convertPoint:windowPoint fromView:nil];                
-            // Apply same rule as above wrt z-order.
-            for (NSView *view in [viewForDescent subviews]) {
-                if (![view isHidden] && NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
-                    lowerView = view;
-            }
-            if (!lowerView) // Low as we can be at this point.
-                candidateView = viewForDescent;
-
-            // Try to go deeper, will also exit out of the loop, if we found the point.
-            viewForDescent = lowerView;
-            lowerView = nil;
-        }
-    }
-    // I am transparent, so I can't be a candidate.
-    if (candidateView == mouseView)
-        candidateView = nil;
-    return candidateView;
 }
 
 - (void)mouseDown:(NSEvent *)theEvent

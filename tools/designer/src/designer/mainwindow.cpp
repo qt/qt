@@ -155,7 +155,7 @@ DockedMdiArea::DockedMdiArea(const QString &extension, QWidget *parent) :
 
 QStringList DockedMdiArea::uiFiles(const QMimeData *d) const
 {
-    // Extract dropped ui files from Mime data.
+    // Extract dropped UI files from Mime data.
     QStringList rc;
     if (!d->hasFormat(QLatin1String(uriListMimeFormatC)))
         return rc;
