@@ -121,7 +121,7 @@ bool MakefileGenerator::mkdir(const QString &in_path) const
     QDir d;
     if(path.startsWith(QDir::separator())) {
         d.cd(QString(QDir::separator()));
-        path = path.right(path.length() - 1);
+        path.remove(0, 1);
     }
     bool ret = true;
 #ifdef Q_OS_WIN
@@ -129,7 +129,7 @@ bool MakefileGenerator::mkdir(const QString &in_path) const
     if(!QDir::isRelativePath(path)) {
         if(QFile::exists(path.left(3))) {
             d.cd(path.left(3));
-            path = path.right(path.length() - 3);
+            path.remove(0, 3);
         } else {
             warn_msg(WarnLogic, "Cannot access drive '%s' (%s)",
                      path.left(3).toLatin1().data(), path.toLatin1().data());
@@ -243,7 +243,7 @@ MakefileGenerator::initOutPaths()
         if(!(dirs[x] == "DLLDESTDIR"))
 #endif
         {
-            if(pathRef.right(Option::dir_sep.length()) != Option::dir_sep)
+            if(!pathRef.endsWith(Option::dir_sep))
                 pathRef += Option::dir_sep;
         }
 
@@ -344,7 +344,7 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
                     QString real_dir = Option::fixPathToLocalOS((*vpath_it));
                     if(exists(real_dir + QDir::separator() + val)) {
                         QString dir = (*vpath_it);
-                        if(dir.right(Option::dir_sep.length()) != Option::dir_sep)
+                        if(!dir.endsWith(Option::dir_sep))
                             dir += Option::dir_sep;
                         val = dir + val;
                         if(!(flags & VPATH_NoFixify))
@@ -363,7 +363,7 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
                     real_dir = dir;
                     if(!(flags & VPATH_NoFixify))
                         real_dir = fileFixify(real_dir, qmake_getpwd(), Option::output_dir);
-                    regex = regex.right(regex.length() - dir.length());
+                    regex.remove(0, dir.length());
                 }
                 if(real_dir.isEmpty() || exists(real_dir)) {
                     QStringList files = QDir(real_dir).entryList(QStringList(regex));
@@ -787,7 +787,7 @@ MakefileGenerator::init()
                         QString dir, regex = Option::fixPathToLocalOS((*dep_it));
                         if(regex.lastIndexOf(Option::dir_sep) != -1) {
                             dir = regex.left(regex.lastIndexOf(Option::dir_sep) + 1);
-                            regex = regex.right(regex.length() - dir.length());
+                            regex.remove(0, dir.length());
                         }
                         QStringList files = QDir(dir).entryList(QStringList(regex));
                         if(files.isEmpty()) {
@@ -937,7 +937,7 @@ MakefileGenerator::writePrlFile(QTextStream &t)
     QString target = project->first("TARGET");
     int slsh = target.lastIndexOf(Option::dir_sep);
     if(slsh != -1)
-        target = target.right(target.length() - slsh - 1);
+        target.remove(0, slsh + 1);
     QString bdir = Option::output_dir;
     if(bdir.isEmpty())
         bdir = qmake_getpwd();
@@ -1055,11 +1055,11 @@ MakefileGenerator::prlFileName(bool fixify)
         ret = project->first("TARGET");
     int slsh = ret.lastIndexOf(Option::dir_sep);
     if(slsh != -1)
-        ret = ret.right(ret.length() - slsh);
+        ret.remove(0, slsh);
     if(!ret.endsWith(Option::prl_ext)) {
         int dot = ret.indexOf('.');
         if(dot != -1)
-            ret = ret.left(dot);
+            ret.truncate(dot);
         ret += Option::prl_ext;
     }
     if(!project->isEmpty("QMAKE_BUNDLE"))
@@ -1209,7 +1209,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
         if(project->values((*it) + ".CONFIG").indexOf("no_path") == -1 &&
            project->values((*it) + ".CONFIG").indexOf("dummy_install") == -1) {
             dst = fileFixify(unescapeFilePath(project->values(pvar).first()), FileFixifyAbsolute, false);
-            if(dst.right(1) != Option::dir_sep)
+            if(!dst.endsWith(Option::dir_sep))
                 dst += Option::dir_sep;
         }
         dst = escapeFilePath(dst);
@@ -1238,9 +1238,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 int slsh = filestr.lastIndexOf(Option::dir_sep);
                 if(slsh != -1) {
                     dirstr = filestr.left(slsh+1);
-                    filestr = filestr.right(filestr.length() - slsh - 1);
+                    filestr.remove(0, slsh+1);
                 }
-                if(dirstr.right(Option::dir_sep.length()) != Option::dir_sep)
+                if(!dirstr.endsWith(Option::dir_sep))
                     dirstr += Option::dir_sep;
                 if(exists(wild)) { //real file
                     QString file = wild;
@@ -1340,7 +1340,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
             const QStringList &dirs = project->values(pvar);
             for(QStringList::ConstIterator pit = dirs.begin(); pit != dirs.end(); ++pit) {
                 QString tmp_dst = fileFixify((*pit), FileFixifyAbsolute, false);
-                if (!isWindowsShell() && tmp_dst.right(1) != Option::dir_sep)
+                if (!isWindowsShell() && !tmp_dst.endsWith(Option::dir_sep))
                     tmp_dst += Option::dir_sep;
                 t << mkdir_p_asstring(filePrefixRoot(root, tmp_dst)) << "\n\t";
             }
@@ -2215,8 +2215,8 @@ MakefileGenerator::writeSubDirs(QTextStream &t)
                     st->profile = file.section(Option::dir_sep, -1) + Option::pro_ext;
                 st->in_directory = file;
             }
-            while(st->in_directory.right(1) == Option::dir_sep)
-                st->in_directory = st->in_directory.left(st->in_directory.length() - 1);
+            while(st->in_directory.endsWith(Option::dir_sep))
+                st->in_directory.chop(1);
             if(fileInfo(st->in_directory).isRelative())
                 st->out_directory = st->in_directory;
             else
@@ -2288,7 +2288,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
     QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
     if(ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+        ofile.remove(0, ofile.lastIndexOf(Option::dir_sep) +1);
     t << "MAKEFILE      = " << ofile << endl;
     /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
      * back-slashes to be turned into slashes. */
@@ -2822,13 +2822,13 @@ MakefileGenerator::checkMultipleDefinition(const QString &f, const QString &w)
     QString file = f;
     int slsh = f.lastIndexOf(Option::dir_sep);
     if(slsh != -1)
-        file = file.right(file.length() - slsh - 1);
+        file.remove(0, slsh + 1);
     QStringList &l = project->values(w);
     for(QStringList::Iterator val_it = l.begin(); val_it != l.end(); ++val_it) {
         QString file2((*val_it));
         slsh = file2.lastIndexOf(Option::dir_sep);
         if(slsh != -1)
-            file2 = file2.right(file2.length() - slsh - 1);
+            file2.remove(0, slsh + 1);
         if(file2 == file) {
             warn_msg(WarnLogic, "Found potential symbol conflict of %s (%s) in %s",
                      file.toLatin1().constData(), (*val_it).toLatin1().constData(), w.toLatin1().constData());
