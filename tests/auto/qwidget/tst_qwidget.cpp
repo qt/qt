@@ -350,6 +350,7 @@ private slots:
 #endif
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
+    void inputFocus_task257832();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -8963,6 +8964,20 @@ void tst_QWidget::toplevelLineEditFocus()
 
     QCOMPARE(QApplication::activeWindow(), &w);
     QCOMPARE(QApplication::focusWidget(), &w);
+}
+
+void tst_QWidget::inputFocus_task257832()
+{
+      QLineEdit *widget = new QLineEdit;
+      QInputContext *context = widget->inputContext();
+      if (!context)
+            QSKIP("No input context", SkipSingle);
+      widget->setFocus();
+      context->setFocusWidget(widget);
+      QCOMPARE(context->focusWidget(), widget);
+      widget->setReadOnly(true);
+      QVERIFY(!context->focusWidget());
+      delete widget;
 }
 
 QTEST_MAIN(tst_QWidget)
