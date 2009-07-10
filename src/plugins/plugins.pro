@@ -4,7 +4,7 @@ SUBDIRS	*= accessible imageformats sqldrivers iconengines script
 unix:!symbian {
         contains(QT_CONFIG,iconv)|contains(QT_CONFIG,gnu-libiconv):SUBDIRS *= codecs
 } else {
-        SUBDIRS *= codecs
+        SUBDIRS *= codecs s60
 }
 !embedded:SUBDIRS *= graphicssystems
 embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
