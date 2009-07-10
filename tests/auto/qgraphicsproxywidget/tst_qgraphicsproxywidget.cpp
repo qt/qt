@@ -178,6 +178,7 @@ private slots:
     void windowFlags_data();
     void windowFlags();
     void comboboxWindowFlags();
+    void updateAndDelete();
 };
 
 // Subclass that exposes the protected functions.
@@ -3215,6 +3216,44 @@ void tst_QGraphicsProxyWidget::comboboxWindowFlags()
     QGraphicsItem *popupProxy = proxy->childItems().first();
     QVERIFY(popupProxy->isWindow());
     QVERIFY((static_cast<QGraphicsWidget *>(popupProxy)->windowFlags() & Qt::Popup) == Qt::Popup);
+}
+
+void tst_QGraphicsProxyWidget::updateAndDelete()
+{
+    QGraphicsScene scene;
+    QGraphicsProxyWidget *proxy = scene.addWidget(new QPushButton("Hello World"));
+    View view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
+    const QRect itemDeviceBoundingRect = proxy->deviceTransform(view.viewportTransform())
+                                         .mapRect(proxy->boundingRect()).toRect();
+    const QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+
+    view.npaints = 0;
+    view.paintEventRegion = QRegion();
+
+    // Update and hide.
+    proxy->update();
+    proxy->hide();
+    QTest::qWait(50);
+    QCOMPARE(view.npaints, 1);
+    QCOMPARE(view.paintEventRegion, expectedRegion);
+
+    proxy->show();
+    QTest::qWait(50);
+    view.npaints = 0;
+    view.paintEventRegion = QRegion();
+
+    // Update and delete.
+    proxy->update();
+    delete proxy;
+    QTest::qWait(50);
+    QCOMPARE(view.npaints, 1);
+    QCOMPARE(view.paintEventRegion, expectedRegion);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)
