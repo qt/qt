@@ -334,6 +334,10 @@ QScriptValue QScriptContext::callee() const
 QScriptValue QScriptContext::argumentsObject() const
 {
     Q_D(const QScriptContext);
+    if (d->frame == d->engine->globalObject->globalExec()) {
+        qWarning("QScriptContext::argumentsObject() not implemented for global context");
+        return QScriptValue();
+    }
     if (!d->frame->optionalCalleeArguments()) {
         JSC::Arguments* arguments = new (&d->frame->globalData())JSC::Arguments(d->frame, JSC::Arguments::NoParameters);
         d->frame->setCalleeArguments(arguments);
@@ -400,8 +404,13 @@ QScriptValue QScriptContext::returnValue() const
 */
 void QScriptContext::setReturnValue(const QScriptValue &result)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    Q_UNUSED(result);
+    Q_D(QScriptContext);
+    JSC::ExecState *callerFrame = d->frame->callerFrame();
+    if (!callerFrame->codeBlock())
+        return;
+    Q_ASSERT_X(false, Q_FUNC_INFO, "check me");
+    int dst = d->frame->registers()[JSC::RegisterFile::ReturnValueRegister].i(); // returnValueRegister() is private
+    callerFrame[dst] = d->engine->scriptValueToJSCValue(result);
 }
 
 /*!
@@ -413,8 +422,15 @@ void QScriptContext::setReturnValue(const QScriptValue &result)
 */
 QScriptValue QScriptContext::activationObject() const
 {
-    qWarning("QScriptContext::activationObject() not implemented");
-    return QScriptValue();
+    Q_D(const QScriptContext);
+    JSC::CodeBlock *codeBlock = d->frame->codeBlock();
+    if (!codeBlock) {
+        qWarning("QScriptContext::activationObject() not implemented for native functions");
+        return QScriptValue();
+    }
+    // ### this is still a bit shaky
+    JSC::FunctionBodyNode *body = static_cast<JSC::FunctionBodyNode*>(codeBlock->ownerNode());
+    return d->engine->scriptValueFromJSCValue(new (&d->frame->globalData())JSC::JSActivation(d->frame, body));
 }
 
 /*!

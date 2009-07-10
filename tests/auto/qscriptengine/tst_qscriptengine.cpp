@@ -158,7 +158,7 @@ void tst_QScriptEngine::currentContext()
     QVERIFY(globalCtx->thisObject().strictlyEquals(eng.globalObject()));
     QEXPECT_FAIL("", "", Continue);
     QVERIFY(globalCtx->activationObject().strictlyEquals(eng.globalObject()));
-    QSKIP("Crashes", SkipAll);
+    QEXPECT_FAIL("", "", Continue);
     QVERIFY(globalCtx->argumentsObject().isObject());
 }
 
@@ -3016,6 +3016,7 @@ void tst_QScriptEngine::getterSetterThisObject()
     {
         QScriptEngine eng;
         QScriptContext *ctx = eng.pushContext();
+        QVERIFY(ctx != 0);
         QScriptValue act = ctx->activationObject();
         act.setProperty("act", act);
         // read
