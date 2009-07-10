@@ -66,7 +66,7 @@
 #include "qstring.h"
 #include "qprocess.h"
 #include "qprocess_p.h"
-#include "qeventdispatcher_symbian_p.h"
+#include "private/qeventdispatcher_symbian_p.h"
 
 #include <private/qthread_p.h>
 #include <qmutex.h>

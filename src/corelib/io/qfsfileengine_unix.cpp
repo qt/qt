@@ -55,7 +55,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #if defined(Q_OS_SYMBIAN)
-# include <syslimits.h>
+# include <sys/syslimits.h>
 # include <f32file.h>
 # include <pathinfo.h>
 # include "private/qcore_symbian_p.h"
