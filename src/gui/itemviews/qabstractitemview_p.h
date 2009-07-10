@@ -221,7 +221,7 @@ public:
     void clearOrRemove();
     void checkPersistentEditorFocus();
 
-    QPixmap renderToPixmap(const QModelIndexList &indexes, QRect *r = 0) const;
+    QPixmap renderToPixmap(const QModelIndexList &indexes, QRect *r) const;
 
     inline QPoint offset() const {
         const Q_Q(QAbstractItemView);

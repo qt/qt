@@ -153,7 +153,7 @@ namespace Phonon
                     }
                 } else if (!isEmbedded()) {
                     m_currentRenderer = m_node->switchRendering(m_currentRenderer);
-                    setAttribute(Qt::WA_PaintOnScreen, true);
+                    setAttribute(Qt::WA_PaintOnScreen, false);
                 }
             }
 
