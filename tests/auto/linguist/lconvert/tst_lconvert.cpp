@@ -47,7 +47,7 @@ class tst_lconvert : public QObject
     Q_OBJECT
 
 public:
-    tst_lconvert() : dataDir("data/") {}
+    tst_lconvert() : dataDir("data/"), binDir(QLibraryInfo::location(QLibraryInfo::BinariesPath)) {}
 
 private slots:
     void initTestCase();
@@ -73,6 +73,7 @@ private:
             const QList<QStringList> &args);
 
     QString dataDir;
+    QString binDir;
 };
 
 void tst_lconvert::initTestCase()
@@ -151,7 +152,7 @@ void tst_lconvert::doCompare(QIODevice *actualDev, const QString &expectedFn)
 void tst_lconvert::verifyReadFail(const QString &fn)
 {
     QProcess cvt;
-    cvt.start("lconvert", QStringList() << (dataDir + fn));
+    cvt.start(binDir + "/lconvert", QStringList() << (dataDir + fn));
     QVERIFY(cvt.waitForFinished(1000));
     QVERIFY(cvt.exitStatus() == QProcess::NormalExit);
     QVERIFY2(cvt.exitCode() == 2, "Accepted invalid input");
@@ -178,7 +179,7 @@ void tst_lconvert::convertChain(const QString &_inFileName, const QString &_outF
         if (!argList.isEmpty())
             args += argList[i];
         args << "-if" << stations[i] << "-i" << "-" << "-of" << stations[i + 1];
-        cvts.at(i)->start("lconvert", args);
+        cvts.at(i)->start(binDir + "/lconvert", args);
     }
     int st = 0;
     foreach (QProcess *cvt, cvts)
@@ -242,7 +243,7 @@ void tst_lconvert::converts()
     QString outFileNameFq = dataDir + outFileName;
 
     QProcess cvt;
-    cvt.start("lconvert", QStringList() << "-i" << (dataDir + inFileName) << "-of" << format);
+    cvt.start(binDir + "/lconvert", QStringList() << "-i" << (dataDir + inFileName) << "-of" << format);
     doWait(&cvt, 0);
     if (QTest::currentTestFailed())
         return;

@@ -49,6 +49,10 @@
 class tst_lrelease : public QObject
 {
     Q_OBJECT
+
+public:
+    tst_lrelease() : binDir(QLibraryInfo::location(QLibraryInfo::BinariesPath)) {}
+
 private:
 
 private slots:
@@ -59,6 +63,8 @@ private slots:
 
 private:
     void doCompare(const QStringList &actual, const QString &expectedFn);
+
+    QString binDir;
 };
 
 void tst_lrelease::doCompare(const QStringList &actual, const QString &expectedFn)
@@ -111,7 +117,7 @@ void tst_lrelease::doCompare(const QStringList &actual, const QString &expectedF
 
 void tst_lrelease::translate()
 {
-    QVERIFY(!QProcess::execute("lrelease testdata/translate.ts"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/translate.ts"));
 
     QTranslator translator;
     QVERIFY(translator.load("testdata/translate.qm"));
@@ -161,8 +167,8 @@ void tst_lrelease::translate()
 
 void tst_lrelease::mixedcodecs()
 {
-    QVERIFY(!QProcess::execute("lrelease testdata/mixedcodecs-ts11.ts"));
-    QVERIFY(!QProcess::execute("lrelease testdata/mixedcodecs-ts20.ts"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/mixedcodecs-ts11.ts"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/mixedcodecs-ts20.ts"));
     QVERIFY(!QProcess::execute("cmp testdata/mixedcodecs-ts11.qm testdata/mixedcodecs-ts20.qm"));
     QTranslator translator;
     QVERIFY(translator.load("testdata/mixedcodecs-ts11.qm"));
@@ -176,7 +182,7 @@ void tst_lrelease::mixedcodecs()
 
 void tst_lrelease::compressed()
 {
-    QVERIFY(!QProcess::execute("lrelease -compress testdata/compressed.ts"));
+    QVERIFY(!QProcess::execute(binDir + "/lrelease -compress testdata/compressed.ts"));
 
     QTranslator translator;
     QVERIFY(translator.load("testdata/compressed.qm"));
@@ -194,7 +200,7 @@ void tst_lrelease::compressed()
 void tst_lrelease::dupes()
 {
     QProcess proc;
-    proc.start("lrelease testdata/dupes.ts");
+    proc.start(binDir + "/lrelease testdata/dupes.ts");
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     doCompare(QString(proc.readAllStandardError()).trimmed().remove('\r').split('\n'), "testdata/dupes.errors");
