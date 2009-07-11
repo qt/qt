@@ -351,6 +351,8 @@ public:
 
     void scrollElasticBandBy(int dx, int dy);
 
+    QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
+
     // ### FIXME: we only need one at a time
     QDynamicListViewBase *dynamicListView;
     QStaticListViewBase *staticListView;

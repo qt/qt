@@ -709,6 +709,32 @@ void QListViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)
         selectionModel->select(selection, command);
 }
 
+/*!
+  \reimp
+
+  We have a QListView way of knowing what elements are on the viewport
+  through the intersectingSet function
+*/
+QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const
+{
+    Q_ASSERT(r);
+    Q_Q(const QListView);
+    QRect &rect = *r;
+    const QRect viewportRect = viewport->rect();
+    QItemViewPaintPairs ret;
+    intersectingSet(viewportRect);
+    const QSet<QModelIndex> visibleIndexes = intersectVector.toList().toSet();
+    for (int i = 0; i < indexes.count(); ++i) {
+        const QModelIndex &index = indexes.at(i);
+        if (visibleIndexes.contains(index)) {
+            const QRect current = q->visualRect(index);
+            ret += qMakePair(current, index);
+            rect |= current;
+        }
+    }
+    rect &= viewportRect;
+    return ret;
+}
 
 /*!
   \internal
