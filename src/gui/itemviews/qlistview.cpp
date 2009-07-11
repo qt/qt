@@ -723,7 +723,7 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
     const QRect viewportRect = viewport->rect();
     QItemViewPaintPairs ret;
     intersectingSet(viewportRect);
-    const QSet<QModelIndex> visibleIndexes = intersectVector.toList().toSet();
+    const QSet<QModelIndex> visibleIndexes = intersectingSet(viewportRect).toList().toSet();
     for (int i = 0; i < indexes.count(); ++i) {
         const QModelIndex &index = indexes.at(i);
         if (visibleIndexes.contains(index)) {
@@ -951,9 +951,9 @@ void QListView::dragMoveEvent(QDragMoveEvent *e)
             QModelIndex index;
             if (d->movement == Snap) {
                 QRect rect(d->dynamicListView->snapToGrid(e->pos() + d->offset()), d->gridSize());
-                d->intersectingSet(rect);
-                index = d->intersectVector.count() > 0
-                                    ? d->intersectVector.last() : QModelIndex();
+                const QVector<QModelIndex> intersectVector = d->intersectingSet(rect);
+                index = intersectVector.count() > 0
+                                    ? intersectVector.last() : QModelIndex();
             } else {
                 index = indexAt(e->pos());
             }
@@ -1126,10 +1126,8 @@ void QListView::paintEvent(QPaintEvent *e)
         return;
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     QPainter painter(d->viewport);
-    QRect area = e->rect();
 
-    d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
-    const QVector<QModelIndex> toBeRendered = d->intersectVector;
+    const QVector<QModelIndex> toBeRendered = d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
 
     const QModelIndex current = currentIndex();
     const QModelIndex hover = d->hover;
@@ -1251,9 +1249,9 @@ QModelIndex QListView::indexAt(const QPoint &p) const
 {
     Q_D(const QListView);
     QRect rect(p.x() + horizontalOffset(), p.y() + verticalOffset(), 1, 1);
-    d->intersectingSet(rect);
-    QModelIndex index = d->intersectVector.count() > 0
-                        ? d->intersectVector.last() : QModelIndex();
+    const QVector<QModelIndex> intersectVector = d->intersectingSet(rect);
+    QModelIndex index = intersectVector.count() > 0
+                        ? intersectVector.last() : QModelIndex();
     if (index.isValid() && visualRect(index).contains(p))
         return index;
     return QModelIndex();
@@ -1351,38 +1349,38 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     if (d->gridSize().isValid()) rect.setSize(d->gridSize());
 
     QSize contents = d->contentsSize();
-    d->intersectVector.clear();
+    QVector<QModelIndex> intersectVector;
 
     switch (cursorAction) {
     case MoveLeft:
-        while (d->intersectVector.isEmpty()) {
+        while (intersectVector.isEmpty()) {
             rect.translate(-rect.width(), 0);
             if (rect.right() <= 0)
                 return current;
             if (rect.left() < 0)
                 rect.setLeft(0);
-            d->intersectingSet(rect);
-            d->removeCurrentAndDisabled(&d->intersectVector, current);
+            intersectVector = d->intersectingSet(rect);
+            d->removeCurrentAndDisabled(&intersectVector, current);
         }
-        return d->closestIndex(initialRect, d->intersectVector);
+        return d->closestIndex(initialRect, intersectVector);
     case MoveRight:
-        while (d->intersectVector.isEmpty()) {
+        while (intersectVector.isEmpty()) {
             rect.translate(rect.width(), 0);
             if (rect.left() >= contents.width())
                 return current;
             if (rect.right() > contents.width())
                 rect.setRight(contents.width());
-            d->intersectingSet(rect);
-            d->removeCurrentAndDisabled(&d->intersectVector, current);
+            intersectVector = d->intersectingSet(rect);
+            d->removeCurrentAndDisabled(&intersectVector, current);
         }
-        return d->closestIndex(initialRect, d->intersectVector);
+        return d->closestIndex(initialRect, intersectVector);
     case MovePageUp:
         rect.moveTop(rect.top() - d->viewport->height());
         if (rect.top() < rect.height())
             rect.moveTop(rect.height());
     case MovePrevious:
     case MoveUp:
-        while (d->intersectVector.isEmpty()) {
+        while (intersectVector.isEmpty()) {
             rect.translate(0, -rect.height());
             if (rect.bottom() <= 0) {
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1398,17 +1396,17 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             }
             if (rect.top() < 0)
                 rect.setTop(0);
-            d->intersectingSet(rect);
-            d->removeCurrentAndDisabled(&d->intersectVector, current);
+            intersectVector = d->intersectingSet(rect);
+            d->removeCurrentAndDisabled(&intersectVector, current);
         }
-        return d->closestIndex(initialRect, d->intersectVector);
+        return d->closestIndex(initialRect, intersectVector);
     case MovePageDown:
         rect.moveTop(rect.top() + d->viewport->height());
         if (rect.bottom() > contents.height() - rect.height())
             rect.moveBottom(contents.height() - rect.height());
     case MoveNext:
     case MoveDown:
-        while (d->intersectVector.isEmpty()) {
+        while (intersectVector.isEmpty()) {
             rect.translate(0, rect.height());
             if (rect.top() >= contents.height()) {
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1425,10 +1423,10 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             }
             if (rect.bottom() > contents.height())
                 rect.setBottom(contents.height());
-            d->intersectingSet(rect);
-            d->removeCurrentAndDisabled(&d->intersectVector, current);
+            intersectVector = d->intersectingSet(rect);
+            d->removeCurrentAndDisabled(&intersectVector, current);
         }
-        return d->closestIndex(initialRect, d->intersectVector);
+        return d->closestIndex(initialRect, intersectVector);
     case MoveHome:
         return d->model->index(0, d->column, d->root);
     case MoveEnd:
@@ -1503,10 +1501,10 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
     QItemSelection selection;
 
     if (rect.width() == 1 && rect.height() == 1) {
-        d->intersectingSet(rect.translated(horizontalOffset(), verticalOffset()));
+        const QVector<QModelIndex> intersectVector = d->intersectingSet(rect.translated(horizontalOffset(), verticalOffset()));
         QModelIndex tl;
-        if (!d->intersectVector.isEmpty())
-            tl = d->intersectVector.last(); // special case for mouse press; only select the top item
+        if (!intersectVector.isEmpty())
+            tl = intersectVector.last(); // special case for mouse press; only select the top item
         if (tl.isValid() && d->isIndexEnabled(tl))
             selection.select(tl, tl);
     } else {
@@ -1516,14 +1514,14 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
             QModelIndex tl, br;
             // get the first item
             const QRect topLeft(rect.left() + horizontalOffset(), rect.top() + verticalOffset(), 1, 1);
-            d->intersectingSet(topLeft);
-            if (!d->intersectVector.isEmpty())
-                tl = d->intersectVector.last();
+            QVector<QModelIndex> intersectVector = d->intersectingSet(topLeft);
+            if (!intersectVector.isEmpty())
+                tl = intersectVector.last();
             // get the last item
             const QRect bottomRight(rect.right() + horizontalOffset(), rect.bottom() + verticalOffset(), 1, 1);
-            d->intersectingSet(bottomRight);
-            if (!d->intersectVector.isEmpty())
-                br = d->intersectVector.last();
+            intersectVector = d->intersectingSet(bottomRight);
+            if (!intersectVector.isEmpty())
+                br = intersectVector.last();
 
             // get the ranges
             if (tl.isValid() && br.isValid()
@@ -2144,8 +2142,8 @@ QItemSelection QListViewPrivate::selection(const QRect &rect) const
 {
     QItemSelection selection;
     QModelIndex tl, br;
-    intersectingSet(rect);
-    QVector<QModelIndex>::iterator it = intersectVector.begin();
+    const QVector<QModelIndex> intersectVector = intersectingSet(rect);
+    QVector<QModelIndex>::const_iterator it = intersectVector.begin();
     for (; it != intersectVector.end(); ++it) {
         if (!tl.isValid() && !br.isValid()) {
             tl = br = *it;
@@ -2436,9 +2434,9 @@ void QStaticListViewBase::doStaticLayout(const QListViewLayoutInfo &info)
   Finds the set of items intersecting with \a area.
   In this function, itemsize is counted from topleft to the start of the next item.
 */
-void QStaticListViewBase::intersectingStaticSet(const QRect &area) const
+QVector<QModelIndex> QStaticListViewBase::intersectingStaticSet(const QRect &area) const
 {
-    clearIntersections();
+    QVector<QModelIndex> ret;
     int segStartPosition;
     int segEndPosition;
     int flowStartPosition;
@@ -2455,7 +2453,7 @@ void QStaticListViewBase::intersectingStaticSet(const QRect &area) const
         flowEndPosition = area.bottom();
     }
     if (segmentPositions.count() < 2 || flowPositions.isEmpty())
-        return;
+        return ret;
     // the last segment position is actually the edge of the last segment
     const int segLast = segmentPositions.count() - 2;
     int seg = qBinarySearch<int>(segmentPositions, segStartPosition, 0, segLast + 1);
@@ -2470,13 +2468,14 @@ void QStaticListViewBase::intersectingStaticSet(const QRect &area) const
                 continue;
             QModelIndex index = modelIndex(row);
             if (index.isValid())
-                appendToIntersections(index);
+                ret += index;
 #if 0 // for debugging
             else
                 qWarning("intersectingStaticSet: row %d was invalid", row);
 #endif
         }
     }
+    return ret;
 }
 
 int QStaticListViewBase::itemIndex(const QListViewItem &item) const
@@ -2797,12 +2796,15 @@ void QDynamicListViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
         viewport()->update();
 }
 
-void QDynamicListViewBase::intersectingDynamicSet(const QRect &area) const
+QVector<QModelIndex> QDynamicListViewBase::intersectingDynamicSet(const QRect &area) const
 {
-    clearIntersections();
-    QListViewPrivate *that = const_cast<QListViewPrivate*>(dd);
+    QDynamicListViewBase *that = const_cast<QDynamicListViewBase*>(this);
     QBspTree::Data data(static_cast<void*>(that));
-    that->dynamicListView->tree.climbTree(area, &QDynamicListViewBase::addLeaf, data);
+    QVector<QModelIndex> res;
+    that->interSectingVector = &res;
+    that->tree.climbTree(area, &QDynamicListViewBase::addLeaf, data);
+    that->interSectingVector = 0;
+    return res;
 }
 
 void QDynamicListViewBase::createItems(int to)
@@ -2879,20 +2881,20 @@ int QDynamicListViewBase::itemIndex(const QListViewItem &item) const
 }
 
 void QDynamicListViewBase::addLeaf(QVector<int> &leaf, const QRect &area,
-                               uint visited, QBspTree::Data data)
+                                   uint visited, QBspTree::Data data)
 {
     QListViewItem *vi;
-    QListViewPrivate *_this = static_cast<QListViewPrivate *>(data.ptr);
+    QDynamicListViewBase *_this = static_cast<QDynamicListViewBase *>(data.ptr);
     for (int i = 0; i < leaf.count(); ++i) {
         int idx = leaf.at(i);
-        if (idx < 0 || idx >= _this->dynamicListView->items.count())
+        if (idx < 0 || idx >= _this->items.count())
             continue;
-        vi = &_this->dynamicListView->items[idx];
+        vi = &_this->items[idx];
         Q_ASSERT(vi);
         if (vi->isValid() && vi->rect().intersects(area) && vi->visited != visited) {
-            QModelIndex index = _this->listViewItemToIndex(*vi);
+            QModelIndex index  = _this->dd->listViewItemToIndex(*vi);
             Q_ASSERT(index.isValid());
-            _this->intersectVector.append(index);
+            _this->interSectingVector->append(index);
             vi->visited = visited;
         }
     }
