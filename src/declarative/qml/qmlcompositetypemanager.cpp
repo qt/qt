@@ -251,7 +251,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
 
     } else {
         foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-            engine->addImport(&unit->imports, imp.uri, imp.prefix, imp.version_major, imp.version_minor);
+            engine->addImport(&unit->imports, imp.uri, imp.as, imp.version_major, imp.version_minor);
         }
         compile(unit);
 
@@ -320,7 +320,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             continue;
         }
 
-        QUrl url = engine->resolveType(unit->imports, QString(type));
+        QUrl url = engine->resolveType(unit->imports, QLatin1String(type));
         QmlCompositeTypeData *urlUnit = components.value(url.toString());
 
         if (!urlUnit) {

@@ -89,6 +89,8 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #include <private/qkeymapper_p.h>
 #include <private/qlocale_p.h>
 #include "qevent_p.h"
+#include "qstandardgestures.h"
+#include "qstandardgestures_p.h"
 
 //#define ALIEN_DEBUG
 
@@ -451,6 +453,7 @@ public:
     bool        translateConfigEvent(const MSG &msg);
     bool        translateCloseEvent(const MSG &msg);
     bool        translateTabletEvent(const MSG &msg, PACKET *localPacketBuf, int numPackets);
+    bool        translateGestureEvent(const MSG &msg);
     void        repolishStyle(QStyle &style);
     inline void showChildren(bool spontaneous) { d_func()->showChildren(spontaneous); }
     inline void hideChildren(bool spontaneous) { d_func()->hideChildren(spontaneous); }
@@ -809,6 +812,33 @@ void qt_init(QApplicationPrivate *priv, int)
         QLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware"))
     ptrSetProcessDPIAware();
 #endif
+
+    priv->lastGestureId = 0;
+
+    priv->GetGestureInfo =
+        (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
+                                             "GetGestureInfo");
+    priv->GetGestureExtraArgs =
+        (PtrGetGestureExtraArgs)QLibrary::resolve(QLatin1String("user32"),
+                                                  "GetGestureExtraArgs");
+    priv->CloseGestureInfoHandle =
+        (PtrCloseGestureInfoHandle)QLibrary::resolve(QLatin1String("user32"),
+                                                     "CloseGestureInfoHandle");
+    priv->SetGestureConfig =
+        (PtrSetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
+                                               "SetGestureConfig");
+    priv->GetGestureConfig =
+        (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
+                                               "GetGestureConfig");
+    priv->BeginPanningFeedback =
+        (PtrBeginPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                   "BeginPanningFeedback");
+    priv->UpdatePanningFeedback =
+        (PtrUpdatePanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                   "UpdatePanningFeedback");
+    priv->EndPanningFeedback =
+        (PtrEndPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                   "EndPanningFeedback");
 }
 
 /*****************************************************************************
@@ -2469,6 +2499,10 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             result = false;
             break;
+        case WM_GESTURE:
+            widget->translateGestureEvent(msg);
+            result = true;
+            break;
         default:
             result = false;                        // event was not processed
             break;
@@ -2922,7 +2956,9 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
     if (alienWidget && alienWidget->internalWinId())
         alienWidget = 0;
 
-    if (type == QEvent::MouseMove || type == QEvent::NonClientAreaMouseMove) {
+    if (type == QEvent::MouseMove || type == QEvent::NonClientAreaMouseMove
+            || type == QEvent::TabletMove) {
+
         if (!(state & Qt::MouseButtonMask))
             qt_button_down = 0;
 #ifndef QT_NO_CURSOR
@@ -3053,6 +3089,8 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
                 popupButtonFocus = popupChild;
                 break;
             case QEvent::MouseButtonRelease:
+            case QEvent::TabletRelease:
+
                 releaseAfter = true;
                 break;
             default:
@@ -3290,17 +3328,19 @@ static void tabletInit(UINT wActiveCsr, HCTX hTab)
         tdd.minTanPressure = int(np.axMin);
         tdd.maxTanPressure = int(np.axMax);
 
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_X, &np);
-        tdd.minX = int(np.axMin);
-        tdd.maxX = int(np.axMax);
+        LOGCONTEXT lcMine;
 
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_Y, &np);
-        tdd.minY = int(np.axMin);
-        tdd.maxY = int(np.axMax);
+      	/* get default region */
+        ptrWTInfo(WTI_DEFCONTEXT, 0, &lcMine);
 
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_Z, &np);
-        tdd.minZ = int(np.axMin);
-        tdd.maxZ = int(np.axMax);
+        tdd.minX = 0;
+        tdd.maxX = int(lcMine.lcInExtX) - int(lcMine.lcInOrgX);
+
+        tdd.minY = 0;
+        tdd.maxY = int(lcMine.lcInExtY) - int(lcMine.lcInOrgY);
+
+        tdd.minZ = 0;
+        tdd.maxZ = int(lcMine.lcInExtZ) - int(lcMine.lcInOrgZ);
 
         int csr_type,
             csr_physid;
@@ -3410,13 +3450,34 @@ bool QETWidget::translateTabletEvent(const MSG &msg, PACKET *localPacketBuf,
         }
         QPoint globalPos(qRound(hiResGlobal.x()), qRound(hiResGlobal.y()));
 
+        if (t == QEvent::TabletPress)
+        {
+            qt_button_down = QApplication::widgetAt(globalPos);
+        }
+
         // make sure the tablet event get's sent to the proper widget...
-        QWidget *w = QApplication::widgetAt(globalPos);
+        QWidget *w = 0;
+
         if (qt_button_down)
             w = qt_button_down; // Pass it to the thing that's grabbed it.
+        else
+            w = QApplication::widgetAt(globalPos);
 
         if (!w)
             w = this;
+
+        if (t == QEvent::TabletRelease)
+        {
+            if (qt_win_ignoreNextMouseReleaseEvent) {
+                qt_win_ignoreNextMouseReleaseEvent = false;
+                if (qt_button_down && qt_button_down->internalWinId() == autoCaptureWnd) {
+                    releaseAutoCapture();
+                    qt_button_down = 0;
+                }
+            }
+
+        }
+
         QPoint localPos = w->mapFromGlobal(globalPos);
 #ifndef QT_NO_TABLETEVENT
         if (currentTabletPointer.currentDevice == QTabletEvent::Airbrush) {
@@ -3649,6 +3710,60 @@ bool QETWidget::translateCloseEvent(const MSG &)
     return d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
+bool QETWidget::translateGestureEvent(const MSG &msg)
+{
+    GESTUREINFO gi;
+    gi.cbSize = sizeof(GESTUREINFO);
+    gi.dwFlags       = 0;
+    gi.ptsLocation.x = 0;
+    gi.ptsLocation.y = 0;
+    gi.dwID          = 0;
+    gi.dwInstanceID  = 0;
+    gi.dwSequenceID  = 0;
+
+    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+    BOOL bResult = qAppPriv->GetGestureInfo((HGESTUREINFO)msg.lParam, &gi);
+
+    const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
+    if (alienWidget && alienWidget->internalWinId())
+        alienWidget = 0;
+    QWidget *widget = alienWidget ? alienWidget : this;
+
+    QWinGestureEvent event;
+    event.sequenceId = gi.dwSequenceID;
+    event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    if (bResult) {
+        switch (gi.dwID) {
+        case GID_BEGIN:
+            // we are not interested in this type of event.
+            break;
+        case GID_END:
+            event.gestureType = QWinGestureEvent::GestureEnd;
+            break;
+        case GID_ZOOM:
+            event.gestureType = QWinGestureEvent::Pinch;
+            break;
+        case GID_PAN:
+            event.gestureType = QWinGestureEvent::Pan;
+            break;
+        case GID_ROTATE:
+        case GID_TWOFINGERTAP:
+        case GID_ROLLOVER:
+        default:
+            break;
+        }
+        if (event.gestureType != QWinGestureEvent::None)
+            qt_sendSpontaneousEvent(widget, &event);
+    } else {
+        DWORD dwErr = GetLastError();
+        if (dwErr > 0)
+            qWarning() << "translateGestureEvent: error = " << dwErr;
+    }
+    qAppPriv->CloseGestureInfoHandle((HGESTUREINFO)msg.lParam);
+    return true;
+}
+
 
 void  QApplication::setCursorFlashTime(int msecs)
 {
@@ -3830,6 +3945,7 @@ void QSessionManager::cancel()
 
 #endif //QT_NO_SESSIONMANAGER
 
+
 qt_RegisterTouchWindowPtr QApplicationPrivate::RegisterTouchWindow = 0;
 qt_GetTouchInputInfoPtr QApplicationPrivate::GetTouchInputInfo = 0;
 qt_CloseTouchInputHandlePtr QApplicationPrivate::CloseTouchInputHandle = 0;
@@ -3851,13 +3967,11 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 
 bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 {
-    Q_Q(QApplication);
-
     QWidget *widgetForHwnd = QWidget::find(msg.hwnd);
     if (!widgetForHwnd)
         return false;
 
-    QRect screenGeometry = q->desktop()->screenGeometry(widgetForHwnd);
+    QRect screenGeometry = QApplication::desktop()->screenGeometry(widgetForHwnd);
 
     QList<QTouchEvent::TouchPoint> touchPoints;
 

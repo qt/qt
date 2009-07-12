@@ -121,7 +121,7 @@
     window). Don't forget the exclamation mark!
 
     Click the \gui Done checkbox and choose \gui File|Save from the
-    menu bar. The \c .ts file will no longer contain
+    menu bar. The TS file will no longer contain
 
     \snippet doc/src/snippets/code/doc_src_examples_hellotr.qdoc 3
 
@@ -129,11 +129,11 @@
 
     \snippet doc/src/snippets/code/doc_src_examples_hellotr.qdoc 4
 
-    To see the application running in Latin, we have to generate a \c .qm
-    file from the \c .ts file. Generating a \c .qm file can be achieved
-    either from within \e {Qt Linguist} (for a single \c .ts file), or
-    by using the command line program \c lrelease which will produce one \c
-    .qm file for each of the \c .ts files listed in the project file.
+    To see the application running in Latin, we have to generate a QM
+    file from the TS file. Generating a QM file can be achieved
+    either from within \e {Qt Linguist} (for a single TS file), or
+    by using the command line program \c lrelease which will produce one
+    QM file for each of the TS files listed in the project file.
     Generate \c hellotr_la.qm from \c hellotr_la.ts by choosing
     \gui File|Release from \e {Qt Linguist}'s menu bar and pressing
     \gui Save in the file save dialog that pops up. Now run the \c helloscript

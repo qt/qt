@@ -325,11 +325,6 @@ void QmlViewer::toggleRecording()
     setRecording(recording);
 }
 
-void QmlViewer::addLibraryPath(const QString& lib)
-{
-    canvas->engine()->addNameSpacePath("",lib);
-}
-
 void QmlViewer::reload()
 {
     openQml(currentFileName);

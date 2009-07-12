@@ -256,3 +256,54 @@ This example builds on:
 \endlist
 
 */
+
+/*!
+\example declarative/extending/signal
+\title Extending QML - Signal Support Example
+
+This example builds on:
+\list
+\o \l {Extending QML - Attached Properties Example}
+\o \l {Extending QML - Grouped Properties Example}
+\o \l {Extending QML - Default Property Example}
+\o \l {Extending QML - Inheritance and Coercion Example}
+\o \l {Extending QML - Object and List Property Types Example}
+\o \l {Extending QML - Adding Types Example}
+\endlist
+
+*/
+
+/*!
+\example declarative/extending/valuesource
+\title Extending QML - Property Value Source Example
+
+This example builds on:
+\list
+\o \l {Extending QML - Signal Support Example}
+\o \l {Extending QML - Attached Properties Example}
+\o \l {Extending QML - Grouped Properties Example}
+\o \l {Extending QML - Default Property Example}
+\o \l {Extending QML - Inheritance and Coercion Example}
+\o \l {Extending QML - Object and List Property Types Example}
+\o \l {Extending QML - Adding Types Example}
+\endlist
+
+*/
+
+/*!
+\example declarative/extending/binding
+\title Extending QML - Binding Example
+
+This example builds on:
+\list
+\o \l {Extending QML - Property Value Source Example}
+\o \l {Extending QML - Signal Support Example}
+\o \l {Extending QML - Attached Properties Example}
+\o \l {Extending QML - Grouped Properties Example}
+\o \l {Extending QML - Default Property Example}
+\o \l {Extending QML - Inheritance and Coercion Example}
+\o \l {Extending QML - Object and List Property Types Example}
+\o \l {Extending QML - Adding Types Example}
+\endlist
+
+*/

@@ -82,6 +82,8 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
+#include "qstandardgestures.h"
+#include "qstandardgestures_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -107,9 +109,9 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "QtGui/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
+#include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
-#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -127,8 +129,6 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
     qt_enable_backingstore = enable;
 }
 #endif
-
-QString qt_getStandardGestureTypeName(Qt::GestureType);
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
@@ -4547,6 +4547,11 @@ void QWidget::unsetLayoutDirection()
     By default, this property contains a cursor with the Qt::ArrowCursor
     shape.
 
+    Some underlying window implementations will reset the cursor if it
+    leaves a widget even if the mouse is grabbed. If you want to have
+    a cursor set for all widgets, even when outside the window, consider
+    QApplication::setOverrideCursor().
+
     \sa QApplication::setOverrideCursor()
 */
 
@@ -7490,7 +7495,6 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
-        case QEvent::Gesture:
             return false;
         default:
             break;
@@ -7886,9 +7890,6 @@ bool QWidget::event(QEvent *event)
         d->needWindowChange = false;
         break;
 #endif
-    case QEvent::Gesture:
-        event->ignore();
-        break;
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
@@ -7926,6 +7927,59 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
+#ifdef Q_WS_WIN
+    case QEvent::WinGesture: {
+        QWinGestureEvent *ev = static_cast<QWinGestureEvent*>(event);
+        QApplicationPrivate *qAppPriv = qApp->d_func();
+        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
+        it = qAppPriv->widgetGestures.find(this);
+        if (it != qAppPriv->widgetGestures.end()) {
+            Qt::GestureState state = Qt::GestureUpdated;
+            if (qAppPriv->lastGestureId == 0)
+                state = Qt::GestureStarted;
+            QWinGestureEvent::Type type = ev->gestureType;
+            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+                type = (QWinGestureEvent::Type)qAppPriv->lastGestureId;
+                state = Qt::GestureFinished;
+            }
+
+            QGesture *gesture = 0;
+            switch (type) {
+            case QWinGestureEvent::Pan: {
+                QPanGesture *pan = it.value().pan;
+                gesture = pan;
+                if (state == Qt::GestureStarted) {
+                    gesture->setStartPos(ev->position);
+                    gesture->setLastPos(ev->position);
+                } else {
+                    gesture->setLastPos(gesture->pos());
+                }
+                gesture->setPos(ev->position);
+                break;
+            }
+            case QWinGestureEvent::Pinch:
+                break;
+            default:
+                break;
+            }
+            if (gesture) {
+                gesture->setState(state);
+                if (state == Qt::GestureStarted)
+                    emit gesture->started();
+                emit gesture->triggered();
+                if (state == Qt::GestureFinished)
+                    emit gesture->finished();
+                event->accept();
+            }
+            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
+                qAppPriv->lastGestureId = 0;
+            } else {
+                qAppPriv->lastGestureId = type;
+            }
+        }
+        break;
+    }
+#endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11020,105 +11074,6 @@ QWindowSurface *QWidget::windowSurface() const
 #endif // Q_BACKINGSTORE_SUBSURFACES
 
     return bs ? bs->windowSurface : 0;
-}
-
-/*!
-    \since 4.6
-
-    Subscribes the widget to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QWidget::grabGesture(const QString &gesture)
-{
-    Q_D(QWidget);
-    int id = d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
-    if (d->extra && d->extra->proxyWidget)
-        d->extra->proxyWidget->QGraphicsItem::d_ptr->grabGesture(id);
-    return id;
-}
-
-int QWidgetPrivate::grabGesture(int gestureId)
-{
-    gestures << gestureId;
-    ++qApp->d_func()->grabbedGestures[QGestureManager::instance()->gestureNameFromId(gestureId)];
-    return gestureId;
-}
-
-bool QWidgetPrivate::releaseGesture(int gestureId)
-{
-    QApplicationPrivate *qAppPriv = qApp->d_func();
-    if (gestures.contains(gestureId)) {
-        QString name = QGestureManager::instance()->gestureNameFromId(gestureId);
-        Q_ASSERT(qAppPriv->grabbedGestures[name] > 0);
-        --qAppPriv->grabbedGestures[name];
-        gestures.remove(gestureId);
-        return true;
-    }
-    return false;
-}
-
-bool QWidgetPrivate::hasGesture(const QString &name) const
-{
-    QGestureManager *gm = QGestureManager::instance();
-    QSet<int>::const_iterator it = gestures.begin(),
-                               e = gestures.end();
-    for (; it != e; ++it) {
-        if (gm->gestureNameFromId(*it) == name)
-            return true;
-    }
-    return false;
-}
-
-/*!
-    \since 4.6
-
-    Subscribes the widget to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QWidget::grabGesture(Qt::GestureType gesture)
-{
-    return grabGesture(qt_getStandardGestureTypeName(gesture));
-}
-
-/*!
-    \since 4.6
-
-    Unsubscribes the widget from a gesture, which is specified by the
-    \a gestureId.
-
-    \sa grabGesture(), setGestureEnabled()
-*/
-void QWidget::releaseGesture(int gestureId)
-{
-    Q_D(QWidget);
-    if (d->releaseGesture(gestureId)) {
-        if (d->extra && d->extra->proxyWidget)
-            d->extra->proxyWidget->QGraphicsItem::d_ptr->releaseGesture(gestureId);
-        QGestureManager::instance()->releaseGestureId(gestureId);
-    }
-}
-
-/*!
-    \since 4.6
-
-    If \a enable is true, the gesture with the given \a gestureId is
-    enabled; otherwise the gesture is disabled.
-
-    The id of the gesture is returned by the grabGesture().
-
-    \sa grabGesture(), releaseGesture()
-*/
-void QWidget::setGestureEnabled(int gestureId, bool enable)
-{
-    Q_UNUSED(gestureId);
-    Q_UNUSED(enable);
-    //###
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

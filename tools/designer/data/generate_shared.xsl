@@ -6,8 +6,8 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
 <!-- Hack to make names camel case
-     All names in ui files are lowercase, while the element names are
-     capital case. To make the ui files conforming to the xsd file + keep
+     All names in UI files are lowercase, while the element names are
+     capital case. To make the UI files conforming to the XSD file + keep
      the DOM interface we rename them here -->
     <xsl:template name="camel-case">
         <xsl:param name="text"/>

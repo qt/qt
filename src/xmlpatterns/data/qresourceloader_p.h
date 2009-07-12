@@ -114,7 +114,7 @@ namespace QPatternist
              *
              * Typically this hint is given when the URI is available at
              * compile-time, but it is used inside a conditional statement
-             * whose branching can't be determined at compile time.
+             * whose branching cannot be determined at compile time.
              */
             MayUse,
 

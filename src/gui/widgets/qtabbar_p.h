@@ -58,9 +58,8 @@
 
 #include <qicon.h>
 #include <qtoolbutton.h>
-#include <qtimeline.h>
-#include <qhash.h>
 #include <qdebug.h>
+#include <qvariantanimation.h>
 
 #ifndef QT_NO_TABBAR
 
@@ -75,9 +74,10 @@ class QTabBarPrivate  : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QTabBar)
 public:
     QTabBarPrivate()
-        :currentIndex(-1), pressedIndex(-1),
-         shape(QTabBar::RoundedNorth),
-         layoutDirty(false), drawBase(true), scrollOffset(0), expanding(true), closeButtonOnTabs(false), selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false), dragInProgress(false), documentMode(false), movingTab(0) {}
+        :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
+        drawBase(true), scrollOffset(0), expanding(true), closeButtonOnTabs(false),
+        selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
+        dragInProgress(false), documentMode(false), movingTab(0) {}
 
     int currentIndex;
     int pressedIndex;
@@ -88,16 +88,13 @@ public:
 
     struct Tab {
         inline Tab(const QIcon &ico, const QString &txt)
-            : enabled(true)
-            , shortcutId(0)
-            , text(txt)
-            , icon(ico)
-            , leftWidget(0)
-            , rightWidget(0)
-            , lastTab(-1)
-            , timeLine(0)
-            , dragOffset(0)
+            : enabled(true) , shortcutId(0), text(txt), icon(ico),
+            leftWidget(0), rightWidget(0), lastTab(-1), dragOffset(0)
+#ifndef QT_NO_ANIMATION
+            , animation(0)
+#endif //QT_NO_ANIMATION
         {}
+        bool operator==(const Tab &other) const { return &other == this; }
         bool enabled;
         int shortcutId;
         QString text;
@@ -117,21 +114,39 @@ public:
         QWidget *leftWidget;
         QWidget *rightWidget;
         int lastTab;
-
-        QTimeLine *timeLine;
         int dragOffset;
 
-        void makeTimeLine(QWidget *q) {
-            if (timeLine)
-                return;
-            timeLine = new QTimeLine(ANIMATION_DURATION, q);
-            q->connect(timeLine, SIGNAL(frameChanged(int)), q, SLOT(_q_moveTab(int)));
-            q->connect(timeLine, SIGNAL(finished()), q, SLOT(_q_moveTabFinished()));
-        }
+#ifndef QT_NO_ANIMATION
+        ~Tab() { delete animation; }
+        struct TabBarAnimation : public QVariantAnimation {
+            TabBarAnimation(Tab *t, QTabBarPrivate *_priv) : tab(t), priv(_priv)
+            { setEasingCurve(QEasingCurve::InOutQuad); }
 
+            void updateCurrentValue(const QVariant &current)
+            { priv->moveTab(priv->tabList.indexOf(*tab), current.toInt()); }
+
+            void updateState(State, State newState)
+            { if (newState == Stopped) priv->moveTabFinished(priv->tabList.indexOf(*tab)); }
+        private:
+            //these are needed for the callbacks
+            Tab *tab;
+            QTabBarPrivate *priv;
+        } *animation;
+
+        void startAnimation(QTabBarPrivate *priv, int duration) {
+            if (!animation)
+                animation = new TabBarAnimation(this, priv);
+            animation->setStartValue(dragOffset);
+            animation->setEndValue(0);
+            animation->setDuration(duration);
+            animation->start();
+        }
+#else
+        void startAnimation(QTabBarPrivate *priv, int duration)
+        { Q_UNUSED(duration); priv->moveTabFinished(priv->tabList.indexOf(*this)); }
+#endif //QT_NO_ANIMATION
     };
     QList<Tab> tabList;
-    QHash<QTimeLine*, int> animations;
 
     int calculateNewPosition(int from, int to, int index) const;
     void slide(int from, int to);
@@ -152,9 +167,8 @@ public:
 
     void _q_scrollTabs();
     void _q_closeTab();
-    void _q_moveTab(int);
-    void _q_moveTabFinished();
-    void _q_moveTabFinished(int offset);
+    void moveTab(int index, int offset);
+    void moveTabFinished(int index);
     QRect hoverRect;
 
     void refresh();

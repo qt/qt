@@ -163,6 +163,12 @@ void QMenuPrivate::init()
     }
 }
 
+int QMenuPrivate::scrollerHeight() const
+{
+    Q_Q(const QMenu);
+    return qMax(QApplication::globalStrut().height(), q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q));
+}
+
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(int screen) const
 {
@@ -257,7 +263,6 @@ void QMenuPrivate::updateActionRects() const
         //let the style modify the above size..
         QStyleOptionMenuItem opt;
         q->initStyleOption(&opt, action);
-        opt.rect = q->rect();
         const QFontMetrics &fm = opt.fontMetrics;
 
         QSize sz;
@@ -484,14 +489,13 @@ void QMenuPrivate::setFirstActionActive()
 {
     Q_Q(QMenu);
     updateActionRects();
-    const int scrollerHeight = q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q);
     for(int i = 0, saccum = 0; i < actions.count(); i++) {
         const QRect &rect = actionRects.at(i);
         if (rect.isNull())
             continue;
         if (scroll && scroll->scrollFlags & QMenuScroller::ScrollUp) {
             saccum -= rect.height();
-            if (saccum > scroll->scrollOffset-scrollerHeight)
+            if (saccum > scroll->scrollOffset - scrollerHeight())
                 continue;
         }
         QAction *act = actions.at(i);
@@ -669,16 +673,14 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
         return;
     updateActionRects();
     int newOffset = 0;
-    const int scrollHeight = q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q);
-    const int topScroll = (scroll->scrollFlags & QMenuScroller::ScrollUp)   ? scrollHeight : 0;
-    const int botScroll = (scroll->scrollFlags & QMenuScroller::ScrollDown) ? scrollHeight : 0;
+    const int topScroll = (scroll->scrollFlags & QMenuScroller::ScrollUp)   ? scrollerHeight() : 0;
+    const int botScroll = (scroll->scrollFlags & QMenuScroller::ScrollDown) ? scrollerHeight() : 0;
     const int vmargin = q->style()->pixelMetric(QStyle::PM_MenuVMargin, 0, q);
     const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
 
     if (location == QMenuScroller::ScrollTop) {
         for(int i = 0, saccum = 0; i < actions.count(); i++) {
-            QAction *act = actions.at(i);
-            if (act == action) {
+            if (actions.at(i) == action) {
                 newOffset = topScroll - saccum;
                 break;
             }
@@ -686,9 +688,8 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
         }
     } else {
         for(int i = 0, saccum = 0; i < actions.count(); i++) {
-            QAction *act = actions.at(i);
             saccum += actionRects.at(i).height();
-            if (act == action) {
+            if (actions.at(i) == action) {
                 if (location == QMenuScroller::ScrollCenter)
                     newOffset = ((q->height() / 2) - botScroll) - (saccum - topScroll);
                 else
@@ -757,9 +758,19 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
     }
 
     //actually update flags
-    scroll->scrollOffset = newOffset;
-    if (scroll->scrollOffset > 0)
-        scroll->scrollOffset = 0;
+    const int delta = qMin(0, newOffset) - scroll->scrollOffset; //make sure the new offset is always negative
+    if (!itemsDirty && delta) {
+        //we've scrolled so we need to update the action rects
+        for (int i = 0; i < actionRects.count(); ++i) {
+            QRect &current = actionRects[i];
+            current.moveTop(current.top() + delta);
+
+            //we need to update the widgets geometry
+            if (QWidget *w = widgetItems.at(i))
+                w->setGeometry(current);
+        }
+    }
+    scroll->scrollOffset += delta;
     scroll->scrollFlags = newScrollFlags;
     if (active)
         setCurrentAction(action);
@@ -811,9 +822,8 @@ void QMenuPrivate::scrollMenu(QMenuScroller::ScrollDirection direction, bool pag
     if (!scroll || !(scroll->scrollFlags & direction)) //not really possible...
         return;
     updateActionRects();
-    const int scrollHeight = q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q);
-    const int topScroll = (scroll->scrollFlags & QMenuScroller::ScrollUp)   ? scrollHeight : 0;
-    const int botScroll = (scroll->scrollFlags & QMenuScroller::ScrollDown) ? scrollHeight : 0;
+    const int topScroll = (scroll->scrollFlags & QMenuScroller::ScrollUp)   ? scrollerHeight() : 0;
+    const int botScroll = (scroll->scrollFlags & QMenuScroller::ScrollDown) ? scrollerHeight() : 0;
     const int vmargin = q->style()->pixelMetric(QStyle::PM_MenuVMargin, 0, q);
     const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
     const int offset = topScroll ? topScroll-vmargin : 0;
@@ -860,13 +870,12 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     if (scroll && !activeMenu) { //let the scroller "steal" the event
         bool isScroll = false;
         if (pos.x() >= 0 && pos.x() < q->width()) {
-            const int scrollerHeight = q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q);
             for(int dir = QMenuScroller::ScrollUp; dir <= QMenuScroller::ScrollDown; dir = dir << 1) {
                 if (scroll->scrollFlags & dir) {
                     if (dir == QMenuScroller::ScrollUp)
-                        isScroll = (pos.y() <= scrollerHeight);
+                        isScroll = (pos.y() <= scrollerHeight());
                     else if (dir == QMenuScroller::ScrollDown)
-                        isScroll = (pos.y() >= q->height()-scrollerHeight);
+                        isScroll = (pos.y() >= q->height() - scrollerHeight());
                     if (isScroll) {
                         scroll->scrollDirection = dir;
                         break;
@@ -875,19 +884,17 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             }
         }
         if (isScroll) {
-            if (!scroll->scrollTimer)
-                scroll->scrollTimer = new QBasicTimer;
-            scroll->scrollTimer->start(50, q);
+            scroll->scrollTimer.start(50, q);
             return true;
-        } else if (scroll->scrollTimer && scroll->scrollTimer->isActive()) {
-            scroll->scrollTimer->stop();
+        } else {
+            scroll->scrollTimer.stop();
         }
     }
 
     if (tearoff) { //let the tear off thingie "steal" the event..
         QRect tearRect(0, 0, q->width(), q->style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, q));
         if (scroll && scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
-            tearRect.translate(0, q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q));
+            tearRect.translate(0, scrollerHeight());
         q->update(tearRect);
         if (tearRect.contains(pos) && hasMouseMoved(e->globalPos())) {
             setCurrentAction(0);
@@ -1348,8 +1355,7 @@ QMenu::~QMenu()
 
     if (d->eventLoop)
         d->eventLoop->exit();
-    if (d->tornPopup)
-        d->tornPopup->close();
+    hideTearOffMenu();
 }
 
 /*!
@@ -1560,8 +1566,8 @@ void QMenu::setTearOffEnabled(bool b)
     Q_D(QMenu);
     if (d->tearoff == b)
         return;
-    if (!b && d->tornPopup)
-        d->tornPopup->close();
+    if (!b)
+        hideTearOffMenu();
     d->tearoff = b;
 
     d->itemsDirty = true;
@@ -1596,8 +1602,8 @@ bool QMenu::isTearOffMenuVisible() const
 */
 void QMenu::hideTearOffMenu()
 {
-    if (d_func()->tornPopup)
-        d_func()->tornPopup->close();
+    if (QWidget *w = d_func()->tornPopup)
+        w->close();
 }
 
 
@@ -1712,8 +1718,6 @@ QSize QMenu::sizeHint() const
         if (rect.right() >= s.width())
             s.setWidth(rect.x() + rect.width());
     }
-    if (d->tearoff)
-        s.rheight() += style()->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, this);
     // Note that the action rects calculated above already include
     // the top and left margins, so we only need to add margins for
     // the bottom and right.
@@ -2054,6 +2058,8 @@ void QMenu::hideEvent(QHideEvent *)
     d->hasHadMouse = false;
     d->causedPopup.widget = 0;
     d->causedPopup.action = 0;
+    if (d->scroll)
+        d->scroll->scrollTimer.stop(); //make sure the timer stops
 }
 
 /*!
@@ -2095,18 +2101,17 @@ void QMenu::paintEvent(QPaintEvent *e)
     const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, this);
     //draw the scroller regions..
     if (d->scroll) {
-        const int scrollerHeight = style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, this);
         menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
         menuOpt.state |= QStyle::State_Enabled;
         if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp) {
-            menuOpt.rect.setRect(fw, fw, width() - (fw * 2), scrollerHeight);
+            menuOpt.rect.setRect(fw, fw, width() - (fw * 2), d->scrollerHeight());
             emptyArea -= QRegion(menuOpt.rect);
             p.setClipRect(menuOpt.rect);
             style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
         }
         if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollDown) {
-            menuOpt.rect.setRect(fw, height() - scrollerHeight - fw, width() - (fw * 2),
-                                     scrollerHeight);
+            menuOpt.rect.setRect(fw, height() - d->scrollerHeight() - fw, width() - (fw * 2),
+                                     d->scrollerHeight());
             emptyArea -= QRegion(menuOpt.rect);
             menuOpt.state |= QStyle::State_DownArrow;
             p.setClipRect(menuOpt.rect);
@@ -2119,7 +2124,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         menuOpt.rect.setRect(fw, fw, width() - (fw * 2),
                              style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, this));
         if (d->scroll && d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
-            menuOpt.rect.translate(0, style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, this));
+            menuOpt.rect.translate(0, d->scrollerHeight());
         emptyArea -= QRegion(menuOpt.rect);
         p.setClipRect(menuOpt.rect);
         menuOpt.state = QStyle::State_None;
@@ -2449,7 +2454,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
                                 continue;
                             nextAction = next;
                             if (d->scroll && (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)) {
-                                int topVisible = style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, this);
+                                int topVisible = d->scrollerHeight();
                                 if (d->tearoff)
                                     topVisible += style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, this);
                                 if (((y + d->scroll->scrollOffset) - topVisible) <= d->actionRects.at(next_i).height())
@@ -2480,10 +2485,9 @@ void QMenu::keyPressEvent(QKeyEvent *e)
                                 continue;
                             nextAction = next;
                             if (d->scroll && (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollDown)) {
-                                const int scrollerHeight = style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, this);
-                                int bottomVisible = height()-scrollerHeight;
+                                int bottomVisible = height() - d->scrollerHeight();
                                 if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
-                                    bottomVisible -= scrollerHeight;
+                                    bottomVisible -= d->scrollerHeight();
                                 if (d->tearoff)
                                     bottomVisible -= style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, this);
                                 if ((y + d->scroll->scrollOffset + d->actionRects.at(next_i).height()) > bottomVisible)
@@ -2499,8 +2503,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         }
         if (nextAction) {
             if (d->scroll && scroll_loc != QMenuPrivate::QMenuScroller::ScrollStay) {
-                if (d->scroll->scrollTimer)
-                    d->scroll->scrollTimer->stop();
+                d->scroll->scrollTimer.stop();
                 d->scrollMenu(nextAction, scroll_loc);
             }
             d->setCurrentAction(nextAction, /*popup*/-1, QMenuPrivate::SelectedFromKeyboard);
@@ -2761,10 +2764,10 @@ void
 QMenu::timerEvent(QTimerEvent *e)
 {
     Q_D(QMenu);
-    if (d->scroll && d->scroll->scrollTimer && d->scroll->scrollTimer->timerId() == e->timerId()) {
+    if (d->scroll && d->scroll->scrollTimer.timerId() == e->timerId()) {
         d->scrollMenu((QMenuPrivate::QMenuScroller::ScrollDirection)d->scroll->scrollDirection);
         if (d->scroll->scrollFlags == QMenuPrivate::QMenuScroller::ScrollNone)
-            d->scroll->scrollTimer->stop();
+            d->scroll->scrollTimer.stop();
     } else if(QMenuPrivate::menuDelayTimer.timerId() == e->timerId()) {
         QMenuPrivate::menuDelayTimer.stop();
         internalDelayedPopup();

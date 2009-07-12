@@ -462,16 +462,26 @@ bool ProcessAST::visit(AST::UiProgram *node)
 // UiImport: T_IMPORT T_STRING_LITERAL ;
 bool ProcessAST::visit(AST::UiImport *node)
 {
-    QString fileName = node->fileName->asString();
+    QString uri;
+    QmlScriptParser::Import import;
+
+    if (node->fileName) {
+        import.type = QmlScriptParser::Import::File;
+        uri = node->fileName->asString();
+    } else {
+        import.type = QmlScriptParser::Import::Library;
+        uri = asString(node->importUri);
+    }
 
     AST::SourceLocation startLoc = node->importToken;
     AST::SourceLocation endLoc = node->semicolonToken;
 
-    QmlScriptParser::Import import;
+    if (node->importId)
+        import.as = node->importId->asString();
+
     import.location = location(startLoc, endLoc);
-    import.uri = fileName;
-    // XXX not used yet...
-    import.prefix = "";
+    import.uri = uri;
+    // XXX not parsed yet...
     import.version_major = 0;
     import.version_minor = 0;
 

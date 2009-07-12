@@ -218,7 +218,7 @@ void QMenuBarPrivate::updateGeometries()
     bool hasHiddenActions = false;
     for (int i = 0; i < actions.count(); ++i) {
         const QRect &rect = actionRects.at(i);
-        if (!menuRect.contains(rect)) {
+        if (rect.isValid() && !menuRect.contains(rect)) {
             hasHiddenActions = true;
             break;
         }
@@ -229,7 +229,7 @@ void QMenuBarPrivate::updateGeometries()
         menuRect = this->menuRect(true);
         for (int i = 0; i < actions.count(); ++i) {
             const QRect &rect = actionRects.at(i);
-            if (!menuRect.contains(rect)) {
+            if (rect.isValid() && !menuRect.contains(rect)) {
                 hiddenActions.append(actions.at(i));
             }
         }
@@ -955,6 +955,13 @@ void QMenuBar::setActiveAction(QAction *act)
 
 /*!
     Removes all the actions from the menu bar.
+
+    \note On Mac OS X, menu items that have been merged to the system
+    menu bar are not removed by this function. One way to handle this
+    would be to remove the extra actions yourself. You can set the
+    \l{QAction::MenuRole}{menu role} on the different menus, so that
+    you know ahead of time which menu items get merged and which do
+    not. Then decide what to recreate or remove yourself.
 
     \sa removeAction()
 */

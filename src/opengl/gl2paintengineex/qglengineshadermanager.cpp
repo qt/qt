@@ -190,27 +190,33 @@ QGLEngineShaderManager::~QGLEngineShaderManager()
     //###
 }
 
-
-uint QGLEngineShaderManager::getUniformIdentifier(const char *uniformName)
-{
-    uniformIdentifiers << uniformName;
-    return uniformIdentifiers.size() - 1;
-}
-
-uint QGLEngineShaderManager::getUniformLocation(uint id)
+uint QGLEngineShaderManager::getUniformLocation(Uniform id)
 {
     QVector<uint> &uniformLocations = currentShaderProg->uniformLocations;
-    uint oldSize = uniformLocations.size();
-    if (oldSize <= id) {
-        uint newSize = id + 1;
-        uniformLocations.resize(newSize);
+    if (uniformLocations.isEmpty())
+        uniformLocations.fill(GLuint(-1), NumUniforms);
 
-        for (uint i = oldSize; i < newSize; ++i)
-            uniformLocations[i] = GLuint(-1);
-    }
+    static const char *uniformNames[] = {
+        "imageTexture",
+        "patternColor",
+        "globalOpacity",
+        "depth",
+        "pmvMatrix",
+        "maskTexture",
+        "fragmentColor",
+        "linearData",
+        "angle",
+        "halfViewportSize",
+        "fmp",
+        "fmp2_m_radius2",
+        "inverse_2_fmp2_m_radius2",
+        "invertedTextureSize",
+        "brushTransform",
+        "brushTexture"
+    };
 
     if (uniformLocations.at(id) == GLuint(-1))
-        uniformLocations[id] = currentShaderProg->program->uniformLocation(uniformIdentifiers.at(id));
+        uniformLocations[id] = currentShaderProg->program->uniformLocation(uniformNames[id]);
 
     return uniformLocations.at(id);
 }

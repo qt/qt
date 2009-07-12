@@ -47,6 +47,7 @@
 #include <QStringList>
 
 #include <qplatformdefs.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <errno.h>
 #include <termios.h>
@@ -213,6 +214,9 @@ QWSTtyKbPrivate::~QWSTtyKbPrivate()
         ::ioctl(m_tty_fd, KDSKBMODE, m_originalKbdMode);
 #endif
         tcsetattr(m_tty_fd, TCSANOW, &m_tty_attr);
+
+        // we're leaking m_tty_fd here?
+        //QT_CLOSE(m_tty_fd);
     }
 }
 

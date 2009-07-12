@@ -353,6 +353,7 @@ private slots:
     void toplevelLineEditFocus();
 
     void focusWidget_task254563();
+    void rectOutsideCoordinatesLimit_task144779();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9115,6 +9116,40 @@ void tst_QWidget::focusWidget_task254563()
     container.setFocus();
     delete widget; // will call clearFocus but that doesn't help
     QVERIFY(top.focusWidget() != widget); //dangling pointer
+}
+
+void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
+{
+    QWidget main;
+    QPalette palette;
+    palette.setColor(QPalette::Window, Qt::red);
+    main.setPalette(palette);
+    main.resize(400, 400);
+
+    QWidget *offsetWidget = new QWidget(&main);
+    offsetWidget->setGeometry(0, -14600, 400, 15000);
+
+    // big widget is too big for the coordinates, it must be limited by wrect
+    // if wrect is not at the right position because of offsetWidget, bigwidget
+    // is not painted correctly
+    QWidget *bigWidget = new QWidget(offsetWidget);
+    bigWidget->setGeometry(0, 0, 400, 50000);
+    palette.setColor(QPalette::Window, Qt::green);
+    bigWidget->setPalette(palette);
+    bigWidget->setAutoFillBackground(true);
+
+    main.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&main);
+#endif
+    QTest::qWait(100);
+    QPixmap pixmap = QPixmap::grabWindow(main.winId());
+
+    QPixmap correct(main.size());
+    correct.fill(Qt::green);
+
+    QRect center(100, 100, 200, 200); // to avoid the decorations
+    QCOMPARE(pixmap.toImage().copy(center), correct.toImage().copy(center));
 }
 
 QTEST_MAIN(tst_QWidget)

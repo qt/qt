@@ -159,6 +159,8 @@ int Lexer::findReservedWord(const QChar *c, int size) const
             return QmlJSGrammar::T_IF;
         else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('n'))
             return QmlJSGrammar::T_IN;
+        else if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('s'))
+            return QmlJSGrammar::T_AS;
     }   break;
 
     case 3: {

@@ -66,7 +66,7 @@
   generate a dependency on the \c libQtUiTools library containing the QtUiTools
   classes.
 
-  Note that we do not inform \c qmake about any .ui files, and so none will
+  Note that we do not inform \c qmake about any UI files, and so none will
   be processed and built into the application. The resource file contains
   an entry for the particular form that we wish to use:
 

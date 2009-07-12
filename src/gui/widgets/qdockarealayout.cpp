@@ -1707,7 +1707,7 @@ QDockAreaLayoutItem &QDockAreaLayoutInfo::item(const QList<int> &path)
     Q_ASSERT(!path.isEmpty());
     const int index = path.first();
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(index);
+        const QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
         return item.subinfo->item(path.mid(1));
     }

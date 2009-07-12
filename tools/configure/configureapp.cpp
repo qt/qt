@@ -1140,6 +1140,10 @@ void Configure::parseCmdLine()
 
     useUnixSeparators = (dictionary["QMAKESPEC"] == "win32-g++");
 
+    // Allow tests for private classes to be compiled against internal builds
+    if (dictionary["BUILDDEV"] == "yes")
+        qtConfig += "private_tests";
+
 
 #if !defined(EVAL)
     for( QStringList::Iterator dis = disabledModules.begin(); dis != disabledModules.end(); ++dis ) {
@@ -1526,7 +1530,7 @@ bool Configure::displayHelp()
         desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "", "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL accelleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL acceleration, experimental!", ' ');
 
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
@@ -2004,7 +2008,6 @@ bool Configure::verifyConfiguration()
      no-gif gif
      dll staticlib
 
-     internal
      nocrosscompiler
      GNUmake
      largefile

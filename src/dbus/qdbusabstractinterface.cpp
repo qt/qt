@@ -44,6 +44,7 @@
 
 #include "qdbusargument.h"
 #include "qdbuspendingcall.h"
+#include "qdbusmessage_p.h"
 #include "qdbusmetaobject_p.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
@@ -52,99 +53,83 @@
 
 QT_BEGIN_NAMESPACE
 
+static QDBusError checkIfValid(const QString &service, const QString &path,
+                               const QString &interface, bool isDynamic)
+{
+    // We should be throwing exceptions here... oh well
+    QDBusError error;
+
+    // dynamic interfaces (QDBusInterface) can have empty interfaces, but not service and object paths
+    // non-dynamic is the opposite: service and object paths can be empty, but not the interface
+    if (!isDynamic) {
+        // use assertion here because this should never happen, at all
+        Q_ASSERT_X(!interface.isEmpty(), "QDBusAbstractInterface", "Interface name cannot be empty");
+    }
+    if (!QDBusUtil::checkBusName(service, isDynamic ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
+        return error;
+    if (!QDBusUtil::checkObjectPath(path, isDynamic ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
+        return error;
+    if (!QDBusUtil::checkInterfaceName(interface, QDBusUtil::EmptyAllowed, &error))
+        return error;
+
+    // no error
+    return QDBusError();
+}
+
 QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv,
                                                              const QString &p,
                                                              const QString &iface,
                                                              const QDBusConnection& con,
                                                              bool isDynamic)
-    : connection(con), service(serv), path(p), interface(iface), isValid(true)
+    : connection(con), service(serv), path(p), interface(iface),
+      lastError(checkIfValid(serv, p, iface, isDynamic)),
+      isValid(!lastError.isValid())
 {
-    if (isDynamic) {
-        // QDBusInterface: service and object path can't be empty, but interface can
-#if 0
-        Q_ASSERT_X(QDBusUtil::isValidBusName(service),
-                   "QDBusInterface::QDBusInterface", "Invalid service name");
-        Q_ASSERT_X(QDBusUtil::isValidObjectPath(path),
-                   "QDBusInterface::QDBusInterface", "Invalid object path given");
-        Q_ASSERT_X(interface.isEmpty() || QDBusUtil::isValidInterfaceName(interface),
-                   "QDBusInterface::QDBusInterface", "Invalid interface name");
-#else
-        if (!QDBusUtil::isValidBusName(service)) {
-            lastError = QDBusError(QDBusError::Disconnected,
-                                   QLatin1String("Invalid service name"));
-            isValid = false;
-        } else if (!QDBusUtil::isValidObjectPath(path)) {
-            lastError = QDBusError(QDBusError::Disconnected,
-                                   QLatin1String("Invalid object name given"));
-            isValid = false;
-        } else if (!interface.isEmpty() && !QDBusUtil::isValidInterfaceName(interface)) {
-            lastError = QDBusError(QDBusError::Disconnected,
-                                   QLatin1String("Invalid interface name"));
-            isValid = false;
-        }
-#endif
-    } else {
-        // all others: service and path can be empty here, but interface can't
-#if 0
-        Q_ASSERT_X(service.isEmpty() || QDBusUtil::isValidBusName(service),
-                   "QDBusAbstractInterface::QDBusAbstractInterface", "Invalid service name");
-        Q_ASSERT_X(path.isEmpty() || QDBusUtil::isValidObjectPath(path),
-                   "QDBusAbstractInterface::QDBusAbstractInterface", "Invalid object path given");
-        Q_ASSERT_X(QDBusUtil::isValidInterfaceName(interface),
-                   "QDBusAbstractInterface::QDBusAbstractInterface", "Invalid interface class!");
-#else
-        if (!service.isEmpty() && !QDBusUtil::isValidBusName(service)) {
-            lastError = QDBusError(QDBusError::Disconnected,
-                                   QLatin1String("Invalid service name"));
-            isValid = false;
-        } else if (!path.isEmpty() && !QDBusUtil::isValidObjectPath(path)) {
-            lastError = QDBusError(QDBusError::Disconnected,
-                                   QLatin1String("Invalid object path given"));
-            isValid = false;
-        } else if (!QDBusUtil::isValidInterfaceName(interface)) {
-            lastError = QDBusError(QDBusError::Disconnected,
-                                   QLatin1String("Invalid interface class"));
-            isValid = false;
-        }
-#endif
-    }
-
     if (!isValid)
         return;
 
     if (!connection.isConnected()) {
         lastError = QDBusError(QDBusError::Disconnected,
                                QLatin1String("Not connected to D-Bus server"));
-        isValid = false;
     } else if (!service.isEmpty()) {
         currentOwner = connectionPrivate()->getNameOwner(service); // verify the name owner
         if (currentOwner.isEmpty()) {
-            isValid = false;
             lastError = connectionPrivate()->lastError;
         }
     }
 }
 
-QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
+bool QDBusAbstractInterfacePrivate::canMakeCalls() const
 {
-    if (!connection.isConnected())    // not connected
-        return QVariant();
+    // recheck only if we have a wildcard (i.e. empty) service or path
+    // if any are empty, set the error message according to QDBusUtil
+    if (service.isEmpty())
+        return QDBusUtil::checkBusName(service, QDBusUtil::EmptyNotAllowed, &lastError);
+    if (path.isEmpty())
+        return QDBusUtil::checkObjectPath(path, QDBusUtil::EmptyNotAllowed, &lastError);
+    return true;
+}
+
+void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &where) const
+{
+    if (!isValid || !canMakeCalls()) {   // can't make calls
+        where.clear();
+        return;
+    }
 
     // is this metatype registered?
-    int mid;
-    const char *expectedSignature;
-    if (mp.type() == QVariant::LastType) {
-        // We're asking to read a QVariant
-        mid = qMetaTypeId<QDBusVariant>();
-        expectedSignature = "v";
-    } else {
-        mid = QMetaType::type(mp.typeName());
-        expectedSignature = QDBusMetaType::typeToSignature(mid);
+    const char *expectedSignature = "";
+    if (mp.type() != 0xff) {
+        expectedSignature = QDBusMetaType::typeToSignature(where.userType());
         if (expectedSignature == 0) {
             qWarning("QDBusAbstractInterface: type %s must be registered with QtDBus before it can be "
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
-            return QVariant();
+            lastError = QDBusError(QDBusError::Failed,
+                                   QString::fromLatin1("Unregistered type %1 cannot be handled")
+                                   .arg(QLatin1String(mp.typeName())));
+            where.clear();
+            return;
         }
     }
 
@@ -152,26 +137,33 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
                                                       QLatin1String(DBUS_INTERFACE_PROPERTIES),
                                                       QLatin1String("Get"));
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name());
     QDBusMessage reply = connection.call(msg, QDBus::Block);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = reply;
-        return QVariant();
+        where.clear();
+        return;
     }
     if (reply.signature() != QLatin1String("v")) {
         QString errmsg = QLatin1String("Invalid signature `%1' in return from call to "
                                        DBUS_INTERFACE_PROPERTIES);
         lastError = QDBusError(QDBusError::InvalidSignature, errmsg.arg(reply.signature()));
-        return QVariant();
+        where.clear();
+        return;
     }
 
     QByteArray foundSignature;
     const char *foundType = 0;
     QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
-    if (value.userType() == mid)
-        return value;       // simple match
+    if (value.userType() == where.userType() || mp.type() == 0xff
+        || (expectedSignature[0] == 'v' && expectedSignature[1] == '\0')) {
+        // simple match
+        where = value;
+        return;
+    }
 
     if (value.userType() == qMetaTypeId<QDBusArgument>()) {
         QDBusArgument arg = qvariant_cast<QDBusArgument>(value);
@@ -179,14 +171,9 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
         foundType = "user type";
         foundSignature = arg.currentSignature().toLatin1();
         if (foundSignature == expectedSignature) {
-            void *null = 0;
-            QVariant result(mid, null);
-            QDBusMetaType::demarshall(arg, mid, result.data());
-
-            if (mp.type() == QVariant::LastType)
-                // special case: QVariant
-                return qvariant_cast<QDBusVariant>(result).variant();
-            return result;
+            // signatures match, we can demarshall
+            QDBusMetaType::demarshall(arg, where.userType(), where.data());
+            return;
         }
     } else {
         foundType = value.typeName();
@@ -203,23 +190,28 @@ QVariant QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp) const
                                       QString::fromUtf8(mp.name()),
                                       QString::fromLatin1(mp.typeName()),
                                       QString::fromLatin1(expectedSignature)));
-    return QVariant();
+    where.clear();
+    return;
 }
 
-void QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const QVariant &value)
+bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const QVariant &value)
 {
-    if (!connection.isConnected())    // not connected
-        return;
+    if (!isValid || !canMakeCalls())    // can't make calls
+        return false;
 
     // send the value
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
                                                 QLatin1String(DBUS_INTERFACE_PROPERTIES),
                                                 QLatin1String("Set"));
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name()) << qVariantFromValue(QDBusVariant(value));
     QDBusMessage reply = connection.call(msg, QDBus::Block);
 
-    if (reply.type() != QDBusMessage::ReplyMessage)
+    if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = reply;
+        return false;
+    }
+    return true;
 }
 
 void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
@@ -230,10 +222,36 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
     //qDebug() << "QDBusAbstractInterfacePrivate serviceOwnerChanged" << name << oldOwner << newOwner;
     if (name == service) {
         currentOwner = newOwner;
-        isValid = !newOwner.isEmpty();
     }
 }
 
+QDBusAbstractInterfaceBase::QDBusAbstractInterfaceBase(QDBusAbstractInterfacePrivate &d, QObject *parent)
+    : QObject(d, parent)
+{
+}
+
+int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    int saved_id = _id;
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+
+    if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty) {
+        QMetaProperty mp = metaObject()->property(saved_id);
+        int &status = *reinterpret_cast<int *>(_a[2]);
+        QVariant &variant = *reinterpret_cast<QVariant *>(_a[1]);
+
+        if (_c == QMetaObject::WriteProperty) {
+            status = d_func()->setProperty(mp, variant) ? 1 : 0;
+        } else {
+            d_func()->property(mp, variant);
+            status = variant.isValid() ? 1 : 0;
+        }
+        _id = -1;
+    }
+    return _id;
+}
 
 /*!
     \class QDBusAbstractInterface
@@ -258,10 +276,10 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
     This is the constructor called from QDBusInterface::QDBusInterface.
 */
 QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d, QObject *parent)
-    : QObject(d, parent)
+    : QDBusAbstractInterfaceBase(d, parent)
 {
     // keep track of the service owner
-    if (d_func()->isValid)
+    if (!d_func()->currentOwner.isEmpty())
         QObject::connect(d_func()->connectionPrivate(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
                          this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
@@ -274,7 +292,7 @@ QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d,
 QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QString &path,
                                                const char *interface, const QDBusConnection &con,
                                                QObject *parent)
-    : QObject(*new QDBusAbstractInterfacePrivate(service, path, QString::fromLatin1(interface),
+    : QDBusAbstractInterfaceBase(*new QDBusAbstractInterfacePrivate(service, path, QString::fromLatin1(interface),
                                                  con, false), parent)
 {
     // keep track of the service owner
@@ -300,7 +318,7 @@ QDBusAbstractInterface::~QDBusAbstractInterface()
 */
 bool QDBusAbstractInterface::isValid() const
 {
-    return d_func()->isValid;
+    return !d_func()->currentOwner.isEmpty();
 }
 
 /*!
@@ -367,6 +385,9 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 {
     Q_D(QDBusAbstractInterface);
 
+    if (!d->isValid || !d->canMakeCalls())
+        return QDBusMessage::createError(d->lastError);
+
     QString m = method;
     // split out the signature from the method
     int pos = method.indexOf(QLatin1Char('.'));
@@ -397,6 +418,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 
 //    qDebug() << "QDBusAbstractInterface" << "Service" << service() << "Path:" << path();
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), m);
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
     QDBusMessage reply = d->connection.call(msg, mode);
@@ -425,7 +447,11 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
 {
     Q_D(QDBusAbstractInterface);
 
+    if (!d->isValid || !d->canMakeCalls())
+        return QDBusPendingCall::fromError(d->lastError);
+
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), method);
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
     return d->connection.asyncCall(msg);
 }
@@ -440,7 +466,8 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
 
     This function returns true if the queueing succeeds. It does
     not indicate that the executed call succeeded. If it fails,
-    the \a errorMethod is called.
+    the \a errorMethod is called. If the queueing failed, this
+    function returns false and no slot will be called.
  
     The \a returnMethod must have as its parameters the types returned
     by the function call. Optionally, it may have a QDBusMessage
@@ -453,22 +480,26 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
 bool QDBusAbstractInterface::callWithCallback(const QString &method,
                                               const QList<QVariant> &args,
                                               QObject *receiver,
-					      const char *returnMethod,
+                                              const char *returnMethod,
                                               const char *errorMethod)
 {
     Q_D(QDBusAbstractInterface);
 
+    if (!d->isValid || !d->canMakeCalls())
+        return false;
+
     QDBusMessage msg = QDBusMessage::createMethodCall(service(),
-						      path(),
-						      interface(),
-						      method);
+                                                      path(),
+                                                      interface(),
+                                                      method);
+    QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
     d->lastError = 0;
     return d->connection.callWithCallback(msg,
-					  receiver,
-					  returnMethod,
-					  errorMethod);
+                                          receiver,
+                                          returnMethod,
+                                          errorMethod);
 }
 
 /*!
@@ -492,7 +523,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
 bool QDBusAbstractInterface::callWithCallback(const QString &method,
                                               const QList<QVariant> &args,
                                               QObject *receiver,
-					      const char *slot)
+                                              const char *slot)
 {
     return callWithCallback(method, args, receiver, slot, 0);
 }
@@ -503,12 +534,14 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
 */
 void QDBusAbstractInterface::connectNotify(const char *signal)
 {
+    // someone connecting to one of our signals
+    Q_D(QDBusAbstractInterface);
+    if (!d->isValid)
+        return;
+
     // we end up recursing here, so optimise away
     if (qstrcmp(signal + 1, "destroyed(QObject*)") == 0)
         return;
-
-    // someone connecting to one of our signals
-    Q_D(QDBusAbstractInterface);
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
     if (conn)
@@ -524,6 +557,8 @@ void QDBusAbstractInterface::disconnectNotify(const char *signal)
 {
     // someone disconnecting from one of our signals
     Q_D(QDBusAbstractInterface);
+    if (!d->isValid)
+        return;
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
     if (conn)
@@ -540,11 +575,7 @@ QVariant QDBusAbstractInterface::internalPropGet(const char *propname) const
     // assume this property exists and is readable
     // we're only called from generated code anyways
 
-    int idx = metaObject()->indexOfProperty(propname);
-    if (idx != -1)
-        return d_func()->property(metaObject()->property(idx));
-    qWarning("QDBusAbstractInterface::internalPropGet called with unknown property '%s'", propname);
-    return QVariant();          // error
+    return property(propname);
 }
 
 /*!
@@ -553,16 +584,7 @@ QVariant QDBusAbstractInterface::internalPropGet(const char *propname) const
 */
 void QDBusAbstractInterface::internalPropSet(const char *propname, const QVariant &value)
 {
-    Q_D(QDBusAbstractInterface);
-
-    // assume this property exists and is writeable
-    // we're only called from generated code anyways
-
-    int idx = metaObject()->indexOfProperty(propname);
-    if (idx != -1)
-        d->setProperty(metaObject()->property(idx), value);
-    else
-        qWarning("QDBusAbstractInterface::internalPropGet called with unknown property '%s'", propname);
+    setProperty(propname, value);
 }
 
 /*!

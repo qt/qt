@@ -79,11 +79,11 @@ class QGraphicsSceneHelpEvent;
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
-class QGraphicsSceneGestureEvent;
 class QGraphicsSimpleTextItem;
 class QGraphicsTextItem;
 class QGraphicsView;
 class QGraphicsWidget;
+class QGraphicsSceneIndex;
 class QHelpEvent;
 class QInputMethodEvent;
 class QKeyEvent;
@@ -153,22 +153,38 @@ public:
     QRectF itemsBoundingRect() const;
 
     QList<QGraphicsItem *> items() const;
-    QList<QGraphicsItem *> items(const QPointF &pos) const;
-    QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
-    QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
-    QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
+    QList<QGraphicsItem *> items(Qt::SortOrder order) const; // ### Qt 5: unify
+
+    QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+
+    QList<QGraphicsItem *> items(const QPointF &pos) const; // ### obsolete
+    QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const; // ### obsolete
+    QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const; // ### obsolete
+    QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const; // ### obsolete
+
     QList<QGraphicsItem *> collidingItems(const QGraphicsItem *item, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
-    QGraphicsItem *itemAt(const QPointF &pos) const;
+
+    QGraphicsItem *itemAt(const QPointF &pos) const; // ### obsolete
+    QGraphicsItem *itemAt(const QPointF &pos, const QTransform &deviceTransform) const;
 
     inline QList<QGraphicsItem *> items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const
-    { return items(QRectF(x, y, w, h), mode); }
-    inline QGraphicsItem *itemAt(qreal x, qreal y) const
+    { return items(QRectF(x, y, w, h), mode); } // ### obsolete
+    inline QList<QGraphicsItem *> items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode, Qt::SortOrder order,
+                                        const QTransform &deviceTransform = QTransform()) const
+    { return items(QRectF(x, y, w, h), mode, order, deviceTransform); }
+    inline QGraphicsItem *itemAt(qreal x, qreal y) const // ### obsolete
     { return itemAt(QPointF(x, y)); }
+    inline QGraphicsItem *itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
+    { return itemAt(QPointF(x, y), deviceTransform); }
 
     QList<QGraphicsItem *> selectedItems() const;
     QPainterPath selectionArea() const;
     void setSelectionArea(const QPainterPath &path);
-    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode);
+    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode);
+    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode, const QTransform &deviceTransform);
 
     QGraphicsItemGroup *createItemGroup(const QList<QGraphicsItem *> &items);
     void destroyItemGroup(QGraphicsItemGroup *group);
@@ -276,11 +292,8 @@ Q_SIGNALS:
 private:
     Q_DECLARE_PRIVATE(QGraphicsScene)
     Q_DISABLE_COPY(QGraphicsScene)
-    Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
     Q_PRIVATE_SLOT(d_func(), void _q_emitUpdated())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateLater())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
     Q_PRIVATE_SLOT(d_func(), void _q_processDirtyItems())
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
@@ -288,6 +301,10 @@ private:
     friend class QGraphicsViewPrivate;
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
+    friend class QGraphicsSceneIndex;
+    friend class QGraphicsSceneIndexPrivate;
+    friend class QGraphicsSceneBspTreeIndex;
+    friend class QGraphicsSceneBspTreeIndexPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)
