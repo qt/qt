@@ -63,6 +63,10 @@ public:
 
     void sendMessage(const QByteArray &);
 
+    static int idForObject(QObject *);
+    static QObject *objectForId(int);
+
+
     static bool isDebuggingEnabled();
     static QString objectToString(QObject *obj);
 

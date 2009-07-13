@@ -523,8 +523,9 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
     if (!d->engine->d_func()->rootComponent)
         d->engine->d_func()->rootComponent = this;
 
-    QmlContext *ctxt = 
-        new QmlContext(context, 0);
+    QmlContextPrivate *contextPriv = 
+        static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
+    QmlContext *ctxt = new QmlContext(context, 0, true);
     static_cast<QmlContextPrivate*>(ctxt->d_ptr)->url = d->cc->url;
     if(d->start != -1) {
         // ### FIXME
@@ -558,6 +559,8 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         delete ctxt;
     }
 
+    if (rv && !contextPriv->isInternal && ep->isDebugging)
+        contextPriv->instances.append(rv);
     return rv;
 }
 

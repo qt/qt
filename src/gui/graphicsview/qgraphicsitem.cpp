@@ -558,6 +558,7 @@
 #include "qgraphicsview.h"
 #include "qgraphicswidget.h"
 #include "qgraphicsproxywidget.h"
+#include "qgraphicsscenebsptreeindex_p.h"
 #include <QtCore/qbitarray.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qpoint.h>
@@ -587,17 +588,6 @@
 #include <math.h>
 
 QT_BEGIN_NAMESPACE
-
-// QRectF::intersects() returns false always if either the source or target
-// rectangle's width or height are 0. This works around that problem.
-static inline void _q_adjustRect(QRectF *rect)
-{
-    Q_ASSERT(rect);
-    if (!rect->width())
-        rect->adjust(-0.00001, 0, 0.00001, 0);
-    if (!rect->height())
-        rect->adjust(0, -0.00001, 0, 0.00001);
-}
 
 static inline void _q_adjustRect(QRect *rect)
 {
@@ -839,6 +829,42 @@ void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTran
     }
 }
 
+void QGraphicsItemPrivate::updateSceneTransformFromParent()
+{
+    if (parent) {
+        Q_ASSERT(!parent->d_ptr->dirtySceneTransform);
+        if (parent->d_ptr->sceneTransformTranslateOnly) {
+            sceneTransform = QTransform::fromTranslate(parent->d_ptr->sceneTransform.dx() + pos.x(),
+                                                       parent->d_ptr->sceneTransform.dy() + pos.y());
+        } else {
+            sceneTransform = parent->d_ptr->sceneTransform;
+            sceneTransform.translate(pos.x(), pos.y());
+        }
+        if (transformData) {
+            sceneTransform = transformData->computedFullTransform(&sceneTransform);
+            sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+        } else {
+            sceneTransformTranslateOnly = parent->d_ptr->sceneTransformTranslateOnly;
+        }
+    } else if (!transformData) {
+        sceneTransform = QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransformTranslateOnly = 1;
+    } else if (transformData->onlyTransform) {
+        sceneTransform = transformData->transform;
+        if (!pos.isNull())
+            sceneTransform *= QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    } else if (pos.isNull()) {
+        sceneTransform = transformData->computedFullTransform();
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    } else {
+        sceneTransform = QTransform::fromTranslate(pos.x(), pos.y());
+        sceneTransform = transformData->computedFullTransform(&sceneTransform);
+        sceneTransformTranslateOnly = (sceneTransform.type() <= QTransform::TxTranslate);
+    }
+    dirtySceneTransform = 0;
+}
+
 /*!
     \internal
 
@@ -877,6 +903,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     newParent = qVariantValue<QGraphicsItem *>(newParentVariant);
     if (newParent == parent)
         return;
+
+    if (scene) {
+        // Deliver the change to the index
+        scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+    }
 
     if (QGraphicsWidget *w = isWidget ? static_cast<QGraphicsWidget *>(q) : q->parentWidget()) {
         // Update the child focus chain; when reparenting a widget that has a
@@ -965,12 +996,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                                            /*maybeDirtyClipPath=*/true);
             }
         }
-    }
-
-    if (scene) {
-        // Invalidate any sort caching; arrival of a new item means we need to
-        // resort.
-        scene->d_func()->invalidateSortCache();
     }
 
     // Resolve depth.
@@ -1451,6 +1476,8 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     flags = GraphicsItemFlags(itemChange(ItemFlagsChange, quint32(flags)).toUInt());
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
 
     // Flags that alter the geometry of the item (or its children).
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
@@ -1809,6 +1836,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         if (q_ptr->isSelected())
             q_ptr->setSelected(false);
     } else {
+        geometryChanged = 1;
+        paintedViewBoundingRectsNeedRepaint = 1;
         if (isWidget && scene) {
             QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
             if (widget->windowType() == Qt::Popup)
@@ -3205,7 +3234,8 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 */
 QMatrix QGraphicsItem::sceneMatrix() const
 {
-    return sceneTransform().toAffine();
+    d_ptr->ensureSceneTransform();
+    return d_ptr->sceneTransform.toAffine();
 }
 
 
@@ -3228,16 +3258,7 @@ QMatrix QGraphicsItem::sceneMatrix() const
 */
 QTransform QGraphicsItem::sceneTransform() const
 {
-    if (d_ptr->dirtySceneTransform) {
-        // This item and all its descendants have dirty scene transforms.
-        // We're about to validate this item's scene transform, so we have to
-        // invalidate all the children; otherwise there's no way for the descendants
-        // to detect that the ancestor has changed.
-        d_ptr->invalidateChildrenSceneTransform();
-    }
-
-    QGraphicsItem *that = const_cast<QGraphicsItem *>(this);
-    d_ptr->ensureSceneTransformRecursive(&that);
+    d_ptr->ensureSceneTransform();
     return d_ptr->sceneTransform;
 }
 
@@ -3267,8 +3288,10 @@ QTransform QGraphicsItem::sceneTransform() const
 QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) const
 {
     // Ensure we return the standard transform if we're not untransformable.
-    if (!d_ptr->itemIsUntransformable())
-        return sceneTransform() * viewportTransform;
+    if (!d_ptr->itemIsUntransformable()) {
+        d_ptr->ensureSceneTransform();
+        return d_ptr->sceneTransform * viewportTransform;
+    }
 
     // Find the topmost item that ignores view transformations.
     const QGraphicsItem *untransformedAncestor = this;
@@ -3287,7 +3310,8 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     }
 
     // First translate the base untransformable item.
-    QPointF mappedPoint = (untransformedAncestor->sceneTransform() * viewportTransform).map(QPointF(0, 0));
+    untransformedAncestor->d_ptr->ensureSceneTransform();
+    QPointF mappedPoint = (untransformedAncestor->d_ptr->sceneTransform * viewportTransform).map(QPointF(0, 0));
 
     // COMBINE
     QTransform matrix = QTransform::fromTranslate(mappedPoint.x(), mappedPoint.y());
@@ -3380,8 +3404,11 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     // Find the closest common ancestor. If the two items don't share an
     // ancestor, then the only way is to combine their scene transforms.
     const QGraphicsItem *commonAncestor = commonAncestorItem(other);
-    if (!commonAncestor)
-        return sceneTransform() * other->sceneTransform().inverted(ok);
+    if (!commonAncestor) {
+        d_ptr->ensureSceneTransform();
+        other->d_ptr->ensureSceneTransform();
+        return d_ptr->sceneTransform * other->d_ptr->sceneTransform.inverted(ok);
+    }
 
     // If the two items are cousins (in sibling branches), map both to the
     // common ancestor, and combine the two transforms.
@@ -3672,18 +3699,20 @@ void QGraphicsItem::setZValue(qreal z)
     qreal newZ = qreal(newZVariant.toDouble());
     if (newZ == d_ptr->z)
         return;
+
+    if (d_ptr->scene) {
+        // Z Value has changed, we have to notify the index.
+        d_ptr->scene->d_func()->index->itemChange(this, ItemZValueChange, newZVariant);
+    }
+
     d_ptr->z = newZ;
     if (d_ptr->parent)
         d_ptr->parent->d_ptr->needSortChildren = 1;
     else if (d_ptr->scene)
         d_ptr->scene->d_func()->needSortTopLevelItems = 1;
 
-    if (d_ptr->scene) {
+    if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
-        // Invalidate any sort caching; arrival of a new item means we need to
-        // resort.
-        d_ptr->scene->d_func()->invalidateSortCache();
-    }
 
     itemChange(ItemZValueHasChanged, newZVariant);
 
@@ -3774,7 +3803,13 @@ QRectF QGraphicsItem::sceneBoundingRect() const
 
     QRectF br = boundingRect();
     br.translate(offset);
-    return !parentItem ? br : parentItem->sceneTransform().mapRect(br);
+    if (!parentItem)
+        return br;
+    if (parentItem->d_ptr->hasTranslateOnlySceneTransform()) {
+        br.translate(parentItem->d_ptr->sceneTransform.dx(), parentItem->d_ptr->sceneTransform.dy());
+        return br;
+    }
+    return parentItem->d_ptr->sceneTransform.mapRect(br);
 }
 
 /*!
@@ -4149,7 +4184,7 @@ bool QGraphicsItem::isObscuredBy(const QGraphicsItem *item) const
 {
     if (!item)
         return false;
-    return QGraphicsScenePrivate::closestItemFirst_withoutCache(item, this)
+    return QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(item, this)
         && qt_QGraphicsItem_isObscured(this, item, boundingRect());
 }
 
@@ -4342,12 +4377,11 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignore
 {
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
-    return (!visible && !ignoreVisibleBit)
+    return !scene
+           || (!visible && !ignoreVisibleBit && !this->ignoreVisible)
            || (!ignoreDirtyBit && fullUpdatePending)
-           || !scene
-           || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
            || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
-           || (!ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
+           || (!ignoreOpacity && !this->ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
 }
 
 /*!
@@ -4368,6 +4402,7 @@ void QGraphicsItemPrivate::resolveDepth(int parentDepth)
 void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 {
     needSortChildren = 1;
+    child->d_ptr->siblingIndex = children.size();
     children.append(child);
 }
 
@@ -4377,6 +4412,10 @@ void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 {
     children.removeOne(child);
+    // NB! Do not use children.removeAt(child->d_ptr->siblingIndex) because
+    // the child is not guaranteed to be at the index after the list is sorted.
+    // (see ensureSortedChildren()).
+    child->d_ptr->siblingIndex = -1;
 }
 
 /*!
@@ -4537,9 +4576,22 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
     }
 
     // COMBINE my transform with the parent's scene transform.
-    sceneTransform = parent ? parent->d_ptr->sceneTransform : QTransform();
-    combineTransformFromParent(&sceneTransform);
-    dirtySceneTransform = 0;
+    updateSceneTransformFromParent();
+    Q_ASSERT(!dirtySceneTransform);
+}
+
+void QGraphicsItemPrivate::ensureSceneTransform()
+{
+    if (dirtySceneTransform) {
+        // This item and all its descendants have dirty scene transforms.
+        // We're about to validate this item's scene transform, so we have to
+        // invalidate all the children; otherwise there's no way for the descendants
+        // to detect that the ancestor has changed.
+        invalidateChildrenSceneTransform();
+    }
+
+    QGraphicsItem *that = q_func();
+    ensureSceneTransformRecursive(&that);
 }
 
 /*!
@@ -4880,7 +4932,9 @@ QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 */
 QPointF QGraphicsItem::mapToScene(const QPointF &point) const
 {
-    return sceneTransform().map(point);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return QPointF(point.x() + d_ptr->sceneTransform.dx(), point.y() + d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(point);
 }
 
 /*!
@@ -4947,7 +5001,9 @@ QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 */
 QPolygonF QGraphicsItem::mapToScene(const QRectF &rect) const
 {
-    return sceneTransform().map(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(rect);
 }
 
 /*!
@@ -5020,7 +5076,9 @@ QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 */
 QRectF QGraphicsItem::mapRectToScene(const QRectF &rect) const
 {
-    return sceneTransform().mapRect(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.mapRect(rect);
 }
 
 /*!
@@ -5094,7 +5152,9 @@ QRectF QGraphicsItem::mapRectFromParent(const QRectF &rect) const
 */
 QRectF QGraphicsItem::mapRectFromScene(const QRectF &rect) const
 {
-    return sceneTransform().inverted().mapRect(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().mapRect(rect);
 }
 
 /*!
@@ -5146,7 +5206,9 @@ QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 */
 QPolygonF QGraphicsItem::mapToScene(const QPolygonF &polygon) const
 {
-    return sceneTransform().map(polygon);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return polygon.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(polygon);
 }
 
 /*!
@@ -5191,7 +5253,9 @@ QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 */
 QPainterPath QGraphicsItem::mapToScene(const QPainterPath &path) const
 {
-    return sceneTransform().map(path);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return path.translated(d_ptr->sceneTransform.dx(), d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.map(path);
 }
 
 /*!
@@ -5252,7 +5316,9 @@ QPointF QGraphicsItem::mapFromParent(const QPointF &point) const
 */
 QPointF QGraphicsItem::mapFromScene(const QPointF &point) const
 {
-    return sceneTransform().inverted().map(point);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return QPointF(point.x() - d_ptr->sceneTransform.dx(), point.y() - d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(point);
 }
 
 /*!
@@ -5320,7 +5386,9 @@ QPolygonF QGraphicsItem::mapFromParent(const QRectF &rect) const
 */
 QPolygonF QGraphicsItem::mapFromScene(const QRectF &rect) const
 {
-    return sceneTransform().inverted().map(rect);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return rect.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(rect);
 }
 
 /*!
@@ -5370,7 +5438,9 @@ QPolygonF QGraphicsItem::mapFromParent(const QPolygonF &polygon) const
 */
 QPolygonF QGraphicsItem::mapFromScene(const QPolygonF &polygon) const
 {
-    return sceneTransform().inverted().map(polygon);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return polygon.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(polygon);
 }
 
 /*!
@@ -5413,7 +5483,9 @@ QPainterPath QGraphicsItem::mapFromParent(const QPainterPath &path) const
 */
 QPainterPath QGraphicsItem::mapFromScene(const QPainterPath &path) const
 {
-    return sceneTransform().inverted().map(path);
+    if (d_ptr->hasTranslateOnlySceneTransform())
+        return path.translated(-d_ptr->sceneTransform.dx(), -d_ptr->sceneTransform.dy());
+    return d_ptr->sceneTransform.inverted().map(path);
 }
 
 /*!
@@ -6378,7 +6450,7 @@ void QGraphicsItem::addToIndex()
         return;
     }
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->addToIndex(this);
+        d_ptr->scene->d_func()->index->addItem(this);
 }
 
 /*!
@@ -6395,7 +6467,7 @@ void QGraphicsItem::removeFromIndex()
         return;
     }
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->removeFromIndex(this);
+        d_ptr->scene->d_func()->index->removeItem(this);
 }
 
 /*!
@@ -6414,10 +6486,12 @@ void QGraphicsItem::removeFromIndex()
 void QGraphicsItem::prepareGeometryChange()
 {
     if (d_ptr->scene) {
+        d_ptr->scene->d_func()->dirtyGrowingItemsBoundingRect = true;
         d_ptr->geometryChanged = 1;
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
+        scenePrivate->index->prepareBoundingRectChange(this);
         scenePrivate->markDirty(this, QRectF(),
                                 /*invalidateChildren=*/true,
                                 /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
@@ -6428,10 +6502,13 @@ void QGraphicsItem::prepareGeometryChange()
         // _q_processDirtyItems is called before _q_emitUpdated.
 	if ((scenePrivate->connectedSignals[0] & scenePrivate->changedSignalMask)
             || scenePrivate->views.isEmpty()) {
-            d_ptr->scene->update(sceneTransform().mapRect(boundingRect()));
+            if (d_ptr->hasTranslateOnlySceneTransform()) {
+                d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),
+                                                               d_ptr->sceneTransform.dy()));
+            } else {
+                d_ptr->scene->update(d_ptr->sceneTransform.mapRect(boundingRect()));
+            }
         }
-
-        scenePrivate->removeFromIndex(this);
     }
 
     QGraphicsItem *parent = this;
@@ -9751,17 +9828,11 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         return debug;
     }
 
-    QStringList flags;
-    if (item->isVisible()) flags << QLatin1String("isVisible");
-    if (item->isEnabled()) flags << QLatin1String("isEnabled");
-    if (item->isSelected()) flags << QLatin1String("isSelected");
-    if (item->hasFocus()) flags << QLatin1String("HasFocus");
-
     debug << "QGraphicsItem(this =" << ((void*)item)
           << ", parent =" << ((void*)item->parentItem())
           << ", pos =" << item->pos()
-          << ", z =" << item->zValue() << ", flags = {"
-          << flags.join(QLatin1String("|")) << " })";
+          << ", z =" << item->zValue() << ", flags = "
+          << item->flags() << ")";
     return debug;
 }
 

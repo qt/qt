@@ -3883,28 +3883,35 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
 
 QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
 {
+    Q_ASSERT(r);
     Q_Q(const QAbstractItemView);
-    QRect rect = q->visualRect(indexes.at(0));
+    QRect &rect = *r;
+    const QRect viewportRect = viewport->rect();
     QList<QRect> rects;
+    QModelIndexList paintedIndexes;
     for (int i = 0; i < indexes.count(); ++i) {
-        rects.append(q->visualRect(indexes.at(i)));
-        rect |= rects.at(i);
+        const QModelIndex &index = indexes.at(i);
+        const QRect current = q->visualRect(index);
+        if (current.intersects(viewportRect)) {
+            paintedIndexes += index;
+            rects += current;
+            rect |= current;
+        }
     }
-    rect = rect.intersected(viewport->rect());
-    if (rect.width() <= 0 || rect.height() <= 0)
+    rect = rect.intersected(viewportRect);
+    if (rect.isEmpty())
         return QPixmap();
-    QImage image(rect.size(), QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
-    QPainter painter(&image);
+    QPixmap pixmap(rect.size());
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
     QStyleOptionViewItemV4 option = viewOptionsV4();
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < indexes.count(); ++j) {
+    for (int j = 0; j < paintedIndexes.count(); ++j) {
+        const QModelIndex &current = paintedIndexes.at(j);
         option.rect = QRect(rects.at(j).topLeft() - rect.topLeft(), rects.at(j).size());
-        delegateForIndex(indexes.at(j))->paint(&painter, option, indexes.at(j));
+        delegateForIndex(current)->paint(&painter, option, current);
     }
-    painter.end();
-    if (r) *r = rect;
-    return QPixmap::fromImage(image);
+    return pixmap;
 }
 
 void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYVIEW_P_H
-#define QMLPROPERTYVIEW_P_H
+#ifndef QMLENGINEDEBUG_P_H
+#define QMLENGINEDEBUG_P_H
 
 //
 //  W A R N I N G
@@ -53,37 +53,56 @@
 // We mean it.
 //
 
-#include <QtGui/qwidget.h>
-#include <QtCore/qpointer.h>
-#include <private/qmlwatches_p.h>
+#include <QtDeclarative/qmldebugserver.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QmlPropertyView : public QWidget
+class QmlEngine;
+class QmlContext;
+class QDataStream;
+class QmlEngineDebugServer : public QmlDebugServerPlugin
 {
-    Q_OBJECT
 public:
-    QmlPropertyView(QmlWatches *watches, QWidget *parent = 0);
+    QmlEngineDebugServer(QObject * = 0);
 
-    void setObject(QObject *);
+    struct QmlObjectData {
+        QUrl url;
+        int lineNumber;
+        int columnNumber;
+        QString objectName;
+        QString objectType;
+        int objectId;
+    };
 
-signals:
-    void objectClicked(quint32);
+    struct QmlObjectProperty {
+        enum Type { Unknown, Basic, Object, List };
+        Type type;
+        QString name;
+        QVariant value;
+    };
 
-public slots:
-    void refresh();
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void itemClicked(QTreeWidgetItem *);
+    static void addEngine(QmlEngine *);
+    static void remEngine(QmlEngine *);
+
+protected:
+    virtual void messageReceived(const QByteArray &);
 
 private:
-    QPointer<QObject> m_object;
-    QTreeWidget *m_tree;
-    QmlWatches *m_watches;
+    void buildObjectList(QDataStream &, QmlContext *);
+    void buildObjectDump(QDataStream &, QObject *, bool);
+    QmlObjectData objectData(QObject *);
+    QmlObjectProperty propertyData(QObject *, int);
+
+    static QList<QmlEngine *> m_engines;
 };
+Q_DECLARATIVE_EXPORT QDataStream &operator<<(QDataStream &, const QmlEngineDebugServer::QmlObjectData &);
+Q_DECLARATIVE_EXPORT QDataStream &operator>>(QDataStream &, QmlEngineDebugServer::QmlObjectData &);
+Q_DECLARATIVE_EXPORT QDataStream &operator<<(QDataStream &, const QmlEngineDebugServer::QmlObjectProperty &);
+Q_DECLARATIVE_EXPORT QDataStream &operator>>(QDataStream &, QmlEngineDebugServer::QmlObjectProperty &);
 
 QT_END_NAMESPACE
 
-#endif // QMLPROPERTYVIEW_P_H
+#endif // QMLENGINEDEBUG_P_H
 

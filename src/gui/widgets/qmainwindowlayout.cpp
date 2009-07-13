@@ -1629,9 +1629,6 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
-        //it is important to set the current tab before applying the layout
-        //so that applyState will not try to counter the result of the animation
-        //by putting the item in negative space
         if (qobject_cast<QDockWidget*>(widget) != 0) {
             // info() might return null if the widget is destroyed while
             // animating but before the animationFinished signal is received.
@@ -1640,8 +1637,6 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         }
 #endif
 #endif
-
-        applyState(layoutState, false);
 
         savedState.clear();
         currentGapPos.clear();

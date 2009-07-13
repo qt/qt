@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,65 +39,71 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QGRAPHICSSCENELINEARINDEX_H
+#define QGRAPHICSSCENELINEARINDEX_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qlist.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+QT_MODULE(Gui)
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlObjectTree;
-class QmlContext;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
+#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+
+#include <QtCore/qrect.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qgraphicsitem.h>
+#include <private/qgraphicssceneindex_p.h>
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
-Q_OBJECT
+    Q_OBJECT
+
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
+    { }
 
-    void setDebugObject(QObject *);
-    void setCanvas(QSimpleCanvas *);
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const
+    { Q_UNUSED(order); return m_items; }
 
-public slots:
-    void refresh();
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const
+    {
+        Q_UNUSED(rect);
+        Q_UNUSED(order);
+        return m_items;
+    }
 
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+protected :
+    virtual void clear()
+    { m_items.clear(); }
+
+    virtual void addItem(QGraphicsItem *item)
+    { m_items << item; }
+
+    virtual void removeItem(QGraphicsItem *item)
+    { m_items.removeOne(item); }
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
-
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
+    QList<QGraphicsItem*> m_items;
 };
+
+#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLDEBUGGER_H
+#endif // QGRAPHICSSCENELINEARINDEX_H

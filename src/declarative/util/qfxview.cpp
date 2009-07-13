@@ -60,11 +60,8 @@
 #include "qfxview.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmldebugger.h>
 
 QT_BEGIN_NAMESPACE
-
-DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
 
 static QVariant stringToPixmap(const QString &str)
 {
@@ -323,16 +320,6 @@ void QFxView::continueExecute()
         if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
 
             d->scene.addItem(item);
-
-            if(qmlDebugger()) {
-                QmlDebugger *debugger = new QmlDebugger;
-                debugger->setDebugObject(item);
-                // ### GV
-                //debugger->setCanvas(this);
-                debugger->show();
-                raise();
-                debugger->raise();
-            }
 
             QPerformanceLog::displayData();
             QPerformanceLog::clear();

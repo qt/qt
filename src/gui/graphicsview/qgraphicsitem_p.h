@@ -120,6 +120,7 @@ public:
         parent(0),
         transformData(0),
         index(-1),
+        siblingIndex(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -150,7 +151,7 @@ public:
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
-        geometryChanged(0),
+        geometryChanged(1),
         inDestructor(0),
         isObject(0),
         ignoreVisible(0),
@@ -158,6 +159,7 @@ public:
         acceptTouchEvents(0),
         acceptedTouchBeginEvent(0),
         filtersDescendantEvents(0),
+        sceneTransformTranslateOnly(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -165,6 +167,15 @@ public:
 
     inline virtual ~QGraphicsItemPrivate()
     { }
+
+    static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
+    static QGraphicsItemPrivate *get(QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
 
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
@@ -179,6 +190,7 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void updateSceneTransformFromParent();
 
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
@@ -288,6 +300,13 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+    void ensureSceneTransform();
+
+    inline bool hasTranslateOnlySceneTransform()
+    {
+        ensureSceneTransform();
+        return sceneTransformTranslateOnly;
+    }
 
     inline void invalidateChildrenSceneTransform()
     {
@@ -372,6 +391,7 @@ public:
     }
 
     inline QTransform transformToParent() const;
+    inline void ensureSortedChildren();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -387,6 +407,7 @@ public:
     TransformData *transformData;
     QTransform sceneTransform;
     int index;
+    int siblingIndex;
     int depth;
 
     // Packed 32 bytes
@@ -429,15 +450,12 @@ public:
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
     quint32 filtersDescendantEvents : 1;
-    quint32 unused : 8; // feel free to use
+    quint32 sceneTransformTranslateOnly : 1;
+    quint32 unused : 7; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
     QGraphicsItem *q_ptr;
-
-    static QGraphicsItemPrivate *get(QGraphicsItem *o) {
-        return o->d_func();
-    }
 };
 
 struct QGraphicsItemPrivate::TransformData {
@@ -464,6 +482,10 @@ struct QGraphicsItemPrivate::TransformData {
         if (onlyTransform) {
             if (!postmultiplyTransform)
                 return transform;
+            if (postmultiplyTransform->isIdentity())
+                return transform;
+            if (transform.isIdentity())
+                return *postmultiplyTransform;
             QTransform x(transform);
             x *= *postmultiplyTransform;
             return x;
@@ -484,6 +506,12 @@ struct QGraphicsItemPrivate::TransformData {
     }
 };
 
+/*!
+    \internal
+*/
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{ return qt_closestLeaf(item2, item1); }
+
 /*
    return the full transform of the item to the parent.  This include the position and all the transform data
 */
@@ -492,6 +520,14 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
     QTransform matrix;
     combineTransformToParent(&matrix);
     return matrix;
+}
+
+inline void QGraphicsItemPrivate::ensureSortedChildren()
+{
+    if (needSortChildren) {
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
+        needSortChildren = 0;
+    }
 }
 
 QT_END_NAMESPACE
