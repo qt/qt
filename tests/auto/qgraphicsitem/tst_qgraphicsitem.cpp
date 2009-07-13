@@ -4478,14 +4478,13 @@ void tst_QGraphicsItem::paint()
     view.hide();
 
     QGraphicsScene scene2;
+    QGraphicsView view2(&scene2);
+    view2.show();
+    QTest::qWait(250);
 
     PaintTester tester2;
     scene2.addItem(&tester2);
-
-    QGraphicsView view2(&scene2);
-    view2.show();
     qApp->processEvents();
-    QTest::qWait(250);
 
     //First show one paint
     QVERIFY(tester2.painted == 1);
@@ -5570,11 +5569,12 @@ public:
 void tst_QGraphicsItem::ensureUpdateOnTextItem()
 {
     QGraphicsScene scene;
-    TextItem *text1 = new TextItem(QLatin1String("123"));
-    scene.addItem(text1);
     QGraphicsView view(&scene);
     view.show();
     QTest::qWait(250);
+    TextItem *text1 = new TextItem(QLatin1String("123"));
+    scene.addItem(text1);
+    qApp->processEvents();
     QCOMPARE(text1->updates,1);
 
     //same bouding rect but we have to update
@@ -6034,14 +6034,15 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     scene.addItem(parent1);
     scene.addItem(parent2);
 
-    paintedItems.clear();
-
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
     QTest::qWait(250);
+    paintedItems.clear();
+    view.viewport()->update();
+    QTest::qWait(100);
 
     QCOMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
                                            << grandChild111 << child11
@@ -7247,6 +7248,11 @@ void tst_QGraphicsItem::sorting()
     _paintedItems.clear();
 
     view.viewport()->repaint();
+#ifdef Q_WS_MAC
+    // There's no difference between repaint and update on the Mac,
+    // so we have to process events here to make sure we get the event.
+    QTest::qWait(100);
+#endif
 
     QCOMPARE(_paintedItems, QList<QGraphicsItem *>()
                  << grid[0][0] << grid[0][1] << grid[0][2] << grid[0][3]
@@ -7279,6 +7285,11 @@ void tst_QGraphicsItem::itemHasNoContents()
     _paintedItems.clear();
 
     view.viewport()->repaint();
+#ifdef Q_WS_MAC
+    // There's no difference between update() and repaint() on the Mac,
+    // so we have to process events here to make sure we get the event.
+    QTest::qWait(100);
+#endif
 
     QCOMPARE(_paintedItems, QList<QGraphicsItem *>() << item2);
 }
