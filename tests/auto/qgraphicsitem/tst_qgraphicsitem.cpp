@@ -7113,7 +7113,7 @@ void tst_QGraphicsItem::sorting()
     QGraphicsView view(&scene);
     view.setResizeAnchor(QGraphicsView::NoAnchor);
     view.setTransformationAnchor(QGraphicsView::NoAnchor);
-    view.resize(100, 100);
+    view.resize(120, 100);
     view.setFrameStyle(0);
     view.show();
 #ifdef Q_WS_X11
@@ -7130,6 +7130,7 @@ void tst_QGraphicsItem::sorting()
                  << grid[1][0] << grid[1][1] << grid[1][2] << grid[1][3]
                  << grid[2][0] << grid[2][1] << grid[2][2] << grid[2][3]
                  << grid[3][0] << grid[3][1] << grid[3][2] << grid[3][3]
+                 << grid[4][0] << grid[4][1] << grid[4][2] << grid[4][3]
                  << item1 << item2);
 }
 
