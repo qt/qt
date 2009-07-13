@@ -17,7 +17,6 @@
 
 #include "qscriptengine_p.h"
 #include "qscriptcontext_p.h"
-#include "../bridge/qscriptqobject_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
@@ -42,6 +41,8 @@
 
 #include "utils/qscriptdate_p.h"
 #include "bridge/qscriptfunction_p.h"
+#include "bridge/qscriptobject_p.h"
+#include "bridge/qscriptclassobject_p.h"
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
 
@@ -61,10 +62,6 @@ Q_DECLARE_METATYPE(QScriptValue)
 Q_DECLARE_METATYPE(QObjectList)
 #endif
 Q_DECLARE_METATYPE(QList<int>)
-
-// ### move
-Q_DECLARE_METATYPE(QScriptContext*)
-Q_DECLARE_METATYPE(QScriptValueList)
 
 QT_BEGIN_NAMESPACE
 
@@ -389,157 +386,6 @@ QString qtStringFromJSCUString(const JSC::UString &str)
     return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
 }
 
-// ### move
-const JSC::ClassInfo ClassObject::info = { "QScript::ClassObject", 0, 0, 0 };
-
-ClassObject::ClassObject(QScriptClass *scriptClass, WTF::PassRefPtr<JSC::Structure> sid)
-    : JSC::JSObject(sid), data(new Data(scriptClass))
-{
-}
-
-ClassObject::~ClassObject()
-{
-    delete data;
-}
-
-bool ClassObject::getOwnPropertySlot(JSC::ExecState *exec,
-                                     const JSC::Identifier &propertyName,
-                                     JSC::PropertySlot &slot)
-{
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
-    QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
-    QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
-    uint id = 0;
-    QScriptClass::QueryFlags flags = data->scriptClass->queryProperty(
-        scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
-    if (flags & QScriptClass::HandlesReadAccess) {
-        QScriptValue value = data->scriptClass->property(scriptObject, scriptName, id);
-        slot.setValue(engine->scriptValueToJSCValue(value));
-        return true;
-    }
-    return JSC::JSObject::getOwnPropertySlot(exec, propertyName, slot);
-}
-
-void ClassObject::put(JSC::ExecState *exec, const JSC::Identifier &propertyName,
-                      JSC::JSValue value, JSC::PutPropertySlot &slot)
-{
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
-    QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
-    QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
-    uint id = 0;
-    QScriptClass::QueryFlags flags = data->scriptClass->queryProperty(
-        scriptObject, scriptName, QScriptClass::HandlesWriteAccess, &id);
-    if (flags & QScriptClass::HandlesWriteAccess) {
-        data->scriptClass->setProperty(scriptObject, scriptName, id, engine->scriptValueFromJSCValue(value));
-        return;
-    }
-    JSC::JSObject::put(exec, propertyName, value, slot);
-}
-
-bool ClassObject::deleteProperty(JSC::ExecState *exec,
-                                 const JSC::Identifier &propertyName)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-    return JSC::JSObject::deleteProperty(exec, propertyName);
-}
-
-bool ClassObject::getPropertyAttributes(JSC::ExecState *exec,
-                                        const JSC::Identifier &propertyName,
-                                        unsigned &attribs) const
-{
-    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
-    QScriptValue scriptObject = engine->scriptValueFromJSCValue(this);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
-    QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
-    uint id = 0;
-    QScriptClass::QueryFlags flags = data->scriptClass->queryProperty(
-        scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
-    if (flags & QScriptClass::HandlesReadAccess) {
-        QScriptValue::PropertyFlags flags = data->scriptClass->propertyFlags(scriptObject, scriptName, id);
-        attribs = 0;
-        if (flags & QScriptValue::ReadOnly)
-            attribs |= JSC::ReadOnly;
-        if (flags & QScriptValue::SkipInEnumeration)
-            attribs |= JSC::DontEnum;
-        if (flags & QScriptValue::Undeletable)
-            attribs |= JSC::DontDelete;
-        if (flags & QScriptValue::PropertyGetter)
-            attribs |= JSC::Getter;
-        if (flags & QScriptValue::PropertySetter)
-            attribs |= JSC::Setter;
-        attribs |= flags & QScriptValue::UserRange;
-        return true;
-    }
-    return JSC::JSObject::getPropertyAttributes(exec, propertyName, attribs);
-}
-
-void ClassObject::getPropertyNames(JSC::ExecState *exec,
-                                   JSC::PropertyNameArray &propertyNames)
-{
-    qWarning("Enumeration of custom script objects not implemented");
-    JSC::JSObject::getPropertyNames(exec, propertyNames);
-}
-
-JSC::CallType ClassObject::getCallData(JSC::CallData &callData)
-{
-    if (!data->scriptClass->supportsExtension(QScriptClass::Callable))
-        return JSC::CallTypeNone;
-    callData.native.function = call;
-    return JSC::CallTypeHost;
-}
-
-JSC::JSValue JSC_HOST_CALL ClassObject::call(JSC::ExecState *exec, JSC::JSObject *callee,
-                                             JSC::JSValue thisValue, const JSC::ArgList &args)
-{
-    if (!callee->isObject(&ClassObject::info))
-        return throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
-    ClassObject *obj =  static_cast<ClassObject*>(callee);
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
-    JSC::ExecState *previousFrame = eng_p->currentFrame;
-    QScriptContext *ctx = eng_p->contextForFrame(exec);
-    eng_p->currentFrame = exec;
-    QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
-    QVariant result = obj->scriptClass()->extension(QScriptClass::Callable, qVariantFromValue(ctx));
-    eng_p->currentFrame = previousFrame;
-    eng_p->releaseContextForFrame(exec);
-    return eng_p->jscValueFromVariant(result);
-}
-
-bool ClassObject::hasInstance(JSC::ExecState *exec, JSC::JSValue value, JSC::JSValue proto)
-{
-    if (!scriptClass()->supportsExtension(QScriptClass::HasInstance))
-        return JSC::JSObject::hasInstance(exec, value, proto);
-    QScriptValueList args;
-    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
-    args << eng_p->scriptValueFromJSCValue(this) << eng_p->scriptValueFromJSCValue(value);
-    QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
-    return result.toBool();
-}
-
-const JSC::ClassInfo* ClassObject::classInfo() const
-{
-    // ### respect QScriptClass::name()
-    return &info;
-}
-
-QScriptClass *ClassObject::scriptClass() const
-{
-    return data->scriptClass;
-}
-
-void ClassObject::setScriptClass(QScriptClass *scriptClass)
-{
-    data->scriptClass = scriptClass;
-}
-
-ClassObjectPrototype::ClassObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::Structure> structure,
-                                           JSC::Structure* prototypeFunctionStructure)
-    : ClassObject(/*scriptClass=*/0, structure)
-{
-}
-
 
 bool isFunction(JSC::JSValue value)
 {
@@ -723,8 +569,6 @@ void GlobalObject::mark()
         engine->qmetaobjectPrototype->mark();
     if (engine->variantPrototype)
         engine->variantPrototype->mark();
-    if (engine->classObjectPrototype)
-        engine->classObjectPrototype->mark();
 
     {
         QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
@@ -745,8 +589,10 @@ void GlobalObject::mark()
 
     {
         QHash<int, QScriptTypeInfo*>::const_iterator it;
-        for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it)
-            (*it)->prototype.mark();
+        for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it) {
+            if ((*it)->prototype)
+                (*it)->prototype.mark();
+        }
     }
 }
 
@@ -921,17 +767,16 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 
     JSC::ExecState* exec = globalObject->globalExec();
 
+    scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
+
     qobjectPrototype = new (exec) QScript::QObjectPrototype(exec, QScript::QObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
-    qobjectWrapperObjectStructure = QScript::QObjectWrapperObject::createStructure(qobjectPrototype);
+    qobjectWrapperObjectStructure = QScriptObject::createStructure(qobjectPrototype);
 
     qmetaobjectPrototype = new (exec) QScript::QMetaObjectPrototype(exec, QScript::QMetaObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     qmetaobjectWrapperObjectStructure = QScript::QMetaObjectWrapperObject::createStructure(qmetaobjectPrototype);
 
     variantPrototype = new (exec) QScript::QVariantPrototype(exec, QScript::QVariantPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
-    variantWrapperObjectStructure = QScript::QVariantWrapperObject::createStructure(variantPrototype);
-
-    classObjectPrototype = new (exec) QScript::ClassObjectPrototype(exec, QScript::ClassObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
-    classObjectStructure = QScript::ClassObject::createStructure(classObjectPrototype);
+    variantWrapperObjectStructure = QScriptObject::createStructure(variantPrototype);
 
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "print"), QScript::functionPrint));
     globalObject->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, globalObject->prototypeFunctionStructure(), 0, JSC::Identifier(exec, "gc"), QScript::functionGC));
@@ -1152,8 +997,9 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
     if (!object)
         return JSC::jsNull();
     JSC::ExecState* exec = currentFrame;
-    QScript::QObjectWrapperObject *result = new (exec) QScript::QObjectWrapperObject(object, ownership, options, qobjectWrapperObjectStructure);
-
+    QScriptObject *result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
+    result->setDelegate(new QScript::QObjectDelegate(object, ownership, options));
+    // ### TODO
     /*if (setDefaultPrototype)*/ {
         const QMetaObject *meta = object->metaObject();
         while (meta) {
@@ -1170,7 +1016,6 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
             meta = meta->superClass();
         }
     }
-
     return result;
 }
 
@@ -1529,8 +1374,8 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
-    QScript::QVariantWrapperObject *obj = new (exec) QScript::QVariantWrapperObject(d->variantWrapperObjectStructure);
-    obj->setValue(value);
+    QScriptObject *obj = new (exec) QScriptObject(d->variantWrapperObjectStructure);
+    obj->setDelegate(new QScript::QVariantDelegate(value));
     QScriptValue result = d->scriptValueFromJSCValue(obj);
     QScriptValue proto = defaultPrototype(value.userType());
     if (proto.isValid())
@@ -1567,8 +1412,13 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
 {
     if (!object.isObject())
         return newVariant(value);
-    else if (!object.isVariant()) {
-        qWarning("QScriptEngine::newVariant(): Object-->QVariant promotion not implemented");
+    JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(object)->jscValue);
+    if (!jscObject->isObject(&QScriptObject::info))
+        return QScriptValue();
+    QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
+    if (!object.isVariant()) {
+        delete jscScriptObject->delegate();
+        jscScriptObject->setDelegate(new QScript::QVariantDelegate(value));
     } else {
         QScriptValuePrivate::get(object)->setVariantValue(value);
     }
@@ -1638,14 +1488,18 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
 {
     if (!scriptObject.isObject())
         return newQObject(qtObject, ownership, options);
-    else if (!scriptObject.isQObject()) {
-        qWarning("QScriptEngine::newQObject(): Object-->QObject promotion not implemented");
+    JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
+    if (!jscObject->isObject(&QScriptObject::info))
+        return QScriptValue();
+    QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
+    if (!scriptObject.isQObject()) {
+        delete jscScriptObject->delegate();
+        jscScriptObject->setDelegate(new QScript::QObjectDelegate(qtObject, ownership, options));
     } else {
-        JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
-        QScript::QObjectWrapperObject *wrapper = static_cast<QScript::QObjectWrapperObject*>(jscObject);
-        wrapper->setValue(qtObject);
-        wrapper->setOwnership(ownership);
-        wrapper->setOptions(options);
+        QScript::QObjectDelegate *delegate = static_cast<QScript::QObjectDelegate*>(jscScriptObject->delegate());
+        delegate->setValue(qtObject);
+        delegate->setOwnership(ownership);
+        delegate->setOptions(options);
     }
     return scriptObject;
 }
@@ -1664,7 +1518,7 @@ QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
-    JSC::JSObject *result = JSC::constructEmptyObject(exec);
+    JSC::JSObject *result = new (exec)QScriptObject(d->scriptObjectStructure);
     return d->scriptValueFromJSCValue(result);
 }
 
@@ -1687,7 +1541,8 @@ QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
 {
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
-    QScript::ClassObject *result = new (exec) QScript::ClassObject(scriptClass, d->classObjectStructure);
+    QScriptObject *result = new (exec) QScriptObject(d->scriptObjectStructure);
+    result->setDelegate(new QScript::ClassObjectDelegate(scriptClass));
     QScriptValue scriptObject = d->scriptValueFromJSCValue(result);
     scriptObject.setData(data);
     QScriptValue proto = scriptClass->prototype();
@@ -2095,7 +1950,7 @@ QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
     qWarning("QScriptEngine::pushContext() not implemented");
-    return 0;
+    return d->contextForFrame(d->currentFrame);
 #ifndef Q_SCRIPT_NO_EVENT_NOTIFY
 //    notifyContextPush(); TODO
 #endif
@@ -2836,7 +2691,8 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
         }
 
         // if the __postInit__ function has been set, we call it
-        QScriptValue postInit = ctx->activationObject().property(QLatin1String("__postInit__"));
+        // ### enable once activationObject() works
+        QScriptValue postInit; // = ctx->activationObject().property(QLatin1String("__postInit__"));
         if (postInit.isFunction()) {
             postInit.call(globalObject());
             if (hasUncaughtException()) {

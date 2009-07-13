@@ -27,36 +27,29 @@
 
 #ifndef QT_NO_SCRIPT
 
-#include "JSObject.h"
+#include "qscriptobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace QScript
 {
 
-class QVariantWrapperObject : public JSC::JSObject
+class QVariantDelegate : public QScriptObjectDelegate
 {
 public:
-     // work around CELL_SIZE limitation
-    struct Data
-    {
-        QVariant value;
-    };
+    QVariantDelegate(const QVariant &value);
+    ~QVariantDelegate();
 
-    explicit QVariantWrapperObject(WTF::PassRefPtr<JSC::Structure> sid);
-    ~QVariantWrapperObject();
-    
-    virtual const JSC::ClassInfo* classInfo() const { return &info; }
-    static const JSC::ClassInfo info;
+    QVariant &value();
+    void setValue(const QVariant &value);
 
-    inline QVariant &value() const { return data->value; }
-    inline void setValue(const QVariant &value) { data->value = value; }
+    Type type() const;
 
 private:
-    Data *data;
+    QVariant m_value;
 };
 
-class QVariantPrototype : public QVariantWrapperObject
+class QVariantPrototype : public QScriptObject
 {
 public:
     QVariantPrototype(JSC::ExecState*, WTF::PassRefPtr<JSC::Structure>,

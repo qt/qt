@@ -2213,7 +2213,6 @@ public:
 
 void tst_QScriptValue::getSetScriptClass()
 {
-    QSKIP("Not implemented", SkipAll);
     QScriptEngine eng;
     QScriptValue inv;
     QCOMPARE(inv.scriptClass(), (QScriptClass*)0);

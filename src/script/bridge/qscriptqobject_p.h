@@ -23,14 +23,13 @@
 // We mean it.
 //
 
-#include <QtCore/qobject.h>
+#include "qscriptobject_p.h"
 
 #ifndef QT_NO_SCRIPT
 
 #include "qscriptengine.h"
 #include <QtCore/qpointer.h>
 
-#include "JSObject.h"
 #include "InternalFunction.h"
 
 QT_BEGIN_NAMESPACE
@@ -43,10 +42,9 @@ enum AttributeExtension {
     QObjectMemberAttribute = 1 << 12
 };
 
-class QObjectWrapperObject : public JSC::JSObject
+class QObjectDelegate : public QScriptObjectDelegate
 {
 public:
-    // work around CELL_SIZE limitation
     struct Data
     {
         QPointer<QObject> value;
@@ -60,28 +58,26 @@ public:
             : value(o), ownership(own), options(opt) {}
     };
 
-    explicit QObjectWrapperObject(
+    QObjectDelegate(
         QObject *object, QScriptEngine::ValueOwnership ownership,
-        const QScriptEngine::QObjectWrapOptions &options,
-        WTF::PassRefPtr<JSC::Structure> sid);
-    ~QObjectWrapperObject();
-    
-    virtual bool getOwnPropertySlot(JSC::ExecState*,
+        const QScriptEngine::QObjectWrapOptions &options);
+    ~QObjectDelegate();
+
+    virtual Type type() const;
+
+    virtual bool getOwnPropertySlot(QScriptObject*, JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
-    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+    virtual void put(QScriptObject*, JSC::ExecState* exec,
+                     const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
-    virtual bool deleteProperty(JSC::ExecState*,
+    virtual bool deleteProperty(QScriptObject*, JSC::ExecState*,
                                 const JSC::Identifier& propertyName);
-    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
+    virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
+                                       const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);
-    virtual JSC::JSValue lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);
-    virtual void mark();
-
-    virtual const JSC::ClassInfo* classInfo() const { return &info; }
-    static const JSC::ClassInfo info;
+    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void mark(QScriptObject*);
 
     inline QObject *value() const { return data->value; }
     inline void setValue(QObject* value) { data->value = value; }
@@ -96,16 +92,11 @@ public:
     inline void setOptions(QScriptEngine::QObjectWrapOptions options)
         { data->options = options; }
 
-    static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
-    {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
-    }
-
 protected:
     Data *data;
 };
 
-class QObjectPrototype : public QObjectWrapperObject
+class QObjectPrototype : public QScriptObject
 {
 public:
     QObjectPrototype(JSC::ExecState*, WTF::PassRefPtr<JSC::Structure>,
@@ -168,7 +159,7 @@ public:
     JSC::JSValue execute(JSC::ExecState *exec, JSC::JSValue thisValue,
                          const JSC::ArgList &args);
 
-    QObjectWrapperObject *wrapperObject() const;
+    QScriptObject *wrapperObject() const;
     QObject *qobject() const;
     const QMetaObject *metaObject() const;
     int initialIndex() const;

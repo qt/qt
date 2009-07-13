@@ -21,7 +21,6 @@ QT_BEGIN_NAMESPACE
 
 namespace JSC
 {
-ASSERT_CLASS_FITS_IN_CELL(QScript::QVariantWrapperObject);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QVariantPrototype);
 }
 
@@ -30,34 +29,52 @@ namespace QScript
 
 JSC::UString qtStringToJSCUString(const QString &str);
 
-const JSC::ClassInfo QVariantWrapperObject::info = { "QVariant", 0, 0, 0 };
-
-QVariantWrapperObject::QVariantWrapperObject(WTF::PassRefPtr<JSC::Structure> sid)
-    : JSC::JSObject(sid), data(new Data())
+QVariantDelegate::QVariantDelegate(const QVariant &value)
+    : m_value(value)
 {
 }
 
-QVariantWrapperObject::~QVariantWrapperObject()
+QVariantDelegate::~QVariantDelegate()
 {
-    delete data;
+}
+
+QVariant &QVariantDelegate::value()
+{
+    return m_value;
+}
+
+void QVariantDelegate::setValue(const QVariant &value)
+{
+    m_value = value;
+}
+
+QScriptObjectDelegate::Type QVariantDelegate::type() const
+{
+    return Variant;
 }
 
 static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec, JSC::JSObject*,
                                                            JSC::JSValue thisValue, const JSC::ArgList&)
 {
-    if (!thisValue.isObject(&QVariantWrapperObject::info))
-        return throwError(exec, JSC::TypeError);
-    const QVariant &v = static_cast<QVariantWrapperObject*>(JSC::asObject(thisValue))->value();
-    // ### check the type
+    if (!thisValue.isObject(&QScriptObject::info))
+        return throwError(exec, JSC::TypeError, "This object is not a QVariant");
+    QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::Variant))
+        return throwError(exec, JSC::TypeError, "This object is not a QVariant");
+    const QVariant &v = static_cast<QVariantDelegate*>(delegate)->value();
+    // ### call valueOf()
     return JSC::jsString(exec, QScript::qtStringToJSCUString(v.toString()));
 }
 
 static JSC::JSValue JSC_HOST_CALL variantProtoFuncValueOf(JSC::ExecState *exec, JSC::JSObject*,
                                                           JSC::JSValue thisValue, const JSC::ArgList&)
 {
-    if (!thisValue.isObject(&QVariantWrapperObject::info))
+    if (!thisValue.isObject(&QScriptObject::info))
         return throwError(exec, JSC::TypeError);
-    const QVariant &v = static_cast<QVariantWrapperObject*>(JSC::asObject(thisValue))->value();
+    QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::Variant))
+        return throwError(exec, JSC::TypeError);
+    const QVariant &v = static_cast<QVariantDelegate*>(delegate)->value();
     switch (v.type()) {
     case QVariant::Invalid:
         return JSC::jsUndefined();
@@ -87,9 +104,9 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncValueOf(JSC::ExecState *exec, 
 
 QVariantPrototype::QVariantPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::Structure> structure,
                                      JSC::Structure* prototypeFunctionStructure)
-    : QVariantWrapperObject(structure)
+    : QScriptObject(structure)
 {
-    setValue(QVariant());
+    setDelegate(new QVariantDelegate(QVariant()));
 
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, variantProtoFuncToString), JSC::DontEnum);
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().valueOf, variantProtoFuncValueOf), JSC::DontEnum);

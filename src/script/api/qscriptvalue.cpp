@@ -36,6 +36,8 @@
 #include <QtCore/qnumeric.h>
 
 #include "utils/qscriptdate_p.h"
+#include "bridge/qscriptobject_p.h"
+#include "bridge/qscriptclassobject_p.h"
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
 
@@ -368,12 +370,18 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 
 QVariant &QScriptValuePrivate::variantValue() const
 {
-    return static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(jscValue))->value();
+    Q_ASSERT(jscValue.isObject(&QScriptObject::info));
+    QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(jscValue))->delegate();
+    Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::Variant));
+    return static_cast<QScript::QVariantDelegate*>(delegate)->value();
 }
 
 void QScriptValuePrivate::setVariantValue(const QVariant &value)
 {
-    static_cast<QScript::QVariantWrapperObject*>(JSC::asObject(jscValue))->setValue(value);
+    Q_ASSERT(jscValue.isObject(&QScriptObject::info));
+    QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(jscValue))->delegate();
+    Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::Variant));
+    static_cast<QScript::QVariantDelegate*>(delegate)->setValue(value);
 }
 
 /*!
@@ -1554,7 +1562,8 @@ QObject *QScriptValue::toQObject() const
 {
     Q_D(const QScriptValue);
     if (isQObject()) {
-        return static_cast<QScript::QObjectWrapperObject*>(JSC::asObject(d->jscValue))->value();
+        QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+        return static_cast<QScript::QObjectDelegate*>(object->delegate())->value();
     } else if (isVariant()) {
         QVariant var = toVariant();
         int type = var.userType();
@@ -2281,9 +2290,11 @@ bool QScriptValue::isObject() const
 bool QScriptValue::isVariant() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&QScript::QVariantWrapperObject::info);
+    QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+    QScriptObjectDelegate *delegate = object->delegate();
+    return (delegate && (delegate->type() == QScriptObjectDelegate::Variant));
 }
 
 /*!
@@ -2298,9 +2309,11 @@ bool QScriptValue::isVariant() const
 bool QScriptValue::isQObject() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&QScript::QObjectWrapperObject::info);
+    QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+    QScriptObjectDelegate *delegate = object->delegate();
+    return (delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
 }
 
 /*!
@@ -2344,8 +2357,14 @@ QScriptValue QScriptValue::data() const
     Q_D(const QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return QScriptValue();
-    // ### make hidden property
-    return d->property(QLatin1String("__qt_data__"), QScriptValue::ResolveLocal);
+    if (d->jscValue.isObject(&QScriptObject::info)) {
+        QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+        QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
+        return eng_p->scriptValueFromJSCValue(scriptObject->data());
+    } else {
+        // ### make hidden property
+        return d->property(QLatin1String("__qt_data__"), QScriptValue::ResolveLocal);
+    }
 }
 
 /*!
@@ -2363,13 +2382,18 @@ void QScriptValue::setData(const QScriptValue &data)
         return;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(data);
-    JSC::ExecState *exec = eng_p->currentFrame;
-    JSC::Identifier id = JSC::Identifier(exec, "__qt_data__");
-    if (!data.isValid()) {
-        JSC::asObject(d->jscValue)->removeDirect(id);
+    if (d->jscValue.isObject(&QScriptObject::info)) {
+        QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+        scriptObject->setData(other);
     } else {
-        // ### make hidden property
-        JSC::asObject(d->jscValue)->putDirect(id, other);
+        JSC::ExecState *exec = eng_p->currentFrame;
+        JSC::Identifier id = JSC::Identifier(exec, "__qt_data__");
+        if (!data.isValid()) {
+            JSC::asObject(d->jscValue)->removeDirect(id);
+        } else {
+            // ### make hidden property
+            JSC::asObject(d->jscValue)->putDirect(id, other);
+        }
     }
 }
 
@@ -2384,12 +2408,13 @@ void QScriptValue::setData(const QScriptValue &data)
 QScriptClass *QScriptValue::scriptClass() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
         return 0;
-    if (!d->jscValue.isObject(&QScript::ClassObject::info))
+    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+    QScriptObjectDelegate *delegate = scriptObject->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject))
         return 0;
-    QScript::ClassObject *instance = static_cast<QScript::ClassObject*>(JSC::asObject(d->jscValue));
-    return instance->scriptClass();
+    return static_cast<QScript::ClassObjectDelegate*>(delegate)->scriptClass();
 }
 
 /*!
@@ -2408,14 +2433,16 @@ QScriptClass *QScriptValue::scriptClass() const
 void QScriptValue::setScriptClass(QScriptClass *scriptClass)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
         return;
-    if (!d->jscValue.isObject(&QScript::ClassObject::info)) {
-        qWarning("QScriptValue::setScriptClass() not implemented");
-        return;
+    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
+    QScriptObjectDelegate *delegate = scriptObject->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject)) {
+        delete delegate;
+        delegate = new QScript::ClassObjectDelegate(scriptClass);
+        scriptObject->setDelegate(delegate);
     }
-    QScript::ClassObject *instance = static_cast<QScript::ClassObject*>(JSC::asObject(d->jscValue));
-    instance->setScriptClass(scriptClass);
+    static_cast<QScript::ClassObjectDelegate*>(delegate)->setScriptClass(scriptClass);
 }
 
 /*!
