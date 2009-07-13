@@ -66,10 +66,9 @@ QStringList QSL5000KbdDriver::keys() const
 QWSKeyboardHandler* QSL5000KbdDriver::create(const QString &driver,
                                              const QString &device)
 {
-    Q_UNUSED(device);
     if (driver.compare(QLatin1String("SL5000"), Qt::CaseInsensitive))
         return 0;
-    return new QWSSL5000KeyboardHandler(driver);
+    return new QWSSL5000KeyboardHandler(device);
 }
 
 Q_EXPORT_PLUGIN2(qwssl5000kbddriver, QSL5000KbdDriver)

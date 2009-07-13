@@ -9899,11 +9899,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
         QInputContext *ic = d->ic;
-        if (!ic) {
-            // implicitly create input context only if we have a focus
-            if (hasFocus())
-                ic = d->inputContext();
-        }
+        if (!ic && (!on || hasFocus()))
+            ic = d->inputContext();
         if (ic) {
             if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
