@@ -270,8 +270,6 @@ private:
     int lastLockedHeight;
 
     IDirectFB *fb;
-    int fbWidth;
-    int fbHeight;
 
     quint8 opacity;
 
@@ -318,7 +316,6 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
                device->devType());
     }
     d->lockedMemory = 0;
-    d->surface->GetSize(d->surface, &d->fbWidth, &d->fbHeight);
 
     const bool status = QRasterPaintEngine::begin(device);
     // XXX: QRasterPaintEngine::begin() resets the capabilities
@@ -838,7 +835,7 @@ void QDirectFBPaintEngine::initImageCache(int size)
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), simplePen(false),
       transformationType(0), lastLockedHeight(-1),
-      fbWidth(-1), fbHeight(-1), opacity(255), dirtyClip(true),
+      opacity(255), dirtyClip(true),
       dfbHandledClip(false), dfbDevice(0), lockedMemory(0),
       unsupportedCompositionMode(false), q(p)
 {
