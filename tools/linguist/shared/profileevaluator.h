@@ -76,6 +76,10 @@ public:
     void addProperties(const QHash<QString, QString> &properties);
     QStringList values(const QString &variableName) const;
     QStringList values(const QString &variableName, const ProFile *pro) const;
+    QStringList absolutePathValues(const QString &variable, const QString &baseDirectory) const;
+    QStringList absoluteFileValues(
+            const QString &variable, const QString &baseDirectory, const QStringList &searchDirs,
+            const ProFile *pro) const;
     QString propertyValue(const QString &val) const;
 
     // for our descendents

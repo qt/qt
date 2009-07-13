@@ -41,21 +41,49 @@
 
 #include "profileevaluator.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 
 QT_BEGIN_NAMESPACE
 
-void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap)
+static QStringList getSources(const char *var, const char *vvar, const QStringList &baseVPaths,
+                              const QString &projectDir, const ProFileEvaluator &visitor)
 {
+    QStringList vPaths =
+        visitor.absolutePathValues(QLatin1String(vvar), projectDir);
+    vPaths += baseVPaths;
+    vPaths.removeDuplicates();
+    return visitor.absoluteFileValues(QLatin1String(var), projectDir, vPaths, 0);
+}
+
+void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap,
+                     const QString &projectDir)
+{
+    QStringList baseVPaths;
+    baseVPaths += visitor.absolutePathValues(QLatin1String("VPATH"), projectDir);
+    baseVPaths << projectDir; // QMAKE_ABSOLUTE_SOURCE_PATH
+    baseVPaths += visitor.absolutePathValues(QLatin1String("DEPENDPATH"), projectDir);
+    baseVPaths.removeDuplicates();
+
     QStringList sourceFiles;
     QString codecForTr;
     QString codecForSource;
     QStringList tsFileNames;
 
     // app/lib template
-    sourceFiles += visitor.values(QLatin1String("SOURCES"));
-    sourceFiles += visitor.values(QLatin1String("HEADERS"));
-    tsFileNames = visitor.values(QLatin1String("TRANSLATIONS"));
+    sourceFiles += getSources("SOURCES", "VPATH_SOURCES", baseVPaths, projectDir, visitor);
+
+    sourceFiles += getSources("FORMS", "VPATH_FORMS", baseVPaths, projectDir, visitor);
+    sourceFiles += getSources("FORMS3", "VPATH_FORMS3", baseVPaths, projectDir, visitor);
+
+    QStringList vPathsInc = baseVPaths;
+    vPathsInc += visitor.absolutePathValues(QLatin1String("INCLUDEPATH"), projectDir);
+    vPathsInc.removeDuplicates();
+    sourceFiles += visitor.absoluteFileValues(QLatin1String("HEADERS"), projectDir, vPathsInc, 0);
+
+    QDir proDir(projectDir);
+    foreach (const QString &tsFile, visitor.values(QLatin1String("TRANSLATIONS")))
+        tsFileNames << QFileInfo(proDir, tsFile).filePath();
 
     QStringList trcodec = visitor.values(QLatin1String("CODEC"))
         + visitor.values(QLatin1String("DEFAULTCODEC"))
@@ -66,11 +94,6 @@ void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringL
     QStringList srccodec = visitor.values(QLatin1String("CODECFORSRC"));
     if (!srccodec.isEmpty())
         codecForSource = srccodec.last();
-
-    QStringList forms = visitor.values(QLatin1String("INTERFACES"))
-        + visitor.values(QLatin1String("FORMS"))
-        + visitor.values(QLatin1String("FORMS3"));
-    sourceFiles << forms;
 
     sourceFiles.sort();
     sourceFiles.removeDuplicates();
@@ -100,7 +123,7 @@ bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QS
     if (!visitor.accept(&pro))
         return false;
 
-    evaluateProFile(visitor, varMap);
+    evaluateProFile(visitor, varMap, fi.absolutePath());
 
     return true;
 }

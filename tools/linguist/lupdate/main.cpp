@@ -452,7 +452,7 @@ int main(int argc, char **argv)
                 continue;
             }
 
-            evaluateProFile(visitor, &variables);
+            evaluateProFile(visitor, &variables, pfi.absolutePath());
 
             sourceFiles = variables.value("SOURCES");
 
