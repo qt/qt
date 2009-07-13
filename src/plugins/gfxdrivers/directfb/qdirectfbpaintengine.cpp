@@ -261,10 +261,7 @@ public:
 private:
     IDirectFBSurface *surface;
 
-    QPen pen;
-
     bool antialiased;
-
     bool simplePen;
 
     uint transformationType; // this is QTransform::type() + NegativeScale if qMin(transform.m11(), transform.m22()) < 0
@@ -443,8 +440,9 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
         d->setDFBColor(brush.color());
         d->fillRects(rects, rectCount);
     }
-    if (d->pen != Qt::NoPen) {
-        d->setDFBColor(d->pen.color());
+    const QPen &pen = state()->pen;
+    if (pen != Qt::NoPen) {
+        d->setDFBColor(pen.color());
         d->drawRects(rects, rectCount);
     }
 }
@@ -471,8 +469,9 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
         d->setDFBColor(brush.color());
         d->fillRects(rects, rectCount);
     }
-    if (d->pen != Qt::NoPen) {
-        d->setDFBColor(d->pen.color());
+    const QPen &pen = state()->pen;
+    if (pen != Qt::NoPen) {
+        d->setDFBColor(pen.color());
         d->drawRects(rects, rectCount);
     }
 }
@@ -488,9 +487,10 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
         return;
     }
 
-    if (d->pen != Qt::NoPen) {
+    const QPen &pen = state()->pen;
+    if (pen != Qt::NoPen) {
         d->unlock();
-        d->setDFBColor(d->pen.color());
+        d->setDFBColor(pen.color());
         d->drawLines(lines, lineCount);
     }
 }
@@ -506,9 +506,10 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
         return;
     }
 
-    if (d->pen != Qt::NoPen) {
+    const QPen &pen = state()->pen;
+    if (pen != Qt::NoPen) {
         d->unlock();
-        d->setDFBColor(d->pen.color());
+        d->setDFBColor(pen.color());
         d->drawLines(lines, lineCount);
     }
 }
@@ -904,9 +905,8 @@ void QDirectFBPaintEnginePrivate::setTransform(const QTransform &transform)
     setPen(q->state()->pen);
 }
 
-void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
+void QDirectFBPaintEnginePrivate::setPen(const QPen &pen)
 {
-    pen = p;
     if (pen.style() == Qt::NoPen) {
         simplePen = true;
     } else if (pen.style() == Qt::SolidLine
