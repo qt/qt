@@ -722,7 +722,6 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
     QRect &rect = *r;
     const QRect viewportRect = viewport->rect();
     QItemViewPaintPairs ret;
-    intersectingSet(viewportRect);
     const QSet<QModelIndex> visibleIndexes = intersectingSet(viewportRect).toList().toSet();
     for (int i = 0; i < indexes.count(); ++i) {
         const QModelIndex &index = indexes.at(i);

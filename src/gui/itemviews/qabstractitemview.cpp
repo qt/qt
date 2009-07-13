@@ -3918,7 +3918,7 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     QStyleOptionViewItemV4 option = viewOptionsV4();
     option.state |= QStyle::State_Selected;
     for (int j = 0; j < paintPairs.count(); ++j) {
-        option.rect = paintPairs.at(j).first.translated(r->topLeft());
+        option.rect = paintPairs.at(j).first.translated(-r->topLeft());
         const QModelIndex &current = paintPairs.at(j).second;
         delegateForIndex(current)->paint(&painter, option, current);
     }
