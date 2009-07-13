@@ -8,14 +8,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlDebugClient;
+class QmlDebugConnection;
 class CanvasSceneClient;
-class QmlDebugClientPlugin;
+class QmlDebugClient;
 class CanvasScene : public QWidget
 {
 Q_OBJECT
 public:
-    CanvasScene(QmlDebugClient *, QWidget *parent = 0);
+    CanvasScene(QmlDebugConnection *, QWidget *parent = 0);
 
     void message(QDataStream &);
 private slots:
@@ -29,7 +29,7 @@ private slots:
 private:
     void setOpacityRecur(QTreeWidgetItem *, qreal);
     void clone(QTreeWidgetItem *item, QSimpleCanvasItem *me, QDataStream &);
-    QmlDebugClientPlugin *client;
+    QmlDebugClient *client;
 
     QTreeWidget *m_tree;
     QSimpleCanvas *m_canvas;

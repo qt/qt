@@ -29,7 +29,7 @@ private slots:
     void connectionStateChanged();
 
 private:
-    QmlDebugClient client;
+    QmlDebugConnection client;
 
     QLabel *m_connectionState;
     QLineEdit *m_host;

@@ -5,7 +5,7 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 
-class QmlDebugClient;
+class QmlDebugConnection;
 class QmlDebugWatch;
 class QmlDebugEnginesQuery;
 class QmlDebugRootContextQuery;
@@ -20,7 +20,7 @@ class Q_DECLARATIVE_EXPORT QmlEngineDebug : public QObject
 {
 Q_OBJECT
 public:
-    QmlEngineDebug(QmlDebugClient *, QObject * = 0);
+    QmlEngineDebug(QmlDebugConnection *, QObject * = 0);
 
     QmlDebugWatch *addWatch(const QmlDebugPropertyReference &, 
                             QObject *parent = 0);

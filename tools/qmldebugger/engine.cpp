@@ -27,7 +27,7 @@ private:
     int m_engineId;
 };
 
-EnginePane::EnginePane(QmlDebugClient *client, QWidget *parent)
+EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
 : QWidget(parent), m_client(client), m_engines(0), m_context(0), m_object(0)
 {
     QVBoxLayout *layout = new QVBoxLayout;

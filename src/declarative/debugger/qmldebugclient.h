@@ -50,30 +50,30 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlDebugClientPrivate;
-class Q_DECLARATIVE_EXPORT QmlDebugClient : public QTcpSocket
+class QmlDebugConnectionPrivate;
+class Q_DECLARATIVE_EXPORT QmlDebugConnection : public QTcpSocket
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QmlDebugClient)
+    Q_DISABLE_COPY(QmlDebugConnection)
 public:
-    QmlDebugClient(QObject * = 0);
+    QmlDebugConnection(QObject * = 0);
 
     bool isConnected() const;
 private:
-    QmlDebugClientPrivate *d;
-    friend class QmlDebugClientPlugin;
-    friend class QmlDebugClientPluginPrivate;
+    QmlDebugConnectionPrivate *d;
+    friend class QmlDebugClient;
+    friend class QmlDebugClientPrivate;
 };
 
-class QmlDebugClientPluginPrivate;
-class Q_DECLARATIVE_EXPORT QmlDebugClientPlugin : public QObject
+class QmlDebugClientPrivate;
+class Q_DECLARATIVE_EXPORT QmlDebugClient : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlDebugClientPlugin)
-    Q_DISABLE_COPY(QmlDebugClientPlugin)
+    Q_DECLARE_PRIVATE(QmlDebugClient)
+    Q_DISABLE_COPY(QmlDebugClient)
 
 public:
-    QmlDebugClientPlugin(const QString &, QmlDebugClient *parent);
+    QmlDebugClient(const QString &, QmlDebugConnection *parent);
 
     QString name() const;
 
@@ -88,8 +88,8 @@ protected:
     virtual void messageReceived(const QByteArray &);
 
 private:
-    friend class QmlDebugClient;
-    friend class QmlDebugClientPrivate;
+    friend class QmlDebugConnection;
+    friend class QmlDebugConnectionPrivate;
 };
 
 QT_END_NAMESPACE

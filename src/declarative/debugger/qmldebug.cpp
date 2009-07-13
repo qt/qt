@@ -3,10 +3,10 @@
 #include <private/qobject_p.h>
 #include <private/qmlenginedebug_p.h>
 
-class QmlEngineDebugClient : public QmlDebugClientPlugin
+class QmlEngineDebugClient : public QmlDebugClient
 {
 public:
-    QmlEngineDebugClient(QmlDebugClient *client, QmlEngineDebugPrivate *p);
+    QmlEngineDebugClient(QmlDebugConnection *client, QmlEngineDebugPrivate *p);
 
 protected:
     virtual void messageReceived(const QByteArray &);
@@ -19,7 +19,7 @@ class QmlEngineDebugPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlEngineDebug)
 public:
-    QmlEngineDebugPrivate(QmlDebugClient *);
+    QmlEngineDebugPrivate(QmlDebugConnection *);
 
     void message(const QByteArray &);
 
@@ -38,9 +38,9 @@ public:
     QHash<int, QmlDebugObjectQuery *> objectQuery;
 };
 
-QmlEngineDebugClient::QmlEngineDebugClient(QmlDebugClient *client,
+QmlEngineDebugClient::QmlEngineDebugClient(QmlDebugConnection *client,
                                            QmlEngineDebugPrivate *p)
-: QmlDebugClientPlugin(QLatin1String("QmlEngine"), client), priv(p)
+: QmlDebugClient(QLatin1String("QmlEngine"), client), priv(p)
 {
     setEnabled(true);
 }
@@ -50,7 +50,7 @@ void QmlEngineDebugClient::messageReceived(const QByteArray &data)
     priv->message(data);
 }
 
-QmlEngineDebugPrivate::QmlEngineDebugPrivate(QmlDebugClient *c)
+QmlEngineDebugPrivate::QmlEngineDebugPrivate(QmlDebugConnection *c)
 : client(c, this), nextId(0)
 {
 }
@@ -206,7 +206,7 @@ void QmlEngineDebugPrivate::message(const QByteArray &data)
     }
 }
 
-QmlEngineDebug::QmlEngineDebug(QmlDebugClient *client, QObject *parent)
+QmlEngineDebug::QmlEngineDebug(QmlDebugConnection *client, QObject *parent)
 : QObject(*(new QmlEngineDebugPrivate(client)), parent)
 {
 }
