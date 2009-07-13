@@ -38,7 +38,7 @@ static const HashTableValue JSBarInfoTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSBarInfoTable =
+static JSC_CONST_HASHTABLE HashTable JSBarInfoTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSBarInfoTableValues, 0 };
 #else
@@ -52,7 +52,7 @@ static const HashTableValue JSBarInfoPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSBarInfoPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSBarInfoPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSBarInfoPrototypeTableValues, 0 };
 #else

@@ -126,10 +126,10 @@ void RenderLayerBacking::updateLayerTransform()
     m_graphicsLayer->setTransform(t);
 }
 
-void RenderLayerBacking::updateAfterLayout()
+void RenderLayerBacking::updateAfterLayout(UpdateDepth updateDepth)
 {
     RenderLayerCompositor* layerCompositor = compositor();
-    if (!layerCompositor->compositingLayersNeedUpdate()) {
+    if (!layerCompositor->compositingLayersNeedRebuild()) {
         // Calling updateGraphicsLayerGeometry() here gives incorrect results, because the
         // position of this layer's GraphicsLayer depends on the position of our compositing
         // ancestor's GraphicsLayer. That cannot be determined until all the descendant 
@@ -138,10 +138,12 @@ void RenderLayerBacking::updateAfterLayout()
         // The solution is to update compositing children of this layer here,
         // via updateCompositingChildrenGeometry().
         setCompositedBounds(layerCompositor->calculateCompositedBounds(m_owningLayer, m_owningLayer));
-        layerCompositor->updateCompositingChildrenGeometry(m_owningLayer, m_owningLayer);
+        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer, m_owningLayer, updateDepth);
         
-        if (!m_owningLayer->parent())
+        if (!m_owningLayer->parent()) {
+            updateGraphicsLayerGeometry();
             layerCompositor->updateRootLayerPosition();
+        }
     }
 }
 
@@ -969,7 +971,11 @@ bool RenderLayerBacking::startAnimation(double beginTime, const Animation* anim,
     if (hasOpacity && m_graphicsLayer->animateFloat(AnimatedPropertyOpacity, opacityVector, anim, beginTime))
         didAnimateOpacity = true;
     
-    return didAnimateTransform && didAnimateOpacity;
+    bool runningAcceleratedAnimation = didAnimateTransform && didAnimateOpacity;
+    if (runningAcceleratedAnimation)
+        compositor()->didStartAcceleratedAnimation();
+
+    return runningAcceleratedAnimation;
 }
 
 bool RenderLayerBacking::startTransition(double beginTime, int property, const RenderStyle* fromStyle, const RenderStyle* toStyle)
@@ -1003,6 +1009,9 @@ bool RenderLayerBacking::startTransition(double beginTime, int property, const R
                 didAnimate = true;
         }
     }
+
+    if (didAnimate)
+        compositor()->didStartAcceleratedAnimation();
     
     return didAnimate;
 }

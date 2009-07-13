@@ -42,7 +42,7 @@ static const HashTableValue JSSVGPathSegLinetoHorizontalRelTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoHorizontalRelTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoHorizontalRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoHorizontalRelTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGPathSegLinetoHorizontalRelPrototypeTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoHorizontalRelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoHorizontalRelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoHorizontalRelPrototypeTableValues, 0 };
 #else

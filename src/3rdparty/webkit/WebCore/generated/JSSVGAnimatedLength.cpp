@@ -42,7 +42,7 @@ static const HashTableValue JSSVGAnimatedLengthTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedLengthTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedLengthTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedLengthTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGAnimatedLengthPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedLengthPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedLengthPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedLengthPrototypeTableValues, 0 };
 #else

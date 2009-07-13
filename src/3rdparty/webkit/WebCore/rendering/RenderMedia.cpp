@@ -45,7 +45,8 @@ using namespace HTMLNames;
 static const double cTimeUpdateRepeatDelay = 0.2;
 static const double cOpacityAnimationRepeatDelay = 0.05;
 // FIXME get this from style
-static const double cOpacityAnimationDuration = 0.1;
+static const double cOpacityAnimationDurationFadeIn = 0.1;
+static const double cOpacityAnimationDurationFadeOut = 0.3;
 
 RenderMedia::RenderMedia(HTMLMediaElement* video)
     : RenderReplaced(video)
@@ -53,9 +54,9 @@ RenderMedia::RenderMedia(HTMLMediaElement* video)
     , m_opacityAnimationTimer(this, &RenderMedia::opacityAnimationTimerFired)
     , m_mouseOver(false)
     , m_opacityAnimationStartTime(0)
+    , m_opacityAnimationDuration(cOpacityAnimationDurationFadeIn)
     , m_opacityAnimationFrom(0)
     , m_opacityAnimationTo(1.0f)
-    , m_previousVisible(VISIBLE)
 {
 }
 
@@ -65,6 +66,7 @@ RenderMedia::RenderMedia(HTMLMediaElement* video, const IntSize& intrinsicSize)
     , m_opacityAnimationTimer(this, &RenderMedia::opacityAnimationTimerFired)
     , m_mouseOver(false)
     , m_opacityAnimationStartTime(0)
+    , m_opacityAnimationDuration(cOpacityAnimationDurationFadeIn)
     , m_opacityAnimationFrom(0)
     , m_opacityAnimationTo(1.0f)
 {
@@ -104,20 +106,32 @@ void RenderMedia::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     RenderReplaced::styleDidChange(diff, oldStyle);
 
     if (m_controlsShadowRoot) {
-        if (m_panel->renderer())
-            m_panel->renderer()->setStyle(getCachedPseudoStyle(MEDIA_CONTROLS_PANEL));
-
-        if (m_timelineContainer->renderer())
-            m_timelineContainer->renderer()->setStyle(getCachedPseudoStyle(MEDIA_CONTROLS_TIMELINE_CONTAINER));
-        
-        m_muteButton->updateStyle();
-        m_playButton->updateStyle();
-        m_seekBackButton->updateStyle();
-        m_seekForwardButton->updateStyle();
-        m_timeline->updateStyle();
-        m_fullscreenButton->updateStyle();
-        m_currentTimeDisplay->updateStyle();
-        m_timeRemainingDisplay->updateStyle();
+        if (m_panel)
+            m_panel->updateStyle();
+        if (m_muteButton)
+            m_muteButton->updateStyle();
+        if (m_playButton)
+            m_playButton->updateStyle();
+        if (m_seekBackButton)
+            m_seekBackButton->updateStyle();
+        if (m_seekForwardButton)
+            m_seekForwardButton->updateStyle();
+        if (m_rewindButton)
+            m_rewindButton->updateStyle();
+        if (m_returnToRealtimeButton)
+            m_returnToRealtimeButton->updateStyle();
+        if (m_statusDisplay)
+            m_statusDisplay->updateStyle();
+        if (m_timelineContainer)
+            m_timelineContainer->updateStyle();
+        if (m_timeline)
+            m_timeline->updateStyle();
+        if (m_fullscreenButton)
+            m_fullscreenButton->updateStyle();
+        if (m_currentTimeDisplay)
+            m_currentTimeDisplay->updateStyle();
+        if (m_timeRemainingDisplay)
+            m_timeRemainingDisplay->updateStyle();
     }
 }
 
@@ -132,6 +146,13 @@ void RenderMedia::layout()
         return;
     IntSize newSize = contentBoxRect().size();
     if (newSize != oldSize || controlsRenderer->needsLayout()) {
+
+        if (m_currentTimeDisplay && m_timeRemainingDisplay) {
+            bool shouldShowTimeDisplays = shouldShowTimeDisplayControls();
+            m_currentTimeDisplay->setVisible(shouldShowTimeDisplays);
+            m_timeRemainingDisplay->setVisible(shouldShowTimeDisplays);
+        }
+
         controlsRenderer->setLocation(borderLeft() + paddingLeft(), borderTop() + paddingTop());
         controlsRenderer->style()->setHeight(Length(newSize.height(), Fixed));
         controlsRenderer->style()->setWidth(Length(newSize.width(), Fixed));
@@ -151,17 +172,8 @@ void RenderMedia::createControlsShadowRoot()
 void RenderMedia::createPanel()
 {
     ASSERT(!m_panel);
-    RenderStyle* style = getCachedPseudoStyle(MEDIA_CONTROLS_PANEL);
-    m_panel = new HTMLDivElement(HTMLNames::divTag, document());
-    RenderObject* renderer = m_panel->createRenderer(renderArena(), style);
-    if (renderer) {
-        m_panel->setRenderer(renderer);
-        renderer->setStyle(style);
-        m_panel->setAttached();
-        m_panel->setInDocument(true);
-        m_controlsShadowRoot->addChild(m_panel);
-        m_controlsShadowRoot->renderer()->addChild(renderer);
-    }
+    m_panel = new MediaControlElement(document(), MEDIA_CONTROLS_PANEL, mediaElement());
+    m_panel->attachToParent(m_controlsShadowRoot.get());
 }
 
 void RenderMedia::createMuteButton()
@@ -192,20 +204,32 @@ void RenderMedia::createSeekForwardButton()
     m_seekForwardButton->attachToParent(m_panel.get());
 }
 
+void RenderMedia::createRewindButton()
+{
+    ASSERT(!m_rewindButton);
+    m_rewindButton = new MediaControlRewindButtonElement(document(), mediaElement());
+    m_rewindButton->attachToParent(m_panel.get());
+}
+
+void RenderMedia::createReturnToRealtimeButton()
+{
+    ASSERT(!m_returnToRealtimeButton);
+    m_returnToRealtimeButton = new MediaControlReturnToRealtimeButtonElement(document(), mediaElement());
+    m_returnToRealtimeButton->attachToParent(m_panel.get());
+}
+
+void RenderMedia::createStatusDisplay()
+{
+    ASSERT(!m_statusDisplay);
+    m_statusDisplay = new MediaControlStatusDisplayElement(document(), mediaElement());
+    m_statusDisplay->attachToParent(m_panel.get());
+}
+
 void RenderMedia::createTimelineContainer()
 {
     ASSERT(!m_timelineContainer);
-    RenderStyle* style = getCachedPseudoStyle(MEDIA_CONTROLS_TIMELINE_CONTAINER);
-    m_timelineContainer = new HTMLDivElement(HTMLNames::divTag, document());
-    RenderObject* renderer = m_timelineContainer->createRenderer(renderArena(), style);
-    if (renderer) {
-        m_timelineContainer->setRenderer(renderer);
-        renderer->setStyle(style);
-        m_timelineContainer->setAttached();
-        m_timelineContainer->setInDocument(true);
-        m_panel->addChild(m_timelineContainer);
-        m_panel->renderer()->addChild(renderer);
-    }
+    m_timelineContainer = new MediaControlTimelineContainerElement(document(), mediaElement());
+    m_timelineContainer->attachToParent(m_panel.get());
 }
 
 void RenderMedia::createTimeline()
@@ -215,18 +239,18 @@ void RenderMedia::createTimeline()
     m_timeline->setAttribute(precisionAttr, "float");
     m_timeline->attachToParent(m_timelineContainer.get());
 }
-  
+
 void RenderMedia::createCurrentTimeDisplay()
 {
     ASSERT(!m_currentTimeDisplay);
-    m_currentTimeDisplay = new MediaTimeDisplayElement(document(), mediaElement(), true);
+    m_currentTimeDisplay = new MediaControlTimeDisplayElement(document(), MEDIA_CONTROLS_CURRENT_TIME_DISPLAY, mediaElement());
     m_currentTimeDisplay->attachToParent(m_timelineContainer.get());
 }
 
 void RenderMedia::createTimeRemainingDisplay()
 {
     ASSERT(!m_timeRemainingDisplay);
-    m_timeRemainingDisplay = new MediaTimeDisplayElement(document(), mediaElement(), false);
+    m_timeRemainingDisplay = new MediaControlTimeDisplayElement(document(), MEDIA_CONTROLS_TIME_REMAINING_DISPLAY, mediaElement());
     m_timeRemainingDisplay->attachToParent(m_timelineContainer.get());
 }
 
@@ -251,10 +275,13 @@ void RenderMedia::updateControls()
             m_panel = 0;
             m_muteButton = 0;
             m_playButton = 0;
+            m_statusDisplay = 0;
             m_timelineContainer = 0;
             m_timeline = 0;
             m_seekBackButton = 0;
             m_seekForwardButton = 0;
+            m_rewindButton = 0;
+            m_returnToRealtimeButton = 0;
             m_currentTimeDisplay = 0;
             m_timeRemainingDisplay = 0;
             m_fullscreenButton = 0;
@@ -269,34 +296,46 @@ void RenderMedia::updateControls()
     if (!m_controlsShadowRoot) {
         createControlsShadowRoot();
         createPanel();
-        if (m_panel && m_panel->renderer()) {
+        if (m_panel) {
+            createRewindButton();
             createMuteButton();
             createPlayButton();
+            createReturnToRealtimeButton();
+            createStatusDisplay();
             createTimelineContainer();
             createSeekBackButton();
             createSeekForwardButton();
-            createFullscreenButton();            
-        }
-        if (m_timelineContainer && m_timelineContainer->renderer()) {
-            createCurrentTimeDisplay();
-            createTimeline();
-            createTimeRemainingDisplay();
+            createFullscreenButton();
+            if (m_timelineContainer) {
+                createCurrentTimeDisplay();
+                createTimeline();
+                createTimeRemainingDisplay();
+            }
+            m_panel->attach();
         }
     }
 
     if (media->canPlay()) {
         if (m_timeUpdateTimer.isActive())
             m_timeUpdateTimer.stop();
-    } else if (style()->visibility() == VISIBLE && m_timeline && m_timeline->renderer() && m_timeline->renderer()->style()->display() != NONE ) {
+    } else if (style()->visibility() == VISIBLE && m_timeline && m_timeline->renderer() && m_timeline->renderer()->style()->display() != NONE) {
         m_timeUpdateTimer.startRepeating(cTimeUpdateRepeatDelay);
     }
 
-    m_previousVisible = style()->visibility();
     
+    if (m_panel) {
+        // update() might alter the opacity of the element, especially if we are in the middle
+        // of an animation. This is the only element concerned as we animate only this element.
+        float opacityBeforeChangingStyle = m_panel->renderer() ? m_panel->renderer()->style()->opacity() : 0;
+        m_panel->update();
+        changeOpacity(m_panel.get(), opacityBeforeChangingStyle);
+    }
     if (m_muteButton)
         m_muteButton->update();
     if (m_playButton)
         m_playButton->update();
+    if (m_timelineContainer)
+        m_timelineContainer->update();
     if (m_timeline)
         m_timeline->update();
     if (m_currentTimeDisplay)
@@ -307,8 +346,15 @@ void RenderMedia::updateControls()
         m_seekBackButton->update();
     if (m_seekForwardButton)
         m_seekForwardButton->update();
+    if (m_rewindButton)
+        m_rewindButton->update();
+    if (m_returnToRealtimeButton)
+        m_returnToRealtimeButton->update();
+    if (m_statusDisplay)
+        m_statusDisplay->update();
     if (m_fullscreenButton)
         m_fullscreenButton->update();
+
     updateTimeDisplay();
     updateControlVisibility();
 }
@@ -363,26 +409,34 @@ void RenderMedia::updateControlVisibility()
     if (!media->hasVideo())
         return;
 
-    // do fading manually, css animations don't work well with shadow trees
-    bool visible = style()->visibility() == VISIBLE && (m_mouseOver || media->canPlay());
-    if (visible == (m_opacityAnimationTo > 0))
+    // Don't fade if the media element is not visible
+    if (style()->visibility() != VISIBLE)
+        return;
+    
+    bool shouldHideController = !m_mouseOver && !media->canPlay();
+
+    // Do fading manually, css animations don't work with shadow trees
+
+    float animateFrom = m_panel->renderer()->style()->opacity();
+    float animateTo = shouldHideController ? 0.0f : 1.0f;
+
+    if (animateFrom == animateTo)
         return;
 
-    if (style()->visibility() != m_previousVisible) {
-        // don't fade gradually if it the element has just changed visibility
-        m_previousVisible = style()->visibility();
-        m_opacityAnimationTo = m_previousVisible == VISIBLE ? 1.0f : 0;
-        changeOpacity(m_panel.get(), m_opacityAnimationTo);
-        return;
+    if (m_opacityAnimationTimer.isActive()) {
+        if (m_opacityAnimationTo == animateTo)
+            return;
+        m_opacityAnimationTimer.stop();
     }
 
-    if (visible) {
-        m_opacityAnimationFrom = m_panel->renderer()->style()->opacity();
-        m_opacityAnimationTo = 1.0f;
-    } else {
-        m_opacityAnimationFrom = m_panel->renderer()->style()->opacity();
-        m_opacityAnimationTo = 0;
-    }
+    if (animateFrom < animateTo)
+        m_opacityAnimationDuration = cOpacityAnimationDurationFadeIn;
+    else
+        m_opacityAnimationDuration = cOpacityAnimationDurationFadeOut;
+
+    m_opacityAnimationFrom = animateFrom;
+    m_opacityAnimationTo = animateTo;
+
     m_opacityAnimationStartTime = currentTime();
     m_opacityAnimationTimer.startRepeating(cOpacityAnimationRepeatDelay);
 }
@@ -401,11 +455,11 @@ void RenderMedia::changeOpacity(HTMLElement* e, float opacity)
 void RenderMedia::opacityAnimationTimerFired(Timer<RenderMedia>*)
 {
     double time = currentTime() - m_opacityAnimationStartTime;
-    if (time >= cOpacityAnimationDuration) {
-        time = cOpacityAnimationDuration;
+    if (time >= m_opacityAnimationDuration) {
+        time = m_opacityAnimationDuration;
         m_opacityAnimationTimer.stop();
     }
-    float opacity = narrowPrecisionToFloat(m_opacityAnimationFrom + (m_opacityAnimationTo - m_opacityAnimationFrom) * time / cOpacityAnimationDuration);
+    float opacity = narrowPrecisionToFloat(m_opacityAnimationFrom + (m_opacityAnimationTo - m_opacityAnimationFrom) * time / m_opacityAnimationDuration);
     changeOpacity(m_panel.get(), opacity);
 }
 
@@ -425,6 +479,12 @@ void RenderMedia::forwardEvent(Event* event)
 
         if (m_seekForwardButton && m_seekForwardButton->hitTest(point))
             m_seekForwardButton->defaultEventHandler(event);
+
+        if (m_rewindButton && m_rewindButton->hitTest(point))
+            m_rewindButton->defaultEventHandler(event);
+
+        if (m_returnToRealtimeButton && m_returnToRealtimeButton->hitTest(point))
+            m_returnToRealtimeButton->defaultEventHandler(event);
 
         if (m_timeline && m_timeline->hitTest(point))
             m_timeline->defaultEventHandler(event);
@@ -471,6 +531,19 @@ int RenderMedia::leftmostPosition(bool includeOverflowInterior, bool includeSelf
         return left;
     
     return min(left, m_controlsShadowRoot->renderBox()->x() +  m_controlsShadowRoot->renderBox()->leftmostPosition(includeOverflowInterior, includeSelf));
+}
+
+
+// We want the timeline slider to be at least 100 pixels wide.
+static const int minWidthToDisplayTimeDisplays = 16 + 16 + 45 + 100 + 45 + 16 + 1;
+
+bool RenderMedia::shouldShowTimeDisplayControls() const
+{
+    if (!m_currentTimeDisplay && !m_timeRemainingDisplay)
+        return false;
+
+    int width = mediaElement()->renderBox()->width();
+    return width >= minWidthToDisplayTimeDisplays * style()->effectiveZoom();
 }
 
 } // namespace WebCore

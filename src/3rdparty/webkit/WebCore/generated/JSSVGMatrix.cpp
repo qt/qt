@@ -48,7 +48,7 @@ static const HashTableValue JSSVGMatrixTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMatrixTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMatrixTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGMatrixTableValues, 0 };
 #else
@@ -73,7 +73,7 @@ static const HashTableValue JSSVGMatrixPrototypeTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMatrixPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMatrixPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGMatrixPrototypeTableValues, 0 };
 #else

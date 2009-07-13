@@ -74,12 +74,11 @@ namespace WebCore {
         bool hasPendingActivity() const;
 
         virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL);
-        virtual void addMessage(MessageDestination, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
+        virtual void addMessage(MessageDestination, MessageSource, MessageType, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
         virtual void resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString);
         virtual void scriptImported(unsigned long identifier, const String& sourceString);
 
         virtual void postTask(PassRefPtr<Task>); // Executes the task on context's thread asynchronously.
-
 
         // WorkerGlobalScope
         WorkerContext* self() { return this; }
@@ -90,9 +89,9 @@ namespace WebCore {
         void importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode&);
         WorkerNavigator* navigator() const;
 
-
         // DedicatedWorkerGlobalScope
-        void postMessage(const String& message);
+        void postMessage(const String&, ExceptionCode&);
+        void postMessage(const String&, MessagePort*, ExceptionCode&);
         void setOnmessage(PassRefPtr<EventListener> eventListener) { m_onmessageListener = eventListener; }
         EventListener* onmessage() const { return m_onmessageListener.get(); }
 
@@ -111,7 +110,7 @@ namespace WebCore {
         typedef HashMap<AtomicString, ListenerVector> EventListenersMap;
         EventListenersMap& eventListeners() { return m_eventListeners; }
 
-        void dispatchMessage(const String&);
+        void dispatchMessage(const String&, PassRefPtr<MessagePort>);
 
         // These methods are used for GC marking. See JSWorkerContext::mark() in
         // JSWorkerContextCustom.cpp.

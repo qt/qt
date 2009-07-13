@@ -99,7 +99,7 @@ static const HashTableValue JSSVGSVGElementTableValues[28] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGSVGElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGSVGElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGSVGElementTableValues, 0 };
 #else
@@ -144,7 +144,7 @@ static const HashTableValue JSSVGSVGElementPrototypeTableValues[32] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGSVGElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGSVGElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGSVGElementPrototypeTableValues, 0 };
 #else

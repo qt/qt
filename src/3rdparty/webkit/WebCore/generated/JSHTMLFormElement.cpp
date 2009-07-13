@@ -55,7 +55,7 @@ static const HashTableValue JSHTMLFormElementTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFormElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFormElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 4095, JSHTMLFormElementTableValues, 0 };
 #else
@@ -69,7 +69,7 @@ static const HashTableValue JSHTMLFormElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFormElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFormElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLFormElementConstructorTableValues, 0 };
 #else
@@ -109,7 +109,7 @@ static const HashTableValue JSHTMLFormElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFormElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFormElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLFormElementPrototypeTableValues, 0 };
 #else

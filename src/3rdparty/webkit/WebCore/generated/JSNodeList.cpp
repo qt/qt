@@ -46,7 +46,7 @@ static const HashTableValue JSNodeListTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeListTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSNodeListTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSNodeListConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeListConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeListConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNodeListConstructorTableValues, 0 };
 #else
@@ -99,7 +99,7 @@ static const HashTableValue JSNodeListPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNodeListPrototypeTableValues, 0 };
 #else

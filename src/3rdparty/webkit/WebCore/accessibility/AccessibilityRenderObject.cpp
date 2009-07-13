@@ -966,6 +966,10 @@ String AccessibilityRenderObject::accessibilityDescription() const
     if (!m_renderer)
         return String();
 
+    String ariaLabel = getAttribute(aria_labelAttr).string();
+    if (!ariaLabel.isEmpty())
+        return ariaLabel;
+    
     String ariaDescription = ariaDescribedByAttribute();
     if (!ariaDescription.isEmpty())
         return ariaDescription;
@@ -1063,6 +1067,21 @@ IntSize AccessibilityRenderObject::size() const
     return rect.size();
 }
 
+IntPoint AccessibilityRenderObject::clickPoint() const
+{
+    // use the default position unless this is an editable web area, in which case we use the selection bounds.
+    if (!isWebArea() || isReadOnly())
+        return AccessibilityObject::clickPoint();
+    
+    VisibleSelection visSelection = selection();
+    VisiblePositionRange range = VisiblePositionRange(visSelection.visibleStart(), visSelection.visibleEnd());
+    IntRect bounds = boundsForVisiblePositionRange(range);
+#if PLATFORM(MAC)
+    bounds.setLocation(m_renderer->document()->view()->screenToContents(bounds.location()));
+#endif        
+    return IntPoint(bounds.x() + (bounds.width() / 2), bounds.y() - (bounds.height() / 2));
+}
+    
 AccessibilityObject* AccessibilityRenderObject::internalLinkElement() const
 {
     Element* element = anchorElement();
@@ -1290,13 +1309,13 @@ bool AccessibilityRenderObject::accessibilityIsIgnored() const
             return false;
         }
         
-        // check for one-dimensional image
-        RenderImage* image = toRenderImage(m_renderer);
-        if (image->height() <= 1 || image->width() <= 1)
-            return true;
-        
-        // check whether rendered image was stretched from one-dimensional file image
         if (isNativeImage()) {
+            // check for one-dimensional image
+            RenderImage* image = toRenderImage(m_renderer);
+            if (image->height() <= 1 || image->width() <= 1)
+                return true;
+            
+            // check whether rendered image was stretched from one-dimensional file image
             if (image->cachedImage()) {
                 IntSize imageSize = image->cachedImage()->imageSize(image->view()->zoomFactor());
                 return imageSize.height() <= 1 || imageSize.width() <= 1;
@@ -2154,12 +2173,13 @@ AccessibilityObject* AccessibilityRenderObject::observableObject() const
     
 typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
 
-struct RoleEntry {
-    String ariaRole;
-    AccessibilityRole webcoreRole;
-};
 static const ARIARoleMap& createARIARoleMap()
 {
+    struct RoleEntry {
+        String ariaRole;
+        AccessibilityRole webcoreRole;
+    };
+
     const RoleEntry roles[] = {
         { "button", ButtonRole },
         { "checkbox", CheckBoxRole },
@@ -2184,7 +2204,8 @@ static const ARIARoleMap& createARIARoleMap()
         { "range", SliderRole },
         { "slider", SliderRole },
         { "spinbutton", ProgressIndicatorRole },
-        { "textbox", TextAreaRole }
+        { "textbox", TextAreaRole },
+        { "toolbar", ToolbarRole }
     };
     ARIARoleMap& roleMap = *new ARIARoleMap;
         
@@ -2304,6 +2325,9 @@ AccessibilityRole AccessibilityRenderObject::roleValue() const
     if (node && node->hasTagName(dtTag))
         return DefinitionListTermRole;
 
+    if (node && (node->hasTagName(rpTag) || node->hasTagName(rtTag)))
+        return AnnotationRole;
+    
     if (m_renderer->isBlockFlow() || (node && node->hasTagName(labelTag)))
         return GroupRole;
     

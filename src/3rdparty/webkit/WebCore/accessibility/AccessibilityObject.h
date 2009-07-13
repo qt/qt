@@ -151,7 +151,8 @@ enum AccessibilityRole {
     ListBoxOptionRole,
     TableHeaderContainerRole,
     DefinitionListTermRole,
-    DefinitionListDefinitionRole
+    DefinitionListDefinitionRole,
+    AnnotationRole
 };
 
 struct VisiblePositionRange {
@@ -285,7 +286,7 @@ public:
     virtual IntRect boundingBoxRect() const;
     virtual IntRect elementRect() const;
     virtual IntSize size() const;
-    IntPoint clickPoint() const;
+    virtual IntPoint clickPoint() const;
     
     virtual KURL url() const;
     virtual PlainTextRange selectedTextRange() const;

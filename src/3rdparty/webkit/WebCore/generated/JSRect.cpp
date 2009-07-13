@@ -44,7 +44,7 @@ static const HashTableValue JSRectTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRectTable =
+static JSC_CONST_HASHTABLE HashTable JSRectTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSRectTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSRectConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRectConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSRectConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSRectConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSRectPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRectPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSRectPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSRectPrototypeTableValues, 0 };
 #else

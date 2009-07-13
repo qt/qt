@@ -184,20 +184,32 @@ static PassRefPtr<HTMLElement> tablecolConstructor(const QualifiedName& tagName,
     return new HTMLTableColElement(tagName, doc);
 }
 
+#if ENABLE(DATAGRID)
+
 static PassRefPtr<HTMLElement> datagridConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
     return new HTMLDataGridElement(tagName, doc);
 }
+
+#endif
+
+#if ENABLE(DATAGRID)
 
 static PassRefPtr<HTMLElement> datagridcellConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
     return new HTMLDataGridCellElement(tagName, doc);
 }
 
+#endif
+
+#if ENABLE(DATAGRID)
+
 static PassRefPtr<HTMLElement> datagridcolConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
     return new HTMLDataGridColElement(tagName, doc);
 }
+
+#endif
 
 static PassRefPtr<HTMLElement> modConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
@@ -219,10 +231,14 @@ static PassRefPtr<HTMLElement> dlistConstructor(const QualifiedName& tagName, Do
     return new HTMLDListElement(tagName, doc);
 }
 
+#if ENABLE(DATAGRID)
+
 static PassRefPtr<HTMLElement> datagridrowConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
     return new HTMLDataGridRowElement(tagName, doc);
 }
+
+#endif
 
 static PassRefPtr<HTMLElement> embedConstructor(const QualifiedName& tagName, Document* doc, HTMLFormElement*, bool)
 {
@@ -486,14 +502,26 @@ static inline void createFunctionMapIfNecessary()
     addTag(captionTag, tablecaptionConstructor);
     addTag(colTag, tablecolConstructor);
     addTag(colgroupTag, tablecolConstructor);
+#if ENABLE(DATAGRID)
     addTag(datagridTag, datagridConstructor);
+#endif
+
+#if ENABLE(DATAGRID)
     addTag(dcellTag, datagridcellConstructor);
+#endif
+
+#if ENABLE(DATAGRID)
     addTag(dcolTag, datagridcolConstructor);
+#endif
+
     addTag(delTag, modConstructor);
     addTag(dirTag, directoryConstructor);
     addTag(divTag, divConstructor);
     addTag(dlTag, dlistConstructor);
+#if ENABLE(DATAGRID)
     addTag(drowTag, datagridrowConstructor);
+#endif
+
     addTag(embedTag, embedConstructor);
     addTag(fieldsetTag, fieldsetConstructor);
     addTag(fontTag, fontConstructor);

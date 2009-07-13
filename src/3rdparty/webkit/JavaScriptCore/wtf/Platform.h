@@ -27,11 +27,11 @@
 #define WTF_Platform_h
 
 /* PLATFORM handles OS, operating environment, graphics API, and CPU */
-#define PLATFORM(WTF_FEATURE) (defined( WTF_PLATFORM_##WTF_FEATURE ) && WTF_PLATFORM_##WTF_FEATURE)
-#define COMPILER(WTF_FEATURE) (defined( WTF_COMPILER_##WTF_FEATURE ) && WTF_COMPILER_##WTF_FEATURE)
-#define HAVE(WTF_FEATURE) (defined( HAVE_##WTF_FEATURE ) && HAVE_##WTF_FEATURE)
-#define USE(WTF_FEATURE) (defined( WTF_USE_##WTF_FEATURE ) && WTF_USE_##WTF_FEATURE)
-#define ENABLE(WTF_FEATURE) (defined( ENABLE_##WTF_FEATURE ) && ENABLE_##WTF_FEATURE)
+#define PLATFORM(WTF_FEATURE) (defined WTF_PLATFORM_##WTF_FEATURE  && WTF_PLATFORM_##WTF_FEATURE)
+#define COMPILER(WTF_FEATURE) (defined WTF_COMPILER_##WTF_FEATURE  && WTF_COMPILER_##WTF_FEATURE)
+#define HAVE(WTF_FEATURE) (defined HAVE_##WTF_FEATURE  && HAVE_##WTF_FEATURE)
+#define USE(WTF_FEATURE) (defined WTF_USE_##WTF_FEATURE  && WTF_USE_##WTF_FEATURE)
+#define ENABLE(WTF_FEATURE) (defined ENABLE_##WTF_FEATURE  && ENABLE_##WTF_FEATURE)
 
 /* Operating systems - low-level dependencies */
 
@@ -402,6 +402,10 @@
 #endif
 #endif /* !defined(HAVE_ACCESSIBILITY) */
 
+#if PLATFORM(UNIX) && !PLATFORM(SYMBIAN)
+#define HAVE_SIGNAL_H 1
+#endif
+
 #if PLATFORM(DARWIN)
 
 #define HAVE_ERRNO_H 1
@@ -549,6 +553,7 @@
 #endif
 #endif
 
+#if ENABLE(JIT)
 #ifndef ENABLE_JIT_OPTIMIZE_CALL
 #define ENABLE_JIT_OPTIMIZE_CALL 1
 #endif
@@ -563,6 +568,7 @@
 #endif
 #ifndef ENABLE_JIT_OPTIMIZE_METHOD_CALLS
 #define ENABLE_JIT_OPTIMIZE_METHOD_CALLS 1
+#endif
 #endif
 
 #if PLATFORM(X86) && COMPILER(MSVC)
@@ -630,7 +636,7 @@
 
 /* Accelerated compositing */
 #if PLATFORM(MAC)
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+#if !defined(BUILDING_ON_TIGER)
 #define WTF_USE_ACCELERATED_COMPOSITING 1
 #endif
 #endif

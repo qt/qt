@@ -50,7 +50,7 @@ static const HashTableValue JSNodeIteratorTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeIteratorTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeIteratorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSNodeIteratorTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSNodeIteratorConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeIteratorConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeIteratorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNodeIteratorConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSNodeIteratorPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeIteratorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeIteratorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSNodeIteratorPrototypeTableValues, 0 };
 #else

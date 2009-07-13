@@ -59,7 +59,7 @@ static const HashTableValue JSSVGSymbolElementTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGSymbolElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGSymbolElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGSymbolElementTableValues, 0 };
 #else
@@ -74,7 +74,7 @@ static const HashTableValue JSSVGSymbolElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGSymbolElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGSymbolElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGSymbolElementPrototypeTableValues, 0 };
 #else

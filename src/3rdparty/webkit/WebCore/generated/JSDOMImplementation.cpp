@@ -48,7 +48,7 @@ static const HashTableValue JSDOMImplementationTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMImplementationTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMImplementationTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMImplementationTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSDOMImplementationConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMImplementationConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMImplementationConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMImplementationConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSDOMImplementationPrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMImplementationPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMImplementationPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSDOMImplementationPrototypeTableValues, 0 };
 #else

@@ -52,7 +52,7 @@ static const HashTableValue JSJavaScriptCallFrameTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSJavaScriptCallFrameTable =
+static JSC_CONST_HASHTABLE HashTable JSJavaScriptCallFrameTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSJavaScriptCallFrameTableValues, 0 };
 #else
@@ -67,7 +67,7 @@ static const HashTableValue JSJavaScriptCallFramePrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSJavaScriptCallFramePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSJavaScriptCallFramePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSJavaScriptCallFramePrototypeTableValues, 0 };
 #else

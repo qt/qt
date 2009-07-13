@@ -29,8 +29,10 @@
 #include "JSHTMLFormElement.h"
 #include "JSHTMLOptionsCollection.h"
 #include "JSNode.h"
+#include "JSValidityState.h"
 #include "KURL.h"
 #include "Node.h"
+#include "ValidityState.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
@@ -45,13 +47,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLSelectElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLSelectElementTableValues[14] =
+static const HashTableValue JSHTMLSelectElementTableValues[15] =
 {
     { "type", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementType, (intptr_t)0 },
     { "selectedIndex", DontDelete, (intptr_t)jsHTMLSelectElementSelectedIndex, (intptr_t)setJSHTMLSelectElementSelectedIndex },
     { "value", DontDelete, (intptr_t)jsHTMLSelectElementValue, (intptr_t)setJSHTMLSelectElementValue },
     { "length", DontDelete, (intptr_t)jsHTMLSelectElementLength, (intptr_t)setJSHTMLSelectElementLength },
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementForm, (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementValidity, (intptr_t)0 },
     { "willValidate", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementWillValidate, (intptr_t)0 },
     { "options", DontDelete|ReadOnly, (intptr_t)jsHTMLSelectElementOptions, (intptr_t)0 },
     { "disabled", DontDelete, (intptr_t)jsHTMLSelectElementDisabled, (intptr_t)setJSHTMLSelectElementDisabled },
@@ -63,11 +66,11 @@ static const HashTableValue JSHTMLSelectElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLSelectElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLSelectElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLSelectElementTableValues, 0 };
 #else
-    { 34, 31, JSHTMLSelectElementTableValues, 0 };
+    { 35, 31, JSHTMLSelectElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -77,7 +80,7 @@ static const HashTableValue JSHTMLSelectElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLSelectElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLSelectElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLSelectElementConstructorTableValues, 0 };
 #else
@@ -119,7 +122,7 @@ static const HashTableValue JSHTMLSelectElementPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLSelectElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLSelectElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLSelectElementPrototypeTableValues, 0 };
 #else
@@ -208,6 +211,13 @@ JSValue jsHTMLSelectElementForm(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLSelectElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLSelectElement* imp = static_cast<HTMLSelectElement*>(static_cast<JSHTMLSelectElement*>(asObject(slot.slotBase()))->impl());
+    return toJS(exec, WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLSelectElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)

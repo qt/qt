@@ -52,7 +52,7 @@ static const HashTableValue JSHTMLEmbedElementTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLEmbedElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLEmbedElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 16383, JSHTMLEmbedElementTableValues, 0 };
 #else
@@ -66,7 +66,7 @@ static const HashTableValue JSHTMLEmbedElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLEmbedElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLEmbedElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLEmbedElementConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSHTMLEmbedElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLEmbedElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLEmbedElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLEmbedElementPrototypeTableValues, 0 };
 #else

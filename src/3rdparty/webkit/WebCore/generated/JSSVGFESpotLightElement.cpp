@@ -49,7 +49,7 @@ static const HashTableValue JSSVGFESpotLightElementTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFESpotLightElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFESpotLightElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFESpotLightElementTableValues, 0 };
 #else
@@ -63,7 +63,7 @@ static const HashTableValue JSSVGFESpotLightElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFESpotLightElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFESpotLightElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFESpotLightElementPrototypeTableValues, 0 };
 #else

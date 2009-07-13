@@ -48,7 +48,7 @@ static const HashTableValue JSCSSPrimitiveValueTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSPrimitiveValueTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSPrimitiveValueTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSCSSPrimitiveValueTableValues, 0 };
 #else
@@ -88,7 +88,7 @@ static const HashTableValue JSCSSPrimitiveValueConstructorTableValues[27] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSPrimitiveValueConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSPrimitiveValueConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 8191, JSCSSPrimitiveValueConstructorTableValues, 0 };
 #else
@@ -159,7 +159,7 @@ static const HashTableValue JSCSSPrimitiveValuePrototypeTableValues[34] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSPrimitiveValuePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSPrimitiveValuePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 8191, JSCSSPrimitiveValuePrototypeTableValues, 0 };
 #else

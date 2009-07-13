@@ -78,7 +78,7 @@ static const HashTableValue JSSVGUseElementTableValues[19] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUseElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUseElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGUseElementTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSSVGUseElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGUseElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGUseElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGUseElementPrototypeTableValues, 0 };
 #else
