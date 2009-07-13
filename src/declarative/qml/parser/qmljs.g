@@ -557,7 +557,7 @@ UiImport: T_IMPORT UiQualifiedId T_AUTOMATIC_SEMICOLON;
 UiImport: T_IMPORT UiQualifiedId T_SEMICOLON;
 /.
 case $rule_number: {
-    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId);
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId->finish());
     node->importToken = loc(1);
     node->fileNameToken = loc(2);
     node->semicolonToken = loc(3);
@@ -569,7 +569,7 @@ UiImport: T_IMPORT UiQualifiedId T_AS JsIdentifier T_AUTOMATIC_SEMICOLON;
 UiImport: T_IMPORT UiQualifiedId T_AS JsIdentifier T_SEMICOLON;
 /.
 case $rule_number: {
-    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId);
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId->finish());
     node->importId = sym(4).sval;
     node->importToken = loc(1);
     node->fileNameToken = loc(2);
