@@ -3186,7 +3186,7 @@ void tst_QNetworkReply::httpDownloadPerformance()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     qint64 elapsed = time.elapsed();
-    qWarning() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
+    qDebug() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
             << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
 
     delete reply;
