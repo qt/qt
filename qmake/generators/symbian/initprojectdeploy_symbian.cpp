@@ -148,7 +148,11 @@ void initProjectDeploySymbian(QMakeProject* project,
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
         } else {
             if (0 == platform.compare(QLatin1String("winscw"))) {
-                devicePath = epocRoot() + "epoc32\\winscw\\c" + devicePath;
+                if (devicePathHasDriveLetter) {
+                    devicePath = epocRoot() + "epoc32\\winscw\\" + devicePath.remove(1,1);
+                } else {
+                    devicePath = epocRoot() + "epoc32\\winscw\\c" + devicePath;
+                }
             } else {
                 // Drive letter needed if targetpath contains one and it is not already in
                 if (targetPathHasDriveLetter && !devicePathHasDriveLetter) {
