@@ -97,6 +97,11 @@ QmlDebugClient::QmlDebugClient(QObject *parent)
 {
 }
 
+bool QmlDebugClient::isConnected() const
+{
+    return state() == ConnectedState;
+}
+
 class QmlDebugClientPluginPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlDebugClientPlugin);
@@ -169,11 +174,18 @@ void QmlDebugClientPlugin::setEnabled(bool e)
     }
 }
 
+bool QmlDebugClientPlugin::isConnected() const
+{
+    Q_D(const QmlDebugClientPlugin);
+
+    return d->client->isConnected();
+}
+
 void QmlDebugClientPlugin::sendMessage(const QByteArray &message)
 {
     Q_D(QmlDebugClientPlugin);
 
-    if (!d->client || d->client->state() != QTcpSocket::ConnectedState)
+    if (!d->client || !d->client->isConnected())
         return;
 
     QPacket pack;

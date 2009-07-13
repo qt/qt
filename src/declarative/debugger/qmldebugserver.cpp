@@ -253,6 +253,87 @@ bool QmlDebugServerPlugin::isEnabled() const
     return (d->server && d->server->d_func()->enabledPlugins.contains(d->name));
 }
 
+namespace {
+
+    struct ObjectReference 
+    {
+        QPointer<QObject> object;
+        int id;
+    };
+
+    struct ObjectReferenceHash 
+    {
+        ObjectReferenceHash() : nextId(0) {}
+
+        QHash<QObject *, ObjectReference> objects;
+        QHash<int, QObject *> ids;
+
+        int nextId;
+    };
+
+}
+Q_GLOBAL_STATIC(ObjectReferenceHash, objectReferenceHash);
+
+
+/*!
+    Returns a unique id for \a object.  Calling this method multiple times
+    for the same object will return the same id.
+*/
+int QmlDebugServerPlugin::idForObject(QObject *object)
+{
+    if (!object)
+        return -1;
+
+    ObjectReferenceHash *hash = objectReferenceHash();
+    QHash<QObject *, ObjectReference>::Iterator iter = 
+        hash->objects.find(object);
+
+    if (iter == hash->objects.end()) {
+        int id = hash->nextId++;
+
+        hash->ids.insert(id, object);
+        iter = hash->objects.insert(object, ObjectReference());
+        iter->object = object;
+        iter->id = id;
+    } else if (iter->object != object) {
+        int id = hash->nextId++;
+
+        hash->ids.remove(iter->id);
+
+        hash->ids.insert(id, object);
+        iter->object = object;
+        iter->id = id;
+    } 
+    return iter->id;
+}
+
+/*!
+    Returns the object for unique \a id.  If the object has not previously been
+    assigned an id, through idForObject(), then 0 is returned.  If the object
+    has been destroyed, 0 is returned.
+*/
+QObject *QmlDebugServerPlugin::objectForId(int id)
+{
+    ObjectReferenceHash *hash = objectReferenceHash();
+
+    QHash<int, QObject *>::Iterator iter = hash->ids.find(id);
+    if (iter == hash->ids.end())
+        return 0;
+
+
+    QHash<QObject *, ObjectReference>::Iterator objIter = 
+        hash->objects.find(*iter);
+    Q_ASSERT(objIter != hash->objects.end());
+
+    if (objIter->object == 0) {
+        hash->ids.erase(iter);
+        hash->objects.erase(objIter);
+        return 0;
+    } else {
+        return *iter;
+    }
+}
+
 bool QmlDebugServerPlugin::isDebuggingEnabled()
 {
     return QmlDebugServer::instance() != 0;

@@ -39,65 +39,70 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLENGINEDEBUG_P_H
+#define QMLENGINEDEBUG_P_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include <QtDeclarative/qmldebugserver.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlObjectTree;
+class QmlEngine;
 class QmlContext;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
+class QDataStream;
+class QmlEngineDebugServer : public QmlDebugServerPlugin
 {
-Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QmlEngineDebugServer(QObject * = 0);
 
-    void setDebugObject(QObject *);
-    void setCanvas(QSimpleCanvas *);
+    struct QmlObjectData {
+        QUrl url;
+        int lineNumber;
+        int columnNumber;
+        QString objectName;
+        QString objectType;
+        int objectId;
+    };
 
-public slots:
-    void refresh();
+    struct QmlObjectProperty {
+        enum Type { Unknown, Basic, Object, List };
+        Type type;
+        QString name;
+        QVariant value;
+    };
 
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+    static void addEngine(QmlEngine *);
+    static void remEngine(QmlEngine *);
+
+protected:
+    virtual void messageReceived(const QByteArray &);
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
+    void buildObjectList(QDataStream &, QmlContext *);
+    void buildObjectDump(QDataStream &, QObject *, bool);
+    QmlObjectData objectData(QObject *);
+    QmlObjectProperty propertyData(QObject *, int);
 
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
+    static QList<QmlEngine *> m_engines;
 };
+Q_DECLARATIVE_EXPORT QDataStream &operator<<(QDataStream &, const QmlEngineDebugServer::QmlObjectData &);
+Q_DECLARATIVE_EXPORT QDataStream &operator>>(QDataStream &, QmlEngineDebugServer::QmlObjectData &);
+Q_DECLARATIVE_EXPORT QDataStream &operator<<(QDataStream &, const QmlEngineDebugServer::QmlObjectProperty &);
+Q_DECLARATIVE_EXPORT QDataStream &operator>>(QDataStream &, QmlEngineDebugServer::QmlObjectProperty &);
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QMLENGINEDEBUG_P_H
 
-#endif // QMLDEBUGGER_H

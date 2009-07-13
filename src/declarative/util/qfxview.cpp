@@ -65,7 +65,6 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(itemTreeDump, ITEMTREE_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
 
 static QVariant stringToPixmap(const QString &str)
 {
@@ -324,15 +323,6 @@ void QFxView::continueExecute()
 
             if (itemTreeDump())
                 item->dump();
-
-            if(qmlDebugger()) {
-                QmlDebugger *debugger = new QmlDebugger;
-                debugger->setDebugObject(item);
-                debugger->setCanvas(this);
-                debugger->show();
-                raise();
-                debugger->raise();
-            }
 
             QPerformanceLog::displayData();
             QPerformanceLog::clear();

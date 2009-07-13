@@ -58,6 +58,7 @@ class Q_DECLARATIVE_EXPORT QmlDebugClient : public QTcpSocket
 public:
     QmlDebugClient(QObject * = 0);
 
+    bool isConnected() const;
 private:
     QmlDebugClientPrivate *d;
     friend class QmlDebugClientPlugin;
@@ -78,6 +79,8 @@ public:
 
     bool isEnabled() const;
     void setEnabled(bool);
+
+    bool isConnected() const;
 
     void sendMessage(const QByteArray &);
 

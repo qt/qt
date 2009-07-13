@@ -521,7 +521,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 if (signal.parameterTypes().isEmpty()) {
                     (void *)new QmlBoundSignal(QmlContext::activeContext(), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
                 } else {
-                    (void *)new QmlBoundSignalProxy(new QmlContext(QmlContext::activeContext(), target), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
+                    (void *)new QmlBoundSignalProxy(new QmlContext(QmlContext::activeContext(), target, true), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
                 }
             }
             break;
