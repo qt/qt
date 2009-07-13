@@ -46,10 +46,10 @@
 #include "qtcpserver.h"
 #include "qtcpsocket.h"
 #include "qdatetime.h"
-#include <QtDeclarative/qmldebugserver.h>
+#include <QtDeclarative/qmldebugservice.h>
 
 QT_BEGIN_NAMESPACE
-class QSimpleCanvasDebugPlugin : public QmlDebugServerPlugin
+class QSimpleCanvasDebugPlugin : public QmlDebugService
 {
 public:
     QSimpleCanvasDebugPlugin(QObject *parent = 0);
@@ -65,7 +65,7 @@ private:
 
 class QSimpleCanvas;
 class QSimpleCanvasItem;
-class QSimpleCanvasSceneDebugPlugin : public QmlDebugServerPlugin
+class QSimpleCanvasSceneDebugPlugin : public QmlDebugService
 {
 public:
     QSimpleCanvasSceneDebugPlugin(QSimpleCanvas *parent = 0);

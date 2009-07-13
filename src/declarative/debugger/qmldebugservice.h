@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGSERVER_H
-#define QMLDEBUGSERVER_H
+#ifndef QMLDEBUGSERVICE_H
+#define QMLDEBUGSERVICE_H
 
 #include <QtCore/qobject.h>
 
@@ -48,14 +48,14 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlDebugServerPluginPrivate;
-class QmlDebugServerPlugin : public QObject
+class QmlDebugServicePrivate;
+class QmlDebugService : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlDebugServerPlugin)
-    Q_DISABLE_COPY(QmlDebugServerPlugin)
+    Q_DECLARE_PRIVATE(QmlDebugService)
+    Q_DISABLE_COPY(QmlDebugService)
 public:
-    QmlDebugServerPlugin(const QString &, QObject *parent = 0);
+    QmlDebugService(const QString &, QObject *parent = 0);
 
     QString name() const;
 
@@ -82,5 +82,5 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLDEBUGSERVER_H
+#endif // QMLDEBUGSERVICE_H
 
