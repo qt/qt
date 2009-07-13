@@ -82,9 +82,9 @@ struct QObjectConnection
             }
 #endif
         }
-        if (receiver)
+        if (receiver && !receiver.marked())
             receiver.mark();
-        if (slot)
+        if (slot && !slot.marked())
             slot.mark();
     }
 };
@@ -234,7 +234,13 @@ JSC::CallType QtFunction::getCallData(JSC::CallData &callData)
 
 void QtFunction::mark()
 {
-    data->object.mark();
+    Q_ASSERT(!marked());
+    if (data->object && !data->object.marked()) {
+        // FIXME: Causes infinite recursion because the object will mark this function,
+        // which will again mark the object, and so on. Need an "is marking" flag.
+//        data->object.mark();
+    }
+    JSC::InternalFunction::mark();
 }
 
 QScriptObject *QtFunction::wrapperObject() const
@@ -1498,10 +1504,13 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
 void QObjectDelegate::mark(QScriptObject *object)
 {
     QHash<QByteArray, JSC::JSValue>::const_iterator it;
-    for (it = data->cachedMembers.constBegin(); it != data->cachedMembers.constEnd(); ++it)
-        JSC::asObject(it.value())->mark();
+    for (it = data->cachedMembers.constBegin(); it != data->cachedMembers.constEnd(); ++it) {
+        JSC::JSValue val = it.value();
+        if (val && !val.marked())
+            val.mark();
+    }
 
-    object->JSC::JSObject::mark();
+    QScriptObjectDelegate::mark(object);
 }
 
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec, JSC::JSObject*,

@@ -113,7 +113,8 @@ void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArra
 
 void QScriptObject::mark()
 {
-    if (d && d->data)
+    Q_ASSERT(!marked());
+    if (d && d->data && !d->data.marked())
         d->data.mark();
     if (!d || !d->delegate) {
         JSC::JSObject::mark();
@@ -203,7 +204,8 @@ void QScriptObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecSta
 
 void QScriptObjectDelegate::mark(QScriptObject* object)
 {
-    object->JSC::JSObject::mark();
+    if (!object->marked())
+        object->JSC::JSObject::mark();
 }
 
 JSC::CallType QScriptObjectDelegate::getCallData(QScriptObject* object, JSC::CallData& data)

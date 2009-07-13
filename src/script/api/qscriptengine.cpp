@@ -563,17 +563,19 @@ void GlobalObject::mark()
     if (engine->uncaughtException)
         engine->uncaughtException.mark();
 
-    if (engine->qobjectPrototype)
+    if (engine->qobjectPrototype && !engine->qobjectPrototype->marked())
         engine->qobjectPrototype->mark();
-    if (engine->qmetaobjectPrototype)
+    if (engine->qmetaobjectPrototype && !engine->qmetaobjectPrototype->marked())
         engine->qmetaobjectPrototype->mark();
-    if (engine->variantPrototype)
+    if (engine->variantPrototype && !engine->variantPrototype->marked())
         engine->variantPrototype->mark();
 
     {
         QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
         for (it = engine->keepAliveValues.constBegin(); it != engine->keepAliveValues.constEnd(); ++it) {
-            it.key()->mark();
+            JSC::JSCell *cell = it.key();
+            if (!cell->marked())
+                cell->mark();
         }
     }
 
@@ -590,7 +592,7 @@ void GlobalObject::mark()
     {
         QHash<int, QScriptTypeInfo*>::const_iterator it;
         for (it = engine->m_typeInfos.constBegin(); it != engine->m_typeInfos.constEnd(); ++it) {
-            if ((*it)->prototype)
+            if ((*it)->prototype && !(*it)->prototype.marked())
                 (*it)->prototype.mark();
         }
     }
@@ -1413,8 +1415,10 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
     if (!object.isObject())
         return newVariant(value);
     JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(object)->jscValue);
-    if (!jscObject->isObject(&QScriptObject::info))
+    if (!jscObject->isObject(&QScriptObject::info)) {
+        qWarning("QScriptEngine::newVariant(): changing class of non-QScriptObject not supported");
         return QScriptValue();
+    }
     QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
     if (!object.isVariant()) {
         delete jscScriptObject->delegate();
@@ -1489,8 +1493,10 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     if (!scriptObject.isObject())
         return newQObject(qtObject, ownership, options);
     JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
-    if (!jscObject->isObject(&QScriptObject::info))
+    if (!jscObject->isObject(&QScriptObject::info)) {
+        qWarning("QScriptEngine::newQObject(): changing class of non-QScriptObject not supported");
         return QScriptValue();
+    }
     QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
     if (!scriptObject.isQObject()) {
         delete jscScriptObject->delegate();
