@@ -57,6 +57,9 @@
 #include <qpalette.h>
 #include <qstylepainter.h>
 #include <qdebug.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include <qaccessible.h>
+#endif
 
 #if defined(Q_WS_X11)
 #include <limits.h>
@@ -951,6 +954,9 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
             d->buttonState = (Keyboard | (up ? Up : Down));
         }
         stepBy(steps);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::ValueChanged);
+#endif
         return;
     }
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1548,6 +1554,9 @@ void QAbstractSpinBoxPrivate::updateState(bool up)
         spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
         buttonState = (up ? (Mouse | Up) : (Mouse | Down));
         q->stepBy(up ? 1 : -1);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(q, 0, QAccessible::ValueChanged);
+#endif
     }
 }
 
@@ -1568,7 +1577,7 @@ void QAbstractSpinBox::initStyleOption(QStyleOptionSpinBox *option) const
     option->initFrom(this);
     option->activeSubControls = QStyle::SC_None;
     option->buttonSymbols = d->buttonSymbols;
-    option->subControls = QStyle::SC_SpinBoxFrame;
+    option->subControls = QStyle::SC_SpinBoxFrame | QStyle::SC_SpinBoxEditField;
     if (d->buttonSymbols != QAbstractSpinBox::NoButtons) {
         option->subControls |= QStyle::SC_SpinBoxUp | QStyle::SC_SpinBoxDown;
         if (d->buttonState & Up) {
@@ -1696,6 +1705,8 @@ void QAbstractSpinBoxPrivate::updateEdit()
 
 void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
 {
+    Q_Q(QAbstractSpinBox);
+
     clearCache();
     minimum = min;
     maximum = (variantCompare(min, max) < 0 ? max : min);
@@ -1707,6 +1718,8 @@ void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
     } else if (value == minimum && !specialValueText.isEmpty()) {
         updateEdit();
     }
+
+    q->updateGeometry();
 }
 
 /*!

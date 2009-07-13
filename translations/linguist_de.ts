@@ -34,7 +34,7 @@
     <message>
         <location line="+37"/>
         <source>Searching, please wait...</source>
-        <translation>Suche, bitte warten...</translation>
+        <translation>Suche, bitte warten ...</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -67,7 +67,7 @@
     <message>
         <location/>
         <source>Set translated entries to finished</source>
-        <translation>Markiere Übersetzung als erledigt</translation>
+        <translation>Übersetzung als erledigt markieren</translation>
     </message>
     <message>
         <location/>
@@ -77,7 +77,7 @@
     <message>
         <location/>
         <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked.</source>
-        <translation>Beachten Sie, dass die geänderten Einträge in den Status &apos;unerledigt&apos; zurückgesetzt werden, wenn &apos;Markiere Übersetzung als erledigt&apos; deaktiviert ist.</translation>
+        <translation>Beachten Sie, dass die geänderten Einträge in den Status &apos;unerledigt&apos; zurückgesetzt werden, wenn &apos;Übersetzung als erledigt markieren&apos; deaktiviert ist.</translation>
     </message>
     <message>
         <location/>
@@ -215,17 +215,17 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     <message>
         <location filename="../tools/linguist/linguist/errorsview.cpp" line="+76"/>
         <source>Accelerator possibly superfluous in translation.</source>
-        <translation>Zusätzliche Kurztaste im Übersetzungstext.</translation>
+        <translation>Möglicherweise überflüssiger Kurzbefehl im Übersetzungstext.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Accelerator possibly missing in translation.</source>
-        <translation>Kurztaste fehlt im Übersetzungstext.</translation>
+        <translation>Kurzbefehl fehlt im Übersetzungstext.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Translation does not end with the same punctuation as the source text.</source>
-        <translation>Interpunktion am Ende des Übersetzungstextes unterscheidet sich von Interpunktion im Quelltext.</translation>
+        <translation>Interpunktion am Ende des Übersetzungstextes unterscheidet sich von Interpunktion des Ursprungstextes.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -235,7 +235,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     <message>
         <location line="+3"/>
         <source>Translation does not refer to the same place markers as in the source text.</source>
-        <translation>Platzhalter im Übersetzungstext und Quelltext unterscheiden sich.</translation>
+        <translation>Platzhalter im Übersetzungstext und Ursprungstext unterscheiden sich.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -276,7 +276,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     <message>
         <location/>
         <source>Source texts are searched when checked.</source>
-        <translation>Wenn aktiviert, wird in dem Ursprungstexten gesucht.</translation>
+        <translation>Wenn aktiviert, wird in den Ursprungstexten gesucht.</translation>
     </message>
     <message>
         <source>Source texts</source>
@@ -322,7 +322,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     <message>
         <location/>
         <source>&amp;Source texts</source>
-        <translation>&amp;Quelltexte</translation>
+        <translation>&amp;Ursprungstexte</translation>
     </message>
     <message>
         <location/>
@@ -347,7 +347,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     <message>
         <location/>
         <source>Click here to find the next occurrence of the text you typed in.</source>
-        <translation>Hier klicken für das nächste Vorkommen des Suchtextes.</translation>
+        <translation>Klicken Sie hier, um zum nächsten Vorkommen des Suchtextes zu springen.</translation>
     </message>
     <message>
         <location/>
@@ -357,7 +357,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     <message>
         <location/>
         <source>Click here to close this window.</source>
-        <translation>Klicken Sie hier um das Fenster zu schließen.</translation>
+        <translation>Klicken Sie hier, um das Fenster zu schließen.</translation>
     </message>
     <message>
         <location/>
@@ -510,12 +510,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Edit Phrase Book</source>
-        <translation>Wörterbuch &amp;Editieren</translation>
+        <translation>Wörterbuch &amp;bearbeiten</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Print Phrase Book</source>
-        <translation>Wörterbuch &amp;Drucken</translation>
+        <translation>Wörterbuch &amp;drucken</translation>
     </message>
     <message>
         <location/>
@@ -572,7 +572,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Open...</source>
-        <translation>Ö&amp;ffnen...</translation>
+        <translation>Ö&amp;ffnen ...</translation>
     </message>
     <message>
         <location/>
@@ -613,7 +613,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Previous unfinished item.</source>
-        <translation>Vorherige Unerledigte</translation>
+        <translation>Vorheriger unerledigter Eintrag.</translation>
     </message>
     <message>
         <location/>
@@ -623,7 +623,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Next unfinished item.</source>
-        <translation>Nächste Unerledigte</translation>
+        <translation>Nächster unerledigter Eintrag.</translation>
     </message>
     <message>
         <location/>
@@ -663,7 +663,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Copy from source text</source>
-        <translation>&amp;Ursprungstext übernehmen</translation>
+        <translation>Ursprungstext übernehmen</translation>
     </message>
     <message>
         <location/>
@@ -698,17 +698,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Die Prüfung der Platzhalter, das heißt, ob %1, %2 usw. in Quelltext und Übersetzung übereinstimmend verwendet werden, ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
+        <translation>Die Prüfung der Platzhalter, das heißt, ob %1, %2 usw. in Ursprungstext und Übersetzung übereinstimmend verwendet werden, ein- bzw. ausschalten. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Open Read-O&amp;nly...</source>
-        <translation>Schr&amp;eibgeschützt öffnen...</translation>
+        <translation>Schr&amp;eibgeschützt öffnen ...</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Save All</source>
-        <translation>&amp;Alles speichern</translation>
+        <translation>&amp;Alle speichern</translation>
     </message>
     <message>
         <location/>
@@ -725,7 +725,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Save As...</source>
-        <translation>Speichern unter...</translation>
+        <translation>Speichern unter ...</translation>
     </message>
     <message>
         <location/>
@@ -745,7 +745,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Print...</source>
-        <translation>&amp;Drucken...</translation>
+        <translation>&amp;Drucken ...</translation>
     </message>
     <message>
         <source>Print a list of all the phrases in the current Qt translation source file.</source>
@@ -853,7 +853,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Select &amp;All</source>
-        <translation>Alle &amp;markieren</translation>
+        <translation>Alles &amp;markieren</translation>
     </message>
     <message>
         <location/>
@@ -868,12 +868,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Find...</source>
-        <translation>&amp;Suchen...</translation>
+        <translation>&amp;Suchen ...</translation>
     </message>
     <message>
         <location/>
         <source>Search for some text in the translation source file.</source>
-        <translation>Suche einen Text in der Übersetzungsdatei.</translation>
+        <translation>In der Übersetzungsdatei nach Text suchen.</translation>
     </message>
     <message>
         <location/>
@@ -888,7 +888,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Continue the search where it was left.</source>
-        <translation>Setze die Suche fort.</translation>
+        <translation>Die Suche fortsetzen.</translation>
     </message>
     <message>
         <location/>
@@ -898,7 +898,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Prev Unfinished</source>
-        <translation>&amp;Vorherige Unerledigte</translation>
+        <translation>&amp;Vorheriger Unerledigter</translation>
     </message>
     <message>
         <location/>
@@ -913,7 +913,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Ctrl+W</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+W</translation>
     </message>
     <message>
         <source>Moves to the previous unfinished item.</source>
@@ -927,7 +927,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Next Unfinished</source>
-        <translation>&amp;Nächste Unerledigte</translation>
+        <translation>&amp;Nächster Unerledigter</translation>
     </message>
     <message>
         <source>Moves to the next unfinished item.</source>
@@ -940,7 +940,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>P&amp;rev</source>
-        <translation>V&amp;orherige</translation>
+        <translation>V&amp;orheriger</translation>
     </message>
     <message>
         <source>Moves to the previous item.</source>
@@ -954,7 +954,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Ne&amp;xt</source>
-        <translation>Nä&amp;chste</translation>
+        <translation>Nä&amp;chster</translation>
     </message>
     <message>
         <source>Moves to the next item.</source>
@@ -967,7 +967,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Done and Next</source>
-        <translation>&amp;Fertig und Nächste</translation>
+        <translation>&amp;Fertig und Nächster</translation>
     </message>
     <message>
         <source>Marks this item as done and moves to the next unfinished item.</source>
@@ -980,7 +980,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Copies the source text into the translation field.</source>
-        <translation>Kopiere den Ursprungstext in das Übersetzungsfeld.</translation>
+        <translation>Kopiert den Ursprungstext in das Übersetzungsfeld.</translation>
     </message>
     <message>
         <location/>
@@ -990,7 +990,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Accelerators</source>
-        <translation>&amp;Kurztasten</translation>
+        <translation>&amp;Kurzbefehle</translation>
     </message>
     <message>
         <source>Toggle validity checks of accelerators.</source>
@@ -1013,7 +1013,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Toggle checking that phrase suggestions are used.</source>
-        <translation>Aktiviere/Deaktiviere Überprüfung, ob Wörterbucheinträge benutzt wurden.</translation>
+        <translation>Überprüfung, ob Wörterbucheinträge benutzt werden, aktivieren/deaktivieren.</translation>
     </message>
     <message>
         <location/>
@@ -1027,12 +1027,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;New Phrase Book...</source>
-        <translation>&amp;Neues Wörterbuch...</translation>
+        <translation>&amp;Neues Wörterbuch ...</translation>
     </message>
     <message>
         <location/>
         <source>Create a new phrase book.</source>
-        <translation>Erzeuge ein neues Wörterbuch.</translation>
+        <translation>Ein neues Wörterbuch erzeugen.</translation>
     </message>
     <message>
         <location/>
@@ -1042,12 +1042,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Open Phrase Book...</source>
-        <translation>&amp;Wörterbuch Öffnen...</translation>
+        <translation>&amp;Wörterbuch öffnen ...</translation>
     </message>
     <message>
         <location/>
         <source>Open a phrase book to assist translation.</source>
-        <translation>Öffne ein Wörterbuch als Unterstützung bei der Übersetzung.</translation>
+        <translation>Ein Wörterbuch zur Unterstützung bei der Übersetzung öffnen.</translation>
     </message>
     <message>
         <location/>
@@ -1062,17 +1062,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Sort the items back in the same order as in the message file.</source>
-        <translation>Sortiere die Einträge in der gleichen Reihenfolge wie in der ursprünglichen Übersetzungsdatei.</translation>
+        <translation>Die Einträge in der gleichen Reihenfolge wie in der ursprünglichen Übersetzungsdatei sortieren.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Display guesses</source>
-        <translation>&amp;Vorschläge</translation>
+        <translation>&amp;Vorschläge anzeigen</translation>
     </message>
     <message>
         <location/>
         <source>Set whether or not to display translation guesses.</source>
-        <translation>Aktiviere/Deaktivere Darstellung von Übersetzungsvorschlägen.</translation>
+        <translation>Darstellung von Übersetzungsvorschlägen aktivieren/deaktivieren.</translation>
     </message>
     <message>
         <location/>
@@ -1107,7 +1107,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation>Informationen über das Qt-Toolkit von Trolltech an.</translation>
+        <translation>Informationen über das Qt-Toolkit von Trolltech anzeigen.</translation>
     </message>
     <message>
         <location/>
@@ -1132,18 +1132,18 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&amp;Search And Translate...</source>
-        <translation>Suchen und &amp;Übersetzen...</translation>
+        <translation>Suchen und &amp;übersetzen ...</translation>
     </message>
     <message>
         <location/>
         <source>Replace the translation on all entries that matches the search source text.</source>
-        <translation>Ersetze die Übersetzung von allen Einträgen, die dem Suchtext entsprechen.</translation>
+        <translation>Die Übersetzung aller Einträge ersetzen, die dem Suchtext entsprechen.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+21"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>&amp;Batch Translation...</source>
-        <translation>&amp;Automatische Übersetzung...</translation>
+        <translation>&amp;Automatische Übersetzung ...</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
@@ -1160,7 +1160,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
-        <translation>Eine Qt-Nachrichtendatei aus der aktuellen Übersetzungsdatei erzeugen. Der Dateiname wird automatisch aus dem Namen der .ts-Datei abgeleitet.</translation>
+        <translation>Eine Qt-Nachrichtendatei aus der aktuellen Übersetzungsdatei erzeugen. Der Dateiname wird automatisch aus dem Namen der TS-Datei abgeleitet.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
@@ -1224,7 +1224,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location line="+125"/>
         <source>Loading...</source>
-        <translation>Lade...</translation>
+        <translation>Lade ...</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -1298,7 +1298,7 @@ Alle Dateien (*)</translation>
         <location line="+27"/>
         <location line="+355"/>
         <source>Printing...</source>
-        <translation>Drucke...</translation>
+        <translation>Drucke ...</translation>
     </message>
     <message>
         <location line="-347"/>
@@ -1324,7 +1324,7 @@ Alle Dateien (*)</translation>
         <location line="+15"/>
         <location line="+307"/>
         <source>Printing... (page %1)</source>
-        <translation>Drucke... (Seite %1)</translation>
+        <translation>Drucke ... (Seite %1)</translation>
     </message>
     <message>
         <location line="-300"/>
@@ -1355,7 +1355,7 @@ Alle Dateien (*)</translation>
         <location line="+40"/>
         <location line="+10"/>
         <source>Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Linguist</translation>
     </message>
     <message>
         <location line="-1204"/>
@@ -1393,7 +1393,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+23"/>
         <source>No more occurrences of &apos;%1&apos;. Start over?</source>
-        <translation>Keine weiteren Fundstellen von &apos;%1&apos;. Von vorne beginnen?</translation>
+        <translation>Keine weiteren Vorkommen von &apos;%1&apos;. Von vorne beginnen?</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -1440,7 +1440,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="-9"/>
         <source>No appropriate phrasebook found.</source>
-        <translation>Es wurde kein geeignetes Wörterbuch gefunden.</translation>
+        <translation>Es kann kein geeignetes Wörterbuch gefunden werden.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1484,12 +1484,12 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+43"/>
         <source>Qt Linguist[*]</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Linguist[*]</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>%1[*] - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>%1[*] - Qt Linguist</translation>
     </message>
     <message>
         <location line="+267"/>
@@ -1510,27 +1510,27 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+1"/>
         <source>Ctrl+M</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+M</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Display the manual for %1.</source>
-        <translation>Zeige Handbuch für %1 an.</translation>
+        <translation>Handbuch zu %1 anzeigen.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Display information about %1.</source>
-        <translation>Zeige Informationen über %1 an.</translation>
+        <translation>Informationen über %1 anzeigen.</translation>
     </message>
     <message>
         <location line="+70"/>
         <source>&amp;Save &apos;%1&apos;</source>
-        <translation>&apos;%1&apos; &amp;Speichern</translation>
+        <translation>&apos;%1&apos; &amp;speichern</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save &apos;%1&apos; &amp;As...</source>
-        <translation>Speichere &apos;%1&apos; &amp;unter...</translation>
+        <translation>&apos;%1&apos; speichern &amp;unter ...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1540,12 +1540,12 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+1"/>
         <source>Release &apos;%1&apos; As...</source>
-        <translation>Gebe &apos;%1&apos;frei unter ...</translation>
+        <translation>&apos;%1&apos; freigeben unter ...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Close &apos;%1&apos;</source>
-        <translation>&apos;%1&apos; &amp;Schließen</translation>
+        <translation>&apos;%1&apos; &amp;schließen</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1572,22 +1572,22 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+23"/>
         <source>Translation File &amp;Settings for &apos;%1&apos;...</source>
-        <translation>Einstellungen der Übersetzungs&amp;datei für &apos;%1&apos;...</translation>
+        <translation>Einstellungen der Übersetzungs&amp;datei für &apos;%1&apos; ...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Batch Translation of &apos;%1&apos;...</source>
-        <translation>&amp;Automatische Übersetzung von &apos;%1&apos;...</translation>
+        <translation>&amp;Automatische Übersetzung von &apos;%1&apos; ...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Search And &amp;Translate in &apos;%1&apos;...</source>
-        <translation>Suchen und &amp;Übersetzen in &apos;%1&apos;...</translation>
+        <translation>Suchen und &amp;übersetzen in &apos;%1&apos; ...</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Search And &amp;Translate...</source>
-        <translation>Suchen und &amp;Übersetzen...</translation>
+        <translation>Suchen und &amp;übersetzen ...</translation>
     </message>
     <message>
         <location line="+51"/>
@@ -1622,27 +1622,27 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+84"/>
         <source>Cannot read from phrase book &apos;%1&apos;.</source>
-        <translation>Kann Wörterbuch &apos;%1&apos; nicht lesen.</translation>
+        <translation>Wörterbuch &apos;%1&apos; kann nicht gelesen werden.</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Close this phrase book.</source>
-        <translation>Schließe dieses Wörterbuch.</translation>
+        <translation>Dieses Wörterbuch schließen.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Enables you to add, modify, or delete entries in this phrase book.</source>
-        <translation>Erlaubt das Hinzufügen, Ändern und Entfernen von Einträgen aus dem Wörterbuch.</translation>
+        <translation>Erlaubt das Hinzufügen, Ändern und Entfernen von Wörterbuch-Einträgen.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Print the entries in this phrase book.</source>
-        <translation>Drucke die Einträge des Wörterbuchs.</translation>
+        <translation>Die Einträge des Wörterbuchs drucken.</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Cannot create phrase book &apos;%1&apos;.</source>
-        <translation>Kann Wörterbuch &apos;%1&apos; nicht erzeugen.</translation>
+        <translation>Wörterbuch &apos;%1&apos; kann nicht erzeugt werden.</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1657,7 +1657,7 @@ Alle Dateien (*)</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Open/Refresh Form &amp;Preview</source>
-        <translation>Öffne/Aktualisiere die &amp;Vorschau</translation>
+        <translation>Die &amp;Vorschau öffnen/&amp;aktualisieren</translation>
     </message>
     <message>
         <location/>
@@ -1673,7 +1673,7 @@ Alle Dateien (*)</translation>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-527"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Translation File &amp;Settings...</source>
-        <translation>E&amp;instellungen...</translation>
+        <translation>E&amp;instellungen ...</translation>
     </message>
     <message>
         <source>Other &amp;Languages...</source>
@@ -1686,7 +1686,7 @@ Alle Dateien (*)</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>&amp;Add to Phrase Book</source>
-        <translation>&amp;Füge zum Wörterbuch hinzu</translation>
+        <translation>Zum Wörterbuch &amp;hinzufügen</translation>
     </message>
     <message>
         <location/>
@@ -1696,12 +1696,12 @@ Alle Dateien (*)</translation>
     <message>
         <location/>
         <source>Ctrl+J</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+J</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+Shift+J</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Shift+J</translation>
     </message>
 </context>
 <context>
@@ -1893,7 +1893,7 @@ Zeile: %2</translation>
     <message>
         <location line="+55"/>
         <source>%1[*] - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>%1[*] - Qt Linguist</translation>
     </message>
     <message>
         <location line="+90"/>
@@ -1903,12 +1903,12 @@ Zeile: %2</translation>
     <message>
         <location line="+1"/>
         <source>Cannot save phrase book &apos;%1&apos;.</source>
-        <translation>Kann Wörterbuch &apos;%1&apos; nicht speichern.</translation>
+        <translation>Wörterbuch &apos;%1&apos; kann nicht gespeichert werden.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/phrasebookbox.ui"/>
         <source>Edit Phrase Book</source>
-        <translation>Ändere Wörterbuch</translation>
+        <translation>Wörterbuch bearbeiten</translation>
     </message>
     <message>
         <source>This window allows you to add, modify, or delete phrases in a phrase book.</source>
@@ -1917,7 +1917,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
-        <translation>Dieses Fenster erlaubt das Hinzufügen, Ändern und Entfernen von Einträgen aus dem Wörterbuch.</translation>
+        <translation>Dieses Fenster erlaubt das Hinzufügen, Ändern und Entfernen von Wörterbuch-Einträgen.</translation>
     </message>
     <message>
         <location/>
@@ -1927,7 +1927,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>This is the phrase in the target language corresponding to the source phrase.</source>
-        <translation>Dies ist der Text, die in der Zielsprache dem Ursprungstext entspricht.</translation>
+        <translation>Dies ist der Text, der in der Zielsprache dem Ursprungstext entspricht.</translation>
     </message>
     <message>
         <location/>
@@ -1952,7 +1952,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>Click here to add the phrase to the phrase book.</source>
-        <translation>Füge eine neuen Eintrag ins Wörterbuch hinzu.</translation>
+        <translation>Einen neuen Eintrag ins Wörterbuch einfügen.</translation>
     </message>
     <message>
         <location/>
@@ -1962,17 +1962,17 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>Click here to remove the entry from the phrase book.</source>
-        <translation>Entferne den Eintrag aus dem Wörterbuch.</translation>
+        <translation>Den Eintrag aus dem Wörterbuch entfernen.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Remove Entry</source>
-        <translation>&amp;Entferne Eintrag</translation>
+        <translation>&amp;Eintrag entfernen</translation>
     </message>
     <message>
         <location/>
         <source>Settin&amp;gs...</source>
-        <translation>&amp;Einstellungen...</translation>
+        <translation>&amp;Einstellungen ...</translation>
     </message>
     <message>
         <source>&amp;New Phrase</source>
@@ -1989,7 +1989,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>Click here to save the changes made.</source>
-        <translation>Speichere Änderungen.</translation>
+        <translation>Änderungen speichern.</translation>
     </message>
     <message>
         <location/>
@@ -1999,7 +1999,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>Click here to close this window.</source>
-        <translation>Klicken Sie hier um das Fenster zu schließen.</translation>
+        <translation>Klicken Sie hier, um das Fenster zu schließen.</translation>
     </message>
     <message>
         <location/>
@@ -2053,7 +2053,7 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/shared/qm.cpp" line="+12"/>
         <source>Compiled Qt translations</source>
-        <translation type="unfinished"></translation>
+        <translation>Kompilierte Qt-Übersetzungen</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1279"/>
@@ -2079,7 +2079,7 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/shared/cpp.cpp" line="+1072"/>
         <source>C++ source files</source>
-        <translation>C++-Quelltextdateien&apos;</translation>
+        <translation>C++-Quelltextdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/java.cpp" line="+646"/>
@@ -2089,7 +2089,7 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
         <source>GNU Gettext localization files</source>
-        <translation>GNU-Gettext Übersetzungsdateien</translation>
+        <translation>GNU-Gettext-Übersetzungsdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/qscript.cpp" line="+2399"/>
@@ -2109,7 +2109,7 @@ Zeile: %2</translation>
     <message>
         <location line="+9"/>
         <source>Qt translation sources (latest format)</source>
-        <translation>Qt Übersetzungsdateien (aktuelles Format)</translation>
+        <translation>Qt-Übersetzungsdateien (aktuelles Format)</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
@@ -2213,7 +2213,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>Words:</source>
-        <translation>Worte:</translation>
+        <translation>Wörter:</translation>
     </message>
     <message>
         <location/>
@@ -2654,7 +2654,7 @@ Alle Dateien (*)</translation>
     <message>
         <location/>
         <source>Search options</source>
-        <translation>Suchoptionen</translation>
+        <translation>Sucheinstellungen</translation>
     </message>
     <message>
         <location/>
@@ -2669,12 +2669,12 @@ Alle Dateien (*)</translation>
     <message>
         <location/>
         <source>Mark new translation as &amp;finished</source>
-        <translation>Markiere neue Übersetzung als &amp;erledigt</translation>
+        <translation>Neue Übersetzung als &amp;erledigt markieren</translation>
     </message>
     <message>
         <location/>
         <source>Click here to find the next occurrence of the text you typed in.</source>
-        <translation>Hier klicken für das nächste Vorkommen des Suchtextes.</translation>
+        <translation>Klicken Sie hier, um zum nächsten Vorkommen des Suchtextes zu springen.</translation>
     </message>
     <message>
         <location/>
@@ -2689,12 +2689,12 @@ Alle Dateien (*)</translation>
     <message>
         <location/>
         <source>Translate All</source>
-        <translation>Alle Übersetzen</translation>
+        <translation>Alle übersetzen</translation>
     </message>
     <message>
         <location/>
         <source>Click here to close this window.</source>
-        <translation>Klicken Sie hier um das Fenster zu schließen.</translation>
+        <translation>Klicken Sie hier, um das Fenster zu schließen.</translation>
     </message>
     <message>
         <location/>

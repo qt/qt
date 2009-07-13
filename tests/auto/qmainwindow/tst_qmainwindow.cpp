@@ -1400,6 +1400,7 @@ void AddDockWidget::apply(QMainWindow *mw) const
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 struct MoveSeparator
 {
     MoveSeparator() {}
@@ -1434,11 +1435,9 @@ void MoveSeparator::apply(QMainWindow *mw) const
     }
     QVERIFY(!path.isEmpty());
 
-    QVector<QLayoutStruct> cache;
-
-    l->layoutState.dockAreaLayout.separatorMove(path, QPoint(0, 0), QPoint(delta, delta), &cache);
-
+    l->layoutState.dockAreaLayout.separatorMove(path, QPoint(0, 0), QPoint(delta, delta));
 }
+#endif
 
 QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
 {
@@ -1466,6 +1465,7 @@ QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
 
 void tst_QMainWindow::saveRestore_data()
 {
+#ifdef QT_BUILD_INTERNAL
     QTest::addColumn<AddList >("addList");
     QTest::addColumn<MoveList >("moveList");
 
@@ -1500,10 +1500,12 @@ void tst_QMainWindow::saveRestore_data()
                           << MoveSeparator(-30, "right1")
                           << MoveSeparator(30, "right2a")
                           );
+#endif
 }
 
 void tst_QMainWindow::saveRestore()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(AddList, addList);
     QFETCH(MoveList, moveList);
 
@@ -1573,6 +1575,7 @@ void tst_QMainWindow::saveRestore()
         mainWindow.show();
         COMPARE_DOCK_WIDGET_GEOS(dockWidgetGeos, dockWidgetGeometries(&mainWindow));
     }
+#endif
 }
 
 void tst_QMainWindow::iconSizeChanged()

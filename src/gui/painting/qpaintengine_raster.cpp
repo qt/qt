@@ -3353,6 +3353,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         break;
     default:
         Q_ASSERT(false);
+        depth = 0;
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
@@ -3380,6 +3381,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
             break;
         default:
             Q_ASSERT(false);
+            pitch = 0;
         };
 
         alphaPenBlt(glyph->data, pitch, depth,

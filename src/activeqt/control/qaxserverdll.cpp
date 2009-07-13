@@ -50,7 +50,7 @@ bool qax_ownQApp = false;
 HHOOK qax_hhook = 0;
 
 // in qaxserver.cpp
-extern char qAxModuleFilename[MAX_PATH];
+extern wchar_t qAxModuleFilename[MAX_PATH];
 extern bool qAxIsServer;
 extern ITypeLib *qAxTypeLibrary;
 extern unsigned long qAxLockCount();
@@ -120,7 +120,7 @@ STDAPI DllCanUnloadNow()
 
 EXTERN_C BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpvReserved)
 {
-    GetModuleFileNameA(hInstance, qAxModuleFilename, MAX_PATH-1);
+    GetModuleFileName(hInstance, qAxModuleFilename, MAX_PATH);
     qAxInstance = hInstance;
     qAxIsServer = true;
     

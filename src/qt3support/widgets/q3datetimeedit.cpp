@@ -114,39 +114,21 @@ static void readLocaleSettings()
     lTimeSep = new QString();
 
 #if defined(Q_WS_WIN)
-    QT_WA({
-        TCHAR data[10];
-        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDATE, data, 10);
-        *lDateSep = QString::fromUtf16((ushort*)data);
-        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STIME, data, 10);
-        *lTimeSep = QString::fromUtf16((ushort*)data);
-        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ITIME, data, 10);
-        lAMPM = QString::fromUtf16((ushort*)data).toInt()==0;
-        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_S1159, data, 10);
-        QString am = QString::fromUtf16((ushort*)data);
-        if (!am.isEmpty())
-            lAM = new QString(am);
-        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_S2359, data, 10);
-        QString pm = QString::fromUtf16((ushort*)data);
-        if (!pm.isEmpty() )
-            lPM = new QString(pm);
-    } , {
-        char data[10];
-        GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SDATE, (char*)&data, 10);
-        *lDateSep = QString::fromLocal8Bit(data);
-        GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_STIME, (char*)&data, 10);
-        *lTimeSep = QString::fromLocal8Bit(data);
-        GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_ITIME, (char*)&data, 10);
-        lAMPM = QString::fromLocal8Bit(data).toInt()==0;
-        GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_S1159, (char*)&data, 10);
-        QString am = QString::fromLocal8Bit(data);
-        if (!am.isEmpty())
-            lAM = new QString(am);
-        GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_S2359, (char*)&data, 10);
-        QString pm = QString::fromLocal8Bit(data);
-        if (!pm.isEmpty())
-            lPM = new QString(pm);
-    });
+    wchar_t data[10];
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDATE, data, 10);
+    *lDateSep = QString::fromWCharArray(data);
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STIME, data, 10);
+    *lTimeSep = QString::fromWCharArray(data);
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ITIME, data, 10);
+    lAMPM = QString::fromWCharArray(data).toInt() == 0;
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_S1159, data, 10);
+    QString am = QString::fromWCharArray(data);
+    if (!am.isEmpty())
+        lAM = new QString(am);
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_S2359, data, 10);
+    QString pm = QString::fromWCharArray(data);
+    if (!pm.isEmpty() )
+        lPM = new QString(pm);
 #else
     *lDateSep = QLatin1Char('-');
     *lTimeSep = QLatin1Char(':');
@@ -2666,13 +2648,12 @@ Q3DateTimeEdit::~Q3DateTimeEdit()
 }
 
 
-/*!
+/*! \fn void Q3DateTimeEdit::resizeEvent(QResizeEvent *event)
     \reimp
 
-    Intercepts and handles resize events which have special meaning
-    for the Q3DateTimeEdit.
+    Intercepts and handles the resize \a event, which hase a
+    special meaning for the Q3DateTimeEdit.
 */
-
 void Q3DateTimeEdit::resizeEvent(QResizeEvent *)
 {
     int dw = de->sizeHint().width();

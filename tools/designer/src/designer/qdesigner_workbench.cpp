@@ -410,6 +410,12 @@ void QDesignerWorkbench::switchToDockedMode()
 
     switchToNeutralMode();
 
+#ifndef Q_WS_MAC
+    QDesignerToolWindow *widgetBoxWrapper = widgetBoxToolWindow();
+    widgetBoxWrapper->action()->setVisible(true);
+    widgetBoxWrapper->setWindowTitle(tr("Widget Box"));
+#endif
+
     m_mode = DockedMode;
     const QDesignerSettings settings(m_core);
     m_dockedMainWindow = new DockedMainWindow(this, m_toolbarMenu, m_toolWindows);
@@ -462,8 +468,6 @@ void QDesignerWorkbench::switchToTopLevelMode()
     // make sure that the widgetbox is visible if it is different from neutral.
     QDesignerToolWindow *widgetBoxWrapper = widgetBoxToolWindow();
     Q_ASSERT(widgetBoxWrapper);
-    if (!widgetBoxWrapper->action()->isChecked())
-        widgetBoxWrapper->action()->trigger();
 
     switchToNeutralMode();
     const QPoint desktopOffset = desktopGeometry().topLeft();
@@ -501,9 +505,6 @@ void QDesignerWorkbench::switchToTopLevelMode()
         tw->action()->setChecked(tw->isVisible());
         found_visible_window |= tw->isVisible();
     }
-
-    if (!widgetBoxWrapper->action()->isChecked())
-        widgetBoxWrapper->action()->trigger();
 
     if (!m_toolWindows.isEmpty() && !found_visible_window)
         m_toolWindows.first()->show();
@@ -960,7 +961,7 @@ QDesignerFormWindow * QDesignerWorkbench::loadForm(const QString &fileName,
         removeFormWindow(formWindow);
         formWindowManager->removeFormWindow(editor);
         m_core->metaDataBase()->remove(editor);
-        *errorMessage = tr("The file <b>%1</b> is not a valid Designer ui file.").arg(file.fileName());
+        *errorMessage = tr("The file <b>%1</b> is not a valid Designer UI file.").arg(file.fileName());
         return 0;
     }
     *uic3Converted = editor->fileName().isEmpty();

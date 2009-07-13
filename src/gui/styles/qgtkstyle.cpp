@@ -150,7 +150,6 @@ bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
     if (e->type() == QEvent::ApplicationPaletteChange) {
         // Only do this the first time since this will also
         // generate applicationPaletteChange events
-        extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
         if (!qt_app_palettes_hash() ||  qt_app_palettes_hash()->isEmpty()) {
             QGtk::applyCustomPaletteHash();
         }
@@ -685,11 +684,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
 
         QPixmap pixmap;
-        QPixmapCache::find(pmKey, pixmap);
         QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
 
         // Only draw through style once
-        if (pixmap.isNull()) {
+        if (!QPixmapCache::find(pmKey, pixmap)) {
             pixmap = QPixmap(pmSize, pmSize);
             pixmap.fill(Qt::transparent);
             QPainter pmPainter(&pixmap);

@@ -54,6 +54,7 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qset.h"
 #include "qpixmapcache.h"
 #include "qgraphicsview_p.h"
 
@@ -118,6 +119,7 @@ public:
         parent(0),
         transformData(0),
         index(-1),
+        siblingIndex(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -148,11 +150,14 @@ public:
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
-        geometryChanged(0),
+        geometryChanged(1),
         inDestructor(0),
         isObject(0),
         ignoreVisible(0),
         ignoreOpacity(0),
+        acceptTouchEvents(0),
+        acceptedTouchBeginEvent(0),
+        sceneTransformTranslateOnly(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -160,6 +165,15 @@ public:
 
     inline virtual ~QGraphicsItemPrivate()
     { }
+
+    static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
+    static QGraphicsItemPrivate *get(QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
 
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
@@ -174,7 +188,8 @@ public:
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
-    
+    void updateSceneTransformFromParent();
+
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
@@ -243,7 +258,7 @@ public:
             }
         }
     }
-    
+
     struct ExtraStruct {
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
@@ -255,7 +270,7 @@ public:
         bool operator<(Extra extra) const
         { return type < extra; }
     };
-    
+
     QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
@@ -283,6 +298,13 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+    void ensureSceneTransform();
+
+    inline bool hasTranslateOnlySceneTransform()
+    {
+        ensureSceneTransform();
+        return sceneTransformTranslateOnly;
+    }
 
     inline void invalidateChildrenSceneTransform()
     {
@@ -367,6 +389,7 @@ public:
     }
 
     inline QTransform transformToParent() const;
+    inline void ensureSortedChildren();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -382,9 +405,10 @@ public:
     TransformData *transformData;
     QTransform sceneTransform;
     int index;
+    int siblingIndex;
     int depth;
 
-    // Packed 32 bits
+    // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -401,8 +425,8 @@ public:
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
     quint32 isWidget : 1;
-    quint32 dirty : 1;    
-    quint32 dirtyChildren : 1;    
+    quint32 dirty : 1;
+    quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
@@ -412,7 +436,7 @@ public:
     quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 12;
+    quint32 flags : 13;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
@@ -421,7 +445,10 @@ public:
     quint32 isObject : 1;
     quint32 ignoreVisible : 1;
     quint32 ignoreOpacity : 1;
-    quint32 unused : 12; // feel free to use
+    quint32 acceptTouchEvents : 1;
+    quint32 acceptedTouchBeginEvent : 1;
+    quint32 sceneTransformTranslateOnly : 1;
+    quint32 unused : 8; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
@@ -452,6 +479,10 @@ struct QGraphicsItemPrivate::TransformData {
         if (onlyTransform) {
             if (!postmultiplyTransform)
                 return transform;
+            if (postmultiplyTransform->isIdentity())
+                return transform;
+            if (transform.isIdentity())
+                return *postmultiplyTransform;
             QTransform x(transform);
             x *= *postmultiplyTransform;
             return x;
@@ -472,6 +503,29 @@ struct QGraphicsItemPrivate::TransformData {
     }
 };
 
+/*!
+    \internal
+*/
+inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Return true if sibling item1 is on top of item2.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr;
+    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
+    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
+    if (f1 != f2)
+        return f2;
+    if (d1->z != d2->z)
+        return d1->z > d2->z;
+    return d1->siblingIndex > d2->siblingIndex;
+}
+
+/*!
+    \internal
+*/
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{ return qt_closestLeaf(item2, item1); }
+
 /*
    return the full transform of the item to the parent.  This include the position and all the transform data
 */
@@ -480,6 +534,14 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
     QTransform matrix;
     combineTransformToParent(&matrix);
     return matrix;
+}
+
+inline void QGraphicsItemPrivate::ensureSortedChildren()
+{
+    if (needSortChildren) {
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
+        needSortChildren = 0;
+    }
 }
 
 QT_END_NAMESPACE

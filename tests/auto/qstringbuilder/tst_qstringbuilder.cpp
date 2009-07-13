@@ -85,13 +85,10 @@
 #undef QT_NO_CAST_TO_ASCII
 #endif
 
-
 #include <QtTest/QtTest>
 
 //TESTED_CLASS=QStringBuilder
 //TESTED_FILES=qstringbuilder.cpp
-
-#include <qtest.h>
 
 #define LITERAL "some literal"
 
@@ -99,14 +96,7 @@ class tst_QStringBuilder : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QStringBuilder() {}
-    ~tst_QStringBuilder() {}
-
-public slots:
-    void init() {}
-    void cleanup() {}
-
+private slots:
     void scenario();
 };
 
@@ -119,6 +109,7 @@ void tst_QStringBuilder::scenario()
     QLatin1Char achar('c');
     QString r2(QLatin1String(LITERAL LITERAL));
     QString r;
+    QByteArray ba(LITERAL);
 
     r = l1literal P l1literal;
     QCOMPARE(r, r2);
@@ -138,6 +129,10 @@ void tst_QStringBuilder::scenario()
     r = string P LITERAL;
     QCOMPARE(r, r2);
     r = LITERAL P string;
+    QCOMPARE(r, r2);
+    r = ba P string;
+    QCOMPARE(r, r2);
+    r = string P ba;
     QCOMPARE(r, r2);
 #endif
 }

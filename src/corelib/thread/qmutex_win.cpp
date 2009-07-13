@@ -50,19 +50,7 @@ QT_BEGIN_NAMESPACE
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
     : recursive(mode == QMutex::Recursive), contenders(0), lastSpinCount(0), owner(0), count(0)
 {
-    if (QSysInfo::WindowsVersion == 0) {
-        // mutex was created before initializing WindowsVersion. this
-        // can happen when creating the resource file engine handler,
-        // for example. try again with just the A version
-#ifdef Q_OS_WINCE
-        event = CreateEventW(0, FALSE, FALSE, 0);
-#else
-        event = CreateEventA(0, FALSE, FALSE, 0);
-#endif
-    } else {
-        event = QT_WA_INLINE(CreateEventW(0, FALSE, FALSE, 0),
-                             CreateEventA(0, FALSE, FALSE, 0));
-    }
+    event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
         qWarning("QMutexPrivate::QMutexPrivate: Cannot create event");
 }

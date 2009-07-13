@@ -126,9 +126,9 @@ QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
 
 QAlphaWidget::~QAlphaWidget()
 {
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     // Restore user-defined opacity value
-    if (widget && QSysInfo::WindowsVersion >= QSysInfo::WV_2000 && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+    if (widget)
         widget->setWindowOpacity(windowOpacity);
 #endif
 }
@@ -160,43 +160,40 @@ void QAlphaWidget::run(int time)
     checkTime.start();
 
     showWidget = true;
-#if defined(Q_OS_WIN)
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_2000 && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based) {
-        qApp->installEventFilter(this);
-        widget->setWindowOpacity(0.0);
-        widget->show();
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    qApp->installEventFilter(this);
+    widget->setWindowOpacity(0.0);
+    widget->show();
+    connect(&anim, SIGNAL(timeout()), this, SLOT(render()));
+    anim.start(1);
+#else
+    //This is roughly equivalent to calling setVisible(true) without actually showing the widget
+    widget->setAttribute(Qt::WA_WState_ExplicitShowHide, true);
+    widget->setAttribute(Qt::WA_WState_Hidden, false);
+
+    qApp->installEventFilter(this);
+
+    move(widget->geometry().x(),widget->geometry().y());
+    resize(widget->size().width(), widget->size().height());
+
+    frontImage = QPixmap::grabWidget(widget).toImage();
+    backImage = QPixmap::grabWindow(QApplication::desktop()->winId(),
+                                widget->geometry().x(), widget->geometry().y(),
+                                widget->geometry().width(), widget->geometry().height()).toImage();
+
+    if (!backImage.isNull() && checkTime.elapsed() < duration / 2) {
+        mixedImage = backImage.copy();
+        pm = QPixmap::fromImage(mixedImage);
+        show();
+        setEnabled(false);
+
         connect(&anim, SIGNAL(timeout()), this, SLOT(render()));
         anim.start(1);
-    } else
-#endif
-    {
-        //This is roughly equivalent to calling setVisible(true) without actually showing the widget
-        widget->setAttribute(Qt::WA_WState_ExplicitShowHide, true);
-        widget->setAttribute(Qt::WA_WState_Hidden, false);
-
-        qApp->installEventFilter(this);
-
-        move(widget->geometry().x(),widget->geometry().y());
-        resize(widget->size().width(), widget->size().height());
-
-        frontImage = QPixmap::grabWidget(widget).toImage();
-        backImage = QPixmap::grabWindow(QApplication::desktop()->winId(),
-                                    widget->geometry().x(), widget->geometry().y(),
-                                    widget->geometry().width(), widget->geometry().height()).toImage();
-
-        if (!backImage.isNull() && checkTime.elapsed() < duration / 2) {
-            mixedImage = backImage.copy();
-            pm = QPixmap::fromImage(mixedImage);
-            show();
-            setEnabled(false);
-
-            connect(&anim, SIGNAL(timeout()), this, SLOT(render()));
-            anim.start(1);
-        } else {
-           duration = 0;
-           render();
-        }
+    } else {
+       duration = 0;
+       render();
     }
+#endif
 }
 
 /*
@@ -270,19 +267,17 @@ void QAlphaWidget::render()
     else
         alpha = 1;
 
-#if defined(Q_OS_WIN)
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_2000 && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based) {
-        if (alpha >= windowOpacity || !showWidget) {
-            anim.stop();
-            qApp->removeEventFilter(this);
-            widget->setWindowOpacity(windowOpacity);
-            q_blend = 0;
-            deleteLater();
-        } else {
-            widget->setWindowOpacity(alpha);
-        }
-    } else
-#endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    if (alpha >= windowOpacity || !showWidget) {
+        anim.stop();
+        qApp->removeEventFilter(this);
+        widget->setWindowOpacity(windowOpacity);
+        q_blend = 0;
+        deleteLater();
+    } else {
+        widget->setWindowOpacity(alpha);
+    }
+#else
     if (alpha >= 1 || !showWidget) {
         anim.stop();
         qApp->removeEventFilter(this);
@@ -292,7 +287,7 @@ void QAlphaWidget::render()
 #ifdef Q_WS_WIN
                 setEnabled(true);
                 setFocus();
-#endif
+#endif // Q_WS_WIN
                 widget->hide();
             } else {
                 //Since we are faking the visibility of the widget 
@@ -309,6 +304,7 @@ void QAlphaWidget::render()
         pm = QPixmap::fromImage(mixedImage);
         repaint();
     }
+#endif // defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 }
 
 /*

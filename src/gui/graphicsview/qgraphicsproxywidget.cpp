@@ -275,7 +275,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
 
     QWidget *embeddedMouseGrabberPtr = (QWidget *)embeddedMouseGrabber;
     QApplicationPrivate::sendMouseEvent(receiver, mouseEvent, alienWidget, widget,
-                                        &embeddedMouseGrabberPtr, lastWidgetUnderMouse);
+                                        &embeddedMouseGrabberPtr, lastWidgetUnderMouse, event->spontaneous());
     embeddedMouseGrabber = embeddedMouseGrabberPtr;
 
     // Handle enter/leave events when last button is released from mouse
@@ -447,6 +447,22 @@ void QGraphicsProxyWidgetPrivate::updateProxyGeometryFromWidget()
     q->setGeometry(widgetGeometry);
     posChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
     sizeChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsProxyWidgetPrivate::updateProxyInputMethodAcceptanceFromWidget()
+{
+    Q_Q(QGraphicsProxyWidget);
+    if (!widget)
+        return;
+
+    QWidget *focusWidget = widget->focusWidget();
+    if (!focusWidget)
+        focusWidget = widget;
+    q->setFlag(QGraphicsItem::ItemAcceptsInputMethod,
+               focusWidget->testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 /*!
@@ -689,6 +705,8 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     q->setMaximumSize(sz.isNull() ? QSizeF() : QSizeF(sz));
 
     updateProxyGeometryFromWidget();
+
+    updateProxyInputMethodAcceptanceFromWidget();
 
     // Hook up the event filter to keep the state up to date.
     newWidget->installEventFilter(q);
@@ -1303,8 +1321,8 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
 	if (d->widget && d->widget->focusWidget()) {
 	    d->widget->focusWidget()->setFocus(event->reason());
 	    return;
-	}
-	break;
+        }
+        break;
     }
 }
 

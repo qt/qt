@@ -862,11 +862,6 @@ void tst_QFileInfo::fileTimes()
 #if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)
     QVERIFY(fileInfo.created() < beforeWrite);
 #endif
-#ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        QVERIFY(fileInfo.lastRead().addDays(1) > beforeRead);
-    } else
-#endif
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
@@ -897,26 +892,14 @@ void tst_QFileInfo::fileTimes_oldFile()
     // WriteOnly can create files, ReadOnly cannot.
     DWORD creationDisp = OPEN_ALWAYS;
 
-    HANDLE fileHandle;
-
     // Create the file handle.
-    QT_WA({
-        fileHandle = CreateFileW(L"oldfile.txt",
-            accessRights,
-            shareMode,
-            &securityAtts,
-            creationDisp,
-            flagsAndAtts,
-            NULL);
-    }, {
-        fileHandle = CreateFileA("oldfile.txt",
-            accessRights,
-            shareMode,
-            &securityAtts,
-            creationDisp,
-            flagsAndAtts,
-            NULL);
-    });
+    HANDLE fileHandle = CreateFile(L"oldfile.txt",
+        accessRights,
+        shareMode,
+        &securityAtts,
+        creationDisp,
+        flagsAndAtts,
+        NULL);
 
     // Set file times back to 1601.
     FILETIME ctime;

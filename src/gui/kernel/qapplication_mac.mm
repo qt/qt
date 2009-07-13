@@ -164,7 +164,6 @@ QT_BEGIN_NAMESPACE
 //for qt_mac.h
 QPaintDevice *qt_mac_safe_pdev = 0;
 QList<QMacWindowChangeEvent*> *QMacWindowChangeEvent::change_events = 0;
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash(); // qapplication.cpp
 
 /*****************************************************************************
   Internal variables and functions
@@ -527,9 +526,9 @@ void qt_mac_update_os_settings()
         for(int i = 0; mac_widget_fonts[i].qt_class; i++) {
             QFont fnt = qfontForThemeFont(mac_widget_fonts[i].font_key);
             bool set_font = true;
-            QHash<QByteArray, QFont> *hash = qt_app_fonts_hash();
+            FontHash *hash = qt_app_fonts_hash();
             if (!hash->isEmpty()) {
-                QHash<QByteArray, QFont>::const_iterator it
+                FontHash::const_iterator it
                                         = hash->constFind(mac_widget_fonts[i].qt_class);
                 if (it != hash->constEnd())
                     set_font = (fnt != *it);
@@ -628,10 +627,9 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
             }
 
             bool set_palette = true;
-            extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
-            QHash<QByteArray, QPalette> *phash = qt_app_palettes_hash();
+            PaletteHash *phash = qt_app_palettes_hash();
             if (!phash->isEmpty()) {
-                QHash<QByteArray, QPalette>::const_iterator it
+                PaletteHash::const_iterator it
                                     = phash->constFind(mac_widget_colors[i].qt_class);
                 if (it != phash->constEnd())
                     set_palette = (pal != *it);
@@ -1071,7 +1069,7 @@ void qt_init(QApplicationPrivate *priv, int)
         if (GetCurrentProcess(&psn) == noErr) {
             // Jambi needs to transform itself since most people aren't "used"
             // to putting things in bundles, but other people may actually not
-            // want to tranform the process (running as a helper or somethng)
+            // want to tranform the process (running as a helper or something)
             // so don't do that for them. This means checking both LSUIElement
             // and LSBackgroundOnly. If you set them both... well, you
             // shouldn't do that.
@@ -1318,8 +1316,13 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
+#else
     if (qApp && qApp->activeWindow())
         qt_mac_set_cursor(&qApp->d_func()->cursor_list.first(), QCursor::pos());
+#endif
 }
 
 void QApplication::restoreOverrideCursor()
@@ -1328,12 +1331,17 @@ void QApplication::restoreOverrideCursor()
         return;
     qApp->d_func()->cursor_list.removeFirst();
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [NSCursor pop];
+#else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
         qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first(), QCursor::pos());
     }
-}
 #endif
+}
+#endif // QT_NO_CURSOR
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
@@ -1367,29 +1375,6 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
     }
     return 0; // Couldn't find a window at this point
 #endif
-}
-
-static QWidget *qt_mac_recursive_widgetAt(QWidget *widget, int x, int y)
-{
-    if (!widget)
-        return 0;
-    const QObjectList kids = widget->children();
-    for(int i = kids.size()-1; i >= 0; --i) {
-        if ( QWidget *kid = qobject_cast<QWidget*>(kids.at(i)) ) {
-            if (kid->isVisible() && !kid->isTopLevel() &&
-                    !kid->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-                const int wx=kid->x(), wy=kid->y(),
-                      wx2=wx+kid->width(), wy2=wy+kid->height();
-                if (x >= wx && y >= wy && x < wx2 && y < wy2) {
-                    const QRegion mask = kid->mask();
-                    if (!mask.isEmpty() && !mask.contains(QPoint(x-wx, y-wy)))
-                        continue;
-                    return qt_mac_recursive_widgetAt(kid, x-wx, y-wy);
-                }
-            }
-        }
-    }
-    return widget;
 }
 
 /*****************************************************************************
@@ -1762,7 +1747,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                     if(window) {
                         HIViewRef hiview;
                         if(HIViewGetViewForMouseEvent(HIViewGetRoot(window), event, &hiview) == noErr) {
-                            widget = QWidget::find((WId)hiview);;
+                            widget = QWidget::find((WId)hiview);
                             if (widget) {
                                 // Make sure we didn't pass over a widget with a "fake hole" in it.
                                 QWidget *otherWidget = QApplication::widgetAt(where.h, where.v);
@@ -1879,9 +1864,10 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             tablet_button_state = new_tablet_button_state;
 
             QMacTabletHash *tabletHash = qt_mac_tablet_hash();
-            if (!tabletHash->contains(tabletPointRec.deviceID)) {
-                qWarning("QCocoaView handleTabletEvent: This tablet device is unknown"
-                        " (received no proximity event for it). Discarding event.");
+            if (!tabletHash->contains(tabletPointRec.deviceID) && t != QEvent::TabletRelease) {
+                // Never discard TabletRelease events as they may be delivered *after* TabletLeaveProximity events
+                qWarning("handleTabletEvent: This tablet device is unknown"
+                         " (received no proximity event for it). Discarding event.");
                 return false;
             }
             QTabletDeviceData &deviceData = tabletHash->operator[](tabletPointRec.deviceID);
@@ -1923,8 +1909,13 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                                tp, rotation, z, modifiers, deviceData.tabletUniqueID);
                 QApplication::sendSpontaneousEvent(widget, &e);
                 if (e.isAccepted()) {
+                    if (t == QEvent::TabletPress) {
+                        qt_button_down = widget;
+                    } else if (t == QEvent::TabletRelease) {
+                        qt_button_down = 0;
+                    }
 #if defined(DEBUG_MOUSE_MAPS)
-                    qDebug("Bail out early due to table acceptance");
+                    qDebug("Bail out early due to tablet acceptance");
 #endif
                     break;
                 }
@@ -2997,5 +2988,10 @@ void onApplicationChangedActivation( bool activated )
     Q_UNUSED(activated);
 #endif
 }
+
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
 
 QT_END_NAMESPACE

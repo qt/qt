@@ -280,11 +280,16 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtGui/qpainter.h>
 #include <QtGui/qscrollbar.h>
 #include <QtGui/qstyleoption.h>
+#include <QtGui/qinputcontext.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
 
+#include <private/qevent_p.h>
+
 QT_BEGIN_NAMESPACE
+
+bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
 inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for single precision
 {
@@ -293,6 +298,23 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
     else if (d >= (qreal) INT_MAX)
         return INT_MAX;
     return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1);
+}
+
+void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
+{
+    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+    for (int i = 0; i < touchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
+        // an item, but for now those functions are returning the view's local coordinates
+        touchPoint.setSceneRect(d->mapToScene(touchPoint.rect()));
+        touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
+        touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
+
+        // screenPos, startScreenPos, lastScreenPos, and screenRect are already set
+    }
+
+    touchEvent->setTouchPoints(touchPoints);
 }
 
 /*!
@@ -591,7 +613,10 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
-    QApplication::sendEvent(scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(scene, &mouseEvent);
+    else
+        QApplication::sendEvent(scene, &mouseEvent);
 
     // Remember whether the last event was accepted or not.
     lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -788,19 +813,9 @@ QRegion QGraphicsViewPrivate::mapToViewRegion(const QGraphicsItem *item, const Q
     return item->boundingRegion(itv) & itv.mapRect(rect).toAlignedRect();
 }
 
-// QRectF::intersects() returns false always if either the source or target
-// rectangle's width or height are 0. This works around that problem.
-static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
-{
-    Q_ASSERT(item);
-    QRectF boundingRect(item->boundingRect());
-    if (!boundingRect.width())
-        boundingRect.adjust(-0.00001, 0, 0.00001, 0);
-    if (!boundingRect.height())
-        boundingRect.adjust(0, -0.00001, 0, 0.00001);
-    return boundingRect;
-}
-
+/*!
+    \internal
+*/
 void QGraphicsViewPrivate::processPendingUpdates()
 {
     if (!scene)
@@ -825,13 +840,29 @@ void QGraphicsViewPrivate::processPendingUpdates()
     dirtyRegion = QRegion();
 }
 
+static inline bool intersectsViewport(const QRect &r, int width, int height)
+{ return !(r.left() > width) && !(r.right() < 0) && !(r.top() >= height) && !(r.bottom() < 0); }
+
+static inline bool containsViewport(const QRect &r, int width, int height)
+{ return r.left() <= 0 && r.top() <= 0 && r.right() >= width - 1 && r.bottom() >= height - 1; }
+
+static inline void QRect_unite(QRect *rect, const QRect &other)
+{
+    if (rect->isEmpty()) {
+        *rect = other;
+    } else {
+        rect->setCoords(qMin(rect->left(), other.left()), qMin(rect->top(), other.top()),
+                        qMax(rect->right(), other.right()), qMax(rect->bottom(), other.bottom()));
+    }
+}
+
 bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
         return false;
 
     const QRect boundingRect = r.boundingRect();
-    if (!boundingRect.intersects(viewport->rect()))
+    if (!intersectsViewport(boundingRect, viewport->width(), viewport->height()))
         return false; // Update region outside viewport.
 
     switch (viewportUpdateMode) {
@@ -840,8 +871,8 @@ bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= boundingRect;
-        if (dirtyBoundingRect.contains(viewport->rect())) {
+        QRect_unite(&dirtyBoundingRect, boundingRect);
+        if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
             fullUpdatePending = true;
             viewport->update();
         }
@@ -868,7 +899,7 @@ bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
-        || !r.intersects(viewport->rect())) {
+        || !intersectsViewport(r, viewport->width(), viewport->height())) {
         return false;
     }
 
@@ -878,8 +909,8 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= r;
-        if (dirtyBoundingRect.contains(viewport->rect())) {
+        QRect_unite(&dirtyBoundingRect, r);
+        if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
             fullUpdatePending = true;
             viewport->update();
         }
@@ -930,47 +961,32 @@ extern QPainterPath qt_regionToPath(const QRegion &region);
     is at risk of painting 1 pixel outside the bounding rect. Therefore we
     must search for items with an adjustment of (-1, -1, 1, 1).
 */
-QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedRegion, bool *allItems) const
+QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedRegion, bool *allItems,
+                                                       const QTransform &viewTransform) const
 {
     Q_Q(const QGraphicsView);
 
     // Step 1) If all items are contained within the expose region, then
-    // return a list of all visible items.
+    // return a list of all visible items. ### the scene's growing bounding
+    // rect does not take into account untransformable items.
     const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 1, 1))
                                             .boundingRect();
-    if (exposedRegionSceneBounds.contains(scene->d_func()->growingItemsBoundingRect)) {
+    if (exposedRegionSceneBounds.contains(scene->sceneRect())) {
         Q_ASSERT(allItems);
         *allItems = true;
 
-        // All items are guaranteed within the exposed region, don't bother using the index.
-        QList<QGraphicsItem *> itemList(scene->items());
-        int i = 0;
-        while (i < itemList.size()) {
-            const QGraphicsItem *item = itemList.at(i);
-            // But we only want to include items that are visible
-            // The following check is basically the same as item->d_ptr->isInvisible(), except
-            // that we don't check whether the item clips children to shape or propagates its
-            // opacity (we loop through all items, so those checks are wrong in this context).
-            if (!item->isVisible() || item->d_ptr->isClippedAway() || item->d_ptr->isFullyTransparent())
-                itemList.removeAt(i);
-            else
-                ++i;
-        }
-
-        // Sort the items.
-        QGraphicsScenePrivate::sortItems(&itemList, Qt::DescendingOrder, scene->d_func()->sortCacheEnabled);
-        return itemList;
+        // All items are guaranteed within the exposed region.
+        return scene->items(Qt::DescendingOrder);
     }
 
     // Step 2) If the expose region is a simple rect and the view is only
     // translated or scaled, search for items using
     // QGraphicsScene::items(QRectF).
-    bool simpleRectLookup =  (scene->d_func()->largestUntransformableItem.isNull()
-                              && exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale);
+    bool simpleRectLookup =  exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale;
     if (simpleRectLookup) {
-        return scene->d_func()->items_helper(exposedRegionSceneBounds,
-                                             Qt::IntersectsItemBoundingRect,
-                                             Qt::DescendingOrder);
+        return scene->items(exposedRegionSceneBounds,
+                            Qt::IntersectsItemBoundingRect,
+                            Qt::DescendingOrder, viewTransform);
     }
 
     // If the region is complex or the view has a complex transform, adjust
@@ -980,16 +996,25 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     foreach (const QRect &r, exposedRegion.rects())
         adjustedRegion += r.adjusted(-1, -1, 1, 1);
 
-    const QPainterPath exposedPath(qt_regionToPath(adjustedRegion));
-    if (scene->d_func()->largestUntransformableItem.isNull()) {
-        const QPainterPath exposedScenePath(q->mapToScene(exposedPath));
-        return scene->d_func()->items_helper(exposedScenePath,
-                                             Qt::IntersectsItemBoundingRect,
-                                             Qt::DescendingOrder);
-    }
+    const QPainterPath exposedScenePath(q->mapToScene(qt_regionToPath(adjustedRegion)));
+    return scene->items(exposedScenePath, Qt::IntersectsItemBoundingRect,
+                        Qt::DescendingOrder, viewTransform);
+}
 
-    // NB! Path must be in viewport coordinates.
-    return itemsInArea(exposedPath, Qt::IntersectsItemBoundingRect, Qt::DescendingOrder);
+/*!
+    \internal
+
+    Enables input methods for the view if and only if the current focus item of
+    the scene accepts input methods. Call function whenever that condition has
+    potentially changed.
+*/
+void QGraphicsViewPrivate::updateInputMethodSensitivity()
+{
+    Q_Q(QGraphicsView);
+    q->setAttribute(
+        Qt::WA_InputMethodEnabled,
+        scene && scene->focusItem()
+        && scene->focusItem()->flags() & QGraphicsItem::ItemAcceptsInputMethod);
 }
 
 /*!
@@ -1488,7 +1513,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateScene(QList<QRectF>)));
         disconnect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                    this, SLOT(updateSceneRect(QRectF)));
-        d->scene->d_func()->views.removeAll(this);
+        d->scene->d_func()->removeView(this);
         d->connectedToScene = false;
     }
 
@@ -1497,7 +1522,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         connect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                 this, SLOT(updateSceneRect(QRectF)));
         d->updateSceneSlotReimplementedChecked = false;
-        d->scene->d_func()->views << this;
+        d->scene->d_func()->addView(this);
         d->recalculateContentSize();
         d->lastCenterPoint = sceneRect().center();
         d->keepLastCenterPoint = true;
@@ -1507,9 +1532,15 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
             || !d->scene->d_func()->allItemsUseDefaultCursor) {
             d->viewport->setMouseTracking(true);
         }
+
+        // enable touch events if any items is interested in them
+        if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
+            d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
     } else {
         d->recalculateContentSize();
     }
+
+    d->updateInputMethodSensitivity();
 }
 
 /*!
@@ -1868,7 +1899,12 @@ void QGraphicsView::fitInView(const QRectF &rect, Qt::AspectRatioMode aspectRati
 void QGraphicsView::fitInView(const QGraphicsItem *item, Qt::AspectRatioMode aspectRatioMode)
 {
     QPainterPath path = item->isClipped() ? item->clipPath() : item->shape();
-    fitInView(item->sceneTransform().map(path).boundingRect(), aspectRatioMode);
+    if (item->d_ptr->hasTranslateOnlySceneTransform()) {
+        path.translate(item->d_ptr->sceneTransform.dx(), item->d_ptr->sceneTransform.dy());
+        fitInView(path.boundingRect(), aspectRatioMode);
+    } else {
+        fitInView(item->d_ptr->sceneTransform.map(path).boundingRect(), aspectRatioMode);
+    }
 }
 
 /*!
@@ -1894,6 +1930,8 @@ void QGraphicsView::fitInView(const QGraphicsItem *item, Qt::AspectRatioMode asp
 void QGraphicsView::render(QPainter *painter, const QRectF &target, const QRect &source,
                            Qt::AspectRatioMode aspectRatioMode)
 {
+    // ### Switch to using the recursive rendering algorithm instead.
+
     Q_D(QGraphicsView);
     if (!d->scene || !(painter && painter->isActive()))
         return;
@@ -1990,69 +2028,6 @@ QList<QGraphicsItem *> QGraphicsView::items() const
 }
 
 /*!
-    Returns all items in the area \a path, which is in viewport coordinates,
-    also taking untransformable items into consideration. This function is
-    considerably slower than just checking the scene directly. There is
-    certainly room for improvement.
-*/
-QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &path,
-                                                         Qt::ItemSelectionMode mode,
-                                                         Qt::SortOrder order) const
-{
-    Q_Q(const QGraphicsView);
-
-    // Determine the size of the largest untransformable subtree of children
-    // mapped to scene coordinates.
-    QRectF untr = scene->d_func()->largestUntransformableItem;
-    QRectF ltri = matrix.inverted().mapRect(untr);
-    ltri.adjust(-untr.width(), -untr.height(), untr.width(), untr.height());
-
-    QRectF rect = path.controlPointRect();
-
-    // Find all possible items in the relevant area.
-    // ### Improve this algorithm; it might be searching a too large area.
-    QRectF adjustedRect = q->mapToScene(rect.adjusted(-1, -1, 1, 1).toRect()).boundingRect();
-    adjustedRect.adjust(-ltri.width(), -ltri.height(), ltri.width(), ltri.height());
-
-    // First build a (potentially large) list of all items in the vicinity
-    // that might be untransformable.
-    QList<QGraphicsItem *> allCandidates = scene->d_func()->estimateItemsInRect(adjustedRect);
-
-    // Then find the minimal list of items that are inside \a path, and
-    // convert it to a set.
-    QList<QGraphicsItem *> regularCandidates = scene->items(q->mapToScene(path), mode);
-    QSet<QGraphicsItem *> candSet = QSet<QGraphicsItem *>::fromList(regularCandidates);
-
-    QTransform viewMatrix = q->viewportTransform();
-
-    QList<QGraphicsItem *> result;
-
-    // Run through all candidates and keep all items that are in candSet, or
-    // are untransformable and collide with \a path. ### We can improve this
-    // algorithm.
-    QList<QGraphicsItem *>::Iterator it = allCandidates.begin();
-    while (it != allCandidates.end()) {
-        QGraphicsItem *item = *it;
-        if (item->d_ptr->itemIsUntransformable()) {
-            // Check if this untransformable item collides with the
-            // original selection rect.
-            QTransform itemTransform = item->deviceTransform(viewMatrix);
-            if (QGraphicsScenePrivate::itemCollidesWithPath(item, itemTransform.inverted().map(path), mode))
-                result << item;
-        } else {
-            if (candSet.contains(item))
-                result << item;
-        }
-        ++it;
-    }
-
-    // ### Insertion sort would be faster.
-    if (order != Qt::SortOrder(-1))
-        QGraphicsScenePrivate::sortItems(&result, order, scene->d_func()->sortCacheEnabled);
-    return result;
-}
-
-/*!
     Returns a list of all the items at the position \a pos in the view. The
     items are listed in descending Z order (i.e., the first item in the list
     is the top-most item, and the last item is the bottom-most item). \a pos
@@ -2071,17 +2046,22 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    if (d->scene->d_func()->largestUntransformableItem.isNull()) {
-        if ((d->identityMatrix || d->matrix.type() <= QTransform::TxScale)) {
-            QTransform xinv = viewportTransform().inverted();
-            return d->scene->items(xinv.mapRect(QRectF(pos.x(), pos.y(), 1, 1)));
-        }
-        return d->scene->items(mapToScene(pos.x(), pos.y(), 1, 1));
+    // ### Unify these two, and use the items(QPointF) version in
+    // QGraphicsScene instead. The scene items function could use the viewport
+    // transform to map the point to a rect/polygon.
+    if ((d->identityMatrix || d->matrix.type() <= QTransform::TxScale)) {
+        // Use the rect version
+        QTransform xinv = viewportTransform().inverted();
+        return d->scene->items(xinv.mapRect(QRectF(pos.x(), pos.y(), 1, 1)),
+                               Qt::IntersectsItemShape,
+                               Qt::AscendingOrder,
+                               viewportTransform());
     }
-
-    QPainterPath path;
-    path.addRect(QRectF(pos.x(), pos.y(), 1, 1));
-    return d->itemsInArea(path);
+    // Use the polygon version
+    return d->scene->items(mapToScene(pos.x(), pos.y(), 1, 1),
+                           Qt::IntersectsItemShape,
+                           Qt::AscendingOrder,
+                           viewportTransform());
 }
 
 /*!
@@ -2108,12 +2088,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QRect &rect, Qt::ItemSelection
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    if (d->scene->d_func()->largestUntransformableItem.isNull())
-        return d->scene->items(mapToScene(rect), mode);
-
-    QPainterPath path;
-    path.addRect(rect);
-    return d->itemsInArea(path);
+    return d->scene->items(mapToScene(rect), mode, Qt::AscendingOrder, viewportTransform());
 }
 
 /*!
@@ -2141,13 +2116,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPolygon &polygon, Qt::ItemSel
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    if (d->scene->d_func()->largestUntransformableItem.isNull())
-        return d->scene->items(mapToScene(polygon), mode);
-
-    QPainterPath path;
-    path.addPolygon(polygon);
-    path.closeSubpath();
-    return d->itemsInArea(path);
+    return d->scene->items(mapToScene(polygon), mode, Qt::AscendingOrder, viewportTransform());
 }
 
 /*!
@@ -2167,9 +2136,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPainterPath &path, Qt::ItemSe
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    if (d->scene->d_func()->largestUntransformableItem.isNull())
-        return d->scene->items(mapToScene(path), mode);
-    return d->itemsInArea(path);
+    return d->scene->items(mapToScene(path), mode, Qt::AscendingOrder, viewportTransform());
 }
 
 /*!
@@ -2589,6 +2556,11 @@ void QGraphicsView::setupViewport(QWidget *widget)
                      || !d->scene->d_func()->allItemsUseDefaultCursor)) {
         widget->setMouseTracking(true);
     }
+
+    // enable touch events if any items is interested in them
+    if (d->scene && !d->scene->d_func()->allItemsIgnoreTouchEvents)
+        widget->setAttribute(Qt::WA_AcceptTouchEvents);
+
     widget->setAcceptDrops(acceptDrops());
 }
 
@@ -2706,6 +2678,23 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             d->scene->d_func()->updateAll = false;
         }
         break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        if (!isEnabled())
+            return false;
+
+        if (d->scene && d->sceneInteractionAllowed) {
+            // Convert and deliver the touch event to the scene.
+            QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+            touchEvent->setWidget(viewport());
+            QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
+            (void) QApplication::sendEvent(d->scene, touchEvent);
+        }
+
+        return true;
+    }
     default:
         break;
     }
@@ -2879,6 +2868,7 @@ void QGraphicsView::dragMoveEvent(QDragMoveEvent *event)
 void QGraphicsView::focusInEvent(QFocusEvent *event)
 {
     Q_D(QGraphicsView);
+    d->updateInputMethodSensitivity();
     QAbstractScrollArea::focusInEvent(event);
     if (d->scene)
         QApplication::sendEvent(d->scene, event);
@@ -2964,7 +2954,10 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setAccepted(false);
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
-    QApplication::sendEvent(d->scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+    else
+        QApplication::sendEvent(d->scene, &mouseEvent);
 }
 
 /*!
@@ -3003,7 +2996,10 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setButton(event->button());
             mouseEvent.setModifiers(event->modifiers());
             mouseEvent.setAccepted(false);
-            QApplication::sendEvent(d->scene, &mouseEvent);
+            if (event->spontaneous())
+                qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+            else
+                QApplication::sendEvent(d->scene, &mouseEvent);
 
             // Update the original mouse event accepted state.
             bool isAccepted = mouseEvent.isAccepted();
@@ -3093,7 +3089,8 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
             selectionArea.addPolygon(mapToScene(d->rubberBandRect));
             selectionArea.closeSubpath();
             if (d->scene)
-                d->scene->setSelectionArea(selectionArea, d->rubberBandSelectionMode);
+                d->scene->setSelectionArea(selectionArea, d->rubberBandSelectionMode,
+                                           viewportTransform());
             return;
         }
     } else
@@ -3173,7 +3170,10 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setAccepted(false);
-    QApplication::sendEvent(d->scene, &mouseEvent);
+    if (event->spontaneous())
+        qt_sendSpontaneousEvent(d->scene, &mouseEvent);
+    else
+        QApplication::sendEvent(d->scene, &mouseEvent);
 
     // Update the last mouse event selected state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -3303,8 +3303,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     } else {
         // Find all exposed items
         bool allItems = false;
-        QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems);
-        
+        QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems, viewTransform);
         if (!itemList.isEmpty()) {
             // Generate the style options.
             const int numItems = itemList.size();
@@ -3630,6 +3629,39 @@ void QGraphicsView::setTransform(const QTransform &matrix, bool combine )
 void QGraphicsView::resetTransform()
 {
     setTransform(QTransform());
+}
+
+QPointF QGraphicsViewPrivate::mapToScene(const QPointF &point) const
+{
+    QPointF p = point;
+    p.rx() += horizontalScroll();
+    p.ry() += verticalScroll();
+    return identityMatrix ? p : matrix.inverted().map(p);
+}
+
+QRectF QGraphicsViewPrivate::mapToScene(const QRectF &rect) const
+{
+    QPointF scrollOffset(horizontalScroll(), verticalScroll());
+    QPointF tl = scrollOffset + rect.topLeft();
+    QPointF tr = scrollOffset + rect.topRight();
+    QPointF br = scrollOffset + rect.bottomRight();
+    QPointF bl = scrollOffset + rect.bottomLeft();
+
+    QPolygonF poly;
+    poly.resize(4);
+    if (!identityMatrix) {
+        QTransform x = matrix.inverted();
+        poly[0] = x.map(tl);
+        poly[1] = x.map(tr);
+        poly[2] = x.map(br);
+        poly[3] = x.map(bl);
+    } else {
+        poly[0] = tl;
+        poly[1] = tr;
+        poly[2] = br;
+        poly[3] = bl;
+    }
+    return poly.boundingRect();
 }
 
 QT_END_NAMESPACE

@@ -329,29 +329,25 @@ OSStatus QMainWindowLayout::qtmacToolbarDelegate(EventHandlerCallRef, EventRef e
 void QMainWindowLayout::updateHIToolBarStatus()
 {
     bool useMacToolbar = layoutState.mainWindow->unifiedTitleAndToolBarOnMac();
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
 #ifndef QT_MAC_USE_COCOA
-        if (useMacToolbar) {
-            ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
-                                   kWindowUnifiedTitleAndToolbarAttribute, 0);
-        } else {
-            ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
-                                   0, kWindowUnifiedTitleAndToolbarAttribute);
-        }
-#endif
-        macWindowToolbarShow(layoutState.mainWindow, useMacToolbar);
+    if (useMacToolbar) {
+        ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
+                               kWindowUnifiedTitleAndToolbarAttribute, 0);
+    } else {
+        ChangeWindowAttributes(qt_mac_window_for(layoutState.mainWindow),
+                               0, kWindowUnifiedTitleAndToolbarAttribute);
     }
+#endif
 
     layoutState.mainWindow->setUpdatesEnabled(false);  // reduces a little bit of flicker, not all though
     if (!useMacToolbar) {
-        OSWindowRef windowRef = qt_mac_window_for(parentWidget());
-        macWindowToolbarShow(parentWidget(), false);
+        macWindowToolbarShow(layoutState.mainWindow, false);
         // Move everything out of the HIToolbar into the main toolbar.
         while (!qtoolbarsInUnifiedToolbarList.isEmpty()) {
             // Should shrink the list by one every time.
             layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, qtoolbarsInUnifiedToolbarList.first());
         }
-        macWindowToolbarSet(windowRef, NULL);
+        macWindowToolbarSet(qt_mac_window_for(layoutState.mainWindow), 0);
     } else {
         QList<QToolBar *> toolbars = layoutState.mainWindow->findChildren<QToolBar *>();
         for (int i = 0; i < toolbars.size(); ++i) {
@@ -361,6 +357,7 @@ void QMainWindowLayout::updateHIToolBarStatus()
                 layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
             }
         }
+        syncUnifiedToolbarVisibility();
     }
     layoutState.mainWindow->setUpdatesEnabled(true);
 }
@@ -441,7 +438,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
 #else
     NSString *toolbarID = kQToolBarNSToolbarIdentifier;
     toolbarID = [toolbarID stringByAppendingFormat:@"%p", toolbar];
-    cocoaItemIDToToolbarHash.insert(QCFString::toQString(CFStringRef(toolbarID)), toolbar);
+    cocoaItemIDToToolbarHash.insert(qt_mac_NSStringToQString(toolbarID), toolbar);
     [macToolbar insertItemWithItemIdentifier:toolbarID atIndex:beforeIndex];
 #endif
 }
@@ -489,6 +486,7 @@ void QMainWindowLayout::cleanUpMacToolbarItems()
 
 void QMainWindowLayout::fixSizeInUnifiedToolbar(QToolBar *tb) const
 {
+#ifdef QT_MAC_USE_COCOA
     QHash<void *, QToolBar *>::const_iterator it = unifiedToolbarHash.constBegin();
     NSToolbarItem *item = nil;
     while (it != unifiedToolbarHash.constEnd()) {
@@ -509,5 +507,26 @@ void QMainWindowLayout::fixSizeInUnifiedToolbar(QToolBar *tb) const
         nssize.height = size.height() - 2;
         [item setMinSize:nssize];
     }
+#else
+    Q_UNUSED(tb);
+#endif
 }
+
+void QMainWindowLayout::syncUnifiedToolbarVisibility()
+{
+    if (blockVisiblityCheck)
+        return;
+
+    Q_ASSERT(layoutState.mainWindow->unifiedTitleAndToolBarOnMac());
+    bool show = false;
+    const int ToolBarCount = qtoolbarsInUnifiedToolbarList.count();
+    for (int i = 0; i < ToolBarCount; ++i) {
+        if (qtoolbarsInUnifiedToolbarList.at(i)->isVisible()) {
+            show = true;
+            break;
+        }
+    }
+    macWindowToolbarShow(layoutState.mainWindow, show);
+}
+
 QT_END_NAMESPACE

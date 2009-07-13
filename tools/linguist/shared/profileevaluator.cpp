@@ -68,8 +68,10 @@
 
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
+#define QT_PCLOSE _pclose
 #else
 #define QT_POPEN popen
+#define QT_PCLOSE pclose
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -188,9 +190,6 @@ public:
     QString propertyValue(const QString &val) const;
 
     bool isActiveConfig(const QString &config, bool regex = false);
-    QStringList expandPattern(const QString &pattern);
-    void expandPatternHelper(const QString &relName, const QString &absName,
-        QStringList &sources_out);
     QStringList expandVariableReferences(const QString &value);
     QStringList evaluateExpandFunction(const QString &function, const QString &arguments);
     QString format(const char *format) const;
@@ -760,29 +759,6 @@ bool ProFileEvaluator::Private::visitProValue(ProValue *value)
     }
     m_prevLineNo = m_lineNo;
     m_prevProFile = currentProFile();
-
-    // The following two blocks fix bug 180128 by making all "interesting"
-    // file name absolute in each .pro file, not just the top most one
-    if (varName == QLatin1String("SOURCES")
-            || varName == QLatin1String("HEADERS")
-            || varName == QLatin1String("INTERFACES")
-            || varName == QLatin1String("FORMS")
-            || varName == QLatin1String("FORMS3")
-            || varName == QLatin1String("RESOURCES")) {
-        // matches only existent files, expand certain(?) patterns
-        QStringList vv;
-        for (int i = v.count(); --i >= 0; )
-            vv << expandPattern(v[i]);
-        v = vv;
-    }
-
-    if (varName == QLatin1String("TRANSLATIONS")) {
-        // also matches non-existent files, but does not expand pattern
-        QString dir = QFileInfo(currentFileName()).absolutePath();
-        dir += QLatin1Char('/');
-        for (int i = v.count(); --i >= 0; )
-            v[i] = QFileInfo(dir, v[i]).absoluteFilePath();
-    }
 
     switch (m_variableOperator) {
         case ProVariable::SetOperator:          // =
@@ -1513,6 +1489,8 @@ QStringList ProFileEvaluator::Private::evaluateExpandFunction(const QString &fun
                         output += QLatin1String(buff);
                     }
                     ret += split_value_list(output);
+                    if (proc)
+                        QT_PCLOSE(proc);
                 }
             }
             break;
@@ -1949,9 +1927,9 @@ QStringList ProFileEvaluator::Private::values(const QString &variableName,
             ret = QLatin1String("Windows");
         } else if (type == QLatin1String("name")) {
             DWORD name_length = 1024;
-            TCHAR name[1024];
+            wchar_t name[1024];
             if (GetComputerName(name, &name_length))
-                ret = QString::fromUtf16((ushort*)name, name_length);
+                ret = QString::fromWCharArray(name);
         } else if (type == QLatin1String("version") || type == QLatin1String("version_string")) {
             QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
             if (type == QLatin1String("version"))
@@ -2067,7 +2045,7 @@ bool ProFileEvaluator::Private::evaluateFile(const QString &fileName, bool *resu
     ProFile *pro = q->parsedProFile(fileName);
     if (pro) {
         m_profileStack.push(pro);
-        ok = (currentProFile() ? pro->Accept(this) : false);
+        ok = pro->Accept(this);
         m_profileStack.pop();
         q->releaseParsedProFile(pro);
 
@@ -2077,16 +2055,6 @@ bool ProFileEvaluator::Private::evaluateFile(const QString &fileName, bool *resu
         if (result)
             *result = false;
     }
-/*    if (ok && readFeatures) {
-        QStringList configs = values("CONFIG");
-        QSet<QString> processed;
-        foreach (const QString &fn, configs) {
-            if (!processed.contains(fn)) {
-                processed.insert(fn);
-                evaluateFeatureFile(fn, 0);
-            }
-        }
-    } */
 
     return ok;
 }
@@ -2113,82 +2081,6 @@ bool ProFileEvaluator::Private::evaluateFeatureFile(const QString &fileName, boo
     bool ok = evaluateFile(fn, result);
     m_cumulative = cumulative;
     return ok;
-}
-
-void ProFileEvaluator::Private::expandPatternHelper(const QString &relName, const QString &absName,
-        QStringList &sources_out)
-{
-    const QStringList vpaths = values(QLatin1String("VPATH"))
-        + values(QLatin1String("QMAKE_ABSOLUTE_SOURCE_PATH"))
-        + values(QLatin1String("DEPENDPATH"))
-        + values(QLatin1String("VPATH_SOURCES"));
-
-    QFileInfo fi(absName);
-    bool found = fi.exists();
-    // Search in all vpaths
-    if (!found) {
-        foreach (const QString &vpath, vpaths) {
-            fi.setFile(vpath + QDir::separator() + relName);
-            if (fi.exists()) {
-                found = true;
-                break;
-            }
-        }
-    }
-
-    if (found) {
-        sources_out += fi.absoluteFilePath(); // Not resolving symlinks
-    } else {
-        QString val = relName;
-        QString dir;
-        QString wildcard = val;
-        QString real_dir;
-        if (wildcard.lastIndexOf(QLatin1Char('/')) != -1) {
-            dir = wildcard.left(wildcard.lastIndexOf(QLatin1Char('/')) + 1);
-            real_dir = dir;
-            wildcard = wildcard.right(wildcard.length() - dir.length());
-        }
-
-        if (real_dir.isEmpty() || QFileInfo(real_dir).exists()) {
-            QStringList files = QDir(real_dir).entryList(QStringList(wildcard));
-            if (files.isEmpty()) {
-                q->logMessage(format("Failure to find %1").arg(val));
-            } else {
-                QString a;
-                for (int i = files.count() - 1; i >= 0; --i) {
-                    if (files[i] == QLatin1String(".") || files[i] == QLatin1String(".."))
-                        continue;
-                    a = dir + files[i];
-                    sources_out += a;
-                }
-            }
-        } else {
-            q->logMessage(format("Cannot match %1/%2, as %3 does not exist.")
-                .arg(real_dir).arg(wildcard).arg(real_dir));
-        }
-    }
-}
-
-
-/*
- * Lookup of files are done in this order:
- *  1. look in pwd
- *  2. look in vpaths
- *  3. expand wild card files relative from the profiles folder
- **/
-
-// FIXME: This code supports something that I'd consider a flaw in .pro file syntax
-// which is not even documented. So arguably this can be ditched completely...
-QStringList ProFileEvaluator::Private::expandPattern(const QString& pattern)
-{
-    if (!currentProFile())
-        return QStringList();
-
-    QStringList sources_out;
-    const QString absName = QDir::cleanPath(QDir::current().absoluteFilePath(pattern));
-
-    expandPatternHelper(pattern, absName, sources_out);
-    return sources_out;
 }
 
 QString ProFileEvaluator::Private::format(const char *fmt) const
@@ -2239,6 +2131,59 @@ QStringList ProFileEvaluator::values(const QString &variableName) const
 QStringList ProFileEvaluator::values(const QString &variableName, const ProFile *pro) const
 {
     return fixEnvVariables(d->values(variableName, pro));
+}
+
+QStringList ProFileEvaluator::absolutePathValues(
+        const QString &variable, const QString &baseDirectory) const
+{
+    QStringList result;
+    foreach (const QString &el, values(variable)) {
+        const QFileInfo info = QFileInfo(baseDirectory, el);
+        if (info.isDir())
+            result << QDir::cleanPath(info.absoluteFilePath());
+    }
+    return result;
+}
+
+QStringList ProFileEvaluator::absoluteFileValues(
+        const QString &variable, const QString &baseDirectory, const QStringList &searchDirs,
+        const ProFile *pro) const
+{
+    QStringList result;
+    foreach (const QString &el, pro ? values(variable, pro) : values(variable)) {
+        QFileInfo info(el);
+        if (info.isAbsolute()) {
+            if (info.exists()) {
+                result << QDir::cleanPath(el);
+                goto next;
+            }
+        } else {
+            foreach (const QString &dir, searchDirs) {
+                QFileInfo info(dir, el);
+                if (info.isFile()) {
+                    result << QDir::cleanPath(info.filePath());
+                    goto next;
+                }
+            }
+            if (baseDirectory.isEmpty())
+                goto next;
+            info = QFileInfo(baseDirectory, el);
+        }
+        {
+            QFileInfo baseInfo(info.absolutePath());
+            if (baseInfo.exists()) {
+                QString wildcard = info.fileName();
+                if (wildcard.contains(QLatin1Char('*')) || wildcard.contains(QLatin1Char('?'))) {
+                    QDir theDir(QDir::cleanPath(baseInfo.filePath()));
+                    foreach (const QString &fn, theDir.entryList(QStringList(wildcard)))
+                        if (fn != QLatin1String(".") && fn != QLatin1String(".."))
+                            result << theDir.absoluteFilePath(fn);
+                }
+            }
+        }
+      next: ;
+    }
+    return result;
 }
 
 ProFileEvaluator::TemplateType ProFileEvaluator::templateType()
@@ -2325,66 +2270,6 @@ void ProFileEvaluator::setCumulative(bool on)
 void ProFileEvaluator::setOutputDir(const QString &dir)
 {
     d->m_outputDir = dir;
-}
-
-void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap)
-{
-    QStringList sourceFiles;
-    QString codecForTr;
-    QString codecForSource;
-    QStringList tsFileNames;
-
-    // app/lib template
-    sourceFiles += visitor.values(QLatin1String("SOURCES"));
-    sourceFiles += visitor.values(QLatin1String("HEADERS"));
-    tsFileNames = visitor.values(QLatin1String("TRANSLATIONS"));
-
-    QStringList trcodec = visitor.values(QLatin1String("CODEC"))
-        + visitor.values(QLatin1String("DEFAULTCODEC"))
-        + visitor.values(QLatin1String("CODECFORTR"));
-    if (!trcodec.isEmpty())
-        codecForTr = trcodec.last();
-
-    QStringList srccodec = visitor.values(QLatin1String("CODECFORSRC"));
-    if (!srccodec.isEmpty())
-        codecForSource = srccodec.last();
-
-    QStringList forms = visitor.values(QLatin1String("INTERFACES"))
-        + visitor.values(QLatin1String("FORMS"))
-        + visitor.values(QLatin1String("FORMS3"));
-    sourceFiles << forms;
-
-    sourceFiles.sort();
-    sourceFiles.removeDuplicates();
-    tsFileNames.sort();
-    tsFileNames.removeDuplicates();
-
-    varMap->insert("SOURCES", sourceFiles);
-    varMap->insert("CODECFORTR", QStringList() << codecForTr);
-    varMap->insert("CODECFORSRC", QStringList() << codecForSource);
-    varMap->insert("TRANSLATIONS", tsFileNames);
-}
-
-bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QStringList> *varMap)
-{
-    QFileInfo fi(fileName);
-    if (!fi.exists())
-        return false;
-
-    ProFile pro(fi.absoluteFilePath());
-
-    ProFileEvaluator visitor;
-    visitor.setVerbose(verbose);
-
-    if (!visitor.queryProFile(&pro))
-        return false;
-
-    if (!visitor.accept(&pro))
-        return false;
-
-    evaluateProFile(visitor, varMap);
-
-    return true;
 }
 
 QT_END_NAMESPACE

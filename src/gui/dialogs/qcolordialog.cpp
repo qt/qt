@@ -1262,7 +1262,7 @@ void QColorShower::retranslateStrings()
 void QColorShower::updateQColor()
 {
     QColor oldQColor(curQColor);
-    curQColor.setRgba(qRgba(qRed(curCol), qGreen(curCol), qBlue(curCol), qAlpha(curCol)));
+    curQColor.setRgba(qRgba(qRed(curCol), qGreen(curCol), qBlue(curCol), currentAlpha()));
     if (curQColor != oldQColor)
         emit currentColorChanged(curQColor);
 }

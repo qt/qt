@@ -116,16 +116,9 @@ Configure::Configure( int& argc, char** argv )
 
 
     // Get the path to the executable
-    QFileInfo sourcePathInfo;
-    QT_WA({
-        unsigned short module_name[256];
-        GetModuleFileNameW(0, reinterpret_cast<wchar_t *>(module_name), sizeof(module_name));
-        sourcePathInfo = QString::fromUtf16(module_name);
-    }, {
-        char module_name[256];
-        GetModuleFileNameA(0, module_name, sizeof(module_name));
-        sourcePathInfo = QString::fromLocal8Bit(module_name);
-    });
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, sizeof(module_name) / sizeof(wchar_t));
+    QFileInfo sourcePathInfo = QString::fromWCharArray(module_name);
     sourcePath = sourcePathInfo.absolutePath();
     sourceDir = sourcePathInfo.dir();
     buildPath = QDir::currentPath();
@@ -604,10 +597,13 @@ void Configure::parseCmdLine()
         // cetest ---------------------------------------------------
         else if (configCmdLine.at(i) == "-no-cetest") {
             dictionary[ "CETEST" ] = "no";
+            dictionary[ "CETEST_REQUESTED" ] = "no";
         } else if (configCmdLine.at(i) == "-cetest") {
             // although specified to use it, we stay at "auto" state
             // this is because checkAvailability() adds variables
-            // we need for crosscompilation
+            // we need for crosscompilation; but remember if we asked
+            // for it.
+            dictionary[ "CETEST_REQUESTED" ] = "yes";
         }
         // Qt/CE - signing tool -------------------------------------
         else if( configCmdLine.at(i) == "-signature") {
@@ -891,6 +887,11 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
+        } else if( configCmdLine.at(i) == "-qtlibinfix" ) {
+            ++i;
+            if(i==argCount)
+                break;
+            dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -1133,6 +1134,10 @@ void Configure::parseCmdLine()
     }
 
     useUnixSeparators = (dictionary["QMAKESPEC"] == "win32-g++");
+
+    // Allow tests for private classes to be compiled against internal builds
+    if (dictionary["BUILDDEV"] == "yes")
+        qtConfig += "private_tests";
 
 
 #if !defined(EVAL)
@@ -1418,8 +1423,8 @@ bool Configure::displayHelp()
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
-                    "[-qtnamespace <namespace>] [-no-phonon] [-phonon]\n"
-                    "[-no-phonon-backend] [-phonon-backend]\n"
+                    "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
+                    "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-webkit] [-webkit]\n"
                     "[-no-scripttools] [-scripttools]\n"
                     "[-graphicssystem raster|opengl]\n\n", 0, 7);
@@ -1510,7 +1515,8 @@ bool Configure::displayHelp()
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
 
 #if !defined(EVAL)
-        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}\n");
+        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
+        desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>\n");
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
@@ -1519,7 +1525,7 @@ bool Configure::displayHelp()
         desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "", "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL accelleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL acceleration, experimental!", ' ');
 
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
@@ -1818,6 +1824,11 @@ bool Configure::checkAvailability(const QString &part)
             dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");
             dictionary[ "QT_CE_RAPI_LIB" ] += QLatin1String("\"") + rapiLib + QLatin1String("\"");
         }
+        else if (dictionary[ "CETEST_REQUESTED" ] == "yes") {
+            cout << "cetest could not be enabled: rapi.h and rapi.lib could not be found." << endl;
+            cout << "Make sure the environment is set up for compiling with ActiveSync." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
     }
     else if (part == "INCREDIBUILD_XGE")
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
@@ -1990,7 +2001,6 @@ bool Configure::verifyConfiguration()
      no-gif gif
      dll staticlib
 
-     internal
      nocrosscompiler
      GNUmake
      largefile
@@ -2498,7 +2508,10 @@ void Configure::generateCachefile()
             configStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
         if(!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream<<"QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
+            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
+
+        if (!dictionary["QT_LIBINFIX"].isEmpty())
+            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
 
         configStream.flush();
         configFile.close();
@@ -2716,7 +2729,7 @@ void Configure::generateConfigfiles()
         tmpFile.flush();
 
         // Replace old qconfig.h with new one
-        ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL);
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
@@ -2752,7 +2765,7 @@ void Configure::generateConfigfiles()
     }
 
     outName = defSpec + "/qmake.conf";
-    ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL );
+    ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
     QFile qmakeConfFile(outName);
     if (qmakeConfFile.open(QFile::Append | QFile::WriteOnly | QFile::Text)) {
         QTextStream qmakeConfStream;
@@ -2820,7 +2833,7 @@ void Configure::generateConfigfiles()
         tmpFile2.flush();
 
         // Replace old qconfig.cpp with new one
-        ::SetFileAttributesA(outName.toLocal8Bit(), FILE_ATTRIBUTE_NORMAL );
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
         QFile::remove( outName );
         tmpFile2.copy(outName);
         tmpFile2.close();

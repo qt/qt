@@ -608,18 +608,6 @@ void tst_QUrl::setUrl()
     }
 
     {
-        QString bigStr(QLatin1String("abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                     "abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                     "abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                     "abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                     "abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-        QUrl url;
-        url.setHost(bigStr);
-        QVERIFY(url.isValid());
-        QCOMPARE(url.host().toLower(), bigStr.toLower());
-    }
-
-    {
         QUrl url;
         url.setUrl("hello.com#?");
         QVERIFY(url.isValid());
@@ -1396,8 +1384,6 @@ void tst_QUrl::i18n_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QByteArray>("punyOutput"); 
 
-    QTest::newRow("øl") << QString::fromLatin1("http://ole:passord@www.øl.no/index.html?ole=æsemann&ilder gud=hei#top")
-                     <<          QByteArray("http://ole:passord@www.xn--l-4ga.no/index.html?ole=%C3%A6semann&ilder%20gud=hei#top");
     QTest::newRow("øl") << QString::fromLatin1("http://ole:passord@www.øl.no/index.html?ole=æsemann&ilder gud=hei#top")
                      <<          QByteArray("http://ole:passord@www.xn--l-4ga.no/index.html?ole=%C3%A6semann&ilder%20gud=hei#top");
     QTest::newRow("räksmörgås") << QString::fromLatin1("http://www.räksmörgås.no/")
@@ -2412,9 +2398,7 @@ void tst_QUrl::hasQueryItem()
 void tst_QUrl::nameprep()
 {
     QUrl url(QString::fromUtf8("http://www.fu""\xc3""\x9f""ball.de/"));
-    QUrl url2 = QUrl::fromEncoded("http://www.xn--fuball-cta.de/");
-    QCOMPARE(url2.toString(), QString::fromLatin1("http://www.fussball.de/"));
-    QCOMPARE(url.toString(), url2.toString()); // should be identical
+    QCOMPARE(url.toString(), QString::fromLatin1("http://www.fussball.de/"));
 }
 
 void tst_QUrl::isValid()
@@ -2425,19 +2409,18 @@ void tst_QUrl::isValid()
         QCOMPARE(url.path(), QString("A=B"));
     }
     {
-        QUrl url = QUrl::fromEncoded("http://strange<username>@ok_hostname/", QUrl::StrictMode);
+        QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/", QUrl::StrictMode);
         QVERIFY(!url.isValid());
         // < and > are not allowed in userinfo in strict mode
     }
     {
-        QUrl url = QUrl::fromEncoded("http://strange<username>@ok_hostname/");
+        QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/");
         QVERIFY(url.isValid());
         // < and > are allowed in tolerant mode
     }
     {
         QUrl url = QUrl::fromEncoded("http://strange;hostname/here");
-        QVERIFY(url.isValid());
-        QCOMPARE(url.host(), QString("strange;hostname"));
+        QVERIFY(!url.isValid());
         QCOMPARE(url.path(), QString("/here"));
     }
 }
@@ -3074,12 +3057,15 @@ void tst_QUrl::nameprep_testsuite_data()
         << QString() << 0 << 0;
 }
 
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern QString qt_nameprep(const QString &source);
 QT_END_NAMESPACE
+#endif
 
 void tst_QUrl::nameprep_testsuite()
 {
+#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, in);
     QFETCH(QString, out);
     QFETCH(QString, profile);
@@ -3099,6 +3085,7 @@ void tst_QUrl::nameprep_testsuite()
     QEXPECT_FAIL("Larger test (expanding)",
                  "Investigate further", Continue);
     QCOMPARE(qt_nameprep(in), out);
+#endif
 }
 
 void tst_QUrl::ace_testsuite_data()
@@ -3488,7 +3475,6 @@ void tst_QUrl::setAuthority_data()
     QTest::addColumn<QString>("authority");
     QTest::addColumn<QString>("url");
     QTest::newRow("Plain auth") << QString("62.70.27.22:21") << QString("//62.70.27.22:21");
-    QTest::newRow("Auth with empty port") << QString("62.70.27.22:") << QString("//62.70.27.22:");
     QTest::newRow("Yet another plain auth") << QString("192.168.1.1:21") << QString("//192.168.1.1:21");
     QTest::newRow("Auth without port") << QString("192.168.1.1") << QString("//192.168.1.1");
     QTest::newRow("Auth w/full hostname without port") << QString("shusaku.troll.no") << QString("//shusaku.troll.no");
@@ -3496,7 +3482,6 @@ void tst_QUrl::setAuthority_data()
     QTest::newRow("Auth w/full hostname that ends with number, without port") << QString("shusaku.troll.no.2") << QString("//shusaku.troll.no.2");
     QTest::newRow("Auth w/hostname that ends with number, without port") << QString("shusaku2") << QString("//shusaku2");
     QTest::newRow("Empty auth") << QString() << QString();
-    QTest::newRow("Single") << QString(":") << QString("//:");
 }
 
 void tst_QUrl::setAuthority()

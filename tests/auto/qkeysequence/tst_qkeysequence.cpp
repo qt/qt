@@ -270,7 +270,7 @@ void tst_QKeySequence::checkMultipleNames()
 void tst_QKeySequence::ensureSorted()
 {
 //### accessing static members from private classes does not work on msvc at the moment
-#ifndef Q_WS_WIN
+#if defined(QT_BUILD_INTERNAL) && !defined(Q_WS_WIN)
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     uint val = QKeySequencePrivate::keyBindings[0].shortcut;
     for ( uint i = 1 ; i < N ; ++i) {

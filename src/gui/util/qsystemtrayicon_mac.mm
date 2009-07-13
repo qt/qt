@@ -124,12 +124,20 @@ QT_USE_NAMESPACE
 -(void)mousePressed:(NSEvent *)mouseEvent;
 @end
 
-@interface QNSMenu : NSMenu {
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+
+@protocol NSMenuDelegate <NSObject>
+-(void)menuNeedsUpdate:(NSMenu*)menu;
+@end
+#endif
+
+
+@interface QNSMenu : NSMenu <NSMenuDelegate> {
     QMenu *qmenu;
 }
 -(QMenu*)menu;
 -(id)initWithQMenu:(QMenu*)qmenu;
--(void)menuNeedsUpdate:(QNSMenu*)menu;
 -(void)selectedAction:(id)item;
 @end
 
@@ -455,10 +463,11 @@ private:
     }
     return self;
 }
--(QMenu*)menu { 
-    return qmenu; 
+-(QMenu*)menu {
+    return qmenu;
 }
--(void)menuNeedsUpdate:(QNSMenu*)menu {
+-(void)menuNeedsUpdate:(NSMenu*)nsmenu {
+    QNSMenu *menu = static_cast<QNSMenu *>(nsmenu);
     emit static_cast<QSystemTrayIconQMenu*>(menu->qmenu)->doAboutToShow();
     for(int i = [menu numberOfItems]-1; i >= 0; --i)
         [menu removeItemAtIndex:i];

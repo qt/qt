@@ -491,6 +491,10 @@ public:
         WA_WState_WindowOpacitySet = 119, // internal
         WA_TranslucentBackground = 120,
 
+        WA_AcceptTouchEvents = 121,
+        WA_WState_AcceptedTouchBeginEvent = 122,
+        WA_TouchPadAcceptSingleTouchEvents = 123,
+
         // Add new attributes before this line
         WA_AttributeCount
     };
@@ -1546,6 +1550,26 @@ public:
     enum Initialization {
         Uninitialized
     };
+
+    enum TouchPointState {
+        TouchPointPressed    = 0x01,
+        TouchPointMoved      = 0x02,
+        TouchPointStationary = 0x04,
+        TouchPointReleased   = 0x08,
+        TouchPointStateMask  = 0x0f,
+
+        TouchPointPrimary    = 0x10
+    };
+    Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
+
+    enum GestureState
+    {
+        NoGesture,
+        GestureStarted = 1,
+        GestureUpdated = 2,
+        GestureFinished = 3
+    };
+
 }
 #ifdef Q_MOC_RUN
  ;
@@ -1565,6 +1589,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
 
 typedef bool (*qInternalCallback)(void **);
 

@@ -247,7 +247,7 @@ QDesignerFormWindowInterface *QDesignerFormWindowInterface::findFormWindow(QObje
 /*!
     \fn virtual QString QDesignerFormWindowInterface::fileName() const
 
-    Returns the file name of the .ui file that describes the form
+    Returns the file name of the UI file that describes the form
     currently being shown.
 
     \sa setFileName()
@@ -399,11 +399,11 @@ QDesignerFormWindowInterface *QDesignerFormWindowInterface::findFormWindow(QObje
     \fn virtual QStringList QDesignerFormWindowInterface::includeHints() const
 
     Returns a list of the header files that will be included in the
-    form window's associated \c .ui file.
+    form window's associated UI file.
 
     Header files may be local, i.e. relative to the project's
-    directory,\c "mywidget.h", or global, i.e. part of Qt or the
-    compilers standard libraries:\c <QtGui/QWidget>.
+    directory, \c "mywidget.h", or global, i.e. part of Qt or the
+    compilers standard libraries: \c <QtGui/QWidget>.
 
     \sa setIncludeHints()
 */
@@ -412,11 +412,11 @@ QDesignerFormWindowInterface *QDesignerFormWindowInterface::findFormWindow(QObje
     \fn virtual void QDesignerFormWindowInterface::setIncludeHints(const QStringList &includeHints)
 
     Sets the header files that will be included in the form window's
-    associated \c .ui file to the specified \a includeHints.
+    associated UI file to the specified \a includeHints.
 
     Header files may be local, i.e. relative to the project's
-    directory,\c "mywidget.h", or global, i.e. part of Qt or the
-    compilers standard libraries:\c <QtGui/QWidget>.
+    directory, \c "mywidget.h", or global, i.e. part of Qt or the
+    compilers standard libraries: \c <QtGui/QWidget>.
 
     \sa includeHints()
 */

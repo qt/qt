@@ -122,6 +122,7 @@ public:
     void setFocus(const QXmlItem &item);
     bool setFocus(const QUrl &documentURI);
     bool setFocus(QIODevice *document);
+    bool setFocus(const QString &focus);
 
     void setInitialTemplateName(const QXmlName &name);
     void setInitialTemplateName(const QString &name);

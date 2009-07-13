@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<context>
+    <name>FindDialog</name>
+    <message>
+        <source>Enter the text you are looking for.</source>
+        <translation type="obsolete">Skriv inn teksten du soker etter</translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="60"/>
+        <source>Enter the text you want to find.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="110"/>
+        <source>Search reached end of the document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="112"/>
+        <source>Search reached start of the document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="finddialog.cpp" line="114"/>
+        <source>Text not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>

@@ -100,10 +100,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
-typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
-Q_GLOBAL_STATIC(QPropertyAnimationHash, _q_runningAnimations)
-
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
     if (!target || propertyName.isEmpty())
@@ -286,19 +282,21 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
 
     QPropertyAnimation *animToStop = 0;
     {
-        QPropertyAnimationHash * hash = _q_runningAnimations();
-        QMutexLocker locker(QMutexPool::globalInstanceGet(hash));
+        QMutexLocker locker(QMutexPool::globalInstanceGet(&staticMetaObject));
+        typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
+        typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
+        static QPropertyAnimationHash hash;
         QPropertyAnimationPair key(d->target, d->propertyName);
         if (newState == Running) {
             d->updateMetaProperty();
-            animToStop = hash->value(key, 0);
-            hash->insert(key, this);
+            animToStop = hash.value(key, 0);
+            hash.insert(key, this);
             // update the default start value
             if (oldState == Stopped) {
                 d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
             }
-        } else if (hash->value(key) == this) {
-            hash->remove(key);
+        } else if (hash.value(key) == this) {
+            hash.remove(key);
         }
     }
 

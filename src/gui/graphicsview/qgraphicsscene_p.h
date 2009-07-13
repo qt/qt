@@ -57,8 +57,8 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
-#include "qgraphicsscene_bsp_p.h"
 #include "qgraphicsitem_p.h"
 
 #include <private/qobject_p.h>
@@ -71,10 +71,9 @@
 #include <QtGui/qstyle.h>
 #include <QtGui/qstyleoption.h>
 
-static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
-
 QT_BEGIN_NAMESPACE
 
+class QGraphicsSceneIndex;
 class QGraphicsView;
 class QGraphicsWidget;
 
@@ -85,24 +84,19 @@ public:
     QGraphicsScenePrivate();
     void init();
 
+    static QGraphicsScenePrivate *get(QGraphicsScene *q);
+
     quint32 changedSignalMask;
 
     QGraphicsScene::ItemIndexMethod indexMethod;
-    int bspTreeDepth;
+    QGraphicsSceneIndex *index;
 
-    QList<QGraphicsItem *> estimateItemsInRect(const QRectF &rect) const;
-    void addToIndex(QGraphicsItem *item);
-    void removeFromIndex(QGraphicsItem *item);
-    void resetIndex();
-
-    QGraphicsSceneBspTree bspTree;
-    void _q_updateIndex();
     int lastItemCount;
 
     QRectF sceneRect;
     bool hasSceneRect;
+    bool dirtyGrowingItemsBoundingRect;
     QRectF growingItemsBoundingRect;
-    QRectF largestUntransformableItem;
 
     void _q_emitUpdated();
     QList<QRectF> updatedRects;
@@ -113,9 +107,6 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QList<QGraphicsItem *> unindexedItems;
-    QList<QGraphicsItem *> indexedItems;
-    QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
@@ -127,20 +118,10 @@ public:
 
     void _q_processDirtyItems();
 
-    QList<int> freeItemIndexes;
-    bool regenerateIndex;
-
-    bool purgePending;
     void removeItemHelper(QGraphicsItem *item);
-    QSet<QGraphicsItem *> removedItems;
-    void purgeRemovedItems();
 
     QBrush backgroundBrush;
     QBrush foregroundBrush;
-
-    int indexTimerId;
-    bool restartIndexTimer;
-    void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
 
     bool stickyFocus;
     bool hasFocus;
@@ -165,7 +146,7 @@ public:
     void grabKeyboard(QGraphicsItem *item);
     void ungrabKeyboard(QGraphicsItem *item, bool itemIsDying = false);
     void clearKeyboardGrabber();
-    
+
     QGraphicsItem *dragDropItem;
     QGraphicsWidget *enterWidget;
     Qt::DropAction lastDropAction;
@@ -180,10 +161,12 @@ public:
     QList<QGraphicsItem *> itemsAtPosition(const QPoint &screenPos,
                                            const QPointF &scenePos,
                                            QWidget *widget) const;
-    static bool itemCollidesWithPath(QGraphicsItem *item, const QPainterPath &path, Qt::ItemSelectionMode mode);
     void storeMouseButtonsForMouseGrabber(QGraphicsSceneMouseEvent *event);
 
     QList<QGraphicsView *> views;
+    void addView(QGraphicsView *view);
+    void removeView(QGraphicsView *view);
+
     bool painterStateProtection;
 
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
@@ -206,69 +189,14 @@ public:
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
 
-    QList<QGraphicsItem *> topLevelItemsInStackingOrder(const QTransform *const, QRegion *);
-    void recursive_items_helper(QGraphicsItem *item, QRectF rect, QList<QGraphicsItem *> *items,
-                                const QTransform &parentTransform, const QTransform &viewTransform,
-                                Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
-
-    QList<QGraphicsItem *> items_helper(const QPointF &pos) const;
-    QList<QGraphicsItem *> items_helper(const QRectF &rect,
-                                        Qt::ItemSelectionMode mode,
-                                        Qt::SortOrder order) const;
-    QList<QGraphicsItem *> items_helper(const QPolygonF &rect,
-                                        Qt::ItemSelectionMode mode,
-                                        Qt::SortOrder order) const;
-    QList<QGraphicsItem *> items_helper(const QPainterPath &rect,
-                                        Qt::ItemSelectionMode mode,
-                                        Qt::SortOrder order) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPointF &pos) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QRectF &rect,
-                           Qt::ItemSelectionMode mode) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPolygonF &polygon,
-                           Qt::ItemSelectionMode mode) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPainterPath &path,
-                           Qt::ItemSelectionMode mode) const;
-
-    bool sortCacheEnabled;
-    bool updatingSortCache;
-    void invalidateSortCache();
-    static void climbTree(QGraphicsItem *item, int *stackingOrder);
-    void _q_updateSortCache();
-
-    static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
-    static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
-
-    static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-    { 
-        return item1->d_ptr->globalStackingOrder < item2->d_ptr->globalStackingOrder;
-    }
-    static inline bool closestItemLast_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-    {
-        return item1->d_ptr->globalStackingOrder >= item2->d_ptr->globalStackingOrder;
-    }
-
-    static void sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order, bool cached);
+    bool sortCacheEnabled; // for compatibility
 
     void drawItemHelper(QGraphicsItem *item, QPainter *painter,
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
 
-    inline void drawItems(QPainter *painter, const QTransform *const viewTransform,
-                          QRegion *exposedRegion, QWidget *widget)
-    {
-        const QList<QGraphicsItem *> tli = topLevelItemsInStackingOrder(viewTransform, exposedRegion);
-        for (int i = 0; i < tli.size(); ++i)
-            drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
-        return;
-    }
+    void drawItems(QPainter *painter, const QTransform *const viewTransform,
+                   QRegion *exposedRegion, QWidget *widget);
 
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform *const,
                               QRegion *exposedRegion, QWidget *widget, qreal parentOpacity = qreal(1.0));
@@ -278,18 +206,32 @@ public:
     void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
                                     qreal parentOpacity = qreal(1.0));
 
-    inline void resetDirtyItem(QGraphicsItem *item)
+    inline void resetDirtyItem(QGraphicsItem *item, bool recursive = false)
     {
         Q_ASSERT(item);
         item->d_ptr->dirty = 0;
         item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
         item->d_ptr->geometryChanged = 0;
+        if (!item->d_ptr->dirtyChildren)
+            recursive = false;
         item->d_ptr->dirtyChildren = 0;
         item->d_ptr->needsRepaint = QRectF();
         item->d_ptr->allChildrenDirty = 0;
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+        if (recursive) {
+            for (int i = 0; i < item->d_ptr->children.size(); ++i)
+                resetDirtyItem(item->d_ptr->children.at(i), recursive);
+        }
+    }
+
+    inline void ensureSortedTopLevelItems()
+    {
+        if (needSortTopLevelItems) {
+            qSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+            needSortTopLevelItems = false;
+        }
     }
 
     QStyle *style;
@@ -303,7 +245,37 @@ public:
     void updatePalette(const QPalette &palette);
 
     QStyleOptionGraphicsItem styleOptionTmp;
+
+    QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
+    QMap<int, QGraphicsItem *> itemForTouchPointId;
+    static void updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent);
+    int findClosestTouchPointId(const QPointF &scenePos);
+    void touchEventHandler(QTouchEvent *touchEvent);
+    bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
+    bool allItemsIgnoreTouchEvents;
+    void enableTouchEventsOnViews();
+
+    void updateInputMethodSensitivityInViews();
 };
+
+// QRectF::intersects() returns false always if either the source or target
+// rectangle's width or height are 0. This works around that problem.
+static inline void _q_adjustRect(QRectF *rect)
+{
+    Q_ASSERT(rect);
+    if (!rect->width())
+        rect->adjust(-0.00001, 0, 0.00001, 0);
+    if (!rect->height())
+        rect->adjust(0, -0.00001, 0, 0.00001);
+}
+
+static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(item->boundingRect());
+    _q_adjustRect(&boundingRect);
+    return boundingRect;
+}
 
 QT_END_NAMESPACE
 

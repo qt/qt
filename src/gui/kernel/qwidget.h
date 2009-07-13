@@ -95,6 +95,7 @@ class QIcon;
 class QWindowSurface;
 class QLocale;
 class QGraphicsProxyWidget;
+class QGestureManager;
 #if defined(Q_WS_X11)
 class QX11Info;
 #endif

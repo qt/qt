@@ -561,6 +561,8 @@ private slots:
     void garbageInXMLPrologDefaultCodec() const;
     void garbageInXMLPrologUTF8Explicitly() const;
     void clear() const;
+    void checkCommentIndentation() const;
+    void checkCommentIndentation_data() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1390,6 +1392,56 @@ void tst_QXmlStream::clear() const // task 228768
         reader.readNext();
     }
     QCOMPARE(reader.tokenType(), QXmlStreamReader::EndDocument);
+}
+
+void tst_QXmlStream::checkCommentIndentation_data() const
+{
+
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expectedOutput");
+
+    QString simpleInput = "<a><!-- bla --></a>";
+    QString simpleOutput = "<?xml version=\"1.0\"?>\n"
+                           "<a>\n"
+                           "   <!-- bla -->\n"
+                           "</a>\n";
+    QTest::newRow("simple-comment") << simpleInput << simpleOutput;
+
+    QString advancedInput = "<a><!-- bla --><!-- bla --><b><!-- bla --><c><!-- bla --></c><!-- bla --></b></a>";
+    QString advancedOutput = "<?xml version=\"1.0\"?>\n"
+                           "<a>\n"
+                           "   <!-- bla -->\n"
+                           "   <!-- bla -->\n"
+                           "   <b>\n"
+                           "      <!-- bla -->\n"
+                           "      <c>\n"
+                           "         <!-- bla -->\n"
+                           "      </c>\n"
+                           "      <!-- bla -->\n"
+                           "   </b>\n"
+                           "</a>\n";
+    QTest::newRow("advanced-comment") << advancedInput << advancedOutput;
+}
+
+void tst_QXmlStream::checkCommentIndentation() const // task 256468
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expectedOutput);
+    QString output;
+    QXmlStreamReader reader(input);
+    QXmlStreamWriter writer(&output);
+    writer.setAutoFormatting(true);
+    writer.setAutoFormattingIndent(3);
+
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if (reader.error()) {
+            QFAIL("error reading XML input");
+        } else {
+            writer.writeCurrentToken(reader);
+        }
+    }
+    QCOMPARE(output, expectedOutput);
 }
 
 #include "tst_qxmlstream.moc"

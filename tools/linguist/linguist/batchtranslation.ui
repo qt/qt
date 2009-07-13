@@ -104,7 +104,7 @@
       <item>
        <widget class="QCheckBox" name="ckTranslateFinished">
         <property name="toolTip">
-         <string>Note that the modified entries will be reset to unfinished if 'Set translated entries to finished' above is unchecked.</string>
+         <string>Note that the modified entries will be reset to unfinished if 'Set translated entries to finished' above is unchecked</string>
         </property>
         <property name="text">
          <string>Translate also finished entries</string>
@@ -189,7 +189,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>The batch translator will search through the selected phrase books in the order given above.</string>
+         <string>The batch translator will search through the selected phrase books in the order given above</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
