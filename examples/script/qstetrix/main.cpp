@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     engine.globalObject().setProperty("Qt", Qt);
 //! [1]
 
-#if 0 && defined(QT_NO_SCRIPTTOOLS)
+#if !defined(QT_NO_SCRIPTTOOLS)
     QScriptEngineDebugger debugger;
     debugger.attachTo(&engine);
     QMainWindow *debugWindow = debugger.standardWindow();
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 //! [3]
 
     QPushButton *debugButton = qFindChild<QPushButton*>(ui, "debugButton");
-#if 0 && defined(QT_NO_SCRIPTTOOLS)
+#if !defined(QT_NO_SCRIPTTOOLS)
     QObject::connect(debugButton, SIGNAL(clicked()),
                      debugger.action(QScriptEngineDebugger::InterruptAction),
                      SIGNAL(triggered()));

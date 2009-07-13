@@ -1270,8 +1270,8 @@ QScriptValue QScriptEngine::globalObject() const
 */
 void QScriptEngine::setGlobalObject(const QScriptValue &object)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "not implemented");
-    // not possible with JSC?
+    qWarning("QScriptEngine::setGlobalObject() is not implemented");
+    // ### not possible with JSC?
     Q_UNUSED(object);
 }
 
