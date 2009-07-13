@@ -65,6 +65,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_isEditing(false),
       m_inDestruction(false),
+      m_pendingInputCapabilitiesChanged(false),
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
@@ -269,6 +270,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             sControl->setIgnoreFocusChanged(true);
         }
 
+        ensureInputCapabilitiesChanged();
         m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
 
         if (sControl) {
@@ -331,7 +333,7 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
             return;
         }
     }
-    CCoeEnv::Static()->InputCapabilitiesChanged();
+    queueInputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
@@ -482,6 +484,30 @@ void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attri
                                                         m_preeditString.size(),
                                                         standardFormat(PreeditFormat)));
     }
+}
+
+void QCoeFepInputContext::queueInputCapabilitiesChanged()
+{
+    if (m_pendingInputCapabilitiesChanged)
+        return;
+
+    // Call ensureInputCapabilitiesChanged asynchronously. This is done to improve performance
+    // by not updating input capabilities too often. The reason we don't call the Symbian
+    // asynchronous version of InputCapabilitiesChanged is because we need to ensure that it
+    // is synchronous in some specific cases. Those will call ensureInputCapabilitesChanged.
+    QMetaObject::invokeMethod(this, "ensureInputCapabilitiesChanged", Qt::QueuedConnection);
+    m_pendingInputCapabilitiesChanged = true;
+}
+
+void QCoeFepInputContext::ensureInputCapabilitiesChanged()
+{
+    if (!m_pendingInputCapabilitiesChanged)
+        return;
+
+    // The call below is essentially equivalent to InputCapabilitiesChanged(),
+    // but is synchronous, rather than asynchronous.
+    CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
+    m_pendingInputCapabilitiesChanged = false;
 }
 
 void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
