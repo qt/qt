@@ -60,7 +60,7 @@
 #include "qfxview.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmldebugger.h>
+#include <QtDeclarative/qmldebug.h>
 
 QT_BEGIN_NAMESPACE
 
