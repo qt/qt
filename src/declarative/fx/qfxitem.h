@@ -129,7 +129,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
     Q_PROPERTY(bool clip READ clip WRITE setClip)
-    Q_PROPERTY(bool focusable READ isFocusable WRITE setFocusable)
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged)
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged)
     Q_PROPERTY(QList<QFxTransform *>* transform READ transform)
@@ -266,8 +265,6 @@ public:
 
     QFxItem *mouseGrabberItem() const;
 
-    virtual bool isFocusable() const;
-    void setFocusable(bool);
     virtual bool hasFocus() const;
     void setFocus(bool);
     bool activeFocusPanel() const;

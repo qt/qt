@@ -94,6 +94,7 @@ public:
         _baselineOffset.invalidate();
         q->setAcceptedMouseButtons(Qt::NoButton);
         q->setFlag(QGraphicsItem::ItemHasNoContents, true);
+        q->setFlag(QGraphicsItem::ItemIsFocusable, true);
     }
 
     QString _id;

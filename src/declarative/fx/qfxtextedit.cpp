@@ -66,7 +66,6 @@ TextEdit {
     id: edit
     text: "<b>Hello</b> <i>World!</i>"
     focus: true
-    focusable: true
     font.family: "Helvetica"
     font.size: 20
     color: "blue"

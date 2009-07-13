@@ -237,7 +237,6 @@ void QFxWebView::init()
 
     setAcceptedMouseButtons(Qt::LeftButton);
     setOptions(HasContents | MouseEvents);
-    setFocusable(true);
 
     d->page = 0;
 }

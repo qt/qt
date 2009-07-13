@@ -258,11 +258,6 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-  \property QFxItem::activeFocus
-  This property indicates whether the item has the active focus.
- */
-
-/*!
     \fn void QFxItem::activeFocusChanged()
 
     This signal is emitted when this item gains active focus.
@@ -1849,16 +1844,6 @@ QList<QFxTransform *> *QFxItem::transform()
 }
 
 /*!
-  \property QFxItem::focus
-  This property holds the item's focus state.
-*/
-
-/*!
-  \property QFxItem::focusable
-  This property holds whether the item has focus state.
-*/
-
-/*!
   Returns true if the item is visible; otherwise returns false.
 
   An item is considered visible if its opacity is not 0.
@@ -2192,12 +2177,6 @@ QPointF QFxItem::transformOriginPoint() const
     return d->transformOrigin();
 }
 
-void QFxItem::setFocus(bool focus)
-{
-    Q_UNUSED(focus)
-    return;
-}
-
 qreal QFxItem::z() const
 {
     Q_D(const QFxItem);
@@ -2414,18 +2393,41 @@ QFxItem *QFxItem::mouseGrabberItem() const
     return 0;
 }
 
-bool QFxItem::isFocusable() const
-{
-    return false;
-}
-
-void QFxItem::setFocusable(bool)
-{
-}
+/*!
+  \qmlproperty bool Item::focus
+  This property indicates whether the item has has an active focus request. Set this
+  property to true to request active focus.
+*/
 
 bool QFxItem::hasFocus() const
 {
     return false;
+}
+
+void QFxItem::setFocus(bool focus)
+{
+    Q_UNUSED(focus)
+    return;
+}
+
+/*!
+  \qmlproperty bool Item::activeFocus
+  This property indicates whether the item has the active focus.
+*/
+
+bool QFxItem::hasActiveFocus() const
+{
+    return false;
+}
+
+bool QFxItem::activeFocusPanel() const
+{
+    return false;
+}
+
+void QFxItem::setActiveFocusPanel(bool b)
+{
+    Q_UNUSED(b)
 }
 
 bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
@@ -2462,6 +2464,7 @@ void QFxItem::setOptions(Options options, bool set)
 
     setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
     setFiltersChildEvents(d->options & ChildMouseFilter);
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->options & MouseFilter)
@@ -2486,21 +2489,6 @@ void QFxItem::setParent(QFxItem *p)
     QFxItem *oldParent = itemParent();
     setParentItem(p);
     parentChanged(p, oldParent);
-}
-
-bool QFxItem::activeFocusPanel() const
-{
-    return false;
-}
-
-void QFxItem::setActiveFocusPanel(bool b)
-{
-    Q_UNUSED(b)
-}
-
-bool QFxItem::hasActiveFocus() const
-{
-    return false;
 }
 
 void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)

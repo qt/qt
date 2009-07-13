@@ -120,7 +120,6 @@ Item {
                             id: proxy
                             anchors.left: UrlBox.left
                             anchors.fill: UrlBox
-                            focusable: true
                             targets: [keyActions,EditUrl]
                         }
                         KeyActions {
@@ -191,7 +190,6 @@ Item {
                 url: WebBrowser.url
                 smooth: !Flick.moving
                 fillColor: "white"
-                focusable: true
                 focus: true
 
                 idealWidth: Flick.width
