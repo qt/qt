@@ -113,6 +113,8 @@ void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArra
 
 void QScriptObject::mark()
 {
+    if (d && d->data)
+        d->data.mark();
     if (!d || !d->delegate) {
         JSC::JSObject::mark();
         return;
