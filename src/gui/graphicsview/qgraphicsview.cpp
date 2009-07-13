@@ -971,7 +971,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // rect does not take into account untransformable items.
     const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 1, 1))
                                             .boundingRect();
-    if (exposedRegionSceneBounds.contains(scene->d_func()->growingItemsBoundingRect)) {
+    if (exposedRegionSceneBounds.contains(scene->sceneRect())) {
         Q_ASSERT(allItems);
         *allItems = true;
 
