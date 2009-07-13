@@ -356,6 +356,8 @@ QTextDocument *QSyntaxHighlighter::document() const
     \since 4.2
 
     Redoes the highlighting of the whole document.
+
+    \sa rehighlightBlock()
 */
 void QSyntaxHighlighter::rehighlight()
 {
@@ -369,6 +371,31 @@ void QSyntaxHighlighter::rehighlight()
     cursor.beginEditBlock();
     cursor.movePosition(QTextCursor::End);
     d->_q_reformatBlocks(0, 0, cursor.position());
+    cursor.endEditBlock();
+    connect(d->doc, SIGNAL(contentsChange(int,int,int)),
+            this, SLOT(_q_reformatBlocks(int,int,int)));
+}
+
+/*!
+    \since 4.6
+
+    Redoes the highlighting of the given QTextBlock \a block.
+    
+    \sa rehighlight()
+*/
+void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
+{
+    Q_D(QSyntaxHighlighter);
+    if (!d->doc)
+        return;
+
+    disconnect(d->doc, SIGNAL(contentsChange(int,int,int)),
+               this, SLOT(_q_reformatBlocks(int,int,int)));
+    QTextCursor cursor(block);
+    cursor.beginEditBlock();
+    int from = cursor.position();
+    cursor.movePosition(QTextCursor::EndOfBlock);
+    d->_q_reformatBlocks(from, 0, cursor.position() - from);
     cursor.endEditBlock();
     connect(d->doc, SIGNAL(contentsChange(int,int,int)),
             this, SLOT(_q_reformatBlocks(int,int,int)));
