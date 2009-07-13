@@ -77,6 +77,8 @@ private slots:
     void add();
     void defaultIndent();
     void blockUpdate();
+    void numbering_data();
+    void numbering();
 
 private:
     QTextDocument *doc;
@@ -334,6 +336,44 @@ void tst_QTextList::blockUpdate()
     layout->expect(1, len, len);
     list->remove(list->item(1));
     QVERIFY(!layout->error);
+}
+
+void tst_QTextList::numbering_data()
+{
+    QTest::addColumn<int>("format");
+    QTest::addColumn<int>("number");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("E.") << int(QTextListFormat::ListUpperAlpha) << 5 << "E.";
+    QTest::newRow("abc.") << int(QTextListFormat::ListLowerAlpha) << (26 + 2) * 26 + 3 << "abc.";
+    QTest::newRow("12.") << int(QTextListFormat::ListDecimal) << 12 << "12.";
+    QTest::newRow("XXIV.") << int(QTextListFormat::ListUpperRoman) << 24 << "XXIV.";
+    QTest::newRow("VIII.") << int(QTextListFormat::ListUpperRoman) << 8 << "VIII.";
+    QTest::newRow("xxx.") << int(QTextListFormat::ListLowerRoman) << 30 << "xxx.";
+    QTest::newRow("xxix.") << int(QTextListFormat::ListLowerRoman) << 29 << "xxix.";
+//    QTest::newRow("xxx. alpha") << int(QTextListFormat::ListLowerAlpha) << (24 * 26 + 24) * 26 + 24  << "xxx."; //Too slow
+}
+
+void tst_QTextList::numbering()
+{
+    QFETCH(int, format);
+    QFETCH(int, number);
+    QFETCH(QString, result);
+
+
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::Style(format));
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    for (int i = 1; i < number; ++i)
+        cursor.insertBlock();
+
+    QCOMPARE(list->count(), number);
+
+    QVERIFY(cursor.currentList());
+    QCOMPARE(cursor.currentList()->itemNumber(cursor.block()), number - 1);
+    QCOMPARE(cursor.currentList()->itemText(cursor.block()), result);
 }
 
 QTEST_MAIN(tst_QTextList)
