@@ -489,6 +489,7 @@ void QFxPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 
     d->lastPosTime = QTime();
     d->stealMouse = false;
+    ungrabMouse();
 }
 
 bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
@@ -524,8 +525,8 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
         grabber = static_cast<QFxItem*>(mouseGrabberItem());
-        if (grabber && d->stealMouse && !grabber->keepMouseGrab())
-            mouseGrabberItem()->ungrabMouse();
+        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this)
+            grabMouse();
 
         return d->stealMouse;
     } else if (!d->lastPosTime.isNull()) {

@@ -740,6 +740,7 @@ void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QFxFlickable);
     d->handleMouseReleaseEvent(event);
     event->accept();
+    ungrabMouse();
 }
 
 qreal QFxFlickable::minYExtent() const
