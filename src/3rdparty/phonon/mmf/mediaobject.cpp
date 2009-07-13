@@ -24,9 +24,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-MediaObject::MediaObject(QObject *parent) : m_player(0)
-                                          , m_error(NoError)
-                                          , m_state(StoppedState)
+MMF::MediaObject::MediaObject(QObject *parent) : m_player(0)
+                                               , m_error(NoError)
+                                               , m_state(StoppedState)
 {
     Q_UNUSED(parent);
     m_player = CDrmPlayerUtility::NewL(*this, 0, EMdaPriorityPreferenceNone);
@@ -34,55 +34,55 @@ MediaObject::MediaObject(QObject *parent) : m_player(0)
     m_player->RegisterForAudioLoadingNotification(*this);
 }
 
-MediaObject::~MediaObject()
+MMF::MediaObject::~MediaObject()
 {
     delete m_player;
 }
 
-void MediaObject::play()
+void MMF::MediaObject::play()
 {
     transitTo(PlayingState);
     m_player->Play();
 }
 
-void MediaObject::pause()
+void MMF::MediaObject::pause()
 {
     transitTo(PausedState);
     m_player->Pause();
 }
 
-void MediaObject::stop()
+void MMF::MediaObject::stop()
 {
     transitTo(StoppedState);
     m_player->Stop();
 }
 
-void MediaObject::seek(qint64 milliseconds)
+void MMF::MediaObject::seek(qint64 milliseconds)
 {
     m_player->SetPosition(toMicroSeconds(milliseconds));
 }
 
-qint32 MediaObject::tickInterval() const
+qint32 MMF::MediaObject::tickInterval() const
 {
     return 0;
 }
 
-void MediaObject::setTickInterval(qint32 interval)
+void MMF::MediaObject::setTickInterval(qint32 interval)
 {
     Q_UNUSED(interval);
 }
 
-bool MediaObject::hasVideo() const
+bool MMF::MediaObject::hasVideo() const
 {
     return false;
 }
 
-bool MediaObject::isSeekable() const
+bool MMF::MediaObject::isSeekable() const
 {
     return false;
 }
 
-qint64 MediaObject::currentTime() const
+qint64 MMF::MediaObject::currentTime() const
 {
     TTimeIntervalMicroSeconds mss;
     const TInt retcode = m_player->GetPosition(mss);
@@ -96,37 +96,37 @@ qint64 MediaObject::currentTime() const
     }
 }
 
-QString MediaObject::errorString() const
+QString MMF::MediaObject::errorString() const
 {
     return QString();
 }
 
-Phonon::ErrorType MediaObject::errorType() const
+Phonon::ErrorType MMF::MediaObject::errorType() const
 {
     return m_error;
 }
 
-qint64 MediaObject::toMilliSeconds(const TTimeIntervalMicroSeconds &in)
+qint64 MMF::MediaObject::toMilliSeconds(const TTimeIntervalMicroSeconds &in)
 {
     return in.Int64() / 1000;
 }
 
-TTimeIntervalMicroSeconds MediaObject::toMicroSeconds(qint64 ms)
+TTimeIntervalMicroSeconds MMF::MediaObject::toMicroSeconds(qint64 ms)
 {
     return TTimeIntervalMicroSeconds(TInt64(ms));
 }
 
-qint64 MediaObject::totalTime() const
+qint64 MMF::MediaObject::totalTime() const
 {
     return toMilliSeconds(m_player->Duration());
 }
 
-MediaSource MediaObject::source() const
+MediaSource MMF::MediaObject::source() const
 {
     return m_mediaSource;
 }
 
-void MediaObject::setSource(const MediaSource &source)
+void MMF::MediaObject::setSource(const MediaSource &source)
 {
     stop();
     m_mediaSource = source;
@@ -161,42 +161,42 @@ void MediaObject::setSource(const MediaSource &source)
     transitTo(LoadingState);
 }
 
-void MediaObject::setNextSource(const MediaSource &source)
+void MMF::MediaObject::setNextSource(const MediaSource &source)
 {
     m_nextSource = source;
     Q_UNUSED(source);
 }
 
-qint32 MediaObject::prefinishMark() const
+qint32 MMF::MediaObject::prefinishMark() const
 {
     return 0;
 }
 
-void MediaObject::setPrefinishMark(qint32)
+void MMF::MediaObject::setPrefinishMark(qint32)
 {
 }
 
-qint32 MediaObject::transitionTime() const
+qint32 MMF::MediaObject::transitionTime() const
 {
     return 0;
 }
 
-void MediaObject::setTransitionTime(qint32)
+void MMF::MediaObject::setTransitionTime(qint32)
 {
 }
 
-void MediaObject::MaloLoadingComplete()
+void MMF::MediaObject::MaloLoadingComplete()
 {
     transitTo(StoppedState);
 }
 
-void MediaObject::MaloLoadingStarted()
+void MMF::MediaObject::MaloLoadingStarted()
 {
     transitTo(LoadingState);
 }
 
-void MediaObject::MdapcInitComplete(TInt aError,
-                                    const TTimeIntervalMicroSeconds &)
+void MMF::MediaObject::MdapcInitComplete(TInt aError,
+                                         const TTimeIntervalMicroSeconds &)
 {
     if(aError == KErrNone) {
         m_error = NormalError;
@@ -207,7 +207,7 @@ void MediaObject::MdapcInitComplete(TInt aError,
     transitTo(StoppedState);
 }
 
-void MediaObject::MdapcPlayComplete(TInt aError)
+void MMF::MediaObject::MdapcPlayComplete(TInt aError)
 {
     if(aError == KErrNone) {
         if(m_nextSource.type() == MediaSource::Empty) {
@@ -225,13 +225,13 @@ void MediaObject::MdapcPlayComplete(TInt aError)
     }
 }
 
-void MediaObject::transitTo(Phonon::State newState)
+void MMF::MediaObject::transitTo(Phonon::State newState)
 {
     emit stateChanged(m_state, newState);
     m_state = newState;
 }
 
-Phonon::State MediaObject::state() const
+Phonon::State MMF::MediaObject::state() const
 {
     return m_state;
 }

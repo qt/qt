@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_MEDIAOBJECT_H
 
 #include <DrmAudioSamplePlayer.h>
+#include <VideoPlayer.h>
 
 #include <Phonon/MediaSource>
 #include <Phonon/mediaobjectinterface.h>
@@ -33,16 +34,25 @@ namespace Phonon
     {
         class AudioOutput;
 
+        /**
+         *
+         * See
+         * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
+         * play a video file using CVideoPlayerUtility</a>
+         */
         class MediaObject : public QObject
                           , public MediaObjectInterface
                           , public MDrmAudioPlayerCallback
                           , public MAudioLoadingObserver
+                          //, public MVideoPlayerUtilityObserver
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
         public:
             MediaObject(QObject *parent);
             virtual ~MediaObject();
+
+            // MediaObjectInterface
             virtual void play();
             virtual void pause();
             virtual void stop();

@@ -125,6 +125,7 @@ bool FactoryPrivate::createBackend()
         // (finding the first loadable backend).
         const QLatin1String suffix("/phonon_backend/");
         foreach (QString libPath, QCoreApplication::libraryPaths()) {
+            qDebug() << Q_FUNC_INFO << "Lookinng in" << libPath;
             libPath += suffix;
             const QDir dir(libPath);
             if (!dir.exists()) {
@@ -136,18 +137,18 @@ bool FactoryPrivate::createBackend()
 
 #ifdef Q_OS_SYMBIAN
             /* On Symbian OS we might have two plugins, one which uses Symbian
-             * MMF framework("mmf"), and one which uses Real Networks's
+             * MMF framework("phonon_mmf"), and one which uses Real Networks's
              * Helix("hxphonon"). We prefer the latter because it's more
              * sophisticated, so we make sure the Helix backend is attempted
              * to be loaded first, and the MMF backend is used for backup. */
             {
-                const int helix = plugins.indexOf(QLatin1String("hxphonon"));
-                if (helix != -1)
-                    plugins.move(helix, 0);
+                const int hxphonon = plugins.indexOf(QLatin1String("hxphonon"));
+                if (hxphonon != -1)
+                    plugins.move(hxphonon, 0);
 
                 // Code for debugging the MMF backend.
-                if(helix != -1) {
-                    qDebug() << "Found helix, and removed it from the lookup list.";
+                if(hxphonon != -1) {
+                    qDebug() << "Found hxphonon backend and removed it from the lookup list.";
                     plugins.removeAll(QLatin1String("hxphonon"));
                 }
             }

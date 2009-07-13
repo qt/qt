@@ -24,19 +24,19 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-AudioOutput::AudioOutput(Backend *, QObject *parent) : m_mediaObject(0)
-                                                     , m_volume(0)
-                                                     , m_maxVolume(-1)
+MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : m_mediaObject(0)
+                                                          , m_volume(0)
+                                                          , m_maxVolume(-1)
 {
     setParent(parent);
 }
 
-qreal AudioOutput::volume() const
+qreal MMF::AudioOutput::volume() const
 {
     return 0;
 }
 
-void AudioOutput::setVolume(qreal newVolume)
+void MMF::AudioOutput::setVolume(qreal newVolume)
 {
     if(!m_mediaObject)
         return;
@@ -51,22 +51,22 @@ void AudioOutput::setVolume(qreal newVolume)
     emit volumeChanged(m_volume);
 }
 
-int AudioOutput::outputDevice() const
+int MMF::AudioOutput::outputDevice() const
 {
     return 0;
 }
 
-bool AudioOutput::setOutputDevice(int)
+bool MMF::AudioOutput::setOutputDevice(int)
 {
     return true;
 }
 
-bool AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
+bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
 {
     return true;
 }
 
-void AudioOutput::setMediaObject(MediaObject *mo)
+void MMF::AudioOutput::setMediaObject(MediaObject *mo)
 {
     Q_ASSERT(m_mediaObject);
     m_mediaObject = mo;
