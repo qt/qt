@@ -101,7 +101,7 @@ void QCoeFepInputContext::reset()
 
 void QCoeFepInputContext::update()
 {
-    updateHints();
+    updateHints(false);
 
     // For pre-5.0 SDKs, we don't do text updates on S60 side.
     if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
@@ -120,7 +120,7 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
 
     QInputContext::setFocusWidget(w);
 
-    updateHints();
+    updateHints(true);
 }
 
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
@@ -318,7 +318,7 @@ static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat
     return qFormat;
 }
 
-void QCoeFepInputContext::updateHints()
+void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 {
     QWidget *w = focusWidget();
     if (w) {
@@ -326,10 +326,12 @@ void QCoeFepInputContext::updateHints()
         if (hints != m_lastImHints) {
             m_lastImHints = hints;
             applyHints(hints);
+        } else if (!mustUpdateInputCapabilities) {
+            // Optimization. Return immediately if there was no change.
+            return;
         }
-    } else {
-        CCoeEnv::Static()->InputCapabilitiesChanged();
     }
+    CCoeEnv::Static()->InputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
@@ -449,8 +451,6 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     } else {
         m_textCapabilities = TCoeInputCapabilities::EAllText;
     }
-
-    CCoeEnv::Static()->InputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)

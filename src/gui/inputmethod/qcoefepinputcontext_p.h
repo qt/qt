@@ -93,7 +93,7 @@ public:
 
 private:
     void commitCurrentString(bool triggeredBySymbian);
-    void updateHints();
+    void updateHints(bool mustUpdateInputCapabilities);
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
 
