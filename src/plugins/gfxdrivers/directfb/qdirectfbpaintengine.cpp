@@ -147,13 +147,6 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
 #define RASTERFALLBACK(op, one, two, three)
 #endif
 
-static inline uint ALPHA_MUL(uint x, uint a)
-{
-    uint t = x * a;
-    t = ((t + (t >> 8) + 0x80) >> 8) & 0xff;
-    return t;
-}
-
 class SurfaceCache
 {
 public:
@@ -938,6 +931,13 @@ void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
     }
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
     surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blittingFlags));
+}
+
+static inline uint ALPHA_MUL(uint x, uint a)
+{
+    uint t = x * a;
+    t = ((t + (t >> 8) + 0x80) >> 8) & 0xff;
+    return t;
 }
 
 void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
