@@ -2496,11 +2496,15 @@ void setJSDOMWindowOpener(ExecState* exec, JSObject* thisObject, JSValuePtr valu
 
 void setJSDOMWindowParent(ExecState* exec, JSObject* thisObject, JSValuePtr value)
 {
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "parent"), value);
 }
 
 void setJSDOMWindowTop(ExecState* exec, JSObject* thisObject, JSValuePtr value)
 {
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "top"), value);
 }
 

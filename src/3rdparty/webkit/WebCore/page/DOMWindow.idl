@@ -121,8 +121,8 @@ module window {
         attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow frames;
 
         attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow opener;
-        attribute [Replaceable, DoNotCheckDomainSecurity] DOMWindow parent;
-        attribute [Replaceable, DoNotCheckDomainSecurity] DOMWindow top;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow parent;
+        attribute [Replaceable, DoNotCheckDomainSecurityOnGet] DOMWindow top;
 
         // DOM Level 2 AbstractView Interface
         readonly attribute Document document;
