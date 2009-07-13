@@ -92,6 +92,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
 void QNetworkReplyImplPrivate::_q_sourceReadyRead()
 {
+    if (state != Working)
+        return;
+
     // read data from the outgoingData QIODevice into our internal buffer
     enum { DesiredBufferSize = 32 * 1024 };
 
@@ -131,6 +134,8 @@ void QNetworkReplyImplPrivate::_q_sourceReadChannelFinished()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
+    if (state != Working)
+        return;
     if (!copyDevice || !q->isOpen())
         return;
 

@@ -628,6 +628,10 @@ void QNetworkAccessHttpBackend::closeUpstreamChannel()
 {
     // this indicates that the user finished uploading the data for POST
     Q_ASSERT(uploadDevice);
+
+    if (uploadDevice->eof)
+        return; // received a 2nd time. should fix 257662 and 256369
+
     uploadDevice->eof = true;
     emit uploadDevice->readChannelFinished();
 }
