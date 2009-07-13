@@ -41,7 +41,7 @@ static const HashTableValue JSMessageChannelTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessageChannelTable =
+static JSC_CONST_HASHTABLE HashTable JSMessageChannelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSMessageChannelTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSMessageChannelPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessageChannelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMessageChannelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMessageChannelPrototypeTableValues, 0 };
 #else

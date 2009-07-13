@@ -84,6 +84,9 @@ hash_val (register const char *str, register unsigned int len)
   switch (len)
     {
       default:
+        hval += asso_values[(unsigned char)str[30]];
+      /*FALLTHROUGH*/
+      case 30:
         hval += asso_values[(unsigned char)str[29]];
       /*FALLTHROUGH*/
       case 29:
@@ -188,9 +191,9 @@ findValue (register const char *str, register unsigned int len)
 {
   enum
     {
-      TOTAL_KEYWORDS = 537,
+      TOTAL_KEYWORDS = 539,
       MIN_WORD_LENGTH = 2,
-      MAX_WORD_LENGTH = 30,
+      MAX_WORD_LENGTH = 31,
       MIN_HASH_VALUE = 0,
       MAX_HASH_VALUE = 8751
     };
@@ -203,7 +206,7 @@ findValue (register const char *str, register unsigned int len)
       {"300", CSSValue300},
 #line 287 "CSSValueKeywords.gperf"
       {"end", CSSValueEnd},
-#line 545 "CSSValueKeywords.gperf"
+#line 547 "CSSValueKeywords.gperf"
       {"lr", CSSValueLr},
 #line 48 "CSSValueKeywords.gperf"
       {"900", CSSValue900},
@@ -211,7 +214,7 @@ findValue (register const char *str, register unsigned int len)
       {"hide", CSSValueHide},
 #line 47 "CSSValueKeywords.gperf"
       {"800", CSSValue800},
-#line 369 "CSSValueKeywords.gperf"
+#line 371 "CSSValueKeywords.gperf"
       {"lines", CSSValueLines},
 #line 46 "CSSValueKeywords.gperf"
       {"700", CSSValue700},
@@ -229,23 +232,23 @@ findValue (register const char *str, register unsigned int len)
       {"circle", CSSValueCircle},
 #line 43 "CSSValueKeywords.gperf"
       {"400", CSSValue400},
-#line 463 "CSSValueKeywords.gperf"
+#line 465 "CSSValueKeywords.gperf"
       {"linen", CSSValueLinen},
 #line 41 "CSSValueKeywords.gperf"
       {"200", CSSValue200},
-#line 479 "CSSValueKeywords.gperf"
+#line 481 "CSSValueKeywords.gperf"
       {"oldlace", CSSValueOldlace},
 #line 252 "CSSValueKeywords.gperf"
       {"cross", CSSValueCross},
-#line 400 "CSSValueKeywords.gperf"
+#line 402 "CSSValueKeywords.gperf"
       {"coral", CSSValueCoral},
 #line 312 "CSSValueKeywords.gperf"
       {"clip", CSSValueClip},
 #line 13 "CSSValueKeywords.gperf"
       {"none", CSSValueNone},
-#line 403 "CSSValueKeywords.gperf"
+#line 405 "CSSValueKeywords.gperf"
       {"crimson", CSSValueCrimson},
-#line 547 "CSSValueKeywords.gperf"
+#line 549 "CSSValueKeywords.gperf"
       {"tb", CSSValueTb},
 #line 251 "CSSValueKeywords.gperf"
       {"crop", CSSValueCrop},
@@ -255,7 +258,7 @@ findValue (register const char *str, register unsigned int len)
       {"inline", CSSValueInline},
 #line 176 "CSSValueKeywords.gperf"
       {"armenian", CSSValueArmenian},
-#line 367 "CSSValueKeywords.gperf"
+#line 369 "CSSValueKeywords.gperf"
       {"logical", CSSValueLogical},
 #line 241 "CSSValueKeywords.gperf"
       {"collapse", CSSValueCollapse},
@@ -271,13 +274,13 @@ findValue (register const char *str, register unsigned int len)
       {"initial", CSSValueInitial},
 #line 215 "CSSValueKeywords.gperf"
       {"e-resize", CSSValueEResize},
-#line 546 "CSSValueKeywords.gperf"
+#line 548 "CSSValueKeywords.gperf"
       {"rl", CSSValueRl},
 #line 221 "CSSValueKeywords.gperf"
       {"s-resize", CSSValueSResize},
-#line 375 "CSSValueKeywords.gperf"
+#line 377 "CSSValueKeywords.gperf"
       {"linear", CSSValueLinear},
-#line 505 "CSSValueKeywords.gperf"
+#line 507 "CSSValueKeywords.gperf"
       {"snow", CSSValueSnow},
 #line 205 "CSSValueKeywords.gperf"
       {"move", CSSValueMove},
@@ -287,29 +290,29 @@ findValue (register const char *str, register unsigned int len)
       {"slow", CSSValueSlow},
 #line 218 "CSSValueKeywords.gperf"
       {"n-resize", CSSValueNResize},
-#line 509 "CSSValueKeywords.gperf"
+#line 511 "CSSValueKeywords.gperf"
       {"thistle", CSSValueThistle},
-#line 455 "CSSValueKeywords.gperf"
+#line 457 "CSSValueKeywords.gperf"
       {"lightsalmon", CSSValueLightsalmon},
-#line 399 "CSSValueKeywords.gperf"
+#line 401 "CSSValueKeywords.gperf"
       {"chocolate", CSSValueChocolate},
 #line 279 "CSSValueKeywords.gperf"
       {"show", CSSValueShow},
 #line 257 "CSSValueKeywords.gperf"
       {"higher", CSSValueHigher},
-#line 520 "CSSValueKeywords.gperf"
+#line 522 "CSSValueKeywords.gperf"
       {"srgb", CSSValueSrgb},
 #line 187 "CSSValueKeywords.gperf"
       {"compact", CSSValueCompact},
 #line 309 "CSSValueKeywords.gperf"
       {"ignore", CSSValueIgnore},
-#line 510 "CSSValueKeywords.gperf"
+#line 512 "CSSValueKeywords.gperf"
       {"tomato", CSSValueTomato},
 #line 90 "CSSValueKeywords.gperf"
       {"white", CSSValueWhite},
 #line 51 "CSSValueKeywords.gperf"
       {"small", CSSValueSmall},
-#line 362 "CSSValueKeywords.gperf"
+#line 364 "CSSValueKeywords.gperf"
       {"content", CSSValueContent},
 #line 285 "CSSValueKeywords.gperf"
       {"stretch", CSSValueStretch},
@@ -317,15 +320,15 @@ findValue (register const char *str, register unsigned int len)
       {"maroon", CSSValueMaroon},
 #line 293 "CSSValueKeywords.gperf"
       {"single", CSSValueSingle},
-#line 374 "CSSValueKeywords.gperf"
+#line 376 "CSSValueKeywords.gperf"
       {"ease", CSSValueEase},
 #line 155 "CSSValueKeywords.gperf"
       {"right", CSSValueRight},
-#line 496 "CSSValueKeywords.gperf"
+#line 498 "CSSValueKeywords.gperf"
       {"salmon", CSSValueSalmon},
-#line 508 "CSSValueKeywords.gperf"
+#line 510 "CSSValueKeywords.gperf"
       {"tan", CSSValueTan},
-#line 544 "CSSValueKeywords.gperf"
+#line 546 "CSSValueKeywords.gperf"
       {"tb-rl", CSSValueTbRl},
 #line 39 "CSSValueKeywords.gperf"
       {"lighter", CSSValueLighter},
@@ -333,39 +336,39 @@ findValue (register const char *str, register unsigned int len)
       {"crosshair", CSSValueCrosshair},
 #line 59 "CSSValueKeywords.gperf"
       {"wider", CSSValueWider},
-#line 351 "CSSValueKeywords.gperf"
+#line 353 "CSSValueKeywords.gperf"
       {"caret", CSSValueCaret},
 #line 189 "CSSValueKeywords.gperf"
       {"table", CSSValueTable},
 #line 332 "CSSValueKeywords.gperf"
       {"listitem", CSSValueListitem},
-#line 475 "CSSValueKeywords.gperf"
+#line 477 "CSSValueKeywords.gperf"
       {"mintcream", CSSValueMintcream},
 #line 222 "CSSValueKeywords.gperf"
       {"w-resize", CSSValueWResize},
-#line 542 "CSSValueKeywords.gperf"
+#line 544 "CSSValueKeywords.gperf"
       {"lr-tb", CSSValueLrTb},
 #line 179 "CSSValueKeywords.gperf"
       {"hiragana", CSSValueHiragana},
 #line 236 "CSSValueKeywords.gperf"
       {"rtl", CSSValueRtl},
-#line 527 "CSSValueKeywords.gperf"
+#line 529 "CSSValueKeywords.gperf"
       {"miter", CSSValueMiter},
-#line 448 "CSSValueKeywords.gperf"
+#line 450 "CSSValueKeywords.gperf"
       {"lightcoral", CSSValueLightcoral},
-#line 440 "CSSValueKeywords.gperf"
+#line 442 "CSSValueKeywords.gperf"
       {"indigo", CSSValueIndigo},
 #line 243 "CSSValueKeywords.gperf"
       {"absolute", CSSValueAbsolute},
 #line 289 "CSSValueKeywords.gperf"
       {"horizontal", CSSValueHorizontal},
-#line 404 "CSSValueKeywords.gperf"
+#line 406 "CSSValueKeywords.gperf"
       {"cyan", CSSValueCyan},
 #line 11 "CSSValueKeywords.gperf"
       {"inherit", CSSValueInherit},
-#line 464 "CSSValueKeywords.gperf"
+#line 466 "CSSValueKeywords.gperf"
       {"magenta", CSSValueMagenta},
-#line 516 "CSSValueKeywords.gperf"
+#line 518 "CSSValueKeywords.gperf"
       {"nonzero", CSSValueNonzero},
 #line 204 "CSSValueKeywords.gperf"
       {"pointer", CSSValuePointer},
@@ -373,7 +376,7 @@ findValue (register const char *str, register unsigned int len)
       {"underline", CSSValueUnderline},
 #line 130 "CSSValueKeywords.gperf"
       {"no-repeat", CSSValueNoRepeat},
-#line 387 "CSSValueKeywords.gperf"
+#line 389 "CSSValueKeywords.gperf"
       {"aliceblue", CSSValueAliceblue},
 #line 112 "CSSValueKeywords.gperf"
       {"match", CSSValueMatch},
@@ -385,13 +388,13 @@ findValue (register const char *str, register unsigned int len)
       {"ridge", CSSValueRidge},
 #line 57 "CSSValueKeywords.gperf"
       {"smaller", CSSValueSmaller},
-#line 395 "CSSValueKeywords.gperf"
+#line 397 "CSSValueKeywords.gperf"
       {"brown", CSSValueBrown},
 #line 230 "CSSValueKeywords.gperf"
       {"wait", CSSValueWait},
 #line 258 "CSSValueKeywords.gperf"
       {"invert", CSSValueInvert},
-#line 540 "CSSValueKeywords.gperf"
+#line 542 "CSSValueKeywords.gperf"
       {"no-change", CSSValueNoChange},
 #line 32 "CSSValueKeywords.gperf"
       {"italic", CSSValueItalic},
@@ -409,17 +412,17 @@ findValue (register const char *str, register unsigned int len)
       {"intrinsic", CSSValueIntrinsic},
 #line 317 "CSSValueKeywords.gperf"
       {"wave", CSSValueWave},
-#line 501 "CSSValueKeywords.gperf"
+#line 503 "CSSValueKeywords.gperf"
       {"skyblue", CSSValueSkyblue},
 #line 302 "CSSValueKeywords.gperf"
       {"infinite", CSSValueInfinite},
 #line 280 "CSSValueKeywords.gperf"
       {"static", CSSValueStatic},
-#line 462 "CSSValueKeywords.gperf"
+#line 464 "CSSValueKeywords.gperf"
       {"limegreen", CSSValueLimegreen},
-#line 543 "CSSValueKeywords.gperf"
+#line 545 "CSSValueKeywords.gperf"
       {"rl-tb", CSSValueRlTb},
-#line 447 "CSSValueKeywords.gperf"
+#line 449 "CSSValueKeywords.gperf"
       {"lightblue", CSSValueLightblue},
 #line 85 "CSSValueKeywords.gperf"
       {"orange", CSSValueOrange},
@@ -429,23 +432,23 @@ findValue (register const char *str, register unsigned int len)
       {"progress", CSSValueProgress},
 #line 318 "CSSValueKeywords.gperf"
       {"continuous", CSSValueContinuous},
-#line 385 "CSSValueKeywords.gperf"
+#line 387 "CSSValueKeywords.gperf"
       {"fill", CSSValueFill},
 #line 144 "CSSValueKeywords.gperf"
       {"baseline", CSSValueBaseline},
-#line 538 "CSSValueKeywords.gperf"
+#line 540 "CSSValueKeywords.gperf"
       {"mathematical", CSSValueMathematical},
 #line 207 "CSSValueKeywords.gperf"
       {"cell", CSSValueCell},
 #line 273 "CSSValueKeywords.gperf"
       {"pre", CSSValuePre},
-#line 452 "CSSValueKeywords.gperf"
+#line 454 "CSSValueKeywords.gperf"
       {"lightgreen", CSSValueLightgreen},
-#line 460 "CSSValueKeywords.gperf"
+#line 462 "CSSValueKeywords.gperf"
       {"lightsteelblue", CSSValueLightsteelblue},
-#line 456 "CSSValueKeywords.gperf"
+#line 458 "CSSValueKeywords.gperf"
       {"lightseagreen", CSSValueLightseagreen},
-#line 500 "CSSValueKeywords.gperf"
+#line 502 "CSSValueKeywords.gperf"
       {"sienna", CSSValueSienna},
 #line 286 "CSSValueKeywords.gperf"
       {"start", CSSValueStart},
@@ -465,11 +468,11 @@ findValue (register const char *str, register unsigned int len)
       {"transparent", CSSValueTransparent},
 #line 14 "CSSValueKeywords.gperf"
       {"hidden", CSSValueHidden},
-#line 397 "CSSValueKeywords.gperf"
+#line 399 "CSSValueKeywords.gperf"
       {"cadetblue", CSSValueCadetblue},
-#line 478 "CSSValueKeywords.gperf"
+#line 480 "CSSValueKeywords.gperf"
       {"navajowhite", CSSValueNavajowhite},
-#line 502 "CSSValueKeywords.gperf"
+#line 504 "CSSValueKeywords.gperf"
       {"slateblue", CSSValueSlateblue},
 #line 308 "CSSValueKeywords.gperf"
       {"element", CSSValueElement},
@@ -477,11 +480,11 @@ findValue (register const char *str, register unsigned int len)
       {"level", CSSValueLevel},
 #line 87 "CSSValueKeywords.gperf"
       {"red", CSSValueRed},
-#line 494 "CSSValueKeywords.gperf"
+#line 496 "CSSValueKeywords.gperf"
       {"royalblue", CSSValueRoyalblue},
 #line 163 "CSSValueKeywords.gperf"
       {"disc", CSSValueDisc},
-#line 433 "CSSValueKeywords.gperf"
+#line 435 "CSSValueKeywords.gperf"
       {"ghostwhite", CSSValueGhostwhite},
 #line 25 "CSSValueKeywords.gperf"
       {"menu", CSSValueMenu},
@@ -491,37 +494,37 @@ findValue (register const char *str, register unsigned int len)
       {"icon", CSSValueIcon},
 #line 60 "CSSValueKeywords.gperf"
       {"narrower", CSSValueNarrower},
-#line 484 "CSSValueKeywords.gperf"
+#line 486 "CSSValueKeywords.gperf"
       {"palegreen", CSSValuePalegreen},
-#line 489 "CSSValueKeywords.gperf"
+#line 491 "CSSValueKeywords.gperf"
       {"peru", CSSValuePeru},
 #line 131 "CSSValueKeywords.gperf"
       {"clear", CSSValueClear},
 #line 52 "CSSValueKeywords.gperf"
       {"medium", CSSValueMedium},
-#line 477 "CSSValueKeywords.gperf"
+#line 479 "CSSValueKeywords.gperf"
       {"moccasin", CSSValueMoccasin},
 #line 162 "CSSValueKeywords.gperf"
       {"inside", CSSValueInside},
-#line 499 "CSSValueKeywords.gperf"
+#line 501 "CSSValueKeywords.gperf"
       {"seashell", CSSValueSeashell},
-#line 513 "CSSValueKeywords.gperf"
+#line 515 "CSSValueKeywords.gperf"
       {"wheat", CSSValueWheat},
 #line 150 "CSSValueKeywords.gperf"
       {"top", CSSValueTop},
 #line 156 "CSSValueKeywords.gperf"
       {"center", CSSValueCenter},
-#line 474 "CSSValueKeywords.gperf"
+#line 476 "CSSValueKeywords.gperf"
       {"midnightblue", CSSValueMidnightblue},
-#line 532 "CSSValueKeywords.gperf"
+#line 534 "CSSValueKeywords.gperf"
       {"central", CSSValueCentral},
 #line 298 "CSSValueKeywords.gperf"
       {"up", CSSValueUp},
-#line 521 "CSSValueKeywords.gperf"
+#line 523 "CSSValueKeywords.gperf"
       {"linearrgb", CSSValueLinearrgb},
-#line 537 "CSSValueKeywords.gperf"
+#line 539 "CSSValueKeywords.gperf"
       {"hanging", CSSValueHanging},
-#line 398 "CSSValueKeywords.gperf"
+#line 400 "CSSValueKeywords.gperf"
       {"chartreuse", CSSValueChartreuse},
 #line 80 "CSSValueKeywords.gperf"
       {"green", CSSValueGreen},
@@ -529,13 +532,13 @@ findValue (register const char *str, register unsigned int len)
       {"teal", CSSValueTeal},
 #line 245 "CSSValueKeywords.gperf"
       {"avoid", CSSValueAvoid},
-#line 372 "CSSValueKeywords.gperf"
+#line 374 "CSSValueKeywords.gperf"
       {"flat", CSSValueFlat},
-#line 343 "CSSValueKeywords.gperf"
+#line 345 "CSSValueKeywords.gperf"
       {"menulist", CSSValueMenulist},
 #line 255 "CSSValueKeywords.gperf"
       {"hand", CSSValueHand},
-#line 380 "CSSValueKeywords.gperf"
+#line 382 "CSSValueKeywords.gperf"
       {"reset", CSSValueReset},
 #line 175 "CSSValueKeywords.gperf"
       {"hebrew", CSSValueHebrew},
@@ -545,11 +548,11 @@ findValue (register const char *str, register unsigned int len)
       {"bold", CSSValueBold},
 #line 154 "CSSValueKeywords.gperf"
       {"left", CSSValueLeft},
-#line 528 "CSSValueKeywords.gperf"
+#line 530 "CSSValueKeywords.gperf"
       {"bevel", CSSValueBevel},
-#line 439 "CSSValueKeywords.gperf"
+#line 441 "CSSValueKeywords.gperf"
       {"indianred", CSSValueIndianred},
-#line 432 "CSSValueKeywords.gperf"
+#line 434 "CSSValueKeywords.gperf"
       {"gainsboro", CSSValueGainsboro},
 #line 322 "CSSValueKeywords.gperf"
       {"space", CSSValueSpace},
@@ -567,17 +570,17 @@ findValue (register const char *str, register unsigned int len)
       {"window", CSSValueWindow},
 #line 271 "CSSValueKeywords.gperf"
       {"overline", CSSValueOverline},
-#line 434 "CSSValueKeywords.gperf"
+#line 436 "CSSValueKeywords.gperf"
       {"gold", CSSValueGold},
 #line 211 "CSSValueKeywords.gperf"
       {"no-drop", CSSValueNoDrop},
-#line 524 "CSSValueKeywords.gperf"
+#line 526 "CSSValueKeywords.gperf"
       {"crispedges", CSSValueCrispedges},
-#line 384 "CSSValueKeywords.gperf"
+#line 386 "CSSValueKeywords.gperf"
       {"painted", CSSValuePainted},
-#line 490 "CSSValueKeywords.gperf"
+#line 492 "CSSValueKeywords.gperf"
       {"pink", CSSValuePink},
-#line 391 "CSSValueKeywords.gperf"
+#line 393 "CSSValueKeywords.gperf"
       {"beige", CSSValueBeige},
 #line 141 "CSSValueKeywords.gperf"
       {"xor", CSSValueXor},
@@ -591,7 +594,7 @@ findValue (register const char *str, register unsigned int len)
       {"mix", CSSValueMix},
 #line 114 "CSSValueKeywords.gperf"
       {"scrollbar", CSSValueScrollbar},
-#line 361 "CSSValueKeywords.gperf"
+#line 363 "CSSValueKeywords.gperf"
       {"border", CSSValueBorder},
 #line 38 "CSSValueKeywords.gperf"
       {"bolder", CSSValueBolder},
@@ -599,41 +602,41 @@ findValue (register const char *str, register unsigned int len)
       {"caption", CSSValueCaption},
 #line 242 "CSSValueKeywords.gperf"
       {"above", CSSValueAbove},
-#line 430 "CSSValueKeywords.gperf"
+#line 432 "CSSValueKeywords.gperf"
       {"floralwhite", CSSValueFloralwhite},
-#line 507 "CSSValueKeywords.gperf"
+#line 509 "CSSValueKeywords.gperf"
       {"steelblue", CSSValueSteelblue},
-#line 536 "CSSValueKeywords.gperf"
+#line 538 "CSSValueKeywords.gperf"
       {"alphabetic", CSSValueAlphabetic},
 #line 281 "CSSValueKeywords.gperf"
       {"thick", CSSValueThick},
-#line 491 "CSSValueKeywords.gperf"
+#line 493 "CSSValueKeywords.gperf"
       {"plum", CSSValuePlum},
-#line 402 "CSSValueKeywords.gperf"
+#line 404 "CSSValueKeywords.gperf"
       {"cornsilk", CSSValueCornsilk},
 #line 86 "CSSValueKeywords.gperf"
       {"purple", CSSValuePurple},
-#line 386 "CSSValueKeywords.gperf"
+#line 388 "CSSValueKeywords.gperf"
       {"stroke", CSSValueStroke},
 #line 50 "CSSValueKeywords.gperf"
       {"x-small", CSSValueXSmall},
 #line 69 "CSSValueKeywords.gperf"
       {"serif", CSSValueSerif},
-#line 392 "CSSValueKeywords.gperf"
+#line 394 "CSSValueKeywords.gperf"
       {"bisque", CSSValueBisque},
-#line 466 "CSSValueKeywords.gperf"
+#line 468 "CSSValueKeywords.gperf"
       {"mediumblue", CSSValueMediumblue},
-#line 431 "CSSValueKeywords.gperf"
+#line 433 "CSSValueKeywords.gperf"
       {"forestgreen", CSSValueForestgreen},
-#line 535 "CSSValueKeywords.gperf"
+#line 537 "CSSValueKeywords.gperf"
       {"ideographic", CSSValueIdeographic},
-#line 512 "CSSValueKeywords.gperf"
+#line 514 "CSSValueKeywords.gperf"
       {"violet", CSSValueViolet},
 #line 201 "CSSValueKeywords.gperf"
       {"auto", CSSValueAuto},
-#line 390 "CSSValueKeywords.gperf"
+#line 392 "CSSValueKeywords.gperf"
       {"azure", CSSValueAzure},
-#line 443 "CSSValueKeywords.gperf"
+#line 445 "CSSValueKeywords.gperf"
       {"lavender", CSSValueLavender},
 #line 75 "CSSValueKeywords.gperf"
       {"aqua", CSSValueAqua},
@@ -641,23 +644,23 @@ findValue (register const char *str, register unsigned int len)
       {"lower", CSSValueLower},
 #line 237 "CSSValueKeywords.gperf"
       {"capitalize", CSSValueCapitalize},
-#line 468 "CSSValueKeywords.gperf"
+#line 470 "CSSValueKeywords.gperf"
       {"mediumpurple", CSSValueMediumpurple},
 #line 88 "CSSValueKeywords.gperf"
       {"silver", CSSValueSilver},
-#line 454 "CSSValueKeywords.gperf"
+#line 456 "CSSValueKeywords.gperf"
       {"lightpink", CSSValueLightpink},
 #line 297 "CSSValueKeywords.gperf"
       {"ahead", CSSValueAhead},
-#line 363 "CSSValueKeywords.gperf"
+#line 365 "CSSValueKeywords.gperf"
       {"padding", CSSValuePadding},
-#line 449 "CSSValueKeywords.gperf"
+#line 451 "CSSValueKeywords.gperf"
       {"lightcyan", CSSValueLightcyan},
 #line 248 "CSSValueKeywords.gperf"
       {"blink", CSSValueBlink},
 #line 239 "CSSValueKeywords.gperf"
       {"lowercase", CSSValueLowercase},
-#line 498 "CSSValueKeywords.gperf"
+#line 500 "CSSValueKeywords.gperf"
       {"seagreen", CSSValueSeagreen},
 #line 294 "CSSValueKeywords.gperf"
       {"multiple", CSSValueMultiple},
@@ -665,41 +668,41 @@ findValue (register const char *str, register unsigned int len)
       {"blue", CSSValueBlue},
 #line 184 "CSSValueKeywords.gperf"
       {"block", CSSValueBlock},
-#line 469 "CSSValueKeywords.gperf"
+#line 471 "CSSValueKeywords.gperf"
       {"mediumseagreen", CSSValueMediumseagreen},
-#line 470 "CSSValueKeywords.gperf"
+#line 472 "CSSValueKeywords.gperf"
       {"mediumslateblue", CSSValueMediumslateblue},
-#line 514 "CSSValueKeywords.gperf"
+#line 516 "CSSValueKeywords.gperf"
       {"whitesmoke", CSSValueWhitesmoke},
 #line 18 "CSSValueKeywords.gperf"
       {"outset", CSSValueOutset},
-#line 368 "CSSValueKeywords.gperf"
+#line 370 "CSSValueKeywords.gperf"
       {"visual", CSSValueVisual},
 #line 268 "CSSValueKeywords.gperf"
       {"nowrap", CSSValueNowrap},
 #line 232 "CSSValueKeywords.gperf"
       {"all-scroll", CSSValueAllScroll},
-#line 438 "CSSValueKeywords.gperf"
+#line 440 "CSSValueKeywords.gperf"
       {"hotpink", CSSValueHotpink},
 #line 116 "CSSValueKeywords.gperf"
       {"threedface", CSSValueThreedface},
-#line 481 "CSSValueKeywords.gperf"
+#line 483 "CSSValueKeywords.gperf"
       {"orangered", CSSValueOrangered},
-#line 482 "CSSValueKeywords.gperf"
+#line 484 "CSSValueKeywords.gperf"
       {"orchid", CSSValueOrchid},
 #line 223 "CSSValueKeywords.gperf"
       {"ew-resize", CSSValueEwResize},
 #line 220 "CSSValueKeywords.gperf"
       {"sw-resize", CSSValueSwResize},
-#line 388 "CSSValueKeywords.gperf"
+#line 390 "CSSValueKeywords.gperf"
       {"antiquewhite", CSSValueAntiquewhite},
-#line 461 "CSSValueKeywords.gperf"
+#line 463 "CSSValueKeywords.gperf"
       {"lightyellow", CSSValueLightyellow},
 #line 16 "CSSValueKeywords.gperf"
       {"groove", CSSValueGroove},
 #line 185 "CSSValueKeywords.gperf"
       {"list-item", CSSValueListItem},
-#line 401 "CSSValueKeywords.gperf"
+#line 403 "CSSValueKeywords.gperf"
       {"cornflowerblue", CSSValueCornflowerblue},
 #line 217 "CSSValueKeywords.gperf"
       {"nw-resize", CSSValueNwResize},
@@ -717,35 +720,35 @@ findValue (register const char *str, register unsigned int len)
       {"listbox", CSSValueListbox},
 #line 197 "CSSValueKeywords.gperf"
       {"table-cell", CSSValueTableCell},
-#line 376 "CSSValueKeywords.gperf"
+#line 378 "CSSValueKeywords.gperf"
       {"ease-in", CSSValueEaseIn},
-#line 476 "CSSValueKeywords.gperf"
+#line 478 "CSSValueKeywords.gperf"
       {"mistyrose", CSSValueMistyrose},
 #line 83 "CSSValueKeywords.gperf"
       {"navy", CSSValueNavy},
 #line 76 "CSSValueKeywords.gperf"
       {"black", CSSValueBlack},
-#line 495 "CSSValueKeywords.gperf"
+#line 497 "CSSValueKeywords.gperf"
       {"saddlebrown", CSSValueSaddlebrown},
-#line 441 "CSSValueKeywords.gperf"
+#line 443 "CSSValueKeywords.gperf"
       {"ivory", CSSValueIvory},
 #line 227 "CSSValueKeywords.gperf"
       {"col-resize", CSSValueColResize},
-#line 389 "CSSValueKeywords.gperf"
+#line 391 "CSSValueKeywords.gperf"
       {"aquamarine", CSSValueAquamarine},
 #line 54 "CSSValueKeywords.gperf"
       {"x-large", CSSValueXLarge},
-#line 526 "CSSValueKeywords.gperf"
+#line 528 "CSSValueKeywords.gperf"
       {"butt", CSSValueButt},
 #line 111 "CSSValueKeywords.gperf"
       {"infotext", CSSValueInfotext},
 #line 190 "CSSValueKeywords.gperf"
       {"inline-table", CSSValueInlineTable},
-#line 428 "CSSValueKeywords.gperf"
+#line 430 "CSSValueKeywords.gperf"
       {"dodgerblue", CSSValueDodgerblue},
 #line 127 "CSSValueKeywords.gperf"
       {"repeat", CSSValueRepeat},
-#line 506 "CSSValueKeywords.gperf"
+#line 508 "CSSValueKeywords.gperf"
       {"springgreen", CSSValueSpringgreen},
 #line 278 "CSSValueKeywords.gperf"
       {"separate", CSSValueSeparate},
@@ -765,33 +768,33 @@ findValue (register const char *str, register unsigned int len)
       {"dotted", CSSValueDotted},
 #line 124 "CSSValueKeywords.gperf"
       {"currentcolor", CSSValueCurrentcolor},
-#line 525 "CSSValueKeywords.gperf"
+#line 527 "CSSValueKeywords.gperf"
       {"geometricprecision", CSSValueGeometricprecision},
 #line 295 "CSSValueKeywords.gperf"
       {"forwards", CSSValueForwards},
-#line 519 "CSSValueKeywords.gperf"
+#line 521 "CSSValueKeywords.gperf"
       {"new", CSSValueNew},
-#line 370 "CSSValueKeywords.gperf"
+#line 372 "CSSValueKeywords.gperf"
       {"running", CSSValueRunning},
 #line 119 "CSSValueKeywords.gperf"
       {"threedshadow", CSSValueThreedshadow},
 #line 20 "CSSValueKeywords.gperf"
       {"dashed", CSSValueDashed},
-#line 377 "CSSValueKeywords.gperf"
+#line 379 "CSSValueKeywords.gperf"
       {"ease-out", CSSValueEaseOut},
 #line 198 "CSSValueKeywords.gperf"
       {"table-caption", CSSValueTableCaption},
-#line 485 "CSSValueKeywords.gperf"
+#line 487 "CSSValueKeywords.gperf"
       {"paleturquoise", CSSValuePaleturquoise},
-#line 379 "CSSValueKeywords.gperf"
+#line 381 "CSSValueKeywords.gperf"
       {"document", CSSValueDocument},
 #line 196 "CSSValueKeywords.gperf"
       {"table-column", CSSValueTableColumn},
-#line 444 "CSSValueKeywords.gperf"
+#line 446 "CSSValueKeywords.gperf"
       {"lavenderblush", CSSValueLavenderblush},
-#line 453 "CSSValueKeywords.gperf"
+#line 455 "CSSValueKeywords.gperf"
       {"lightgrey", CSSValueLightgrey},
-#line 451 "CSSValueKeywords.gperf"
+#line 453 "CSSValueKeywords.gperf"
       {"lightgray", CSSValueLightgray},
 #line 181 "CSSValueKeywords.gperf"
       {"hiragana-iroha", CSSValueHiraganaIroha},
@@ -799,7 +802,7 @@ findValue (register const char *str, register unsigned int len)
       {"highlighttext", CSSValueHighlighttext},
 #line 108 "CSSValueKeywords.gperf"
       {"inactivecaption", CSSValueInactivecaption},
-#line 467 "CSSValueKeywords.gperf"
+#line 469 "CSSValueKeywords.gperf"
       {"mediumorchid", CSSValueMediumorchid},
 #line 194 "CSSValueKeywords.gperf"
       {"table-row", CSSValueTableRow},
@@ -807,25 +810,25 @@ findValue (register const char *str, register unsigned int len)
       {"windowframe", CSSValueWindowframe},
 #line 299 "CSSValueKeywords.gperf"
       {"down", CSSValueDown},
-#line 518 "CSSValueKeywords.gperf"
+#line 520 "CSSValueKeywords.gperf"
       {"accumulate", CSSValueAccumulate},
 #line 203 "CSSValueKeywords.gperf"
       {"default", CSSValueDefault},
-#line 445 "CSSValueKeywords.gperf"
+#line 447 "CSSValueKeywords.gperf"
       {"lawngreen", CSSValueLawngreen},
 #line 262 "CSSValueKeywords.gperf"
       {"loud", CSSValueLoud},
 #line 274 "CSSValueKeywords.gperf"
       {"pre-line", CSSValuePreLine},
-#line 459 "CSSValueKeywords.gperf"
+#line 461 "CSSValueKeywords.gperf"
       {"lightslategrey", CSSValueLightslategrey},
-#line 458 "CSSValueKeywords.gperf"
+#line 460 "CSSValueKeywords.gperf"
       {"lightslategray", CSSValueLightslategray},
 #line 290 "CSSValueKeywords.gperf"
       {"vertical", CSSValueVertical},
 #line 238 "CSSValueKeywords.gperf"
       {"uppercase", CSSValueUppercase},
-#line 522 "CSSValueKeywords.gperf"
+#line 524 "CSSValueKeywords.gperf"
       {"optimizespeed", CSSValueOptimizespeed},
 #line 229 "CSSValueKeywords.gperf"
       {"text", CSSValueText},
@@ -835,17 +838,17 @@ findValue (register const char *str, register unsigned int len)
       {"line-through", CSSValueLineThrough},
 #line 132 "CSSValueKeywords.gperf"
       {"copy", CSSValueCopy},
-#line 504 "CSSValueKeywords.gperf"
+#line 506 "CSSValueKeywords.gperf"
       {"slategrey", CSSValueSlategrey},
-#line 503 "CSSValueKeywords.gperf"
+#line 505 "CSSValueKeywords.gperf"
       {"slategray", CSSValueSlategray},
-#line 435 "CSSValueKeywords.gperf"
+#line 437 "CSSValueKeywords.gperf"
       {"goldenrod", CSSValueGoldenrod},
-#line 471 "CSSValueKeywords.gperf"
+#line 473 "CSSValueKeywords.gperf"
       {"mediumspringgreen", CSSValueMediumspringgreen},
-#line 446 "CSSValueKeywords.gperf"
+#line 448 "CSSValueKeywords.gperf"
       {"lemonchiffon", CSSValueLemonchiffon},
-#line 393 "CSSValueKeywords.gperf"
+#line 395 "CSSValueKeywords.gperf"
       {"blanchedalmond", CSSValueBlanchedalmond},
 #line 125 "CSSValueKeywords.gperf"
       {"grey", CSSValueGrey},
@@ -855,57 +858,57 @@ findValue (register const char *str, register unsigned int len)
       {"decimal", CSSValueDecimal},
 #line 113 "CSSValueKeywords.gperf"
       {"menutext", CSSValueMenutext},
-#line 437 "CSSValueKeywords.gperf"
+#line 439 "CSSValueKeywords.gperf"
       {"honeydew", CSSValueHoneydew},
 #line 276 "CSSValueKeywords.gperf"
       {"relative", CSSValueRelative},
 #line 147 "CSSValueKeywords.gperf"
       {"super", CSSValueSuper},
-#line 417 "CSSValueKeywords.gperf"
+#line 419 "CSSValueKeywords.gperf"
       {"darksalmon", CSSValueDarksalmon},
-#line 360 "CSSValueKeywords.gperf"
+#line 362 "CSSValueKeywords.gperf"
       {"round", CSSValueRound},
 #line 72 "CSSValueKeywords.gperf"
       {"fantasy", CSSValueFantasy},
-#line 465 "CSSValueKeywords.gperf"
+#line 467 "CSSValueKeywords.gperf"
       {"mediumaquamarine", CSSValueMediumaquamarine},
-#line 493 "CSSValueKeywords.gperf"
+#line 495 "CSSValueKeywords.gperf"
       {"rosybrown", CSSValueRosybrown},
-#line 371 "CSSValueKeywords.gperf"
+#line 373 "CSSValueKeywords.gperf"
       {"paused", CSSValuePaused},
 #line 22 "CSSValueKeywords.gperf"
       {"double", CSSValueDouble},
 #line 270 "CSSValueKeywords.gperf"
       {"overlay", CSSValueOverlay},
-#line 358 "CSSValueKeywords.gperf"
+#line 360 "CSSValueKeywords.gperf"
       {"textarea", CSSValueTextarea},
-#line 429 "CSSValueKeywords.gperf"
+#line 431 "CSSValueKeywords.gperf"
       {"firebrick", CSSValueFirebrick},
-#line 382 "CSSValueKeywords.gperf"
+#line 384 "CSSValueKeywords.gperf"
       {"visiblefill", CSSValueVisiblefill},
-#line 517 "CSSValueKeywords.gperf"
+#line 519 "CSSValueKeywords.gperf"
       {"evenodd", CSSValueEvenodd},
 #line 118 "CSSValueKeywords.gperf"
       {"threedlightshadow", CSSValueThreedlightshadow},
 #line 275 "CSSValueKeywords.gperf"
       {"pre-wrap", CSSValuePreWrap},
-#line 511 "CSSValueKeywords.gperf"
+#line 513 "CSSValueKeywords.gperf"
       {"turquoise", CSSValueTurquoise},
 #line 70 "CSSValueKeywords.gperf"
       {"sans-serif", CSSValueSansSerif},
 #line 31 "CSSValueKeywords.gperf"
       {"status-bar", CSSValueStatusBar},
-#line 483 "CSSValueKeywords.gperf"
+#line 485 "CSSValueKeywords.gperf"
       {"palegoldenrod", CSSValuePalegoldenrod},
 #line 244 "CSSValueKeywords.gperf"
       {"always", CSSValueAlways},
-#line 436 "CSSValueKeywords.gperf"
+#line 438 "CSSValueKeywords.gperf"
       {"greenyellow", CSSValueGreenyellow},
 #line 250 "CSSValueKeywords.gperf"
       {"close-quote", CSSValueCloseQuote},
-#line 480 "CSSValueKeywords.gperf"
+#line 482 "CSSValueKeywords.gperf"
       {"olivedrab", CSSValueOlivedrab},
-#line 541 "CSSValueKeywords.gperf"
+#line 543 "CSSValueKeywords.gperf"
       {"reset-size", CSSValueResetSize},
 #line 212 "CSSValueKeywords.gperf"
       {"not-allowed", CSSValueNotAllowed},
@@ -915,7 +918,7 @@ findValue (register const char *str, register unsigned int len)
       {"buttonface", CSSValueButtonface},
 #line 122 "CSSValueKeywords.gperf"
       {"windowtext", CSSValueWindowtext},
-#line 472 "CSSValueKeywords.gperf"
+#line 474 "CSSValueKeywords.gperf"
       {"mediumturquoise", CSSValueMediumturquoise},
 #line 49 "CSSValueKeywords.gperf"
       {"xx-small", CSSValueXxSmall},
@@ -923,53 +926,53 @@ findValue (register const char *str, register unsigned int len)
       {"cursive", CSSValueCursive},
 #line 266 "CSSValueKeywords.gperf"
       {"no-close-quote", CSSValueNoCloseQuote},
-#line 427 "CSSValueKeywords.gperf"
+#line 429 "CSSValueKeywords.gperf"
       {"dimgrey", CSSValueDimgrey},
-#line 426 "CSSValueKeywords.gperf"
+#line 428 "CSSValueKeywords.gperf"
       {"dimgray", CSSValueDimgray},
-#line 488 "CSSValueKeywords.gperf"
+#line 490 "CSSValueKeywords.gperf"
       {"peachpuff", CSSValuePeachpuff},
 #line 225 "CSSValueKeywords.gperf"
       {"nesw-resize", CSSValueNeswResize},
 #line 267 "CSSValueKeywords.gperf"
       {"no-open-quote", CSSValueNoOpenQuote},
-#line 539 "CSSValueKeywords.gperf"
+#line 541 "CSSValueKeywords.gperf"
       {"use-script", CSSValueUseScript},
-#line 405 "CSSValueKeywords.gperf"
+#line 407 "CSSValueKeywords.gperf"
       {"darkblue", CSSValueDarkblue},
 #line 291 "CSSValueKeywords.gperf"
       {"inline-axis", CSSValueInlineAxis},
-#line 352 "CSSValueKeywords.gperf"
+#line 354 "CSSValueKeywords.gperf"
       {"searchfield", CSSValueSearchfield},
-#line 381 "CSSValueKeywords.gperf"
+#line 383 "CSSValueKeywords.gperf"
       {"visiblepainted", CSSValueVisiblepainted},
 #line 254 "CSSValueKeywords.gperf"
       {"fixed", CSSValueFixed},
-#line 442 "CSSValueKeywords.gperf"
+#line 444 "CSSValueKeywords.gperf"
       {"khaki", CSSValueKhaki},
-#line 412 "CSSValueKeywords.gperf"
+#line 414 "CSSValueKeywords.gperf"
       {"darkmagenta", CSSValueDarkmagenta},
 #line 103 "CSSValueKeywords.gperf"
       {"captiontext", CSSValueCaptiontext},
-#line 515 "CSSValueKeywords.gperf"
+#line 517 "CSSValueKeywords.gperf"
       {"yellowgreen", CSSValueYellowgreen},
-#line 486 "CSSValueKeywords.gperf"
+#line 488 "CSSValueKeywords.gperf"
       {"palevioletred", CSSValuePalevioletred},
-#line 487 "CSSValueKeywords.gperf"
+#line 489 "CSSValueKeywords.gperf"
       {"papayawhip", CSSValuePapayawhip},
-#line 492 "CSSValueKeywords.gperf"
+#line 494 "CSSValueKeywords.gperf"
       {"powderblue", CSSValuePowderblue},
 #line 78 "CSSValueKeywords.gperf"
       {"fuchsia", CSSValueFuchsia},
-#line 409 "CSSValueKeywords.gperf"
+#line 411 "CSSValueKeywords.gperf"
       {"darkgreen", CSSValueDarkgreen},
 #line 100 "CSSValueKeywords.gperf"
       {"buttonhighlight", CSSValueButtonhighlight},
-#line 418 "CSSValueKeywords.gperf"
+#line 420 "CSSValueKeywords.gperf"
       {"darkseagreen", CSSValueDarkseagreen},
-#line 419 "CSSValueKeywords.gperf"
+#line 421 "CSSValueKeywords.gperf"
       {"darkslateblue", CSSValueDarkslateblue},
-#line 414 "CSSValueKeywords.gperf"
+#line 416 "CSSValueKeywords.gperf"
       {"darkorange", CSSValueDarkorange},
 #line 186 "CSSValueKeywords.gperf"
       {"run-in", CSSValueRunIn},
@@ -979,7 +982,7 @@ findValue (register const char *str, register unsigned int len)
       {"buttonshadow", CSSValueButtonshadow},
 #line 180 "CSSValueKeywords.gperf"
       {"katakana", CSSValueKatakana},
-#line 347 "CSSValueKeywords.gperf"
+#line 349 "CSSValueKeywords.gperf"
       {"slider-horizontal", CSSValueSliderHorizontal},
 #line 134 "CSSValueKeywords.gperf"
       {"source-in", CSSValueSourceIn},
@@ -987,41 +990,41 @@ findValue (register const char *str, register unsigned int len)
       {"inline-block", CSSValueInlineBlock},
 #line 172 "CSSValueKeywords.gperf"
       {"lower-latin", CSSValueLowerLatin},
-#line 394 "CSSValueKeywords.gperf"
+#line 396 "CSSValueKeywords.gperf"
       {"blueviolet", CSSValueBlueviolet},
 #line 136 "CSSValueKeywords.gperf"
       {"source-atop", CSSValueSourceAtop},
 #line 226 "CSSValueKeywords.gperf"
       {"nwse-resize", CSSValueNwseResize},
-#line 497 "CSSValueKeywords.gperf"
+#line 499 "CSSValueKeywords.gperf"
       {"sandybrown", CSSValueSandybrown},
 #line 208 "CSSValueKeywords.gperf"
       {"context-menu", CSSValueContextMenu},
 #line 168 "CSSValueKeywords.gperf"
       {"lower-roman", CSSValueLowerRoman},
-#line 344 "CSSValueKeywords.gperf"
+#line 346 "CSSValueKeywords.gperf"
       {"menulist-button", CSSValueMenulistButton},
 #line 319 "CSSValueKeywords.gperf"
       {"skip-white-space", CSSValueSkipWhiteSpace},
 #line 55 "CSSValueKeywords.gperf"
       {"xx-large", CSSValueXxLarge},
-#line 338 "CSSValueKeywords.gperf"
+#line 340 "CSSValueKeywords.gperf"
       {"media-slider", CSSValueMediaSlider},
-#line 366 "CSSValueKeywords.gperf"
+#line 368 "CSSValueKeywords.gperf"
       {"content-box", CSSValueContentBox},
-#line 457 "CSSValueKeywords.gperf"
+#line 459 "CSSValueKeywords.gperf"
       {"lightskyblue", CSSValueLightskyblue},
 #line 315 "CSSValueKeywords.gperf"
       {"dot-dash", CSSValueDotDash},
-#line 531 "CSSValueKeywords.gperf"
+#line 533 "CSSValueKeywords.gperf"
       {"after-edge", CSSValueAfterEdge},
 #line 135 "CSSValueKeywords.gperf"
       {"source-out", CSSValueSourceOut},
 #line 228 "CSSValueKeywords.gperf"
       {"row-resize", CSSValueRowResize},
-#line 383 "CSSValueKeywords.gperf"
+#line 385 "CSSValueKeywords.gperf"
       {"visiblestroke", CSSValueVisiblestroke},
-#line 416 "CSSValueKeywords.gperf"
+#line 418 "CSSValueKeywords.gperf"
       {"darkred", CSSValueDarkred},
 #line 107 "CSSValueKeywords.gperf"
       {"inactiveborder", CSSValueInactiveborder},
@@ -1029,15 +1032,15 @@ findValue (register const char *str, register unsigned int len)
       {"buttontext", CSSValueButtontext},
 #line 104 "CSSValueKeywords.gperf"
       {"graytext", CSSValueGraytext},
-#line 378 "CSSValueKeywords.gperf"
+#line 380 "CSSValueKeywords.gperf"
       {"ease-in-out", CSSValueEaseInOut},
 #line 138 "CSSValueKeywords.gperf"
       {"destination-in", CSSValueDestinationIn},
-#line 415 "CSSValueKeywords.gperf"
+#line 417 "CSSValueKeywords.gperf"
       {"darkorchid", CSSValueDarkorchid},
 #line 143 "CSSValueKeywords.gperf"
       {"plus-lighter", CSSValuePlusLighter},
-#line 473 "CSSValueKeywords.gperf"
+#line 475 "CSSValueKeywords.gperf"
       {"mediumvioletred", CSSValueMediumvioletred},
 #line 97 "CSSValueKeywords.gperf"
       {"appworkspace", CSSValueAppworkspace},
@@ -1051,7 +1054,7 @@ findValue (register const char *str, register unsigned int len)
       {"push-button", CSSValuePushButton},
 #line 320 "CSSValueKeywords.gperf"
       {"break-all", CSSValueBreakAll},
-#line 529 "CSSValueKeywords.gperf"
+#line 531 "CSSValueKeywords.gperf"
       {"optimizelegibility", CSSValueOptimizelegibility},
 #line 109 "CSSValueKeywords.gperf"
       {"inactivecaptiontext", CSSValueInactivecaptiontext},
@@ -1059,15 +1062,15 @@ findValue (register const char *str, register unsigned int len)
       {"justify", CSSValueJustify},
 #line 173 "CSSValueKeywords.gperf"
       {"upper-alpha", CSSValueUpperAlpha},
-#line 349 "CSSValueKeywords.gperf"
+#line 351 "CSSValueKeywords.gperf"
       {"sliderthumb-horizontal", CSSValueSliderthumbHorizontal},
-#line 424 "CSSValueKeywords.gperf"
+#line 426 "CSSValueKeywords.gperf"
       {"deeppink", CSSValueDeeppink},
 #line 139 "CSSValueKeywords.gperf"
       {"destination-out", CSSValueDestinationOut},
 #line 61 "CSSValueKeywords.gperf"
       {"ultra-condensed", CSSValueUltraCondensed},
-#line 406 "CSSValueKeywords.gperf"
+#line 408 "CSSValueKeywords.gperf"
       {"darkcyan", CSSValueDarkcyan},
 #line 174 "CSSValueKeywords.gperf"
       {"upper-latin", CSSValueUpperLatin},
@@ -1075,15 +1078,15 @@ findValue (register const char *str, register unsigned int len)
       {"text-top", CSSValueTextTop},
 #line 296 "CSSValueKeywords.gperf"
       {"backwards", CSSValueBackwards},
-#line 423 "CSSValueKeywords.gperf"
+#line 425 "CSSValueKeywords.gperf"
       {"darkviolet", CSSValueDarkviolet},
-#line 357 "CSSValueKeywords.gperf"
+#line 359 "CSSValueKeywords.gperf"
       {"textfield", CSSValueTextfield},
 #line 169 "CSSValueKeywords.gperf"
       {"upper-roman", CSSValueUpperRoman},
 #line 327 "CSSValueKeywords.gperf"
       {"square-button", CSSValueSquareButton},
-#line 339 "CSSValueKeywords.gperf"
+#line 341 "CSSValueKeywords.gperf"
       {"media-sliderthumb", CSSValueMediaSliderthumb},
 #line 64 "CSSValueKeywords.gperf"
       {"semi-condensed", CSSValueSemiCondensed},
@@ -1095,21 +1098,21 @@ findValue (register const char *str, register unsigned int len)
       {"read-write", CSSValueReadWrite},
 #line 95 "CSSValueKeywords.gperf"
       {"activeborder", CSSValueActiveborder},
-#line 345 "CSSValueKeywords.gperf"
+#line 347 "CSSValueKeywords.gperf"
       {"menulist-text", CSSValueMenulistText},
-#line 396 "CSSValueKeywords.gperf"
+#line 398 "CSSValueKeywords.gperf"
       {"burlywood", CSSValueBurlywood},
-#line 523 "CSSValueKeywords.gperf"
+#line 525 "CSSValueKeywords.gperf"
       {"optimizequality", CSSValueOptimizequality},
-#line 450 "CSSValueKeywords.gperf"
+#line 452 "CSSValueKeywords.gperf"
       {"lightgoldenrodyellow", CSSValueLightgoldenrodyellow},
-#line 422 "CSSValueKeywords.gperf"
+#line 424 "CSSValueKeywords.gperf"
       {"darkturquoise", CSSValueDarkturquoise},
-#line 530 "CSSValueKeywords.gperf"
+#line 532 "CSSValueKeywords.gperf"
       {"before-edge", CSSValueBeforeEdge},
 #line 26 "CSSValueKeywords.gperf"
       {"message-box", CSSValueMessageBox},
-#line 348 "CSSValueKeywords.gperf"
+#line 350 "CSSValueKeywords.gperf"
       {"slider-vertical", CSSValueSliderVertical},
 #line 149 "CSSValueKeywords.gperf"
       {"text-bottom", CSSValueTextBottom},
@@ -1119,15 +1122,13 @@ findValue (register const char *str, register unsigned int len)
       {"cjk-ideographic", CSSValueCjkIdeographic},
 #line 98 "CSSValueKeywords.gperf"
       {"background", CSSValueBackground},
-#line 410 "CSSValueKeywords.gperf"
+#line 412 "CSSValueKeywords.gperf"
       {"darkgrey", CSSValueDarkgrey},
 #line 195 "CSSValueKeywords.gperf"
       {"table-column-group", CSSValueTableColumnGroup},
-#line 408 "CSSValueKeywords.gperf"
+#line 410 "CSSValueKeywords.gperf"
       {"darkgray", CSSValueDarkgray},
-#line 340 "CSSValueKeywords.gperf"
-      {"media-timeline-container", CSSValueMediaTimelineContainer},
-#line 365 "CSSValueKeywords.gperf"
+#line 367 "CSSValueKeywords.gperf"
       {"border-box", CSSValueBorderBox},
 #line 330 "CSSValueKeywords.gperf"
       {"default-button", CSSValueDefaultButton},
@@ -1137,17 +1138,17 @@ findValue (register const char *str, register unsigned int len)
       {"bidi-override", CSSValueBidiOverride},
 #line 115 "CSSValueKeywords.gperf"
       {"threeddarkshadow", CSSValueThreeddarkshadow},
-#line 413 "CSSValueKeywords.gperf"
+#line 415 "CSSValueKeywords.gperf"
       {"darkolivegreen", CSSValueDarkolivegreen},
 #line 191 "CSSValueKeywords.gperf"
       {"table-row-group", CSSValueTableRowGroup},
-#line 421 "CSSValueKeywords.gperf"
+#line 423 "CSSValueKeywords.gperf"
       {"darkslategrey", CSSValueDarkslategrey},
-#line 420 "CSSValueKeywords.gperf"
+#line 422 "CSSValueKeywords.gperf"
       {"darkslategray", CSSValueDarkslategray},
-#line 364 "CSSValueKeywords.gperf"
+#line 366 "CSSValueKeywords.gperf"
       {"padding-box", CSSValuePaddingBox},
-#line 373 "CSSValueKeywords.gperf"
+#line 375 "CSSValueKeywords.gperf"
       {"preserve-3d", CSSValuePreserve3d},
 #line 133 "CSSValueKeywords.gperf"
       {"source-over", CSSValueSourceOver},
@@ -1155,7 +1156,7 @@ findValue (register const char *str, register unsigned int len)
       {"repeat-x", CSSValueRepeatX},
 #line 334 "CSSValueKeywords.gperf"
       {"media-mute-button", CSSValueMediaMuteButton},
-#line 407 "CSSValueKeywords.gperf"
+#line 409 "CSSValueKeywords.gperf"
       {"darkgoldenrod", CSSValueDarkgoldenrod},
 #line 129 "CSSValueKeywords.gperf"
       {"repeat-y", CSSValueRepeatY},
@@ -1165,7 +1166,7 @@ findValue (register const char *str, register unsigned int len)
       {"lower-greek", CSSValueLowerGreek},
 #line 305 "CSSValueKeywords.gperf"
       {"read-only", CSSValueReadOnly},
-#line 350 "CSSValueKeywords.gperf"
+#line 352 "CSSValueKeywords.gperf"
       {"sliderthumb-vertical", CSSValueSliderthumbVertical},
 #line 321 "CSSValueKeywords.gperf"
       {"break-word", CSSValueBreakWord},
@@ -1173,7 +1174,7 @@ findValue (register const char *str, register unsigned int len)
       {"extra-condensed", CSSValueExtraCondensed},
 #line 329 "CSSValueKeywords.gperf"
       {"button-bevel", CSSValueButtonBevel},
-#line 411 "CSSValueKeywords.gperf"
+#line 413 "CSSValueKeywords.gperf"
       {"darkkhaki", CSSValueDarkkhaki},
 #line 137 "CSSValueKeywords.gperf"
       {"destination-over", CSSValueDestinationOver},
@@ -1189,13 +1190,15 @@ findValue (register const char *str, register unsigned int len)
       {"semi-expanded", CSSValueSemiExpanded},
 #line 142 "CSSValueKeywords.gperf"
       {"plus-darker", CSSValuePlusDarker},
-#line 425 "CSSValueKeywords.gperf"
+#line 427 "CSSValueKeywords.gperf"
       {"deepskyblue", CSSValueDeepskyblue},
 #line 333 "CSSValueKeywords.gperf"
       {"media-fullscreen-button", CSSValueMediaFullscreenButton},
-#line 353 "CSSValueKeywords.gperf"
+#line 355 "CSSValueKeywords.gperf"
       {"searchfield-decoration", CSSValueSearchfieldDecoration},
-#line 346 "CSSValueKeywords.gperf"
+#line 338 "CSSValueKeywords.gperf"
+      {"media-rewind-button", CSSValueMediaRewindButton},
+#line 348 "CSSValueKeywords.gperf"
       {"menulist-textfield", CSSValueMenulistTextfield},
 #line 316 "CSSValueKeywords.gperf"
       {"dot-dot-dash", CSSValueDotDotDash},
@@ -1203,9 +1206,9 @@ findValue (register const char *str, register unsigned int len)
       {"media-play-button", CSSValueMediaPlayButton},
 #line 67 "CSSValueKeywords.gperf"
       {"extra-expanded", CSSValueExtraExpanded},
-#line 356 "CSSValueKeywords.gperf"
+#line 358 "CSSValueKeywords.gperf"
       {"searchfield-cancel-button", CSSValueSearchfieldCancelButton},
-#line 359 "CSSValueKeywords.gperf"
+#line 361 "CSSValueKeywords.gperf"
       {"caps-lock-indicator", CSSValueCapsLockIndicator},
 #line 153 "CSSValueKeywords.gperf"
       {"-webkit-auto", CSSValueWebkitAuto},
@@ -1215,21 +1218,23 @@ findValue (register const char *str, register unsigned int len)
       {"decimal-leading-zero", CSSValueDecimalLeadingZero},
 #line 30 "CSSValueKeywords.gperf"
       {"-webkit-control", CSSValueWebkitControl},
-#line 355 "CSSValueKeywords.gperf"
+#line 357 "CSSValueKeywords.gperf"
       {"searchfield-results-button", CSSValueSearchfieldResultsButton},
 #line 284 "CSSValueKeywords.gperf"
       {"-webkit-nowrap", CSSValueWebkitNowrap},
 #line 159 "CSSValueKeywords.gperf"
       {"-webkit-right", CSSValueWebkitRight},
-#line 534 "CSSValueKeywords.gperf"
+#line 342 "CSSValueKeywords.gperf"
+      {"media-controls-background", CSSValueMediaControlsBackground},
+#line 536 "CSSValueKeywords.gperf"
       {"text-after-edge", CSSValueTextAfterEdge},
 #line 158 "CSSValueKeywords.gperf"
       {"-webkit-left", CSSValueWebkitLeft},
 #line 233 "CSSValueKeywords.gperf"
       {"-webkit-grab", CSSValueWebkitGrab},
-#line 533 "CSSValueKeywords.gperf"
+#line 535 "CSSValueKeywords.gperf"
       {"text-before-edge", CSSValueTextBeforeEdge},
-#line 354 "CSSValueKeywords.gperf"
+#line 356 "CSSValueKeywords.gperf"
       {"searchfield-results-decoration", CSSValueSearchfieldResultsDecoration},
 #line 93 "CSSValueKeywords.gperf"
       {"-webkit-link", CSSValueWebkitLink},
@@ -1243,14 +1248,16 @@ findValue (register const char *str, register unsigned int len)
       {"-webkit-grabbing", CSSValueWebkitGrabbing},
 #line 213 "CSSValueKeywords.gperf"
       {"-webkit-zoom-in", CSSValueWebkitZoomIn},
-#line 342 "CSSValueKeywords.gperf"
+#line 344 "CSSValueKeywords.gperf"
       {"media-time-remaining-display", CSSValueMediaTimeRemainingDisplay},
-#line 341 "CSSValueKeywords.gperf"
+#line 343 "CSSValueKeywords.gperf"
       {"media-current-time-display", CSSValueMediaCurrentTimeDisplay},
 #line 29 "CSSValueKeywords.gperf"
       {"-webkit-small-control", CSSValueWebkitSmallControl},
 #line 214 "CSSValueKeywords.gperf"
       {"-webkit-zoom-out", CSSValueWebkitZoomOut},
+#line 339 "CSSValueKeywords.gperf"
+      {"media-return-to-realtime-button", CSSValueMediaReturnToRealtimeButton},
 #line 28 "CSSValueKeywords.gperf"
       {"-webkit-mini-control", CSSValueWebkitMiniControl},
 #line 336 "CSSValueKeywords.gperf"
@@ -1584,61 +1591,67 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1, 458,  -1,  -1,  -1,  -1, 459,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1, 460, 461,  -1,  -1,  -1, 462, 463,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
       464,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      465,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 466,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      467, 468,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 469,  -1,  -1,
+       -1, 465,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      466, 467,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 468,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 470,  -1,  -1,  -1,
-       -1,  -1, 471,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 469,  -1,  -1,  -1,
+       -1,  -1, 470,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 472,  -1,  -1,  -1,  -1, 473,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 471,  -1,  -1,  -1,  -1, 472,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 474,  -1,  -1,  -1, 475,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 473,  -1,  -1,  -1, 474,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 476,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 475,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 477,  -1,  -1,  -1, 478,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 479, 480,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 476,  -1,  -1,  -1, 477,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 478, 479,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 480,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1, 481,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 482,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 482,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 483,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 484,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 483,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 484,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 485,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 486,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 485,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 487,  -1,  -1,  -1,  -1,
-       -1, 488,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 486,  -1,  -1,  -1,  -1,
+       -1, 487,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      489,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      488,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 490,  -1,  -1,  -1,  -1,
-       -1, 491, 492,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 489,  -1,  -1,  -1,  -1,
+       -1, 490, 491,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 492,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1648,7 +1661,10 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 494,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      494,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1656,27 +1672,18 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      495,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 495,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      496,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 497,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 496,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      497,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1, 498,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
       499, 500,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1789,14 +1796,14 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 511,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 511,  -1,  -1,  -1, 512,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 512,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 513,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      513,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 514,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      514,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 515,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1806,10 +1813,10 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 515,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 516,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 516,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 517,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1832,7 +1839,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 517, 518,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 518, 519,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1842,53 +1849,46 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 519,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 520,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 520,  -1, 521,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 521,  -1, 522,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 522,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 523,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 523,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 524,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 524,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 525,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      525,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 526,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      527,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      526,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 527,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1, 528,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      529,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 530,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1911,7 +1911,6 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 529,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1919,6 +1918,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 531,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1926,7 +1926,6 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 530,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1934,6 +1933,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 532,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1942,7 +1942,6 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      531,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1950,6 +1949,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      533,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -1958,25 +1958,6 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 532,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 533,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -2002,6 +1983,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 535,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -2009,6 +1991,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 536,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -2065,7 +2048,6 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 535,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -2090,6 +2072,7 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 537,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -2150,7 +2133,31 @@ findValue (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 536
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 538
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -2172,7 +2179,7 @@ findValue (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 548 "CSSValueKeywords.gperf"
+#line 550 "CSSValueKeywords.gperf"
 
 static const char * const valueList[] = {
 "",
@@ -2503,9 +2510,11 @@ static const char * const valueList[] = {
 "media-play-button", 
 "media-seek-back-button", 
 "media-seek-forward-button", 
+"media-rewind-button", 
+"media-return-to-realtime-button", 
 "media-slider", 
 "media-sliderthumb", 
-"media-timeline-container", 
+"media-controls-background", 
 "media-current-time-display", 
 "media-time-remaining-display", 
 "menulist", 

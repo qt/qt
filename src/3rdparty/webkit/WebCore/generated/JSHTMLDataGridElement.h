@@ -21,6 +21,8 @@
 #ifndef JSHTMLDataGridElement_h
 #define JSHTMLDataGridElement_h
 
+#if ENABLE(DATAGRID)
+
 #include "JSHTMLElement.h"
 
 namespace WebCore {
@@ -73,5 +75,7 @@ void setJSHTMLDataGridElementMultiple(JSC::ExecState*, JSC::JSObject*, JSC::JSVa
 JSC::JSValue jsHTMLDataGridElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)
 
 #endif

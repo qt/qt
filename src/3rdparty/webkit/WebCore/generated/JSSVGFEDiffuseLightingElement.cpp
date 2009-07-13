@@ -61,7 +61,7 @@ static const HashTableValue JSSVGFEDiffuseLightingElementTableValues[13] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDiffuseLightingElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDiffuseLightingElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEDiffuseLightingElementTableValues, 0 };
 #else
@@ -76,7 +76,7 @@ static const HashTableValue JSSVGFEDiffuseLightingElementPrototypeTableValues[2]
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDiffuseLightingElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDiffuseLightingElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEDiffuseLightingElementPrototypeTableValues, 0 };
 #else

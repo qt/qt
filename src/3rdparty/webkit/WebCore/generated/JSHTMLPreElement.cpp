@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLPreElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLPreElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLPreElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLPreElementTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSHTMLPreElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLPreElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLPreElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLPreElementConstructorTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLPreElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLPreElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLPreElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLPreElementPrototypeTableValues, 0 };
 #else

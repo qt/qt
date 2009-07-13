@@ -39,7 +39,7 @@ static const HashTableValue JSHTMLDListElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDListElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDListElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLDListElementTableValues, 0 };
 #else
@@ -53,7 +53,7 @@ static const HashTableValue JSHTMLDListElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDListElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDListElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDListElementConstructorTableValues, 0 };
 #else
@@ -91,7 +91,7 @@ static const HashTableValue JSHTMLDListElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDListElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDListElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDListElementPrototypeTableValues, 0 };
 #else

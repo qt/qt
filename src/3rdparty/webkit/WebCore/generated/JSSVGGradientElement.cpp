@@ -58,7 +58,7 @@ static const HashTableValue JSSVGGradientElementTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGGradientElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGGradientElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGGradientElementTableValues, 0 };
 #else
@@ -76,7 +76,7 @@ static const HashTableValue JSSVGGradientElementConstructorTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGGradientElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGGradientElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGGradientElementConstructorTableValues, 0 };
 #else
@@ -119,7 +119,7 @@ static const HashTableValue JSSVGGradientElementPrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGGradientElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGGradientElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGGradientElementPrototypeTableValues, 0 };
 #else

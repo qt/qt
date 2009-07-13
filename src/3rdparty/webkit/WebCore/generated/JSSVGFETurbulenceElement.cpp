@@ -65,7 +65,7 @@ static const HashTableValue JSSVGFETurbulenceElementTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFETurbulenceElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFETurbulenceElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFETurbulenceElementTableValues, 0 };
 #else
@@ -85,7 +85,7 @@ static const HashTableValue JSSVGFETurbulenceElementConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFETurbulenceElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFETurbulenceElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGFETurbulenceElementConstructorTableValues, 0 };
 #else
@@ -130,7 +130,7 @@ static const HashTableValue JSSVGFETurbulenceElementPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFETurbulenceElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFETurbulenceElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGFETurbulenceElementPrototypeTableValues, 0 };
 #else

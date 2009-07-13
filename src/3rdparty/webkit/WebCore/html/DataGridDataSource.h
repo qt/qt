@@ -26,6 +26,8 @@
 #ifndef DataGridDataSource_h
 #define DataGridDataSource_h
 
+#if ENABLE(DATAGRID)
+
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -36,11 +38,12 @@ class DataGridDataSource : public RefCounted<DataGridDataSource> {
 public:
     virtual ~DataGridDataSource() { }
 
+    virtual bool isDOMDataGridDataSource() const { return false; }
     virtual bool isJSDataGridDataSource() const { return false; }
-
-    virtual void initialize(HTMLDataGridElement*) = 0;
 };
 
 } // namespace WebCore
+
+#endif
 
 #endif // DataGridDataSource_h

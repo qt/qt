@@ -43,7 +43,7 @@ static const HashTableValue JSSQLResultSetRowListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLResultSetRowListTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLResultSetRowListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSQLResultSetRowListTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSSQLResultSetRowListPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLResultSetRowListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLResultSetRowListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSQLResultSetRowListPrototypeTableValues, 0 };
 #else

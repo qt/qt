@@ -46,7 +46,7 @@ static const HashTableValue JSSQLResultSetTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLResultSetTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLResultSetTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSQLResultSetTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSSQLResultSetPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLResultSetPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLResultSetPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSQLResultSetPrototypeTableValues, 0 };
 #else

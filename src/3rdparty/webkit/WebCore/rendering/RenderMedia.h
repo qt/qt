@@ -38,9 +38,14 @@ class HTMLMediaElement;
 class MediaControlMuteButtonElement;
 class MediaControlPlayButtonElement;
 class MediaControlSeekButtonElement;
+class MediaControlRewindButtonElement;
+class MediaControlReturnToRealtimeButtonElement;
 class MediaControlTimelineElement;
 class MediaControlFullscreenButtonElement;
-class MediaTimeDisplayElement;
+class MediaControlTimeDisplayElement;
+class MediaControlStatusDisplayElement;
+class MediaControlTimelineContainerElement;
+class MediaControlElement;
 class MediaPlayer;
 
 class RenderMedia : public RenderReplaced {
@@ -66,6 +71,8 @@ public:
 
     static String formatTime(float time);
 
+    bool shouldShowTimeDisplayControls() const;
+
     void updateFromElement();
     void updatePlayer();
     void updateControls();
@@ -85,6 +92,9 @@ private:
     void createPlayButton();
     void createSeekBackButton();
     void createSeekForwardButton();
+    void createRewindButton();
+    void createReturnToRealtimeButton();
+    void createStatusDisplay();
     void createTimelineContainer();
     void createTimeline();
     void createCurrentTimeDisplay();
@@ -100,16 +110,19 @@ private:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
     RefPtr<HTMLElement> m_controlsShadowRoot;
-    RefPtr<HTMLElement> m_panel;
+    RefPtr<MediaControlElement> m_panel;
     RefPtr<MediaControlMuteButtonElement> m_muteButton;
     RefPtr<MediaControlPlayButtonElement> m_playButton;
     RefPtr<MediaControlSeekButtonElement> m_seekBackButton;
     RefPtr<MediaControlSeekButtonElement> m_seekForwardButton;
+    RefPtr<MediaControlRewindButtonElement> m_rewindButton;
+    RefPtr<MediaControlReturnToRealtimeButtonElement> m_returnToRealtimeButton;
     RefPtr<MediaControlTimelineElement> m_timeline;
     RefPtr<MediaControlFullscreenButtonElement> m_fullscreenButton;
-    RefPtr<HTMLElement> m_timelineContainer;
-    RefPtr<MediaTimeDisplayElement> m_currentTimeDisplay;
-    RefPtr<MediaTimeDisplayElement> m_timeRemainingDisplay;
+    RefPtr<MediaControlTimelineContainerElement> m_timelineContainer;
+    RefPtr<MediaControlTimeDisplayElement> m_currentTimeDisplay;
+    RefPtr<MediaControlTimeDisplayElement> m_timeRemainingDisplay;
+    RefPtr<MediaControlStatusDisplayElement> m_statusDisplay;
     RenderObjectChildList m_children;
     Node* m_lastUnderNode;
     Node* m_nodeUnderMouse;
@@ -118,9 +131,9 @@ private:
     Timer<RenderMedia> m_opacityAnimationTimer;
     bool m_mouseOver;
     double m_opacityAnimationStartTime;
+    double m_opacityAnimationDuration;
     float m_opacityAnimationFrom;
     float m_opacityAnimationTo;
-    EVisibility m_previousVisible;
 };
 
 } // namespace WebCore

@@ -26,6 +26,8 @@
 #ifndef HTMLDataGridElement_h
 #define HTMLDataGridElement_h
 
+#if ENABLE(DATAGRID)
+
 #include "DataGridColumnList.h"
 #include "DataGridDataSource.h"
 #include "HTMLElement.h"
@@ -53,19 +55,17 @@ public:
     void setMultiple(bool);
 
     void setDataSource(PassRefPtr<DataGridDataSource>);
-    DataGridDataSource* dataSource() const { return m_dataSource.get(); }
+    DataGridDataSource* dataSource() const;
 
     DataGridColumnList* columns() const { return m_columns.get(); }
 
 private:
-    void initializationTimerFired(Timer<HTMLDataGridElement>*);
-
-    Timer<HTMLDataGridElement> m_initializationTimer;
     RefPtr<DataGridDataSource> m_dataSource;
-
     RefPtr<DataGridColumnList> m_columns;
 };
 
 } // namespace WebCore
+
+#endif
 
 #endif // HTMLDataGridElement_h

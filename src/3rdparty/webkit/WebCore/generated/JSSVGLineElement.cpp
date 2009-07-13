@@ -73,7 +73,7 @@ static const HashTableValue JSSVGLineElementTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLineElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLineElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGLineElementTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSSVGLineElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLineElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLineElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGLineElementPrototypeTableValues, 0 };
 #else

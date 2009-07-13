@@ -30,6 +30,7 @@
 #include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
+#include "JSMessagePort.h"
 #include "Worker.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
@@ -49,7 +50,7 @@ static const HashTableValue JSWorkerTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSWorkerTableValues, 0 };
 #else
@@ -60,7 +61,7 @@ static const HashTable JSWorkerTable =
 
 static const HashTableValue JSWorkerPrototypeTableValues[6] =
 {
-    { "postMessage", DontDelete|Function, (intptr_t)jsWorkerPrototypeFunctionPostMessage, (intptr_t)1 },
+    { "postMessage", DontDelete|Function, (intptr_t)jsWorkerPrototypeFunctionPostMessage, (intptr_t)2 },
     { "terminate", DontDelete|Function, (intptr_t)jsWorkerPrototypeFunctionTerminate, (intptr_t)0 },
     { "addEventListener", DontDelete|Function, (intptr_t)jsWorkerPrototypeFunctionAddEventListener, (intptr_t)3 },
     { "removeEventListener", DontDelete|Function, (intptr_t)jsWorkerPrototypeFunctionRemoveEventListener, (intptr_t)3 },
@@ -68,7 +69,7 @@ static const HashTableValue JSWorkerPrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSWorkerPrototypeTableValues, 0 };
 #else
@@ -164,9 +165,20 @@ JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionPostMessage(ExecState* exec, JSOb
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     Worker* imp = static_cast<Worker*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
     const UString& message = args.at(0).toString(exec);
 
-    imp->postMessage(message);
+    int argsCount = args.size();
+    if (argsCount < 2) {
+        imp->postMessage(message, ec);
+        setDOMException(exec, ec);
+        return jsUndefined();
+    }
+
+    MessagePort* messagePort = toMessagePort(args.at(1));
+
+    imp->postMessage(message, messagePort, ec);
+    setDOMException(exec, ec);
     return jsUndefined();
 }
 

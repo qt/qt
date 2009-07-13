@@ -64,7 +64,7 @@ static const HashTableValue JSMouseEventTableValues[19] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMouseEventTable =
+static JSC_CONST_HASHTABLE HashTable JSMouseEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSMouseEventTableValues, 0 };
 #else
@@ -78,7 +78,7 @@ static const HashTableValue JSMouseEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMouseEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMouseEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMouseEventConstructorTableValues, 0 };
 #else
@@ -117,7 +117,7 @@ static const HashTableValue JSMouseEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMouseEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMouseEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMouseEventPrototypeTableValues, 0 };
 #else

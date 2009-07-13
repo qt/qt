@@ -44,7 +44,7 @@ static const HashTableValue JSHTMLIsIndexElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLIsIndexElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLIsIndexElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLIsIndexElementTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSHTMLIsIndexElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLIsIndexElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLIsIndexElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLIsIndexElementConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSHTMLIsIndexElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLIsIndexElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLIsIndexElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLIsIndexElementPrototypeTableValues, 0 };
 #else

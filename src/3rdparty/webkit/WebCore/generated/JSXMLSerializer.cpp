@@ -42,7 +42,7 @@ static const HashTableValue JSXMLSerializerTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLSerializerTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLSerializerTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXMLSerializerTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSXMLSerializerConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLSerializerConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLSerializerConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXMLSerializerConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSXMLSerializerPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLSerializerPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLSerializerPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXMLSerializerPrototypeTableValues, 0 };
 #else

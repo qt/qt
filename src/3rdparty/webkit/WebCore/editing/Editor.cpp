@@ -655,9 +655,9 @@ PassRefPtr<Node> Editor::increaseSelectionListLevelOrdered()
     if (!canEditRichly() || m_frame->selection()->isNone())
         return 0;
     
-    PassRefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(m_frame->document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(m_frame->document());
     revealSelectionAfterEditingOperation();
-    return newList;
+    return newList.release();
 }
 
 PassRefPtr<Node> Editor::increaseSelectionListLevelUnordered()
@@ -665,9 +665,9 @@ PassRefPtr<Node> Editor::increaseSelectionListLevelUnordered()
     if (!canEditRichly() || m_frame->selection()->isNone())
         return 0;
     
-    PassRefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(m_frame->document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(m_frame->document());
     revealSelectionAfterEditingOperation();
-    return newList;
+    return newList.release();
 }
 
 void Editor::decreaseSelectionListLevel()
@@ -1066,9 +1066,9 @@ void Editor::paste()
 
 void Editor::pasteAsPlainText()
 {
-   if (!canPaste())
+    if (!canPaste())
         return;
-   pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
+    pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
 }
 
 void Editor::performDelete()

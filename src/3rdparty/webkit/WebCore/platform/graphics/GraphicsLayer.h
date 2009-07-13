@@ -293,6 +293,14 @@ public:
     enum CompositingCoordinatesOrientation { CompositingCoordinatesTopDown, CompositingCoordinatesBottomUp };
     static CompositingCoordinatesOrientation compositingCoordinatesOrientation();
 
+    // Set the geometry orientation (top-down, or bottom-up) for this layer, which also controls sublayer geometry.
+    virtual void setGeometryOrientation(CompositingCoordinatesOrientation) { }
+    virtual CompositingCoordinatesOrientation geometryOrientation() const { return CompositingCoordinatesTopDown; }
+
+    // Flippedness of the contents of this layer. Does not affect sublayer geometry.
+    virtual void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
+    virtual CompositingCoordinatesOrientation contentsOrientation() const { return m_contentsOrientation; }
+
 #ifndef NDEBUG
     static bool showDebugBorders();
     static bool showRepaintCounter();
@@ -348,6 +356,7 @@ protected:
     bool m_drawsContent : 1;
 
     GraphicsLayerPaintingPhase m_paintingPhase;
+    CompositingCoordinatesOrientation m_contentsOrientation;
 
     Vector<GraphicsLayer*> m_children;
     GraphicsLayer* m_parent;

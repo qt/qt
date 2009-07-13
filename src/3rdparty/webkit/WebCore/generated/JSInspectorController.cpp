@@ -44,7 +44,7 @@ static const HashTableValue JSInspectorControllerTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSInspectorControllerTable =
+static JSC_CONST_HASHTABLE HashTable JSInspectorControllerTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSInspectorControllerTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSInspectorControllerConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSInspectorControllerConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSInspectorControllerConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSInspectorControllerConstructorTableValues, 0 };
 #else
@@ -143,7 +143,7 @@ static const HashTableValue JSInspectorControllerPrototypeTableValues[48] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSInspectorControllerPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSInspectorControllerPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSInspectorControllerPrototypeTableValues, 0 };
 #else

@@ -37,7 +37,7 @@ static const HashTableValue JSCanvasPatternPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasPatternPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasPatternPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCanvasPatternPrototypeTableValues, 0 };
 #else

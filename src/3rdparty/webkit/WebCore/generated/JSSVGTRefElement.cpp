@@ -42,7 +42,7 @@ static const HashTableValue JSSVGTRefElementTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTRefElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTRefElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTRefElementTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGTRefElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTRefElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTRefElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTRefElementPrototypeTableValues, 0 };
 #else

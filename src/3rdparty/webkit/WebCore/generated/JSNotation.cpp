@@ -41,7 +41,7 @@ static const HashTableValue JSNotationTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNotationTable =
+static JSC_CONST_HASHTABLE HashTable JSNotationTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSNotationTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSNotationConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNotationConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSNotationConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNotationConstructorTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSNotationPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNotationPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNotationPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNotationPrototypeTableValues, 0 };
 #else

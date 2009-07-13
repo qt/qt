@@ -52,7 +52,7 @@ static const HashTableValue JSHTMLLinkElementTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLinkElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLinkElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLLinkElementTableValues, 0 };
 #else
@@ -66,7 +66,7 @@ static const HashTableValue JSHTMLLinkElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLinkElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLinkElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLLinkElementConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSHTMLLinkElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLinkElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLinkElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLLinkElementPrototypeTableValues, 0 };
 #else

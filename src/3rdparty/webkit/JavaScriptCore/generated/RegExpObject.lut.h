@@ -13,6 +13,6 @@ static const struct HashTableValue regExpTableValues[6] = {
    { 0, 0, 0, 0 }
 };
 
-extern const struct HashTable regExpTable =
+extern JSC_CONST_HASHTABLE HashTable regExpTable =
     { 17, 15, regExpTableValues, 0 };
 } // namespace
