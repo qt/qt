@@ -843,8 +843,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowToolbarSwitchMode) {
-            QToolBarChangeEvent ev(!(GetCurrentKeyModifiers() & cmdKey));
-            QApplication::sendSpontaneousEvent(widget, &ev);
+            macSendToolbarChangeEvent(widget);
             HIToolbarRef toolbar;
             if (GetWindowToolbar(wid, &toolbar) == noErr) {
                 if (toolbar) {
@@ -1521,12 +1520,16 @@ void QWidgetPrivate::toggleDrawers(bool visible)
  *****************************************************************************/
 bool QWidgetPrivate::qt_mac_update_sizer(QWidget *w, int up)
 {
+    // I'm not sure what "up" is
     if(!w || !w->isWindow())
         return false;
 
     QTLWExtra *topData = w->d_func()->topData();
     QWExtra *extraData = w->d_func()->extraData();
-    topData->resizer += up;
+    // topData->resizer is only 4 bits, so subtracting -1 from zero causes bad stuff
+    // to happen, prevent that here (you really want the thing hidden).
+    if (up >= 0 || topData->resizer != 0)
+        topData->resizer += up;
     OSWindowRef windowRef = qt_mac_window_for(OSViewRef(w->winId()));
     {
 #ifndef QT_MAC_USE_COCOA
@@ -1539,7 +1542,6 @@ bool QWidgetPrivate::qt_mac_update_sizer(QWidget *w, int up)
     bool remove_grip = (topData->resizer || (w->windowFlags() & Qt::FramelessWindowHint)
                         || (extraData->maxw && extraData->maxh &&
                             extraData->maxw == extraData->minw && extraData->maxh == extraData->minh));
-
 #ifndef QT_MAC_USE_COCOA
     WindowAttributes attr;
     GetWindowAttributes(windowRef, &attr);

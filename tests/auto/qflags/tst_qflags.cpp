@@ -45,6 +45,7 @@ class tst_QFlags: public QObject
     Q_OBJECT
 private slots:
     void testFlag() const;
+    void testFlagZeroFlag() const;
     void testFlagMultiBits() const;
 };
 
@@ -59,8 +60,31 @@ void tst_QFlags::testFlag() const
     QVERIFY(!btn.testFlag(Qt::LeftButton));
 }
 
+void tst_QFlags::testFlagZeroFlag() const
+{
+    {
+        Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
+        /* Qt::NoButton has the value 0. */
+
+        QVERIFY(!btn.testFlag(Qt::NoButton));
+    }
+
+    {
+        /* A zero enum set should test true with zero. */
+        QVERIFY(Qt::MouseButtons().testFlag(Qt::NoButton));
+    }
+
+    {
+        Qt::MouseButtons btn = Qt::NoButton;
+        QVERIFY(btn.testFlag(Qt::NoButton));
+    }
+}
+
 void tst_QFlags::testFlagMultiBits() const
 {
+    /* Qt::Window is 0x00000001
+     * Qt::Dialog is 0x00000002 | Window
+     */
     {
         const Qt::WindowFlags onlyWindow(Qt::Window);
         QVERIFY(!onlyWindow.testFlag(Qt::Dialog));

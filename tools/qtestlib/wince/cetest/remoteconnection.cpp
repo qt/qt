@@ -66,8 +66,8 @@ QByteArray strwinerror(DWORD errorcode)
             out.chop(2);
 
         /* Append error number to error message for good measure */
-        out.append(" (");
-        out.append(QByteArray::number((int)errorcode));
+        out.append(" (0x");
+        out.append(QByteArray::number(uint(errorcode), 16).rightJustified(8, '0'));
         out.append(")");
     }
     return out;

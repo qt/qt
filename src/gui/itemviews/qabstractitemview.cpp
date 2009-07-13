@@ -3881,30 +3881,48 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
     return true;
 }
 
+/*
+  \internal
+
+  returns the pair QRect/QModelIndex that should be painted on the viewports's rect
+  */
+
+QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const
+{
+    Q_ASSERT(r);
+    Q_Q(const QAbstractItemView);
+    QRect &rect = *r;
+    const QRect viewportRect = viewport->rect();
+    QItemViewPaintPairs ret;
+    for (int i = 0; i < indexes.count(); ++i) {
+        const QModelIndex &index = indexes.at(i);
+        const QRect current = q->visualRect(index);
+        if (current.intersects(viewportRect)) {
+            ret += qMakePair(current, index);
+            rect |= current;
+        }
+    }
+    rect &= viewportRect;
+    return ret;
+}
+
 QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
 {
-    Q_Q(const QAbstractItemView);
-    QRect rect = q->visualRect(indexes.at(0));
-    QList<QRect> rects;
-    for (int i = 0; i < indexes.count(); ++i) {
-        rects.append(q->visualRect(indexes.at(i)));
-        rect |= rects.at(i);
-    }
-    rect = rect.intersected(viewport->rect());
-    if (rect.width() <= 0 || rect.height() <= 0)
+    Q_ASSERT(r);
+    QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
+    if (paintPairs.isEmpty())
         return QPixmap();
-    QImage image(rect.size(), QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
-    QPainter painter(&image);
+    QPixmap pixmap(r->size());
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
     QStyleOptionViewItemV4 option = viewOptionsV4();
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < indexes.count(); ++j) {
-        option.rect = QRect(rects.at(j).topLeft() - rect.topLeft(), rects.at(j).size());
-        delegateForIndex(indexes.at(j))->paint(&painter, option, indexes.at(j));
+    for (int j = 0; j < paintPairs.count(); ++j) {
+        option.rect = paintPairs.at(j).first.translated(r->topLeft());
+        const QModelIndex &current = paintPairs.at(j).second;
+        delegateForIndex(current)->paint(&painter, option, current);
     }
-    painter.end();
-    if (r) *r = rect;
-    return QPixmap::fromImage(image);
+    return pixmap;
 }
 
 void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)

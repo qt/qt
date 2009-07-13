@@ -939,15 +939,70 @@ void QMainWindowLayout::getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar
 
 void QMainWindowLayout::toggleToolBarsVisible()
 {
-    layoutState.toolBarAreaLayout.visible = !layoutState.toolBarAreaLayout.visible;
-    if (!layoutState.mainWindow->isMaximized()){
-        QPoint topLeft = parentWidget()->geometry().topLeft();
-        QRect r = parentWidget()->geometry();
-        r = layoutState.toolBarAreaLayout.rectHint(r);
-        r.moveTo(topLeft);
-        parentWidget()->setGeometry(r);
-    } else{
-        update();
+    bool updateNonUnifiedParts = true;
+#ifdef Q_WS_MAC
+    if (layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
+        // If we hit this case, someone has pressed the "toolbar button" which will
+        // toggle the unified toolbar visiblity, because that's what the user wants.
+        // We might be in a situation where someone has hidden all the toolbars
+        // beforehand (maybe in construction), but now they've hit this button and
+        // and are expecting the items to show. What do we do?
+        // 1) Check the visibility of all the toolbars, if one is visible, do nothing, this
+        //    preserves what people would expect (these toolbars were visible when I clicked last time).
+        // 2) If NONE are visible, then show them all. Again, this preserves the user expectation
+        //    of, "I want to see the toolbars." The user may get more toolbars than expected, but this
+        //    is better seeing nothing.
+        // Don't worry about any of this if we are going invisible. This does mean we may get
+        // into issues when switching into and out of fullscreen mode, but this is probably minor.
+        // If we ever need to do hiding, that would have to be taken care of after the unified toolbar
+        // has finished hiding.
+        // People can of course handle the QEvent::ToolBarChange event themselves and do
+        // WHATEVER they want if they don't like what we are doing (though the unified toolbar
+        // will fire regardless).
+
+        // Check if we REALLY need to update the geometry below. If we only have items in the
+        // unified toolbar, all the docks will be empty, so there's very little point
+        // in doing the geometry as Apple will do it (we also avoid flicker in Cocoa as well).
+        // FWIW, layoutState.toolBarAreaLayout.visible and the state of the unified toolbar
+        // visibility can get out of sync. I really don't think it's a big issue. It is kept
+        // to a minimum because we only change the visibility if we absolutely must.
+        // update the "non unified parts."
+        updateNonUnifiedParts = !layoutState.toolBarAreaLayout.isEmpty();
+
+        // We get this function before the unified toolbar does its thing.
+        // So, the value will be opposite of what we expect.
+        bool goingVisible = !macWindowToolbarIsVisible(qt_mac_window_for(layoutState.mainWindow));
+        if (goingVisible) {
+            const int ToolBarCount = qtoolbarsInUnifiedToolbarList.size();
+            bool needAllVisible = true;
+            for (int i = 0; i < ToolBarCount; ++i) {
+                if (!qtoolbarsInUnifiedToolbarList.at(i)->isHidden()) {
+                    needAllVisible = false;
+                    break;
+                }
+            }
+            if (needAllVisible) {
+                QBoolBlocker blocker(blockVisiblityCheck);  // Disable the visibilty check because
+                                                            // the toggle has already happened.
+                for (int i = 0; i < ToolBarCount; ++i)
+                    qtoolbarsInUnifiedToolbarList.at(i)->setVisible(true);
+            }
+        }
+        if (!updateNonUnifiedParts)
+            layoutState.toolBarAreaLayout.visible = goingVisible;
+    }
+#endif
+    if (updateNonUnifiedParts) {
+        layoutState.toolBarAreaLayout.visible = !layoutState.toolBarAreaLayout.visible;
+        if (!layoutState.mainWindow->isMaximized()) {
+            QPoint topLeft = parentWidget()->geometry().topLeft();
+            QRect r = parentWidget()->geometry();
+            r = layoutState.toolBarAreaLayout.rectHint(r);
+            r.moveTo(topLeft);
+            parentWidget()->setGeometry(r);
+        } else {
+            update();
+        }
     }
 }
 
@@ -1574,9 +1629,6 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
-        //it is important to set the current tab before applying the layout
-        //so that applyState will not try to counter the result of the animation
-        //by putting the item in negative space
         if (qobject_cast<QDockWidget*>(widget) != 0) {
             // info() might return null if the widget is destroyed while
             // animating but before the animationFinished signal is received.
@@ -1585,8 +1637,6 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         }
 #endif
 #endif
-
-        applyState(layoutState, false);
 
         savedState.clear();
         currentGapPos.clear();
@@ -1641,6 +1691,9 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
 #ifndef QT_NO_RUBBERBAND
     , gapIndicator(new QRubberBand(QRubberBand::Rectangle, mainwindow))
 #endif //QT_NO_RUBBERBAND
+#ifdef Q_WS_MAC
+    , blockVisiblityCheck(false)
+#endif
 {
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR

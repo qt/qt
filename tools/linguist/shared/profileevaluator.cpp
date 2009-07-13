@@ -68,8 +68,10 @@
 
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
+#define QT_PCLOSE _pclose
 #else
 #define QT_POPEN popen
+#define QT_PCLOSE pclose
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1513,6 +1515,8 @@ QStringList ProFileEvaluator::Private::evaluateExpandFunction(const QString &fun
                         output += QLatin1String(buff);
                     }
                     ret += split_value_list(output);
+                    if (proc)
+                        QT_PCLOSE(proc);
                 }
             }
             break;
@@ -2067,7 +2071,7 @@ bool ProFileEvaluator::Private::evaluateFile(const QString &fileName, bool *resu
     ProFile *pro = q->parsedProFile(fileName);
     if (pro) {
         m_profileStack.push(pro);
-        ok = (currentProFile() ? pro->Accept(this) : false);
+        ok = pro->Accept(this);
         m_profileStack.pop();
         q->releaseParsedProFile(pro);
 
@@ -2077,16 +2081,6 @@ bool ProFileEvaluator::Private::evaluateFile(const QString &fileName, bool *resu
         if (result)
             *result = false;
     }
-/*    if (ok && readFeatures) {
-        QStringList configs = values("CONFIG");
-        QSet<QString> processed;
-        foreach (const QString &fn, configs) {
-            if (!processed.contains(fn)) {
-                processed.insert(fn);
-                evaluateFeatureFile(fn, 0);
-            }
-        }
-    } */
 
     return ok;
 }

@@ -461,8 +461,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 void QNetworkReplyImplPrivate::finished()
 {
     Q_Q(QNetworkReplyImpl);
-    Q_ASSERT_X(state != Finished, "QNetworkReplyImpl",
-               "Backend called finished/finishedWithError more than once");
+    if (state == Finished || state == Aborted)
+        return;
 
     state = Finished;
     pendingNotifications.clear();

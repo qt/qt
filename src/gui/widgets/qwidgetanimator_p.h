@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 class QWidget;
 class QMainWindowLayout;
 class QPropertyAnimation;
+class QRect;
 
 class QWidgetAnimator : public QObject
 {

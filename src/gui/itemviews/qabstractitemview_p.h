@@ -61,11 +61,10 @@
 #include "QtGui/qmime.h"
 #include "QtGui/qpainter.h"
 #include "QtCore/qpair.h"
-#include "QtCore/qtimer.h"
-#include "QtCore/qtimeline.h"
 #include "QtGui/qregion.h"
 #include "QtCore/qdebug.h"
 #include "QtGui/qpainter.h"
+#include "QtCore/qbasictimer.h"
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -86,6 +85,9 @@ struct QEditorInfo
     bool isStatic; //true when called from setIndexWidget
 
 };
+
+typedef QPair<QRect, QModelIndex> QItemViewPaintPair;
+typedef QList<QItemViewPaintPair> QItemViewPaintPairs;
 
 class QEmptyModel : public QAbstractItemModel
 {
@@ -177,7 +179,9 @@ public:
             q_func()->style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, painter, q_func());
         }
     }
+
 #endif
+    virtual QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
 
     inline void releaseEditor(QWidget *editor) const {
         if (editor) {
@@ -222,7 +226,7 @@ public:
     void clearOrRemove();
     void checkPersistentEditorFocus();
 
-    QPixmap renderToPixmap(const QModelIndexList &indexes, QRect *r = 0) const;
+    QPixmap renderToPixmap(const QModelIndexList &indexes, QRect *r) const;
 
     inline QPoint offset() const {
         const Q_Q(QAbstractItemView);
@@ -376,7 +380,6 @@ public:
     QBasicTimer updateTimer;
     QBasicTimer delayedEditing;
     QBasicTimer delayedAutoScroll; //used when an item is clicked
-    QTimeLine timeline;
 
     QAbstractItemView::ScrollMode verticalScrollMode;
     QAbstractItemView::ScrollMode horizontalScrollMode;

@@ -128,7 +128,8 @@ QAlphaWidget::~QAlphaWidget()
 {
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     // Restore user-defined opacity value
-    widget->setWindowOpacity(windowOpacity);
+    if (widget)
+        widget->setWindowOpacity(windowOpacity);
 #endif
 }
 

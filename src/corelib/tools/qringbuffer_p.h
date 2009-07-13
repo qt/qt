@@ -303,6 +303,9 @@ public:
 
     // read an unspecified amount (will read the first buffer)
     inline QByteArray read() {
+        if (bufferSize == 0)
+            return QByteArray();
+
         // multiple buffers, just take the first one
         if (head == 0 && tailBuffer != 0) {
             QByteArray qba = buffers.takeFirst();
@@ -325,7 +328,7 @@ public:
         // We can avoid by initializing the QRingBuffer with basicBlockSize of 0
         // and only using this read() function.
         QByteArray qba(readPointer(), nextDataBlockSize());
-        buffers.takeFirst();
+        buffers.removeFirst();
         head = 0;
         if (tailBuffer == 0) {
             buffers << QByteArray();

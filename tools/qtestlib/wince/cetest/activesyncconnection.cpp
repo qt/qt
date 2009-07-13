@@ -385,10 +385,14 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
         DWORD error = 0;
         HRESULT res = CeRapiInvoke(dllLocation.utf16(), functionName.utf16(), 0, 0, &outputSize, &output, &stream, 0);
         if (S_OK != res) {
-            if (S_OK != CeGetLastError())
-                debugOutput(QString::fromLatin1("Error: Could not invoke method on QtRemote"),1);
-            else
-                debugOutput(QString::fromLatin1("Error: QtRemote return unexpectedly with error Code %1").arg(res), 1);
+            DWORD ce_error = CeGetLastError();
+            if (S_OK != ce_error) {
+                qWarning("Error invoking %s on %s: %s", qPrintable(functionName),
+                    qPrintable(dllLocation), strwinerror(ce_error).constData());
+            } else {
+                qWarning("Error: %s on %s unexpectedly returned %d", qPrintable(functionName),
+                    qPrintable(dllLocation), res);
+            }
         } else {
             DWORD written;
             int strSize = program.length();

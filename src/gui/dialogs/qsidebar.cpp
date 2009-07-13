@@ -247,11 +247,16 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
         QUrl url = list.at(i);
         if (!url.isValid() || url.scheme() != QLatin1String("file"))
             continue;
+        //this makes sure the url is clean
+        const QString cleanUrl = QDir::cleanPath(url.toLocalFile());
+        url = QUrl::fromLocalFile(cleanUrl);
+
         for (int j = 0; move && j < rowCount(); ++j) {
+            QString local = index(j, 0).data(UrlRole).toUrl().toLocalFile();
 #if defined(Q_OS_WIN)
-            if (QDir::cleanPath(index(j, 0).data(UrlRole).toUrl().toLocalFile()).toLower() == QDir::cleanPath(url.toLocalFile()).toLower()) {
+            if (index(j, 0).data(UrlRole).toUrl().toLocalFile().toLower() == cleanUrl.toLower()) {
 #else
-            if (QDir::cleanPath(index(j, 0).data(UrlRole).toUrl().toLocalFile()) == QDir::cleanPath(url.toLocalFile())) {
+            if (index(j, 0).data(UrlRole).toUrl().toLocalFile() == cleanUrl) {
 #endif
                 removeRow(j);
                 if (j <= row)
@@ -260,12 +265,12 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
             }
         }
         row = qMax(row, 0);
-        QModelIndex idx = fileSystemModel->index(url.toLocalFile());
+        QModelIndex idx = fileSystemModel->index(cleanUrl);
         if (!fileSystemModel->isDir(idx))
             continue;
         insertRows(row, 1);
         setUrl(index(row, 0), url, idx);
-        watching.append(QPair<QModelIndex, QString>(idx, url.toLocalFile()));
+        watching.append(qMakePair(idx, cleanUrl));
     }
 }
 

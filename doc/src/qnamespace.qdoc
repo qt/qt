@@ -1247,8 +1247,9 @@
 /*! \typedef Qt::HANDLE
 
     Platform-specific handle type for system objects. This is
-    equivalent to \c{void *} on Windows and Mac OS X, and embedded
-    Linux, and to \c{unsigned long} on X11.
+    equivalent to \c{void *} on Mac OS X and embedded Linux, 
+    and to \c{unsigned long} on X11. On Windows it is the
+    DWORD returned by the Win32 function getCurrentThreadId().
 
     \warning Using this type is not portable.
 */

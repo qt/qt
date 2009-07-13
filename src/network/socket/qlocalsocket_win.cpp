@@ -168,7 +168,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 
     // we have a valid handle
     d->serverName = name;
-    if (setSocketDescriptor((quintptr)localSocket), openMode) {
+    if (setSocketDescriptor((quintptr)localSocket, ConnectedState, openMode)) {
         d->handle = localSocket;
         emit connected();
     }
@@ -299,8 +299,6 @@ void QLocalSocket::abort()
 DWORD QLocalSocketPrivate::bytesAvailable()
 {
     Q_Q(QLocalSocket);
-    if (q->state() != QLocalSocket::ConnectedState)
-        return 0;
     DWORD bytes;
     if (PeekNamedPipe(handle, NULL, 0, NULL, &bytes, NULL)) {
         return bytes;
@@ -410,7 +408,7 @@ bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
     d->handle = (int*)socketDescriptor;
     d->state = socketState;
     emit stateChanged(d->state);
-    if (d->state == ConnectedState) {
+    if (d->state == ConnectedState && openMode.testFlag(QIODevice::ReadOnly)) {
         d->startAsyncRead();
         d->checkReadyRead();
     }
@@ -471,6 +469,10 @@ bool QLocalSocket::waitForDisconnected(int msecs)
     Q_D(QLocalSocket);
     if (state() == UnconnectedState)
         return false;
+    if (!openMode().testFlag(QIODevice::ReadOnly)) {
+        qWarning("QLocalSocket::waitForDisconnected isn't supported for write only pipes.");
+        return false;
+    }
     QIncrementalSleepTimer timer(msecs);
     forever {
         d->bytesAvailable();    // to check if PeekNamedPipe fails

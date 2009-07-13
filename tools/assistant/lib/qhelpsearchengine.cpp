@@ -84,17 +84,16 @@ private:
         , resultWidget(0)
         , helpEngine(helpEngine)
     {
-        hitList.clear();
         indexReader = 0;
         indexWriter = 0;
     }
 
     ~QHelpSearchEnginePrivate()
     {
-        hitList.clear();
         delete indexReader;
         delete indexWriter;
     }
+
 
     int hitsCount() const
     {
@@ -107,12 +106,9 @@ private:
 
     QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const
     {
-        QList<QHelpSearchEngine::SearchHit> returnValue;
-        if (indexReader) {
-            for (int i = start; i < end && i < hitsCount(); ++i)
-                returnValue.append(indexReader->hit(i));
-        }
-        return returnValue;
+        return indexReader ?
+                indexReader->hits(start, end) :
+                QList<QHelpSearchEngine::SearchHit>();
     }
 
     void updateIndex(bool reindex = false)
@@ -131,11 +127,9 @@ private:
             connect(indexWriter, SIGNAL(indexingFinished()), this, SLOT(optimizeIndex()));
         }
 
-        if (indexWriter) {
-            indexWriter->cancelIndexing();
-            indexWriter->updateIndex(helpEngine->collectionFile(),
-                indexFilesFolder(), reindex);
-        }
+        indexWriter->cancelIndexing();
+        indexWriter->updateIndex(helpEngine->collectionFile(),
+                                 indexFilesFolder(), reindex);
     }
 
     void cancelIndexing()
@@ -159,11 +153,9 @@ private:
             connect(indexReader, SIGNAL(searchingFinished(int)), this, SIGNAL(searchingFinished(int)));
         }
 
-        if (indexReader) {
-            m_queryList = queryList;
-            indexReader->cancelSearching();
-            indexReader->search(helpEngine->collectionFile(), indexFilesFolder(), queryList);
-        }
+        m_queryList = queryList;
+        indexReader->cancelSearching();
+        indexReader->search(helpEngine->collectionFile(), indexFilesFolder(), queryList);
     }
 
     void cancelSearching()
@@ -204,7 +196,6 @@ private:
     QHelpSearchIndexWriter *indexWriter;
 
     QPointer<QHelpEngineCore> helpEngine;
-    QList<QHelpSearchEngine::SearchHit> hitList;
 
     QList<QHelpSearchQuery> m_queryList;
 };

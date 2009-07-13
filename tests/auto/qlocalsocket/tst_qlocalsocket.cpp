@@ -104,6 +104,7 @@ private slots:
     void recycleServer();
 
     void multiConnect();
+    void writeOnlySocket();
 
     void debug();
 
@@ -904,6 +905,22 @@ void tst_QLocalSocket::multiConnect()
     QVERIFY(server.nextPendingConnection() != 0);
     QVERIFY(server.waitForNewConnection(203));
     QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::writeOnlySocket()
+{
+    QLocalServer server;
+    QVERIFY(server.listen("writeOnlySocket"));
+
+    QLocalSocket client;
+    client.connectToServer("writeOnlySocket", QIODevice::WriteOnly);
+    QVERIFY(client.waitForConnected());
+
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+
+    QCOMPARE(client.bytesAvailable(), qint64(0));
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
 }
 
 void tst_QLocalSocket::debug()

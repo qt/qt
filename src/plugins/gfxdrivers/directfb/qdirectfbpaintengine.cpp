@@ -81,7 +81,7 @@ template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                int scale, bool matrixRotShear, bool simplePen,
-                               bool dfbHandledClip,
+                               bool dfbHandledClip, bool unsupportedCompositionMode,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three)
@@ -98,7 +98,8 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     dbg << "scale" << scale
         << "matrixRotShear" << matrixRotShear
         << "simplePen" << simplePen
-        << "dfbHandledClip" << dfbHandledClip;
+        << "dfbHandledClip" << dfbHandledClip
+        << "unsupportedCompositionMode" << unsupportedCompositionMode;
 
     const T1 *t1 = ptr(one);
     const T2 *t2 = ptr(two);
@@ -124,6 +125,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->unsupportedCompositionMode, \
                            #one, one, #two, two, #three, three);        \
     if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
         return;
@@ -138,6 +140,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->unsupportedCompositionMode, \
                            #one, one, #two, two, #three, three);
 #else
 #define RASTERFALLBACK(op, one, two, three)
@@ -238,7 +241,7 @@ public:
     void fillRects(const QRectF *rects, int count);
     void drawRects(const QRectF *rects, int count);
 
-    void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap);
+    void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos);
     void blit(const QRectF &dest, IDirectFBSurface *surface, const QRectF &src);
 
     inline void updateClip();
@@ -281,6 +284,7 @@ private:
     bool unsupportedCompositionMode;
 
     QDirectFBPaintEngine *q;
+    QRect currentClip;
     friend class QDirectFBPaintEngine;
 };
 
@@ -340,6 +344,7 @@ bool QDirectFBPaintEngine::end()
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     d->surface->ReleaseSource(d->surface);
 #endif
+    d->currentClip = QRect();
     d->surface->SetClip(d->surface, NULL);
     d->surface = 0;
     return QRasterPaintEngine::end();
@@ -610,30 +615,26 @@ void QDirectFBPaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 
 void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
                                            const QPixmap &pixmap,
-                                           const QPointF &sp)
+                                           const QPointF &offset)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (pixmap.pixmapData()->classId() != QPixmapData::DirectFBClass) {
-        RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
+        RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), offset);
         d->lock();
-        QRasterPaintEngine::drawTiledPixmap(r, pixmap, sp);
-    } else if (d->unsupportedCompositionMode || !d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()
+        QRasterPaintEngine::drawTiledPixmap(r, pixmap, offset);
+    } else if (d->unsupportedCompositionMode || !d->dfbCanHandleClip(r) || d->matrixRotShear
                || d->scale == QDirectFBPaintEnginePrivate::NegativeScale) {
-        RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
+        RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), offset);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
         QRasterPixmapData *data = new QRasterPixmapData(QPixmapData::PixmapType);
         data->fromImage(*img, Qt::AutoColor);
         const QPixmap pix(data);
-        QRasterPaintEngine::drawTiledPixmap(r, pix, sp);
+        QRasterPaintEngine::drawTiledPixmap(r, pix, offset);
     } else {
         d->unlock();
-        QPixmapData *data = pixmap.pixmapData();
-        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
-        QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
-        dfbData->unlockDirectFB();
-        d->drawTiledPixmap(r, pixmap);
+        d->drawTiledPixmap(r, pixmap, offset);
     }
 }
 
@@ -730,14 +731,17 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             d->surface->FillRectangle(d->surface, r.x(), r.y(),
                                       r.width(), r.height());
             return; }
-        case Qt::TexturePattern:
-            if (state()->brushOrigin == QPointF() && brush.transform().isIdentity()) {
-                //could handle certain types of brush.transform() E.g. scale
-                d->unlock();
-                d->drawTiledPixmap(rect, brush.texture());
-                return;
-            }
-            break;
+        case Qt::TexturePattern: {
+            if (d->scale == QDirectFBPaintEnginePrivate::NegativeScale)
+                break;
+
+            const QPixmap texture = brush.texture();
+            if (texture.pixmapData()->classId() != QPixmapData::DirectFBClass)
+                break;
+
+            d->unlock();
+            d->drawTiledPixmap(rect, texture, rect.topLeft() - state()->brushOrigin);
+            return; }
         default:
             break;
         }
@@ -1059,6 +1063,8 @@ void QDirectFBPaintEnginePrivate::blit(const QRectF &dest, IDirectFBSurface *s, 
 {
     const QRect sr = src.toRect();
     const QRect dr = transform.mapRect(dest).toRect();
+    if (dr.isEmpty())
+        return;
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
     DFBResult result;
 
@@ -1072,55 +1078,105 @@ void QDirectFBPaintEnginePrivate::blit(const QRectF &dest, IDirectFBSurface *s, 
         DirectFBError("QDirectFBPaintEngine::drawPixmap()", result);
 }
 
-void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
-                                                  const QPixmap &pixmap)
+static inline qreal fixCoord(qreal rect_pos, qreal pixmapSize, qreal offset)
 {
+    qreal pos = rect_pos - offset;
+    while (pos > rect_pos)
+        pos -= pixmapSize;
+    while (pos + pixmapSize < rect_pos)
+        pos += pixmapSize;
+    return pos;
+}
+
+void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &off)
+{
+    Q_ASSERT(!dirtyClip);
+    const QRect destinationRect = transform.mapRect(dest).toRect().normalized();
+    QRect newClip = destinationRect;
+    if (!currentClip.isEmpty())
+        newClip &= currentClip;
+
+    if (newClip.isNull())
+        return;
+
+    const DFBRegion clip = {
+        newClip.x(),
+        newClip.y(),
+        newClip.x() + newClip.width() - 1,
+        newClip.y() + newClip.height() - 1
+    };
+    surface->SetClip(surface, &clip);
+
+    QPointF offset = off;
+    Q_ASSERT(transform.type() <= QTransform::TxScale);
     prepareForBlit(pixmap.hasAlphaChannel());
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
-    IDirectFBSurface *s = dfbData->directFBSurface();
-    const QRect dr = transform.mapRect(dest).toRect();
-    DFBResult result = DFB_OK;
+    dfbData->unlockDirectFB();
+    const QSize pixmapSize = dfbData->size();
+    IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
+    if (transform.isScaling()) {
+        Q_ASSERT(qMin(transform.m11(), transform.m22()) >= 0);
+        offset.rx() *= transform.m11();
+        offset.ry() *= transform.m22();
 
-    if (scale == NoScale && dr == QRect(0, 0, fbWidth, fbHeight)) {
-        result = surface->TileBlit(surface, s, 0, 0, 0);
-    } else if (scale == NoScale) {
-        const int dx = pixmap.width();
-        const int dy = pixmap.height();
-        const DFBRectangle rect = { 0, 0, dx, dy };
-        QVarLengthArray<DFBRectangle> rects;
-        QVarLengthArray<DFBPoint> points;
-
-        for (int y = dr.y(); y <= dr.bottom(); y += dy) {
-            for (int x = dr.x(); x <= dr.right(); x += dx) {
-                rects.append(rect);
-                const DFBPoint point = { x, y };
-                points.append(point);
+        const QSizeF mappedSize(pixmapSize.width() * transform.m11(), pixmapSize.height() * transform.m22());
+        qreal y = ::fixCoord(destinationRect.y(), mappedSize.height(), offset.y());
+        const qreal startX = ::fixCoord(destinationRect.x(), mappedSize.width(), offset.x());
+        while (y < destinationRect.bottom()) {
+            qreal x = startX;
+            while (x < destinationRect.right()) {
+                const DFBRectangle destination = { qRound(x), qRound(y), mappedSize.width(), mappedSize.height() };
+                surface->StretchBlit(surface, sourceSurface, 0, &destination);
+                x += mappedSize.width();
             }
+            y += mappedSize.height();
         }
-        result = surface->BatchBlit(surface, s, rects.constData(),
-                                    points.constData(), points.size());
     } else {
-        const QRect sr = transform.mapRect(QRect(0, 0, pixmap.width(), pixmap.height()));
-        const int dx = sr.width();
-        const int dy = sr.height();
-        const DFBRectangle sRect = { 0, 0, dx, dy };
+        qreal y = ::fixCoord(destinationRect.y(), pixmapSize.height(), offset.y());
+        const qreal startX = ::fixCoord(destinationRect.x(), pixmapSize.width(), offset.x());
+        int horizontal = qMax(1, destinationRect.width() / pixmapSize.width()) + 1;
+        if (startX != destinationRect.x())
+            ++horizontal;
+        int vertical = qMax(1, destinationRect.height() / pixmapSize.height()) + 1;
+        if (y != destinationRect.y())
+            ++vertical;
 
-        for (int y = dr.y(); y <= dr.bottom(); y += dy) {
-            for (int x = dr.x(); x <= dr.right(); x += dx) {
-                const DFBRectangle dRect = { x, y, dx, dy };
-                result = surface->StretchBlit(surface, s, &sRect, &dRect);
-                if (result != DFB_OK) {
-                    y = dr.bottom() + 1;
-                    break;
-                }
+        const int maxCount = (vertical * horizontal);
+        QVarLengthArray<DFBRectangle, 16> sourceRects(maxCount);
+        QVarLengthArray<DFBPoint, 16> points(maxCount);
+
+        int i = 0;
+        while (y < destinationRect.bottom()) {
+            Q_ASSERT(i < maxCount);
+            qreal x = startX;
+            while (x < destinationRect.right()) {
+                points[i].x = qRound(x);
+                points[i].y = qRound(y);
+                sourceRects[i].x = 0;
+                sourceRects[i].y = 0;
+                sourceRects[i].w = int(pixmapSize.width());
+                sourceRects[i].h = int(pixmapSize.height());
+                x += pixmapSize.width();
+                ++i;
             }
+            y += pixmapSize.height();
         }
+        surface->BatchBlit(surface, sourceSurface, sourceRects.constData(), points.constData(), i);
     }
 
-    if (result != DFB_OK)
-        DirectFBError("QDirectFBPaintEngine::drawTiledPixmap()", result);
+    if (currentClip.isEmpty()) {
+        surface->SetClip(surface, 0);
+    } else {
+        const DFBRegion clip = {
+            currentClip.x(),
+            currentClip.y(),
+            currentClip.x() + currentClip.width(),
+            currentClip.y() + currentClip.height()
+        };
+        surface->SetClip(surface, &clip);
+    }
 }
 
 void QDirectFBPaintEnginePrivate::updateClip()
@@ -1128,6 +1184,7 @@ void QDirectFBPaintEnginePrivate::updateClip()
     if (!dirtyClip)
         return;
 
+    currentClip = QRect();
     const QClipData *clipData = clip();
     if (!clipData || !clipData->enabled) {
         surface->SetClip(surface, NULL);
@@ -1140,6 +1197,8 @@ void QDirectFBPaintEnginePrivate::updateClip()
             clipData->clipRect.y() + clipData->clipRect.height()
         };
         surface->SetClip(surface, &r);
+        currentClip = clipData->clipRect.normalized();
+        // ### is this guaranteed to always be normalized?
         dfbHandledClip = true;
     } else if (clipData->hasRegionClip && ignoreSystemClip && clipData->clipRegion == systemClip) {
         dfbHandledClip = true;

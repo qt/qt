@@ -170,8 +170,12 @@ void tst_QFontDialog::task256466_wrongStyle()
     for (int i = 0; i < familyList->model()->rowCount(); ++i) {
         QModelIndex currentFamily = familyList->model()->index(i, 0);
         familyList->setCurrentIndex(currentFamily);
-        QCOMPARE(dialog.currentFont(), fdb.font(currentFamily.data().toString(), 
-            styleList->currentIndex().data().toString(), sizeList->currentIndex().data().toInt()));
+        const QFont current = dialog.currentFont(),
+                    expected = fdb.font(currentFamily.data().toString(), 
+            styleList->currentIndex().data().toString(), sizeList->currentIndex().data().toInt());
+        QCOMPARE(current.family(), expected.family());
+        QCOMPARE(current.style(), expected.style());
+        QCOMPARE(current.pointSizeF(), expected.pointSizeF());
     }
 }
 

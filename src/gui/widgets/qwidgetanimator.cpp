@@ -100,7 +100,6 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     m_animation_map[widget] = anim;
     connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
     anim->start(QPropertyAnimation::DeleteWhenStopped);
-    Q_ASSERT(animate || widget->geometry() == final_geometry);
 #else
     //we do it in one shot
     widget->setGeometry(final_geometry);

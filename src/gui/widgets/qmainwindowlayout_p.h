@@ -335,6 +335,8 @@ public:
     void cleanUpMacToolbarItems();
     void fixSizeInUnifiedToolbar(QToolBar *tb) const;
     bool useHIToolBar;
+    void syncUnifiedToolbarVisibility();
+    bool blockVisiblityCheck;
 #endif
 };
 QT_END_NAMESPACE
