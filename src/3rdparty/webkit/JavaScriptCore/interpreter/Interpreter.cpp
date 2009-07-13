@@ -69,6 +69,10 @@
 #include "AssemblerBuffer.h"
 #endif
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "bridge/qscriptobject_p.h"
+#endif
+
 using namespace std;
 
 namespace JSC {
@@ -3468,8 +3472,12 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 structure = asObject(prototype)->inheritorID();
             else
                 structure = callDataScopeChain->globalObject()->emptyObjectStructure();
+#ifdef QT_BUILD_SCRIPT_LIB
+            // ### world-class hack
+            QScriptObject* newObject = new (globalData) QScriptObject(structure);
+#else
             JSObject* newObject = new (globalData) JSObject(structure);
-
+#endif
             callFrame[thisRegister] = JSValue(newObject); // "this" value
 
             CallFrame* previousCallFrame = callFrame;
@@ -3502,8 +3510,12 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 structure = asObject(prototype)->inheritorID();
             else
                 structure = scopeChain->globalObject()->emptyObjectStructure();
+#ifdef QT_BUILD_SCRIPT_LIB
+            // ### world-class hack
+            QScriptObject* newObject = new (globalData) QScriptObject(structure);
+#else
             JSObject* newObject = new (globalData) JSObject(structure);
-
+#endif
             callFrame[thisRegister] = JSValue(newObject); // "this" value
 
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
