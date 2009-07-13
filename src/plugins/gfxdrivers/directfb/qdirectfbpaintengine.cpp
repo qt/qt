@@ -223,7 +223,6 @@ public:
     inline void setTransform(const QTransform &transforma);
     inline void setPen(const QPen &pen);
     inline void setCompositionMode(QPainter::CompositionMode mode);
-    inline void setOpacity(quint8 value);
     inline void setRenderHints(QPainter::RenderHints hints);
 
     inline void setDFBColor(const QColor &color);
@@ -355,7 +354,7 @@ void QDirectFBPaintEngine::penChanged()
 void QDirectFBPaintEngine::opacityChanged()
 {
     Q_D(QDirectFBPaintEngine);
-    d->setOpacity(quint8(state()->opacity * 255));
+    d->opacity = quint8(state()->opacity * 255);
     QRasterPaintEngine::opacityChanged();
 }
 
@@ -386,7 +385,7 @@ void QDirectFBPaintEngine::setState(QPainterState *state)
     QRasterPaintEngine::setState(state);
     d->dirtyClip = true;
     d->setPen(state->pen);
-    d->setOpacity(quint8(state->opacity * 255));
+    d->opacity = quint8(state->opacity * 255);
     d->setCompositionMode(state->compositionMode());
     d->setTransform(state->transform());
     d->setRenderHints(state->renderHints);
@@ -920,12 +919,6 @@ void QDirectFBPaintEnginePrivate::setPen(const QPen &pen)
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)
 {
     unsupportedCompositionMode = (mode != QPainter::CompositionMode_SourceOver);
-}
-
-
-void QDirectFBPaintEnginePrivate::setOpacity(quint8 op)
-{
-    opacity = op;
 }
 
 void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
