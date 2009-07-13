@@ -67,7 +67,7 @@ private:
 };
 
 QSimpleCanvasDebugPlugin::QSimpleCanvasDebugPlugin(QObject *parent)
-: QmlDebugServerPlugin(QLatin1String("CanvasFrameRate"), parent), _breaks(0)
+: QmlDebugService(QLatin1String("CanvasFrameRate"), parent), _breaks(0)
 {
     _time.start();
     new FrameBreakAnimation(this);
@@ -96,7 +96,7 @@ void QSimpleCanvasDebugPlugin::frameBreak()
 }
 
 QSimpleCanvasSceneDebugPlugin::QSimpleCanvasSceneDebugPlugin(QSimpleCanvas *parent)
-: QmlDebugServerPlugin(QLatin1String("CanvasScene"), parent), m_canvas(parent)
+: QmlDebugService(QLatin1String("CanvasScene"), parent), m_canvas(parent)
 {
 }
 
@@ -120,7 +120,7 @@ void QSimpleCanvasSceneDebugPlugin::refresh()
 void QSimpleCanvasSceneDebugPlugin::refresh(QDataStream &ds, 
                                             QSimpleCanvasItem *item)
 {
-    ds << QmlDebugServerPlugin::objectToString(item) << item->x() << item->y() 
+    ds << QmlDebugService::objectToString(item) << item->x() << item->y() 
        << item->z() << item->width() << item->height() 
        << (int)item->transformOrigin() << item->scale() << (int)item->flip() 
 #ifdef QFX_RENDER_OPENGL

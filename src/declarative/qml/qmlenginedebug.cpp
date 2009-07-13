@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QList<QmlEngine *> QmlEngineDebugServer::m_engines;
 QmlEngineDebugServer::QmlEngineDebugServer(QObject *parent)
-: QmlDebugServerPlugin(QLatin1String("QmlEngine"), parent)
+: QmlDebugService(QLatin1String("QmlEngine"), parent)
 {
 }
 
@@ -135,7 +135,7 @@ void QmlEngineDebugServer::buildObjectList(QDataStream &message,
     QmlContextPrivate *p = (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
     QString ctxtName = ctxt->objectName();
-    int ctxtId = QmlDebugServerPlugin::idForObject(ctxt);
+    int ctxtId = QmlDebugService::idForObject(ctxt);
 
     message << ctxtName << ctxtId; 
     
@@ -182,7 +182,7 @@ QmlEngineDebugServer::objectData(QObject *object)
 
     rv.objectName = object->objectName();
     rv.objectType = object->metaObject()->className();
-    rv.objectId = QmlDebugServerPlugin::idForObject(object);
+    rv.objectId = QmlDebugService::idForObject(object);
 
     return rv;
 }
@@ -207,7 +207,7 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
             QmlEngine *engine = m_engines.at(ii);
 
             QString engineName = engine->objectName();
-            int engineId = QmlDebugServerPlugin::idForObject(engine);
+            int engineId = QmlDebugService::idForObject(engine);
 
             rs << engineName << engineId;
         }
@@ -219,7 +219,7 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
         ds >> queryId >> engineId;
 
         QmlEngine *engine = 
-            qobject_cast<QmlEngine *>(QmlDebugServerPlugin::objectForId(engineId));
+            qobject_cast<QmlEngine *>(QmlDebugService::objectForId(engineId));
 
         QByteArray reply;
         QDataStream rs(&reply, QIODevice::WriteOnly);
@@ -236,7 +236,7 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
 
         ds >> queryId >> objectId >> recurse;
 
-        QObject *object = QmlDebugServerPlugin::objectForId(objectId);
+        QObject *object = QmlDebugService::objectForId(objectId);
 
         QByteArray reply;
         QDataStream rs(&reply, QIODevice::WriteOnly);

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtDeclarative/qmldebugserver.h>
+#include <QtDeclarative/qmldebugservice.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QmlEngine;
 class QmlContext;
 class QDataStream;
-class QmlEngineDebugServer : public QmlDebugServerPlugin
+class QmlEngineDebugServer : public QmlDebugService
 {
 public:
     QmlEngineDebugServer(QObject * = 0);
