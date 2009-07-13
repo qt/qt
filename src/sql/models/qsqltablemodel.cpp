@@ -202,7 +202,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
                 editQuery.addBindValue(rec.value(i));
         }
         for (i = 0; i < whereValues.count(); ++i) {
-            if (whereValues.isGenerated(i))
+            if (whereValues.isGenerated(i) && !whereValues.isNull(i))
                 editQuery.addBindValue(whereValues.value(i));
         }
 
