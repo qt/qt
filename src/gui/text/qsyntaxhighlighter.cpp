@@ -65,6 +65,18 @@ public:
 
     void _q_reformatBlocks(int from, int charsRemoved, int charsAdded);
     void reformatBlock(QTextBlock block);
+    
+    inline void rehighlight(QTextCursor &cursor, QTextCursor::MoveOperation operation) {
+        QObject::disconnect(doc, SIGNAL(contentsChange(int,int,int)),
+                            q_func(), SLOT(_q_reformatBlocks(int,int,int)));
+        cursor.beginEditBlock();
+        int from = cursor.position();
+        cursor.movePosition(operation);
+        _q_reformatBlocks(from, 0, cursor.position() - from);
+        cursor.endEditBlock();
+        QObject::connect(doc, SIGNAL(contentsChange(int,int,int)),
+                         q_func(), SLOT(_q_reformatBlocks(int,int,int)));
+    }
 
     inline void _q_delayedRehighlight() {
         if (!rehighlightPending)
@@ -365,15 +377,8 @@ void QSyntaxHighlighter::rehighlight()
     if (!d->doc)
         return;
 
-    disconnect(d->doc, SIGNAL(contentsChange(int,int,int)),
-               this, SLOT(_q_reformatBlocks(int,int,int)));
     QTextCursor cursor(d->doc);
-    cursor.beginEditBlock();
-    cursor.movePosition(QTextCursor::End);
-    d->_q_reformatBlocks(0, 0, cursor.position());
-    cursor.endEditBlock();
-    connect(d->doc, SIGNAL(contentsChange(int,int,int)),
-            this, SLOT(_q_reformatBlocks(int,int,int)));
+    d->rehighlight(cursor, QTextCursor::End);
 }
 
 /*!
@@ -389,16 +394,8 @@ void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
     if (!d->doc)
         return;
 
-    disconnect(d->doc, SIGNAL(contentsChange(int,int,int)),
-               this, SLOT(_q_reformatBlocks(int,int,int)));
     QTextCursor cursor(block);
-    cursor.beginEditBlock();
-    int from = cursor.position();
-    cursor.movePosition(QTextCursor::EndOfBlock);
-    d->_q_reformatBlocks(from, 0, cursor.position() - from);
-    cursor.endEditBlock();
-    connect(d->doc, SIGNAL(contentsChange(int,int,int)),
-            this, SLOT(_q_reformatBlocks(int,int,int)));
+    d->rehighlight(cursor, QTextCursor::EndOfBlock);
 }
 
 /*!
