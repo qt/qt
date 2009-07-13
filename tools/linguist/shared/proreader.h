@@ -39,64 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef PROFILEEVALUATOR_H
-#define PROFILEEVALUATOR_H
+#ifndef PROREADER_H
+#define PROREADER_H
 
-#include "proitems.h"
-#include "abstractproitemvisitor.h"
-
-#include <QtCore/QIODevice>
 #include <QtCore/QHash>
-#include <QtCore/QStringList>
-#include <QtCore/QStack>
 
 QT_BEGIN_NAMESPACE
 
-class ProFileEvaluator
-{
-public:
-    enum TemplateType {
-        TT_Unknown = 0,
-        TT_Application,
-        TT_Library,
-        TT_Script,
-        TT_Subdirs
-    };
+class ProFileEvaluator;
 
-    ProFileEvaluator();
-    virtual ~ProFileEvaluator();
-
-    ProFileEvaluator::TemplateType templateType();
-    virtual bool contains(const QString &variableName) const;
-    void setVerbose(bool on); // Default is false
-    void setCumulative(bool on); // Default is true!
-    void setOutputDir(const QString &dir); // Default is empty
-
-    bool queryProFile(ProFile *pro);
-    bool accept(ProFile *pro);
-
-    void addVariables(const QHash<QString, QStringList> &variables);
-    void addProperties(const QHash<QString, QString> &properties);
-    QStringList values(const QString &variableName) const;
-    QStringList values(const QString &variableName, const ProFile *pro) const;
-    QStringList absolutePathValues(const QString &variable, const QString &baseDirectory) const;
-    QStringList absoluteFileValues(
-            const QString &variable, const QString &baseDirectory, const QStringList &searchDirs,
-            const ProFile *pro) const;
-    QString propertyValue(const QString &val) const;
-
-    // for our descendents
-    virtual ProFile *parsedProFile(const QString &fileName);
-    virtual void releaseParsedProFile(ProFile *proFile);
-    virtual void logMessage(const QString &msg);
-    virtual void errorMessage(const QString &msg); // .pro parse errors
-    virtual void fileMessage(const QString &msg); // error() and message() from .pro file
-
-private:
-    class Private;
-    Private *d;
-};
+void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap,
+                     const QString &projectDir);
+bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QStringList> *varMap);
 
 QT_END_NAMESPACE
 
-#endif // PROFILEEVALUATOR_H
+#endif // PROREADER_H

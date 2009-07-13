@@ -1,0 +1,15 @@
+prefix=/depot/obuddenh/qt
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/JavaScriptCore
+qt_config=lex yacc debug uic resources qt incremental link_prl exceptions no_mocdepend debug stl qt_no_framework debug largefile stl precompile_header separate_debug_info mmx 3dnow sse sse2 dylib create_prl link_prl depend_includepath QTDIR_build use_libmysqlclient_r building-libs staticlib depend_includepath qt_install_headers qt depend_includepath qmake_cache target_qt hide_symbols create_libtool create_pc explicitlib moc thread static staticlib
+moc_location=${prefix}/bin/moc
+uic_location=${prefix}/bin/uic
+
+Name: Javascriptcore
+Description: Javascriptcore Library
+Version: 4.6.0
+Libs: -L${libdir} -lJavaScriptCore 
+Libs.private: -L/depot/obuddenh/qt/lib  -lQtGui -L/depot/obuddenh/qt/lib -L/usr/X11R6/lib -pthread -lpng -lfreetype -lgobject-2.0 -lSM -lICE -pthread -pthread -lXrender -lfontconfig -lXext -lX11 -lQtCore -lz -lm -pthread -lgthread-2.0 -lrt -lglib-2.0 -lpthread -ldl  
+Cflags: -DQT_SHARED -I/depot/obuddenh/qt/include -I${includedir}
+
