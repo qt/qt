@@ -54,11 +54,25 @@
 #include <qstringlist.h>
 #include <qmutex.h>
 
+
 #include <libpq-fe.h>
 #include <pg_config.h>
 
 #include <stdlib.h>
+#if defined(_MSC_VER)
+#include <float.h>
+#define isnan(x) _isnan(x)
+int isinf(double x) 
+{ 
+    if(_fpclass(x) == _FPCLASS_NINF) 
+        return -1; 
+    else if(_fpclass(x) == _FPCLASS_PINF) 
+        return 1; 
+    else return 0;
+}
+#else
 #include <math.h>
+#endif
 
 // workaround for postgres defining their OIDs in a private header file
 #define QBOOLOID 16
@@ -1161,6 +1175,21 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             qPQfreemem(data);
             break;
         }
+        case QVariant::Double: {
+            double val = field.value().toDouble();
+            if (isnan(val))
+                r = QLatin1String("'NaN'");
+            else {
+                int res = isinf(val);
+                if (res == 1)
+                    r = QLatin1String("'Infinity'");
+                else if (res == -1)
+                    r = QLatin1String("'-Infinity'");
+                else
+                    r = QSqlDriver::formatValue(field, trimStrings);
+            }
+            break;
+        }
         default:
             r = QSqlDriver::formatValue(field, trimStrings);
             break;
@@ -1265,15 +1294,15 @@ QStringList QPSQLDriver::subscribedToNotificationsImplementation() const
 void QPSQLDriver::_q_handleNotification(int)
 {
     PQconsumeInput(d->connection);
-    PGnotify *notify = PQnotifies(d->connection);
-    if (notify) {
-        QString name(QLatin1String(notify->relname));
 
+    PGnotify *notify = 0;
+    while((notify = PQnotifies(d->connection)) != 0) {
+        QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name))
             emit notification(name);
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
-                qPrintable(name));
+                    qPrintable(name));
 
         qPQfreemem(notify);
     }

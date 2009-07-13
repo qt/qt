@@ -171,7 +171,7 @@ QGLGraphicsSystem::QGLGraphicsSystem()
         }
     }
 #elif defined(Q_WS_WIN)
-    QGLWindowSurface::surfaceFormat.setDoubleBuffer(false);
+    QGLWindowSurface::surfaceFormat.setDoubleBuffer(true);
 
     qt_win_owndc_required = true;
 #endif

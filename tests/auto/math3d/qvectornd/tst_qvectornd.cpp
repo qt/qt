@@ -139,8 +139,8 @@ private slots:
     void dotProduct4();
 };
 
-// qFuzzyCompare isn't quite "fuzzy" enough to handle conversion
-// to fixed-point and back again.  So create "fuzzier" compares.
+// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
+// between float, double, and qreal.  So create "fuzzier" compares.
 static bool fuzzyCompare(float x, float y)
 {
     float diff = x - y;

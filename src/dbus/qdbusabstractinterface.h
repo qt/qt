@@ -61,7 +61,23 @@ class QDBusError;
 class QDBusPendingCall;
 
 class QDBusAbstractInterfacePrivate;
-class QDBUS_EXPORT QDBusAbstractInterface: public QObject
+
+class QDBUS_EXPORT QDBusAbstractInterfaceBase: public QObject
+{
+public:
+    int qt_metacall(QMetaObject::Call, int, void**);
+protected:
+    QDBusAbstractInterfaceBase(QDBusAbstractInterfacePrivate &dd, QObject *parent);
+private:
+    Q_DECLARE_PRIVATE(QDBusAbstractInterface)
+};
+
+class QDBUS_EXPORT QDBusAbstractInterface:
+#ifdef Q_QDOC
+        public QObject
+#else
+        public QDBusAbstractInterfaceBase
+#endif
 {
     Q_OBJECT
 

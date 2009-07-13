@@ -45,7 +45,7 @@
 
     The Text Finder example demonstrates how to dynamically process forms
     using the QtUiTools module. Dynamic form processing enables a form to
-    be processed at run-time only by changing the .ui file for the project.
+    be processed at run-time only by changing the UI file for the project.
     The program allows the user to look up a particular word within the
     contents of a text file. This text file is included in the project's
     resource and is loaded into the display at startup.
@@ -95,7 +95,7 @@
     \snippet examples/uitools/textfinder/textfinder.h 0
 
     The slot \c{on_find_Button_clicked()} is a slot named according to the
-    \l{Using a Designer .ui File in Your Application#Automatic Connections}
+    \l{Using a Designer UI File in Your Application#Automatic Connections}
     {Automatic Connection} naming convention required
     by \c uic.
 

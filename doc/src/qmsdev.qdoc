@@ -87,7 +87,7 @@
   the existing  project.
 
   If you want to add an existing dialog to your project, then just select the
-  relevant \c .ui file. This will then add it to your existing project and add
+  relevant UI file. This will then add it to your existing project and add
   the relevant steps to create the generated code.
 
   \section2 Using the 'Qt Designer' button

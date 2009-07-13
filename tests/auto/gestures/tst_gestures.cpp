@@ -140,6 +140,13 @@ struct GestureState
         last.secondfinger.lastPoint = TouchPoint();
         last.secondfinger.point = TouchPoint();
         last.secondfinger.offset = QPoint();
+        last.pan.delivered = false;
+        last.pan.startPoints[0] = TouchPoint();
+        last.pan.startPoints[1] = TouchPoint();
+        last.pan.lastPoints[0] = TouchPoint();
+        last.pan.lastPoints[1] = TouchPoint();
+        last.pan.points[0] = TouchPoint();
+        last.pan.points[1] = TouchPoint();
         last.cancelled.clear();
     }
 };
@@ -760,7 +767,8 @@ void tst_Gestures::simpleGraphicsItem()
     scene.addItem(item);
     QApplication::processEvents();
 
-    SingleshotEvent event(50, 80);
+    QPoint pt = view.mapFromScene(item->mapToScene(30, 30));
+    SingleshotEvent event(pt.x(), pt.y());
     sendSpontaneousEvent(&view, &event);
     QVERIFY(item->gesture.seenGestureEvent);
     QVERIFY(scene.gesture.seenGestureEvent);
@@ -771,7 +779,9 @@ void tst_Gestures::simpleGraphicsItem()
     mainWidget->reset();
 
     item->shouldAcceptSingleshotGesture = false;
-    SingleshotEvent event2(20, 40);
+    // outside of the graphicsitem
+    pt = view.mapFromScene(item->mapToScene(-10, -10));
+    SingleshotEvent event2(pt.x(), pt.y());
     sendSpontaneousEvent(&view, &event2);
     QVERIFY(!item->gesture.seenGestureEvent);
     QVERIFY(scene.gesture.seenGestureEvent);
@@ -790,9 +800,11 @@ void tst_Gestures::overlappingGraphicsItems()
     scene.addItem(item);
     GraphicsItem *subitem1 = new GraphicsItem(50, 70);
     subitem1->setPos(70, 70);
+    subitem1->setZValue(1);
     scene.addItem(subitem1);
     GraphicsItem *subitem2 = new GraphicsItem(50, 70);
     subitem2->setPos(250, 70);
+    subitem2->setZValue(1);
     scene.addItem(subitem2);
     QApplication::processEvents();
 
@@ -802,13 +814,14 @@ void tst_Gestures::overlappingGraphicsItems()
     subitem1->grabSingleshotGesture();
     subitem2->grabSecondFingerGesture();
 
-    SingleshotEvent event(100, 100);
+    QPoint pt = view.mapFromScene(subitem1->mapToScene(20, 20));
+    SingleshotEvent event(pt.x(), pt.y());
     sendSpontaneousEvent(&view, &event);
-    QVERIFY(subitem1->gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.seenGestureEvent);
     QVERIFY(!subitem2->gesture.seenGestureEvent);
     QVERIFY(!item->gesture.seenGestureEvent);
-    QVERIFY(scene.gesture.seenGestureEvent);
     QVERIFY(!mainWidget->gesture.seenGestureEvent);
+    QVERIFY(subitem1->gesture.seenGestureEvent);
     QVERIFY(subitem1->gesture.last.singleshot.delivered);
 
     item->reset();
@@ -818,12 +831,12 @@ void tst_Gestures::overlappingGraphicsItems()
     mainWidget->reset();
 
     subitem1->shouldAcceptSingleshotGesture = false;
-    SingleshotEvent event2(100, 100);
+    SingleshotEvent event2(pt.x(), pt.y());
     sendSpontaneousEvent(&view, &event2);
-    QVERIFY(subitem1->gesture.seenGestureEvent);
-    QVERIFY(!subitem2->gesture.seenGestureEvent);
-    QVERIFY(item->gesture.seenGestureEvent);
     QVERIFY(scene.gesture.seenGestureEvent);
+    QVERIFY(!subitem2->gesture.seenGestureEvent);
+    QVERIFY(subitem1->gesture.seenGestureEvent);
+    QVERIFY(item->gesture.seenGestureEvent);
     QVERIFY(!mainWidget->gesture.seenGestureEvent);
     QVERIFY(subitem1->gesture.last.singleshot.delivered);
     QVERIFY(item->gesture.last.singleshot.delivered);

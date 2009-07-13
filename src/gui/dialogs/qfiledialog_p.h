@@ -73,7 +73,6 @@
 #include <qabstractproxymodel.h>
 #include <qcompleter.h>
 #include <qpointer.h>
-#include <qtimeline.h>
 #include <qdebug.h>
 #include "qsidebar_p.h"
 

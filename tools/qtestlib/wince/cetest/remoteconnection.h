@@ -79,4 +79,6 @@ public:
     virtual bool execute(QString program, QString arguments = QString(), int timeout = -1, int *returnValue = NULL) = 0;
 };
 
+QByteArray strwinerror(DWORD);
+
 #endif

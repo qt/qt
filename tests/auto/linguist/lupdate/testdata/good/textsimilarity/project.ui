@@ -17,7 +17,7 @@
  <widget class="QWidget" name="FindDialog" >
   <property name="test1">
     <!-- If the sourcetext is not similar to the vernacular sourcetext, mark the old one as obsolete and the new one as unfinished -->
-    <string>This should not be considered to be more or less equal to the corresponding one in the ts file.</string>
+    <string>This should not be considered to be more or less equal to the corresponding one in the TS file.</string>
   </property>
   <property name="test2">
     <string>Here, similarity should kick in!</string>

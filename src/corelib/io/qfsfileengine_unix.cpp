@@ -42,6 +42,7 @@
 #include "qplatformdefs.h"
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
+#include "private/qcore_unix_p.h"
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -90,6 +91,12 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
         if (flags & QIODevice::ReadOnly)
             mode += '+';
     }
+
+#if defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0207
+    // must be glibc >= 2.7
+    mode += 'e';
+#endif
+
     return mode;
 }
 
@@ -118,12 +125,6 @@ static int openModeToOpenFlags(QIODevice::OpenMode mode)
             oflags |= QT_OPEN_TRUNC;
     }
 
-#ifdef O_CLOEXEC
-    // supported on Linux >= 2.6.23; avoids one extra system call
-    // and avoids a race condition: if another thread forks, we could
-    // end up leaking a file descriptor...
-    oflags |= O_CLOEXEC;
-#endif
     return oflags;
 }
 
@@ -176,11 +177,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
                 return false;
             }
         }
-
-#ifndef O_CLOEXEC
-        // not needed on Linux >= 2.6.23
-        setCloseOnExec(fd);     // ignore failure
-#endif
 
         // Seek to the end when in Append mode.
         if (flags & QFile::Append) {
@@ -462,7 +458,7 @@ bool QFSFileEngine::caseSensitive() const
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
     int r;
-    r = ::chdir(QFile::encodeName(path));
+    r = QT_CHDIR(QFile::encodeName(path));
     return r >= 0;
 }
 
