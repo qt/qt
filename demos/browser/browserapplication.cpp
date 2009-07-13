@@ -205,6 +205,7 @@ void BrowserApplication::postLaunch()
     if (directory.isEmpty())
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
     QWebSettings::setIconDatabasePath(directory);
+    QWebSettings::setOfflineStoragePath(directory);
 
     setWindowIcon(QIcon(QLatin1String(":browser.svg")));
 
