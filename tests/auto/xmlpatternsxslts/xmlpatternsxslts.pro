@@ -23,3 +23,4 @@ wince*: {
     DEPLOYMENT += testdata
 }
 
+requires(contains(QT_CONFIG,private_tests))

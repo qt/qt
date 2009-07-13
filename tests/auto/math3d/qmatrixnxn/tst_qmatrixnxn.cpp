@@ -172,22 +172,22 @@ private slots:
 
 private:
     static void setMatrix(QMatrix2x2& m, const qreal *values);
-    static void setMatrixFixed(QMatrix2x2& m, const qreal *values);
+    static void setMatrixDirect(QMatrix2x2& m, const qreal *values);
     static bool isSame(const QMatrix2x2& m, const qreal *values);
     static bool isIdentity(const QMatrix2x2& m);
 
     static void setMatrix(QMatrix3x3& m, const qreal *values);
-    static void setMatrixFixed(QMatrix3x3& m, const qreal *values);
+    static void setMatrixDirect(QMatrix3x3& m, const qreal *values);
     static bool isSame(const QMatrix3x3& m, const qreal *values);
     static bool isIdentity(const QMatrix3x3& m);
 
     static void setMatrix(QMatrix4x4& m, const qreal *values);
-    static void setMatrixFixed(QMatrix4x4& m, const qreal *values);
+    static void setMatrixDirect(QMatrix4x4& m, const qreal *values);
     static bool isSame(const QMatrix4x4& m, const qreal *values);
     static bool isIdentity(const QMatrix4x4& m);
 
     static void setMatrix(QMatrix4x3& m, const qreal *values);
-    static void setMatrixFixed(QMatrix4x3& m, const qreal *values);
+    static void setMatrixDirect(QMatrix4x3& m, const qreal *values);
     static bool isSame(const QMatrix4x3& m, const qreal *values);
     static bool isIdentity(const QMatrix4x3& m);
 };
@@ -321,8 +321,9 @@ void tst_QMatrix::setMatrix(QMatrix4x3& m, const qreal *values)
 }
 
 // Set a matrix to a specified array of values, which are assumed
-// to be in row-major order.  This sets the values using fixed-point.
-void tst_QMatrix::setMatrixFixed(QMatrix2x2& m, const qreal *values)
+// to be in row-major order.  This sets the values directly into
+// the internal data() array.
+void tst_QMatrix::setMatrixDirect(QMatrix2x2& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 2; ++row) {
@@ -331,7 +332,7 @@ void tst_QMatrix::setMatrixFixed(QMatrix2x2& m, const qreal *values)
         }
     }
 }
-void tst_QMatrix::setMatrixFixed(QMatrix3x3& m, const qreal *values)
+void tst_QMatrix::setMatrixDirect(QMatrix3x3& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 3; ++row) {
@@ -340,7 +341,7 @@ void tst_QMatrix::setMatrixFixed(QMatrix3x3& m, const qreal *values)
         }
     }
 }
-void tst_QMatrix::setMatrixFixed(QMatrix4x4& m, const qreal *values)
+void tst_QMatrix::setMatrixDirect(QMatrix4x4& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 4; ++row) {
@@ -349,7 +350,7 @@ void tst_QMatrix::setMatrixFixed(QMatrix4x4& m, const qreal *values)
         }
     }
 }
-void tst_QMatrix::setMatrixFixed(QMatrix4x3& m, const qreal *values)
+void tst_QMatrix::setMatrixDirect(QMatrix4x3& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 3; ++row) {
@@ -359,8 +360,8 @@ void tst_QMatrix::setMatrixFixed(QMatrix4x3& m, const qreal *values)
     }
 }
 
-// qFuzzyCompare isn't quite "fuzzy" enough to handle conversion
-// to fixed-point and back again.  So create "fuzzier" compares.
+// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
+// between float, double, and qreal.  So create "fuzzier" compares.
 static bool fuzzyCompare(float x, float y, qreal epsilon = 0.001)
 {
     float diff = x - y;
@@ -511,7 +512,7 @@ void tst_QMatrix::create2x2()
     QVERIFY(!m2.isIdentity());
 
     QMatrix2x2 m3;
-    setMatrixFixed(m3, uniqueValues2);
+    setMatrixDirect(m3, uniqueValues2);
     QVERIFY(isSame(m3, uniqueValues2));
 
     QMatrix2x2 m4(m3);
@@ -546,7 +547,7 @@ void tst_QMatrix::create3x3()
     QVERIFY(!m2.isIdentity());
 
     QMatrix3x3 m3;
-    setMatrixFixed(m3, uniqueValues3);
+    setMatrixDirect(m3, uniqueValues3);
     QVERIFY(isSame(m3, uniqueValues3));
 
     QMatrix3x3 m4(m3);
@@ -581,7 +582,7 @@ void tst_QMatrix::create4x4()
     QVERIFY(!m2.isIdentity());
 
     QMatrix4x4 m3;
-    setMatrixFixed(m3, uniqueValues4);
+    setMatrixDirect(m3, uniqueValues4);
     QVERIFY(isSame(m3, uniqueValues4));
 
     QMatrix4x4 m4(m3);
@@ -623,7 +624,7 @@ void tst_QMatrix::create4x3()
     QVERIFY(!m2.isIdentity());
 
     QMatrix4x3 m3;
-    setMatrixFixed(m3, uniqueValues4x3);
+    setMatrixDirect(m3, uniqueValues4x3);
     QVERIFY(isSame(m3, uniqueValues4x3));
 
     QMatrix4x3 m4(m3);
@@ -2960,10 +2961,6 @@ void tst_QMatrix::extractTranslation()
     QVERIFY(fuzzyCompare(vec.x(), x, epsilon));
     QVERIFY(fuzzyCompare(vec.y(), y, epsilon));
     QVERIFY(fuzzyCompare(vec.z(), z, epsilon));
-
-    // Have to be careful with numbers here, it is really easy to blow away
-    // the precision of a fixed pointer number, especially when doing distance
-    // formula for vector normalization
 
     QMatrix4x4 lookAt;
     QVector3D eye(1.5f, -2.5f, 2.5f);

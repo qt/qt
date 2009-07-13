@@ -274,6 +274,26 @@ public:
         TextureSrcWithPattern = Qt::TexturePattern+4
     };
 
+    enum Uniform {
+        ImageTexture,
+        PatternColor,
+        GlobalOpacity,
+        Depth,
+        PmvMatrix,
+        MaskTexture,
+        FragmentColor,
+        LinearData,
+        Angle,
+        HalfViewportSize,
+        Fmp,
+        Fmp2MRadius2,
+        Inverse2Fmp2MRadius2,
+        InvertedTextureSize,
+        BrushTransform,
+        BrushTexture,
+        NumUniforms
+    };
+
     // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
@@ -285,8 +305,7 @@ public:
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
 
-    uint getUniformIdentifier(const char *uniformName);
-    uint getUniformLocation(uint id);
+    uint getUniformLocation(Uniform id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
@@ -352,6 +371,7 @@ public:
         TotalShaderCount, InvalidShaderName
     };
 
+
 /*
     // These allow the ShaderName enum to be used as a cache key
     const int mainVertexOffset = 0;
@@ -391,8 +411,6 @@ private:
     void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
 
     static const char* qglEngineShaderSourceCode[TotalShaderCount];
-
-    QVector<const char *> uniformIdentifiers;
 };
 
 QT_END_NAMESPACE

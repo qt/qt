@@ -252,6 +252,8 @@ private slots:
     void stickyFocus_data();
     void stickyFocus();
     void sendEvent();
+    void inputMethod_data();
+    void inputMethod();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -287,28 +289,46 @@ void tst_QGraphicsScene::construction()
 void tst_QGraphicsScene::sceneRect()
 {
     QGraphicsScene scene;
+    QSignalSpy sceneRectChanged(&scene, SIGNAL(sceneRectChanged(QRectF)));
     QCOMPARE(scene.sceneRect(), QRectF());
+    QCOMPARE(sceneRectChanged.count(), 0);
 
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
-    qApp->processEvents();
     item->setPos(-5, -5);
-    qApp->processEvents();
+    QCOMPARE(sceneRectChanged.count(), 0);
 
     QCOMPARE(scene.itemAt(0, 0), item);
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
+    QCOMPARE(sceneRectChanged.count(), 0);
+    QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 10, 10));
+    QCOMPARE(sceneRectChanged.count(), 1);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
+
+    item->setPos(0, 0);
     QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 15, 15));
+    QCOMPARE(sceneRectChanged.count(), 2);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 
     scene.setSceneRect(-100, -100, 10, 10);
+    QCOMPARE(sceneRectChanged.count(), 3);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 
     QCOMPARE(scene.itemAt(0, 0), item);
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
     QCOMPARE(scene.sceneRect(), QRectF(-100, -100, 10, 10));
+    item->setPos(10, 10);
+    QCOMPARE(scene.sceneRect(), QRectF(-100, -100, 10, 10));
+    QCOMPARE(sceneRectChanged.count(), 3);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 
     scene.setSceneRect(QRectF());
 
-    QCOMPARE(scene.itemAt(0, 0), item);
-    QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
-    QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 15, 15));
+    QCOMPARE(scene.itemAt(10, 10), item);
+    QCOMPARE(scene.itemAt(20, 20), (QGraphicsItem *)0);
+    QCOMPARE(sceneRectChanged.count(), 4);
+    QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 25, 25));
+    QCOMPARE(sceneRectChanged.count(), 5);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 }
 
 void tst_QGraphicsScene::itemIndexMethod()
@@ -397,8 +417,7 @@ void tst_QGraphicsScene::items()
             for (int x = minX; x < maxX; x += 100)
                 items << scene.addRect(QRectF(0, 0, 10, 10));
         }
-
-        QCOMPARE(scene.items(), items);
+        QCOMPARE(scene.items().size(), items.size());
         scene.itemAt(0, 0); // trigger indexing
 
         scene.removeItem(items.at(5));
@@ -413,6 +432,9 @@ void tst_QGraphicsScene::items()
         QGraphicsLineItem *l2 = scene.addLine(0, -5, 0, 5);
         QVERIFY(!l1->sceneBoundingRect().intersects(l2->sceneBoundingRect()));
         QVERIFY(!l2->sceneBoundingRect().intersects(l1->sceneBoundingRect()));
+        QList<QGraphicsItem *> items;
+        items<<l1<<l2;
+        QCOMPARE(scene.items().size(), items.size());
         QVERIFY(scene.items(-1, -1, 2, 2).contains(l1));
         QVERIFY(scene.items(-1, -1, 2, 2).contains(l2));
     }
@@ -2740,8 +2762,8 @@ void tst_QGraphicsScene::update()
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy spy(&scene, SIGNAL(changed(QList<QRectF>)));
 
-    // When deleted, the item will lazy-remove itself
-    delete rect;
+    // We update the scene.
+    scene.update();
 
     // This function forces a purge, which will post an update signal
     scene.itemAt(0, 0);
@@ -3612,6 +3634,62 @@ void tst_QGraphicsScene::sendEvent()
     QEvent event(QEvent::User);
     scene.sendEvent(item, &event);
     QCOMPARE(spy->count(), 1);
+}
+
+void tst_QGraphicsScene::inputMethod_data()
+{
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<bool>("callFocusItem");
+    QTest::newRow("0") << 0 << false;
+    QTest::newRow("1") << (int)QGraphicsItem::ItemAcceptsInputMethod << false;
+    QTest::newRow("2") << (int)QGraphicsItem::ItemIsFocusable << false;
+    QTest::newRow("3") <<
+        (int)(QGraphicsItem::ItemAcceptsInputMethod|QGraphicsItem::ItemIsFocusable) << true;
+}
+
+class InputMethodTester : public QGraphicsRectItem
+{
+    void inputMethodEvent(QInputMethodEvent *) { ++eventCalls; }
+    QVariant inputMethodQuery(Qt::InputMethodQuery) const { ++queryCalls; return QVariant(); }
+public:
+    int eventCalls;
+    mutable int queryCalls;
+};
+
+void tst_QGraphicsScene::inputMethod()
+{
+    QFETCH(int, flags);
+    QFETCH(bool, callFocusItem);
+
+    InputMethodTester *item = new InputMethodTester;
+    item->setFlags((QGraphicsItem::GraphicsItemFlags)flags);
+
+    QGraphicsScene scene;
+    scene.addItem(item);
+    QInputMethodEvent event;
+
+    scene.setFocusItem(item);
+    QCOMPARE(!!(item->flags() & QGraphicsItem::ItemIsFocusable), scene.focusItem() == item);
+
+    item->eventCalls = 0;
+    qApp->sendEvent(&scene, &event);
+    QCOMPARE(item->eventCalls, callFocusItem ? 1 : 0);
+
+    item->queryCalls = 0;
+    scene.inputMethodQuery((Qt::InputMethodQuery)0);
+    QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0);
+
+    scene.setFocusItem(0);
+    QCOMPARE(item->eventCalls, callFocusItem ? 2 : 0); // verify correct delivery of "reset" event
+    QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected
+
+    item->eventCalls = 0;
+    qApp->sendEvent(&scene, &event);
+    QCOMPARE(item->eventCalls, 0);
+
+    item->queryCalls = 0;
+    scene.inputMethodQuery((Qt::InputMethodQuery)0);
+    QCOMPARE(item->queryCalls, 0);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

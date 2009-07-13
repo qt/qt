@@ -2169,7 +2169,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
 
     if (unknown && !d->readOnly) {
         QString t = event->text();
-        if (!t.isEmpty() && t.at(0).isPrint()) {
+        if (!t.isEmpty() && t.at(0).isPrint() &&
+            ((event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) == Qt::NoModifier)) {
             insert(t);
 #ifndef QT_NO_COMPLETER
             d->complete(event->key());

@@ -74,7 +74,7 @@ class QCocoaTouch
         static void setMouseInDraggingState(bool inDraggingState);
 
     private:
-        static QHash<int, QCocoaTouch*> _currentTouches;
+        static QHash<qint64, QCocoaTouch*> _currentTouches;
         static QPointF _screenReferencePos;
         static QPointF _trackpadReferencePos;
         static int _idAssignmentCount;
@@ -82,7 +82,7 @@ class QCocoaTouch
         static bool _updateInternalStateOnly;
 
         QTouchEvent::TouchPoint _touchPoint;
-        int _identity;
+        qint64 _identity;
 
         QCocoaTouch(NSTouch *nstouch);
         ~QCocoaTouch();

@@ -10,7 +10,7 @@
 </phrase>
 <phrase>
     <source>accessibility</source>
-    <target>удобство</target>
+    <target>специальные возможности</target>
 </phrase>
 <phrase>
     <source>action handle</source>
@@ -345,8 +345,8 @@
     <target>активная зона</target>
 </phrase>
 <phrase>
-    <source>icon</source>
-    <target>пиктограмма</target>
+    <source>Icon</source>
+    <target>Значок</target>
 </phrase>
 <phrase>
     <source>inactive</source>
@@ -402,7 +402,7 @@
 </phrase>
 <phrase>
     <source>list view</source>
-    <target>древовидный список</target>
+    <target>список</target>
 </phrase>
 <phrase>
     <source>manual link</source>
@@ -901,10 +901,6 @@
     <target>панель инструментов</target>
 </phrase>
 <phrase>
-    <source>tooltip</source>
-    <target>всплывающая подсказка</target>
-</phrase>
-<phrase>
     <source>tree view control</source>
     <target>древовидный список</target>
 </phrase>
@@ -1054,10 +1050,46 @@
 </phrase>
 <phrase>
     <source>Case Sensitive</source>
-    <target>Регистрозависимо</target>
+    <target>Учитывать регистр</target>
 </phrase>
 <phrase>
     <source>Whole words</source>
-    <target>Слова полностью</target>
+    <target>Слова целиком</target>
+</phrase>
+<phrase>
+    <source>Find Next</source>
+    <target>Найти следующее</target>
+</phrase>
+<phrase>
+    <source>Find Previous</source>
+    <target>Найти предыдущее</target>
+</phrase>
+<phrase>
+    <source>Case Sensitive</source>
+    <target>Учитывать регистр символов</target>
+</phrase>
+<phrase>
+    <source>Whole words only</source>
+    <target>Только слова целиком</target>
+</phrase>
+<phrase>
+    <source>Subwindow</source>
+    <target>Дочернее окно</target>
+</phrase>
+<phrase>
+    <source>Next</source>
+    <target>Далее</target>
+</phrase>
+<phrase>
+    <source>tree view</source>
+    <target>древовидный список</target>
+</phrase>
+<phrase>
+    <source>ToolTip</source>
+    <target>Подсказка</target>
+</phrase>
+<phrase>
+    <source>Checkable</source>
+    <target>Переключаемое</target>
 </phrase>
 </QPH>

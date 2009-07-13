@@ -75,15 +75,19 @@ public:
     QString path;
     QString interface;
     mutable QDBusError lastError;
+
+    // this is set during creation and never changed
+    // it can't be const because QDBusInterfacePrivate has one more check
     bool isValid;
 
     QDBusAbstractInterfacePrivate(const QString &serv, const QString &p,
                                   const QString &iface, const QDBusConnection& con, bool dynamic);
     virtual ~QDBusAbstractInterfacePrivate() { }
+    bool canMakeCalls() const;
 
     // these functions do not check if the property is valid
-    QVariant property(const QMetaProperty &mp) const;
-    void setProperty(const QMetaProperty &mp, const QVariant &value);
+    void property(const QMetaProperty &mp, QVariant &where) const;
+    bool setProperty(const QMetaProperty &mp, const QVariant &value);
 
     // return conn's d pointer
     inline QDBusConnectionPrivate *connectionPrivate() const

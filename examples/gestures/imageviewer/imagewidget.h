@@ -50,17 +50,24 @@
 
 class ImageWidget : public QWidget
 {
+    Q_OBJECT
+
 public:
     ImageWidget(QWidget *parent = 0);
 
     void openDirectory(const QString &path);
 
 protected:
-    bool event(QEvent *event);
     void paintEvent(QPaintEvent*);
-    void gestureEvent(QGestureEvent *event);
     void resizeEvent(QResizeEvent*);
     void timerEvent(QTimerEvent*);
+    void mousePressEvent(QMouseEvent*);
+    void mouseDoubleClickEvent(QMouseEvent*);
+
+private slots:
+    void gestureTriggered();
+    void gestureFinished();
+    void gestureCancelled();
 
 private:
     void updateImage();
@@ -70,6 +77,9 @@ private:
     void goNextImage();
     void goPrevImage();
     void goToImage(int index);
+
+    QPanGesture *panGesture;
+    QTapAndHoldGesture *tapAndHoldGesture;
 
     QString path;
     QStringList files;

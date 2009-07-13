@@ -1576,8 +1576,9 @@ void tst_QMenuBar::menubarSizeHint()
                 return 11;
             case PM_MenuBarPanelWidth:
                 return 1;
+            default:
+              return QWindowsStyle::pixelMetric(metric, option, widget);
             }
-            return QWindowsStyle::pixelMetric(metric, option, widget);
         }
     } style;
 

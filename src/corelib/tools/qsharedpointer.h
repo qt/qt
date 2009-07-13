@@ -93,6 +93,7 @@ public:
     template <class X> QSharedPointer<X> staticCast() const;
     template <class X> QSharedPointer<X> dynamicCast() const;
     template <class X> QSharedPointer<X> constCast() const;
+    template <class X> QSharedPointer<X> objectCast() const;
 };
 
 template <class T>
@@ -136,6 +137,8 @@ template <class X, class T> QSharedPointer<X> qSharedPointerDynamicCast(const QS
 template <class X, class T> QSharedPointer<X> qSharedPointerDynamicCast(const QWeakPointer<T> &src);
 template <class X, class T> QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &src);
 template <class X, class T> QSharedPointer<X> qSharedPointerConstCast(const QWeakPointer<T> &src);
+template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src);
+template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &src);
 
 template <class X, class T> QWeakPointer<X> qWeakPointerCast(const QWeakPointer<T> &src);
 

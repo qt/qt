@@ -1074,6 +1074,15 @@ static bool waitForPopup(QToolBar *tb, QWidget *popup)
     return false;
 }
 
+#if defined(Q_WS_MAC)
+static bool toolbarInUnifiedToolBar(QToolBar *toolbar)
+{
+    const QMainWindow *mainWindow = qobject_cast<const QMainWindow *>(toolbar->parentWidget());
+    return mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()
+            && mainWindow->toolBarArea(toolbar) == Qt::TopToolBarArea;
+}
+#endif
+
 /*! \reimp */
 bool QToolBar::event(QEvent *event)
 {
@@ -1096,7 +1105,15 @@ bool QToolBar::event(QEvent *event)
         // fallthrough intended
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_MAC)
+        if (toolbarInUnifiedToolBar(this)) {
+             // I can static_cast because I did the qobject_cast in the if above, therefore
+            // we must have a QMainWindowLayout here.
+            QMainWindowLayout *mwLayout = static_cast<QMainWindowLayout *>(parentWidget()->layout());
+            mwLayout->fixSizeInUnifiedToolbar(this);
+            mwLayout->syncUnifiedToolbarVisibility();
+        }
+#  if !defined(QT_MAC_USE_COCOA)
         // Fall through
     case QEvent::LayoutRequest: {
         // There's currently no way to invalidate the size and let
@@ -1111,10 +1128,9 @@ bool QToolBar::event(QEvent *event)
             }
 
             if (needUpdate) {
-                OSWindowRef windowRef = qt_mac_window_for(this);
-                if (mainWindow->unifiedTitleAndToolBarOnMac()
-                        && mainWindow->toolBarArea(this) == Qt::TopToolBarArea
-                        && macWindowToolbarVisible(windowRef))   {
+                OSWindowRef windowRef = qt_mac_window_for(mainWindow);
+                if (toolbarInUnifiedToolBar(this)
+                        && macWindowToolbarIsVisible(windowRef))   {
                     DisableScreenUpdates();
                     macWindowToolbarShow(this, false);
                     macWindowToolbarShow(this, true);
@@ -1126,7 +1142,8 @@ bool QToolBar::event(QEvent *event)
                 return earlyResult;
         }
     }
-#endif
+#  endif // !QT_MAC_USE_COCOA
+#endif // Q_WS_MAC
         break;
     case QEvent::ParentChange:
         d->layout->checkUsePopupMenu();
@@ -1145,6 +1162,10 @@ bool QToolBar::event(QEvent *event)
         if (d->mouseReleaseEvent(static_cast<QMouseEvent*>(event)))
             return true;
         break;
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+        // there's nothing special to do here and we don't want to update the whole widget
+        return true;
     case QEvent::HoverMove: {
 #ifndef QT_NO_CURSOR
         QHoverEvent *e = static_cast<QHoverEvent*>(event);

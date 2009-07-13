@@ -115,13 +115,13 @@
     support these project-level features.
 
     We recommend using one of the
-    \l{Using a Designer .ui File in Your Application}{form subclassing approaches}
+    \l{Using a Designer UI File in Your Application}{form subclassing approaches}
     with forms created using Qt Designer. This avoids the need
     to use \c{.ui.h} files and special purpose code editors.
 
     Existing Qt 3 forms created using Qt Designer can be gradually
     ported to Qt 4 by following the advice in the
-    \l{Porting .ui Files to Qt 4} guide. However, some extra effort
+    \l{Porting UI Files to Qt 4} guide. However, some extra effort
     will be required to move application logic from \c{.ui.h} files
     into the main body of a Qt 4 application.
 

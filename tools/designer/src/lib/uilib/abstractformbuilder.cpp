@@ -135,7 +135,7 @@ public:
     QAbstractFormBuilder provides a standard interface and a default
     implementation for constructing forms from user interface
     files. It is not intended to be instantiated directly. Use the
-    QFormBuilder class to create user interfaces from \c{.ui} files at
+    QFormBuilder class to create user interfaces from UI files at
     run-time. For example:
 
     \snippet doc/src/snippets/code/tools_designer_src_lib_uilib_abstractformbuilder.cpp 0
@@ -145,10 +145,10 @@ public:
     functions:
 
     \list
-    \o load() handles reading of \c{.ui} format files from arbitrary
+    \o load() handles reading of UI format files from arbitrary
        QIODevices, and construction of widgets from the XML data
        that they contain.
-    \o save() handles saving of widget details in \c{.ui} format to
+    \o save() handles saving of widget details in UI format to
        arbitrary QIODevices.
     \o workingDirectory() and setWorkingDirectory() control the
        directory in which forms are held. The form builder looks for
@@ -208,13 +208,13 @@ QWidget *QAbstractFormBuilder::load(QIODevice *dev, QWidget *parentWidget)
         }
     }
     if (reader.hasError()) {
-        uiLibWarning(QCoreApplication::translate("QAbstractFormBuilder", "An error has occurred while reading the ui file at line %1, column %2: %3")
+        uiLibWarning(QCoreApplication::translate("QAbstractFormBuilder", "An error has occurred while reading the UI file at line %1, column %2: %3")
                                 .arg(reader.lineNumber()).arg(reader.columnNumber())
                                 .arg(reader.errorString()));
         return 0;
     }
     if (!initialized) {
-        uiLibWarning(QCoreApplication::translate("QAbstractFormBuilder", "Invalid ui file: The root element <ui> is missing."));
+        uiLibWarning(QCoreApplication::translate("QAbstractFormBuilder", "Invalid UI file: The root element <ui> is missing."));
         return 0;
     }
 
@@ -657,7 +657,7 @@ void QAbstractFormBuilder::layoutInfo(DomLayout *ui_layout, QObject *parent, int
         spac = p->elementNumber();
 
 #ifdef Q_OS_MAC
-    // here we recognize ui file < 4.3 (no we don't store margin property)
+    // here we recognize UI file < 4.3 (no we don't store margin property)
     if (mar != INT_MIN) {
         const int defaultMargin = parent->inherits("QLayoutWidget") ? 0 : 9;
         if (mar == defaultMargin)
@@ -1202,7 +1202,7 @@ QActionGroup *QAbstractFormBuilder::createActionGroup(QObject *parent, const QSt
     \fn void QAbstractFormBuilder::save(QIODevice *device, QWidget *widget)
 
     Saves an XML representation of the given \a widget to the
-    specified \a device in the standard \c{.ui} file format.
+    specified \a device in the standard UI file format.
 
     \sa load()*/
 void QAbstractFormBuilder::save(QIODevice *dev, QWidget *widget)

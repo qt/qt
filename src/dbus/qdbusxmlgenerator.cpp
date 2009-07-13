@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qcoreapplication.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qstringlist.h>
 
@@ -231,42 +230,6 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
     return retval;
 }
-
-QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
-{
-    QString interface;
-
-    int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
-    if (idx >= mo->classInfoOffset()) {
-        interface = QLatin1String(mo->classInfo(idx).value());
-    } else {
-        interface = QLatin1String(mo->className());
-        interface.replace(QLatin1String("::"), QLatin1String("."));
-
-        if (interface.startsWith(QLatin1String("QDBus"))) {
-            interface.prepend(QLatin1String("com.trolltech.QtDBus."));
-        } else if (interface.startsWith(QLatin1Char('Q')) &&
-                   interface.length() >= 2 && interface.at(1).isUpper()) {
-            // assume it's Qt
-            interface.prepend(QLatin1String("com.trolltech.Qt."));
-        } else if (!QCoreApplication::instance()||
-                   QCoreApplication::instance()->applicationName().isEmpty()) {
-            interface.prepend(QLatin1String("local."));
-         } else {
-            interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
-            QStringList domainName =
-                QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
-                                                                         QString::SkipEmptyParts);
-            if (domainName.isEmpty())
-                 interface.prepend(QLatin1String("local."));
-            else
-                for (int i = 0; i < domainName.count(); ++i)
-                    interface.prepend(QLatin1Char('.')).prepend(domainName.at(i));
-         }
-     }
- 
-    return interface;
- }
 
 QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
                                    const QMetaObject *base, int flags)

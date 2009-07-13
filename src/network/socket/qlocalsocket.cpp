@@ -63,6 +63,9 @@ QT_BEGIN_NAMESPACE
     waitForReadyRead(), waitForBytesWritten(), and waitForDisconnected()
     which blocks until the operation is complete or the timeout expires.
 
+    Note that this feature is not supported on versions of Windows earlier than
+    Windows XP.
+
     \sa QLocalServer
 */
 
@@ -100,7 +103,7 @@ QT_BEGIN_NAMESPACE
     opened in the mode specified by \a openMode, and enters the socket state
     specified by \a socketState.
 
-    Note: It is not possible to initialize two local sockets with the same
+    \note It is not possible to initialize two local sockets with the same
     native socket descriptor.
 
     \sa socketDescriptor(), state(), openMode()
@@ -205,10 +208,10 @@ QT_BEGIN_NAMESPACE
     Returns true if the socket is valid and ready for use; otherwise
     returns false.
 
-    Note: The socket's state must be ConnectedState before reading
+    \note The socket's state must be ConnectedState before reading
     and writing can occur.
 
-    \sa state()
+    \sa state(), connectToServer()
 */
 
 /*!
@@ -241,9 +244,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QLocalSocket::waitForConnected(int msec)
+    \fn bool QLocalSocket::waitForConnected(int msecs)
 
-    Waits until the socket is connected, up to \a msec milliseconds. If the
+    Waits until the socket is connected, up to \a msecs milliseconds. If the
     connection has been established, this function returns true; otherwise
     it returns false. In the case where it returns false, you can call
     error() to determine the cause of the error.
@@ -253,7 +256,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/code/src_network_socket_qlocalsocket_unix.cpp 0
 
-    If msecs is -1, this function will not time out.
+    If \a msecs is -1, this function will not time out.
 
     \sa connectToServer(), connected()
 */
@@ -272,7 +275,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/code/src_network_socket_qlocalsocket_unix.cpp 1
 
-    If msecs is -1, this function will not time out.
+    If \a msecs is -1, this function will not time out.
 
     \sa disconnectFromServer(), close()
 */
@@ -307,9 +310,10 @@ QT_BEGIN_NAMESPACE
     parameter describes the type of error that occurred.
 
     QLocalSocket::LocalSocketError is not a registered metatype, so for queued
-    connections, you will have to register it with Q_DECLARE_METATYPE.
+    connections, you will have to register it with Q_DECLARE_METATYPE() and
+    qRegisterMetaType().
 
-    \sa error(), errorString()
+    \sa error(), errorString(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -319,9 +323,10 @@ QT_BEGIN_NAMESPACE
     The \a socketState parameter is the new state.
 
     QLocalSocket::SocketState is not a registered metatype, so for queued
-    connections, you will have to register it with Q_DECLARE_METATYPE.
+    connections, you will have to register it with Q_DECLARE_METATYPE() and
+    qRegisterMetaType().
 
-    \sa state()
+    \sa state(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -363,7 +368,7 @@ QString QLocalSocket::serverName() const
 /*!
     Returns the server path that the socket is connected to.
 
-    Note: This is platform specific
+    \note The return value of this function is platform specific.
 
     \sa connectToServer(), serverName()
  */

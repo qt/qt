@@ -11,3 +11,4 @@ QT = core network
 
 
 
+requires(contains(QT_CONFIG,private_tests))

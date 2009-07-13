@@ -462,8 +462,7 @@ void QDesignerWorkbench::switchToTopLevelMode()
     // make sure that the widgetbox is visible if it is different from neutral.
     QDesignerToolWindow *widgetBoxWrapper = widgetBoxToolWindow();
     Q_ASSERT(widgetBoxWrapper);
-    if (!widgetBoxWrapper->action()->isChecked())
-        widgetBoxWrapper->action()->trigger();
+    const bool needWidgetBoxWrapperVisible = widgetBoxWrapper->action()->isChecked();
 
     switchToNeutralMode();
     const QPoint desktopOffset = desktopGeometry().topLeft();
@@ -502,7 +501,7 @@ void QDesignerWorkbench::switchToTopLevelMode()
         found_visible_window |= tw->isVisible();
     }
 
-    if (!widgetBoxWrapper->action()->isChecked())
+    if (needWidgetBoxWrapperVisible)
         widgetBoxWrapper->action()->trigger();
 
     if (!m_toolWindows.isEmpty() && !found_visible_window)
@@ -960,7 +959,7 @@ QDesignerFormWindow * QDesignerWorkbench::loadForm(const QString &fileName,
         removeFormWindow(formWindow);
         formWindowManager->removeFormWindow(editor);
         m_core->metaDataBase()->remove(editor);
-        *errorMessage = tr("The file <b>%1</b> is not a valid Designer ui file.").arg(file.fileName());
+        *errorMessage = tr("The file <b>%1</b> is not a valid Designer UI file.").arg(file.fileName());
         return 0;
     }
     *uic3Converted = editor->fileName().isEmpty();

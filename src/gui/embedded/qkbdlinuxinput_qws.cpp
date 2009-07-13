@@ -47,6 +47,7 @@
 #include <QStringList>
 
 #include <qplatformdefs.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <errno.h>
 #include <termios.h>

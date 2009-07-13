@@ -137,7 +137,14 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     if (initHelpDB()) {
         setupFilterToolbar();
         setupAddressToolbar();
+
         m_bookmarkManager->setupBookmarkModels();
+        m_bookmarkMenu->addSeparator();
+        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
+        connect(m_bookmarkMenu, SIGNAL(triggered(QAction*)), this,
+            SLOT(showBookmark(QAction*)));
+        connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
+            SLOT(updateBookmarkMenu()));
 
         setWindowTitle(m_helpEngine->customValue(QLatin1String("WindowTitle"),
             defWindowTitle).toString());
@@ -370,6 +377,29 @@ void MainWindow::checkInitState()
     }
 }
 
+void MainWindow::updateBookmarkMenu()
+{
+    if (m_bookmarkManager) {
+        m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
+        
+        m_bookmarkMenu->clear();
+        
+        m_bookmarkMenu->addAction(m_bookmarkMenuAction);
+        m_bookmarkMenu->addSeparator();
+        
+        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
+    }
+}
+
+void MainWindow::showBookmark(QAction *action)
+{
+    if (m_bookmarkManager) {
+        const QUrl &url = m_bookmarkManager->urlForAction(action);
+        if (url.isValid())
+            m_centralWidget->setSource(url);
+    }
+}
+
 void MainWindow::insertLastPages()
 {
     if (m_cmdLine->url().isValid())
@@ -495,9 +525,10 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
-    menu = menuBar()->addMenu(tr("&Bookmarks"));
-    tmp = menu->addAction(tr("Add Bookmark..."), this, SLOT(addBookmark()));
-    tmp->setShortcut(tr("CTRL+D"));
+    m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
+    m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
+        this, SLOT(addBookmark()));
+    m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));

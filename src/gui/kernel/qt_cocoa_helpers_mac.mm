@@ -177,11 +177,10 @@ void macWindowToolbarShow(const QWidget *widget, bool show )
 {
     OSWindowRef wnd = qt_mac_window_for(widget);
 #if QT_MAC_USE_COCOA
-    NSToolbar *toolbar	= [wnd toolbar];
-    if (toolbar) {
+    if (NSToolbar *toolbar = [wnd toolbar]) {
         QMacCocoaAutoReleasePool pool;
         if (show != [toolbar isVisible]) {
-           [wnd toggleToolbarShown:wnd];
+           [toolbar setVisible:show];
         } else {
             // The toolbar may be in sync, but we are not, update our framestrut.
             qt_widget_private(const_cast<QWidget *>(widget))->updateFrameStrut();
@@ -197,22 +196,21 @@ void macWindowToolbarSet( void * /*OSWindowRef*/ window, void *toolbarRef  )
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	[wnd setToolbar:static_cast<NSToolbar *>(toolbarRef)];
+    [wnd setToolbar:static_cast<NSToolbar *>(toolbarRef)];
 #else
     SetWindowToolbar(wnd, static_cast<HIToolbarRef>(toolbarRef));
 #endif
 }
 
-bool macWindowToolbarVisible( void * /*OSWindowRef*/ window )
+bool macWindowToolbarIsVisible( void * /*OSWindowRef*/ window )
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	NSToolbar *toolbar	= [wnd toolbar];
-	if (toolbar)
+    if (NSToolbar *toolbar = [wnd toolbar])
         return [toolbar isVisible];
     return false;
 #else
-	return IsWindowToolbarVisible(wnd);
+    return IsWindowToolbarVisible(wnd);
 #endif
 }
 
@@ -220,12 +218,12 @@ void macWindowSetHasShadow( void * /*OSWindowRef*/ window, bool hasShadow  )
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	[wnd setHasShadow:BOOL(hasShadow)];
+    [wnd setHasShadow:BOOL(hasShadow)];
 #else
-	if (hasShadow)
-		ChangeWindowAttributes(wnd, 0, kWindowNoShadowAttribute);
-	else
-		ChangeWindowAttributes(wnd, kWindowNoShadowAttribute, 0);
+    if (hasShadow)
+        ChangeWindowAttributes(wnd, 0, kWindowNoShadowAttribute);
+    else
+        ChangeWindowAttributes(wnd, kWindowNoShadowAttribute, 0);
 #endif
 }
 
@@ -233,9 +231,9 @@ void macWindowFlush(void * /*OSWindowRef*/ window)
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	[wnd flushWindowIfNeeded];
+    [wnd flushWindowIfNeeded];
 #else
-	HIWindowFlush(wnd);
+    HIWindowFlush(wnd);
 #endif
 }
 
@@ -350,6 +348,12 @@ Qt::MouseButton qt_mac_get_button(EventMouseButton button)
         }
     }
     return Qt::NoButton;
+}
+
+void macSendToolbarChangeEvent(QWidget *widget)
+{
+    QToolBarChangeEvent ev(!(GetCurrentKeyModifiers() & cmdKey));
+    qt_sendSpontaneousEvent(widget, &ev);
 }
 
 Q_GLOBAL_STATIC(QMacTabletHash, tablet_hash)
@@ -1129,6 +1133,18 @@ CGFloat qt_mac_get_scalefactor()
 #else
     return [[NSScreen mainScreen] userSpaceScaleFactor];
 #endif
+}
+
+QString qt_mac_get_pasteboardString()
+{
+    QMacCocoaAutoReleasePool pool;
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSString *text = [pb stringForType:NSStringPboardType];
+    if (text) {
+        return qt_mac_NSStringToQString(text);
+    } else {
+        return QString();
+    }
 }
 
 QT_END_NAMESPACE

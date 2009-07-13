@@ -88,7 +88,7 @@ public:
     void init();
     void layoutChildren();
     // ### Fix for 4.4, talk to Bjoern E or Girish.
-    virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy);
+    virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
 
     void _q_hslide(int);
     void _q_vslide(int);
@@ -99,6 +99,11 @@ public:
     inline bool viewportEvent(QEvent *event)
     { return q_func()->viewportEvent(event); }
     QObject *viewportFilter;
+
+#ifdef Q_WS_WIN
+    bool singleFingerPanEnabled;
+#endif
+    void setupGestures();
 };
 
 class QAbstractScrollAreaFilter : public QObject
