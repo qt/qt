@@ -9,14 +9,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlDebugClient;
+class QmlDebugConnection;
 class EngineClientPlugin;
 class QLineEdit;
 class EnginePane : public QWidget
 {
 Q_OBJECT
 public:
-    EnginePane(QmlDebugClient *, QWidget *parent = 0);
+    EnginePane(QmlDebugConnection *, QWidget *parent = 0);
 
 private slots:
     void queryEngines();
