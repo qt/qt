@@ -48,7 +48,7 @@
     threading primitives.
 
     See the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} section in the \l{threads.html}{threading} documentation.
-    
+    \inheaderfile QtCore
     \ingroup thread
 */
 
