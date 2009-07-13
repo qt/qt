@@ -146,6 +146,8 @@ private slots:
     void task253125_lineEditCompletion_data();
     void task253125_lineEditCompletion();
 
+    void task247560_keyboardNavigation();
+
 private:
     void filter();
     void testRowCount();
@@ -1228,6 +1230,44 @@ void tst_QCompleter::task253125_lineEditCompletion()
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
 
     QCOMPARE(edit.text(), QString("iota"));
+}
+
+void tst_QCompleter::task247560_keyboardNavigation()
+{
+    QStandardItemModel model;
+
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            model.setItem(i, j, new QStandardItem(QString("row %1 column %2").arg(i).arg(j)));
+        }
+    }
+
+
+    QCompleter completer(&model);
+    completer.setCompletionColumn(1);
+
+    QLineEdit edit;
+    edit.setCompleter(&completer);
+    edit.show();
+    edit.setFocus();
+
+    QTest::qWait(100);
+
+    QTest::keyClick(&edit, 'r');
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("row 1 column 1"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'r');
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Up);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Up);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("row 3 column 1"));
 }
 
 QTEST_MAIN(tst_QCompleter)
