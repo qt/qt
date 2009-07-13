@@ -91,6 +91,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
+    if (state != Working)
+        return;
     if (!copyDevice || !q->isOpen())
         return;
 
