@@ -1198,16 +1198,7 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         p.setClipping(false);
                         if(was_unclipped)
                             widget->setAttribute(Qt::WA_PaintUnclipped);
-
-                        QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget->parent());
-                        QPoint scrollAreaOffset;
-                        if (scrollArea && scrollArea->viewport() == widget) {
-                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr);
-                            scrollAreaOffset = priv->contentsOffset();
-                            p.translate(-scrollAreaOffset);
-                        }
-
-                        widget->d_func()->paintBackground(&p, qrgn, scrollAreaOffset, widget->isWindow() ? DrawAsRoot : 0);
+                        widget->d_func()->paintBackground(&p, qrgn, widget->isWindow() ? DrawAsRoot : 0);
                         if (widget->testAttribute(Qt::WA_TintedBackground)) {
                             QColor tint = widget->palette().window().color();
                             tint.setAlphaF(.6);

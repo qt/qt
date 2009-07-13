@@ -1871,24 +1871,23 @@ QPixmap QMacStylePrivate::generateBackgroundPattern() const
     Fills the given \a rect with the pattern stored in \a brush. As an optimization,
     HIThemeSetFill us used directly if we are filling with the standard background.
 */
-void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush)
+void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     QPoint dummy;
     const QPaintDevice *target = painter->device();
     const QPaintDevice *redirected = QPainter::redirected(target, &dummy);
     const bool usePainter = redirected && redirected != target;
-    const QRegion translated = rgn.translated(offset);
 
     if (!usePainter && qt_mac_backgroundPattern
         && qt_mac_backgroundPattern->cacheKey() == brush.texture().cacheKey()) {
 
-        painter->setClipRegion(translated);
+        painter->setClipRegion(rgn);
 
         CGContextRef cg = qt_mac_cg_context(target);
         CGContextSaveGState(cg);
         HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
 
-        const QVector<QRect> &rects = translated.rects();
+        const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i) {
             const QRect rect(rects.at(i));
             // Anchor the pattern to the top so it stays put when the window is resized.
@@ -1899,8 +1898,8 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 
         CGContextRestoreGState(cg);
     } else {
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
+        const QRect rect(rgn.boundingRect());
+        painter->setClipRegion(rgn);
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
     }
 }
