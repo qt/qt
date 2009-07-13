@@ -2017,7 +2017,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f; }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
