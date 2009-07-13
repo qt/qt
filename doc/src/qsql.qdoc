@@ -41,12 +41,12 @@
 
 /*!
     \namespace QSql
+    \inmodule QtSql
     \brief The QSql namespace contains miscellaneous identifiers used throughout
     the Qt SQL library.
 
     \ingroup database
     \mainclass
-    \omit ### \module sql \endomit
 
     \sa {QtSql Module}
 */
