@@ -152,6 +152,7 @@ SUBDIRS += _networkselftest \
 	   qgraphicspolygonitem \
 	   qgraphicsproxywidget \
            qgraphicsscene \
+           qgraphicssceneindex \
            qgraphicsview \
            qgraphicswidget \
 	   qgridlayout \

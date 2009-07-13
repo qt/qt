@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
+class Q_AUTOTEST_EXPORT QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsView)
 public:
@@ -83,10 +83,6 @@ public:
 
     qint64 horizontalScroll() const;
     qint64 verticalScroll() const;
-
-    QList<QGraphicsItem *> itemsInArea(const QPainterPath &path,
-                                       Qt::ItemSelectionMode mode = Qt::IntersectsItemShape,
-                                       Qt::SortOrder = Qt::AscendingOrder) const;
 
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
@@ -176,7 +172,8 @@ public:
     bool updateSceneSlotReimplementedChecked;
     QRegion exposedRegion;
 
-    QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
+    QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems,
+                                     const QTransform &viewTransform) const;
 
     QPointF mapToScene(const QPointF &point) const;
     QRectF mapToScene(const QRectF &rect) const;

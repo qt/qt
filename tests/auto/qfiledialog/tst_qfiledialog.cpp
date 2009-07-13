@@ -160,6 +160,7 @@ private slots:
     void task251321_sideBarHiddenEntries();
     void task251341_sideBarRemoveEntries();
     void task254490_selectFileMultipleTimes();
+    void task257579_sideBarWithNonCleanUrls();
 
 private:
     QByteArray userSettings;
@@ -2025,6 +2026,26 @@ void tst_QFiledialog::task254490_selectFileMultipleTimes()
 
     t->deleteLater();
 }
+
+void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
+{
+    QDir tempDir = QDir::temp();
+    QLatin1String dirname("autotest_task257579");
+    tempDir.rmdir(dirname); //makes sure it doesn't exist any more
+    QVERIFY(tempDir.mkdir(dirname));
+    QString url = QString::fromLatin1("%1/%2/..").arg(tempDir.absolutePath()).arg(dirname);
+    QNonNativeFileDialog fd;
+    fd.setSidebarUrls(QList<QUrl>() << QUrl::fromLocalFile(url));
+    QSidebar *sidebar = qFindChild<QSidebar*>(&fd, "sidebar");
+    QCOMPARE(sidebar->urls().count(), 1);
+    QVERIFY(sidebar->urls().first().toLocalFile() != url);
+    QCOMPARE(sidebar->urls().first().toLocalFile(), QDir::cleanPath(url));
+    QCOMPARE(sidebar->model()->index(0,0).data().toString(), tempDir.dirName());
+
+    //all tests are finished, we can remove the temporary dir
+    QVERIFY(tempDir.rmdir(dirname));
+}
+
 
 QTEST_MAIN(tst_QFiledialog)
 #include "tst_qfiledialog.moc"

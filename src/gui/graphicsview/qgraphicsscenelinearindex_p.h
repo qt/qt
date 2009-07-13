@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,13 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSCENEBSPTREE_P_H
-#define QGRAPHICSSCENEBSPTREE_P_H
+#ifndef QGRAPHICSSCENELINEARINDEX_H
+#define QGRAPHICSSCENELINEARINDEX_H
 
 //
 //  W A R N I N G
@@ -55,78 +55,55 @@
 
 #include <QtCore/qlist.h>
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
-#include <QtCore/qrect.h>
-#include <QtCore/qset.h>
-#include <QtCore/qvector.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsItem;
-class QGraphicsSceneBspTreeVisitor;
-class QGraphicsSceneInsertItemBspTreeVisitor;
-class QGraphicsSceneRemoveItemBspTreeVisitor;
-class QGraphicsSceneFindItemBspTreeVisitor;
+QT_MODULE(Gui)
 
-class QGraphicsSceneBspTree
+#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+
+#include <QtCore/qrect.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qgraphicsitem.h>
+#include <private/qgraphicssceneindex_p.h>
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
+    Q_OBJECT
+
 public:
-    struct Node
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
+    { }
+
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const
+    { Q_UNUSED(order); return m_items; }
+
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const
     {
-        enum Type { Horizontal, Vertical, Leaf };
-        union {
-            qreal offset;
-            int leafIndex;
-        };
-        Type type;
-    };
+        Q_UNUSED(rect);
+        Q_UNUSED(order);
+        return m_items;
+    }
 
-    QGraphicsSceneBspTree();
-    ~QGraphicsSceneBspTree();
+protected :
+    virtual void clear()
+    { m_items.clear(); }
 
-    void initialize(const QRectF &rect, int depth);
-    void clear();
+    virtual void addItem(QGraphicsItem *item)
+    { m_items << item; }
 
-    void insertItem(QGraphicsItem *item, const QRectF &rect);
-    void removeItem(QGraphicsItem *item, const QRectF &rect);
-    void removeItems(const QSet<QGraphicsItem *> &items);
-
-    QList<QGraphicsItem *> items(const QRectF &rect, bool onlyTopLevelItems = false) const;
-    int leafCount() const;
-
-    inline int firstChildIndex(int index) const
-    { return index * 2 + 1; }
-
-    inline int parentIndex(int index) const
-    { return index > 0 ? ((index & 1) ? ((index - 1) / 2) : ((index - 2) / 2)) : -1; }
-
-    QString debug(int index) const;
+    virtual void removeItem(QGraphicsItem *item)
+    { m_items.removeOne(item); }
 
 private:
-    void initialize(const QRectF &rect, int depth, int index);
-    void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index = 0) const;
-    QRectF rectForIndex(int index) const;
-
-    QVector<Node> nodes;
-    QVector<QList<QGraphicsItem *> > leaves;
-    int leafCnt;
-    QRectF rect;
-
-    QGraphicsSceneInsertItemBspTreeVisitor *insertVisitor;
-    QGraphicsSceneRemoveItemBspTreeVisitor *removeVisitor;
-    QGraphicsSceneFindItemBspTreeVisitor *findVisitor;
+    QList<QGraphicsItem*> m_items;
 };
-
-class QGraphicsSceneBspTreeVisitor
-{
-public:
-    virtual ~QGraphicsSceneBspTreeVisitor() { }
-    virtual void visit(QList<QGraphicsItem *> *items) = 0;
-};
-
-QT_END_NAMESPACE
 
 #endif // QT_NO_GRAPHICSVIEW
 
-#endif // QGRAPHICSSCENEBSPTREE_P_H
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QGRAPHICSSCENELINEARINDEX_H
