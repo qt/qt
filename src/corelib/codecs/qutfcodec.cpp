@@ -142,7 +142,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
 QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::ConverterState *state)
 {
     bool headerdone = false;
-    QChar replacement = QChar::ReplacementCharacter;
+    ushort replacement = QChar::ReplacementCharacter;
     int need = 0;
     int error = -1;
     uint uc = 0;
@@ -166,38 +166,28 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
         headerdone = true;
     }
 
-    QString result(len, Qt::Uninitialized); // worst case
-    QChar *qch = (QChar *)result.unicode();
+    QString result(need + len + 1, Qt::Uninitialized); // worst case
+    ushort *qch = (ushort *)result.unicode();
     uchar ch;
     int invalid = 0;
 
-    for (int i=0; i<len; i++) {
+    for (int i = 0; i < len; ++i) {
         ch = chars[i];
         if (need) {
             if ((ch&0xc0) == 0x80) {
                 uc = (uc << 6) | (ch & 0x3f);
-                need--;
+                --need;
                 if (!need) {
                     // utf-8 bom composes into 0xfeff code point
                     if (!headerdone && uc == 0xfeff) {
                         // dont do anything, just skip the BOM
                     } else if (uc > 0xffff && uc < 0x110000) {
                         // surrogate pair
-                        uc -= 0x10000;
-                        unsigned short high = uc/0x400 + 0xd800;
-                        unsigned short low = uc%0x400 + 0xdc00;
-
-                        // resize if necessary
-                        long where = qch - result.unicode();
-                        if (where + 2 >= result.length()) {
-                            result.resize(where + 2);
-                            qch = result.data() + where;
-                        }
-
-                        *qch++ = QChar(high);
-                        *qch++ = QChar(low);
+                        Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
+                        *qch++ = QChar::highSurrogate(uc);
+                        *qch++ = QChar::lowSurrogate(uc);
                     } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || (uc >= 0xfffe)) {
-                        // error
+                        // error: overlong sequence, UTF16 surrogate or BOM
                         *qch++ = replacement;
                         ++invalid;
                     } else {
@@ -215,7 +205,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
             }
         } else {
             if (ch < 128) {
-                *qch++ = QLatin1Char(ch);
+                *qch++ = ushort(ch);
                 headerdone = true;
             } else if ((ch & 0xe0) == 0xc0) {
                 uc = ch & 0x1f;
@@ -249,7 +239,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
             ++invalid;
         }
     }
-    result.truncate(qch - result.unicode());
+    result.truncate(qch - (ushort *)result.unicode());
     if (state) {
         state->invalidChars += invalid;
         state->remainingChars = need;
