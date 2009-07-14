@@ -1688,14 +1688,13 @@ bool Configure::findFile( const QString &fileName )
 
     QString paths;
     if (file.endsWith(".h")) {
-        if (!mingwPath.isNull())
-            paths = mingwPath + QLatin1String("/../include");
-        else
-            paths = QString::fromLocal8Bit(getenv("INCLUDE"));
-    } else if ( file.endsWith( ".lib" ) ) {
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+		    return true;
+        paths = QString::fromLocal8Bit(getenv("INCLUDE"));
+    } else if ( file.endsWith( ".lib" ) ||  file.endsWith( ".a" ) ) {
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
+		    return true;
         paths = QString::fromLocal8Bit(getenv("LIB"));
-    } else if (file.endsWith( ".a" ) && !mingwPath.isNull() ) {
-        paths = mingwPath + QLatin1String("/../lib");
     } else {
         paths = pathEnvVar;
     }
