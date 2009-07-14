@@ -1003,6 +1003,7 @@ void tst_QNetworkReply::stateChecking()
     QCOMPARE(reply->request(), req);
     QCOMPARE(int(reply->operation()), int(QNetworkAccessManager::GetOperation));
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->isFinished(), false);
     QCOMPARE(reply->url(), url);
 
     reply->abort();
@@ -1323,6 +1324,9 @@ void tst_QNetworkReply::getErrors()
     QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
 
     QTEST(reply->readAll().isEmpty(), "dataIsEmpty");
+
+    QVERIFY(reply->isFinished());
+    QVERIFY(!reply->isRunning());
 
     QFETCH(int, httpStatusCode);
     if (httpStatusCode != 0) {
@@ -3237,6 +3241,8 @@ void tst_QNetworkReply::downloadProgress()
     connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
             &QTestEventLoop::instance(), SLOT(exitLoop()));
     QVERIFY(spy.isValid());
+    QVERIFY(!reply->isFinished());
+    QVERIFY(reply->isRunning());
 
     QCoreApplication::instance()->processEvents();
     if (!server.hasPendingConnections())
@@ -3257,6 +3263,8 @@ void tst_QNetworkReply::downloadProgress()
         QTestEventLoop::instance().enterLoop(2);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(spy.count() > 0);
+        QVERIFY(!reply->isFinished());
+        QVERIFY(reply->isRunning());
 
         QList<QVariant> args = spy.last();
         QCOMPARE(args.at(0).toInt(), i*data.size());
@@ -3270,6 +3278,8 @@ void tst_QNetworkReply::downloadProgress()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(spy.count() > 0);
+    QVERIFY(!reply->isRunning());
+    QVERIFY(reply->isFinished());
 
     QList<QVariant> args = spy.last();
     QCOMPARE(args.at(0).toInt(), loopCount * data.size());
