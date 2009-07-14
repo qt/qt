@@ -532,6 +532,11 @@ void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
+bool QNetworkReplyImplPrivate::isFinished() const
+{
+    return (state == Finished || state == Aborted);
+}
+
 QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
     : QNetworkReply(*new QNetworkReplyImplPrivate, parent)
 {
