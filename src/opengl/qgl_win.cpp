@@ -51,7 +51,7 @@
 #include <qdebug.h>
 #include <qcolor.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 
 typedef bool (APIENTRY *PFNWGLGETPIXELFORMATATTRIBIVARB)(HDC hdc,
                                                          int iPixelFormat,

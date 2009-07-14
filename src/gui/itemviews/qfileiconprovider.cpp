@@ -47,6 +47,8 @@
 #include <qdir.h>
 #if defined(Q_WS_WIN)
 #define _WIN32_IE 0x0500
+#include <qt_windows.h>
+#include <commctrl.h>
 #include <objbase.h>
 #include <private/qpixmapdata_p.h>
 #include <qpixmapcache.h>
@@ -54,9 +56,6 @@
 #include <private/qt_mac_p.h>
 #endif
 #include <private/qfunctions_p.h>
-#ifdef Q_OS_WINCE
-#include <Commctrl.h>
-#endif
 
 #ifndef SHGFI_ADDOVERLAYS
 #define SHGFI_ADDOVERLAYS 0x000000020

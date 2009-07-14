@@ -301,6 +301,7 @@ void QAbstractScrollAreaPrivate::setupGestures()
 #ifdef Q_OS_WIN
     if (!viewport)
         return;
+    QApplicationPrivate* getQApplicationPrivateInternal();
     QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
     bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
                   || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
