@@ -40,9 +40,11 @@
 ****************************************************************************/
 
 #include "qfxkeyproxy.h"
-
+#include <QGraphicsScene>
+#include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
 
 /*!
@@ -94,11 +96,25 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
     // ### GV
+    for (int ii = 0; ii < d->targets.count(); ++ii) {
+        QFxItem *i = d->targets.at(ii); //scene()->focusItem()
+        if (i)
+            i->keyPressEvent(e);
+        if (e->isAccepted())
+            return;
+    }
 }
 
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
     // ### GV
+    for (int ii = 0; ii < d->targets.count(); ++ii) {
+        QFxItem *i = d->targets.at(ii); //scene()->focusItem()
+        if (i)
+            i->keyReleaseEvent(e);
+        if (e->isAccepted())
+            return;
+    }
 }
 
 QT_END_NAMESPACE
