@@ -829,6 +829,10 @@ QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
 
 QWidgetBackingStore::~QWidgetBackingStore()
 {
+    for (int c = 0; c < dirtyWidgets.size(); ++c) {
+        resetWidget(dirtyWidgets.at(c));
+    }
+
     delete windowSurface;
     windowSurface = 0;
     delete dirtyOnScreenWidgets;

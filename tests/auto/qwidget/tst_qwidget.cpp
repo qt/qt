@@ -67,6 +67,7 @@
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
 #include <QtGui/qpaintengine.h>
+#include <private/qbackingstore_p.h>
 
 #ifdef Q_WS_S60
 #include <avkon.hrh>                // EEikStatusPaneUidTitle
@@ -360,6 +361,8 @@ private slots:
     void toplevelLineEditFocus();
 
     void focusWidget_task254563();
+
+    void destroyBackingStore();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9197,6 +9200,32 @@ void tst_QWidget::focusWidget_task254563()
     container.setFocus();
     delete widget; // will call clearFocus but that doesn't help
     QVERIFY(top.focusWidget() != widget); //dangling pointer
+}
+
+void tst_QWidget::destroyBackingStore()
+{
+    UpdateWidget w;
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QApplication::processEvents();
+
+    w.reset();
+    w.update();
+    delete qt_widget_private(&w)->topData()->backingStore;
+    qt_widget_private(&w)->topData()->backingStore = 0;
+    qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);
+
+    w.update();
+    QApplication::processEvents();
+    QCOMPARE(w.numPaintEvents, 1);
+
+    // Check one more time, because the second time around does more caching.
+    w.update();
+    QApplication::processEvents();
+    QCOMPARE(w.numPaintEvents, 2);
 }
 
 QTEST_MAIN(tst_QWidget)
