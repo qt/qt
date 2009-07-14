@@ -1212,6 +1212,29 @@ void QLineControl::timerEvent ( QTimerEvent * event )
 
 bool QLineControl::processEvent(QEvent* ev)
 {
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::keypadNavigationEnabled()) {
+        if ((ev->type() == QEvent::KeyPress) || (ev->type() == QEvent::KeyRelease)) {
+            QKeyEvent *ke = (QKeyEvent *)ev;
+            if (ke->key() == Qt::Key_Back) {
+                if (ke->isAutoRepeat()) {
+                    // Swallow it. We don't want back keys running amok.
+                    ke->accept();
+                    return true;
+                }
+                if ((ev->type() == QEvent::KeyRelease)
+                    && !isReadOnly()
+                    && deleteAllTimer) {
+                    killTimer(m_deleteAllTimer);
+                    m_deleteAllTimer = 0;
+                    backspace();
+                    ke->accept();
+                    return true;
+                }
+            }
+        }
+    }
+#endif
     switch(ev->type()){
 #ifndef QT_NO_GRAPHICSVIEW
         case QEvent::GraphicsSceneMouseMove:

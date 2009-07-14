@@ -1361,44 +1361,6 @@ void QLineEdit::paste()
 bool QLineEdit::event(QEvent * e)
 {
     Q_D(QLineEdit);
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
-        if ((ev->type() == QEvent::KeyPress) || (ev->type() == QEvent::KeyRelease)) {
-            QKeyEvent *ke = (QKeyEvent *)ev;
-            if (ke->key() == Qt::Key_Back) {
-                if (ke->isAutoRepeat()) {
-                    // Swallow it. We don't want back keys running amok.
-                    ke->accept();
-                    return true;
-                }
-                if ((ev->type() == QEvent::KeyRelease)
-                    && !isReadOnly()
-                    && deleteAllTimer) {
-                    killTimer(m_deleteAllTimer);
-                    m_deleteAllTimer = 0;
-                    backspace();
-                    ke->accept();
-                    return true;
-                }
-            }
-        } else if (e->type() == QEvent::EnterEditFocus) {
-            end(false);
-            int cft = QApplication::cursorFlashTime();
-            control->setCursorBlinkPeriod(cft/2);
-        } else if (e->type() == QEvent::LeaveEditFocus) {
-            d->setCursorVisible(false);//!!!
-            control->setCursorBlinkPeriod(0);
-            if (!m_emitingEditingFinished) {
-                if (hasAcceptableInput() || fixup()) {
-                    m_emitingEditingFinished = true;
-                    emit editingFinished();
-                    m_emitingEditingFinished = false;
-                }
-            }
-        }
-        return;
-    }
-#endif
     if (e->type() == QEvent::Timer) {
         // should be timerEvent, is here for binary compatibility
         int timerId = ((QTimerEvent*)e)->timerId();
@@ -1424,6 +1386,26 @@ bool QLineEdit::event(QEvent * e)
         d->control->setLayoutDirection((layoutDirection()));
     }
 
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::keypadNavigationEnabled()) {
+        if (e->type() == QEvent::EnterEditFocus) {
+            end(false);
+            int cft = QApplication::cursorFlashTime();
+            d->control->setCursorBlinkPeriod(cft/2);
+        } else if (e->type() == QEvent::LeaveEditFocus) {
+            d->setCursorVisible(false);
+            d->control->setCursorBlinkPeriod(0);
+            if (!d->control->emitingEditingFinished) {
+                if (d->control->hasAcceptableInput() || d->control->fixup()) {
+                    d->control->emitingEditingFinished = true;
+                    emit editingFinished();
+                    d->control->emitingEditingFinished = false;
+                }
+            }
+        }
+        return;
+    }
+#endif
     return QWidget::event(e);
 }
 
