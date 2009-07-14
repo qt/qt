@@ -174,13 +174,13 @@ protected:
     void removeDirectedEdge(Vertex *from, Vertex *to)
     {
         QHash<Vertex *, EdgeData *> *adjacentToFirst = m_graph.value(from);
-        if (adjacentToFirst) {
-            adjacentToFirst->remove(to);
-            if (adjacentToFirst->isEmpty()) {
-                //nobody point to 'from' so we can remove it from the graph
-                m_graph.remove(from);
-                delete adjacentToFirst;
-            }
+        Q_ASSERT(adjacentToFirst);
+
+        adjacentToFirst->remove(to);
+        if (adjacentToFirst->isEmpty()) {
+            //nobody point to 'from' so we can remove it from the graph
+            m_graph.remove(from);
+            delete adjacentToFirst;
         }
     }
 

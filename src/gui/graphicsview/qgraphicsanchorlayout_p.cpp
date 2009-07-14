@@ -701,10 +701,10 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
 
+    Q_ASSERT(v1 && v2);
+
     // Remove edge from graph
-    if (v1 && v2) {
-        graph[edgeOrientation(firstEdge)].removeEdge(v1, v2);
-    }
+    graph[edgeOrientation(firstEdge)].removeEdge(v1, v2);
 
     // Decrease vertices reference count (may trigger a deletion)
     removeInternalVertex(firstItem, firstEdge);
