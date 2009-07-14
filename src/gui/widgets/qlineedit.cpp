@@ -1382,8 +1382,6 @@ bool QLineEdit::event(QEvent * e)
         QTimer::singleShot(0, this, SLOT(_q_handleWindowActivate()));
     }else if(e->type() == QEvent::ShortcutOverride){
         d->control->processEvent(e);
-    }else if(e->type() == QEvent::LayoutDirectionChange){
-        d->control->setLayoutDirection((layoutDirection()));
     }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1462,7 +1460,9 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
                 d->drag();
         } else
 #endif
+        {
             d->control->moveCursor(d->xToPos(e->pos().x()), true);
+        }
     }
 }
 
@@ -1473,16 +1473,15 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     Q_D(QLineEdit);
     if (d->sendMouseEventToInputContext(e))
         return;
-
-    if (e->buttons() & Qt::LeftButton) {
 #ifndef QT_NO_DRAGANDDROP
+    if (e->button() == Qt::LeftButton) {
         if (d->dndTimer.isActive()) {
-            if ((d->dndPos - e->pos()).manhattanLength() > QApplication::startDragDistance())
-                d->drag();
-        } else
-#endif
-            d->control->moveCursor(d->xToPos(e->pos().x()), true);
+            d->dndTimer.stop();
+            deselect();
+            return;
+        }
     }
+#endif
 #ifndef QT_NO_CLIPBOARD
     if (QApplication::clipboard()->supportsSelection()) {
         if (e->button() == Qt::LeftButton) {
