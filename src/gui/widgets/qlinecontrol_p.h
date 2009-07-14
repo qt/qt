@@ -462,8 +462,10 @@ inline void QLineControl::removeSelection()
 
 inline bool QLineControl::inSelection(int x) const
 {
-    if (selstart >= selend) return false;
-    int pos = xToPos(x, QTextLine::CursorOnCharacter);  return pos >= selstart && pos < selend;
+    if (selstart >= selend)
+        return false;
+    int pos = xToPos(x, QTextLine::CursorOnCharacter);
+    return pos >= selstart && pos < selend;
 }
 
 inline int QLineControl::cursor() const
@@ -557,22 +559,26 @@ inline QString QLineControl::displayText() const
 
 inline void QLineControl::deselect()
 {
-    p_deselect(); finishChange();
+    p_deselect();
+    finishChange();
 }
 
 inline void QLineControl::selectAll()
 {
-    selstart = selend = m_cursor = 0; moveCursor(m_text.length(), true);
+    selstart = selend = m_cursor = 0;
+    moveCursor(m_text.length(), true);
 }
 
 inline void QLineControl::undo()
 {
-    p_undo(), finishChange(-1, true);
+    p_undo();
+    finishChange(-1, true);
 }
 
 inline void QLineControl::redo()
 {
-    p_redo(), finishChange();
+    p_redo();
+    finishChange();
 }
 
 inline uint QLineControl::echoMode() const
@@ -625,7 +631,8 @@ inline void QLineControl::setCompleter(const QCompleter* c)
 
 inline void QLineControl::setCursorPosition(int pos)
 {
-    if (pos < 0) pos = 0;
+    if (pos < 0)
+        pos = 0;
     if (pos < m_text.length())
         moveCursor(pos);
 }
@@ -723,7 +730,7 @@ inline void QLineControl::setCancelText(QString s)
 QT_END_NAMESPACE
 
 QT_END_HEADER
-#endif // QT_NO_LINEEDIT
 
+#endif // QT_NO_LINEEDIT
 
 #endif // QLINECONTROL_P_H

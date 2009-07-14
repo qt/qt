@@ -275,7 +275,7 @@ void QLineControl::_q_deleteSelected()
 
     Initializes the line control with a starting text value of \a txt.
 */
-void QLineControl::init(const QString& txt)
+void QLineControl::init(const QString &txt)
 {
     m_text = txt;
     updateDisplayText();
@@ -571,7 +571,7 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
 
     An internal function for setting the text of the line control.
 */
-void QLineControl::p_setText(const QString& txt, int pos, bool edited)
+void QLineControl::p_setText(const QString &txt, int pos, bool edited)
 {
     p_deselect();
     emit resetInputContext();
@@ -596,7 +596,7 @@ void QLineControl::p_setText(const QString& txt, int pos, bool edited)
     Adds the given \a command to the undo history
     of the line control.  Does not apply the command.
 */
-void QLineControl::addCommand(const Command& cmd)
+void QLineControl::addCommand(const Command &cmd)
 {
     if (separator && undoState && history[undoState-1].type != Separator) {
         history.resize(undoState + 2);
@@ -618,15 +618,15 @@ void QLineControl::addCommand(const Command& cmd)
     This function does not call finishChange(), and may leave the text
     in an invalid state.
 */
-void QLineControl::p_insert(const QString& s)
+void QLineControl::p_insert(const QString &s)
 {
     if (hasSelectedText())
         addCommand(Command(SetSelection, m_cursor, 0, selstart, selend));
     if (maskData) {
         QString ms = maskString(m_cursor, s);
         for (int i = 0; i < (int) ms.length(); ++i) {
-            addCommand (Command(DeleteSelection, m_cursor+i, m_text.at(m_cursor+i), -1, -1));
-            addCommand(Command(Insert, m_cursor+i, ms.at(i), -1, -1));
+            addCommand (Command(DeleteSelection, m_cursor + i, m_text.at(m_cursor + i), -1, -1));
+            addCommand(Command(Insert, m_cursor + i, ms.at(i), -1, -1));
         }
         m_text.replace(m_cursor, ms.length(), ms);
         m_cursor += ms.length();
@@ -659,7 +659,8 @@ void QLineControl::p_del(bool wasBackspace)
     if (m_cursor < (int) m_text.length()) {
         if (hasSelectedText())
             addCommand(Command(SetSelection, m_cursor, 0, selstart, selend));
-        addCommand (Command((CommandType)((maskData?2:0)+(wasBackspace?Remove:Delete)), m_cursor, m_text.at(m_cursor), -1, -1));
+        addCommand(Command((CommandType)((maskData ? 2 : 0) + (wasBackspace ? Remove : Delete)),
+                   m_cursor, m_text.at(m_cursor), -1, -1));
         if (maskData) {
             m_text.replace(m_cursor, 1, clearString(m_cursor, 1));
             addCommand(Command(Insert, m_cursor, m_text.at(m_cursor), -1, -1));
@@ -990,7 +991,7 @@ QString QLineControl::maskString(uint pos, const QString &str, bool clear) const
                         }
                     }
                 }
-                strIndex++;
+                ++strIndex;
             }
         } else
             break;
@@ -1014,7 +1015,7 @@ QString QLineControl::clearString(uint pos, uint len) const
 
     QString s;
     int end = qMin((uint)m_maxLength, pos + len);
-    for (int i=pos; i<end; i++)
+    for (int i = pos; i < end; ++i)
         if (maskData[i].separator)
             s += maskData[i].maskChar;
         else
@@ -1036,7 +1037,7 @@ QString QLineControl::stripString(const QString &str) const
 
     QString s;
     int end = qMin(m_maxLength, (int)str.length());
-    for (int i=0; i < end; i++)
+    for (int i = 0; i < end; ++i)
         if (maskData[i].separator)
             s += maskData[i].maskChar;
         else
@@ -1243,32 +1244,32 @@ void QLineControl::complete(int key)
 
 void QLineControl::setCursorBlinkPeriod(int msec)
 {
-    if(msec == m_blinkPeriod)
+    if (msec == m_blinkPeriod)
         return;
-    if(m_blinkTimer){
+    if (m_blinkTimer) {
         killTimer(m_blinkTimer);
     }
-    if(msec){
-        m_blinkTimer = startTimer(msec/2);
+    if (msec) {
+        m_blinkTimer = startTimer(msec / 2);
         m_blinkStatus = 1;
-    }else{
+    } else {
         m_blinkTimer = 0;
-        if(m_blinkStatus == 0)
-            emit updateNeeded(inputMask().isEmpty()?cursorRect():QRect());
+        if (m_blinkStatus == 0)
+            emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
     }
     m_blinkPeriod = msec;
 }
 
-void QLineControl::timerEvent ( QTimerEvent * event )
+void QLineControl::timerEvent(QTimerEvent *event)
 {
-    if(event->timerId() == m_blinkTimer) {
+    if (event->timerId() == m_blinkTimer) {
         m_blinkStatus = !m_blinkStatus;
-        emit updateNeeded(inputMask().isEmpty()?cursorRect():QRect());
-    }else if(event->timerId() == m_deleteAllTimer){
+        emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
+    } else if (event->timerId() == m_deleteAllTimer) {
         killTimer(m_deleteAllTimer);
         m_deleteAllTimer = 0;
         clear();
-    }else if(event->timerId() == m_tripleClickTimer){
+    } else if (event->timerId() == m_tripleClickTimer) {
         killTimer(m_tripleClickTimer);
         m_tripleClickTimer = 0;
     }
@@ -1371,11 +1372,12 @@ bool QLineControl::processEvent(QEvent* ev)
 void QLineControl::processMouseEvent(QMouseEvent* ev)
 {
 
-    switch (ev->type()){
+    switch (ev->type()) {
         case QEvent::GraphicsSceneMousePress:
         case QEvent::MouseButtonPress:{
-            if (m_tripleClickTimer && (ev->pos() - m_tripleClick).manhattanLength() <
-                QApplication::startDragDistance()) {
+            if (m_tripleClickTimer
+                && (ev->pos() - m_tripleClick).manhattanLength()
+                    < QApplication::startDragDistance()) {
                 selectAll();
                 return;
             }
@@ -1390,7 +1392,7 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
         case QEvent::MouseButtonDblClick:
             if (ev->button() == Qt::LeftButton) {
                 selectWordAtPos(xToPos(ev->pos().x()));
-                if(m_tripleClickTimer)
+                if (m_tripleClickTimer)
                     killTimer(m_tripleClickTimer);
                 m_tripleClickTimer = startTimer(QApplication::doubleClickInterval());
                 m_tripleClick = ev->pos();
@@ -1412,7 +1414,7 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
         case QEvent::GraphicsSceneMouseMove:
         case QEvent::MouseMove:
             if (ev->buttons() & Qt::LeftButton) {
-                    moveCursor(xToPos(ev->pos().x()), true);
+                moveCursor(xToPos(ev->pos().x()), true);
             }
             break;
         default:
@@ -1422,7 +1424,6 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
 
 void QLineControl::processKeyEvent(QKeyEvent* event)
 {
-
     bool inlineCompletionAccepted = false;
 
 #ifndef QT_NO_COMPLETER
@@ -1471,8 +1472,6 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         }
     }
 #endif // QT_NO_COMPLETER
-
-
 
     if (echoMode() == QLineEdit::PasswordEchoOnEdit
         && !passwordEchoEditing()
