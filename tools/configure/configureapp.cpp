@@ -1656,39 +1656,49 @@ bool Configure::displayHelp()
     return false;
 }
 
-bool Configure::findFileInPaths(const QString &fileName, const QStringList &paths)
+QString Configure::findFileInPaths(const QString &fileName, const QString &paths)
 {
-    QDir d;
-    for( QStringList::ConstIterator it = paths.begin(); it != paths.end(); ++it ) {
-        // Remove any leading or trailing ", this is commonly used in the environment
-        // variables
-        QString path = (*it);
-        if ( path.startsWith( "\"" ) )
-            path = path.right( path.length() - 1 );
-        if ( path.endsWith( "\"" ) )
-            path = path.left( path.length() - 1 );
-        if( d.exists( path + QDir::separator() + fileName ) )
-            return true;
-    }
-    return false;
-}
-
-bool Configure::findFile( const QString &fileName )
-{
-    QString file = fileName.toLower();
-    QStringList paths;
 #if defined(Q_OS_WIN32)
     QRegExp splitReg("[;,]");
 #else
     QRegExp splitReg("[:]");
 #endif
-    if (file.endsWith(".h"))
-        paths = QString::fromLocal8Bit(getenv("INCLUDE")).split(splitReg, QString::SkipEmptyParts);
-    else if ( file.endsWith( ".lib" ) )
-        paths = QString::fromLocal8Bit(getenv("LIB")).split(splitReg, QString::SkipEmptyParts);
-    else
-        paths = QString::fromLocal8Bit(getenv("PATH")).split(splitReg, QString::SkipEmptyParts);
-    return findFileInPaths(file, paths);
+    QStringList pathList = paths.split(splitReg, QString::SkipEmptyParts);
+    QDir d;
+    for( QStringList::ConstIterator it = pathList.begin(); it != pathList.end(); ++it ) {
+        // Remove any leading or trailing ", this is commonly used in the environment
+        // variables
+        QString path = (*it);
+        if ( path.startsWith( '\"' ) )
+            path = path.right( path.length() - 1 );
+        if ( path.endsWith( '\"' ) )
+            path = path.left( path.length() - 1 );
+        if( d.exists( path + QDir::separator() + fileName ) )
+            return path;
+    }
+    return QString();
+}
+
+bool Configure::findFile( const QString &fileName )
+{
+    const QString file = fileName.toLower();
+    const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
+    const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
+        findFileInPaths("mingw32-g++.exe", pathEnvVar) : QString();
+
+    QString paths;
+    if (file.endsWith(".h")) {
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+		    return true;
+        paths = QString::fromLocal8Bit(getenv("INCLUDE"));
+    } else if ( file.endsWith( ".lib" ) ||  file.endsWith( ".a" ) ) {
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
+		    return true;
+        paths = QString::fromLocal8Bit(getenv("LIB"));
+    } else {
+        paths = pathEnvVar;
+    }
+    return !findFileInPaths(file, paths).isNull();
 }
 
 /*!
@@ -1758,7 +1768,7 @@ bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
     if (part == "STYLE_WINDOWSXP")
-        available = (dictionary.value("QMAKESPEC") == "win32-g++" || findFile("uxtheme.h"));
+        available = (findFile("uxtheme.h"));
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -1840,8 +1850,11 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
     } else if (part == "PHONON") {
-        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("strmiids.lib") &&
-                        findFile("dmoguids.lib") && findFile("msdmo.lib") && findFile("d3d9.h");
+        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
+            && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
+            && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
+            && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
+            && findFile("d3d9.h");
 
         if (!available) {
             cout << "All the required DirectShow/Direct3D files couldn't be found." << endl

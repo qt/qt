@@ -53,7 +53,7 @@ static const HashTableValue JSSVGCursorElementTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGCursorElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGCursorElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGCursorElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGCursorElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGCursorElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGCursorElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGCursorElementPrototypeTableValues, 0 };
 #else

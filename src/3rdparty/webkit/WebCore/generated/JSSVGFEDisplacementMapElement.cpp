@@ -63,7 +63,7 @@ static const HashTableValue JSSVGFEDisplacementMapElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDisplacementMapElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDisplacementMapElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEDisplacementMapElementTableValues, 0 };
 #else
@@ -82,7 +82,7 @@ static const HashTableValue JSSVGFEDisplacementMapElementConstructorTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDisplacementMapElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDisplacementMapElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFEDisplacementMapElementConstructorTableValues, 0 };
 #else
@@ -126,7 +126,7 @@ static const HashTableValue JSSVGFEDisplacementMapElementPrototypeTableValues[7]
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEDisplacementMapElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEDisplacementMapElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFEDisplacementMapElementPrototypeTableValues, 0 };
 #else

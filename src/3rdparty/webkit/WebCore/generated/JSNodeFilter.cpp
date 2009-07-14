@@ -39,7 +39,7 @@ static const HashTableValue JSNodeFilterTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeFilterTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeFilterTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNodeFilterTableValues, 0 };
 #else
@@ -69,7 +69,7 @@ static const HashTableValue JSNodeFilterConstructorTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeFilterConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeFilterConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSNodeFilterConstructorTableValues, 0 };
 #else
@@ -124,7 +124,7 @@ static const HashTableValue JSNodeFilterPrototypeTableValues[18] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeFilterPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeFilterPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSNodeFilterPrototypeTableValues, 0 };
 #else

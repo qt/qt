@@ -42,7 +42,7 @@ static const HashTableValue JSCSSValueTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSValueTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSValueTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSValueTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSCSSValueConstructorTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSValueConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSValueConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSValueConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSCSSValuePrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSValuePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSValuePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSValuePrototypeTableValues, 0 };
 #else

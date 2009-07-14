@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLBlockquoteElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBlockquoteElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBlockquoteElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLBlockquoteElementTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSHTMLBlockquoteElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBlockquoteElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBlockquoteElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBlockquoteElementConstructorTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLBlockquoteElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBlockquoteElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBlockquoteElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBlockquoteElementPrototypeTableValues, 0 };
 #else

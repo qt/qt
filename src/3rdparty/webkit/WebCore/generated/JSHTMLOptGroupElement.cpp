@@ -42,7 +42,7 @@ static const HashTableValue JSHTMLOptGroupElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLOptGroupElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLOptGroupElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLOptGroupElementTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSHTMLOptGroupElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLOptGroupElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLOptGroupElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLOptGroupElementConstructorTableValues, 0 };
 #else
@@ -94,7 +94,7 @@ static const HashTableValue JSHTMLOptGroupElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLOptGroupElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLOptGroupElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLOptGroupElementPrototypeTableValues, 0 };
 #else

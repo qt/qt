@@ -40,7 +40,7 @@ static const HashTableValue JSSVGTSpanElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTSpanElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTSpanElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTSpanElementPrototypeTableValues, 0 };
 #else

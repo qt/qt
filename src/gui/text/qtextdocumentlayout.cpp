@@ -1383,6 +1383,8 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
     case QTextListFormat::ListDecimal:
     case QTextListFormat::ListLowerAlpha:
     case QTextListFormat::ListUpperAlpha:
+    case QTextListFormat::ListLowerRoman:
+    case QTextListFormat::ListUpperRoman:
         itemText = static_cast<QTextList *>(object)->itemText(bl);
         size.setWidth(fontMetrics.width(itemText));
         size.setHeight(fontMetrics.height());
@@ -1426,7 +1428,9 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
     switch (style) {
     case QTextListFormat::ListDecimal:
     case QTextListFormat::ListLowerAlpha:
-    case QTextListFormat::ListUpperAlpha: {
+    case QTextListFormat::ListUpperAlpha:
+    case QTextListFormat::ListLowerRoman:
+    case QTextListFormat::ListUpperRoman: {
         QTextLayout layout(itemText, font, q->paintDevice());
         layout.setCacheEnabled(true);
         QTextOption option(Qt::AlignLeft | Qt::AlignAbsolute);

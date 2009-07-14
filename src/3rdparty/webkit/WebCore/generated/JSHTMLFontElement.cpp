@@ -43,7 +43,7 @@ static const HashTableValue JSHTMLFontElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFontElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFontElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLFontElementTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSHTMLFontElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFontElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFontElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLFontElementConstructorTableValues, 0 };
 #else
@@ -95,7 +95,7 @@ static const HashTableValue JSHTMLFontElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFontElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFontElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLFontElementPrototypeTableValues, 0 };
 #else

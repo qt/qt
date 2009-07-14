@@ -43,7 +43,7 @@ static const HashTableValue JSSVGAnimatedRectTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedRectTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedRectTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedRectTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGAnimatedRectPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedRectPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedRectPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedRectPrototypeTableValues, 0 };
 #else

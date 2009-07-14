@@ -43,6 +43,7 @@
 
 #include <translator.h>
 #include <profileevaluator.h>
+#include <proreader.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -488,7 +489,7 @@ int main(int argc, char **argv)
 
             cd.m_includePath += visitor.values(QLatin1String("INCLUDEPATH"));
 
-            evaluateProFile(visitor, &variables);
+            evaluateProFile(visitor, &variables, pfi.absolutePath());
 
             sourceFiles = variables.value("SOURCES");
 

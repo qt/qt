@@ -60,7 +60,7 @@ static const HashTableValue JSHTMLIFrameElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLIFrameElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLIFrameElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 16383, JSHTMLIFrameElementTableValues, 0 };
 #else
@@ -74,7 +74,7 @@ static const HashTableValue JSHTMLIFrameElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLIFrameElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLIFrameElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLIFrameElementConstructorTableValues, 0 };
 #else
@@ -113,7 +113,7 @@ static const HashTableValue JSHTMLIFrameElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLIFrameElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLIFrameElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLIFrameElementPrototypeTableValues, 0 };
 #else

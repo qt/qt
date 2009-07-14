@@ -26,7 +26,9 @@
 #include "HTMLInputElement.h"
 #include "JSFileList.h"
 #include "JSHTMLFormElement.h"
+#include "JSValidityState.h"
 #include "KURL.h"
+#include "ValidityState.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
@@ -40,11 +42,12 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLInputElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLInputElementTableValues[27] =
+static const HashTableValue JSHTMLInputElementTableValues[28] =
 {
     { "defaultValue", DontDelete, (intptr_t)jsHTMLInputElementDefaultValue, (intptr_t)setJSHTMLInputElementDefaultValue },
     { "defaultChecked", DontDelete, (intptr_t)jsHTMLInputElementDefaultChecked, (intptr_t)setJSHTMLInputElementDefaultChecked },
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLInputElementForm, (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLInputElementValidity, (intptr_t)0 },
     { "accept", DontDelete, (intptr_t)jsHTMLInputElementAccept, (intptr_t)setJSHTMLInputElementAccept },
     { "accessKey", DontDelete, (intptr_t)jsHTMLInputElementAccessKey, (intptr_t)setJSHTMLInputElementAccessKey },
     { "align", DontDelete, (intptr_t)jsHTMLInputElementAlign, (intptr_t)setJSHTMLInputElementAlign },
@@ -71,7 +74,7 @@ static const HashTableValue JSHTMLInputElementTableValues[27] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLInputElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLInputElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSHTMLInputElementTableValues, 0 };
 #else
@@ -85,7 +88,7 @@ static const HashTableValue JSHTMLInputElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLInputElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLInputElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLInputElementConstructorTableValues, 0 };
 #else
@@ -126,7 +129,7 @@ static const HashTableValue JSHTMLInputElementPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLInputElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLInputElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLInputElementPrototypeTableValues, 0 };
 #else
@@ -181,6 +184,13 @@ JSValue jsHTMLInputElementForm(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLInputElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()))->impl());
+    return toJS(exec, WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLInputElementAccept(ExecState* exec, const Identifier&, const PropertySlot& slot)

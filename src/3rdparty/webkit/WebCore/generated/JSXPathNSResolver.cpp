@@ -45,7 +45,7 @@ static const HashTableValue JSXPathNSResolverPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathNSResolverPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathNSResolverPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXPathNSResolverPrototypeTableValues, 0 };
 #else

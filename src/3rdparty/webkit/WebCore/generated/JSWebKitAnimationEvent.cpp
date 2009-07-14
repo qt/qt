@@ -44,7 +44,7 @@ static const HashTableValue JSWebKitAnimationEventTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitAnimationEventTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitAnimationEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSWebKitAnimationEventTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSWebKitAnimationEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitAnimationEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitAnimationEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitAnimationEventConstructorTableValues, 0 };
 #else
@@ -97,7 +97,7 @@ static const HashTableValue JSWebKitAnimationEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitAnimationEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitAnimationEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitAnimationEventPrototypeTableValues, 0 };
 #else

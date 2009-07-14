@@ -50,7 +50,7 @@ static const HashTableValue JSXMLHttpRequestUploadTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestUploadTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestUploadTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSXMLHttpRequestUploadTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSXMLHttpRequestUploadConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestUploadConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestUploadConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXMLHttpRequestUploadConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSXMLHttpRequestUploadPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestUploadPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestUploadPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSXMLHttpRequestUploadPrototypeTableValues, 0 };
 #else

@@ -42,7 +42,7 @@ static const HashTableValue JSSQLTransactionPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLTransactionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLTransactionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSQLTransactionPrototypeTableValues, 0 };
 #else

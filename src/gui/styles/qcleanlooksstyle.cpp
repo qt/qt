@@ -2042,6 +2042,12 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                     s = s.left(t);
                 }
                 QFont font = menuitem->font;
+                // font may not have any "hard" flags set. We override
+                // the point size so that when it is resolved against the device, this font will win.
+                // This is mainly to handle cases where someone sets the font on the window
+                // and then the combo inherits it and passes it onward. At that point the resolve mask
+                // is very, very weak. This makes it stonger.
+                font.setPointSizeF(menuItem->font.pointSizeF());
 
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);

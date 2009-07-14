@@ -47,7 +47,7 @@ static const HashTableValue JSSVGPaintTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPaintTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPaintTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGPaintTableValues, 0 };
 #else
@@ -71,7 +71,7 @@ static const HashTableValue JSSVGPaintConstructorTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPaintConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPaintConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 4095, JSSVGPaintConstructorTableValues, 0 };
 #else
@@ -121,7 +121,7 @@ static const HashTableValue JSSVGPaintPrototypeTableValues[13] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPaintPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPaintPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 4095, JSSVGPaintPrototypeTableValues, 0 };
 #else

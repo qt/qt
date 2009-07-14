@@ -57,7 +57,7 @@
 
 #ifndef QT_NO_FILESYSTEMWATCHER
 
-#include <windows.h>
+#include <qt_windows.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qfile.h>
