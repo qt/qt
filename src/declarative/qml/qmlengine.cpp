@@ -1155,7 +1155,7 @@ public:
         return true;
     }
 
-    QUrl find(const QString& base, const QString& type)
+    QUrl find(const QUrl& base, const QString& type)
     {
         TypeSet *s = 0;
         int slash = type.indexOf(QLatin1Char('/'));
@@ -1172,10 +1172,9 @@ public:
             s = &unqualifiedset;
         }
         QString unqualifiedtype = type.mid(slash+1);
-        QUrl baseUrl(base);
         if (s) {
             for (int i=0; i<s->urls.count(); ++i) {
-                QUrl url = baseUrl.resolved(QUrl(s->urls.at(i) +QLatin1String("/")+ unqualifiedtype + QLatin1String(".qml")));
+                QUrl url = base.resolved(QUrl(s->urls.at(i) +QLatin1String("/")+ unqualifiedtype + QLatin1String(".qml")));
                 QString version = s->versions.at(i);
                 // XXX search non-files too! (eg. zip files, see QT-524)
                 QFileInfo f(url.toLocalFile());
@@ -1209,10 +1208,10 @@ public:
                 }
             }
         }
-        return baseUrl.resolved(QUrl(type + QLatin1String(".qml")));
+        return base.resolved(QUrl(type + QLatin1String(".qml")));
     }
 
-    QmlType *findBuiltin(const QString&, const QByteArray& type)
+    QmlType *findBuiltin(const QUrl& base, const QByteArray& type)
     {
         TypeSet *s = 0;
         int slash = type.indexOf('/');
