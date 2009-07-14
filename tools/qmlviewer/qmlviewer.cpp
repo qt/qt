@@ -292,8 +292,7 @@ void QmlViewer::takeSnapShot()
 {
     static int snapshotcount = 1;
     QString snapFileName = QString(QLatin1String("snapshot%1.png")).arg(snapshotcount);
-    // ### GV
-    // canvas->asImage().save(snapFileName);
+    QPixmap::grabWidget(canvas).save(snapFileName);
     qDebug() << "Wrote" << snapFileName;
     ++snapshotcount;
 }
@@ -647,12 +646,10 @@ void QmlViewer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == recordTimer.timerId()) {
         if (frame_stream) {
-            // ### GV
-            // QImage frame(canvas->asImage());
-            // frame_stream->write((char*)frame.bits(),frame.numBytes());
+            QImage frame = QPixmap::grabWidget(canvas).toImage();
+            frame_stream->write((char*)frame.bits(),frame.numBytes());
         } else {
-            // ### GV
-            // frames.append(new QImage(canvas->asImage()));
+            frames.append(new QImage(QPixmap::grabWidget(canvas).toImage()));
         }
         if (record_autotime && autoTimer.elapsed() >= record_autotime)
             setRecording(false);
