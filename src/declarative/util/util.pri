@@ -19,6 +19,7 @@ SOURCES += \
            util/qmllistaccessor.cpp \
            util/qmlopenmetaobject.cpp \
            util/qmltimeline.cpp \
+           util/qmltimer.cpp \
            util/qmlbind.cpp
 
 HEADERS += \
@@ -46,4 +47,5 @@ HEADERS += \
            util/qmlopenmetaobject.h \
            util/qmlnullablevalue_p.h \
            util/qmltimeline_p.h \
+           util/qmltimer.h \
            util/qmlbind.h
