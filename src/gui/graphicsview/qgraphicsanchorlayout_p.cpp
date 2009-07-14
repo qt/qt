@@ -642,6 +642,11 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
     AnchorVertex *v1 = addInternalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = addInternalVertex(secondItem, secondEdge);
 
+    // Remove previous anchor
+    // ### Could we update the existing edgeData rather than creating a new one?
+    if (graph[edgeOrientation(firstEdge)].edgeData(v1, v2))
+        removeAnchor(firstItem, firstEdge, secondItem, secondEdge);
+
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
     // so we still know that the anchor direction is from 1 to 2.
