@@ -442,6 +442,8 @@ QNetworkReply::NetworkError QNetworkReply::error() const
 }
 
 /*!
+    \since 4.6
+
     Returns true when the reply has finished or was aborted.
 
     \sa isRunning()
@@ -452,6 +454,8 @@ bool QNetworkReply::isFinished() const
 }
 
 /*!
+    \since 4.6
+
     Returns true when the request is still processing and the
     reply has not finished or was aborted yet.
 
