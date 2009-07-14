@@ -124,6 +124,8 @@ int main(int argc, char ** argv)
                 usage();
             translationFile = argv[i + 1];
             ++i;
+        } else if (arg == "-L") {
+            libraries << QString(argv[++i]);
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -138,6 +140,8 @@ int main(int argc, char ** argv)
     }
 
     QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    foreach (QString lib, libraries)
+        viewer.addLibraryPath(lib);
     viewer.setCacheEnabled(cache);
     viewer.setRecordFile(recordfile);
     if (period>0)
@@ -160,4 +164,3 @@ int main(int argc, char ** argv)
 
     return app.exec();
 }
-

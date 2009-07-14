@@ -477,13 +477,12 @@ bool ProcessAST::visit(AST::UiImport *node)
     AST::SourceLocation endLoc = node->semicolonToken;
 
     if (node->importId)
-        import.as = node->importId->asString();
+        import.qualifier = node->importId->asString();
+    if (node->versionToken.isValid())
+        import.version = textAt(node->versionToken);
 
     import.location = location(startLoc, endLoc);
     import.uri = uri;
-    // XXX not parsed yet...
-    import.version_major = 0;
-    import.version_minor = 0;
 
     _parser->_imports << import;
 

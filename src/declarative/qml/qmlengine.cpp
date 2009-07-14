@@ -1,4 +1,4 @@
-/****************************************************************************
+    /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
@@ -79,6 +79,7 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
+DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
 QML_DEFINE_TYPE(QObject,Object)
 
@@ -1100,70 +1101,120 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 
 class QmlImportsPrivate {
 public:
-    void add(const QString& uri, const QString& prefix, int version_major, int version_minor)
+    bool add(const QString& uri, const QString& prefix, const QString& version, QmlEngine::ImportType importType, const QStringList& importPath)
     {
         TypeSet *s;
         if (prefix.isEmpty()) {
-            s = &unqualifiedset;
+            if (importType == QmlEngine::LibraryImport && version.isEmpty()) {
+                // unversioned library imports are always qualified - if only by final URI component
+                int lastdot = uri.lastIndexOf(QLatin1Char('.'));
+                QString defaultprefix = uri.mid(lastdot+1);
+                s = set.value(defaultprefix);
+                if (!s)
+                    set.insert(defaultprefix,(s=new TypeSet));
+            } else {
+                s = &unqualifiedset;
+            }
         } else {
             s = set.value(prefix);
             if (!s)
                 set.insert(prefix,(s=new TypeSet));
         }
         QString url = uri;
+        if (importType == QmlEngine::LibraryImport) {
+            url.replace(QLatin1Char('.'),QLatin1Char('/'));
+            bool found = false;
+            foreach (QString p, importPath) {
+                QString dir = p+QLatin1Char('/')+url;
+                if (QFile::exists(dir+QLatin1String("/qmldir"))) {
+                    url = dir;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                return false;
+        }
         s->urls.append(url);
-        s->vmaj.append(version_major);
-        s->vmin.append(version_minor);
+        s->versions.append(version);
+        s->isLibrary.append(importType == QmlEngine::LibraryImport);
+        return true;
     }
 
     QUrl find(const QString& base, const QString& type)
     {
         TypeSet *s = 0;
-        int dot = type.indexOf(QLatin1Char('.'));
-        if (dot >= 0) {
+        int slash = type.indexOf(QLatin1Char('/'));
+        if (slash >= 0) {
             while (!s) {
-                s = set.value(type.left(dot));
-                int ndot = type.indexOf(QLatin1Char('.'),dot+1);
-                if (ndot > 0)
-                    dot = ndot;
+                s = set.value(type.left(slash));
+                int nslash = type.indexOf(QLatin1Char('/'),slash+1);
+                if (nslash > 0)
+                    slash = nslash;
                 else
                     break;
             }
         } else {
             s = &unqualifiedset;
         }
-        QString unqualifiedtype = type.mid(dot+1);
+        QString unqualifiedtype = type.mid(slash+1);
         QUrl baseUrl(base);
         if (s) {
             for (int i=0; i<s->urls.count(); ++i) {
                 QUrl url = baseUrl.resolved(QUrl(s->urls.at(i) +QLatin1String("/")+ unqualifiedtype + QLatin1String(".qml")));
+                QString version = s->versions.at(i);
                 // XXX search non-files too! (eg. zip files, see QT-524)
                 QFileInfo f(url.toLocalFile());
-                if (f.exists())
-                    return url;
+                if (f.exists()) {
+                    bool ok=true;
+                    if (!version.isEmpty()) {
+                        ok=false;
+                        // Check version file - XXX cache these in QmlEngine!
+                        QFile qmldir(s->urls.at(i)+QLatin1String("/qmldir"));
+                        if (qmldir.open(QIODevice::ReadOnly)) {
+                            do {
+                                QString line = QString::fromUtf8(qmldir.readLine());
+                                if (line.at(0) == QLatin1Char('#'))
+                                    continue;
+                                int space1 = line.indexOf(QLatin1Char(' '));
+                                int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
+                                QStringRef maptype = line.leftRef(space1);
+                                QStringRef mapversion = line.midRef(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
+                                QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
+                                if (maptype==unqualifiedtype && mapversion==version) {
+                                    if (mapfile.isEmpty())
+                                        return url;
+                                    else
+                                        return url.resolved(mapfile.toString());
+                                }
+                            } while (!qmldir.atEnd());
+                        }
+                    }
+                    if (ok)
+                        return url;
+                }
             }
         }
         return baseUrl.resolved(QUrl(type + QLatin1String(".qml")));
     }
 
-    QmlType *findBuiltin(const QString& base, const QByteArray& type)
+    QmlType *findBuiltin(const QString&, const QByteArray& type)
     {
-        // XXX import only have one space of imports!
         TypeSet *s = 0;
-        int dot = type.indexOf('.');
-        if (dot >= 0) {
+        int slash = type.indexOf('/');
+        if (slash >= 0) {
             while (!s) {
-                s = set.value(QString::fromLatin1(type.left(dot)));
-                int ndot = type.indexOf('.',dot+1);
-                if (ndot > 0)
-                    dot = ndot;
+                s = set.value(QString::fromLatin1(type.left(slash)));
+                int nslash = type.indexOf('/',slash+1);
+                if (nslash > 0)
+                    slash = nslash;
                 else
                     break;
             }
         } else {
             s = &unqualifiedset;
         }
-        QByteArray unqualifiedtype = dot < 0 ? type : type.mid(dot+1); // common-case opt (QString::mid works fine, but slower)
+        QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
         if (s) {
             for (int i=0; i<s->urls.count(); ++i) {
                 QmlType *t = QmlMetaType::qmlType(s->urls.at(i).toLatin1()+"/"+unqualifiedtype);
@@ -1176,8 +1227,8 @@ public:
 private:
     struct TypeSet {
         QStringList urls;
-        QList<int> vmaj;
-        QList<int> vmin;
+        QStringList versions;
+        QList<bool> isLibrary;
     };
     TypeSet unqualifiedset;
     QHash<QString,TypeSet* > set;
@@ -1197,19 +1248,44 @@ void QmlEngine::Imports::setBaseUrl(const QUrl& url)
     base = url;
 }
 
-void QmlEngine::addImport(Imports* imports, const QString& uri, const QString& prefix, int version_major, int version_minor) const
+void QmlEngine::addImportPath(const QString& path)
 {
-    imports->d->add(uri,prefix,version_major,version_minor);
+    if (qmlImportTrace()) 
+        qDebug() << "QmlEngine::addImportPath" << path;
+    Q_D(QmlEngine);
+    d->fileImportPath.prepend(path);
 }
 
-QUrl QmlEngine::resolveType(const Imports& imports, const QString& type) const
+bool QmlEngine::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, ImportType importType) const
 {
-    return imports.d->find(imports.base,type);
+    Q_D(const QmlEngine);
+    bool ok = imports->d->add(uri,prefix,version,importType,d->fileImportPath);
+    if (qmlImportTrace()) 
+        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==LibraryImport ? "Library" : "File") << ": " << ok;
+    return ok;
 }
 
-QmlType* QmlEngine::resolveBuiltInType(const Imports& imports, const QByteArray& type) const
+bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return) const
 {
-    return imports.d->findBuiltin(imports.base,type);
+    Q_D(const QmlEngine);
+    QmlType* t = imports.d->findBuiltin(imports.base,type);
+    if (t) {
+        if (type_return) *type_return = t;
+        if (qmlImportTrace()) 
+            qDebug() << "QmlEngine::resolveType" << type << "= (builtin)";
+        return true;
+    }
+    QUrl url = imports.d->find(imports.base,type);
+    if (url.isValid()) {
+        if (url_return) *url_return = url;
+        if (qmlImportTrace()) 
+            qDebug() << "QmlEngine::resolveType" << type << "=" << url;
+        return true;
+    }
+    if (qmlImportTrace()) 
+        qDebug() << "QmlEngine::resolveType" << type << " not found";
+    return false;
 }
+
 
 QT_END_NAMESPACE

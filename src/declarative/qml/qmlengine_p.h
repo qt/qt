@@ -164,6 +164,7 @@ public:
     mutable QNetworkAccessManager *networkAccessManager;
 
     QmlCompositeTypeManager typeManager;
+    QStringList fileImportPath;
 
     mutable quint32 uniqueId;
     quint32 getUniqueId() const {

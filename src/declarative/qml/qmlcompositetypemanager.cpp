@@ -242,19 +242,29 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
                                      const QByteArray &data,
                                      const QUrl &url)
 {
+    bool ok = true;
     if (!unit->data.parse(data, url)) {
-
-        unit->status = QmlCompositeTypeData::Error;
-        unit->errorType = QmlCompositeTypeData::GeneralError;
+        ok = false;
         unit->errors << unit->data.errors();
-        doComplete(unit);
-
     } else {
         foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-            engine->addImport(&unit->imports, imp.uri, imp.as, imp.version_major, imp.version_minor);
+            if (!engine->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version, imp.type==QmlScriptParser::Import::Library ? QmlEngine::LibraryImport : QmlEngine::FileImport)) {
+                QmlError error;
+                error.setUrl(url);
+                error.setDescription(tr("Import %1 unavailable").arg(imp.uri));
+                unit->errors << error;
+qDebug() << "ERR";
+                ok = false;
+            }
         }
-        compile(unit);
+    }
 
+    if (ok) {
+        compile(unit);
+    } else {
+        unit->status = QmlCompositeTypeData::Error;
+        unit->errorType = QmlCompositeTypeData::GeneralError;
+        doComplete(unit);
     }
 }
 
@@ -314,13 +324,16 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             continue;
         }
 
-        ref.type = engine->resolveBuiltInType(unit->imports, type);
+        QUrl url;
+        if (!engine->resolveType(unit->imports, type, &ref.type, &url)) {
+            // XXX could produce error message here.
+        }
+
         if (ref.type) {
             unit->types << ref;
             continue;
         }
 
-        QUrl url = engine->resolveType(unit->imports, QLatin1String(type));
         QmlCompositeTypeData *urlUnit = components.value(url.toString());
 
         if (!urlUnit) {

@@ -87,9 +87,10 @@ public:
         QUrl base;
         QmlImportsPrivate *d;
     };
-    void addImport(Imports*, const QString& uri, const QString& prefix, int version_major, int version_minor) const;
-    QUrl resolveType(const Imports&, const QString& type) const;
-    QmlType* resolveBuiltInType(const Imports& imports, const QByteArray& type) const;
+    void addImportPath(const QString& dir);
+    enum ImportType { LibraryImport, FileImport };
+    bool addToImport(Imports*, const QString& uri, const QString& prefix, const QString& version, ImportType type) const;
+    bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
 
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;

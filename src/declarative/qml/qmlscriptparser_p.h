@@ -72,15 +72,14 @@ public:
     class Import
     {
     public:
-        Import() : type(Library), version_major(0), version_minor(0) {}
+        Import() : type(Library) {}
 
         enum Type { Library, File };
         Type type;
 
         QString uri;
-        QString as; // prefix for qualification
-        int version_major;
-        int version_minor;
+        QString qualifier;
+        QString version;
 
         QmlParser::LocationSpan location;
     };
