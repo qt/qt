@@ -59,7 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
+/*!
+    \internal
+
     Updates the display text based of the current edit text
     If the text has changed will emit displayTextChanged()
 */
@@ -105,7 +107,9 @@ void QLineControl::updateDisplayText()
 }
 
 #ifndef QT_NO_CLIPBOARD
-/*
+/*!
+    \internal
+
     Copies the currently selected text into the clipboard using the given
     \a mode.
   
@@ -124,7 +128,9 @@ void QLineControl::copy(QClipboard::Mode mode) const
     }
 }
 
-/*
+/*!
+    \internal
+
     Inserts the text stored in the application clipboard into the line
     control.
 
@@ -137,7 +143,9 @@ void QLineControl::paste()
 
 #endif // !QT_NO_CLIPBOARD
 
-/*
+/*!
+    \internal
+
     Handles the behavior for the backspace key or function.
     Removes the current selection if there is a selection, otherwise
     removes the character prior to the cursor position.
@@ -168,7 +176,9 @@ void QLineControl::backspace()
     finishChange(priorState);
 }
 
-/*
+/*!
+    \internal
+
     Handles the behavior for the delete key or function.
     Removes the current selection if there is a selection, otherwise
     removes the character after the cursor position.
@@ -188,7 +198,9 @@ void QLineControl::del()
     finishChange(priorState);
 }
 
-/*
+/*!
+    \internal
+
     Inserts the given \a newText at the current cursor position.
     If there is any selected text it is removed prior to insertion of
     the new text.
@@ -201,7 +213,9 @@ void QLineControl::insert(const QString &newText)
     finishChange(priorState);
 }
 
-/*
+/*!
+    \internal
+
     Clears the line control text.
 */
 void QLineControl::clear()
@@ -214,7 +228,9 @@ void QLineControl::clear()
     finishChange(priorState, /*update*/false, /*edited*/false);
 }
 
-/*
+/*!
+    \internal
+
     Sets \a length characters from the given \a start position as selected.
     The given \a start position must be within the current text for
     the line control.  If \a length characters cannot be selected, then
@@ -254,7 +270,9 @@ void QLineControl::_q_deleteSelected()
     finishChange(priorState);
 }
 
-/*
+/*!
+    \internal
+
     Initializes the line control with a starting text value of \a txt.
 */
 void QLineControl::init(const QString& txt)
@@ -264,7 +282,9 @@ void QLineControl::init(const QString& txt)
     m_cursor = m_text.length();
 }
 
-/*
+/*!
+    \internal
+
     Sets the password echo editing to \a editing.  If password echo editing
     is true, then the text of the password is displayed even if the echo
     mode is set to QLineEdit::PasswordEchoOnEdit.  Password echoing editing
@@ -276,7 +296,9 @@ void QLineControl::updatePasswordEchoEditing(bool editing)
     updateDisplayText();
 }
 
-/*
+/*!
+    \internal
+
     Returns the cursor position of the given \a x pixel value in relation
     to the displayed text.  The given \a betweenOrOn specified what kind
     of cursor position is requested.
@@ -286,7 +308,9 @@ int QLineControl::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
     return textLayout.lineAt(0).xToCursor(x, betweenOrOn);
 }
 
-/*
+/*!
+    \internal
+
     Returns the bounds of the current cursor, as defined as a
     between characters cursor.
 */
@@ -303,7 +327,9 @@ QRect QLineControl::cursorRect() const
     return QRect(cix-5, 0, w+9, ch);
 }
 
-/*
+/*!
+    \internal
+
     Fixes the current text so that it is valid given any set validators.
 
     Returns true if the text was changed.  Otherwise returns false.
@@ -325,7 +351,9 @@ bool QLineControl::fixup() // this function assumes that validate currently retu
     return false;
 }
 
-/*
+/*!
+    \internal
+
     Moves the cursor to the given position \a pos.   If \a mark is true will
     adjust the currently selected text.
 */
@@ -358,7 +386,9 @@ void QLineControl::moveCursor(int pos, bool mark)
     emitCursorPositionChanged();
 }
 
-/*
+/*!
+    \internal
+
     Applies the given input method event \a event to the text of the line
     control
 */
@@ -411,7 +441,9 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     finishChange(priorState);
 }
 
-/*
+/*!
+    \internal
+
     Draws the display text for the line control using the given 
     \a painter, \a clip, and \a offset.  Which aspects of the display text
     are drawn is specified by the given \a flags.
@@ -453,7 +485,9 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
     }
 }
 
-/*
+/*!
+    \internal
+
     Sets the selection to cover the word at the given cursor position.
     The word boundries is defined by the behavior of QTextLayout::SkipWords
     cursor mode.
@@ -469,7 +503,9 @@ void QLineControl::selectWordAtPos(int cursor)
     moveCursor(end, true);
 }
 
-/*
+/*!
+    \internal
+
     Completes a change to the line control text.  If the change is not valid
     will undo the line control state back to the given \a validateFromState.
 
@@ -479,7 +515,6 @@ void QLineControl::selectWordAtPos(int cursor)
 
     The \a update value is currently unused.
 */
-
 bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
 {
     Q_UNUSED(update)
@@ -531,7 +566,9 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
     return true;
 }
 
-/*
+/*!
+    \internal
+
     An internal function for setting the text of the line control.
 */
 void QLineControl::p_setText(const QString& txt, int pos, bool edited)
@@ -553,7 +590,9 @@ void QLineControl::p_setText(const QString& txt, int pos, bool edited)
 }
 
 
-/*
+/*!
+    \internal
+
     Adds the given \a command to the undo history
     of the line control.  Does not apply the command.
 */
@@ -569,7 +608,9 @@ void QLineControl::addCommand(const Command& cmd)
     history[undoState++] = cmd;
 }
 
-/*
+/*!
+    \internal
+
     Inserts the given string \a s into the line
     control.
 
@@ -602,8 +643,9 @@ void QLineControl::p_insert(const QString& s)
     }
 }
 
-/*
+/*!
     \internal
+
     deletes a single character from the current text.  If \a wasBackspace,
     the character prior to the cursor is removed.  Otherwise the character
     after the cursor is removed.
@@ -628,8 +670,9 @@ void QLineControl::p_del(bool wasBackspace)
     }
 }
 
-/*
+/*!
     \internal
+
     removes the currently selected text from the line control.
 
     Also adds the appropriate commands into the undo history.
@@ -667,7 +710,9 @@ void QLineControl::removeSelectedText()
     }
 }
 
-/*
+/*!
+    \internal
+
     Parses the input mask specified by \a maskFields to generate
     the mask data used to handle input masks.
 */
@@ -769,7 +814,11 @@ void QLineControl::parseInputMask(const QString &maskFields)
 }
 
 
-/* checks if the key is valid compared to the inputMask */
+/*!
+    \internal
+
+    checks if the key is valid compared to the inputMask
+*/
 bool QLineControl::isValidInput(QChar key, QChar mask) const
 {
     switch (mask.unicode()) {
@@ -839,7 +888,9 @@ bool QLineControl::isValidInput(QChar key, QChar mask) const
     return false;
 }
 
-/*
+/*!
+    \internal
+
     Returns true if the given text \a str is valid for any
     validator or input mask set for the line control.
 
@@ -873,11 +924,13 @@ bool QLineControl::hasAcceptableInput(const QString &str) const
     return true;
 }
 
-/*
-  Applies the inputMask on \a str starting from position \a pos in the mask. \a clear
-  specifies from where characters should be gotten when a separator is met in \a str - true means
-  that blanks will be used, false that previous input is used.
-  Calling this when no inputMask is set is undefined.
+/*!
+    \internal
+
+    Applies the inputMask on \a str starting from position \a pos in the mask. \a clear
+    specifies from where characters should be gotten when a separator is met in \a str - true means
+    that blanks will be used, false that previous input is used.
+    Calling this when no inputMask is set is undefined.
 */
 QString QLineControl::maskString(uint pos, const QString &str, bool clear) const
 {
@@ -948,9 +1001,11 @@ QString QLineControl::maskString(uint pos, const QString &str, bool clear) const
 
 
 
-/*
-  Returns a "cleared" string with only separators and blank chars.
-  Calling this when no inputMask is set is undefined.
+/*!
+    \internal
+
+    Returns a "cleared" string with only separators and blank chars.
+    Calling this when no inputMask is set is undefined.
 */
 QString QLineControl::clearString(uint pos, uint len) const
 {
@@ -968,9 +1023,11 @@ QString QLineControl::clearString(uint pos, uint len) const
     return s;
 }
 
-/*
-  Strips blank parts of the input in a QLineControl when an inputMask is set,
-  separators are still included. Typically "127.0__.0__.1__" becomes "127.0.0.1".
+/*!
+    \internal
+
+    Strips blank parts of the input in a QLineControl when an inputMask is set,
+    separators are still included. Typically "127.0__.0__.1__" becomes "127.0.0.1".
 */
 QString QLineControl::stripString(const QString &str) const
 {
@@ -989,7 +1046,10 @@ QString QLineControl::stripString(const QString &str) const
     return s;
 }
 
-/* searches forward/backward in maskData for either a separator or a blank */
+/*!
+    \internal
+    searches forward/backward in maskData for either a separator or a blank
+*/
 int QLineControl::findInMask(int pos, bool forward, bool findSeparator, QChar searchChar) const
 {
     if (pos >= m_maxLength || pos < 0)
@@ -1099,7 +1159,9 @@ void QLineControl::p_redo() {
     emitCursorPositionChanged();
 }
 
-/*
+/*!
+    \internal
+
     If the current cursor position differs from the last emited cursor
     position, emits cursorPositionChanged().
 */
