@@ -141,7 +141,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
 
 public:
     enum Option { NoOption = 0x00000000,
-                  MouseFilter = 0x00000003, // ### GV
+                  MouseFilter = 0x00000001,
                   ChildMouseFilter = 0x00000002,
                   HoverEvents = 0x00000004,
                   MouseEvents = 0x00000008,
