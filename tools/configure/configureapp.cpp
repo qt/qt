@@ -1858,8 +1858,14 @@ bool Configure::checkAvailability(const QString &part)
 
         if (!available) {
             cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
-                 << "Make sure you have either the platform SDK AND the DirectX SDK or the Windows SDK installed." << endl
-                 << "If you have the DirectX SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
+                 << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
+                 << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
+            if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
+            if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
+            if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
+            if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
+            if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
+            if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
