@@ -1361,7 +1361,45 @@ void QLineEdit::paste()
 bool QLineEdit::event(QEvent * e)
 {
     Q_D(QLineEdit);
-        if (e->type() == QEvent::Timer) {
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::keypadNavigationEnabled()) {
+        if ((ev->type() == QEvent::KeyPress) || (ev->type() == QEvent::KeyRelease)) {
+            QKeyEvent *ke = (QKeyEvent *)ev;
+            if (ke->key() == Qt::Key_Back) {
+                if (ke->isAutoRepeat()) {
+                    // Swallow it. We don't want back keys running amok.
+                    ke->accept();
+                    return true;
+                }
+                if ((ev->type() == QEvent::KeyRelease)
+                    && !isReadOnly()
+                    && deleteAllTimer) {
+                    killTimer(m_deleteAllTimer);
+                    m_deleteAllTimer = 0;
+                    backspace();
+                    ke->accept();
+                    return true;
+                }
+            }
+        } else if (e->type() == QEvent::EnterEditFocus) {
+            end(false);
+            int cft = QApplication::cursorFlashTime();
+            control->setCursorBlinkPeriod(cft/2);
+        } else if (e->type() == QEvent::LeaveEditFocus) {
+            d->setCursorVisible(false);//!!!
+            control->setCursorBlinkPeriod(0);
+            if (!m_emitingEditingFinished) {
+                if (hasAcceptableInput() || fixup()) {
+                    m_emitingEditingFinished = true;
+                    emit editingFinished();
+                    m_emitingEditingFinished = false;
+                }
+            }
+        }
+        return;
+    }
+#endif
+    if (e->type() == QEvent::Timer) {
         // should be timerEvent, is here for binary compatibility
         int timerId = ((QTimerEvent*)e)->timerId();
         if (false) {
@@ -1442,9 +1480,7 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
                 d->drag();
         } else
 #endif
-        {
             d->control->moveCursor(d->xToPos(e->pos().x()), true);
-        }
     }
 }
 
@@ -1463,10 +1499,18 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
                 d->drag();
         } else
 #endif
-        {
             d->control->moveCursor(d->xToPos(e->pos().x()), true);
+    }
+#ifndef QT_NO_CLIPBOARD
+    if (QApplication::clipboard()->supportsSelection()) {
+        if (e->button() == Qt::LeftButton) {
+            d->control->copy(QClipboard::Selection);
+        } else if (!d->control->isReadOnly() && e->button() == Qt::MidButton) {
+            deselect();
+            insert(QApplication::clipboard()->text(QClipboard::Selection));
         }
     }
+#endif
 }
 
 /*! \reimp

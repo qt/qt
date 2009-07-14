@@ -1212,44 +1212,6 @@ void QLineControl::timerEvent ( QTimerEvent * event )
 
 bool QLineControl::processEvent(QEvent* ev)
 {
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
-        if ((ev->type() == QEvent::KeyPress) || (ev->type() == QEvent::KeyRelease)) {
-            QKeyEvent *ke = (QKeyEvent *)ev;
-            if (ke->key() == Qt::Key_Back) {
-                if (ke->isAutoRepeat()) {
-                    // Swallow it. We don't want back keys running amok.
-                    ke->accept();
-                    return true;
-                }
-                if ((ev->type() == QEvent::KeyRelease)
-                    && !isReadOnly()
-                    && deleteAllTimer) {
-                    killTimer(m_deleteAllTimer);
-                    m_deleteAllTimer = 0;
-                    backspace();
-                    ke->accept();
-                    return true;
-                }
-            }
-        } else if (e->type() == QEvent::EnterEditFocus) {
-            end(false);
-            int cft = QApplication::cursorFlashTime();
-            control->setCursorBlinkPeriod(cft/2);
-        } else if (e->type() == QEvent::LeaveEditFocus) {
-            d->setCursorVisible(false);//!!!
-            control->setCursorBlinkPeriod(0);
-            if (!m_emitingEditingFinished) {
-                if (hasAcceptableInput() || fixup()) {
-                    m_emitingEditingFinished = true;
-                    emit editingFinished();
-                    m_emitingEditingFinished = false;
-                }
-            }
-        }
-        return;
-    }
-#endif
     switch(ev->type()){
 #ifndef QT_NO_GRAPHICSVIEW
         case QEvent::GraphicsSceneMouseMove:
@@ -1332,14 +1294,6 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
             }
             if (ev->button() == Qt::RightButton)
                 return;
-#ifdef QT_KEYPAD_NAVIGATION
-            if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
-                setEditFocus(true);
-                // Get the completion list to pop up.
-                if (m_completer)
-                    m_completer->complete();
-            }
-#endif
 
             bool mark = ev->modifiers() & Qt::ShiftModifier;
             int cursor = xToPos(ev->pos().x());
