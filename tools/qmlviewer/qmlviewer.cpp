@@ -505,7 +505,7 @@ void QmlViewer::setRecordFile(const QString& f)
 bool QmlViewer::event(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {
-        setupPalette();
+        setupPalettes();
         return true;
     }
     return QWidget::event(event);
