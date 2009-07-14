@@ -53,6 +53,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l Script
 \o \l Connection
 \o \l Component
+\o \l Timer
 \endlist
 \endtable
 
