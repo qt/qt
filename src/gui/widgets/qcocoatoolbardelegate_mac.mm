@@ -120,12 +120,9 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 
     NSArray *items = [[qt_mac_window_for(mainWindowLayout->layoutState.mainWindow->window()) toolbar] items];
     int someIndex = 0;
-    bool foundItem = false;
     for (NSToolbarItem *i in items) {
-        if (i == item) {
-            foundItem = true;
+        if (i == item)
             break;
-        }
         ++someIndex;
     }
     mainWindowLayout->toolbarItemsCopy.insert(someIndex, item);
