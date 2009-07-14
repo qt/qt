@@ -5,13 +5,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlDebugClient;
+class QmlDebugConnection;
 class QTabWidget;
 class CanvasFrameRate : public QWidget
 {
     Q_OBJECT
 public:
-    CanvasFrameRate(QmlDebugClient *, QWidget *parent = 0);
+    CanvasFrameRate(QmlDebugConnection *, QWidget *parent = 0);
 
 private slots:
     void newTab();

@@ -232,7 +232,7 @@ case 8: {
 } break;
 
 case 10: {
-    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId);
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId->finish());
     node->importToken = loc(1);
     node->fileNameToken = loc(2);
     node->semicolonToken = loc(3);
@@ -240,7 +240,7 @@ case 10: {
 } break;
 
 case 12: {
-    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId);
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).UiQualifiedId->finish());
     node->importId = sym(4).sval;
     node->importToken = loc(1);
     node->fileNameToken = loc(2);
