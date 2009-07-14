@@ -75,32 +75,24 @@ HANDLE QSystemLockPrivate::handle()
     // Create it if it doesn't already exists.
     if (semaphore == 0) {
         QString safeName = makeKeyFileName();
-        QT_WA({
-            semaphore = CreateSemaphoreW(0, MAX_LOCKS, MAX_LOCKS, (TCHAR*)safeName.utf16());
-        }, {
-            semaphore = CreateSemaphoreA(0, MAX_LOCKS, MAX_LOCKS, safeName.toLocal8Bit().constData());
-        });
+        semaphore = CreateSemaphore(0, MAX_LOCKS, MAX_LOCKS, (wchar_t*)safeName.utf16());
 
         if (semaphore == 0) {
             setErrorString(QLatin1String("QSystemLockPrivate::handle"));
-	    return 0;
-	}
+            return 0;
+        }
     }
 
     if (semaphoreLock == 0) {
-	QString safeLockName = QSharedMemoryPrivate::makePlatformSafeKey(key + QLatin1String("lock"), QLatin1String("qipc_systemlock_"));
-        QT_WA({
-            semaphoreLock = CreateSemaphoreW(0,
-                 1, 1, (TCHAR*)safeLockName.utf16());
-        }, {
-            semaphoreLock = CreateSemaphoreA(0,
-                 1, 1, safeLockName.toLocal8Bit().constData());
-        });
+        QString safeLockName = QSharedMemoryPrivate::makePlatformSafeKey(key + QLatin1String("lock"), QLatin1String("qipc_systemlock_"));
+        semaphoreLock = CreateSemaphore(0, 1, 1, (wchar_t*)safeLockName.utf16());
+
         if (semaphoreLock == 0) {
             setErrorString(QLatin1String("QSystemLockPrivate::handle"));
-	    return 0;
-	}
+            return 0;
+        }
     }
+
     return semaphore;
 }
 

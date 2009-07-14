@@ -135,6 +135,7 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
 
     if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
 
     // please never ever change this table; otherwise fix all tests ;)
@@ -156,11 +157,9 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
     }
 
     if (tst_Databases::isMSAccess(db)) {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 number)"));
-    } else if (db.driverName().startsWith("QIBASE")) {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 number)"));
     } else {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
     }
 }
 
@@ -556,7 +555,7 @@ void tst_Q3SqlCursor::unicode()
 
 void tst_Q3SqlCursor::precision()
 {
-    static const QString precStr = "1.23456789012345";
+    static const QString precStr = QLatin1String("1.23456789012345");
     static const double precDbl = 2.23456789012345;
 
     QFETCH( QString, dbName );
@@ -575,7 +574,10 @@ void tst_Q3SqlCursor::precision()
 
     QVERIFY_SQL(cur, select());
     QVERIFY( cur.next() );
-    QCOMPARE( cur.value( 0 ).asString(), QString( precStr ) );
+    if(!tst_Databases::isSqlServer(db))
+        QCOMPARE( cur.value( 0 ).asString(), precStr );
+    else
+        QCOMPARE( cur.value( 0 ).asString(), precStr.left(precStr.size()-1) ); // Sql server fails at counting.
     QVERIFY( cur.next() );
     QCOMPARE( cur.value( 0 ).asDouble(), precDbl );
 }
@@ -759,9 +761,10 @@ void tst_Q3SqlCursor::insertFieldNameContainsWS() {
 
     QSqlQuery q(db);
     tst_Databases::safeDropTable(db, tableName);
-    QString query = QString("CREATE TABLE %1 (id int, \"first Name\" varchar(20), "
-                            "lastName varchar(20))").arg(tableName);
-    QVERIFY_SQL(q, exec(query));
+    QString query = "CREATE TABLE %1 (id int, " 
+        + db.driver()->escapeIdentifier("first Name", QSqlDriver::FieldName) 
+        + " varchar(20), lastName varchar(20))";
+    QVERIFY_SQL(q, exec(query.arg(tableName)));
 
     Q3SqlCursor cur(tableName, true, db);
     cur.select();

@@ -53,7 +53,7 @@ static const HashTableValue JSHTMLAppletElementTableValues[13] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAppletElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAppletElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLAppletElementTableValues, 0 };
 #else
@@ -67,7 +67,7 @@ static const HashTableValue JSHTMLAppletElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAppletElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAppletElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAppletElementConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSHTMLAppletElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAppletElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAppletElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAppletElementPrototypeTableValues, 0 };
 #else

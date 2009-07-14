@@ -56,7 +56,7 @@ static const HashTableValue JSDOMSelectionTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMSelectionTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMSelectionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSDOMSelectionTableValues, 0 };
 #else
@@ -85,7 +85,7 @@ static const HashTableValue JSDOMSelectionPrototypeTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMSelectionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMSelectionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSDOMSelectionPrototypeTableValues, 0 };
 #else

@@ -101,6 +101,7 @@ private slots:
     void automaticSemicolonInsertion();
     void abortEvaluation();
     void isEvaluating();
+    void printFunctionWithCustomHandler();
     void printThrowsException();
     void errorConstructors();
     void argumentsProperty();
@@ -1583,7 +1584,7 @@ static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
 void tst_QScriptEngine::importExtension()
 {
     QStringList libPaths = QCoreApplication::instance()->libraryPaths();
-    QCoreApplication::instance()->setLibraryPaths(QStringList() << ".");
+    QCoreApplication::instance()->setLibraryPaths(QStringList() << SRCDIR);
 
     QStringList availableExtensions;
     {
@@ -1604,6 +1605,7 @@ void tst_QScriptEngine::importExtension()
         QScriptValue ret = eng.importExtension("this.extension.does.not.exist");
         QCOMPARE(eng.hasUncaughtException(), true);
         QCOMPARE(ret.isError(), true);
+        QCOMPARE(ret.toString(), QString::fromLatin1("Error: Unable to import this.extension.does.not.exist: no such extension"));
     }
 
     {
@@ -1622,6 +1624,8 @@ void tst_QScriptEngine::importExtension()
                      .strictlyEquals(QScriptValue(&eng, "com")), true);
             QCOMPARE(com.property("level")
                      .strictlyEquals(QScriptValue(&eng, 1)), true);
+            QVERIFY(com.property("originalPostInit").isUndefined());
+            QVERIFY(com.property("postInitCallCount").strictlyEquals(1));
 
             QScriptValue trolltech = com.property("trolltech");
             QCOMPARE(trolltech.isObject(), true);
@@ -1631,6 +1635,8 @@ void tst_QScriptEngine::importExtension()
                      .strictlyEquals(QScriptValue(&eng, "com.trolltech")), true);
             QCOMPARE(trolltech.property("level")
                      .strictlyEquals(QScriptValue(&eng, 2)), true);
+            QVERIFY(trolltech.property("originalPostInit").isUndefined());
+            QVERIFY(trolltech.property("postInitCallCount").strictlyEquals(1));
         }
         QStringList imp = eng.importedExtensions();
         QCOMPARE(imp.size(), 2);
@@ -1646,6 +1652,8 @@ void tst_QScriptEngine::importExtension()
         eng.globalObject().setProperty("__import__", eng.newFunction(__import__));
         QScriptValue ret = eng.importExtension("com.trolltech.recursive");
         QCOMPARE(eng.hasUncaughtException(), true);
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("Error: recursive import of com.trolltech.recursive"));
         QStringList imp = eng.importedExtensions();
         QCOMPARE(imp.size(), 2);
         QCOMPARE(imp.at(0), QString::fromLatin1("com"));
@@ -2502,6 +2510,33 @@ void tst_QScriptEngine::isEvaluating()
         eng.evaluate(script);
         QVERIFY(receiver.wasEvaluating);
     }
+}
+
+static QtMsgType theMessageType;
+static QString theMessage;
+
+static void myMsgHandler(QtMsgType type, const char *msg)
+{
+    theMessageType = type;
+    theMessage = QString::fromLatin1(msg);
+}
+
+void tst_QScriptEngine::printFunctionWithCustomHandler()
+{
+    QScriptEngine eng;
+    QtMsgHandler oldHandler = qInstallMsgHandler(myMsgHandler);
+    QVERIFY(eng.globalObject().property("print").isFunction());
+    theMessageType = QtSystemMsg;
+    QVERIFY(theMessage.isEmpty());
+    QVERIFY(eng.evaluate("print('test')").isUndefined());
+    QCOMPARE(theMessageType, QtDebugMsg);
+    QCOMPARE(theMessage, QString::fromLatin1("test"));
+    theMessageType = QtSystemMsg;
+    theMessage.clear();
+    QVERIFY(eng.evaluate("print(3, true, 'little pigs')").isUndefined());
+    QCOMPARE(theMessageType, QtDebugMsg);
+    QCOMPARE(theMessage, QString::fromLatin1("3 true little pigs"));
+    qInstallMsgHandler(oldHandler);
 }
 
 void tst_QScriptEngine::printThrowsException()

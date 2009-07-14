@@ -53,7 +53,7 @@ static const HashTableValue JSSVGTitleElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTitleElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTitleElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGTitleElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGTitleElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTitleElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTitleElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTitleElementPrototypeTableValues, 0 };
 #else

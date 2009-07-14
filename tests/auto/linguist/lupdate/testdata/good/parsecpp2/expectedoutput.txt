@@ -1,0 +1,7 @@
+.*/lupdate/testdata/good/parsecpp2/main.cpp:10: Excess closing brace .*
+
+.*/lupdate/testdata/good/parsecpp2/main.cpp:14: Excess closing brace .*
+
+.*/lupdate/testdata/good/parsecpp2/main.cpp:20: Excess closing brace .*
+
+.*/lupdate/testdata/good/parsecpp2/main.cpp:24: Excess closing brace .*

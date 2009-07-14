@@ -1015,6 +1015,7 @@ void tst_QStateMachine::rootState()
 
 void tst_QStateMachine::addAndRemoveState()
 {
+#ifdef QT_BUILD_INTERNAL
     QStateMachine machine;
     QStatePrivate *root_d = QStatePrivate::get(machine.rootState());
     QCOMPARE(root_d->childStates().size(), 0); 
@@ -1075,6 +1076,7 @@ void tst_QStateMachine::addAndRemoveState()
     delete s2;
     // ### how to deal with this?
     // machine.removeState(machine.errorState());
+#endif
 }
 
 void tst_QStateMachine::stateEntryAndExit()

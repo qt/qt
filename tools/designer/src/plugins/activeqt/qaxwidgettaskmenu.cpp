@@ -162,7 +162,7 @@ void QAxWidgetTaskMenu::setActiveXControl()
                                      tr("The control requires a design-time license"));
                 clsid = QUuid();
             } else {
-                key = QString::fromUtf16((ushort *)bKey);
+                key = QString::fromWCharArray(bKey);
             }
 
             cf2->Release();

@@ -60,7 +60,7 @@ static const HashTableValue JSHTMLImageElementTableValues[20] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLImageElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLImageElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 16383, JSHTMLImageElementTableValues, 0 };
 #else
@@ -74,7 +74,7 @@ static const HashTableValue JSHTMLImageElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLImageElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLImageElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLImageElementConstructorTableValues, 0 };
 #else
@@ -112,7 +112,7 @@ static const HashTableValue JSHTMLImageElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLImageElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLImageElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLImageElementPrototypeTableValues, 0 };
 #else

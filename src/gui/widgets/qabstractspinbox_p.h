@@ -135,8 +135,6 @@ public:
     mutable QValidator::State cachedState;
     mutable QSize cachedSizeHint, cachedMinimumSizeHint;
     uint pendingEmit : 1;
-    uint spindownEnabled : 1;
-    uint spinupEnabled : 1;
     uint readOnly : 1;
     uint wrapping : 1;
     uint ignoreCursorPositionChanged : 1;

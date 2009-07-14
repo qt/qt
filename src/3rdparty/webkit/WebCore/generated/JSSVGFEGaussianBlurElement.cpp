@@ -59,7 +59,7 @@ static const HashTableValue JSSVGFEGaussianBlurElementTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEGaussianBlurElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEGaussianBlurElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEGaussianBlurElementTableValues, 0 };
 #else
@@ -75,7 +75,7 @@ static const HashTableValue JSSVGFEGaussianBlurElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEGaussianBlurElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEGaussianBlurElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGFEGaussianBlurElementPrototypeTableValues, 0 };
 #else

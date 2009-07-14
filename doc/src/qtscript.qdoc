@@ -44,7 +44,7 @@
   \title QtScript Module
   \since 4.3
   \contentspage Qt's Modules
-  \previouspage QtOpenGL
+  \previouspage QtOpenVG
   \nextpage QtScriptTools
   \ingroup modules
   \ingroup scripting
@@ -1782,20 +1782,20 @@
     \list 1
 
     \o Run \c lupdate to extract translatable text from the script source code
-    of the Qt application, resulting in a message file for translators (a \c
-    .ts file). The utility recognizes qsTr(), qsTranslate() and the
-    \c{QT_TR*_NOOP()} functions described above and produces \c .ts files
+    of the Qt application, resulting in a message file for translators (a TS
+    file). The utility recognizes qsTr(), qsTranslate() and the
+    \c{QT_TR*_NOOP()} functions described above and produces TS files
     (usually one per language).
 
-    \o Provide translations for the source texts in the \c .ts file, using
-    \e{Qt Linguist}. Since \c .ts files are in XML format, you can also
+    \o Provide translations for the source texts in the TS file, using
+    \e{Qt Linguist}. Since TS files are in XML format, you can also
     edit them by hand.
 
-    \o Run \c lrelease to obtain a light-weight message file (a \c .qm
-    file) from the \c .ts file, suitable only for end use. Think of the \c
-    .ts files as "source files", and \c .qm files as "object files". The
-    translator edits the \c .ts files, but the users of your application
-    only need the \c .qm files. Both kinds of files are platform and
+    \o Run \c lrelease to obtain a light-weight message file (a QM
+    file) from the TS file, suitable only for end use. Think of the TS
+     files as "source files", and QM files as "object files". The
+    translator edits the TS files, but the users of your application
+    only need the QM files. Both kinds of files are platform and
     locale independent.
 
     \endlist
@@ -1805,7 +1805,7 @@
     translations from previous releases.
 
     When running \c lupdate, you must specify the location of the script(s),
-    and the name of the \c{.ts} file to produce. Examples:
+    and the name of the TS file to produce. Examples:
 
     \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 87
 
@@ -1823,7 +1823,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 89
 
-    When running \c lrelease, you must specify the name of the \c{.ts} input
+    When running \c lrelease, you must specify the name of the TS input
     file; or, if you are using a qmake project file to manage script
     translations, you specify the name of that file. \c lrelease will create
     \c myscript_la.qm, the binary representation of the translation.

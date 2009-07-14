@@ -56,7 +56,9 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
     : backend(0), outgoingData(0), outgoingDataBuffer(0),
       copyDevice(0), networkCache(0),
       cacheEnabled(false), cacheSaveDevice(0),
+      notificationHandlingPaused(false),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      httpStatusCode(0),
       state(Idle)
 {
 }
@@ -89,7 +91,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
-    if (!copyDevice && !q->isOpen())
+    if (state != Working)
+        return;
+    if (!copyDevice || !q->isOpen())
         return;
 
     forever {
@@ -126,9 +130,11 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
 
     lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
     emit q->readyRead();
+    resumeNotificationHandling();
 }
 
 void QNetworkReplyImplPrivate::_q_copyReadChannelFinished()
@@ -262,6 +268,9 @@ void QNetworkReplyImplPrivate::backendNotify(InternalNotifications notification)
 
 void QNetworkReplyImplPrivate::handleNotifications()
 {
+    if (notificationHandlingPaused)
+        return;
+
     NotificationQueue current = pendingNotifications;
     pendingNotifications.clear();
 
@@ -290,6 +299,22 @@ void QNetworkReplyImplPrivate::handleNotifications()
         }
         }
     }
+}
+
+// Do not handle the notifications while we are emitting downloadProgress
+// or readyRead
+void QNetworkReplyImplPrivate::pauseNotificationHandling()
+{
+    notificationHandlingPaused = true;
+}
+
+// Resume notification handling
+void QNetworkReplyImplPrivate::resumeNotificationHandling()
+{
+    Q_Q(QNetworkReplyImpl);
+    notificationHandlingPaused = false;
+    if (pendingNotifications.size() >= 1)
+        QCoreApplication::postEvent(q, new QEvent(QEvent::NetworkReplyUpdated));
 }
 
 void QNetworkReplyImplPrivate::createCache()
@@ -347,7 +372,9 @@ void QNetworkReplyImplPrivate::emitUploadProgress(qint64 bytesSent, qint64 bytes
 {
     Q_Q(QNetworkReplyImpl);
     bytesUploaded = bytesSent;
+    pauseNotificationHandling();
     emit q->uploadProgress(bytesSent, bytesTotal);
+    resumeNotificationHandling();
 }
 
 
@@ -368,8 +395,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
     if (!q->isOpen())
         return;
 
-    char *ptr = readBuffer.reserve(data.size());
-    memcpy(ptr, data.constData(), data.size());
+    readBuffer.append(data);
 
     if (cacheEnabled && !cacheSaveDevice) {
         // save the meta data
@@ -398,12 +424,14 @@ void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
     QPointer<QNetworkReplyImpl> qq = q;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
     emit q->readyRead();
 
     // hopefully we haven't been deleted here
     if (!qq.isNull()) {
+        resumeNotificationHandling();
         // do we still have room in the buffer?
         if (nextDownstreamBlockSize() > 0)
             backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
@@ -435,12 +463,13 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 void QNetworkReplyImplPrivate::finished()
 {
     Q_Q(QNetworkReplyImpl);
-    Q_ASSERT_X(state != Finished, "QNetworkReplyImpl",
-               "Backend called finished/finishedWithError more than once");
+    if (state == Finished || state == Aborted)
+        return;
 
     state = Finished;
     pendingNotifications.clear();
 
+    pauseNotificationHandling();
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (totalSize.isNull() || totalSize == -1) {
         emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
@@ -448,14 +477,17 @@ void QNetworkReplyImplPrivate::finished()
 
     if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))
         emit q->uploadProgress(0, 0);
+    resumeNotificationHandling();
 
     completeCacheSave();
 
     // note: might not be a good idea, since users could decide to delete us
     // which would delete the backend too...
     // maybe we should protect the backend
+    pauseNotificationHandling();
     emit q->readChannelFinished();
     emit q->finished();
+    resumeNotificationHandling();
 }
 
 void QNetworkReplyImplPrivate::error(QNetworkReplyImpl::NetworkError code, const QString &errorMessage)

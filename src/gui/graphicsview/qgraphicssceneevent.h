@@ -44,6 +44,10 @@
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtGui/qpolygon.h>
+#include <QtCore/qset.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_HEADER
 

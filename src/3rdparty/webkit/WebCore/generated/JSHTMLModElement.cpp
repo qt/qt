@@ -42,7 +42,7 @@ static const HashTableValue JSHTMLModElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLModElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLModElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLModElementTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSHTMLModElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLModElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLModElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLModElementConstructorTableValues, 0 };
 #else
@@ -94,7 +94,7 @@ static const HashTableValue JSHTMLModElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLModElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLModElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLModElementPrototypeTableValues, 0 };
 #else

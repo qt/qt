@@ -188,7 +188,7 @@ private slots:
     void oci_fieldLength_data() { generic_data("QOCI"); }
     void oci_fieldLength();
 
-    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE3"); }
+    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE"); }
     void sqlite_bindAndFetchUInt();
 
     void sqlStatementUseIsNull_189093_data() { generic_data(); }
@@ -256,6 +256,8 @@ static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
     QString autoName = tst_Databases::autoFieldName(db);
     if (tst_Databases::isMSAccess(db))
         qs.append(" (id int not null");
+    else if (tst_Databases::isPostgreSQL(db))
+        qs.append(" (id serial not null");
     else
         qs.append(QString("(id integer not null %1 primary key").arg(autoName));
 
@@ -298,6 +300,7 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
         q.exec("set table_type=innodb");
     if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+        QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
 
     // please never ever change this table; otherwise fix all tests ;)
@@ -354,10 +357,9 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         q.exec("drop schema " + qTableName("qtestschema") + " cascade");
 
     if (testWhiteSpaceNames(db.driverName()))
-        tableNames <<  (qTableName("qtest") + " test");
+        tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest") + " test", QSqlDriver::TableName);
 
     tst_Databases::safeDropTables(db, tableNames);
-    tst_Databases::safeDropView(db, qTableName("qtest_view"));
 }
 
 void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
@@ -916,7 +918,7 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("varchar(20)", QVariant::String,       QString("blah2")),
         FieldDef("nchar(20)", QVariant::String,         QString("blah3")),
         FieldDef("nvarchar2(20)", QVariant::String,     QString("blah4")),
-        FieldDef("number(10,5)", QVariant::String,      1.1234567),
+        FieldDef("number(10,5)", QVariant::Double,      1.1234567),
         FieldDef("date", QVariant::DateTime,            dt),
 #ifdef QT3_SUPPORT
 //X?    FieldDef("long raw", QVariant::ByteArray,       QByteArray(Q3CString("blah5"))),
@@ -1240,7 +1242,7 @@ void tst_QSqlDatabase::recordSQLServer()
         FieldDef("varchar(20)", QVariant::String, QString("Blah1")),
         FieldDef("bigint", QVariant::LongLong, 12345),
         FieldDef("int", QVariant::Int, 123456),
-        FieldDef("tinyint", QVariant::Int, 255),
+        FieldDef("tinyint", QVariant::UInt, 255),
 #ifdef QT3_SUPPORT
         FieldDef("image", QVariant::ByteArray, Q3CString("Blah1")),
 #endif
@@ -1345,6 +1347,8 @@ void tst_QSqlDatabase::transaction()
     }
 
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest") + " where id = 41"));
+    if(db.driverName().startsWith("QODBC") && dbName.contains("MySQL"))
+        QEXPECT_FAIL("", "Some odbc drivers don't actually roll back despite telling us they do, especially the mysql driver", Continue);
     QVERIFY(!q.next());
 
     populateTestTables(db);
@@ -1355,11 +1359,13 @@ void tst_QSqlDatabase::bigIntField()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    QString drvName = db.driverName();
 
     QSqlQuery q(db);
     q.setForwardOnly(true);
+    if (drvName.startsWith("QOCI"))
+        q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
 
-    QString drvName = db.driverName();
     if (drvName.startsWith("QMYSQL")) {
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit bigint, t_u64bit bigint unsigned)"));
     } else if (drvName.startsWith("QPSQL")
@@ -1368,6 +1374,8 @@ void tst_QSqlDatabase::bigIntField()
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + "(id int, t_s64bit bigint, t_u64bit bigint)"));
     } else if (drvName.startsWith("QOCI")) {
         QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit int, t_u64bit int)"));
+    //} else if (drvName.startsWith("QIBASE")) {
+    //    QVERIFY_SQL(q, exec("create table " + qTableName("qtest_bigint") + " (id int, t_s64bit int64, t_u64bit int64)"));
     } else {
         QSKIP("no 64 bit integer support", SkipAll);
     }
@@ -1397,10 +1405,15 @@ void tst_QSqlDatabase::bigIntField()
     }
     QVERIFY(q.exec("select * from " + qTableName("qtest_bigint") + " order by id"));
     QVERIFY(q.next());
+    QCOMPARE(q.value(1).toDouble(), (double)ll);
     QCOMPARE(q.value(1).toLongLong(), ll);
+    if(drvName.startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle driver lacks support for unsigned int64 types", Continue);
     QCOMPARE(q.value(2).toULongLong(), ull);
     QVERIFY(q.next());
     QCOMPARE(q.value(1).toLongLong(), -ll);
+    if(drvName.startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle driver lacks support for unsigned int64 types", Continue);
     QCOMPARE(q.value(2).toULongLong(), ull);
 }
 
@@ -1413,7 +1426,8 @@ void tst_QSqlDatabase::caseSensivity()
     bool cs = false;
     if (db.driverName().startsWith("QMYSQL")
      || db.driverName().startsWith("QSQLITE")
-     || db.driverName().startsWith("QTDS"))
+     || db.driverName().startsWith("QTDS")
+     || db.driverName().startsWith("QODBC"))
     cs = true;
 
     QSqlRecord rec = db.record(qTableName("qtest"));
@@ -1512,6 +1526,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     QString field1Name = QString("fIeLdNaMe");
     QString field2Name = QString("ZuLu");
 
+    q.exec(QString("DROP SCHEMA \"%1\" CASCADE").arg(schemaName));
     QString createSchema = QString("CREATE SCHEMA \"%1\"").arg(schemaName);
     QVERIFY_SQL(q, exec(createSchema));
     QString createTable = QString("CREATE TABLE \"%1\".\"%2\" (\"%3\" int PRIMARY KEY, \"%4\" varchar(20))").arg(schemaName).arg(tableName).arg(field1Name).arg(field2Name);
@@ -1643,6 +1658,8 @@ void tst_QSqlDatabase::precisionPolicy()
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
     QVERIFY_SQL(q, exec(query));
+    if(db.driverName().startsWith("QOCI"))
+        QEXPECT_FAIL("", "Oracle fails to move to next when data columns are oversize", Abort);
     QVERIFY_SQL(q, next());
     if(db.driverName().startsWith("QSQLITE"))
         QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
@@ -2270,6 +2287,10 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    if (db.driverName().startsWith("QSQLITE2")) { 
+        QSKIP("SQLite3 specific test", SkipSingle); 
+        return; 
+    }
 
     QSqlQuery q(db);
     QString tableName = qTableName("uint_test");

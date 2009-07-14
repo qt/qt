@@ -128,7 +128,7 @@ static void printHelp()
                               "    -D<name>      "
                               "Define <name> as a macro while parsing sources\n"
                               "    -slow         "
-                              "Turn on features that slow down qdoc"
+                              "Turn on features that slow down qdoc\n"
                               "    -showinternal "
                               "Include stuff marked internal") );
 }

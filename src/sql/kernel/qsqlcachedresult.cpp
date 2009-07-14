@@ -184,8 +184,11 @@ bool QSqlCachedResult::fetch(int i)
     if (d->rowCacheEnd > 0)
         setAt(d->cacheCount());
     while (at() < i + 1) {
-        if (!cacheNext())
+        if (!cacheNext()) {
+            if (d->canSeek(i))
+                break;
             return false;
+        }
     }
     setAt(i);
 

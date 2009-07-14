@@ -70,7 +70,7 @@ static const HashTableValue JSSVGAElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGAElementTableValues, 0 };
 #else
@@ -90,7 +90,7 @@ static const HashTableValue JSSVGAElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGAElementPrototypeTableValues, 0 };
 #else

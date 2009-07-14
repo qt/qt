@@ -59,6 +59,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "private/qcore_unix_p.h"
+
 QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate()
@@ -153,7 +155,7 @@ int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
     if (QFile::exists(fileName))
         return 0;
 
-    int fd = open(QFile::encodeName(fileName).constData(),
+    int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
             O_EXCL | O_CREAT | O_RDWR, 0640);
     if (-1 == fd) {
         if (errno == EEXIST)

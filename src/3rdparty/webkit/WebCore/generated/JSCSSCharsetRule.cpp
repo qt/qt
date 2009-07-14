@@ -40,7 +40,7 @@ static const HashTableValue JSCSSCharsetRuleTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSCharsetRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSCharsetRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSCSSCharsetRuleTableValues, 0 };
 #else
@@ -54,7 +54,7 @@ static const HashTableValue JSCSSCharsetRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSCharsetRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSCharsetRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSCharsetRuleConstructorTableValues, 0 };
 #else
@@ -92,7 +92,7 @@ static const HashTableValue JSCSSCharsetRulePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSCharsetRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSCharsetRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSCharsetRulePrototypeTableValues, 0 };
 #else

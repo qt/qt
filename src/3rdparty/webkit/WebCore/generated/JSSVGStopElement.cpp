@@ -51,7 +51,7 @@ static const HashTableValue JSSVGStopElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGStopElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGStopElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGStopElementTableValues, 0 };
 #else
@@ -66,7 +66,7 @@ static const HashTableValue JSSVGStopElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGStopElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGStopElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGStopElementPrototypeTableValues, 0 };
 #else

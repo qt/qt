@@ -156,21 +156,15 @@ void QToolBarAreaLayoutLine::fitLayout()
         if (item.skip())
             continue;
 
-        QToolBarLayout *tblayout = qobject_cast<QToolBarLayout*>(item.widgetItem->widget()->layout());
-        if (tblayout)
+        if (QToolBarLayout *tblayout = qobject_cast<QToolBarLayout*>(item.widgetItem->widget()->layout()))
             tblayout->checkUsePopupMenu();
 
-        int itemMin = pick(o, item.minimumSize());
-        int itemHint = pick(o, item.sizeHint());
-        //we ensure the extraspace is not too low
-        item.size = qMax(item.size, itemHint);
-        if (item.preferredSize > 0) {
-            //preferredSize would be the default size
-            item.size = item.preferredSize;
-        }
+        const int itemMin = pick(o, item.minimumSize());
+        //preferredSize is the default if it is set, otherwise, we take the sizehint
+        item.size = item.preferredSize > 0 ? item.preferredSize : pick(o, item.sizeHint());
 
         //the extraspace is the space above the item minimum sizehint
-        int extraSpace = qMin(item.size - itemMin, extra);
+        const int extraSpace = qMin(item.size - itemMin, extra);
         item.size = itemMin + extraSpace; //that is the real size
 
         extra -= extraSpace;
@@ -526,9 +520,10 @@ QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos) const
     return QList<int>();
 }
 
-bool QToolBarAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *item)
+bool QToolBarAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *item)
 {
-    int j = path.at(0);
+    Q_ASSERT(path.count() == 2);
+    int j = path.first();
     if (j == lines.count())
         lines.append(QToolBarAreaLayoutLine(o));
 
@@ -570,8 +565,9 @@ void QToolBarAreaLayoutInfo::clear()
     rect = QRect();
 }
 
-QRect QToolBarAreaLayoutInfo::itemRect(QList<int> path) const
+QRect QToolBarAreaLayoutInfo::itemRect(const QList<int> &path) const
 {
+    Q_ASSERT(path.count() == 2);
     int j = path.at(0);
     int k = path.at(1);
 
@@ -623,10 +619,8 @@ QRect QToolBarAreaLayoutInfo::appendLineDropRect() const
 ** QToolBarAreaLayout
 */
 
-QToolBarAreaLayout::QToolBarAreaLayout(QMainWindow *win)
+QToolBarAreaLayout::QToolBarAreaLayout(const QMainWindow *win) : mainWindow(win), visible(true)
 {
-    visible = true;
-    mainWindow = win;
     for (int i = 0; i < QInternal::DockCount; ++i) {
         QInternal::DockPosition pos = static_cast<QInternal::DockPosition>(i);
         docks[i] = QToolBarAreaLayoutInfo(pos);
@@ -932,7 +926,7 @@ void QToolBarAreaLayout::apply(bool animate)
                 if (visible && dock.o == Qt::Horizontal)
                     geo = QStyle::visualRect(dir, line.rect, geo);
 
-                layout->widgetAnimator->animate(widget, geo, animate);
+                layout->widgetAnimator.animate(widget, geo, animate);
             }
         }
     }
@@ -1064,16 +1058,17 @@ QList<int> QToolBarAreaLayout::currentGapIndex() const
     return QList<int>();
 }
 
-bool QToolBarAreaLayout::insertGap(QList<int> path, QLayoutItem *item)
+bool QToolBarAreaLayout::insertGap(const QList<int> &path, QLayoutItem *item)
 {
-    Q_ASSERT(!path.isEmpty());
-    int i = path.takeFirst();
+    Q_ASSERT(path.count() == 3);
+    const int i = path.first();
     Q_ASSERT(i >= 0 && i < QInternal::DockCount);
-    return docks[i].insertGap(path, item);
+    return docks[i].insertGap(path.mid(1), item);
 }
 
-void QToolBarAreaLayout::remove(QList<int> path)
+void QToolBarAreaLayout::remove(const QList<int> &path)
 {
+    Q_ASSERT(path.count() == 3);
     docks[path.at(0)].lines[path.at(1)].toolBarItems.removeAt(path.at(2));
 }
 
@@ -1104,7 +1099,7 @@ void QToolBarAreaLayout::clear()
     rect = QRect();
 }
 
-QToolBarAreaLayoutItem &QToolBarAreaLayout::item(QList<int> path)
+QToolBarAreaLayoutItem &QToolBarAreaLayout::item(const QList<int> &path)
 {
     Q_ASSERT(path.count() == 3);
 
@@ -1116,18 +1111,18 @@ QToolBarAreaLayoutItem &QToolBarAreaLayout::item(QList<int> path)
     return line.toolBarItems[path.at(2)];
 }
 
-QRect QToolBarAreaLayout::itemRect(QList<int> path) const
+QRect QToolBarAreaLayout::itemRect(const QList<int> &path) const
 {
-    int i = path.takeFirst();
+    const int i = path.first();
 
-    QRect r = docks[i].itemRect(path);
+    QRect r = docks[i].itemRect(path.mid(1));
     if (docks[i].o == Qt::Horizontal)
         r = QStyle::visualRect(mainWindow->layoutDirection(),
                                 docks[i].rect, r);
     return r;
 }
 
-QLayoutItem *QToolBarAreaLayout::plug(QList<int> path)
+QLayoutItem *QToolBarAreaLayout::plug(const QList<int> &path)
 {
     QToolBarAreaLayoutItem &item = this->item(path);
     Q_ASSERT(item.gap);
@@ -1136,9 +1131,10 @@ QLayoutItem *QToolBarAreaLayout::plug(QList<int> path)
     return item.widgetItem;
 }
 
-QLayoutItem *QToolBarAreaLayout::unplug(QList<int> path, QToolBarAreaLayout *other)
+QLayoutItem *QToolBarAreaLayout::unplug(const QList<int> &path, QToolBarAreaLayout *other)
 {
     //other needs to be update as well
+    Q_ASSERT(path.count() == 3);
     QToolBarAreaLayoutItem &item = this->item(path);
 
     //update the leading space here

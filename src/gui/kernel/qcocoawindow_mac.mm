@@ -58,6 +58,10 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
 QT_END_NAMESPACE
 QT_USE_NAMESPACE
 
+@interface NSWindow (QtCoverForHackWithCategory)
++ (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
+@end
+
 @implementation NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
 
 - (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget*)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask;
@@ -99,6 +103,12 @@ QT_USE_NAMESPACE
     So, the handling should get handled by the view. This is here more as a
     last resort (i.e., this is code that can potentially be removed).
  */
+
+- (void)toggleToolbarShown:(id)sender
+{
+    macSendToolbarChangeEvent([self QT_MANGLE_NAMESPACE(qt_qwidget)]);
+    [super toggleToolbarShown:sender];
+}
 
 - (void)keyDown:(NSEvent *)theEvent
 {

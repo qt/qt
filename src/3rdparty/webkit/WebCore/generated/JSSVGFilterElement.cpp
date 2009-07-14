@@ -67,7 +67,7 @@ static const HashTableValue JSSVGFilterElementTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFilterElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFilterElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSSVGFilterElementTableValues, 0 };
 #else
@@ -83,7 +83,7 @@ static const HashTableValue JSSVGFilterElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFilterElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFilterElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFilterElementPrototypeTableValues, 0 };
 #else

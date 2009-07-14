@@ -382,6 +382,9 @@ private:
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
     Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())
 #endif
+#if defined(QT_RX71_MULTITOUCH)
+    Q_PRIVATE_SLOT(d_func(), void _q_readRX71MultiTouchEvents())
+#endif
 };
 
 QT_END_NAMESPACE

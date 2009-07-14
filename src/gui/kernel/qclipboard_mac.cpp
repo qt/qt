@@ -50,6 +50,7 @@
 #include "qurl.h"
 #include <stdlib.h>
 #include <string.h>
+#include "qt_cocoa_helpers_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -525,8 +526,17 @@ QMacPasteboard::retrieveData(const QString &format, QVariant::Type) const
         QString c_flavor = c->flavorFor(format);
         if(!c_flavor.isEmpty()) {
             // Handle text/plain a little differently. Try handling Unicode first.
-            if((c_flavor == QLatin1String("com.apple.traditional-mac-plain-text") || c_flavor == QLatin1String("public.utf8-plain-text")) &&
-               hasFlavor(QLatin1String("public.utf16-plain-text")))
+            bool checkForUtf16 = (c_flavor == QLatin1String("com.apple.traditional-mac-plain-text")
+                                  || c_flavor == QLatin1String("public.utf8-plain-text"));
+            if (checkForUtf16 || c_flavor == QLatin1String("public.utf16-plain-text")) {
+                // Try to get the NSStringPboardType from NSPasteboard, newlines are mapped
+                // correctly (as '\n') in this data. The 'public.utf16-plain-text' type
+                // usually maps newlines to '\r' instead.
+                QString str = qt_mac_get_pasteboardString();
+                if (!str.isEmpty())
+                    return str;
+            }
+            if (checkForUtf16 && hasFlavor(QLatin1String("public.utf16-plain-text")))
                 c_flavor = QLatin1String("public.utf16-plain-text");
 
             QVariant ret;

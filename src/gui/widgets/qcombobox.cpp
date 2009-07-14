@@ -59,6 +59,7 @@
 #ifndef QT_NO_IM
 #include "qinputcontext.h"
 #endif
+#include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
@@ -76,8 +77,6 @@
 # include <private/qeffects_p.h>
 #endif
 QT_BEGIN_NAMESPACE
-
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash();
 
 QComboBoxPrivate::QComboBoxPrivate()
     : QWidgetPrivate(),
@@ -149,8 +148,10 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     menuOption.rect = option.rect;
 
     // Make sure fonts set on the combo box also overrides the font for the popup menu.
-    if (mCombo->testAttribute(Qt::WA_SetFont) || mCombo->testAttribute(Qt::WA_MacSmallSize)
-            || mCombo->testAttribute(Qt::WA_MacMiniSize))
+    if (mCombo->testAttribute(Qt::WA_SetFont)
+            || mCombo->testAttribute(Qt::WA_MacSmallSize)
+            || mCombo->testAttribute(Qt::WA_MacMiniSize)
+            || mCombo->font() != qt_app_fonts_hash()->value("QComboBox", QFont()))
         menuOption.font = mCombo->font();
     else
         menuOption.font = qt_app_fonts_hash()->value("QComboMenuItem", mCombo->font());

@@ -3542,7 +3542,8 @@ QStyleOptionQ3DockWindow::QStyleOptionQ3DockWindow(int version)
 */
 
 QStyleOptionDockWidget::QStyleOptionDockWidget()
-    : QStyleOption(Version, SO_DockWidget), movable(false)
+    : QStyleOption(Version, SO_DockWidget), closable(false),
+      movable(false), floatable(false)
 {
 }
 

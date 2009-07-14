@@ -136,7 +136,12 @@ BuildsMetaMakefileGenerator::init()
         Build *build = new Build;
         build->name = name;
         build->makefile = createMakefileGenerator(project, false);
-        makefiles += build;
+	if (build->makefile){
+            makefiles += build;
+	}else {
+	    delete build;
+	    return false;
+	}
     }
     return true;
 }
@@ -437,7 +442,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 
     QString gen = proj->first("MAKEFILE_GENERATOR");
     if(gen.isEmpty()) {
-        fprintf(stderr, "No generator specified in config file: %s\n",
+        fprintf(stderr, "MAKEFILE_GENERATOR variable not set as a result of parsing : %s. Possibly qmake was not able to find files included using \"include(..)\" - enable qmake debugging to investigate more.\n",
                 proj->projectFile().toLatin1().constData());
     } else if(gen == "UNIX") {
         mkfile = new UnixMakefileGenerator;

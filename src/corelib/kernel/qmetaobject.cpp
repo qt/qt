@@ -218,8 +218,14 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    QByteArray constructorName = className();
+    {
+        int idx = constructorName.lastIndexOf(':');
+        if (idx != -1)
+            constructorName.remove(0, idx+1); // remove qualified part
+    }
     QVarLengthArray<char, 512> sig;
-    sig.append(className(), qstrlen(className()));
+    sig.append(constructorName.constData(), constructorName.length());
     sig.append('(');
 
     enum { MaximumParamCount = 10 };
@@ -2130,8 +2136,15 @@ QVariant QMetaProperty::read(const QObject *object) const
             return QVariant();
         }
     }
+
+    // the status variable is changed by qt_metacall to indicate what it did
+    // this feature is currently only used by QtDBus and should not be depended
+    // upon. Don't change it without looking into QDBusAbstractInterface first
+    // -1 (unchanged): normal qt_metacall, result stored in argv[0]
+    // changed: result stored directly in value
+    int status = -1;
     QVariant value;
-    void *argv[2] = { 0, &value };
+    void *argv[] = { 0, &value, &status };
     if (t == QVariant::LastType) {
         argv[0] = &value;
     } else {
@@ -2141,8 +2154,8 @@ QVariant QMetaProperty::read(const QObject *object) const
     const_cast<QObject*>(object)->qt_metacall(QMetaObject::ReadProperty,
                                               idx + mobj->propertyOffset(),
                                               argv);
-    if (argv[1] == 0)
-        // "value" was changed
+
+    if (status != -1)
         return value;
     if (t != QVariant::LastType && argv[0] != value.data())
         // pointer or reference
@@ -2200,13 +2213,19 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
             return false;
     }
 
-    void *argv[2] = { 0, &v };
+    // the status variable is changed by qt_metacall to indicate what it did
+    // this feature is currently only used by QtDBus and should not be depended
+    // upon. Don't change it without looking into QDBusAbstractInterface first
+    // -1 (unchanged): normal qt_metacall, result stored in argv[0]
+    // changed: result stored directly in value, return the value of status
+    int status = -1;
+    void *argv[] = { 0, &v, &status };
     if (t == QVariant::LastType)
         argv[0] = &v;
     else
         argv[0] = v.data();
     object->qt_metacall(QMetaObject::WriteProperty, idx + mobj->propertyOffset(), argv);
-    return true;
+    return status;
 }
 
 /*!

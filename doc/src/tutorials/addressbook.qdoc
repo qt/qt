@@ -697,10 +697,11 @@
 
     \snippet tutorials/addressbook/part5/finddialog.h FindDialog header
 
-    We define a public function, \c getFindText() for use by classes that
-    instantiate \c FindDialog, which allows them to obtain the text
-    entered by the user. A public slot, \c findClicked(), is defined to
-    handle the search string when the user clicks the \gui Find button.
+    We define a public function, \c getFindText(), to be used by classes that
+    instantiate \c FindDialog. This function allows these classes to obtain the
+    search string entered by the user. A public slot, \c findClicked(), is also
+    defined to handle the search string when the user clicks the \gui Find
+    button.
 
     Lastly, we define the private variables, \c findButton, \c lineEdit
     and \c findText, corresponding to the \gui Find button, the line edit
@@ -715,15 +716,15 @@
 
     \snippet tutorials/addressbook/part5/finddialog.cpp constructor
 
-    We set the layout and window title, as well as connect the signals
-    to their respective slots. Notice that \c{findButton}'s
-    \l{QPushButton::clicked()}{clicked()} signal is connected to to
-    \c findClicked() and \l{QDialog::accept()}{accept()}. The
-    \l{QDialog::accept()}{accept()} slot provided by QDialog hides
-    the dialog and sets the result code to \l{QDialog::}{Accepted}.
-    We use this function to help \c{AddressBook}'s \c findContact() function
-    know when the \c FindDialog object has been closed. This will be
-    further explained when discussing the \c findContact() function.
+    We set the layout and window title, as well as connect the signals to their
+    respective slots. Notice that \c{findButton}'s \l{QPushButton::clicked()}
+    {clicked()} signal is connected to to \c findClicked() and
+    \l{QDialog::accept()}{accept()}. The \l{QDialog::accept()}{accept()} slot
+    provided by QDialog hides the dialog and sets the result code to
+    \l{QDialog::}{Accepted}. We use this function to help \c{AddressBook}'s
+    \c findContact() function know when the \c FindDialog object has been
+    closed. We will explain this logic in further detail when discussing the
+    \c findContact() function.
 
     \image addressbook-tutorial-part5-signals-and-slots.png
 
@@ -817,21 +818,23 @@
 
     \image addressbook-tutorial-part6-screenshot.png
 
-    Although browsing and searching for contacts are useful features, our address
-    book is not really fully ready for use until we can saving existing contacts
-    and load them again at a later time.
-    Qt provides a number of classes for \l{Input/Output and Networking}{input and output},
-    but we have chosen to use two which are simple to use in combination: QFile and
-    QDataStream.
+    Although browsing and searching for contacts are useful features, our
+    address book is not ready for use until we can save existing contacts and
+    load them again at a later time.
 
-    A QFile object represents a file on disk that can be read from and written to.
-    QFile is a subclass of the more general QIODevice class which represents many
-    different kinds of devices.
+    Qt provides a number of classes for \l{Input/Output and Networking}
+    {input and output}, but we have chosen to use two which are simple to use
+    in combination: QFile and QDataStream.
 
-    A QDataStream object is used to serialize binary data so that it can be stored
-    in a QIODevice and retrieved again later. Reading from a QIODevice and writing
-    to it is as simple as opening the stream - with the respective device as a
-    parameter - and reading from or writing to it.
+    A QFile object represents a file on disk that can be read from and written
+    to. QFile is a subclass of the more general QIODevice class which
+    represents many different kinds of devices.
+
+    A QDataStream object is used to serialize binary data so that it can be
+    stored in a QIODevice and retrieved again later. Reading from a QIODevice
+    and writing to it is as simple as opening the stream - with the respective
+    device as a parameter - and reading from or writing to it.
+
 
     \section1 Defining the AddressBook Class
 
@@ -873,7 +876,7 @@
 
     \image addressbook-tutorial-part6-save.png
 
-    If \c fileName is not empty, we create a QFile object, \c file with
+    If \c fileName is not empty, we create a QFile object, \c file, with
     \c fileName. QFile works with QDataStream as QFile is a QIODevice.
 
     Next, we attempt to open the file in \l{QIODevice::}{WriteOnly} mode.
@@ -903,18 +906,18 @@
     \image addressbook-tutorial-part6-load.png
 
     If \c fileName is not empty, again, we use a QFile object, \c file, and
-    attempt to open it in \l{QIODevice::}{ReadOnly} mode. In a similar way
-    to our implementation of \c saveToFile(), if this attempt is unsuccessful,
-    we display a QMessageBox to inform the user.
+    attempt to open it in \l{QIODevice::}{ReadOnly} mode. Similar to our
+    implementation of \c saveToFile(), if this attempt is unsuccessful, we
+    display a QMessageBox to inform the user.
 
     \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part2
 
     Otherwise, we instantiate a QDataStream object, \c in, set its version as
     above and read the serialized data into the \c contacts data structure.
-    Note that we empty \c contacts before reading data into it to simplify the
-    file reading process. A more advanced method would be to read the contacts
-    into temporary QMap object, and copy only the contacts that do not already
-    exist in \c contacts.
+    The \c contacts object is emptied before data is read into it to simplify
+    the file reading process. A more advanced method would be to read the
+    contacts into a temporary QMap object, and copy over non-duplicate contacts
+    into \c contacts.
 
     \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part3
 

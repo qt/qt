@@ -85,9 +85,8 @@ public:
     void search(const QString &collectionFile,
         const QString &indexFilesFolder,
         const QList<QHelpSearchQuery> &queryList);
-
     int hitsCount() const;
-    QHelpSearchEngine::SearchHit hit(int index) const;
+    QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
 
 signals:
     void searchingStarted();
@@ -105,10 +104,8 @@ private:
         const QList<QHelpSearchQuery> &queryList);
 
 private:
-    QMutex mutex;
+    mutable QMutex mutex;
     QList<QHelpSearchEngine::SearchHit> hitList;
-    QWaitCondition waitCondition;
-
     bool m_cancel;
     QString m_collectionFile;
     QList<QHelpSearchQuery> m_query;

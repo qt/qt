@@ -49,7 +49,7 @@ static const HashTableValue JSHTMLVideoElementTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLVideoElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLVideoElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLVideoElementTableValues, 0 };
 #else
@@ -63,7 +63,7 @@ static const HashTableValue JSHTMLVideoElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLVideoElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLVideoElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLVideoElementConstructorTableValues, 0 };
 #else
@@ -101,7 +101,7 @@ static const HashTableValue JSHTMLVideoElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLVideoElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLVideoElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLVideoElementPrototypeTableValues, 0 };
 #else

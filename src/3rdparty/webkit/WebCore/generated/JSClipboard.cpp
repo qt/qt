@@ -46,7 +46,7 @@ static const HashTableValue JSClipboardTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClipboardTable =
+static JSC_CONST_HASHTABLE HashTable JSClipboardTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSClipboardTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSClipboardConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClipboardConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSClipboardConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSClipboardConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSClipboardPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClipboardPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSClipboardPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSClipboardPrototypeTableValues, 0 };
 #else

@@ -270,24 +270,35 @@ QItemSelectionRange QItemSelectionRange::intersect(const QItemSelectionRange &ot
 
 */
 
+/*
+  \internal
+
+  utility function for getting the indexes from a range
+  it avoid concatenating list and works on one
+ */
+
+static void indexesFromRange(const QItemSelectionRange &range, QModelIndexList &result)
+{
+    if (range.isValid() && range.model()) {
+        for (int column = range.left(); column <= range.right(); ++column) {
+            for (int row = range.top(); row <= range.bottom(); ++row) {
+                QModelIndex index = range.model()->index(row, column, range.parent());
+                Qt::ItemFlags flags = range.model()->flags(index);
+                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                    result.append(index);
+            }
+        }
+    }
+}
+
 /*!
     Returns the list of model index items stored in the selection.
 */
 
 QModelIndexList QItemSelectionRange::indexes() const
 {
-    QModelIndex index;
     QModelIndexList result;
-    if (isValid() && model()) {
-        for (int column = left(); column <= right(); ++column) {
-            for (int row = top(); row <= bottom(); ++row) {
-                index = model()->index(row, column, parent());
-                Qt::ItemFlags flags = model()->flags(index);
-                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
-                    result.append(index);
-            }
-        }
-    }
+    indexesFromRange(*this, result);
     return result;
 }
 
@@ -404,7 +415,7 @@ QModelIndexList QItemSelection::indexes() const
     QModelIndexList result;
     QList<QItemSelectionRange>::const_iterator it = begin();
     for (; it != end(); ++it)
-        result += (*it).indexes();
+        indexesFromRange(*it, result);
     return result;
 }
 

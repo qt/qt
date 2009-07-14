@@ -57,16 +57,16 @@
         <translation>Новая папка</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+185"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+184"/>
         <location line="+18"/>
-        <location line="+36"/>
-        <location line="+24"/>
-        <location line="+32"/>
+        <location line="+39"/>
+        <location line="+18"/>
+        <location line="+30"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
     <message>
-        <location line="-69"/>
+        <location line="-61"/>
         <source>Delete Folder</source>
         <translation>Удалить папку</translation>
     </message>
@@ -79,12 +79,12 @@
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+449"/>
+        <location line="+434"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+37"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
@@ -94,7 +94,7 @@
         <translation>Удаление папки приведёт к удалению её содержимого.&lt;br&gt;Желаете продолжить?</translation>
     </message>
     <message>
-        <location line="+109"/>
+        <location line="+143"/>
         <location line="+9"/>
         <source>New Folder</source>
         <translation>Новая папка</translation>
@@ -103,7 +103,7 @@
 <context>
     <name>BookmarkWidget</name>
     <message>
-        <location line="-436"/>
+        <location line="-462"/>
         <source>Delete Folder</source>
         <translation>Удалить папку</translation>
     </message>
@@ -138,7 +138,7 @@
         <translation>Фильтр:</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
@@ -161,7 +161,7 @@
         <translation>Закрыть текущую страницу</translation>
     </message>
     <message>
-        <location line="+284"/>
+        <location line="+291"/>
         <source>Print Document</source>
         <translation>Печать документа</translation>
     </message>
@@ -226,24 +226,24 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-925"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-932"/>
         <source>Previous</source>
-        <translation>Предыдущее совпадение</translation>
+        <translation>Предыдущее</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Next</source>
-        <translation>Следующее совпадение</translation>
+        <translation>Следующее</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Case Sensitive</source>
-        <translation>Регистрозависимо</translation>
+        <translation>Учитывать регистр</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Whole words</source>
-        <translation>Слова полностью</translation>
+        <translation>Слова целиком</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -441,31 +441,31 @@
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+108"/>
-        <location line="+354"/>
+        <location line="+384"/>
         <source>Index</source>
-        <translation>Индекс</translation>
+        <translation>Указатель</translation>
     </message>
     <message>
-        <location line="-348"/>
-        <location line="+346"/>
+        <location line="-378"/>
+        <location line="+376"/>
         <source>Contents</source>
         <translation>Содержание</translation>
     </message>
     <message>
-        <location line="-341"/>
-        <location line="+345"/>
+        <location line="-371"/>
+        <location line="+375"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
     <message>
-        <location line="-333"/>
-        <location line="+208"/>
-        <location line="+476"/>
+        <location line="-363"/>
+        <location line="+215"/>
+        <location line="+500"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-508"/>
+        <location line="-532"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Без фильтрации</translation>
@@ -473,10 +473,10 @@
     <message>
         <location line="+21"/>
         <source>Looking for Qt Documentation...</source>
-        <translation type="unfinished">Поиск по документации Qt...</translation>
+        <translation>Поиск документации по Qt...</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+84"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
@@ -656,7 +656,7 @@
         <translation>Добавить закладку...</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>CTRL+D</source>
         <translation type="unfinished"></translation>
     </message>
@@ -723,12 +723,12 @@
     <message>
         <location line="+114"/>
         <source>Could not find the associated content item.</source>
-        <translation type="unfinished">Не удалось найти элемент, связанный с содержанием.</translation>
+        <translation>Не удалось найти элемент, связанный с содержанием.</translation>
     </message>
     <message>
         <location line="+81"/>
         <source>About %1</source>
-        <translation type="unfinished">О %1</translation>
+        <translation>О %1</translation>
     </message>
     <message>
         <location line="+114"/>
@@ -767,7 +767,7 @@
     <message>
         <location line="+1"/>
         <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
-        <translation>Некоторые открытые в Qt Assistant документы ссылаются на документацию, которую вы пытаетесь удалить. Удаление данной документации приведёт к закрытию таких документов.</translation>
+        <translation>Некоторые открытые в Qt Assistant документы ссылаются на документацию, которую вы пытаетесь удалить. Её удаление приведёт к закрытию этих документов.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -830,7 +830,7 @@
     <message>
         <location line="+11"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -876,17 +876,11 @@
     <message>
         <location line="+7"/>
         <source>Restore to default</source>
-        <translation type="unfinished">Восстановить по умолчанию</translation>
+        <translation>Страница по умолчанию</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+157"/>
-        <location line="+1"/>
-        <source>Bookmark</source>
-        <translation>Закладка</translation>
-    </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
         <source>The specified collection file does not exist!</source>
@@ -1037,17 +1031,17 @@ Reason:
     <message>
         <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+54"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;:</source>
-        <translation>Выберите статью для &lt;b&gt;%1&lt;/b&gt;:</translation>
+        <translation>Выберите раздел для &lt;b&gt;%1&lt;/b&gt;:</translation>
     </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/topicchooser.ui" line="+16"/>
         <source>Choose Topic</source>
-        <translation>Выбор статьи</translation>
+        <translation>Выбор раздела</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>&amp;Topics</source>
-        <translation>&amp;Статьи</translation>
+        <translation>&amp;Разделы</translation>
     </message>
     <message>
         <location line="+51"/>

@@ -49,7 +49,7 @@ static const HashTableValue JSLocationTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSLocationTable =
+static JSC_CONST_HASHTABLE HashTable JSLocationTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSLocationTableValues, 0 };
 #else
@@ -67,7 +67,7 @@ static const HashTableValue JSLocationPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSLocationPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSLocationPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSLocationPrototypeTableValues, 0 };
 #else

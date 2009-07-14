@@ -1550,10 +1550,7 @@ void QLineEditPrivate::copy(bool clipboard) const
     Q_Q(const QLineEdit);
     QString t = q->selectedText();
     if (!t.isEmpty() && echoMode == QLineEdit::Normal) {
-        q->disconnect(QApplication::clipboard(), SIGNAL(selectionChanged()), q, 0);
         QApplication::clipboard()->setText(t, clipboard ? QClipboard::Clipboard : QClipboard::Selection);
-        q->connect(QApplication::clipboard(), SIGNAL(selectionChanged()),
-                   q, SLOT(_q_clipboardChanged()));
     }
 }
 
@@ -2172,7 +2169,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
 
     if (unknown && !d->readOnly) {
         QString t = event->text();
-        if (!t.isEmpty() && t.at(0).isPrint()) {
+        if (!t.isEmpty() && t.at(0).isPrint() &&
+            ((event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) == Qt::NoModifier)) {
             insert(t);
 #ifndef QT_NO_COMPLETER
             d->complete(event->key());
@@ -2689,11 +2687,11 @@ QMenu *QLineEdit::createStandardContextMenu()
 
 #ifndef QT_NO_CLIPBOARD
     action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->readOnly && d->hasSelectedText());
+    action->setEnabled(!d->readOnly && d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(cut()));
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
-    action->setEnabled(d->hasSelectedText());
+    action->setEnabled(d->hasSelectedText() && d->echoMode == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
     action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
@@ -2747,10 +2745,6 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->updateTextLayout();
     }
     QWidget::changeEvent(ev);
-}
-
-void QLineEditPrivate::_q_clipboardChanged()
-{
 }
 
 void QLineEditPrivate::_q_handleWindowActivate()

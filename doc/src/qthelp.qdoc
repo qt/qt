@@ -279,7 +279,7 @@
 
     \section1 Qt Help Project File Format
 
-    The file format is XML based. For a better understanding of
+    The file format is XML-based. For a better understanding of
     the format we'll discuss the following example:
 
     \snippet doc/src/snippets/code/doc_src_qthelp.qdoc 7
@@ -398,11 +398,13 @@
 
     Finally, the actual documentation files have to be listed. Make sure
     that all files neccessary to display the help are mentioned, i.e.
-    stylesheets or similar files need to be there as well. The file, like all
+    stylesheets or similar files need to be there as well. The files, like all
     file references in a Qt help project, are relative to the help project file
-    itself. All listed files will be compressed and written to the Qt compressed
-    help file. So, in the end, one single Qt help file contains all
-    documentation files along with the contents and indices. \note The
-    referenced files must be inside the same directory (or within a subdirectory)
-    as the help project file. An absolute file path is not supported either.
+    itself. As the example shows, files (but not directories) can also be 
+    specified as patterns using wildcards. All listed files will be compressed 
+    and written to the Qt compressed help file. So, in the end, one single Qt 
+    help file contains all documentation files along with the contents and 
+    indices. \note The referenced files must be inside the same directory 
+    (or within a subdirectory) as the help project file. An absolute file path 
+    is not supported either.
 */

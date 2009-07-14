@@ -48,7 +48,7 @@ static const HashTableValue JSStorageTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSStorageTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSStorageConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStorageConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSStorageConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSStorageConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSStoragePrototypeTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSStoragePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSStoragePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSStoragePrototypeTableValues, 0 };
 #else

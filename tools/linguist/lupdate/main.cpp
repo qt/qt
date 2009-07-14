@@ -43,6 +43,7 @@
 
 #include <translator.h>
 #include <profileevaluator.h>
+#include <proreader.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -103,7 +104,7 @@ static void printUsage()
         "    -silent\n"
         "           Do not explain what is being done.\n"
         "    -no-sort\n"
-        "           Do not sort contexts in .ts files.\n"
+        "           Do not sort contexts in TS files.\n"
         "    -no-recursive\n"
         "           Do not recursively scan the following directories.\n"
         "    -recursive\n"
@@ -112,10 +113,10 @@ static void printUsage()
         "           Additional location to look for include files.\n"
         "           May be specified multiple times.\n"
         "    -locations {absolute|relative|none}\n"
-        "           Specify/override how source code references are saved in ts files.\n"
+        "           Specify/override how source code references are saved in TS files.\n"
         "           Default is absolute.\n"
         "    -no-ui-lines\n"
-        "           Do not record line numbers in references to .ui files.\n"
+        "           Do not record line numbers in references to UI files.\n"
         "    -disable-heuristic {sametext|similartext|number}\n"
         "           Disable the named merge heuristic. Can be specified multiple times.\n"
         "    -pro <filename>\n"
@@ -182,9 +183,10 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         if (options & Verbose)
             printOut(QObject::tr("Updating '%1'...\n").arg(fn));
 
+        UpdateOptions theseOptions = options;
         if (tor.locationsType() == Translator::NoLocations) // Could be set from file
-            options |= NoLocations;
-        Translator out = merge(tor, fetchedTor, options, err);
+            theseOptions |= NoLocations;
+        Translator out = merge(tor, fetchedTor, theseOptions, err);
         if (!codecForTr.isEmpty())
             out.setCodecName(codecForTr);
 
@@ -487,7 +489,7 @@ int main(int argc, char **argv)
 
             cd.m_includePath += visitor.values(QLatin1String("INCLUDEPATH"));
 
-            evaluateProFile(visitor, &variables);
+            evaluateProFile(visitor, &variables, pfi.absolutePath());
 
             sourceFiles = variables.value("SOURCES");
 

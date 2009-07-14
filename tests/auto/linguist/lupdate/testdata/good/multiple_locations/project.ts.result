@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<context>
+    <name>context</name>
+    <message>
+        <location filename="finddialog.cpp" line="2"/>
+        <location filename="finddialog.cpp" line="7"/>
+        <location filename="main.cpp" line="6"/>
+        <source>just a message</source>
+        <extracomment>This is one comment
+----------
+This is a comment, too.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>

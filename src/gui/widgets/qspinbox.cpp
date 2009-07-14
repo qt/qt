@@ -50,6 +50,7 @@
 #include <qdebug.h>
 
 #include <math.h>
+#include <float.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -284,6 +285,9 @@ void QSpinBox::setPrefix(const QString &prefix)
 
     d->prefix = prefix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!
@@ -318,6 +322,9 @@ void QSpinBox::setSuffix(const QString &suffix)
 
     d->suffix = suffix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!
@@ -817,8 +824,8 @@ void QDoubleSpinBox::setRange(double minimum, double maximum)
      Sets how many decimals the spinbox will use for displaying and
      interpreting doubles.
 
-     \warning The results might not be reliable with very high values
-     for \a decimals.
+     \warning The maximum value for \a decimals is DBL_MAX_10_EXP +
+     DBL_DIG (ie. 323) because of the limitations of the double type.
 
      Note: The maximum, minimum and value might change as a result of
      changing this property.
@@ -834,7 +841,7 @@ int QDoubleSpinBox::decimals() const
 void QDoubleSpinBox::setDecimals(int decimals)
 {
     Q_D(QDoubleSpinBox);
-    d->decimals = qMax(0, decimals);
+    d->decimals = qBound(0, decimals, DBL_MAX_10_EXP + DBL_DIG);
 
     setRange(minimum(), maximum()); // make sure values are rounded
     setValue(value());

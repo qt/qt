@@ -41,7 +41,7 @@ static const HashTableValue JSHistoryTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHistoryTable =
+static JSC_CONST_HASHTABLE HashTable JSHistoryTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHistoryTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSHistoryPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHistoryPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHistoryPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHistoryPrototypeTableValues, 0 };
 #else

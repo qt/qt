@@ -57,7 +57,7 @@ static const HashTableValue JSSVGFEFloodElementTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFloodElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEFloodElementTableValues, 0 };
 #else
@@ -71,7 +71,7 @@ static const HashTableValue JSSVGFEFloodElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFloodElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEFloodElementConstructorTableValues, 0 };
 #else
@@ -110,7 +110,7 @@ static const HashTableValue JSSVGFEFloodElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFloodElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEFloodElementPrototypeTableValues, 0 };
 #else

@@ -44,7 +44,7 @@ static const HashTableValue JSSVGPreserveAspectRatioTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPreserveAspectRatioTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPreserveAspectRatioTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGPreserveAspectRatioTableValues, 0 };
 #else
@@ -72,7 +72,7 @@ static const HashTableValue JSSVGPreserveAspectRatioConstructorTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPreserveAspectRatioConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPreserveAspectRatioConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGPreserveAspectRatioConstructorTableValues, 0 };
 #else
@@ -124,7 +124,7 @@ static const HashTableValue JSSVGPreserveAspectRatioPrototypeTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPreserveAspectRatioPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPreserveAspectRatioPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGPreserveAspectRatioPrototypeTableValues, 0 };
 #else

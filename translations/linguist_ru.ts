@@ -42,7 +42,7 @@
     <message>
         <location line="+7"/>
         <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked.</source>
-        <translation>Имейте в виду, что изменённые записи будут отмечены как незавершённые, если не включен параметр &quot;Помечать переведенные записи как завершённые&quot;.</translation>
+        <translation>Имейте в виду, что изменённые записи будут отмечены как незавершённые, если не включён параметр &quot;Помечать переведенные записи как завершённые&quot;.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -289,7 +289,7 @@ Will assume a single universal form.</source>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+715"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+732"/>
         <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
 </source>
         <translation>
@@ -617,7 +617,7 @@ All files (*)</source>
     <message>
         <location line="+6"/>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - инструмент для добавления переводов в приложения на основе Qt.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.&lt;/p&gt;&lt;p&gt;Программа предоставляется &quot;как есть&quot; без гарантий любого рода, включая гарантии дизайна, коммерческой ценности и пригодности для определённой цели.&lt;/p&gt;</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+41"/>
@@ -1250,7 +1250,7 @@ All files (*)</source>
     <message>
         <location line="+3"/>
         <source>Toggle checking that phrase suggestions are used.</source>
-        <translation>Переключение проверки использования предложений для фраз. Если выявлено несовпадение, будет показано сообщение в окне предупреждений.</translation>
+        <translation>Переключение проверки использования предложений для фраз.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1466,6 +1466,11 @@ All files (*)</source>
     </message>
     <message>
         <location line="+30"/>
+        <source>Russian</source>
+        <translation>Русский</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>German</source>
         <translation>Немецкий</translation>
     </message>
@@ -1517,7 +1522,7 @@ All files (*)</source>
     <message>
         <location line="+3"/>
         <source>Developer comments</source>
-        <translation>Комментарии разработчика</translation>
+        <translation>Комментарий разработчика</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1547,7 +1552,7 @@ All files (*)</source>
     <message>
         <location line="+1"/>
         <source>%1 translator comments</source>
-        <translation>Комментарий переводчика на %1</translation>
+        <translation>%1 перевод: комментарий переводчика</translation>
     </message>
     <message>
         <location line="+140"/>
@@ -1583,10 +1588,11 @@ Line: %2</source>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-544"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-545"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Правая панель главного окна</translatorcomment>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1800,17 +1806,17 @@ Line: %2</source>
     <message>
         <location filename="../tools/linguist/shared/cpp.cpp" line="+1089"/>
         <source>C++ source files</source>
-        <translation>Исходные коды C++</translation>
+        <translation>Файлы исходных кодов C++</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/java.cpp" line="+652"/>
         <source>Java source files</source>
-        <translation>Исходные коды Java</translation>
+        <translation>Файлы исходных кодов Java</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/qscript.cpp" line="+2399"/>
         <source>Qt Script source files</source>
-        <translation>Исходные коды Qt Script</translation>
+        <translation>Файлы исходных кодов Qt Script</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>

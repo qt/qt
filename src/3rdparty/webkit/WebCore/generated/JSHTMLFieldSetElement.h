@@ -57,6 +57,7 @@ public:
 // Attributes
 
 JSC::JSValue jsHTMLFieldSetElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLFieldSetElementValidity(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLFieldSetElementWillValidate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLFieldSetElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 

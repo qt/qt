@@ -225,10 +225,11 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
     char *inBytes = const_cast<char *>(chars);
 #endif
 
+    QByteArray in;
     if (remainingCount) {
         // we have to prepend the remaining bytes from the previous conversion
         inBytesLeft += remainingCount;
-        QByteArray in(inBytesLeft, Qt::Uninitialized);
+        in.resize(inBytesLeft);
         inBytes = in.data();
 
         memcpy(in.data(), remainingBuffer, remainingCount);
@@ -362,9 +363,10 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     inBytes = const_cast<char *>(reinterpret_cast<const char *>(uc));
     inBytesLeft = len * sizeof(QChar);
 
+    QByteArray in;
     if (convState && convState->remainingChars) {
         // we have one surrogate char to be prepended
-        QByteArray in(sizeof(QChar) + len, Qt::Uninitialized);
+        in.resize(sizeof(QChar) + len);
         inBytes = in.data();
 
         QChar remaining = convState->state_data[0];

@@ -331,7 +331,10 @@ QString CodeMarker::sortName(const Node *node)
     return QLatin1Char('B') + nodeName;
 }
 
-void CodeMarker::insert(FastSection &fastSection, Node *node, SynopsisStyle style, Status status)
+void CodeMarker::insert(FastSection &fastSection,
+                        Node *node,
+                        SynopsisStyle style,
+                        Status status)
 {
     bool inheritedMember = (!node->relates() &&
 			    (node->parent() != (const InnerNode *)fastSection.innerNode));
@@ -339,12 +342,14 @@ void CodeMarker::insert(FastSection &fastSection, Node *node, SynopsisStyle styl
 
     if (node->access() == Node::Private) {
 	irrelevant = true;
-    } else if (node->type() == Node::Function) {
+    }
+    else if (node->type() == Node::Function) {
 	FunctionNode *func = (FunctionNode *) node;
 	irrelevant = (inheritedMember
 		      && (func->metaness() == FunctionNode::Ctor ||
 			  func->metaness() == FunctionNode::Dtor));
-    } else if (node->type() == Node::Class || node->type() == Node::Enum
+    }
+    else if (node->type() == Node::Class || node->type() == Node::Enum
 		    || node->type() == Node::Typedef) {
 	irrelevant = (inheritedMember && style != SeparateList);
         if (!irrelevant && style == Detailed && node->type() == Node::Typedef) {
@@ -357,9 +362,11 @@ void CodeMarker::insert(FastSection &fastSection, Node *node, SynopsisStyle styl
     if (!irrelevant) {
         if (status == Compat) {
             irrelevant = (node->status() != Node::Compat);
-	} else if (status == Obsolete) {
+	}
+        else if (status == Obsolete) {
             irrelevant = (node->status() != Node::Obsolete);
-	} else {
+	}
+        else {
             irrelevant = (node->status() == Node::Compat ||
                           node->status() == Node::Obsolete);
 	}
@@ -370,7 +377,8 @@ void CodeMarker::insert(FastSection &fastSection, Node *node, SynopsisStyle styl
 	    QString key = sortName(node);
             if (!fastSection.memberMap.contains(key))
 		fastSection.memberMap.insert(key, node);
-	} else {
+	}
+        else {
 	    if (node->parent()->type() == Node::Class) {
 		if (fastSection.inherited.isEmpty()
                     || fastSection.inherited.last().first != node->parent()) {
@@ -383,16 +391,42 @@ void CodeMarker::insert(FastSection &fastSection, Node *node, SynopsisStyle styl
     }
 }
 
-void CodeMarker::append(QList<Section>& sectionList,
-                        const FastSection& fastSection)
+/*!
+  Returns true if \a node represents a reimplemented member function.
+  If it is, then it is inserted in the reimplemented member map in the
+  section \a fs. And, the test is only performed if \a status is \e OK.
+  Otherwise, false is returned.
+ */
+bool CodeMarker::insertReimpFunc(FastSection& fs, Node* node, Status status)
 {
-    if (!fastSection.memberMap.isEmpty() ||
-	 !fastSection.inherited.isEmpty()) {
-	Section section(fastSection.name,
-                        fastSection.singularMember,
-                        fastSection.pluralMember);
-	section.members = fastSection.memberMap.values();
-	section.inherited = fastSection.inherited;
+    if (node->access() == Node::Private)
+        return false;
+
+    const FunctionNode* fn = static_cast<const FunctionNode*>(node);
+    if ((fn->reimplementedFrom() != 0) && (status == Okay)) {
+        bool inherited = (!fn->relates() && (fn->parent() != (const InnerNode*)fs.innerNode));
+        if (!inherited) {
+            QString key = sortName(fn);
+            if (!fs.reimpMemberMap.contains(key)) {
+                fs.reimpMemberMap.insert(key,node);
+                return true;
+            }
+        }
+    }
+    return false;
+ }
+
+/*!
+  If \a fs is not empty, convert it to a Section and append
+  the new Section to \a sectionList.
+ */
+void CodeMarker::append(QList<Section>& sectionList, const FastSection& fs)
+{
+    if (!fs.isEmpty()) {
+	Section section(fs.name,fs.singularMember,fs.pluralMember);
+	section.members = fs.memberMap.values();
+        section.reimpMembers = fs.reimpMemberMap.values();
+	section.inherited = fs.inherited;
 	sectionList.append(section);
     }
 }

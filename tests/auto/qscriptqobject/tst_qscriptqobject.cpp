@@ -909,6 +909,7 @@ void tst_QScriptExtQObject::getSetChildren()
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
 
+    QScriptValue mobj = m_engine->evaluate("myObject");
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::ReadOnly);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::Undeletable);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::SkipInEnumeration);
@@ -918,6 +919,8 @@ void tst_QScriptExtQObject::getSetChildren()
         QScriptValue scriptChild = m_engine->evaluate("myObject.child");
         QVERIFY(scriptChild.isQObject());
         QCOMPARE(scriptChild.toQObject(), (QObject*)child);
+        QScriptValue sameChild = m_engine->evaluate("myObject.child");
+        QVERIFY(sameChild.strictlyEquals(scriptChild));
     }
 
     // add a grandchild

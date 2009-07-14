@@ -94,6 +94,7 @@
 #include "JSHTMLCanvasElement.h"
 #include "JSHTMLCollection.h"
 #include "JSHTMLDListElement.h"
+#include "JSHTMLDataGridCellElement.h"
 #include "JSHTMLDataGridColElement.h"
 #include "JSHTMLDataGridElement.h"
 #include "JSHTMLDirectoryElement.h"
@@ -148,7 +149,9 @@
 #include "JSKeyboardEvent.h"
 #include "JSMediaError.h"
 #include "JSMediaList.h"
+#include "JSMessageChannel.h"
 #include "JSMessageEvent.h"
+#include "JSMessagePort.h"
 #include "JSMimeType.h"
 #include "JSMimeTypeArray.h"
 #include "JSMouseEvent.h"
@@ -225,7 +228,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 
 /* Hash table */
 
-static const HashTableValue JSDOMWindowTableValues[272] =
+static const HashTableValue JSDOMWindowTableValues[275] =
 {
     { "screen", DontDelete|ReadOnly, (intptr_t)jsDOMWindowScreen, (intptr_t)0 },
     { "history", DontDelete|ReadOnly, (intptr_t)jsDOMWindowHistory, (intptr_t)0 },
@@ -385,8 +388,15 @@ static const HashTableValue JSDOMWindowTableValues[272] =
     { "HTMLBodyElement", DontDelete, (intptr_t)jsDOMWindowHTMLBodyElementConstructor, (intptr_t)setJSDOMWindowHTMLBodyElementConstructor },
     { "HTMLButtonElement", DontDelete, (intptr_t)jsDOMWindowHTMLButtonElementConstructor, (intptr_t)setJSDOMWindowHTMLButtonElementConstructor },
     { "HTMLCanvasElement", DontDelete, (intptr_t)jsDOMWindowHTMLCanvasElementConstructor, (intptr_t)setJSDOMWindowHTMLCanvasElementConstructor },
+#if ENABLE(DATAGRID)
     { "HTMLDataGridElement", DontDelete, (intptr_t)jsDOMWindowHTMLDataGridElementConstructor, (intptr_t)setJSDOMWindowHTMLDataGridElementConstructor },
+#endif
+#if ENABLE(DATAGRID)
+    { "HTMLDataGridCellElement", DontDelete, (intptr_t)jsDOMWindowHTMLDataGridCellElementConstructor, (intptr_t)setJSDOMWindowHTMLDataGridCellElementConstructor },
+#endif
+#if ENABLE(DATAGRID)
     { "HTMLDataGridColElement", DontDelete, (intptr_t)jsDOMWindowHTMLDataGridColElementConstructor, (intptr_t)setJSDOMWindowHTMLDataGridColElementConstructor },
+#endif
     { "HTMLDListElement", DontDelete, (intptr_t)jsDOMWindowHTMLDListElementConstructor, (intptr_t)setJSDOMWindowHTMLDListElementConstructor },
     { "HTMLDirectoryElement", DontDelete, (intptr_t)jsDOMWindowHTMLDirectoryElementConstructor, (intptr_t)setJSDOMWindowHTMLDirectoryElementConstructor },
     { "HTMLDivElement", DontDelete, (intptr_t)jsDOMWindowHTMLDivElementConstructor, (intptr_t)setJSDOMWindowHTMLDivElementConstructor },
@@ -467,6 +477,8 @@ static const HashTableValue JSDOMWindowTableValues[272] =
     { "XMLHttpRequest", DontDelete, (intptr_t)jsDOMWindowXMLHttpRequestConstructor, (intptr_t)setJSDOMWindowXMLHttpRequestConstructor },
     { "XMLHttpRequestUpload", DontDelete, (intptr_t)jsDOMWindowXMLHttpRequestUploadConstructor, (intptr_t)setJSDOMWindowXMLHttpRequestUploadConstructor },
     { "XMLHttpRequestException", DontDelete, (intptr_t)jsDOMWindowXMLHttpRequestExceptionConstructor, (intptr_t)setJSDOMWindowXMLHttpRequestExceptionConstructor },
+    { "MessagePort", DontDelete, (intptr_t)jsDOMWindowMessagePortConstructor, (intptr_t)setJSDOMWindowMessagePortConstructor },
+    { "MessageChannel", DontDelete, (intptr_t)jsDOMWindowMessageChannelConstructor, (intptr_t)setJSDOMWindowMessageChannelConstructor },
     { "Worker", DontDelete, (intptr_t)jsDOMWindowWorkerConstructor, (intptr_t)setJSDOMWindowWorkerConstructor },
     { "Plugin", DontDelete, (intptr_t)jsDOMWindowPluginConstructor, (intptr_t)setJSDOMWindowPluginConstructor },
     { "PluginArray", DontDelete, (intptr_t)jsDOMWindowPluginArrayConstructor, (intptr_t)setJSDOMWindowPluginArrayConstructor },
@@ -511,7 +523,7 @@ static const HashTableValue JSDOMWindowTableValues[272] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMWindowTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMWindowTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 32767, JSDOMWindowTableValues, 0 };
 #else
@@ -561,7 +573,7 @@ static const HashTableValue JSDOMWindowPrototypeTableValues[37] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMWindowPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMWindowPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSDOMWindowPrototypeTableValues, 0 };
 #else
@@ -2182,6 +2194,7 @@ JSValue jsDOMWindowHTMLCanvasElementConstructor(ExecState* exec, const Identifie
     return JSHTMLCanvasElement::getConstructor(exec);
 }
 
+#if ENABLE(DATAGRID)
 JSValue jsDOMWindowHTMLDataGridElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
@@ -2189,7 +2202,19 @@ JSValue jsDOMWindowHTMLDataGridElementConstructor(ExecState* exec, const Identif
     UNUSED_PARAM(slot);
     return JSHTMLDataGridElement::getConstructor(exec);
 }
+#endif
 
+#if ENABLE(DATAGRID)
+JSValue jsDOMWindowHTMLDataGridCellElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
+    return JSHTMLDataGridCellElement::getConstructor(exec);
+}
+#endif
+
+#if ENABLE(DATAGRID)
 JSValue jsDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
@@ -2197,6 +2222,7 @@ JSValue jsDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, const Iden
     UNUSED_PARAM(slot);
     return JSHTMLDataGridColElement::getConstructor(exec);
 }
+#endif
 
 JSValue jsDOMWindowHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
@@ -2831,6 +2857,21 @@ JSValue jsDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, const Ide
         return jsUndefined();
     UNUSED_PARAM(slot);
     return JSXMLHttpRequestException::getConstructor(exec);
+}
+
+JSValue jsDOMWindowMessagePortConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
+    return JSMessagePort::getConstructor(exec);
+}
+
+JSValue jsDOMWindowMessageChannelConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->messageChannel(exec);
 }
 
 JSValue jsDOMWindowWorkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -4386,6 +4427,14 @@ void setJSDOMWindowHTMLDataGridElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridElement"), value);
 }
 
+void setJSDOMWindowHTMLDataGridCellElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridCellElement"), value);
+}
+
 void setJSDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -5032,6 +5081,22 @@ void setJSDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, JSObject*
         return;
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLHttpRequestException"), value);
+}
+
+void setJSDOMWindowMessagePortConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MessagePort"), value);
+}
+
+void setJSDOMWindowMessageChannelConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MessageChannel"), value);
 }
 
 void setJSDOMWindowWorkerConstructor(ExecState* exec, JSObject* thisObject, JSValue value)

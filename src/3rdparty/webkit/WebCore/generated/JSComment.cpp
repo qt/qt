@@ -38,7 +38,7 @@ static const HashTableValue JSCommentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCommentTable =
+static JSC_CONST_HASHTABLE HashTable JSCommentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCommentTableValues, 0 };
 #else
@@ -52,7 +52,7 @@ static const HashTableValue JSCommentConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCommentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCommentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCommentConstructorTableValues, 0 };
 #else
@@ -90,7 +90,7 @@ static const HashTableValue JSCommentPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCommentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCommentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCommentPrototypeTableValues, 0 };
 #else

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
+<context>
+    <name>FindDialog</name>
+    <message>
+        <location filename="project.ui" line="27"/>
+        <source>Qt Assistant - Find Text</source>
+        <oldsource>Qt Assistant - Find text</oldsource>
+        <translation type="unfinished">Qt Assistant - Finn tekst</translation>
+    </message>
+    <message>
+        <location filename="project.ui" line="30"/>
+        <source>300px</source>
+        <translation>300px</translation>
+    </message>
+    <message>
+        <location filename="project.ui" line="33"/>
+        <source>401 pixels</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>
