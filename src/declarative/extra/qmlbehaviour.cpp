@@ -57,8 +57,8 @@ public:
     QmlBehaviourData(QObject *parent)
         : QObject(parent) {}
 
-    Q_PROPERTY(QVariant endValue READ endValue NOTIFY valuesChanged);
-    Q_PROPERTY(QVariant startValue READ startValue NOTIFY valuesChanged);
+    Q_PROPERTY(QVariant endValue READ endValue NOTIFY valuesChanged)
+    Q_PROPERTY(QVariant startValue READ startValue NOTIFY valuesChanged)
     QVariant endValue() const { return e; }
     QVariant startValue() const { return s; }
 

@@ -57,10 +57,10 @@ public:
         attachedProperties.remove(parent());
     }
 
-    Q_PROPERTY(QFxGridView *view READ view);
+    Q_PROPERTY(QFxGridView *view READ view)
     QFxGridView *view() { return m_view; }
 
-    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged);
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
     bool isCurrentItem() const { return m_isCurrent; }
     void setIsCurrentItem(bool c) {
         if (m_isCurrent != c) {
@@ -69,7 +69,7 @@ public:
         }
     }
 
-    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged);
+    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
     bool delayRemove() const { return m_delayRemove; }
     void setDelayRemove(bool delay) {
         if (m_delayRemove != delay) {
