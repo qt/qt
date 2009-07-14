@@ -167,11 +167,11 @@ void QLineControl::backspace()
                 // if yes delete both at once
                 uc = m_text.at(m_cursor - 1);
                 if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00) {
-                    p_del(true);
+                    internalDelete(true);
                     --m_cursor;
                 }
             }
-            p_del(true);
+            internalDelete(true);
     }
     finishChange(priorState);
 }
@@ -193,7 +193,7 @@ void QLineControl::del()
     } else {
         int n = m_textLayout.nextCursorPosition(m_cursor) - m_cursor;
         while (n--)
-            p_del();
+            internalDelete();
     }
     finishChange(priorState);
 }
@@ -209,7 +209,7 @@ void QLineControl::insert(const QString &newText)
 {
     int priorState = m_undoState;
     removeSelectedText();
-    p_insert(newText);
+    internalInsert(newText);
     finishChange(priorState);
 }
 
@@ -343,7 +343,7 @@ bool QLineControl::fixup() // this function assumes that validate currently retu
         m_validator->fixup(textCopy);
         if (m_validator->validate(textCopy, cursorCopy) == QValidator::Acceptable) {
             if (textCopy != m_text || cursorCopy != m_cursor)
-                p_setText(textCopy, cursorCopy);
+                internalSetText(textCopy, cursorCopy);
             return true;
         }
     }
@@ -376,7 +376,7 @@ void QLineControl::moveCursor(int pos, bool mark)
         m_selend = qMax(anchor, pos);
         updateDisplayText();
     } else {
-        p_deselect();
+        internalDeselect();
     }
     m_cursor = pos;
     if (mark || m_selDirty) {
@@ -531,7 +531,7 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
             m_validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
             if (m_validInput) {
                 if (m_text != textCopy) {
-                    p_setText(textCopy, cursorCopy);
+                    internalSetText(textCopy, cursorCopy);
                     return true;
                 }
                 m_cursor = cursorCopy;
@@ -541,7 +541,7 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
         if (validateFromState >= 0 && wasValidInput && !m_validInput) {
             if (m_transactions.count())
                 return false;
-            p_undo(validateFromState);
+            internalUndo(validateFromState);
             m_history.resize(m_undoState);
             if (m_modifiedState > m_undoState)
                 m_modifiedState = -1;
@@ -571,9 +571,9 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
 
     An internal function for setting the text of the line control.
 */
-void QLineControl::p_setText(const QString &txt, int pos, bool edited)
+void QLineControl::internalSetText(const QString &txt, int pos, bool edited)
 {
-    p_deselect();
+    internalDeselect();
     emit resetInputContext();
     QString oldText = m_text;
     if (m_maskData) {
@@ -618,7 +618,7 @@ void QLineControl::addCommand(const Command &cmd)
     This function does not call finishChange(), and may leave the text
     in an invalid state.
 */
-void QLineControl::p_insert(const QString &s)
+void QLineControl::internalInsert(const QString &s)
 {
     if (hasSelectedText())
         addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
@@ -654,7 +654,7 @@ void QLineControl::p_insert(const QString &s)
     This function does not call finishChange(), and may leave the text
     in an invalid state.
 */
-void QLineControl::p_del(bool wasBackspace)
+void QLineControl::internalDelete(bool wasBackspace)
 {
     if (m_cursor < (int) m_text.length()) {
         if (hasSelectedText())
@@ -706,7 +706,7 @@ void QLineControl::removeSelectedText()
         }
         if (m_cursor > m_selstart)
             m_cursor -= qMin(m_cursor, m_selend) - m_selstart;
-        p_deselect();
+        internalDeselect();
         m_textDirty = true;
     }
 }
@@ -725,7 +725,7 @@ void QLineControl::parseInputMask(const QString &maskFields)
             delete [] m_maskData;
             m_maskData = 0;
             m_maxLength = 32767;
-            p_setText(QString());
+            internalSetText(QString());
         }
         return;
     }
@@ -811,7 +811,7 @@ void QLineControl::parseInputMask(const QString &maskFields)
             }
         }
     }
-    p_setText(m_text);
+    internalSetText(m_text);
 }
 
 
@@ -1077,11 +1077,11 @@ int QLineControl::findInMask(int pos, bool forward, bool findSeparator, QChar se
     return -1;
 }
 
-void QLineControl::p_undo(int until)
+void QLineControl::internalUndo(int until)
 {
     if (!isUndoAvailable())
         return;
-    p_deselect();
+    internalDeselect();
     while (m_undoState && m_undoState > until) {
         Command& cmd = m_history[--m_undoState];
         switch (cmd.type) {
@@ -1118,10 +1118,11 @@ void QLineControl::p_undo(int until)
     emitCursorPositionChanged();
 }
 
-void QLineControl::p_redo() {
+void QLineControl::internalRedo()
+{
     if (!isRedoAvailable())
         return;
-    p_deselect();
+    internalDeselect();
     while (m_undoState < (int)m_history.size()) {
         Command& cmd = m_history[m_undoState++];
         switch (cmd.type) {

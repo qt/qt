@@ -235,21 +235,21 @@ public:
 private:
     void init(const QString &txt);
     void removeSelectedText();
-    void p_setText(const QString &txt, int pos = -1, bool edited = true);
+    void internalSetText(const QString &txt, int pos = -1, bool edited = true);
     void updateDisplayText();
 
-    void p_insert(const QString &s);
-    void p_del(bool wasBackspace = false);
-    void p_remove(int pos);
+    void internalInsert(const QString &s);
+    void internalDelete(bool wasBackspace = false);
+    void internalRemove(int pos);
 
-    inline void p_deselect()
+    inline void internalDeselect()
     {
         m_selDirty |= (m_selend > m_selstart);
         m_selstart = m_selend = 0;
     }
 
-    void p_undo(int until = -1);
-    void p_redo();
+    void internalUndo(int until = -1);
+    void internalRedo();
 
     QString m_text;
     QPalette m_palette;
@@ -296,7 +296,6 @@ private:
     QString m_inputMask;
     QChar m_blank;
     MaskInputData *m_maskData;
-
 
     // undo/redo handling
     enum CommandType { Separator, Insert, Remove, Delete, RemoveSelection, DeleteSelection, SetSelection };
@@ -558,7 +557,7 @@ inline QString QLineControl::text() const
 
 inline void QLineControl::setText(const QString &txt)
 {
-    p_setText(txt, -1, false);
+    internalSetText(txt, -1, false);
 }
 
 inline QString QLineControl::displayText() const
@@ -568,7 +567,7 @@ inline QString QLineControl::displayText() const
 
 inline void QLineControl::deselect()
 {
-    p_deselect();
+    internalDeselect();
     finishChange();
 }
 
@@ -580,13 +579,13 @@ inline void QLineControl::selectAll()
 
 inline void QLineControl::undo()
 {
-    p_undo();
+    internalUndo();
     finishChange(-1, true);
 }
 
 inline void QLineControl::redo()
 {
-    p_redo();
+    internalRedo();
     finishChange();
 }
 
