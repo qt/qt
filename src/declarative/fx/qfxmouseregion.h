@@ -129,8 +129,6 @@ Q_SIGNALS:
     void doubleClicked(QFxMouseEvent *mouse);
     void entered();
     void exited();
-    void exitedWhilePressed();
-    void reenteredWhilePressed();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

@@ -2465,6 +2465,7 @@ void QFxItem::setOptions(Options options, bool set)
     setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
     setFiltersChildEvents(d->options & ChildMouseFilter);
     setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
+    setAcceptHoverEvents(d->options & HoverEvents);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->options & MouseFilter)
