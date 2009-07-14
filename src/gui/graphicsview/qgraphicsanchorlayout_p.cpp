@@ -563,6 +563,67 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     removeAnchor(item, firstEdge, item, lastEdge);
 }
 
+void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
+    QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge)
+{
+    Orientation orientation;
+    switch (centerEdge) {
+    case QGraphicsAnchorLayout::HCenter:
+        orientation = Horizontal;
+        break;
+    case QGraphicsAnchorLayout::VCenter:
+        orientation = Vertical;
+        break;
+    default:
+        // Don't remove edges that not the center ones
+        return;
+    }
+
+    // Check if vertex is used by other than the internal anchors
+    AnchorVertex *center = internalVertex(item, centerEdge);
+    if (graph[orientation].adjacentVertices(center).count() > 2)
+        return;
+
+    // Orientation code
+    QGraphicsAnchorLayout::Edge firstEdge;
+    QGraphicsAnchorLayout::Edge lastEdge;
+
+    if (orientation == Horizontal) {
+        firstEdge = QGraphicsAnchorLayout::Left;
+        lastEdge = QGraphicsAnchorLayout::Right;
+    } else {
+        firstEdge = QGraphicsAnchorLayout::Top;
+        lastEdge = QGraphicsAnchorLayout::Bottom;
+    }
+
+    AnchorVertex *first = internalVertex(item, firstEdge);
+    AnchorVertex *last = internalVertex(item, lastEdge);
+    Q_ASSERT(first && last);
+
+    // Create new anchor
+    AnchorData *oldData = graph[orientation].edgeData(first, center);
+
+    int minimumSize = oldData->minSize * 2;
+    int preferredSize = oldData->prefSize * 2;
+    int maximumSize = oldData->maxSize * 2;
+
+    AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
+    addAnchor(item, firstEdge, item, lastEdge, data);
+
+    // Remove center constraint
+    for (int i = itemCenterConstraints[orientation].count() - 1; i >= 0; --i) {
+        if (itemCenterConstraints[orientation][i]->variables.contains(oldData)) {
+            delete itemCenterConstraints[orientation].takeAt(i);
+            break;
+        }
+    }
+
+    // Remove old anchors
+    removeAnchor(item, firstEdge, item, centerEdge);
+    removeAnchor(item, centerEdge, item, lastEdge);
+}
+
+
 void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *item,
                                                            Orientation orientation)
 {
@@ -574,12 +635,16 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
     AnchorVertex *first = internalVertex(item, orientation == Horizontal ?
                                        QGraphicsAnchorLayout::Left :
                                        QGraphicsAnchorLayout::Top);
-    AnchorVertex *second = internalVertex(item, orientation == Horizontal ?
+    AnchorVertex *center = internalVertex(item, orientation == Horizontal ?
                                         QGraphicsAnchorLayout::HCenter :
                                         QGraphicsAnchorLayout::VCenter);
 
-    Q_ASSERT(first && second);
-    AnchorData *internalAnchor = graph[orientation].edgeData(first, second);
+    // Skip if no center constraints exist
+    if (!center)
+        return;
+
+    Q_ASSERT(first);
+    AnchorData *internalAnchor = graph[orientation].edgeData(first, center);
 
     // Look for our anchor in all item center constraints, then remove it
     for (int i = 0; i < itemCenterConstraints[orientation].size(); ++i) {
