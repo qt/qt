@@ -78,7 +78,9 @@ public:
         Type type;
 
         QString uri;
-        QString as;
+        QString qualifier;
+        QString version;
+
         QmlParser::LocationSpan location;
     };
 
@@ -87,7 +89,6 @@ public:
 
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
 
-    QMap<QString,QString> nameSpacePaths() const;
     QStringList types() const;
 
     QmlParser::Object *tree() const;
@@ -104,12 +105,9 @@ public:
     void setScriptFile(const QString &filename) {_scriptFile = filename; }
     QString scriptFile() const { return _scriptFile; }
 
-    void addNamespacePath(const QString &path);
-
 // ### private:
     QList<QmlError> _errors;
 
-    QMap<QString,QString> _nameSpacePaths;
     QmlParser::Object *root;
     QList<Import> _imports;
     QStringList _typeNames;

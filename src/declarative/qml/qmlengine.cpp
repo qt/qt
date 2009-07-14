@@ -1,4 +1,4 @@
-/****************************************************************************
+    /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
@@ -80,6 +80,7 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
+DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
 QML_DEFINE_TYPE(QObject,Object)
 
@@ -494,132 +495,6 @@ QmlContext *QmlEngine::activeContext()
         return d->currentBindContext;
     else
         return 0;
-}
-
-/*!
-    Sets the mappings from namespace URIs to URL to \a map.
-
-    \sa nameSpacePaths()
-*/
-void QmlEngine::setNameSpacePaths(const QMap<QString,QString>& map)
-{
-    Q_D(QmlEngine);
-    d->nameSpacePaths = map;
-}
-
-/*!
-    Adds mappings (given by \a map) from namespace URIs to URL.
-
-    \sa nameSpacePaths()
-*/
-void QmlEngine::addNameSpacePaths(const QMap<QString,QString>& map)
-{
-    Q_D(QmlEngine);
-    d->nameSpacePaths.unite(map);
-}
-
-/*!
-    Adds a mapping from namespace URI \a ns to URL \a path.
-
-    \sa nameSpacePaths()
-*/
-void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
-{
-    Q_D(QmlEngine);
-    d->nameSpacePaths.insertMulti(ns,path);
-}
-
-/*!
-    Returns the mapping from namespace URIs to URLs.
-
-    Currently, only the empty namespace is supported
-    (i.e. types cannot be qualified with a namespace).
-
-    The QML \c import statement can be used to import a directory of
-    components into the empty namespace.
-
-    \qml
-    import "MyModuleDirectory"
-    \endqml
-
-    This is also possible from C++:
-
-    \code
-        engine->addNameSpacePath("","file:///opt/abcdef");
-    \endcode
-
-    \sa componentUrl()
-*/
-QMap<QString,QString> QmlEngine::nameSpacePaths() const
-{
-    Q_D(const QmlEngine);
-    return d->nameSpacePaths;
-}
-
-/*!
-    Returns the URL for the component source \a src, as mapped
-    by the nameSpacePaths(), resolved relative to \a baseUrl.
-
-    \sa nameSpacePaths()
-*/
-QUrl QmlEngine::componentUrl(const QUrl& src, const QUrl& baseUrl) const
-{
-    Q_D(const QmlEngine);
-
-    // Find the most-specific namespace matching src.
-    // For files, multiple paths can be given, the first found is used.
-    QUrl r;
-    QMap<QString, QString>::const_iterator i = d->nameSpacePaths.constBegin();
-    QString rns=QLatin1String(":"); // ns of r, if file found, initial an imposible namespace
-    QString srcstring = src.toString();
-    while (i != d->nameSpacePaths.constEnd()) {
-        QString ns = i.key();
-        QString path = i.value();
-        if (ns != rns) {
-            if (srcstring.startsWith(ns) && (ns.length()==0 || srcstring[ns.length()]==QLatin1Char('/'))) {
-                QString file = ns.length()==0 ? srcstring : srcstring.mid(ns.length()+1);
-                QUrl cr = baseUrl.resolved(QUrl(path + QLatin1String("/") + file));
-                QString lf = cr.toLocalFile();
-                if (lf.isEmpty() || QFile::exists(lf)) {
-                    r = cr;
-                    rns = ns;
-                }
-            }
-        }
-        ++i;
-    }
-    if (r.isEmpty())
-        r = baseUrl.resolved(src);
-    return r;
-}
-
-/*!
-  Returns the list of base urls the engine browses to find sub-components.
-
-  The search path consists of the base of the \a url, and, in the case of local files,
-  the directories imported using the "import" statement in \a qml.
-  */
-QList<QUrl> QmlEngine::componentSearchPath(const QByteArray &qml, const QUrl &url) const
-{
-    QList<QUrl> searchPath;
-
-    searchPath << url.resolved(QUrl(QLatin1String(".")));
-
-    if (QFileInfo(url.toLocalFile()).exists()) {
-        QmlScriptParser parser;
-        if (parser.parse(qml, url)) {
-            for (int i = 0; i < parser.imports().size(); ++i) {
-                QUrl importUrl = QUrl(parser.imports().at(i).uri);
-                if (importUrl.isRelative()) {
-                    searchPath << url.resolved(importUrl);
-                } else {
-                    searchPath << importUrl;
-                }
-            }
-        }
-    }
-
-    return searchPath;
 }
 
 /*!
@@ -1236,5 +1111,195 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 
     scriptEngine->currentContext()->setActivationObject(oldact);
 }
+
+
+class QmlImportsPrivate {
+public:
+    bool add(const QString& uri, const QString& prefix, const QString& version, QmlEngine::ImportType importType, const QStringList& importPath)
+    {
+        TypeSet *s;
+        if (prefix.isEmpty()) {
+            if (importType == QmlEngine::LibraryImport && version.isEmpty()) {
+                // unversioned library imports are always qualified - if only by final URI component
+                int lastdot = uri.lastIndexOf(QLatin1Char('.'));
+                QString defaultprefix = uri.mid(lastdot+1);
+                s = set.value(defaultprefix);
+                if (!s)
+                    set.insert(defaultprefix,(s=new TypeSet));
+            } else {
+                s = &unqualifiedset;
+            }
+        } else {
+            s = set.value(prefix);
+            if (!s)
+                set.insert(prefix,(s=new TypeSet));
+        }
+        QString url = uri;
+        if (importType == QmlEngine::LibraryImport) {
+            url.replace(QLatin1Char('.'),QLatin1Char('/'));
+            bool found = false;
+            foreach (QString p, importPath) {
+                QString dir = p+QLatin1Char('/')+url;
+                if (QFile::exists(dir+QLatin1String("/qmldir"))) {
+                    url = dir;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                return false;
+        }
+        s->urls.append(url);
+        s->versions.append(version);
+        s->isLibrary.append(importType == QmlEngine::LibraryImport);
+        return true;
+    }
+
+    QUrl find(const QString& base, const QString& type)
+    {
+        TypeSet *s = 0;
+        int slash = type.indexOf(QLatin1Char('/'));
+        if (slash >= 0) {
+            while (!s) {
+                s = set.value(type.left(slash));
+                int nslash = type.indexOf(QLatin1Char('/'),slash+1);
+                if (nslash > 0)
+                    slash = nslash;
+                else
+                    break;
+            }
+        } else {
+            s = &unqualifiedset;
+        }
+        QString unqualifiedtype = type.mid(slash+1);
+        QUrl baseUrl(base);
+        if (s) {
+            for (int i=0; i<s->urls.count(); ++i) {
+                QUrl url = baseUrl.resolved(QUrl(s->urls.at(i) +QLatin1String("/")+ unqualifiedtype + QLatin1String(".qml")));
+                QString version = s->versions.at(i);
+                // XXX search non-files too! (eg. zip files, see QT-524)
+                QFileInfo f(url.toLocalFile());
+                if (f.exists()) {
+                    bool ok=true;
+                    if (!version.isEmpty()) {
+                        ok=false;
+                        // Check version file - XXX cache these in QmlEngine!
+                        QFile qmldir(s->urls.at(i)+QLatin1String("/qmldir"));
+                        if (qmldir.open(QIODevice::ReadOnly)) {
+                            do {
+                                QString line = QString::fromUtf8(qmldir.readLine());
+                                if (line.at(0) == QLatin1Char('#'))
+                                    continue;
+                                int space1 = line.indexOf(QLatin1Char(' '));
+                                int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
+                                QStringRef maptype = line.leftRef(space1);
+                                QStringRef mapversion = line.midRef(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
+                                QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
+                                if (maptype==unqualifiedtype && mapversion==version) {
+                                    if (mapfile.isEmpty())
+                                        return url;
+                                    else
+                                        return url.resolved(mapfile.toString());
+                                }
+                            } while (!qmldir.atEnd());
+                        }
+                    }
+                    if (ok)
+                        return url;
+                }
+            }
+        }
+        return baseUrl.resolved(QUrl(type + QLatin1String(".qml")));
+    }
+
+    QmlType *findBuiltin(const QString&, const QByteArray& type)
+    {
+        TypeSet *s = 0;
+        int slash = type.indexOf('/');
+        if (slash >= 0) {
+            while (!s) {
+                s = set.value(QString::fromLatin1(type.left(slash)));
+                int nslash = type.indexOf('/',slash+1);
+                if (nslash > 0)
+                    slash = nslash;
+                else
+                    break;
+            }
+        } else {
+            s = &unqualifiedset;
+        }
+        QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
+        if (s) {
+            for (int i=0; i<s->urls.count(); ++i) {
+                QmlType *t = QmlMetaType::qmlType(s->urls.at(i).toLatin1()+"/"+unqualifiedtype);
+                if (t) return t;
+            }
+        }
+        return QmlMetaType::qmlType(type);
+    }
+
+private:
+    struct TypeSet {
+        QStringList urls;
+        QStringList versions;
+        QList<bool> isLibrary;
+    };
+    TypeSet unqualifiedset;
+    QHash<QString,TypeSet* > set;
+};
+
+QmlEngine::Imports::Imports() :
+    d(new QmlImportsPrivate)
+{
+}
+
+QmlEngine::Imports::~Imports()
+{
+}
+
+void QmlEngine::Imports::setBaseUrl(const QUrl& url)
+{
+    base = url;
+}
+
+void QmlEngine::addImportPath(const QString& path)
+{
+    if (qmlImportTrace()) 
+        qDebug() << "QmlEngine::addImportPath" << path;
+    Q_D(QmlEngine);
+    d->fileImportPath.prepend(path);
+}
+
+bool QmlEngine::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, ImportType importType) const
+{
+    Q_D(const QmlEngine);
+    bool ok = imports->d->add(uri,prefix,version,importType,d->fileImportPath);
+    if (qmlImportTrace()) 
+        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==LibraryImport ? "Library" : "File") << ": " << ok;
+    return ok;
+}
+
+bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return) const
+{
+    Q_D(const QmlEngine);
+    QmlType* t = imports.d->findBuiltin(imports.base,type);
+    if (t) {
+        if (type_return) *type_return = t;
+        if (qmlImportTrace()) 
+            qDebug() << "QmlEngine::resolveType" << type << "= (builtin)";
+        return true;
+    }
+    QUrl url = imports.d->find(imports.base,type);
+    if (url.isValid()) {
+        if (url_return) *url_return = url;
+        if (qmlImportTrace()) 
+            qDebug() << "QmlEngine::resolveType" << type << "=" << url;
+        return true;
+    }
+    if (qmlImportTrace()) 
+        qDebug() << "QmlEngine::resolveType" << type << " not found";
+    return false;
+}
+
 
 QT_END_NAMESPACE

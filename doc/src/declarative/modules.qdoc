@@ -25,6 +25,7 @@ The import statement cannot be used by remote content.
 
 Ideas for full module support....
 
+See QT-558.
 
 * Modularity within applications
 

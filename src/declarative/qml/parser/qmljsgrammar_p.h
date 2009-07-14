@@ -2,7 +2,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,7 +35,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -151,20 +151,26 @@ public:
     T_XOR = 78,
     T_XOR_EQ = 79,
 
-    ACCEPT_STATE = 608,
-    RULE_COUNT = 334,
-    STATE_COUNT = 609,
+    ACCEPT_STATE = 615,
+    RULE_COUNT = 338,
+    STATE_COUNT = 616,
     TERMINAL_COUNT = 92,
     NON_TERMINAL_COUNT = 104,
 
-    GOTO_INDEX_OFFSET = 609,
-    GOTO_INFO_OFFSET = 2136,
-    GOTO_CHECK_OFFSET = 2136
+    GOTO_INDEX_OFFSET = 616,
+    GOTO_INFO_OFFSET = 2139,
+    GOTO_CHECK_OFFSET = 2139
   };
 
   static const char  *const spell [];
   static const int            lhs [];
   static const int            rhs [];
+
+#ifndef QLALR_NO_QMLJSGRAMMAR_DEBUG_INFO
+  static const int     rule_index [];
+  static const int      rule_info [];
+#endif // QLALR_NO_QMLJSGRAMMAR_DEBUG_INFO
+
   static const int   goto_default [];
   static const int action_default [];
   static const int   action_index [];
