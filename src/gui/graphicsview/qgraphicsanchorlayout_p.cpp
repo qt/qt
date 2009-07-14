@@ -88,6 +88,8 @@ QString GraphPath::toString() const
 QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     : calculateGraphCacheDirty(1)
 {
+    for (int i = 0; i < NOrientations; ++i)
+        spacing[i] = -1;
 }
 
 QGraphicsAnchorLayout::Edge QGraphicsAnchorLayoutPrivate::oppositeEdge(
