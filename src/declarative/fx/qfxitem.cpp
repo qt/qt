@@ -1465,11 +1465,7 @@ void QFxItem::setRotation(qreal rotation)
     if (d->_rotation == rotation)
         return;
     d->_rotation = rotation;
-    QPointF to = d->transformOrigin();
-    QTransform trans = QTransform::fromTranslate(to.x(), to.y());
-    trans.rotate(d->_rotation);
-    trans.translate(-to.x(), -to.y());
-    setTransform(trans);
+    setTransform(d->transform);
     emit rotationChanged();
 }
 
@@ -2333,14 +2329,7 @@ void QFxItem::setScale(qreal s)
         return;
 
     d->scale = s;
-    QTransform t;
-    QPointF to = transformOriginPoint();
-    if (to.x() != 0. || to.y() != 0.)
-        t.translate(to.x(), to.y());
-    t.scale(s, s);
-    if (to.x() != 0. || to.y() != 0.)
-        t.translate(-to.x(), -to.y());
-    setTransform(t * d->transform);
+    setTransform(d->transform);
 
     emit scaleChanged();
 }
@@ -2376,11 +2365,30 @@ QTransform QFxItem::transform() const
     return d->transform;
 }
 
+//### optimize (perhaps cache scale and rot transforms, and have dirty flags)
+//### we rely on there not being an "if (d->transform == m) return;" check
 void QFxItem::setTransform(const QTransform &m)
 {
     Q_D(QFxItem);
     d->transform = m;
-    QGraphicsItem::setTransform(QTransform::fromScale(d->scale, d->scale) * d->transform);
+    QTransform scaleTransform, rotTransform;
+    if (d->scale != 1) {
+        QPointF to = transformOriginPoint();
+        if (to.x() != 0. || to.y() != 0.)
+            scaleTransform.translate(to.x(), to.y());
+        scaleTransform.scale(d->scale, d->scale);
+        if (to.x() != 0. || to.y() != 0.)
+            scaleTransform.translate(-to.x(), -to.y());
+    }
+    if (d->_rotation != 0) {
+        QPointF to = d->transformOrigin();
+        if (to.x() != 0. || to.y() != 0.)
+            rotTransform.translate(to.x(), to.y());
+        rotTransform.rotate(d->_rotation);
+        if (to.x() != 0. || to.y() != 0.)
+            rotTransform.translate(-to.x(), -to.y());
+    }
+    QGraphicsItem::setTransform(scaleTransform * rotTransform * d->transform);
 }
 
 QFxItem *QFxItem::mouseGrabberItem() const
