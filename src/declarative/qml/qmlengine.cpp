@@ -72,6 +72,7 @@
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbindablevalue_p.h>
 #include <private/qmlvme_p.h>
+#include <private/qmlenginedebug_p.h>
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -133,8 +134,9 @@ QStack<QmlEngine *> *QmlEngineStack::engines()
 
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
-: rootContext(0), currentBindContext(0), currentExpression(0), q(e),
-  rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
+: rootContext(0), currentBindContext(0), currentExpression(0), q(e), 
+  isDebugging(false), rootComponent(0), networkAccessManager(0), typeManager(e),
+  uniqueId(1)
 {
     QScriptValue qtObject = scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
@@ -180,12 +182,14 @@ void QmlEnginePrivate::clear(SimpleList<QmlParserStatus> &pss)
     pss.clear();
 }
 
+Q_GLOBAL_STATIC(QmlEngineDebugServer, qmlEngineDebugServer);
+
 void QmlEnginePrivate::init()
 {
     scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
-    rootContext = new QmlContext(q);
+    rootContext = new QmlContext(q,true);
 #ifdef QT_SCRIPTTOOLS_LIB
     if (qmlDebugger()){
         debugger = new QScriptEngineDebugger(q);
@@ -199,6 +203,13 @@ void QmlEnginePrivate::init()
             scriptEngine.newFunction(QmlEngine::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEngine::createComponent, 1));
+
+    if (QCoreApplication::instance()->thread() == q->thread() && 
+        QmlEngineDebugServer::isDebuggingEnabled()) {
+        qmlEngineDebugServer();
+        isDebugging = true;
+        QmlEngineDebugServer::addEngine(q);
+    }
 }
 
 QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
@@ -424,6 +435,9 @@ QmlEngine::QmlEngine(QObject *parent)
 */
 QmlEngine::~QmlEngine()
 {
+    Q_D(QmlEngine);
+    if (d->isDebugging)
+        QmlEngineDebugServer::remEngine(this);
 }
 
 /*!

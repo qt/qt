@@ -39,51 +39,73 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYVIEW_P_H
-#define QMLPROPERTYVIEW_P_H
+#ifndef QMLPALETTE_H
+#define QMLPALETTE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qobject.h>
+#include <QtDeclarative/qml.h>
+#include <QPalette>
 
-#include <QtGui/qwidget.h>
-#include <QtCore/qpointer.h>
-#include <private/qmlwatches_p.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QmlPropertyView : public QWidget
+QT_MODULE(Declarative)
+
+class QmlPalettePrivate;
+class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPalette)
+
 public:
-    QmlPropertyView(QmlWatches *watches, QWidget *parent = 0);
+    QmlPalette(QObject *parent=0);
+    ~QmlPalette();
 
-    void setObject(QObject *);
+    Q_PROPERTY(QColor window READ window CONSTANT)
+    Q_PROPERTY(QColor windowText READ windowText CONSTANT)
+    Q_PROPERTY(QColor base READ base CONSTANT)
+    Q_PROPERTY(QColor alternateBase READ alternateBase CONSTANT)
+    Q_PROPERTY(QColor button READ button CONSTANT)
+    Q_PROPERTY(QColor buttonText READ buttonText CONSTANT)
+    Q_PROPERTY(QColor light READ light CONSTANT)
+    Q_PROPERTY(QColor midlight READ midlight CONSTANT)
+    Q_PROPERTY(QColor dark READ dark CONSTANT)
+    Q_PROPERTY(QColor mid READ mid CONSTANT)
+    Q_PROPERTY(QColor shadow READ shadow CONSTANT)
+    Q_PROPERTY(QColor highlight READ highlight CONSTANT)
+    Q_PROPERTY(QColor highlightedText READ highlightedText CONSTANT)
 
-signals:
-    void objectClicked(quint32);
+    QColor window() const;
+    QColor windowText() const;
 
-public slots:
-    void refresh();
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void itemClicked(QTreeWidgetItem *);
+    QColor base() const;
+    QColor alternateBase() const;
 
-private:
-    QPointer<QObject> m_object;
-    QTreeWidget *m_tree;
-    QmlWatches *m_watches;
+    QColor button() const;
+    QColor buttonText() const;
+
+    QColor light() const;
+    QColor midlight() const;
+    QColor dark() const;
+    QColor mid() const;
+    QColor shadow() const;
+
+    QColor highlight() const;
+    QColor highlightedText() const;
+
+    QPalette palette() const;
+
+    void setColorGroup(QPalette::ColorGroup);
+
+Q_SIGNALS:
+    void updated();
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLPROPERTYVIEW_P_H
+QML_DECLARE_TYPE(QmlPalette)
 
+QT_END_HEADER
+
+#endif // QMLPALETTE_H

@@ -1,17 +1,11 @@
-SOURCES += debugger/qmldebugger.cpp \
-           debugger/qmldebuggerstatus.cpp \
-           debugger/qmlpropertyview.cpp \
-           debugger/qmlwatches.cpp \
-           debugger/qmlobjecttree.cpp \
+SOURCES += debugger/qmldebuggerstatus.cpp \
            debugger/qpacketprotocol.cpp \
-           debugger/qmldebugserver.cpp \
-           debugger/qmldebugclient.cpp
+           debugger/qmldebugservice.cpp \
+           debugger/qmldebugclient.cpp \
+           debugger/qmldebug.cpp
 
-HEADERS += debugger/qmldebugger.h \
-           debugger/qmldebuggerstatus.h \
-           debugger/qmlpropertyview_p.h \
-           debugger/qmlwatches_p.h \
-           debugger/qmlobjecttree_p.h \
+HEADERS += debugger/qmldebuggerstatus.h \
            debugger/qpacketprotocol.h \
-           debugger/qmldebugserver.h \
-           debugger/qmldebugclient.h
+           debugger/qmldebugservice.h \
+           debugger/qmldebugclient.h \
+           debugger/qmldebug.h

@@ -117,6 +117,7 @@ public:
     QmlContext *currentBindContext;
     QmlExpression *currentExpression;
     QmlEngine *q;
+    bool isDebugging;
 #ifdef QT_SCRIPTTOOLS_LIB
     QScriptEngineDebugger *debugger;
 #endif
