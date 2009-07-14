@@ -222,8 +222,10 @@ void QLineControl::clear()
 */
 void QLineControl::setSelection(int start, int length)
 {
-    Q_ASSERT_X(start >= 0 && start <= (int)m_text.length(),
-        "QLineControl::setSelection", "Invalid start position");
+    if(start < 0 || start > (int)m_text.length()){
+        qWarning("QLineControl::setSelection: Invalid start position");
+        return;
+    }
 
     if (length > 0) {
         selstart = start;
