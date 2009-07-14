@@ -608,8 +608,7 @@ qint64 QFSFileEnginePrivate::nativePos() const
     // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
-    offset.LowPart = 0;
-    offset.HighPart = 0;
+    offset.QuadPart = 0;
     if (!ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return 0;
@@ -652,8 +651,7 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
     // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
-    offset.LowPart = (unsigned int)(quint64(pos) & Q_UINT64_C(0xffffffff));
-    offset.HighPart = (unsigned int)((quint64(pos) >> 32) & Q_UINT64_C(0xffffffff));
+    offset.QuadPart = pos;
     if (ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN) == 0) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return false;
