@@ -607,7 +607,6 @@ qint64 QFSFileEnginePrivate::nativePos() const
 #if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     }
 
-    // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
     offset.QuadPart = 0;
@@ -651,7 +650,6 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 #if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     }
 
-    // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
     offset.QuadPart = pos;
