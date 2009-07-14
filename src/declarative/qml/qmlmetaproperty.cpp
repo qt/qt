@@ -663,9 +663,6 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
         return;
     }
 
-    if (!value.isValid())
-        return;
-
     int t = propertyType();
     int vt = value.userType();
     int category = propertyCategory();
@@ -684,19 +681,22 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
 
         QObject *o = QmlMetaType::toQObject(value);
 
-        if (!o)
-            return;
+        const QMetaObject *valMo = 0;
 
-        const QMetaObject *valMo = o->metaObject();
-        const QMetaObject *propMo = QmlMetaType::rawMetaObjectForType(t);
+        if (o) {
 
-        while (valMo) {
-            if (valMo == propMo)
-                break;
-            valMo = valMo->superClass();
+            valMo = o->metaObject();
+            const QMetaObject *propMo = QmlMetaType::rawMetaObjectForType(t);
+
+            while (valMo) {
+                if (valMo == propMo)
+                    break;
+                valMo = valMo->superClass();
+            }
+
         }
 
-        if (valMo) {
+        if (valMo || !o) {
 
             void *args[] = { &o, 0 };
             QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, 

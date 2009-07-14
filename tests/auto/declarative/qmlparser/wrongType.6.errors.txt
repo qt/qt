@@ -1,1 +1,1 @@
-2:19:Cannot assign value "Hello" to property realProperty
+2:19:Invalid property assignment: double expected

@@ -1,1 +1,1 @@
-2:19:Cannot assign value "-13" to property uintProperty
+2:19:Invalid property assignment: unsigned int expected

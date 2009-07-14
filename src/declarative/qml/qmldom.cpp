@@ -1379,7 +1379,6 @@ QmlDomValue::Type QmlDomValue::type() const
         return PropertyBinding;
     case QmlParser::Value::ValueSource:
         return ValueSource;
-    case QmlParser::Value::Component:
     case QmlParser::Value::CreatedObject:
         return Object;
     case QmlParser::Value::SignalObject:

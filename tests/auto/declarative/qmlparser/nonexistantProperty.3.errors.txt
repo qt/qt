@@ -1,1 +1,1 @@
-2:5:Cannot assign binding to non-existant property "something"
+2:5:Cannot assign to non-existant property "something"

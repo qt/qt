@@ -54,13 +54,13 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
 
     switch(instr->type) {
     case QmlInstruction::Init:
-        qWarning() << idx << "\t" << line << "\t" << "INIT\t\t\t" << instr->init.dataSize;
+        qWarning() << idx << "\t" << line << "\t" << "INIT";
         break;
     case QmlInstruction::CreateObject:
         qWarning() << idx << "\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
         break;
     case QmlInstruction::SetId:
-        qWarning() << idx << "\t" << line << "\t" << "SETID\t\t\t" << instr->setId.value << "\t" << instr->setId.save << "\t\t" << primitives.at(instr->setId.value);
+        qWarning() << idx << "\t" << line << "\t" << "SETID\t\t\t" << instr->setId.value << "\t\t\t\t" << primitives.at(instr->setId.value);
         break;
     case QmlInstruction::SetDefault:
         qWarning() << idx << "\t" << line << "\t" << "SET_DEFAULT";
@@ -125,14 +125,20 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreObject:
         qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
         break;
-    case QmlInstruction::AssignCustomType:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;
+    case QmlInstruction::StoreVariantObject:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_VARIANT_OBJECT\t" << instr->storeObject.propertyIndex;
+        break;
+    case QmlInstruction::StoreInterface:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_INTERFACE\t\t" << instr->storeObject.propertyIndex;
         break;
     case QmlInstruction::StoreSignal:
         qWarning() << idx << "\t" << line << "\t" << "STORE_SIGNAL\t\t" << instr->storeSignal.signalIndex << "\t" << instr->storeSignal.value << "\t\t" << primitives.at(instr->storeSignal.value);
         break;
     case QmlInstruction::AssignSignalObject:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_SIGNAL_OBJECT\t" << instr->assignSignalObject.signal << "\t\t\t" << datas.at(instr->assignSignalObject.signal);
+        break;
+    case QmlInstruction::AssignCustomType:
+        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;
         break;
     case QmlInstruction::StoreBinding:
         qWarning() << idx << "\t" << line << "\t" << "STORE_BINDING\t\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t\t" << instr->assignBinding.context << primitives.at(instr->assignBinding.value);
@@ -148,6 +154,12 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
         break;
     case QmlInstruction::CompleteObject:
         qWarning() << idx << "\t" << line << "\t" << "COMPLETE\t\t" << instr->complete.castValue;
+        break;
+    case QmlInstruction::StoreObjectQmlList:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT_QMLLIST";
+        break;
+    case QmlInstruction::StoreObjectQList:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT_QLIST";
         break;
     case QmlInstruction::AssignObjectList:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t";
@@ -170,14 +182,11 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::PopQList:
         qWarning() << idx << "\t" << line << "\t" << "POP_QLIST";
         break;
-    case QmlInstruction::PushProperty:
-        qWarning() << idx << "\t" << line << "\t" << "PUSH_PROPERTY" << "\t\t" << instr->pushProperty.property;
-        break;
-    case QmlInstruction::StoreStackObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_STACK_OBJ" << "\t" << instr->assignStackObject.property << "\t" << instr->assignStackObject.object;
+    case QmlInstruction::Defer:
+        qWarning() << idx << "\t" << line << "\t" << "DEFER" << "\t\t" << instr->defer.deferCount;
         break;
     default:
-        qWarning() << idx << "\t" << line << "\t" << "XXX UNKOWN INSTRUCTION";
+        qWarning() << idx << "\t" << line << "\t" << "XXX UNKOWN INSTRUCTION" << "\t" << instr->type;
         break;
     }
 }
