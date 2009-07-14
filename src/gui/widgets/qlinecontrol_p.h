@@ -75,24 +75,24 @@ QT_MODULE(Gui)
 class Q_GUI_EXPORT QLineControl : public QObject
 {
     Q_OBJECT
-public:
 
+public:
     QLineControl(const QString &txt = QString())
-        : emitingEditingFinished(0),
+        : m_emitingEditingFinished(0),
         m_cursor(0), m_preeditCursor(0), m_layoutDirection(Qt::LeftToRight),
-        hideCursor(false), separator(0), readOnly(0),
-        dragEnabled(0), m_echoMode(0), textDirty(0), selDirty(0),
-        validInput(1), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
-        m_ascent(0), m_maxLength(32767), lastCursorPos(-1), 
-        m_tripleClickTimer(0), maskData(0), modifiedState(0), undoState(0),
-        selstart(0), selend(0), m_passwordEchoEditing(false)
+        m_hideCursor(false), m_separator(0), m_readOnly(0),
+        m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
+        m_validInput(1), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
+        m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
+        m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
+        m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
     {
         init(txt);
     }
 
     ~QLineControl()
     {
-        delete [] maskData;
+        delete [] m_maskData;
     }
 
     int nextMaskBlank(int pos);
@@ -154,7 +154,7 @@ public:
     void setReadOnly(bool enable);
 
     QString text() const;
-    void setText(const QString &);
+    void setText(const QString &txt);
 
     QString displayText() const;
 
@@ -218,7 +218,7 @@ public:
     void setCursorBlinkPeriod(int msec);
 
     QString cancelText() const;
-    void setCancelText(QString);
+    void setCancelText(const QString &text);
 
     enum DrawFlags {
         DrawText = 0x01,
@@ -228,19 +228,26 @@ public:
     };
     void draw(QPainter *, const QPoint &, const QRect &, int flags = DrawAll);
 
-    bool processEvent(QEvent* ev);
+    bool processEvent(QEvent *ev);
 
-    bool emitingEditingFinished;//Needed in QLineEdit FocusOut event
+    bool m_emitingEditingFinished; //Needed in QLineEdit FocusOut event
+
 private:
-    void init(const QString&);
+    void init(const QString &txt);
     void removeSelectedText();
-    void p_setText(const QString& txt, int pos = -1, bool edited = true);
+    void p_setText(const QString &txt, int pos = -1, bool edited = true);
     void updateDisplayText();
 
-    void p_insert(const QString& s);
+    void p_insert(const QString &s);
     void p_del(bool wasBackspace = false);
     void p_remove(int pos);
-    inline void p_deselect() { selDirty |= (selend > selstart); selstart = selend = 0; }
+
+    inline void p_deselect()
+    {
+        m_selDirty |= (m_selend > m_selstart);
+        m_selstart = m_selend = 0;
+    }
+
     void p_undo(int until = -1);
     void p_redo();
 
@@ -250,22 +257,22 @@ private:
     int m_preeditCursor;
     int m_cursorWidth;
     Qt::LayoutDirection m_layoutDirection;
-    uint hideCursor : 1; // used to hide the m_cursor inside preedit areas
-    uint separator : 1;
-    uint readOnly : 1;
-    uint dragEnabled : 1;
+    uint m_hideCursor : 1; // used to hide the m_cursor inside preedit areas
+    uint m_separator : 1;
+    uint m_readOnly : 1;
+    uint m_dragEnabled : 1;
     uint m_echoMode : 2;
-    uint textDirty : 1;
-    uint selDirty : 1;
-    uint validInput : 1;
+    uint m_textDirty : 1;
+    uint m_selDirty : 1;
+    uint m_validInput : 1;
     int m_blinkPeriod; // 0 for non-blinking cursor
     int m_blinkTimer;
     int m_deleteAllTimer;
     int m_blinkStatus;
     int m_ascent;
     int m_maxLength;
-    int lastCursorPos;
-    QList<int> transactions;
+    int m_lastCursorPos;
+    QList<int> m_transactions;
     QPoint m_tripleClick;
     int m_tripleClickTimer;
     QString m_cancelText;
@@ -287,8 +294,8 @@ private:
         Casemode caseMode;
     };
     QString m_inputMask;
-    QChar blank;
-    MaskInputData *maskData;
+    QChar m_blank;
+    MaskInputData *m_maskData;
 
 
     // undo/redo handling
@@ -300,15 +307,16 @@ private:
         QChar uc;
         int pos, selStart, selEnd;
     };
-    int modifiedState;
-    int undoState;
-    QVector<Command> history;
+    int m_modifiedState;
+    int m_undoState;
+    QVector<Command> m_history;
     void addCommand(const Command& cmd);
 
-    inline void separate() { separator = true; }
+    inline void separate() { m_separator = true; }
 
     // selection
-    int selstart, selend;
+    int m_selstart;
+    int m_selend;
 
     // masking
     void parseInputMask(const QString &maskFields);
@@ -319,9 +327,8 @@ private:
     QString stripString(const QString &str) const;
     int findInMask(int pos, bool forward, bool findSeparator, QChar searchChar = QChar()) const;
 
-
     // complex text layout
-    QTextLayout textLayout;
+    QTextLayout m_textLayout;
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
@@ -339,8 +346,10 @@ Q_SIGNALS:
     void accepted();
     void editingFinished();
     void updateNeeded(const QRect &);
+
 protected:
-    virtual void timerEvent ( QTimerEvent * event );
+    virtual void timerEvent(QTimerEvent *event);
+
 private slots:
     void _q_clipboardChanged();
     void _q_deleteSelected();
@@ -350,61 +359,61 @@ private slots:
 inline int QLineControl::nextMaskBlank(int pos)
 {
     int c = findInMask(pos, true, false);
-    separator |= (c != pos);
+    m_separator |= (c != pos);
     return (c != -1 ?  c : m_maxLength);
 }
 
 inline int QLineControl::prevMaskBlank(int pos)
 {
     int c = findInMask(pos, false, false);
-    separator |= (c != pos);
+    m_separator |= (c != pos);
     return (c != -1 ? c : 0);
 }
 
 inline bool QLineControl::isUndoAvailable() const
 { 
-    return !readOnly && undoState;
+    return !m_readOnly && m_undoState;
 }
 
 inline bool QLineControl::isRedoAvailable() const
 {
-    return !readOnly && undoState < (int)history.size();
+    return !m_readOnly && m_undoState < (int)m_history.size();
 }
 
 inline void QLineControl::clearUndo()
 {
-    history.clear();
-    modifiedState = undoState = 0;
+    m_history.clear();
+    m_modifiedState = m_undoState = 0;
 }
 
 inline bool QLineControl::isModified() const
 {
-    return modifiedState != undoState;
+    return m_modifiedState != m_undoState;
 }
 
 inline void QLineControl::setModified(bool modified)
 {
-    modifiedState = modified ? -1 : undoState;
+    m_modifiedState = modified ? -1 : m_undoState;
 }
 
 inline bool QLineControl::allSelected() const
 {
-    return !m_text.isEmpty() && selstart == 0 && selend == (int)m_text.length();
+    return !m_text.isEmpty() && m_selstart == 0 && m_selend == (int)m_text.length();
 }
 
 inline bool QLineControl::hasSelectedText() const
 {
-    return !m_text.isEmpty() && selend > selstart;
+    return !m_text.isEmpty() && m_selend > m_selstart;
 }
 
 inline int QLineControl::width() const
 {
-    return qRound(textLayout.lineAt(0).width()) + 1;
+    return qRound(m_textLayout.lineAt(0).width()) + 1;
 }
 
 inline int QLineControl::height() const
 {
-    return qRound(textLayout.lineAt(0).height()) + 1;
+    return qRound(m_textLayout.lineAt(0).height()) + 1;
 }
 
 inline int QLineControl::ascent() const
@@ -415,32 +424,32 @@ inline int QLineControl::ascent() const
 inline QString QLineControl::selectedText() const
 {
     if (hasSelectedText())
-        return m_text.mid(selstart, selend - selstart);
+        return m_text.mid(m_selstart, m_selend - m_selstart);
     return QString();
 }
 
 inline QString QLineControl::textBeforeSelection() const
 {
     if (hasSelectedText())
-        return m_text.left(selstart);
+        return m_text.left(m_selstart);
     return QString();
 }
 
 inline QString QLineControl::textAfterSelection() const
 {
     if (hasSelectedText())
-        return m_text.mid(selend);
+        return m_text.mid(m_selend);
     return QString();
 }
 
 inline int QLineControl::selectionStart() const
 {
-    return hasSelectedText() ? selstart : -1;
+    return hasSelectedText() ? m_selstart : -1;
 }
 
 inline int QLineControl::selectionEnd() const
 {
-    return hasSelectedText() ? selend : -1;
+    return hasSelectedText() ? m_selend : -1;
 }
 
 inline int QLineControl::start() const
@@ -455,17 +464,17 @@ inline int QLineControl::end() const
 
 inline void QLineControl::removeSelection()
 {
-    int priorState = undoState;
+    int priorState = m_undoState;
     removeSelectedText();
     finishChange(priorState);
 }
 
 inline bool QLineControl::inSelection(int x) const
 {
-    if (selstart >= selend)
+    if (m_selstart >= m_selend)
         return false;
     int pos = xToPos(x, QTextLine::CursorOnCharacter);
-    return pos >= selstart && pos < selend;
+    return pos >= m_selstart && pos < m_selend;
 }
 
 inline int QLineControl::cursor() const
@@ -492,18 +501,18 @@ inline void QLineControl::cursorForward(bool mark, int steps)
 {
     int c = m_cursor;
     if (steps > 0) {
-        while(steps--)
-            c = textLayout.nextCursorPosition(c);
+        while (steps--)
+            c = m_textLayout.nextCursorPosition(c);
     } else if (steps < 0) {
         while (steps++)
-            c = textLayout.previousCursorPosition(c);
+            c = m_textLayout.previousCursorPosition(c);
     }
     moveCursor(c, mark);
 }
 
 inline void QLineControl::cursorWordForward(bool mark)
 {
-    moveCursor(textLayout.nextCursorPosition(m_cursor, QTextLayout::SkipWords), mark);
+    moveCursor(m_textLayout.nextCursorPosition(m_cursor, QTextLayout::SkipWords), mark);
 }
 
 inline void QLineControl::home(bool mark)
@@ -518,12 +527,12 @@ inline void QLineControl::end(bool mark)
 
 inline void QLineControl::cursorWordBackward(bool mark)
 {
-    moveCursor(textLayout.previousCursorPosition(m_cursor, QTextLayout::SkipWords), mark);
+    moveCursor(m_textLayout.previousCursorPosition(m_cursor, QTextLayout::SkipWords), mark);
 }
 
 inline qreal QLineControl::cursorToX(int cursor) const
 {
-    return textLayout.lineAt(0).cursorToX(cursor);
+    return m_textLayout.lineAt(0).cursorToX(cursor);
 }
 
 inline qreal QLineControl::cursorToX() const
@@ -533,17 +542,17 @@ inline qreal QLineControl::cursorToX() const
 
 inline bool QLineControl::isReadOnly() const
 {
-    return readOnly;
+    return m_readOnly;
 }
 
 inline void QLineControl::setReadOnly(bool enable)
 { 
-    readOnly = enable;
+    m_readOnly = enable;
 }
 
 inline QString QLineControl::text() const
 {
-    QString res = maskData ?  stripString(m_text) : m_text;
+    QString res = m_maskData ? stripString(m_text) : m_text;
     return (res.isNull() ? QString::fromLatin1("") : res);
 }
 
@@ -554,7 +563,7 @@ inline void QLineControl::setText(const QString &txt)
 
 inline QString QLineControl::displayText() const
 {
-    return textLayout.text();
+    return m_textLayout.text();
 }
 
 inline void QLineControl::deselect()
@@ -565,7 +574,7 @@ inline void QLineControl::deselect()
 
 inline void QLineControl::selectAll()
 {
-    selstart = selend = m_cursor = 0;
+    m_selstart = m_selend = m_cursor = 0;
     moveCursor(m_text.length(), true);
 }
 
@@ -595,7 +604,7 @@ inline void QLineControl::setEchoMode(uint mode)
 
 inline void QLineControl::setMaxLength(int maxLength)
 {
-    if (maskData)
+    if (m_maskData)
         return;
     m_maxLength = maxLength;
     setText(m_text);
@@ -649,13 +658,13 @@ inline bool QLineControl::hasAcceptableInput() const
 
 inline QString QLineControl::inputMask() const
 {
-    return maskData ? m_inputMask + QLatin1Char(';') + blank : QString();
+    return m_maskData ? m_inputMask + QLatin1Char(';') + m_blank : QString();
 }
 
 inline void QLineControl::setInputMask(const QString &mask)
 {
     parseInputMask(mask);
-    if (maskData)
+    if (m_maskData)
         moveCursor(nextMaskBlank(0));
 }
 
@@ -663,18 +672,18 @@ inline void QLineControl::setInputMask(const QString &mask)
 #ifndef QT_NO_IM
 inline bool QLineControl::composeMode() const
 {
-    return !textLayout.preeditAreaText().isEmpty();
+    return !m_textLayout.preeditAreaText().isEmpty();
 }
 
 inline void QLineControl::setPreeditArea(int cursor, const QString &text)
 {
-    textLayout.setPreeditArea(cursor, text);
+    m_textLayout.setPreeditArea(cursor, text);
 }
 #endif
 
 inline QString QLineControl::preeditAreaText() const
 {
-    return textLayout.preeditAreaText();
+    return m_textLayout.preeditAreaText();
 }
 
 inline bool QLineControl::passwordEchoEditing() const
@@ -708,7 +717,7 @@ inline void QLineControl::setLayoutDirection(Qt::LayoutDirection direction)
 
 inline void QLineControl::setFont(const QFont &font)
 {
-    textLayout.setFont(font);
+    m_textLayout.setFont(font);
     updateDisplayText();
 }
 
@@ -722,9 +731,9 @@ inline QString QLineControl::cancelText() const
     return m_cancelText;
 }
 
-inline void QLineControl::setCancelText(QString s)
+inline void QLineControl::setCancelText(const QString &text)
 {
-    m_cancelText = s;
+    m_cancelText = text;
 }
 
 QT_END_NAMESPACE

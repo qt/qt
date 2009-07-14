@@ -1727,11 +1727,11 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
 #endif
     if (reason != Qt::PopupFocusReason
         || !(QApplication::activePopupWidget() && QApplication::activePopupWidget()->parentWidget() == this)) {
-        if (!d->control->emitingEditingFinished) {
+        if (!d->control->m_emitingEditingFinished) {
             if (hasAcceptableInput() || d->control->fixup()) {
-                d->control->emitingEditingFinished = true;
+                d->control->m_emitingEditingFinished = true;
                 emit editingFinished();
-                d->control->emitingEditingFinished = false;
+                d->control->m_emitingEditingFinished = false;
             }
         }
 #ifdef QT3_SUPPORT

@@ -135,7 +135,6 @@ public:
     void drag();
 #endif
 
-
     int leftTextMargin;
     int topTextMargin;
     int rightTextMargin;
