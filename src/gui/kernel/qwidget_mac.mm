@@ -2864,8 +2864,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         SetWindowTitleWithCFString(qt_mac_window_for(q), QCFString(caption));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-          setTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(caption)))];
+        [qt_mac_window_for(q) setTitle:qt_mac_QStringToNSString(caption)];
 #endif
     }
 }
@@ -2977,8 +2976,7 @@ void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
         SetWindowAlternateTitle(qt_mac_window_for(q), QCFString(iconText));
 #else
         QMacCocoaAutoReleasePool pool;
-        [qt_mac_window_for(q)
-            setMiniwindowTitle:reinterpret_cast<const NSString *>(static_cast<CFStringRef>(QCFString(iconText)))];
+        [qt_mac_window_for(q) setMiniwindowTitle:qt_mac_QStringToNSString(iconText)];
 #endif
     }
 }
