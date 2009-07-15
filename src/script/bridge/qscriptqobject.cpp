@@ -1314,13 +1314,6 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
         }
     }
 
-    index = qobject->dynamicPropertyNames().indexOf(name);
-    if (index != -1) {
-        QVariant v = eng->scriptValueFromJSCValue(value).toVariant();
-        (void)qobject->setProperty(name, v);
-        return;
-    }
-
     const int offset = (opt & QScriptEngine::ExcludeSuperClassMethods)
                        ? meta->methodOffset() : 0;
     for (index = meta->methodCount() - 1; index >= offset; --index) {
@@ -1330,6 +1323,13 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
             data->cachedMembers.insert(name, value);
             return;
         }
+    }
+
+    index = qobject->dynamicPropertyNames().indexOf(name);
+    if ((index != -1) || (opt & QScriptEngine::AutoCreateDynamicProperties)) {
+        QVariant v = eng->scriptValueFromJSCValue(value).toVariant();
+        (void)qobject->setProperty(name, v);
+        return;
     }
 
     QScriptObjectDelegate::put(object, exec, propertyName, value, slot);
