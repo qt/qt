@@ -23,7 +23,7 @@ mac:!embedded {
     HEADERS += inputmethod/qmacinputcontext_p.h
     SOURCES += inputmethod/qmacinputcontext_mac.cpp
 }
-symbian {
+symbian:contains(QT_CONFIG, s60) {
     HEADERS += inputmethod/qcoefepinputcontext_p.h
     SOURCES += inputmethod/qcoefepinputcontext_s60.cpp
     LIBS += -lfepbase

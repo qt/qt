@@ -741,7 +741,7 @@ void QMenuBarPrivate::init()
             q->hide();
     }
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     symbianCreateMenuBar(q->parentWidget());
     if(symbian_menubar)
         q->hide();
@@ -817,7 +817,7 @@ QMenuBar::~QMenuBar()
     if (qt_wince_is_mobile())
         d->wceDestroyMenuBar();
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     Q_D(QMenuBar);
     d->symbianDestroyMenuBar();
 #endif
@@ -1069,7 +1069,7 @@ void QMenuBar::setVisible(bool visible)
     if (isNativeMenuBar())
         return;
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     Q_D(QMenuBar);
     if(d->symbian_menubar)
         return;
@@ -1286,7 +1286,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
             nativeMenuBar->syncAction(e->action());
     }
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     if(d->symbian_menubar) {
         if(e->type() == QEvent::ActionAdded)
             d->symbian_menubar->addAction(e->action(), d->symbian_menubar->findAction(e->before()));
@@ -1383,7 +1383,7 @@ void QMenuBarPrivate::handleReparent()
     if (qt_wince_is_mobile() && wce_menubar)
         wce_menubar->rebuild();
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     if (symbian_menubar)
         symbian_menubar->rebuild();
 #endif
@@ -1622,7 +1622,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1677,7 +1677,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1735,7 +1735,7 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;

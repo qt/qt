@@ -2855,7 +2855,7 @@ void QMenu::actionEvent(QActionEvent *e)
         d->wce_menu->syncAction(e->action());
 #endif
 
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     if (!d->symbian_menu)
         d->symbian_menu = new QMenuPrivate::QSymbianMenuPrivate;
     if (e->type() == QEvent::ActionAdded)

@@ -761,7 +761,7 @@ private:
     friend bool isWidgetOpaque(const QWidget *);
     friend class QGLWidgetPrivate;
 #endif
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     friend class QSymbianControl;
     friend class QS60WindowSurface;
 #endif

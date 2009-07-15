@@ -80,11 +80,9 @@
 #include "QtGui/qscreen_qws.h"
 #endif
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 class RDrawableWindow;
 class CCoeControl;
-class CAknTitlePane;
-class CAknContextPane;
 // The following 2 defines may only be needed for s60. To be seen.
 const int SOFTKEYSTART=5000;
 const int SOFTKEYEND=5004;
@@ -172,7 +170,7 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
-#elif defined(Q_WS_S60) // <--------------------------------------------------------- SYMBIAN
+#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     uint activated : 1; // RWindowBase::Activated has been called
     RDrawableWindow *rwindow;
 #endif
@@ -663,7 +661,7 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
-#elif defined(Q_WS_S60) // <--------------------------------------------------------- SYMBIAN
+#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
     void s60UpdateIsOpaque();

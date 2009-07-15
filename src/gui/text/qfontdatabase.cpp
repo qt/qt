@@ -56,7 +56,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#if (defined(Q_WS_QWS) || defined(Q_WS_S60)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 #  include <ft2build.h>
 #  include FT_TRUETYPE_TABLES_H
 #endif
@@ -148,10 +148,10 @@ struct QtFontSize
     QtFontEncoding *encodingID(int id, uint xpoint = 0, uint xres = 0,
                                 uint yres = 0, uint avgwidth = 0, bool add = false);
 #endif // Q_WS_X11
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QByteArray fileName;
     int fileIndex;
-#endif // defined(Q_WS_QWS) || defined(Q_WS_S60)
+#endif // defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 };
 
 
@@ -225,12 +225,12 @@ struct QtFontStyle
         delete [] weightName;
         delete [] setwidthName;
 #endif
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
         while (count--) {
 #ifdef Q_WS_X11
             free(pixelSizes[count].encodings);
 #endif
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
             pixelSizes[count].fileName.~QByteArray();
 #endif
         }
@@ -248,7 +248,7 @@ struct QtFontStyle
     const char *weightName;
     const char *setwidthName;
 #endif // Q_WS_X11
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     bool antialiased;
 #endif
 
@@ -289,7 +289,7 @@ QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
     pixelSizes[count].count = 0;
     pixelSizes[count].encodings = 0;
 #endif
-#if defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     new (&pixelSizes[count].fileName) QByteArray;
     pixelSizes[count].fileIndex = 0;
 #endif
@@ -375,7 +375,7 @@ struct QtFontFamily
         fixedPitchComputed(false),
 #endif
         name(n), count(0), foundries(0)
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
         , bogusWritingSystems(false)
 #endif
     {
@@ -405,7 +405,7 @@ struct QtFontFamily
 #endif
 
     QString name;
-#if defined(Q_WS_X11) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_X11) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     QByteArray fontFilename;
     int fontFileIndex;
 #endif
@@ -415,7 +415,7 @@ struct QtFontFamily
     int count;
     QtFontFoundry **foundries;
 
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     bool bogusWritingSystems;
     QStringList fallbackFamilies;
 #endif
@@ -462,7 +462,7 @@ QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 
 // ### copied to tools/makeqpf/qpf2.cpp
 
-#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN)  || defined(Q_WS_S60) || (defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA))
+#if (defined(Q_WS_QWS) && !defined(QT_NO_FREETYPE)) || defined(Q_WS_WIN)  || defined(Q_OS_SYMBIAN) || (defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA))
 // see the Unicode subset bitfields in the MSDN docs
 static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Any,
@@ -583,7 +583,7 @@ static QList<QFontDatabase::WritingSystem> determineWritingSystemsFromTrueTypeBi
 }
 #endif
 
-#if defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 // class with virtual destructor, derived in qfontdatabase_s60.cpp
 class QFontDatabaseS60Store
 {
@@ -600,7 +600,7 @@ public:
 #if defined(Q_WS_QWS)
           , stream(0)
 #endif
-#if defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
           , s60Store(0)
 #endif
     { }
@@ -614,7 +614,7 @@ public:
         ::free(families);
         families = 0;
         count = 0;
-#if defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
         if (s60Store) {
             delete s60Store;
             s60Store = 0;
@@ -649,7 +649,7 @@ public:
     bool loadFromCache(const QString &fontPath);
     void addQPF2File(const QByteArray &file);
 #endif // Q_WS_QWS
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     void addFont(const QString &familyname, const char *foundryname, int weight,
                  bool italic, int pixelSize, const QByteArray &file, int fileIndex,
                  bool antialiased,
@@ -661,7 +661,7 @@ public:
 #if defined(Q_WS_QWS)
     QDataStream *stream;
     QStringList fallbackFamilies;
-#elif defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     const QFontDatabaseS60Store *s60Store;
 #endif
 };
@@ -712,7 +712,7 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
     return families[pos];
 }
 
-#if defined(Q_WS_QWS) ||   defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
 void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, bool italic, int pixelSize,
                                    const QByteArray &file, int fileIndex, bool antialiased,
                                    const QList<QFontDatabase::WritingSystem> &writingSystems)
@@ -751,14 +751,14 @@ void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundr
         for (int i = 0; i < writingSystems.count(); ++i)
             *stream << quint8(writingSystems.at(i));
     }
-#else // ..in case of defined(Q_WS_S60) && !defined(QT_NO_FREETYPE)
+#else // ..in case of defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
     f->fontFilename = file;
     f->fontFileIndex = fileIndex;
 #endif
 }
 #endif
 
-#if (defined(Q_WS_QWS) || defined(Q_WS_S60)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteArray &fontData)
 {
     QStringList families;
@@ -973,7 +973,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
 #endif
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 static void getEngineData(const QFontPrivate *d, const QFontCache::Key &key)
 {
     // look for the requested font in the engine data cache
@@ -1034,7 +1034,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #  include "qfontdatabase_win.cpp"
 #elif defined(Q_WS_QWS)
 #  include "qfontdatabase_qws.cpp"
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
 #  include "qfontdatabase_s60.cpp"
 #endif
 QT_END_INCLUDE_NAMESPACE

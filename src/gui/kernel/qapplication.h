@@ -61,7 +61,7 @@
 
 QT_BEGIN_HEADER
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 class TWsEvent;
 #endif
 
@@ -232,7 +232,7 @@ public:
     virtual int x11ClientMessage(QWidget*, XEvent*, bool passive_only);
     int x11ProcessEvent(XEvent*);
 #endif
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
     int s60ProcessEvent(TWsEvent *event);
     virtual bool s60EventFilter(TWsEvent *aEvent);
     void symbianHandleCommand(int command);

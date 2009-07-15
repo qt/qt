@@ -161,7 +161,7 @@ contains( styles, windowsmobile ) {
 	DEFINES += QT_NO_STYLE_WINDOWSMOBILE
 }
 
-contains( styles, s60 ) {
+contains( styles, s60 ):contains(QT_CONFIG, s60) {
 	HEADERS += \
 		styles/qs60style.h \
 		styles/qs60style_p.h

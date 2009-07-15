@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#if !defined(Q_WS_WINCE) && !defined(Q_WS_S60)
+#if !defined(Q_WS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include "ui_qfiledialog.h"
 #else
 #define Q_EMBEDDED_SMALLSCREEN

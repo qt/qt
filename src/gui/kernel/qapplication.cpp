@@ -448,7 +448,7 @@ bool Q_GUI_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 static int drag_time = 500;
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
 // The screens are a bit too small to for your thumb when using only 4 pixels drag distance.
 static int drag_distance = 8;
 #else
@@ -469,7 +469,7 @@ bool QApplicationPrivate::auto_sip_on_mouse_focus = false;
 bool QApplicationPrivate::inSizeMove = false;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-#  if defined(Q_WS_S60)
+#  if defined(Q_OS_SYMBIAN)
 bool QApplicationPrivate::keypadNavigation = true;
 #  else
 bool QApplicationPrivate::keypadNavigation = false;
@@ -1963,7 +1963,9 @@ QString desktopstyle;
 #elif defined(Q_WS_X11) && defined(Q_OS_SOLARIS)
             desktopstyle = QLatin1String("CDE");                        // default style for X11 on Solaris
 #elif defined(Q_WS_S60)
-            desktopstyle = QLatin1String("S60");
+            desktopstyle = QLatin1String("S60");                        // default style for Symbian with S60
+#elif defined(Q_OS_SYMBIAN)
+            desktopstyle = QLatin1String("Windows");                    // default style for Symbian without S60
 #elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
             desktopstyle = QLatin1String("SGI");                        // default style for X11 on IRIX
 #elif defined(Q_WS_QWS)
@@ -5098,7 +5100,7 @@ uint QApplicationPrivate::currentPlatform(){
         platform |= KB_Gnome;
     if (X11->desktopEnvironment == DE_CDE)
         platform |= KB_CDE;
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     platform = KB_S60;
 #endif
     return platform;

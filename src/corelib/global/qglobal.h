@@ -822,7 +822,9 @@ namespace QT_NAMESPACE {}
 #      define Q_WS_MAC32
 #    endif
 #  elif defined(Q_OS_SYMBIAN)
-#    define Q_WS_S60
+#    if (defined(__SERIES60_31__) || defined(__S60_32__) || defined(__S60_50__)) && !defined(QT_NO_S60)
+#      define Q_WS_S60
+#    endif
 #  elif !defined(Q_WS_QWS)
 #    define Q_WS_X11
 #  endif
@@ -1472,15 +1474,14 @@ public:
         SV_9_4 = 0x0004
     };
     static SymVersion symbianVersion();
-# ifdef Q_WS_S60
     enum S60Version {
-        SV_S60_Unknown = 0x0000,
-        SV_S60_3_1 = 0x0001,
-        SV_S60_3_2 = 0x0002,
-        SV_S60_5_0 = 0x0004
+        SV_S60_None = 0x0000,
+        SV_S60_Unknown = 0x0001,
+        SV_S60_3_1 = 0x0002,
+        SV_S60_3_2 = 0x0004,
+        SV_S60_5_0 = 0x0008
     };
     static S60Version s60Version();
-# endif
 #endif
 };
 

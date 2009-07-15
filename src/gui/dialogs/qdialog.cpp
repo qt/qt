@@ -64,11 +64,9 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_WS_X11)
 #  include "../kernel/qt_x11_p.h"
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
 #  include "qfiledialog.h"
-#endif
-#if defined(Q_OS_SYMBIAN)
-#include "qmenubar.h"
+#  include "qmenubar.h"
 #endif
 #ifndef SPI_GETSNAPTODEFBUTTON
 #  define SPI_GETSNAPTODEFBUTTON  95
@@ -500,16 +498,13 @@ int QDialog::exec()
     if (!findChild<QMenuBar *>())
         menuBar = new QMenuBar(this);
 #endif
-#endif
-    
-#if !defined(Q_WS_S60)
-    show();
-#else
+
     if (qobject_cast<QFileDialog *>(this))
         showFullScreen();
     else
+#endif // Q_OS_SYMBIAN
+
         show();
-#endif
 
 #ifdef Q_WS_MAC
     d->mac_nativeDialogModalHelp();

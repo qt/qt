@@ -1523,7 +1523,7 @@ public:
     typedef unsigned long HANDLE;
 #elif defined(Q_WS_QWS)
     typedef void * HANDLE;
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     typedef unsigned long int HANDLE; // equivalent to TUint32
 #endif
     typedef WindowFlags WFlags;

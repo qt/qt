@@ -91,7 +91,7 @@
 #    include <private/qfontengine_qpf_p.h>
 #  endif
 #  include <private/qabstractfontengine_p.h>
-#elif defined(Q_WS_S60) && defined(QT_NO_FREETYPE)
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 #  include <private/qfontengine_s60_p.h>
 #endif
 
@@ -3231,7 +3231,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || (defined(Q_WS_S60) && defined(QT_NO_FREETYPE))
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || (defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE))
 
     bool drawCached = true;
 
@@ -3264,7 +3264,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 
-#else // Q_WS_WIN || Q_WS_MAC || Q_WS_S60 && QT_NO_FREETYPE
+#else // Q_WS_WIN || Q_WS_MAC || Q_OS_SYMBIAN && QT_NO_FREETYPE
 
     QFontEngine *fontEngine = ti.fontEngine;
 
@@ -3284,7 +3284,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     }
 #endif // Q_WS_QWS
 
-#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_S60)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 
 #if defined(Q_WS_QWS) && !defined(QT_NO_QWS_QPF2)
     if (fontEngine->type() == QFontEngine::QPF2) {
@@ -4235,13 +4235,13 @@ int QCustomRasterPaintDevice::bytesPerLine() const
     return (width() * depth() + 7) / 8;
 }
 
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
 
 void QRasterBuffer::prepareBuffer(int /* width */, int /* height */)
 {
 }
 
-#endif // Q_WS_S60
+#endif // Q_OS_SYMBIAN
 
 /*!
     \class QCustomRasterPaintDevice

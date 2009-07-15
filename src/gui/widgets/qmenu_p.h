@@ -61,7 +61,7 @@
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
 
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
 class CEikMenuPane;
 #endif
 QT_BEGIN_NAMESPACE
@@ -123,7 +123,7 @@ struct QWceMenuAction {
     QWceMenuAction() : menuHandle(0), command(0) {}
 };
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
 struct QSymbianMenuAction {
     uint command;
     int parent;
@@ -147,7 +147,7 @@ public:
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
                       ,symbian_menu(0)
 #endif
 #ifdef QT3_SUPPORT
@@ -163,7 +163,7 @@ public:
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
         delete symbian_menu;
 #endif
 
@@ -336,7 +336,7 @@ public:
     HMENU wceMenu(bool create = false);
     QAction* wceCommands(uint command);
 #endif
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_S60)
     struct QSymbianMenuPrivate {
         QList<QSymbianMenuAction*> actionItems;
         QSymbianMenuPrivate();

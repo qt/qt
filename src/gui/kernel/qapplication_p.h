@@ -438,7 +438,7 @@ public:
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
                                bool spontaneous = true);
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
@@ -496,7 +496,7 @@ private:
     QMap<const QScreen*, QRect> maxWindowRects;
 #endif
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     static QHash<TInt, TUint> scanCodeCache;
 #endif
 

@@ -131,10 +131,10 @@ QT_END_HEADER
 
 #endif // Q_WS_QWS
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 class CCoeControl;
 typedef CCoeControl * WId;
-#endif // Q_WS_S60
+#endif // Q_OS_SYMBIAN
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

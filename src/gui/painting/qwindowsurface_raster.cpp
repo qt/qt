@@ -295,7 +295,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 #endif
 #endif
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     Q_UNUSED(widget);
     Q_UNUSED(rgn);
     Q_UNUSED(offset);

@@ -43,6 +43,7 @@
 #include <qstring.h>
 #include <qdir.h>
 
+#ifdef Q_WS_S60
 #include <e32base.h>                 // CBase -> Required by cdirectorylocalizer.h
 #include <cdirectorylocalizer.h>     // CDirectoryLocalizer
 
@@ -66,4 +67,12 @@ EXPORT_C QString localizedDirectoryName(QString& rawPath)
 
     return ret;
 }
+#else
+
+EXPORT_C QString localizedDirectoryName(QString& /* rawPath */)
+{
+    qWarning("QDesktopServices::displayName() not implemented for this platform version");
+    return QString();
+}
+#endif
 

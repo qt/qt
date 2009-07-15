@@ -1819,9 +1819,6 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return cachedS60Version = SV_S60_Unknown;
 #  endif
 }
-# else
-#  error Qt does not support non-S60 Symbian versions yet.
-# endif // ifdef Q_WS_S60
 QSysInfo::SymVersion QSysInfo::symbianVersion()
 {
     switch (s60Version()) {
@@ -1835,6 +1832,17 @@ QSysInfo::SymVersion QSysInfo::symbianVersion()
         return SV_Unknown;
     }
 }
+#else
+QSysInfo::S60Version QSysInfo::s60Version()
+{
+    return SV_S60_None;
+}
+
+QSysInfo::SymVersion QSysInfo::symbianVersion()
+{
+    return SV_Unknown;
+}
+# endif // ifdef Q_WS_S60
 #endif // ifdef Q_OS_SYMBIAN
 
 /*!

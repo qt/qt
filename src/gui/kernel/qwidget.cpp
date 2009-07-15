@@ -99,7 +99,7 @@
 #endif
 #include <private/qpaintengine_raster_p.h>
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 #include "private/qt_s60_p.h"
 #endif
 
@@ -1996,7 +1996,7 @@ void QWidgetPrivate::setOpaque(bool opaque)
 #ifdef Q_WS_WIN
     winUpdateIsOpaque();
 #endif
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     s60UpdateIsOpaque();
 #endif
 }
@@ -2012,7 +2012,7 @@ void QWidgetPrivate::updateIsTranslucent()
 #ifdef Q_WS_WIN
     winUpdateIsOpaque();
 #endif
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     s60UpdateIsOpaque();
 #endif
 }
@@ -4888,12 +4888,12 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
-#if !defined(Q_WS_S60)
+#if !defined(Q_OS_SYMBIAN)
 void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 {
     Q_UNUSED(softkeys)
 }
-#endif // !defined(Q_WS_S60)
+#endif // !defined(Q_OS_SYMBIAN)
 
 bool QWidgetPrivate::isAboutToShow() const
 {
@@ -6790,7 +6790,7 @@ void QWidgetPrivate::show_helper()
     // On Windows, show the popup now so that our own focus handling
     // stores the correct old focus widget even if it's stolen in the
     // showevent
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_S60)
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
     if (!isEmbedded && q->windowType() == Qt::Popup)
         qApp->d_func()->openPopup(q);
 #endif
@@ -6807,7 +6807,7 @@ void QWidgetPrivate::show_helper()
 
     show_sys();
 
-#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_WS_S60)
+#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     if (!isEmbedded && q->windowType() == Qt::Popup)
         qApp->d_func()->openPopup(q);
 #endif
@@ -10430,7 +10430,7 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 */
 void QWidget::updateMicroFocus()
 {
-#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_S60))
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
     // and optimisation to update input context only it has already been created.
     if (d->ic || qApp->d_func()->inputContext) {

@@ -319,6 +319,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "IPV6" ]            = "yes"; // Always, dynamicly loaded
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
+    dictionary[ "S60" ]             = "yes";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
@@ -805,6 +806,13 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "ARM_FPU_TYPE" ] = configCmdLine.at(i);
         }
+
+        // S60 Support -------------------------------------------
+        else if( configCmdLine.at(i) == "-s60" )
+            dictionary[ "S60" ]    = "yes";
+        else if( configCmdLine.at(i) == "-no-s60" )
+            dictionary[ "S60" ]    = "no";
+
         else if (configCmdLine.at(i) == "-fast" )
             dictionary[ "FAST" ] = "yes";
         else if (configCmdLine.at(i) == "-no-fast" )
@@ -895,6 +903,12 @@ void Configure::parseCmdLine()
             dictionary[ "PLUGIN_MANIFESTS" ] = "no";
         } else if( configCmdLine.at(i) == "-plugin-manifests" ) {
             dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+        }
+
+        // Work around compiler nesting limitation
+        else
+            continueElse = true;
+        if (!continueElse) {
         }
 
         else if( configCmdLine.at(i) == "-internal" )
@@ -1432,6 +1446,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "XMLPATTERNS" ]         = "no";
         dictionary[ "QT_GLIB" ]             = "no";
+        dictionary[ "S60" ]                 = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
         // iconv_open seems to return -1 always, so something is probably missing from the platform.
         dictionary[ "QT_ICONV" ]            = "no";
@@ -1768,10 +1783,12 @@ bool Configure::displayHelp()
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
         // Qt\Symbian only options go below here -----------------------------------------------------------------------------
-        desc("Qt for S60 only:\n\n");
+        desc("Qt for Symbian OS only:\n\n");
         desc("FREETYPE", "no",     "-no-freetype",         "Do not compile in Freetype2 support.");
-        desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.\n");
-        desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2\n");
+        desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.");
+        desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2");
+        desc("S60", "no",          "-no-s60",              "Do not compile in S60 support.");
+        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework\n");
         return true;
     }
     return false;
@@ -2399,6 +2416,10 @@ void Configure::generateOutputVars()
         qtConfig += "egl";
     }
 
+    if ( dictionary["S60"] == "yes" ) {
+        qtConfig += "s60";
+    }
+
      if ( dictionary["DIRECTSHOW"] == "yes" )
         qtConfig += "directshow";
 
@@ -2819,6 +2840,7 @@ void Configure::generateConfigfiles()
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
         if(dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
+        if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_CL"] == "yes" ||
@@ -3135,6 +3157,10 @@ void Configure::displayConfig()
         cout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
         cout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
         cout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
+    }
+
+    if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("symbian"))) {
+        cout << "Support for S60............." << dictionary[ "S60" ] << endl;
     }
 
     if(dictionary["ASSISTANT_WEBKIT"] == "yes")

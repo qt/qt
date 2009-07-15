@@ -17,6 +17,7 @@ x11:include(kernel/x11.pri)
 mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)
 embedded:include(embedded/embedded.pri)
+symbian:include(kernel/symbian.pri)
 
 #modules
 include(animation/animation.pri)

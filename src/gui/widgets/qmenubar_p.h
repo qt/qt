@@ -62,7 +62,7 @@
 #endif
 
 #ifndef QT_NO_MENUBAR
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
 class CCoeControl;
 class CEikMenuBar;
 #endif
@@ -89,7 +89,7 @@ public:
 #ifdef Q_WS_WINCE
                          , wce_menubar(0), wceClassicMenu(false)
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
                          , symbian_menubar(0)
 #endif
 
@@ -102,7 +102,7 @@ public:
 #ifdef Q_WS_WINCE
             delete wce_menubar;
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
             delete symbian_menubar;
 #endif
         }
@@ -239,7 +239,7 @@ public:
     void wceRefresh();
     bool wceEmitSignals(QList<QWceMenuAction*> actions, uint command);
 #endif
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     void symbianCreateMenuBar(QWidget *);
     void symbianDestroyMenuBar();
     struct QSymbianMenuBarPrivate {
