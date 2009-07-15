@@ -1204,7 +1204,7 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                             tint.setAlphaF(.6);
                             const QVector<QRect> &rects = qrgn.rects();
                             for (int i = 0; i < rects.size(); ++i)
-                                p.fillRect(rects.at(i).translated(scrollAreaOffset), tint);
+                                p.fillRect(rects.at(i), tint);
                         }
                         p.end();
                         if (!redirectionOffset.isNull())

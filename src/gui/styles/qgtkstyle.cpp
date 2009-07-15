@@ -70,6 +70,7 @@
 #include <qpixmapcache.h>
 #undef signals // Collides with GTK stymbols
 #include "qgtkpainter_p.h"
+#include "qstylehelper_p.h"
 
 #include <private/qcleanlooksstyle_p.h>
 
@@ -206,17 +207,6 @@ static GdkColor fromQColor(const QColor &color)
     retval.green = color.green() * 255;
     retval.blue = color.blue() * 255;
     return retval;
-}
-
-// Note this is different from uniqueName as used in QGtkPainter
-static QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
-{
-    QString tmp;
-    const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-    tmp.sprintf("%s-%d-%d-%d-%lld-%dx%d", key.toLatin1().constData(), uint(option->state),
-                option->direction, complexOption ? uint(complexOption->activeSubControls) : uint(0),
-                option->palette.cacheKey(), size.width(), size.height());
-    return tmp;
 }
 
 /*!
