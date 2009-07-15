@@ -194,7 +194,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), parent);
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
-    
+
     recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
@@ -500,15 +500,6 @@ void QmlViewer::setRecordArgs(const QStringList& a)
 void QmlViewer::setRecordFile(const QString& f)
 {
     record_file = f;
-}
-
-bool QmlViewer::event(QEvent *event)
-{
-    if (event->type() == QEvent::PaletteChange) {
-        setupPalettes();
-        return true;
-    }
-    return QWidget::event(event);
 }
 
 void QmlViewer::setRecordPeriod(int ms)
