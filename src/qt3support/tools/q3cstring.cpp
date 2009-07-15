@@ -77,11 +77,23 @@ QT_BEGIN_NAMESPACE
     and '\0' (NUL byte) terminated; otherwise the results are
     undefined.
 
-    A Q3CString that has not been assigned to anything is \e null, i.e.
-    both the length and the data pointer is 0. A Q3CString that
-    references the empty string ("", a single '\0' char) is \e empty.
-    Both null and empty Q3CStrings are legal parameters to the methods.
-    Assigning \c{const char *} 0 to Q3CString produces a null Q3CString.
+    A default constructed Q3CString is \e null, i.e. both the length
+    and the data pointer are 0 and isNull() returns true.
+    
+    \note However, if you ask for the data pointer of a null Q3CString
+    by calling data(), then because the internal representation of the
+    null Q3CString is shared, it will be detached and replaced with a
+    non-shared, empty representation, a non-null data pointer will be
+    returned, and subsequent calls to isNull() will return false. But
+    if you ask for the data pointer of a null Q3CString by calling
+    constData(), the shared internal representation is not detached, a
+    null data pointer is returned, and subsequent calls to isNull()
+    will continue to return true.
+
+    A Q3CString that references the empty string ("", a single '\0'
+    char) is \e empty, i.e. isEmpty() returns true.  Both null and
+    empty Q3CStrings are legal parameters to the methods.  Assigning
+    \c{const char *} 0 to Q3CString produces a null Q3CString.
 
     The length() function returns the length of the string; resize()
     resizes the string and truncate() truncates the string. A string
@@ -320,6 +332,16 @@ QT_BEGIN_NAMESPACE
 
     Returns true if the string is null, i.e. if data() == 0; otherwise
     returns false. A null string is also an empty string.
+
+    \note If you ask for the data pointer of a null Q3CString by
+    calling data(), then because the internal representation of the
+    null Q3CString is shared, it will be detached and replaced with a
+    non-shared, empty representation, a non-null data pointer will be
+    returned, and subsequent calls to isNull() will return false. But
+    if you ask for the data pointer of a null Q3CString by calling
+    constData(), the shared internal representation is not detached, a
+    null data pointer is returned, and subsequent calls to isNull()
+    will continue to return true.
 
     Example:
     \snippet doc/src/snippets/code/src.qt3support.tools.q3cstring.cpp 1

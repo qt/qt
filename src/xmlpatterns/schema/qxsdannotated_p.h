@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtXmlPatterns of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,36 +34,63 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
 
-#include <QtTest/QtTest>
+#ifndef Patternist_XsdAnnotated_H
+#define Patternist_XsdAnnotated_H
 
-class tst_Exception: public QObject
+#include "qxsdannotation_p.h"
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+namespace QPatternist
 {
-    Q_OBJECT
+    /**
+     * @short Base class for all XSD components with annotation content.
+     *
+     * @ingroup Patternist_schema
+     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     */
+    class XsdAnnotated
+    {
+        public:
+            /**
+             * Adds a new @p annotation to the component.
+             */
+            void addAnnotation(const XsdAnnotation::Ptr &annotation);
 
-private slots:
-    void throwException() const;
-};
+            /**
+             * Adds a list of new @p annotations to the component.
+             */
+            void addAnnotations(const XsdAnnotation::List &annotations);
 
-/*!
- \internal
+            /**
+             * Returns the list of all annotations of the component.
+             */
+            XsdAnnotation::List annotations() const;
 
- We simply throw an exception to check that we get sane output/reporting.
- */
-void tst_Exception::throwException() const
-{
-    /* When exceptions are disabled, some compilers, at least linux-g++, treat
-     * exception clauses as hard errors. */
-#ifndef QT_NO_EXCEPTIONS
-    throw 3;
-#endif
+        private:
+            XsdAnnotation::List m_annotations;
+    };
 }
 
-QTEST_MAIN(tst_Exception)
+QT_END_NAMESPACE
 
-#include "tst_exception.moc"
+QT_END_HEADER
+
+#endif

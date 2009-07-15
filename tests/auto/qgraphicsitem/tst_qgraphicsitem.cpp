@@ -182,6 +182,8 @@ private slots:
     void handlesChildEvents();
     void handlesChildEvents2();
     void handlesChildEvents3();
+    void filtersChildEvents();
+    void filtersChildEvents2();
     void ensureVisible();
     void cursor();
     //void textControlGetterSetter();
@@ -3406,6 +3408,127 @@ void tst_QGraphicsItem::handlesChildEvents3()
     QCOMPARE(group2->counter, 3);
 }
 
+
+class ChildEventFilterTester : public ChildEventTester
+{
+public:
+    ChildEventFilterTester(const QRectF &rect, QGraphicsItem *parent = 0)
+        : ChildEventTester(rect, parent), filter(QEvent::None)
+    { }
+
+    QEvent::Type filter;
+
+protected:
+    bool sceneEventFilter(QGraphicsItem *item, QEvent *event)
+    {
+        Q_UNUSED(item);
+        if (event->type() == filter) {
+            ++counter;
+            return true;
+        }
+        return false;
+    }
+};
+
+void tst_QGraphicsItem::filtersChildEvents()
+{
+    QGraphicsScene scene;
+    ChildEventFilterTester *root = new ChildEventFilterTester(QRectF(0, 0, 10, 10));
+    ChildEventFilterTester *filter = new ChildEventFilterTester(QRectF(10, 10, 10, 10), root);
+    ChildEventTester *child = new ChildEventTester(QRectF(20, 20, 10, 10), filter);
+
+    // setup filter
+    filter->setFiltersChildEvents(true);
+    filter->filter = QEvent::GraphicsSceneMousePress;
+
+    scene.addItem(root);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWait(1000);
+
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+
+    // send event to child
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setScenePos(QPointF(25, 25));//child->mapToScene(5, 5));
+    pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setScenePos(QPointF(25, 25));//child->mapToScene(5, 5));
+    releaseEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
+    QApplication::sendEvent(&scene, &pressEvent);
+    QApplication::sendEvent(&scene, &releaseEvent);
+
+    QCOMPARE(child->counter, 1);  // mouse release is not filtered
+    QCOMPARE(filter->counter, 1); // mouse press is filtered
+    QCOMPARE(root->counter, 0);
+
+    // add another filter
+    root->setFiltersChildEvents(true);
+    root->filter = QEvent::GraphicsSceneMouseRelease;
+
+    // send event to child
+    QApplication::sendEvent(&scene, &pressEvent);
+    QApplication::sendEvent(&scene, &releaseEvent);
+
+    QCOMPARE(child->counter, 1);
+    QCOMPARE(filter->counter, 2); // mouse press is filtered
+    QCOMPARE(root->counter, 1); // mouse release is filtered
+
+    // reparent to another sub-graph
+    ChildEventTester *parent = new ChildEventTester(QRectF(10, 10, 10, 10), root);
+    child->setParentItem(parent);
+
+    // send event to child
+    QApplication::sendEvent(&scene, &pressEvent);
+    QApplication::sendEvent(&scene, &releaseEvent);
+
+    QCOMPARE(child->counter, 2); // mouse press is _not_ filtered
+    QCOMPARE(parent->counter, 0);
+    QCOMPARE(filter->counter, 2);
+    QCOMPARE(root->counter, 2); // mouse release is filtered
+}
+
+void tst_QGraphicsItem::filtersChildEvents2()
+{
+    ChildEventFilterTester *root = new ChildEventFilterTester(QRectF(0, 0, 10, 10));
+    root->setFiltersChildEvents(true);
+    root->filter = QEvent::GraphicsSceneMousePress;
+    QVERIFY(root->filtersChildEvents());
+
+    ChildEventTester *child = new ChildEventTester(QRectF(0, 0, 10, 10), root);
+    QVERIFY(!child->filtersChildEvents());
+
+    ChildEventTester *child2 = new ChildEventTester(QRectF(0, 0, 10, 10));
+    ChildEventTester *child3 = new ChildEventTester(QRectF(0, 0, 10, 10), child2);
+    ChildEventTester *child4 = new ChildEventTester(QRectF(0, 0, 10, 10), child3);
+
+    child2->setParentItem(root);
+    QVERIFY(!child2->filtersChildEvents());
+    QVERIFY(!child3->filtersChildEvents());
+    QVERIFY(!child4->filtersChildEvents());
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    QMouseEvent event(QEvent::MouseButtonPress, view.mapFromScene(5, 5),
+                      view.viewport()->mapToGlobal(view.mapFromScene(5, 5)), Qt::LeftButton, 0, 0);
+    QApplication::sendEvent(view.viewport(), &event);
+
+    QCOMPARE(child->counter, 0);
+    QCOMPARE(child2->counter, 0);
+    QCOMPARE(child3->counter, 0);
+    QCOMPARE(child4->counter, 0);
+    QCOMPARE(root->counter, 1);
+}
+
 class CustomItem : public QGraphicsItem
 {
 public:
@@ -4355,14 +4478,13 @@ void tst_QGraphicsItem::paint()
     view.hide();
 
     QGraphicsScene scene2;
+    QGraphicsView view2(&scene2);
+    view2.show();
+    QTest::qWait(250);
 
     PaintTester tester2;
     scene2.addItem(&tester2);
-
-    QGraphicsView view2(&scene2);
-    view2.show();
     qApp->processEvents();
-    QTest::qWait(250);
 
     //First show one paint
     QVERIFY(tester2.painted == 1);
@@ -5447,11 +5569,12 @@ public:
 void tst_QGraphicsItem::ensureUpdateOnTextItem()
 {
     QGraphicsScene scene;
-    TextItem *text1 = new TextItem(QLatin1String("123"));
-    scene.addItem(text1);
     QGraphicsView view(&scene);
     view.show();
     QTest::qWait(250);
+    TextItem *text1 = new TextItem(QLatin1String("123"));
+    scene.addItem(text1);
+    qApp->processEvents();
     QCOMPARE(text1->updates,1);
 
     //same bouding rect but we have to update
@@ -5911,14 +6034,15 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     scene.addItem(parent1);
     scene.addItem(parent2);
 
-    paintedItems.clear();
-
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
     QTest::qWait(250);
+    paintedItems.clear();
+    view.viewport()->update();
+    QTest::qWait(100);
 
     QCOMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
                                            << grandChild111 << child11
@@ -7124,6 +7248,11 @@ void tst_QGraphicsItem::sorting()
     _paintedItems.clear();
 
     view.viewport()->repaint();
+#ifdef Q_WS_MAC
+    // There's no difference between repaint and update on the Mac,
+    // so we have to process events here to make sure we get the event.
+    QTest::qWait(100);
+#endif
 
     QCOMPARE(_paintedItems, QList<QGraphicsItem *>()
                  << grid[0][0] << grid[0][1] << grid[0][2] << grid[0][3]
@@ -7156,6 +7285,11 @@ void tst_QGraphicsItem::itemHasNoContents()
     _paintedItems.clear();
 
     view.viewport()->repaint();
+#ifdef Q_WS_MAC
+    // There's no difference between update() and repaint() on the Mac,
+    // so we have to process events here to make sure we get the event.
+    QTest::qWait(100);
+#endif
 
     QCOMPARE(_paintedItems, QList<QGraphicsItem *>() << item2);
 }

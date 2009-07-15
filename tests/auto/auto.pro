@@ -422,9 +422,14 @@ SUBDIRS += checkxmlfiles                \
            qxmlnodemodelindex           \
            qxmlquery                    \
            qxmlresultitems              \
+           qxmlschema                   \
+           qxmlschemavalidator          \
            qxmlserializer               \
            xmlpatterns                  \
            xmlpatternsdiagnosticsts     \
+           xmlpatternsschema            \
+           xmlpatternsschemats          \
+           xmlpatternsvalidator         \
            xmlpatternsview              \
            xmlpatternsxqts              \
            xmlpatternsxslts

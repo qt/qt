@@ -550,15 +550,7 @@ extern "C" {
                        qwidget->objectName().local8Bit().data());
 #endif
             QPainter p(qwidget);
-            QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(qwidget->parent());
-            QPoint scrollAreaOffset;
-            if (scrollArea && scrollArea->viewport() == qwidget) {
-                QAbstractScrollAreaPrivate *priv
-                        = static_cast<QAbstractScrollAreaPrivate *>(qt_widget_private(scrollArea));
-                scrollAreaOffset = priv->contentsOffset();
-                p.translate(-scrollAreaOffset);
-            }
-            qwidgetprivate->paintBackground(&p, qrgn, scrollAreaOffset,
+            qwidgetprivate->paintBackground(&p, qrgn,
                                             qwidget->isWindow() ? QWidgetPrivate::DrawAsRoot : 0);
             p.end();
         }
