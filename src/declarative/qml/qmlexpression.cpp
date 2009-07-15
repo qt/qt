@@ -52,17 +52,17 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
+: q(b), ctxt(0), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
+: q(b), ctxt(0), expressionFunctionValid(false), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr)
-: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
+: q(b), ctxt(0), expression(expr), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
 }
 
@@ -177,6 +177,8 @@ void QmlExpression::setExpression(const QString &expression)
     delete d->proxy; d->proxy = 0;
 
     d->expression = expression;
+    d->expressionFunctionValid = false;
+    d->expressionFunction = QScriptValue();
 
     d->sse.clear();
 }
@@ -234,8 +236,14 @@ QVariant QmlExpressionPrivate::evalQtScript()
     for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i) 
         scriptEngine->currentContext()->pushScope(ctxtPriv->scopeChain.at(i));
     
-    QScriptValue svalue = 
-        scriptEngine->evaluate(expression, fileName.toString(), line);
+    if (!expressionFunctionValid) {
+        expressionFunction = 
+            scriptEngine->evaluate("function() {" +expression+"}", 
+                                   fileName.toString(), line);
+        expressionFunctionValid = true;
+    }
+
+    QScriptValue svalue = expressionFunction.call();
 
     if (scriptEngine->hasUncaughtException()) {
         if (scriptEngine->uncaughtException().isError()){
