@@ -450,7 +450,7 @@ public:
 
     // New 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 12;
+    quint32 flags : 13;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -467,7 +467,7 @@ public:
     quint32 isFocusItemForArea : 1;
     quint32 hasActiveFocus : 1;
     quint32 mouseSetsFocus : 1;
-    quint32 unused : 3; // feel free to use
+    quint32 unused : 2; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
