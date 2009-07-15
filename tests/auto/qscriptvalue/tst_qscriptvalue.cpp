@@ -2354,10 +2354,8 @@ void tst_QScriptValue::call()
 
         {
             QScriptValue result = fun.call();
-            QEXPECT_FAIL("", "Returns null if a function throws an error", Continue);
             QCOMPARE(result.isError(), true);
             QCOMPARE(eng.hasUncaughtException(), true);
-            QEXPECT_FAIL("", "returns null if a function throws an error", Continue);
             QVERIFY(result.strictlyEquals(eng.uncaughtException()));
         }
     }

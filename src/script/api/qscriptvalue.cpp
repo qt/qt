@@ -1987,8 +1987,10 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     JSC::CallData callData;
     JSC::CallType callType = callee.getCallData(callData);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, jscArgs);
-    if (exec->hadException())
+    if (exec->hadException()) {
         eng_p->uncaughtException = exec->exception();
+        result = exec->exception();
+    }
     return eng_p->scriptValueFromJSCValue(result);
 }
 
