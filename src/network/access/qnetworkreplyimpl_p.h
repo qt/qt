@@ -61,6 +61,7 @@
 #include "QtCore/qqueue.h"
 #include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
+#include "private/qbytedata_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -144,7 +145,7 @@ public:
     void consume(qint64 count);
     void emitUploadProgress(qint64 bytesSent, qint64 bytesTotal);
     qint64 nextDownstreamBlockSize() const;
-    void appendDownstreamData(const QByteArray &data);
+    void appendDownstreamData(QByteDataBuffer &data);
     void appendDownstreamData(QIODevice *data);
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
@@ -172,7 +173,7 @@ public:
     QList<QNetworkProxy> proxyList;
 #endif
 
-    QRingBuffer readBuffer;
+    QByteDataBuffer readBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;
