@@ -1677,7 +1677,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
                                           QString *selectedFilter,
                                           Options options)
 {
-    if (qt_filedialog_open_filenames_hook)
+    if (qt_filedialog_open_filenames_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filenames_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
@@ -1763,7 +1763,7 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
                                      QString *selectedFilter,
                                      Options options)
 {
-    if (qt_filedialog_save_filename_hook)
+    if (qt_filedialog_save_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_save_filename_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
@@ -1838,7 +1838,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
                                           const QString &dir,
                                           Options options)
 {
-    if (qt_filedialog_existing_directory_hook)
+    if (qt_filedialog_existing_directory_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_existing_directory_hook(parent, caption, dir, options);
     QFileDialogArgs args;
     args.parent = parent;
