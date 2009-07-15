@@ -76,6 +76,10 @@ QmlParser::Object::~Object()
         prop->release();
     foreach(Property *prop, signalProperties)
         prop->release();
+    foreach(Property *prop, attachedProperties)
+        prop->release();
+    foreach(Property *prop, groupedProperties)
+        prop->release();
 }
 
 const QMetaObject *Object::metaObject() const
