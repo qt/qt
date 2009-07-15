@@ -156,6 +156,7 @@ public:
     void _q_objectDestroyed(QObject *);
 #endif
 
+    JSC::JSGlobalData *globalData;
     JSC::JSGlobalObject *globalObject;
     JSC::JSObject *customGlobalObject;
     JSC::ExecState *currentFrame;

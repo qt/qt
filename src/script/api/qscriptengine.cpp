@@ -811,8 +811,8 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 
     JSC::initializeThreading(); // ### hmmm
 
-    JSC::JSGlobalData *data = JSC::JSGlobalData::create().releaseRef();
-    globalObject = new (data)QScript::GlobalObject(this);
+    globalData = JSC::JSGlobalData::create().releaseRef();
+    globalObject = new (globalData)QScript::GlobalObject(this);
 
     JSC::ExecState* exec = globalObject->globalExec();
 
@@ -847,6 +847,10 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     detachAllRegisteredScriptValues();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
+    qDeleteAll(contextForFrameHash);
+    JSC::JSLock lock(false);
+    globalData->heap.destroy();
+    globalData->deref();
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)

@@ -1582,6 +1582,7 @@ QMetaObjectWrapperObject::QMetaObjectWrapperObject(
 
 QMetaObjectWrapperObject::~QMetaObjectWrapperObject()
 {
+    delete data;
 }
     
 bool QMetaObjectWrapperObject::getOwnPropertySlot(
