@@ -62,19 +62,19 @@ public:
     QmlPalette(QObject *parent=0);
     ~QmlPalette();
 
-    Q_PROPERTY(QColor window READ window CONSTANT)
-    Q_PROPERTY(QColor windowText READ windowText CONSTANT)
-    Q_PROPERTY(QColor base READ base CONSTANT)
-    Q_PROPERTY(QColor alternateBase READ alternateBase CONSTANT)
-    Q_PROPERTY(QColor button READ button CONSTANT)
-    Q_PROPERTY(QColor buttonText READ buttonText CONSTANT)
-    Q_PROPERTY(QColor light READ light CONSTANT)
-    Q_PROPERTY(QColor midlight READ midlight CONSTANT)
-    Q_PROPERTY(QColor dark READ dark CONSTANT)
-    Q_PROPERTY(QColor mid READ mid CONSTANT)
-    Q_PROPERTY(QColor shadow READ shadow CONSTANT)
-    Q_PROPERTY(QColor highlight READ highlight CONSTANT)
-    Q_PROPERTY(QColor highlightedText READ highlightedText CONSTANT)
+    Q_PROPERTY(QColor window READ window NOTIFY paletteChanged)
+    Q_PROPERTY(QColor windowText READ windowText NOTIFY paletteChanged)
+    Q_PROPERTY(QColor base READ base NOTIFY paletteChanged)
+    Q_PROPERTY(QColor alternateBase READ alternateBase NOTIFY paletteChanged)
+    Q_PROPERTY(QColor button READ button NOTIFY paletteChanged)
+    Q_PROPERTY(QColor buttonText READ buttonText NOTIFY paletteChanged)
+    Q_PROPERTY(QColor light READ light NOTIFY paletteChanged)
+    Q_PROPERTY(QColor midlight READ midlight NOTIFY paletteChanged)
+    Q_PROPERTY(QColor dark READ dark NOTIFY paletteChanged)
+    Q_PROPERTY(QColor mid READ mid NOTIFY paletteChanged)
+    Q_PROPERTY(QColor shadow READ shadow NOTIFY paletteChanged)
+    Q_PROPERTY(QColor highlight READ highlight NOTIFY paletteChanged)
+    Q_PROPERTY(QColor highlightedText READ highlightedText NOTIFY paletteChanged)
 
     QColor window() const;
     QColor windowText() const;
@@ -98,8 +98,11 @@ public:
 
     void setColorGroup(QPalette::ColorGroup);
 
+    bool virtual eventFilter(QObject *watched, QEvent *event);
+    bool virtual event(QEvent *event);
+
 Q_SIGNALS:
-    void updated();
+    void paletteChanged();
 };
 
 QT_END_NAMESPACE
