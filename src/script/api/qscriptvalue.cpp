@@ -284,11 +284,9 @@ void QScriptValuePrivate::initFromJSCValue(JSC::JSValue value)
         JSC::JSCell *cell = value.asCell();
         Q_ASSERT(engine != 0);
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        if (value != eng_p->globalObject) {
-            if (!eng_p->keepAliveValues.contains(cell))
-                eng_p->keepAliveValues[cell] = 0;
-            eng_p->keepAliveValues[cell].ref();
-        }
+        if (!eng_p->keepAliveValues.contains(cell))
+            eng_p->keepAliveValues[cell] = 0;
+        eng_p->keepAliveValues[cell].ref();
     }
 }
 
@@ -401,8 +399,7 @@ QScriptValue::~QScriptValue()
         if (d_ptr->engine && d_ptr->isJSC()
             && !JSC::JSImmediate::isImmediate(d_ptr->jscValue)) {
             QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d_ptr->engine);
-            if (d_ptr->jscValue != eng_p->globalObject)
-                eng_p->releaseJSCValue(d_ptr->jscValue);
+            eng_p->releaseJSCValue(d_ptr->jscValue);
         }
         delete d_ptr;
         d_ptr = 0;
