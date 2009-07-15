@@ -1035,7 +1035,7 @@ QFxWebView *QFxWebPage::view()
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = qmlContext(view())->resolvedUri(url);
+    QUrl comp = qmlContext(view())->resolvedUrl(url);
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 

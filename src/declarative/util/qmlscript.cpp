@@ -148,9 +148,8 @@ void QmlScript::setSource(const QUrl &source)
     Q_D(QmlScript);
     if (d->url == source)
         return;
-    d->url = source;
-    Q_ASSERT(!source.isRelative());
-
+    d->url = qmlContext(this)->resolvedUrl(source);
+    
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (d->url.scheme() == QLatin1String("file")) {
         QFile file(d->url.toLocalFile());

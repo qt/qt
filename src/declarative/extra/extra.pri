@@ -4,7 +4,6 @@ SOURCES += \
            extra/qmldatetimeformatter.cpp \
            extra/qfxintegermodel.cpp \
            extra/qmlfolderlistmodel.cpp \
-           extra/qmltimer.cpp \
            extra/qfxanimatedimageitem.cpp \
            extra/qfxflowview.cpp \
            extra/qfxparticles.cpp \
@@ -17,7 +16,6 @@ HEADERS += \
            extra/qmldatetimeformatter.h \
            extra/qfxintegermodel.h \
            extra/qmlfolderlistmodel.h \
-           extra/qmltimer.h \
            extra/qfxanimatedimageitem.h \
            extra/qfxanimatedimageitem_p.h \
            extra/qfxflowview.h \

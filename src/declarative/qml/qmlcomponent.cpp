@@ -122,7 +122,7 @@ void QmlComponentPrivate::typeDataReady()
 
 void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
 {
-    url = QUrl(data->url);
+    url = data->imports.baseUrl();
     QmlCompiledComponent *c = data->toCompiledComponent(engine);
 
     if (!c) {

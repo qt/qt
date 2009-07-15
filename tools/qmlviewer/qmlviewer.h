@@ -24,6 +24,7 @@ QT_BEGIN_NAMESPACE
 class QFxView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
+class QmlPalette;
 class QProcess;
 
 class QmlViewer : public QWidget
@@ -60,6 +61,7 @@ public slots:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
+    virtual bool event(QEvent *event);
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
@@ -69,11 +71,14 @@ private slots:
 
 private:
     void setupProxy();
+    void setupPalettes();
 
     QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QFxView *canvas;
+    QmlPalette *palette;
+    QmlPalette *disabledPalette;
     QBasicTimer recordTimer;
     QList<QImage*> frames;
     QProcess* frame_stream;

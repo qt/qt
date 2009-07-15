@@ -17,6 +17,7 @@ private slots:
     void loadProperties();
     void loadChildObject();
     void loadComposite();
+    void loadImports();
 
     void testValueSource();
 
@@ -52,7 +53,7 @@ void tst_qmldom::loadProperties()
     QmlDomObject rootObject = document.rootObject();
     QVERIFY(rootObject.isValid());
     QVERIFY(rootObject.objectId() == "item");
-    QVERIFY(rootObject.properties().size() == 2);
+    QCOMPARE(rootObject.properties().size(), 3);
 
     QmlDomProperty xProperty = rootObject.property("x");
     QVERIFY(xProperty.propertyName() == "x");
@@ -91,7 +92,7 @@ void tst_qmldom::loadChildObject()
 
 void tst_qmldom::loadComposite()
 {
-    QFile file(SRCDIR  "/top.qml");
+    QFile file(SRCDIR  "/data/top.qml");
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 
     QmlDomDocument document;
@@ -140,6 +141,47 @@ void tst_qmldom::testValueSource()
     QVERIFY(sourceValue.isBinding());
     QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");
 }
+
+void tst_qmldom::loadImports()
+{
+    QByteArray qml = "import importlib.sublib 4.7\n"
+                     "import importlib.sublib 4.6 as NewFoo\n"
+                     "import 'import'\n"
+                     "import 'import' as X\n"
+                     "Item {}";
+
+    QmlEngine engine;
+    engine.addImportPath(SRCDIR "/data");
+    QmlDomDocument document;
+    QVERIFY(document.load(&engine, qml));
+
+    QCOMPARE(document.imports().size(), 4);
+
+    QmlDomImport import1 = document.imports().at(0);
+    QCOMPARE(import1.type(), QmlDomImport::Library);
+    QCOMPARE(import1.uri(), QLatin1String("importlib.sublib"));
+    QCOMPARE(import1.qualifier(), QString());
+    QCOMPARE(import1.version(), QLatin1String("4.7"));
+
+    QmlDomImport import2 = document.imports().at(1);
+    QCOMPARE(import2.type(), QmlDomImport::Library);
+    QCOMPARE(import2.uri(), QLatin1String("importlib.sublib"));
+    QCOMPARE(import2.qualifier(), QLatin1String("NewFoo"));
+    QCOMPARE(import2.version(), QLatin1String("4.6"));
+
+    QmlDomImport import3 = document.imports().at(2);
+    QCOMPARE(import3.type(), QmlDomImport::File);
+    QCOMPARE(import3.uri(), QLatin1String("import"));
+    QCOMPARE(import3.qualifier(), QLatin1String(""));
+    QCOMPARE(import3.version(), QLatin1String(""));
+
+    QmlDomImport import4 = document.imports().at(3);
+    QCOMPARE(import4.type(), QmlDomImport::File);
+    QCOMPARE(import4.uri(), QLatin1String("import"));
+    QCOMPARE(import4.qualifier(), QLatin1String("X"));
+    QCOMPARE(import4.version(), QLatin1String(""));
+}
+
 
 QTEST_MAIN(tst_qmldom)
 

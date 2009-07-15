@@ -89,6 +89,7 @@ Flipable {
                     // Center image if it is smaller than the flickable area.
                     x: ImageContainer.width > width*scale ? (ImageContainer.width - width*scale) / 2 : 0
                     y: ImageContainer.height > height*scale ? (ImageContainer.height - height*scale) / 2 : 0
+                    smooth: !Flick.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 0 && width != 0) {
@@ -135,7 +136,19 @@ Flipable {
 
     transitions: [
         Transition {
-            NumberAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+            SequentialAnimation {
+                SetPropertyAction {
+                    target: BigImage
+                    property: "smooth"
+                    value: false
+                }
+                NumberAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+                SetPropertyAction {
+                    target: BigImage
+                    property: "smooth"
+                    value: !Flick.moving
+                }
+            }
         }
     ]
 }

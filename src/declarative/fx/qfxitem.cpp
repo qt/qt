@@ -1895,7 +1895,7 @@ void QFxItem::newChild(const QString &type)
 {
     Q_D(QFxItem);
 
-    QUrl url = qmlContext(this)->resolvedUri(QUrl(type));
+    QUrl url = qmlContext(this)->resolvedUrl(QUrl(type));
     if (url.isEmpty())
         return;
 
