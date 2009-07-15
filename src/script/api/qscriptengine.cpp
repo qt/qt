@@ -38,6 +38,7 @@
 #include "ObjectPrototype.h"
 #include "SourceCode.h"
 #include "FunctionPrototype.h"
+#include "JSFunction.h"
 
 #include "utils/qscriptdate_p.h"
 #include "bridge/qscriptfunction_p.h"
