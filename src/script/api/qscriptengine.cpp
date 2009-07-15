@@ -3118,9 +3118,8 @@ int QScriptEngine::processEventsInterval() const
 */
 bool QScriptEngine::isEvaluating() const
 {
-    qWarning("QScriptEngine::isEvaluating() not implemented");
-    // check whether we have a lock on the exec state?
-    return false;
+    Q_D(const QScriptEngine);
+    return (d->currentFrame != d->globalObject->globalExec());
 }
 
 /*!
