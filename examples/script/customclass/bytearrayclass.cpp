@@ -294,7 +294,7 @@ void ByteArrayClassPropertyIterator::toBack()
 
 QScriptString ByteArrayClassPropertyIterator::name() const
 {
-    return QScriptString();
+    return object().engine()->toStringHandle(QString::number(m_last));
 }
 
 uint ByteArrayClassPropertyIterator::id() const
