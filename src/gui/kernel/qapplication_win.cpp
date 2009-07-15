@@ -1009,6 +1009,8 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
 #ifndef QT_NO_DEBUG
     if (!atom)
         qErrnoWarning("QApplication::regClass: Registering window class failed.");
+#else
+    Q_UNUSED(atom);
 #endif
 
     winclassNames()->insert(cname, 1);
