@@ -838,9 +838,11 @@ bool WidgetFactory::isPassiveInteractor(QWidget *widget)
         if (isTabBarInteractor(tabBar))
             m_lastWasAPassiveInteractor = true;
         return m_lastWasAPassiveInteractor;
-    }  else if (qobject_cast<QSizeGrip*>(widget))
+#ifndef QT_NO_SIZEGRIP
+    }  else if (qobject_cast<QSizeGrip*>(widget)) {
         return (m_lastWasAPassiveInteractor = true);
-     else if (qobject_cast<QMdiSubWindow*>(widget))
+#endif
+    }  else if (qobject_cast<QMdiSubWindow*>(widget))
         return (m_lastWasAPassiveInteractor = true);
     else if (qobject_cast<QAbstractButton*>(widget) && (qobject_cast<QTabBar*>(widget->parent()) || qobject_cast<QToolBox*>(widget->parent())))
         return (m_lastWasAPassiveInteractor = true);
