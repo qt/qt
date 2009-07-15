@@ -44,6 +44,7 @@
 #include "qdatetime.h"
 #include "qdiriterator.h"
 #include "qset.h"
+#include <QtCore/qdebug.h>
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -571,7 +572,7 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
     } else {
         // Unbuffered stdio mode.
         if (QT_LSEEK(fd, pos, SEEK_SET) == -1) {
-            qWarning("QFile::at: Cannot set file position %lld", pos);
+            qWarning() << "QFile::at: Cannot set file position" << pos;
             q->setError(QFile::PositionError, qt_error_string(errno));
             return false;
         }

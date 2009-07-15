@@ -1488,9 +1488,8 @@ int QRegExpEngine::anchorAlternation(int a, int b)
         return Anchor_Alternation | (n - 1);
 #endif
 
-    aa.resize(n + 1);
-    aa[n].a = a;
-    aa[n].b = b;
+    QRegExpAnchorAlternation element = {a, b};
+    aa.append(element);
     return Anchor_Alternation | n;
 }
 
