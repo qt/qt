@@ -73,7 +73,7 @@ struct ListModelData
     \qmlclass ListModel 
     \brief The ListModel element defines a free-form list data source.
 
-    The ListModel is a simple heirarchy of items containing data roles.
+    The ListModel is a simple hierarchy of items containing data roles.
     For example:
 
     \code

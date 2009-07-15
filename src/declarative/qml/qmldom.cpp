@@ -145,9 +145,9 @@ int QmlDomDocument::version() const
 }
 
 /*!
-    Return the URIs listed by "import <dir>" in the qml.
+    Returns all import statements in qml.
 */
-QList<QUrl> QmlDomDocument::imports() const
+QList<QmlDomImport> QmlDomDocument::imports() const
 {
     return d->imports;
 }
@@ -191,7 +191,13 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     }
 
     for (int i = 0; i < td->data.imports().size(); ++i) {
-        d->imports += QUrl(td->data.imports().at(i).uri);
+        QmlScriptParser::Import parserImport = td->data.imports().at(i);
+        QmlDomImport domImport;
+        domImport.d->type = static_cast<QmlDomImportPrivate::Type>(parserImport.type);
+        domImport.d->uri = parserImport.uri;
+        domImport.d->qualifier = parserImport.qualifier;
+        domImport.d->version = parserImport.version;
+        d->imports += domImport;
     }
 
     if (td->data.tree()) {
@@ -206,7 +212,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
 
     return true;
 }
-
 
 /*!
     Returns the last load errors.  The load errors will be reset after a 
@@ -1764,6 +1769,91 @@ void QmlDomComponent::setComponentRoot(const QmlDomObject &root)
 {
     Q_UNUSED(root);
     qWarning("QmlDomComponent::setComponentRoot(const QmlDomObject &): Not implemented");
+}
+
+
+QmlDomImportPrivate::QmlDomImportPrivate()
+: type(File)
+{
+}
+
+QmlDomImportPrivate::QmlDomImportPrivate(const QmlDomImportPrivate &other)
+: QSharedData(other)
+{
+}
+
+QmlDomImportPrivate::~QmlDomImportPrivate()
+{
+}
+
+/*!
+    \class QmlDomImport
+    \internal
+    \brief The QmlDomImport class represents an import statement.
+*/
+
+/*!
+    Construct an empty QmlDomImport.
+*/
+QmlDomImport::QmlDomImport()
+: d(new QmlDomImportPrivate)
+{
+}
+
+/*!
+    Create a copy of \a other QmlDomImport.
+*/
+QmlDomImport::QmlDomImport(const QmlDomImport &other)
+: d(other.d)
+{
+}
+
+/*!
+    Destroy the QmlDomImport.
+*/
+QmlDomImport::~QmlDomImport()
+{
+}
+
+/*!
+    Assign \a other to this QmlDomImport.
+*/
+QmlDomImport &QmlDomImport::operator=(const QmlDomImport &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
+  Returns the type of the import.
+  */
+QmlDomImport::Type QmlDomImport::type() const
+{
+    return static_cast<QmlDomImport::Type>(d->type);
+}
+
+/*!
+  Returns the URI of the import (e.g. 'subdir' or 'com.nokia.Qt')
+  */
+QString QmlDomImport::uri() const
+{
+    return d->uri;
+}
+
+/*!
+  Returns the version specified by the import. An empty string if no version was specified.
+  */
+QString QmlDomImport::version() const
+{
+    return d->version;
+}
+
+/*!
+  Returns the (optional) qualifier string (the token following the 'as' keyword) of the import.
+  */
+QString QmlDomImport::qualifier() const
+{
+    return d->qualifier;
 }
 
 QT_END_NAMESPACE

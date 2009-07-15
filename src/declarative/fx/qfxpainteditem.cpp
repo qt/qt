@@ -232,10 +232,10 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
 #if defined(QFX_RENDER_QPAINTER)
     bool oldAntiAliasing = p.testRenderHint(QPainter::Antialiasing);
     bool oldSmoothPixmap = p.testRenderHint(QPainter::SmoothPixmapTransform);
-    if (d->smooth) {
-        p.setRenderHints(QPainter::Antialiasing, true);
+    if (oldAntiAliasing)
+        p.setRenderHints(QPainter::Antialiasing, false); // cannot stitch properly otherwise
+    if (d->smooth)
         p.setRenderHints(QPainter::SmoothPixmapTransform, true);
-    }
     QRectF clipf = p.clipRegion().boundingRect();
     if (clipf.isEmpty())
         clipf = mapToScene(content); // ### Inefficient: Maps toScene and then fromScene
@@ -330,10 +330,10 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
 #if defined(QFX_RENDER_QPAINTER)
-    if (d->smooth) {
+    if (oldAntiAliasing)
         p.setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
+    if (d->smooth)
         p.setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
-    }
 #endif
 }
 

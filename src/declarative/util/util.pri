@@ -7,6 +7,7 @@ SOURCES += \
            util/qmlscript.cpp \
            util/qmlanimation.cpp \
            util/qmlfont.cpp \
+           util/qmlpalette.cpp \
            util/qmlfollow.cpp \
            util/qmlstate.cpp\
            util/qmltransitionmanager.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
            util/qmllistaccessor.cpp \
            util/qmlopenmetaobject.cpp \
            util/qmltimeline.cpp \
+           util/qmltimer.cpp \
            util/qmlbind.cpp
 
 HEADERS += \
@@ -31,6 +33,7 @@ HEADERS += \
            util/qmlanimation.h \
            util/qmlanimation_p.h \
            util/qmlfont.h \
+           util/qmlpalette.h \
            util/qmlfollow.h \
            util/qmlstate.h\
            util/qmlstateoperations.h \
@@ -44,4 +47,5 @@ HEADERS += \
            util/qmlopenmetaobject.h \
            util/qmlnullablevalue_p.h \
            util/qmltimeline_p.h \
+           util/qmltimer.h \
            util/qmlbind.h

@@ -233,7 +233,7 @@
     structures.
 
     Every expression is executed in a bind context, encapsulated by the 
-    QmlBindContext C++ class.  As covered in the class documentation, a 
+    QmlContext C++ class.  As covered in the class documentation, a 
     bind context contains a map of names to values, and a list of default 
     objects.  When resolving a name, the name to value map is searched first.
     If the name cannot be found, the default object's are iterated in turn and 
@@ -331,7 +331,7 @@
     }
     \endcode
 
-    To relate id's back to QmlBindContext, id's exist as properties on the
+    To relate id's back to QmlContext, id's exist as properties on the
     component context.
 
     Bind expressions can reference any object property.  The QML bind engine 
