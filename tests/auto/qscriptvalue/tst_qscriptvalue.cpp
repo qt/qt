@@ -2593,10 +2593,8 @@ void tst_QScriptValue::construct()
         QScriptValue fun = eng.evaluate("(function() { throw new Error('foo'); })");
         QCOMPARE(fun.isFunction(), true);
         QScriptValue ret = fun.construct();
-        QEXPECT_FAIL("", "Returns null if a constructor throws an error", Continue);
         QCOMPARE(ret.isError(), true);
         QCOMPARE(eng.hasUncaughtException(), true);
-        QEXPECT_FAIL("", "Returns null if a constructor throws an error", Continue);
         QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
     }
 

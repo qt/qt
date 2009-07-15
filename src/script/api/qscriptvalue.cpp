@@ -2131,8 +2131,10 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     JSC::ConstructData constructData;
     JSC::ConstructType constructType = callee.getConstructData(constructData);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
-    if (exec->hadException())
+    if (exec->hadException()) {
         eng_p->uncaughtException = exec->exception();
+        result = JSC::asObject(exec->exception());
+    }
     return eng_p->scriptValueFromJSCValue(result);
 }
 
