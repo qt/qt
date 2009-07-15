@@ -1167,8 +1167,10 @@ static QByteArray buildParameterNames
 
 // Build a QMetaObject in "buf" based on the information in "d".
 // If "buf" is null, then return the number of bytes needed to
-// build the QMetaObject.
-static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf)
+// build the QMetaObject.  Returns -1 if the metaobject if 
+// relocatable is set, but the metaobject contains extradata.
+static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf, 
+                           bool relocatable)
 {
     int size = 0;
     int dataIndex;
@@ -1176,18 +1178,23 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf)
     int index;
     bool hasNotifySignals = false;
 
+    if (relocatable && 
+        (d->relatedMetaObjects.size() > 0 || d->staticMetacallFunction))
+        return -1;
+
     // Create the main QMetaObject structure at the start of the buffer.
     QMetaObject *meta = reinterpret_cast<QMetaObject *>(buf);
     size += sizeof(QMetaObject);
     ALIGN(size, int);
     if (buf) {
-        meta->d.superdata = d->superClass;
+        if (!relocatable) meta->d.superdata = d->superClass;
         meta->d.extradata = 0;
     }
 
     // Populate the QMetaObjectPrivate structure.
     QMetaObjectPrivate *pmeta
         = reinterpret_cast<QMetaObjectPrivate *>(buf + size);
+    int pmetaSize = size;
     dataIndex = 13;     // Number of fields in the QMetaObjectPrivate.
     for (index = 0; index < d->properties.size(); ++index) {
         if (d->properties[index].notifySignal != -1) {
@@ -1246,8 +1253,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf)
     size += dataIndex * sizeof(int);
     char *str = reinterpret_cast<char *>(buf + size);
     if (buf) {
-        meta->d.stringdata = str;
-        meta->d.data = reinterpret_cast<uint *>(data);
+        if (relocatable) {
+            meta->d.stringdata = reinterpret_cast<const char *>((intptr_t)size);
+            meta->d.data = reinterpret_cast<uint *>((intptr_t)pmetaSize);
+        } else {
+            meta->d.stringdata = str;
+            meta->d.data = reinterpret_cast<uint *>(data);
+        }
     }
 
     // Reset the current data position to just past the QMetaObjectPrivate.
@@ -1422,10 +1434,65 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf)
 */
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
-    int size = buildMetaObject(d, 0);
+    int size = buildMetaObject(d, 0, false);
     char *buf = reinterpret_cast<char *>(qMalloc(size));
-    buildMetaObject(d, buf);
+    buildMetaObject(d, buf, false);
     return reinterpret_cast<QMetaObject *>(buf);
+}
+
+/*
+    \internal
+
+    Converts this meta object builder into relocatable data.  This data can
+    be stored, copied and later passed to fromRelocatableData() to create a
+    concrete QMetaObject.
+
+    The data is specific to the architecture on which it was created, but is not
+    specific to the process that created it.  Not all meta object builder's can
+    be converted to data in this way.  If \a ok is provided, it will be set to
+    true if the conversion succeeds, and false otherwise.  If a 
+    staticMetacallFunction() or any relatedMetaObject()'s are specified the
+    conversion to relocatable data will fail.
+*/
+QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
+{
+    int size = buildMetaObject(d, 0, true);
+    if (size == -1) {
+        if (ok) *ok = false;
+        return QByteArray();
+    }
+
+    QByteArray data;
+    data.resize(size);
+    char *buf = data.data();
+    buildMetaObject(d, buf, true);
+    if (ok) *ok = true;
+    return data;
+}
+
+/*
+    \internal
+
+    Sets the \a data returned from toRelocatableData() onto a concrete 
+    QMetaObject instance, \a output.  As the meta object's super class is not
+    saved in the relocatable data, it must be passed as \a superClass.
+*/
+void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output, 
+                                             const QMetaObject *superclass, 
+                                             const QByteArray &data)
+{
+    if (!output)
+        return;
+
+    const char *buf = data.constData();
+    const QMetaObject *dataMo = reinterpret_cast<const QMetaObject *>(buf);
+
+    intptr_t stringdataOffset = (intptr_t)dataMo->d.stringdata;
+    intptr_t dataOffset = (intptr_t)dataMo->d.data;
+
+    output->d.superdata = superclass;
+    output->d.stringdata = buf + stringdataOffset;
+    output->d.data = reinterpret_cast<const uint *>(buf + dataOffset);
 }
 
 /*!

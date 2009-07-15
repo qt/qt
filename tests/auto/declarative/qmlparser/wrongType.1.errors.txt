@@ -1,1 +1,1 @@
-2:12:Cannot assign value "hello" to property value
+2:12:Invalid property assignment: int expected

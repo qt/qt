@@ -1,1 +1,1 @@
-2:11:Cannot assign value "5,5x10" to property rect
+2:11:Invalid property assignment: rect expected

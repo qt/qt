@@ -43,6 +43,10 @@
 #include "qmlexpression_p.h"
 #include "qmlengine_p.h"
 #include "qmlcontext_p.h"
+#include "rewriter/textwriter_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljsnodepool_p.h"
 #include "QtCore/qdebug.h"
 
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -51,18 +55,109 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 
+namespace {
+
+using namespace QmlJS;
+
+class RewriteBinding: protected AST::Visitor
+{
+    unsigned _position;
+    TextWriter *_writer;
+
+public:
+    QString operator()(const QString &code)
+    {
+        Engine engine;
+        NodePool pool(QString(), &engine);
+        Lexer lexer(&engine);
+        Parser parser(&engine);
+        lexer.setCode(code, 0);
+        parser.parseStatement();
+        return rewrite(code, 0, parser.statement());
+    }
+
+protected:
+    using AST::Visitor::visit;
+
+    void accept(AST::Node *node)
+    {
+        AST::Node::acceptChild(node, this);
+    }
+
+    QString rewrite(QString code, unsigned position, AST::Statement *node)
+    {
+        TextWriter w;
+        _writer = &w;
+        _position = position;
+
+        accept(node);
+
+        unsigned startOfStatement = node->firstSourceLocation().begin() - _position;
+        unsigned endOfStatement = node->lastSourceLocation().end() - _position;
+
+        _writer->replace(startOfStatement, 0, QLatin1String("function() {\n"));
+        _writer->replace(endOfStatement, 0, QLatin1String("\n}"));
+
+        w.write(&code);
+
+        return code;
+    }
+
+    virtual bool visit(AST::Block *ast)
+    {
+        for (AST::StatementList *it = ast->statements; it; it = it->next) {
+            if (! it->next) {
+                // we need to rewrite only the last statement of a block.
+                accept(it->statement);
+            }
+        }
+
+        return false;
+    }
+
+    virtual bool visit(AST::ExpressionStatement *ast)
+    {
+        unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
+        _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
+
+        return false;
+    }
+
+    virtual bool visit(AST::NumericLiteral *node)
+    {
+        if (node->suffix != AST::NumericLiteral::noSuffix) {
+            const int suffixLength = AST::NumericLiteral::suffixLength[node->suffix];
+            const char *suffixSpell = AST::NumericLiteral::suffixSpell[node->suffix];
+            QString pre;
+            pre += QLatin1String("qmlNumberFrom");
+            pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
+            pre += QLatin1String(&suffixSpell[1]);
+            pre += QLatin1Char('(');
+            _writer->replace(node->literalToken.begin() - _position, 0, pre);
+            _writer->replace(node->literalToken.end() - _position - suffixLength,
+                             suffixLength,
+                             QLatin1String(")"));
+        }
+
+        return false;
+    }
+};
+
+} // end of anonymous namespace
+
+
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
+: q(b), ctxt(0), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
+: q(b), ctxt(0), expressionFunctionValid(false), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr)
-: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
+: q(b), ctxt(0), expression(expr), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
 }
 
@@ -77,7 +172,7 @@ QmlExpressionPrivate::~QmlExpressionPrivate()
 /*!
     Create an invalid QmlExpression.
 
-    As the expression will not have an associated QmlContext, this will be a 
+    As the expression will not have an associated QmlContext, this will be a
     null expression object and its value will always be an invalid QVariant.
  */
 QmlExpression::QmlExpression()
@@ -86,7 +181,7 @@ QmlExpression::QmlExpression()
 }
 
 /*! \internal */
-QmlExpression::QmlExpression(QmlContext *ctxt, void *expr, 
+QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
                              QmlRefCount *rc, QObject *me)
 : d(new QmlExpressionPrivate(this, expr, rc))
 {
@@ -105,7 +200,7 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
     If specified, the \a scope object's properties will also be in scope during
     the expression's execution.
 */
-QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression, 
+QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
                              QObject *scope)
 : d(new QmlExpressionPrivate(this, expression))
 {
@@ -177,13 +272,15 @@ void QmlExpression::setExpression(const QString &expression)
     delete d->proxy; d->proxy = 0;
 
     d->expression = expression;
+    d->expressionFunctionValid = false;
+    d->expressionFunction = QScriptValue();
 
     d->sse.clear();
 }
 
 /*!
     Called by QmlExpression each time the expression value changes from the
-    last time it was evaluated.  The expression must have been evaluated at 
+    last time it was evaluated.  The expression must have been evaluated at
     least once (by calling QmlExpression::value()) before this callback will
     be made.
 
@@ -226,16 +323,24 @@ QVariant QmlExpressionPrivate::evalQtScript()
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
 
     QScriptEngine *scriptEngine = engine->scriptEngine();
-    QScriptValueList oldScopeChain = 
+    QScriptValueList oldScopeChain =
         scriptEngine->currentContext()->scopeChain();
 
     for (int i = 0; i < oldScopeChain.size(); ++i)
         scriptEngine->currentContext()->popScope();
-    for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i) 
+    for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
         scriptEngine->currentContext()->pushScope(ctxtPriv->scopeChain.at(i));
-    
-    QScriptValue svalue = 
-        scriptEngine->evaluate(expression, fileName.toString(), line);
+
+    if (!expressionFunctionValid) {
+        RewriteBinding rewriteBinding;
+
+        const QString code = rewriteBinding(expression);
+        expressionFunction = scriptEngine->evaluate(code, fileName.toString(), line);
+        expressionFunctionValid = true;
+    }
+
+    QScriptValue svalue = expressionFunction.call();
+
 
     if (scriptEngine->hasUncaughtException()) {
         if (scriptEngine->uncaughtException().isError()){
@@ -262,7 +367,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
             QList<QObject *> list;
             for (int ii = 0; ii < length; ++ii) {
                 QScriptValue arrayItem = svalue.property(ii);
-                QObject *d = 
+                QObject *d =
                     qvariant_cast<QObject *>(arrayItem.data().toVariant());
                 if (d) {
                     list << d;
@@ -272,11 +377,11 @@ QVariant QmlExpressionPrivate::evalQtScript()
             }
             rv = QVariant::fromValue(list);
         }
-    } else if (svalue.isObject() && 
+    } else if (svalue.isObject() &&
                !svalue.isNumber() &&
                !svalue.isString() &&
-               !svalue.isDate() && 
-               !svalue.isError() && 
+               !svalue.isDate() &&
+               !svalue.isError() &&
                !svalue.isFunction() &&
                !svalue.isNull() &&
                !svalue.isQMetaObject() &&
@@ -290,19 +395,19 @@ QVariant QmlExpressionPrivate::evalQtScript()
                 rv = var;
         }
     }
-    if (rv.isNull()) 
+    if (rv.isNull())
         rv = svalue.toVariant();
 
-    for (int i = 0; i < ctxtPriv->scopeChain.size(); ++i) 
+    for (int i = 0; i < ctxtPriv->scopeChain.size(); ++i)
         scriptEngine->currentContext()->popScope();
-    for (int i = oldScopeChain.size() - 1; i > -1; --i) 
+    for (int i = oldScopeChain.size() - 1; i > -1; --i)
         scriptEngine->currentContext()->pushScope(oldScopeChain.at(i));
 
     return rv;
 }
 
 /*!
-    Returns the value of the expression, or an invalid QVariant if the 
+    Returns the value of the expression, or an invalid QVariant if the
     expression is invalid or has an error.
 */
 QVariant QmlExpression::value()
@@ -358,12 +463,12 @@ QVariant QmlExpression::value()
                                              d->proxy, changedIndex);
                     } else {
                         const QMetaObject *metaObj = prop.object->metaObject();
-                        QMetaProperty metaProp = 
+                        QMetaProperty metaProp =
                             metaObj->property(prop.coreIndex);
 
-                        QString warn = QLatin1String("Expression depends on non-NOTIFYable property: ") + 
-                                       QLatin1String(metaObj->className()) + 
-                                       QLatin1String("::") + 
+                        QString warn = QLatin1String("Expression depends on non-NOTIFYable property: ") +
+                                       QLatin1String(metaObj->className()) +
+                                       QLatin1String("::") +
                                        QLatin1String(metaProp.name());
                         log.addWarning(warn);
                     }
@@ -386,10 +491,10 @@ QVariant QmlExpression::value()
                         }
 
                         const QMetaObject *metaObj = prop.object->metaObject();
-                        QMetaProperty metaProp = 
+                        QMetaProperty metaProp =
                             metaObj->property(prop.coreIndex);
 
-                        qWarning().nospace() << "    " << metaObj->className() 
+                        qWarning().nospace() << "    " << metaObj->className()
                                              << "::" << metaProp.name();
                     }
                 }
@@ -438,14 +543,14 @@ bool QmlExpression::trackChange() const
 /*!
     Set whether changes are tracked in the expression's value to \a trackChange.
 
-    If true, the QmlExpression will monitor properties involved in the 
+    If true, the QmlExpression will monitor properties involved in the
     expression's evaluation, and call QmlExpression::valueChanged() if they have
     changed.  This allows an application to ensure that any value associated
     with the result of the expression remains up to date.
 
     If false, the QmlExpression will not montitor properties involved in the
     expression's evaluation, and QmlExpression::valueChanged() will never be
-    called.  This is more efficient if an application wants a "one off" 
+    called.  This is more efficient if an application wants a "one off"
     evaluation of the expression.
 
     By default, trackChange is true.
@@ -468,7 +573,7 @@ void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 /*!
     Returns the expression's scope object, if provided, otherwise 0.
 
-    In addition to data provided by the expression's QmlContext, the scope 
+    In addition to data provided by the expression's QmlContext, the scope
     object's properties are also in scope during the expression's evaluation.
 */
 QObject *QmlExpression::scopeObject() const
@@ -498,13 +603,13 @@ quint32 QmlExpression::id() const
     more convenient in an application, QmlExpressionObject can be used instead.
 
     QmlExpressionObject behaves identically to QmlExpression, except that the
-    QmlExpressionObject::value() method is a slot, and the 
+    QmlExpressionObject::value() method is a slot, and the
     QmlExpressionObject::valueChanged() callback is a signal.
 */
 /*!
     Create a QmlExpression with the specified \a parent.
 
-    As the expression will not have an associated QmlContext, this will be a 
+    As the expression will not have an associated QmlContext, this will be a
     null expression object and its value will always be an invalid QVariant.
 */
 QmlExpressionObject::QmlExpressionObject(QObject *parent)
@@ -531,7 +636,7 @@ QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, void *d, QmlRefCount 
 }
 
 /*!
-    Returns the value of the expression, or an invalid QVariant if the 
+    Returns the value of the expression, or an invalid QVariant if the
     expression is invalid or has an error.
 */
 QVariant QmlExpressionObject::value()
@@ -543,8 +648,8 @@ QVariant QmlExpressionObject::value()
     \fn void QmlExpressionObject::valueChanged()
 
     Emitted each time the expression value changes from the last time it was
-    evaluated.  The expression must have been evaluated at least once (by 
-    calling QmlExpressionObject::value()) before this signal will be emitted.  
+    evaluated.  The expression must have been evaluated at least once (by
+    calling QmlExpressionObject::value()) before this signal will be emitted.
 */
 
 void QmlExpressionPrivate::addLog(const QmlExpressionLog &l)

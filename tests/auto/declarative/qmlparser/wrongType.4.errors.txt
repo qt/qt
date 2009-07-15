@@ -1,1 +1,1 @@
-2:19:Cannot assign value "InvalidEnumName" to property enumProperty
+2:19:Invalid property assignment: unknown enumeration

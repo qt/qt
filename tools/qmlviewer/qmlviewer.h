@@ -62,7 +62,6 @@ public slots:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
-    virtual bool event(QEvent *event);
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
