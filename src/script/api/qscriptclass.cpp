@@ -13,9 +13,6 @@
 
 #ifndef QT_NO_SCRIPT
 
-// ### Q_DECLARE_METATYPE(QScriptContext*)
-Q_DECLARE_METATYPE(QScriptValueList)
-
 QT_BEGIN_NAMESPACE
 
 /*!

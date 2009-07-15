@@ -16,8 +16,10 @@
 #include "../api/qscriptengine.h"
 #include "../api/qscriptengine_p.h"
 #include "../api/qscriptclass.h"
+#include "../api/qscriptclasspropertyiterator.h"
 
 #include "Error.h"
+#include "PropertyNameArray.h"
 
 Q_DECLARE_METATYPE(QScriptContext*)
 Q_DECLARE_METATYPE(QScriptValue)
@@ -29,6 +31,7 @@ namespace QScript
 {
 
 QString qtStringFromJSCUString(const JSC::UString &str);
+JSC::UString qtStringToJSCUString(const QString &str);
 
 ClassObjectDelegate::ClassObjectDelegate(QScriptClass *scriptClass)
     : m_scriptClass(scriptClass)
@@ -145,7 +148,17 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
 void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState *exec,
                                            JSC::PropertyNameArray &propertyNames)
 {
-    qWarning("Enumeration of custom script objects not implemented");
+    QScriptEnginePrivate *engine = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
+    QScriptClassPropertyIterator *it = m_scriptClass->newIterator(scriptObject);
+    if (it != 0) {
+        while (it->hasNext()) {
+            it->next();
+            QString name = it->name().toString();
+            propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
+        }
+        delete it;
+    }
     QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames);
 }
 
