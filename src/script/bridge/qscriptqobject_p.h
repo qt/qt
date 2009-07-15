@@ -96,6 +96,15 @@ protected:
     Data *data;
 };
 
+class QObjectPrototypeObject : public QObject
+{
+    Q_OBJECT
+public:
+    QObjectPrototypeObject(QObject *parent = 0)
+        : QObject(parent) { }
+    ~QObjectPrototypeObject() { }
+};
+
 class QObjectPrototype : public QScriptObject
 {
 public:

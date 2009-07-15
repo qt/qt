@@ -1561,7 +1561,10 @@ QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::St
                                    JSC::Structure* prototypeFunctionStructure)
     : QScriptObject(structure)
 {
-    setDelegate(new QObjectDelegate(new QObject(), QScriptEngine::AutoOwnership, /*options=*/0));
+    setDelegate(new QObjectDelegate(new QObjectPrototypeObject(), QScriptEngine::AutoOwnership,
+                                    QScriptEngine::ExcludeSuperClassMethods
+                                    | QScriptEngine::ExcludeSuperClassProperties
+                                    | QScriptEngine::ExcludeChildObjects));
 
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, exec->propertyNames().toString, qobjectProtoFuncToString), JSC::DontEnum);
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChild"), qobjectProtoFuncFindChild), JSC::DontEnum);
