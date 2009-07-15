@@ -1,9 +1,9 @@
 load(qttest_p4)
-SOURCES += tst_exception.cpp
+SOURCES += tst_exceptionthrow.cpp
 QT = core
 
 mac:CONFIG -= app_bundle
 CONFIG -= debug_and_release_target
 
 
-TARGET = exception
+TARGET = exceptionthrow
