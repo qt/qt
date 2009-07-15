@@ -496,6 +496,8 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
         thisQObject = qobj;
     }
 
+    exec->clearException();
+
     QByteArray funName;
     QScriptMetaMethod chosenMethod;
     int chosenIndex = -1;
