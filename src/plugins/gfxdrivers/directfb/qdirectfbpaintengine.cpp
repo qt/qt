@@ -54,154 +54,7 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmap_raster_p.h>
 
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define VOID_ARG() static_cast<bool>(false)
-enum PaintOperation {
-    DRAW_RECTS = 0x0001,
-    DRAW_LINES = 0x0002,
-    DRAW_IMAGE = 0x0004,
-    DRAW_PIXMAP = 0x0008,
-    DRAW_TILED_PIXMAP = 0x0010,
-    STROKE_PATH = 0x0020,
-    DRAW_PATH = 0x0040,
-    DRAW_POINTS = 0x0080,
-    DRAW_ELLIPSE = 0x0100,
-    DRAW_POLYGON = 0x0200,
-    DRAW_TEXT = 0x0400,
-    FILL_PATH = 0x0800,
-    FILL_RECT = 0x1000,
-    DRAW_COLORSPANS = 0x2000,
-    ALL = 0xffff
-};
-#endif
-
-#ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
-template <typename T> inline const T *ptr(const T &t) { return &t; }
-template <> inline const bool* ptr<bool>(const bool &) { return 0; }
-template <typename device, typename T1, typename T2, typename T3>
-static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
-                               uint transformationType, bool simplePen,
-                               bool dfbHandledClip, bool unsupportedCompositionMode,
-                               const char *nameOne, const T1 &one,
-                               const char *nameTwo, const T2 &two,
-                               const char *nameThree, const T3 &three)
-{
-    QString out;
-    QDebug dbg(&out);
-    dbg << msg << (QByteArray(func) + "()")  << "painting on";
-    if (dev->devType() == QInternal::Widget) {
-        dbg << static_cast<const QWidget*>(dev);
-    } else {
-        dbg << dev << "of type" << dev->devType();
-    }
-
-    dbg << QString("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
-        << "simplePen" << simplePen
-        << "dfbHandledClip" << dfbHandledClip
-        << "unsupportedCompositionMode" << unsupportedCompositionMode;
-
-    const T1 *t1 = ptr(one);
-    const T2 *t2 = ptr(two);
-    const T3 *t3 = ptr(three);
-
-    if (t1) {
-        dbg << nameOne << *t1;
-        if (t2) {
-            dbg << nameTwo << *t2;
-            if (t3) {
-                dbg << nameThree << *t3;
-            }
-        }
-    }
-    qWarning("%s", qPrintable(out));
-}
-#endif
-
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS && defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define RASTERFALLBACK(op, one, two, three)                             \
-    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
-        rasterFallbackWarn("Disabled raster engine operation",          \
-                           __FUNCTION__, state()->painter->device(),    \
-                           d_func()->transformationType,                \
-                           d_func()->simplePen,                         \
-                           d_func()->dfbCanHandleClip(),                \
-                           d_func()->unsupportedCompositionMode,        \
-                           #one, one, #two, two, #three, three);        \
-    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
-        return;
-#elif defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define RASTERFALLBACK(op, one, two, three)             \
-    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))     \
-        return;
-#elif defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
-#define RASTERFALLBACK(op, one, two, three)                             \
-    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
-        rasterFallbackWarn("Falling back to raster engine for",         \
-                           __FUNCTION__, state()->painter->device(),    \
-                           d_func()->transformationType,                \
-                           d_func()->simplePen,                         \
-                           d_func()->dfbCanHandleClip(),                \
-                           d_func()->unsupportedCompositionMode,        \
-                           #one, one, #two, two, #three, three);
-#else
-#define RASTERFALLBACK(op, one, two, three)
-#endif
-
-class SurfaceCache
-{
-public:
-    SurfaceCache() : surface(0), buffer(0), bufsize(0) {}
-    ~SurfaceCache() { clear(); }
-
-
-    IDirectFBSurface *getSurface(const uint *buf, int size)
-    {
-        if (buffer == buf && bufsize == size)
-            return surface;
-
-        clear();
-
-        const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
-        surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
-        if (!surface)
-            qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
-
-        buffer = const_cast<uint*>(buf);
-        bufsize = size;
-
-        return surface;
-    }
-
-    void clear()
-    {
-        if (surface && QDirectFBScreen::instance())
-            QDirectFBScreen::instance()->releaseDFBSurface(surface);
-        surface = 0;
-        buffer = 0;
-        bufsize = 0;
-    }
-private:
-    IDirectFBSurface *surface;
-    uint *buffer;
-    int bufsize;
-};
-
-
-#ifdef QT_DIRECTFB_IMAGECACHE
-#include <private/qimage_p.h>
-struct CachedImage
-{
-    IDirectFBSurface *surface;
-    ~CachedImage()
-    {
-        if (surface && QDirectFBScreen::instance()) {
-            QDirectFBScreen::instance()->releaseDFBSurface(surface);
-        }
-    }
-};
-static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
-#endif
-
+class SurfaceCache;
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
@@ -232,7 +85,7 @@ public:
     void blit(const QRectF &dest, IDirectFBSurface *surface, const QRectF &src);
 
     inline void updateClip();
-    void systemStateChanged();
+    virtual void systemStateChanged();
 
     static IDirectFBSurface *getSurface(const QImage &img, bool *release);
 
@@ -265,6 +118,83 @@ private:
     QRect currentClip;
     friend class QDirectFBPaintEngine;
 };
+
+class SurfaceCache
+{
+public:
+    SurfaceCache() : surface(0), buffer(0), bufsize(0) {}
+    ~SurfaceCache() { clear(); }
+    IDirectFBSurface *getSurface(const uint *buf, int size);
+    void clear();
+private:
+    IDirectFBSurface *surface;
+    uint *buffer;
+    int bufsize;
+};
+
+
+#ifdef QT_DIRECTFB_IMAGECACHE
+#include <private/qimage_p.h>
+struct CachedImage
+{
+    IDirectFBSurface *surface;
+    ~CachedImage()
+    {
+        if (surface && QDirectFBScreen::instance()) {
+            QDirectFBScreen::instance()->releaseDFBSurface(surface);
+        }
+    }
+};
+static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
+#endif
+
+#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+#define VOID_ARG() static_cast<bool>(false)
+enum PaintOperation {
+    DRAW_RECTS = 0x0001, DRAW_LINES = 0x0002, DRAW_IMAGE = 0x0004,
+    DRAW_PIXMAP = 0x0008, DRAW_TILED_PIXMAP = 0x0010, STROKE_PATH = 0x0020,
+    DRAW_PATH = 0x0040, DRAW_POINTS = 0x0080, DRAW_ELLIPSE = 0x0100,
+    DRAW_POLYGON = 0x0200, DRAW_TEXT = 0x0400, FILL_PATH = 0x0800,
+    FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, ALL = 0xffff
+};
+#endif
+
+#ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
+template <typename device, typename T1, typename T2, typename T3>
+static void rasterFallbackWarn(const char *msg, const char *, const device *, uint, bool, bool, bool,
+                               const char *, const T1 &, const char *, const T2 &, const char *, const T3 &);
+#endif
+
+#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS && defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+#define RASTERFALLBACK(op, one, two, three)                             \
+    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
+        rasterFallbackWarn("Disabled raster engine operation",          \
+                           __FUNCTION__, state()->painter->device(),    \
+                           d_func()->transformationType,                \
+                           d_func()->simplePen,                         \
+                           d_func()->dfbCanHandleClip(),                \
+                           d_func()->unsupportedCompositionMode,        \
+                           #one, one, #two, two, #three, three);        \
+    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
+        return;
+#elif defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+#define RASTERFALLBACK(op, one, two, three)             \
+    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))     \
+        return;
+#elif defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
+#define RASTERFALLBACK(op, one, two, three)                             \
+    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
+        rasterFallbackWarn("Falling back to raster engine for",         \
+                           __FUNCTION__, state()->painter->device(),    \
+                           d_func()->transformationType,                \
+                           d_func()->simplePen,                         \
+                           d_func()->dfbCanHandleClip(),                \
+                           d_func()->unsupportedCompositionMode,        \
+                           #one, one, #two, two, #three, three);
+#else
+#define RASTERFALLBACK(op, one, two, three)
+#endif
+
 
 template <class T>
 static inline void drawLines(const T *lines, int n, const QTransform &transform, IDirectFBSurface *surface);
@@ -1123,6 +1053,34 @@ void QDirectFBPaintEnginePrivate::systemStateChanged()
     QRasterPaintEnginePrivate::systemStateChanged();
 }
 
+IDirectFBSurface *SurfaceCache::getSurface(const uint *buf, int size)
+{
+    if (buffer == buf && bufsize == size)
+        return surface;
+
+    clear();
+
+    const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
+    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
+    if (!surface)
+        qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
+
+    buffer = const_cast<uint*>(buf);
+    bufsize = size;
+
+    return surface;
+}
+
+void SurfaceCache::clear()
+{
+    if (surface && QDirectFBScreen::instance())
+        QDirectFBScreen::instance()->releaseDFBSurface(surface);
+    surface = 0;
+    buffer = 0;
+    bufsize = 0;
+}
+
+
 static inline QRect mapRect(const QTransform &transform, const QRect &rect) { return transform.mapRect(rect); }
 static inline QRect mapRect(const QTransform &transform, const QRectF &rect) { return transform.mapRect(rect).toRect(); }
 static inline QLine map(const QTransform &transform, const QLine &line) { return transform.map(line); }
@@ -1173,5 +1131,48 @@ static inline void drawRects(const T *rects, int n, const QTransform &transform,
         surface->DrawRectangle(surface, r.x(), r.y(), r.width(), r.height());
     }
 }
+
+#ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
+template <typename T> inline const T *ptr(const T &t) { return &t; }
+template <> inline const bool* ptr<bool>(const bool &) { return 0; }
+template <typename device, typename T1, typename T2, typename T3>
+static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
+                               uint transformationType, bool simplePen,
+                               bool dfbHandledClip, bool unsupportedCompositionMode,
+                               const char *nameOne, const T1 &one,
+                               const char *nameTwo, const T2 &two,
+                               const char *nameThree, const T3 &three)
+{
+    QString out;
+    QDebug dbg(&out);
+    dbg << msg << (QByteArray(func) + "()")  << "painting on";
+    if (dev->devType() == QInternal::Widget) {
+        dbg << static_cast<const QWidget*>(dev);
+    } else {
+        dbg << dev << "of type" << dev->devType();
+    }
+
+    dbg << QString("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
+        << "simplePen" << simplePen
+        << "dfbHandledClip" << dfbHandledClip
+        << "unsupportedCompositionMode" << unsupportedCompositionMode;
+
+    const T1 *t1 = ptr(one);
+    const T2 *t2 = ptr(two);
+    const T3 *t3 = ptr(three);
+
+    if (t1) {
+        dbg << nameOne << *t1;
+        if (t2) {
+            dbg << nameTwo << *t2;
+            if (t3) {
+                dbg << nameThree << *t3;
+            }
+        }
+    }
+    qWarning("%s", qPrintable(out));
+}
+#endif
+
 
 #endif // QT_NO_DIRECTFB
