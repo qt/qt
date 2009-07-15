@@ -1136,8 +1136,8 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
                           .arg(QString::fromLatin1(name));
-        JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
-        return false;
+        slot.setValue(JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message)));
+        return true;
     }
 
     const QMetaObject *meta = qobject->metaObject();
