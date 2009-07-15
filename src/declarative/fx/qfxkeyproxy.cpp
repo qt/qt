@@ -64,12 +64,19 @@ QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
 class QFxKeyProxyPrivate
 {
 public:
+    QFxKeyProxyPrivate() : inPress(false), inRelease(false), inIM(false) {}
     QList<QFxItem *> targets;
+
+    //loop detection
+    bool inPress:1;
+    bool inRelease:1;
+    bool inIM:1;
 };
 
 QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
 : QFxItem(parent), d(new QFxKeyProxyPrivate)
 {
+    setOptions(AcceptsInputMethods);
 }
 
 QFxKeyProxy::~QFxKeyProxy()
@@ -95,25 +102,52 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
-    // ### GV
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QFxItem *i = d->targets.at(ii); //scene()->focusItem()
-        if (i)
-            i->keyPressEvent(e);
-        if (e->isAccepted())
-            return;
+    if (!d->inPress) {
+        d->inPress = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QFxItem *i = d->targets.at(ii); //### FocusRealm
+            if (i && scene())
+                scene()->sendEvent(i, e);
+            if (e->isAccepted()) {
+                d->inPress = false;
+                return;
+            }
+        }
+        d->inPress = false;
     }
 }
 
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
-    // ### GV
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QFxItem *i = d->targets.at(ii); //scene()->focusItem()
-        if (i)
-            i->keyReleaseEvent(e);
-        if (e->isAccepted())
-            return;
+    if (!d->inRelease) {
+        d->inRelease = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QFxItem *i = d->targets.at(ii); //### FocusRealm
+            if (i && scene())
+                scene()->sendEvent(i, e);
+            if (e->isAccepted()) {
+                d->inRelease = false;
+                return;
+            }
+        }
+        d->inRelease = false;
+    }
+}
+
+void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
+{
+    if (!d->inIM) {
+        d->inIM = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QFxItem *i = d->targets.at(ii); //### FocusRealm
+            if (i && scene())
+                scene()->sendEvent(i, e);
+            if (e->isAccepted()) {
+                d->inIM = false;
+                return;
+            }
+        }
+        d->inIM = false;
     }
 }
 

@@ -64,6 +64,7 @@ public:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void keyReleaseEvent(QKeyEvent *);
+    virtual void inputMethodEvent(QInputMethodEvent *);
 
 private:
     Q_DISABLE_COPY(QFxKeyProxy)

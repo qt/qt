@@ -296,10 +296,6 @@ Q_SIGNALS:
     void qmlChanged();
     void newChildCreated(const QString &url, QScriptValue);
 
-public:   //### for KeyProxy
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
-
 protected:
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void childrenChanged();
@@ -316,6 +312,8 @@ protected:
     virtual void parentChanged(QFxItem *, QFxItem *);
     virtual void focusChanged(bool);
     virtual void activeFocusChanged(bool);
+    virtual void keyPressEvent(QKeyEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
 
