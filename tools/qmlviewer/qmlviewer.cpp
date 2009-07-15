@@ -330,7 +330,7 @@ void QmlViewer::toggleRecording()
 
 void QmlViewer::addLibraryPath(const QString& lib)
 {
-    canvas->engine()->addNameSpacePath("",lib);
+    canvas->engine()->addImportPath(lib);
 }
 
 void QmlViewer::reload()
