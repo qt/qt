@@ -125,8 +125,6 @@ HDC shared_dc()
 }
 #endif
 
-static HFONT stock_sysfont  = 0;
-
 typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 static PtrGetCharWidthI ptrGetCharWidthI = 0;
 static bool resolvedGetCharWidthI = false;
@@ -541,13 +539,6 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
 }
 
-
-
-
-#ifndef Q_WS_WINCE
-typedef HRESULT (WINAPI *pGetCharABCWidthsFloat)(HDC, UINT, UINT, LPABCFLOAT);
-static pGetCharABCWidthsFloat qt_GetCharABCWidthsFloat = 0;
-#endif
 
 glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 {
@@ -1143,8 +1134,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
         memset(&mat, 0, sizeof(mat));
         mat.eM11.value = mat.eM22.value = 1;
 
-        int error = GetGlyphOutline(hdc, glyph, ggo_options, &tgm, 0, 0, &mat);
-        if (error == GDI_ERROR) {
+        if (GetGlyphOutline(hdc, glyph, ggo_options, &tgm, 0, 0, &mat) == GDI_ERROR) {
             qWarning("QWinFontEngine: unable to query transformed glyph metrics...");
             return 0;
         }
