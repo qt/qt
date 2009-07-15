@@ -110,6 +110,8 @@ public:
     QScriptContext *contextForFrame(JSC::ExecState *frame);
     void releaseContextForFrame(JSC::ExecState *frame);
 
+    bool isCollecting() const;
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -155,6 +157,7 @@ public:
 #endif
 
     JSC::JSGlobalObject *globalObject;
+    JSC::JSObject *customGlobalObject;
     JSC::ExecState *currentFrame;
     QHash<JSC::ExecState*, QScriptContext*> contextForFrameHash;
     JSC::JSValue uncaughtException;
@@ -198,9 +201,19 @@ class GlobalObject : public JSC::JSGlobalObject
 {
 public:
     GlobalObject(QScriptEnginePrivate*);
-    ~GlobalObject();
+    virtual ~GlobalObject();
     virtual JSC::UString className() const { return "global"; }
     virtual void mark();
+    virtual bool getOwnPropertySlot(JSC::ExecState*,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertySlot&);
+    virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                     JSC::JSValue, JSC::PutPropertySlot&);
+    virtual bool deleteProperty(JSC::ExecState*,
+                                const JSC::Identifier& propertyName);
+    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
+                                       unsigned&) const;
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
 
 public:
     QScriptEnginePrivate *engine;

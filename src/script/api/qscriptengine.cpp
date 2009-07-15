@@ -560,8 +560,11 @@ void GlobalObject::mark()
 {
     JSC::JSGlobalObject::mark();
 
-    if (engine->uncaughtException)
+    if (engine->uncaughtException && !engine->uncaughtException.marked())
         engine->uncaughtException.mark();
+
+    if (engine->customGlobalObject && !engine->customGlobalObject->marked())
+        engine->customGlobalObject->mark();
 
     if (engine->qobjectPrototype && !engine->qobjectPrototype->marked())
         engine->qobjectPrototype->mark();
@@ -596,6 +599,50 @@ void GlobalObject::mark()
                 (*it)->prototype.mark();
         }
     }
+}
+
+bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
+                                      const JSC::Identifier& propertyName,
+                                      JSC::PropertySlot& slot)
+{
+    if (engine->customGlobalObject)
+        return engine->customGlobalObject->getOwnPropertySlot(exec, propertyName, slot);
+    return JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot);
+}
+
+void GlobalObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                       JSC::JSValue value, JSC::PutPropertySlot& slot)
+{
+    if (engine->customGlobalObject) {
+        engine->customGlobalObject->put(exec, propertyName, value, slot);
+        return;
+    }
+    JSC::JSGlobalObject::put(exec, propertyName, value, slot);
+}
+
+bool GlobalObject::deleteProperty(JSC::ExecState* exec,
+                                  const JSC::Identifier& propertyName)
+{
+    if (engine->customGlobalObject)
+        return engine->customGlobalObject->deleteProperty(exec, propertyName);
+    return JSC::JSGlobalObject::deleteProperty(exec, propertyName);
+}
+
+bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                                         unsigned& attributes) const
+{
+    if (engine->customGlobalObject)
+        return engine->customGlobalObject->getPropertyAttributes(exec, propertyName, attributes);
+    return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
+}
+
+void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames)
+{
+    if (engine->customGlobalObject) {
+        engine->customGlobalObject->getPropertyNames(exec, propertyNames);
+        return;
+    }
+    JSC::JSGlobalObject::getPropertyNames(exec, propertyNames);
 }
 
 static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -790,6 +837,7 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
 
     currentFrame = exec;
 
+    customGlobalObject = 0;
     agent = 0;
     processEventsInterval = -1;
 }
@@ -832,7 +880,8 @@ void QScriptEnginePrivate::releaseJSCValue(JSC::JSValue value)
 // ### Q_ASSERT(!JSC::JSImmediate::isImmediate(value));
     Q_ASSERT(value.isCell());
     JSC::JSCell *cell = value.asCell();
-    Q_ASSERT(keepAliveValues.contains(cell));
+    if (!keepAliveValues.contains(cell))
+        qWarning("QScriptEnginePrivate::releaseJSCValue(): cell %p doesn't need releasing", cell);
     if (!keepAliveValues[cell].deref())
         keepAliveValues.remove(cell);
 }
@@ -988,6 +1037,11 @@ void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
     contextForFrameHash.erase(it);
     // ### put back in pool
     delete ctx;
+}
+
+bool QScriptEnginePrivate::isCollecting() const
+{
+    return globalObject->globalData()->heap.isBusy();
 }
 
 #ifndef QT_NO_QOBJECT
@@ -1263,7 +1317,8 @@ QScriptEngine::~QScriptEngine()
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
-    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(d->globalObject);
+    JSC::JSObject *result = d->customGlobalObject ? d->customGlobalObject : d->globalObject;
+    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(result);
 }
 
 /*!
@@ -1280,9 +1335,14 @@ QScriptValue QScriptEngine::globalObject() const
 */
 void QScriptEngine::setGlobalObject(const QScriptValue &object)
 {
-    qWarning("QScriptEngine::setGlobalObject() is not implemented");
-    // ### not possible with JSC?
-    Q_UNUSED(object);
+    Q_D(QScriptEngine);
+    if (!object.isObject() || globalObject().strictlyEquals(object))
+        return;
+    JSC::JSObject *jscObject = JSC::asObject(d->scriptValueToJSCValue(object));
+    if (jscObject == d->globalObject)
+        d->customGlobalObject = 0;
+    else
+        d->customGlobalObject = jscObject;
 }
 
 /*!

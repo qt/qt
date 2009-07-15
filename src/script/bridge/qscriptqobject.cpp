@@ -1032,7 +1032,7 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
         object = object.prototype();
         qobject = object.toQObject();
     }
-    Q_ASSERT(qobject);
+    Q_ASSERT_X(qobject, Q_FUNC_INFO, "this-object must be a QObject");
 
     QMetaProperty prop = data->meta->property(data->index);
     Q_ASSERT(prop.isScriptable());
@@ -1771,16 +1771,16 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
             }
         }
     }
-//    Q_ASSERT(slot != 0);
+    Q_ASSERT(slot && slot.isObject());
 
-#if 0
-    // ### fixme
     if (engine->isCollecting()) {
+        qWarning("QtScript: can't execute signal handler during GC");
         // we can't do a script function call during GC,
         // so we're forced to ignore this signal
         return;
     }
 
+#if 0
     QScriptFunction *fun = engine->convertToNativeFunction(slot);
     if (fun == 0) {
         // the signal handler has been GC'ed. This can only happen when
