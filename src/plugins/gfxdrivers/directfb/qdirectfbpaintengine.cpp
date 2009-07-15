@@ -1119,9 +1119,9 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
         const QSizeF mappedSize(pixmapSize.width() * transform.m11(), pixmapSize.height() * transform.m22());
         qreal y = ::fixCoord(destinationRect.y(), mappedSize.height(), offset.y());
         const qreal startX = ::fixCoord(destinationRect.x(), mappedSize.width(), offset.x());
-        while (y < destinationRect.bottom()) {
+        while (y <= destinationRect.bottom()) {
             qreal x = startX;
-            while (x < destinationRect.right()) {
+            while (x <= destinationRect.right()) {
                 const DFBRectangle destination = { qRound(x), qRound(y), mappedSize.width(), mappedSize.height() };
                 surface->StretchBlit(surface, sourceSurface, 0, &destination);
                 x += mappedSize.width();
@@ -1143,10 +1143,10 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
         QVarLengthArray<DFBPoint, 16> points(maxCount);
 
         int i = 0;
-        while (y < destinationRect.bottom()) {
+        while (y <= destinationRect.bottom()) {
             Q_ASSERT(i < maxCount);
             qreal x = startX;
-            while (x < destinationRect.right()) {
+            while (x <= destinationRect.right()) {
                 points[i].x = qRound(x);
                 points[i].y = qRound(y);
                 sourceRects[i].x = 0;
