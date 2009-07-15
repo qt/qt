@@ -542,6 +542,7 @@ void QGraphicsSceneBspTreeIndex::clear()
     d->indexedItems.clear();
     d->unindexedItems.clear();
     d->untransformableItems.clear();
+    d->regenerateIndex = true;
 }
 
 /*!
