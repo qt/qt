@@ -3112,7 +3112,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 exceptionValue = createStackOverflowError(callFrame);
                 goto vm_throw;
             }
-            int32_t expectedParams = callFrame->callee()->body()->parameterCount();
+            int32_t expectedParams = static_cast<JSFunction*>(callFrame->callee())->body()->parameterCount();
             int32_t inplaceArgs = min(argCount, expectedParams);
             int32_t i = 0;
             Register* argStore = callFrame->registers() + argsOffset;
@@ -3489,7 +3489,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ScopeChainNode* scopeChain = callFrame->scopeChain();
 
             Structure* structure;
-            JSValue prototype = callFrame[proto].jsValue();
+            JSValue prototype = callFrame->r(proto).jsValue();
             if (prototype.isObject())
                 structure = asObject(prototype)->inheritorID();
             else
