@@ -24,18 +24,4 @@ Rect { id:block
             SetProperties { target: block; opacity: 0 }
         }
     ]
-//    transitions: [
-//        Transition {
-//            fromState: "SpawnState"
-//            NumberAnimation { properties: "opacity"; duration: 200 }
-//        },
-//        Transition {
-//            toState: "DeathState"
-//            SequentialAnimation {
-//                NumberAnimation { properties: "opacity"; duration: 200 }
-//                //TODO: Warning about following line, if it works
-//                //RunScriptAction { script: page.destroy() }
-//            }
-//        }
-//    ]
 }
