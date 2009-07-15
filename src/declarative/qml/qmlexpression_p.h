@@ -55,7 +55,6 @@
 
 #include "qmlbasicscript_p.h"
 #include "qmlexpression.h"
-#include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,9 +73,6 @@ public:
     QmlExpression *q;
     QmlContext *ctxt;
     QString expression;
-    bool expressionFunctionValid;
-    QScriptValue expressionFunction;
-
     QmlBasicScript sse;
     void *sseData;
     QmlExpressionBindProxy *proxy;
