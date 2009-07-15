@@ -59,9 +59,11 @@ class QmlDomList;
 class QmlDomValue;
 class QmlEngine;
 class QmlDomComponent;
+class QmlDomImport;
 class QIODevice;
 
 class QmlDomDocumentPrivate;
+
 class Q_DECLARATIVE_EXPORT QmlDomDocument
 {
 public:
@@ -71,7 +73,7 @@ public:
     QmlDomDocument &operator=(const QmlDomDocument &);
 
     int version() const;
-    QList<QUrl> imports() const;
+    QList<QmlDomImport> imports() const;
 
     QList<QmlError> errors() const;
     bool load(QmlEngine *, const QByteArray &, const QUrl & = QUrl());
@@ -302,6 +304,27 @@ public:
 private:
     friend class QmlDomValue;
     QSharedDataPointer<QmlDomValuePrivate> d;
+};
+
+class QmlDomImportPrivate;
+class Q_DECLARATIVE_EXPORT QmlDomImport
+{
+public:
+    enum Type { Library, File };
+
+    QmlDomImport();
+    QmlDomImport(const QmlDomImport &);
+    ~QmlDomImport();
+    QmlDomImport &operator=(const QmlDomImport &);
+
+    Type type() const;
+    QString uri() const;
+    QString version() const;
+    QString qualifier() const;
+
+private:
+    friend class QmlDomDocument;
+    QSharedDataPointer<QmlDomImportPrivate> d;
 };
 
 QT_END_NAMESPACE
