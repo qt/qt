@@ -46,7 +46,7 @@ static const HashTableValue JSSVGColorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGColorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGColorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGColorTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSSVGColorConstructorTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGColorConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGColorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGColorConstructorTableValues, 0 };
 #else
@@ -109,7 +109,7 @@ static const HashTableValue JSSVGColorPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGColorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGColorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGColorPrototypeTableValues, 0 };
 #else

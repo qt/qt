@@ -44,7 +44,7 @@ static const HashTableValue JSProcessingInstructionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSProcessingInstructionTable =
+static JSC_CONST_HASHTABLE HashTable JSProcessingInstructionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSProcessingInstructionTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSProcessingInstructionConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSProcessingInstructionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSProcessingInstructionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSProcessingInstructionConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSProcessingInstructionPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSProcessingInstructionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSProcessingInstructionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSProcessingInstructionPrototypeTableValues, 0 };
 #else

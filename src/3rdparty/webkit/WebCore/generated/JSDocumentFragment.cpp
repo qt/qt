@@ -44,7 +44,7 @@ static const HashTableValue JSDocumentFragmentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentFragmentTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentFragmentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDocumentFragmentTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSDocumentFragmentConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentFragmentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentFragmentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDocumentFragmentConstructorTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSDocumentFragmentPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentFragmentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentFragmentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSDocumentFragmentPrototypeTableValues, 0 };
 #else

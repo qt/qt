@@ -21,6 +21,8 @@
 #ifndef JSDataGridColumnList_h
 #define JSDataGridColumnList_h
 
+#if ENABLE(DATAGRID)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -89,5 +91,7 @@ JSC::JSValue jsDataGridColumnListPrimaryColumn(JSC::ExecState*, const JSC::Ident
 JSC::JSValue jsDataGridColumnListConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)
 
 #endif

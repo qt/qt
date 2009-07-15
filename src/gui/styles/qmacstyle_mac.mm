@@ -1871,24 +1871,23 @@ QPixmap QMacStylePrivate::generateBackgroundPattern() const
     Fills the given \a rect with the pattern stored in \a brush. As an optimization,
     HIThemeSetFill us used directly if we are filling with the standard background.
 */
-void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush)
+void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     QPoint dummy;
     const QPaintDevice *target = painter->device();
     const QPaintDevice *redirected = QPainter::redirected(target, &dummy);
     const bool usePainter = redirected && redirected != target;
-    const QRegion translated = rgn.translated(offset);
 
     if (!usePainter && qt_mac_backgroundPattern
         && qt_mac_backgroundPattern->cacheKey() == brush.texture().cacheKey()) {
 
-        painter->setClipRegion(translated);
+        painter->setClipRegion(rgn);
 
         CGContextRef cg = qt_mac_cg_context(target);
         CGContextSaveGState(cg);
         HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
 
-        const QVector<QRect> &rects = translated.rects();
+        const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i) {
             const QRect rect(rects.at(i));
             // Anchor the pattern to the top so it stays put when the window is resized.
@@ -1899,8 +1898,8 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 
         CGContextRestoreGState(cg);
     } else {
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
+        const QRect rect(rgn.boundingRect());
+        painter->setClipRegion(rgn);
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
     }
 }
@@ -3991,8 +3990,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
                 const int xm = macItemFrame + maxpmw + macItemHMargin;
                 QFont myFont = mi->font;
-                if (mi->state & QStyle::State_Mini)
-                    myFont.setPointSize(mi->font.pointSize());
+                // myFont may not have any "hard" flags set. We override
+                // the point size so that when it is resolved against the device, this font will win.
+                // This is mainly to handle cases where someone sets the font on the window
+                // and then the combo inherits it and passes it onward. At that point the resolve mask
+                // is very, very weak. This makes it stonger.
+                myFont.setPointSizeF(mi->font.pointSizeF());
                 p->setFont(myFont);
                 p->drawText(xpos, yPos, contentRect.width() - xm - tabwidth + 1,
                             contentRect.height(), text_flags ^ Qt::AlignRight, s);

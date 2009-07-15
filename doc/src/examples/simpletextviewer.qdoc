@@ -198,12 +198,7 @@
           <file>openfile.html</file>
           <file>wildcardmatching.html</file>
           <file>images/browse.png</file>
-          <file>images/fadedfilemenu.png</file>
-          <file>images/filedialog.png</file>
-          <file>images/handbook.png</file>
-          <file>images/mainwindow.png</file>
-          <file>images/open.png</file>
-          <file>images/wildcard.png</file>
+          <file>images/*.png</file>
         </files>
       </filterSection>
     </QtHelpProject>

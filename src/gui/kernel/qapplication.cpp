@@ -126,7 +126,7 @@ int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly
 QApplication::Type qt_appType=QApplication::Tty;
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-QInputContext *QApplicationPrivate::inputContext;
+QInputContext *QApplicationPrivate::inputContext = 0;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
@@ -3716,6 +3716,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                                                                          Qt::MouseFocusReason);
                 }
 
+                // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
+                // like Mac OS X (probably others too), can optimize their views by not
+                // dispatching mouse move events. We have attributes to control hover,
+                // and mouse tracking, but as long as we are deciding to implement this
+                // feature without choice of opting-in or out, you ALWAYS have to have
+                // tracking enabled. Therefore, the other properties give a false sense of
+                // performance enhancement.
                 if (e->type() == QEvent::MouseMove && mouse->buttons() == 0) {
                     d->toolTipWidget = w;
                     d->toolTipPos = relpos;
@@ -5233,8 +5240,6 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate *d = self;
-    QApplication *q = self->q_func();
-
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
@@ -5256,7 +5261,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             if (!widget) {
                 // determine which widget this event will go to
                 if (!window)
-                    window = q->topLevelAt(touchPoint.screenPos().toPoint());
+                    window = QApplication::topLevelAt(touchPoint.screenPos().toPoint());
                 if (!window)
                     continue;
                 widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
@@ -5356,7 +5361,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         QTouchEvent touchEvent(eventType,
                                deviceType,
-                               q->keyboardModifiers(),
+                               QApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);

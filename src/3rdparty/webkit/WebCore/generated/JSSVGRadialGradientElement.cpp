@@ -46,7 +46,7 @@ static const HashTableValue JSSVGRadialGradientElementTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRadialGradientElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRadialGradientElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGRadialGradientElementTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSSVGRadialGradientElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRadialGradientElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRadialGradientElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGRadialGradientElementPrototypeTableValues, 0 };
 #else

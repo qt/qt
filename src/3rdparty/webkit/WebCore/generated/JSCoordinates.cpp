@@ -48,7 +48,7 @@ static const HashTableValue JSCoordinatesTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCoordinatesTable =
+static JSC_CONST_HASHTABLE HashTable JSCoordinatesTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSCoordinatesTableValues, 0 };
 #else
@@ -63,7 +63,7 @@ static const HashTableValue JSCoordinatesPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCoordinatesPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCoordinatesPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCoordinatesPrototypeTableValues, 0 };
 #else

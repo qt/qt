@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,19 +69,19 @@
 
 struct sockaddr;
 
-QT_BEGIN_NAMESPACE
-
 #if defined(Q_OS_LINUX) && defined(O_CLOEXEC) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
 // Linux supports thread-safe FD_CLOEXEC
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 1
 
+QT_BEGIN_NAMESPACE
 namespace QtLibcSupplement {
     Q_CORE_EXPORT int accept4(int, sockaddr *, QT_SOCKLEN_T *, int flags);
     Q_CORE_EXPORT int dup3(int oldfd, int newfd, int flags);
     Q_CORE_EXPORT int pipe2(int pipes[], int flags);
 }
+QT_END_NAMESPACE
+using namespace QT_PREPEND_NAMESPACE(QtLibcSupplement);
 
-using namespace QtLibcSupplement;
 #else
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 0
 #endif
@@ -91,6 +91,7 @@ using namespace QtLibcSupplement;
         var = cmd;                              \
     } while (var == -1 && errno == EINTR)
 
+QT_BEGIN_NAMESPACE
 
 // don't call QT_OPEN or ::open
 // call qt_safe_open

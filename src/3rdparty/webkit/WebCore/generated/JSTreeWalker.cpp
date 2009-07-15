@@ -49,7 +49,7 @@ static const HashTableValue JSTreeWalkerTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTreeWalkerTable =
+static JSC_CONST_HASHTABLE HashTable JSTreeWalkerTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSTreeWalkerTableValues, 0 };
 #else
@@ -63,7 +63,7 @@ static const HashTableValue JSTreeWalkerConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTreeWalkerConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSTreeWalkerConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTreeWalkerConstructorTableValues, 0 };
 #else
@@ -108,7 +108,7 @@ static const HashTableValue JSTreeWalkerPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTreeWalkerPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTreeWalkerPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSTreeWalkerPrototypeTableValues, 0 };
 #else

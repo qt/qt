@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,6 +58,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+// for inet_addr
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <resolv.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -132,7 +138,8 @@ static inline int qt_safe_listen(int s, int backlog)
 static inline int qt_safe_connect(int sockfd, const struct sockaddr *addr, QT_SOCKLEN_T addrlen)
 {
     register int ret;
-    EINTR_LOOP(ret, QT_SOCKET_CONNECT(sockfd, addr, addrlen));
+    // Solaris e.g. expects a non-const 2nd parameter
+    EINTR_LOOP(ret, QT_SOCKET_CONNECT(sockfd, const_cast<struct sockaddr *>(addr), addrlen));
     return ret;
 }
 #undef QT_SOCKET_CONNECT
@@ -147,6 +154,28 @@ static inline int qt_safe_connect(int sockfd, const struct sockaddr *addr, QT_SO
 #if defined(listen)
 # undef listen
 #endif
+
+template <typename T>
+static inline int qt_safe_ioctl(int sockfd, int request, T arg)
+{
+    return ::ioctl(sockfd, request, arg);
+}
+
+static inline in_addr_t qt_safe_inet_addr(const char *cp)
+{
+    return ::inet_addr(cp);
+}
+
+static inline int qt_safe_sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *to, QT_SOCKLEN_T tolen)
+{
+#ifdef MSG_NOSIGNAL
+    flags |= MSG_NOSIGNAL;
+#endif
+
+    register int ret;
+    EINTR_LOOP(ret, ::sendto(sockfd, buf, len, flags, to, tolen));
+    return ret;
+}
 
 QT_END_NAMESPACE
 

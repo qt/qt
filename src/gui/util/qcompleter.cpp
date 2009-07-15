@@ -1182,7 +1182,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Up:
             if (!curIndex.isValid()) {
                 int rowCount = d->proxy->rowCount();
-                QModelIndex lastIndex = d->proxy->index(rowCount - 1, 0);
+                QModelIndex lastIndex = d->proxy->index(rowCount - 1, d->column);
                 d->setCurrentIndex(lastIndex);
                 return true;
             } else if (curIndex.row() == 0) {
@@ -1194,7 +1194,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
         case Qt::Key_Down:
             if (!curIndex.isValid()) {
-                QModelIndex firstIndex = d->proxy->index(0, 0);
+                QModelIndex firstIndex = d->proxy->index(0, d->column);
                 d->setCurrentIndex(firstIndex);
                 return true;
             } else if (curIndex.row() == d->proxy->rowCount() - 1) {
@@ -1581,6 +1581,10 @@ QString QCompleter::currentCompletion() const
     Returns the completion model. The completion model is a read-only list model
     that contains all the possible matches for the current completion prefix.
     The completion model is auto-updated to reflect the current completions.
+
+    \note The return value of this function is defined to be an QAbstractItemModel
+    purely for generality. This actual kind of model returned is an instance of an
+    QAbstractProxyModel subclass.
 
     \sa completionPrefix, model()
 */

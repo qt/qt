@@ -45,7 +45,7 @@ static const HashTableValue JSGeopositionTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSGeopositionTable =
+static JSC_CONST_HASHTABLE HashTable JSGeopositionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSGeopositionTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSGeopositionPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSGeopositionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSGeopositionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSGeopositionPrototypeTableValues, 0 };
 #else

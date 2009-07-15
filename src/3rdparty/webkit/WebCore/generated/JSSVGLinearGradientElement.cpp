@@ -45,7 +45,7 @@ static const HashTableValue JSSVGLinearGradientElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLinearGradientElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLinearGradientElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGLinearGradientElementTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSSVGLinearGradientElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLinearGradientElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLinearGradientElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGLinearGradientElementPrototypeTableValues, 0 };
 #else

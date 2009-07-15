@@ -107,7 +107,6 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #endif
 #endif // QT_NO_ACCESSIBILITY
 
-#include <winuser.h>
 #if !defined(WINABLEAPI)
 #  if defined(Q_WS_WINCE)
 #    include <bldver.h>
@@ -270,6 +269,8 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define WM_XBUTTONDOWN                  0x020B
 #define WM_XBUTTONUP                    0x020C
 #define WM_XBUTTONDBLCLK                0x020D
+#endif
+#ifndef GET_KEYSTATE_WPARAM
 #define GET_KEYSTATE_WPARAM(wParam)     (LOWORD(wParam))
 #define GET_XBUTTON_WPARAM(wParam)      (HIWORD(wParam))
 #define XBUTTON1      0x0001
@@ -278,14 +279,12 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define MK_XBUTTON2         0x0040
 #endif
 
-#ifdef Q_WS_WINCE
-#define GET_KEYSTATE_WPARAM(wParam)     (LOWORD(wParam))
-#endif
-
 // support for multi-media-keys
 #ifndef WM_APPCOMMAND
 #define WM_APPCOMMAND                   0x0319
+#endif
 
+#ifndef FAPPCOMMAND_MOUSE
 #define FAPPCOMMAND_MOUSE 0x8000
 #define FAPPCOMMAND_KEY   0
 #define FAPPCOMMAND_OEM   0x1000
@@ -353,7 +352,7 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define APPCOMMAND_MEDIA_CHANNEL_DOWN     52
 #endif // APPCOMMAND_MICROPHONE_VOLUME_MUTE
 
-#endif // WM_APPCOMMAND
+#endif // FAPPCOMMAND_MOUSE
 
 #if (_WIN32_WINNT < 0x0400)
 // This struct is defined in winuser.h if the _WIN32_WINNT >= 0x0400 -- in the
@@ -2956,7 +2955,9 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
     if (alienWidget && alienWidget->internalWinId())
         alienWidget = 0;
 
-    if (type == QEvent::MouseMove || type == QEvent::NonClientAreaMouseMove) {
+    if (type == QEvent::MouseMove || type == QEvent::NonClientAreaMouseMove
+            || type == QEvent::TabletMove) {
+
         if (!(state & Qt::MouseButtonMask))
             qt_button_down = 0;
 #ifndef QT_NO_CURSOR
@@ -3087,6 +3088,8 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
                 popupButtonFocus = popupChild;
                 break;
             case QEvent::MouseButtonRelease:
+            case QEvent::TabletRelease:
+
                 releaseAfter = true;
                 break;
             default:
@@ -3324,17 +3327,19 @@ static void tabletInit(UINT wActiveCsr, HCTX hTab)
         tdd.minTanPressure = int(np.axMin);
         tdd.maxTanPressure = int(np.axMax);
 
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_X, &np);
-        tdd.minX = int(np.axMin);
-        tdd.maxX = int(np.axMax);
+        LOGCONTEXT lcMine;
 
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_Y, &np);
-        tdd.minY = int(np.axMin);
-        tdd.maxY = int(np.axMax);
+      	/* get default region */
+        ptrWTInfo(WTI_DEFCONTEXT, 0, &lcMine);
 
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_Z, &np);
-        tdd.minZ = int(np.axMin);
-        tdd.maxZ = int(np.axMax);
+        tdd.minX = 0;
+        tdd.maxX = int(lcMine.lcInExtX) - int(lcMine.lcInOrgX);
+
+        tdd.minY = 0;
+        tdd.maxY = int(lcMine.lcInExtY) - int(lcMine.lcInOrgY);
+
+        tdd.minZ = 0;
+        tdd.maxZ = int(lcMine.lcInExtZ) - int(lcMine.lcInOrgZ);
 
         int csr_type,
             csr_physid;
@@ -3444,13 +3449,34 @@ bool QETWidget::translateTabletEvent(const MSG &msg, PACKET *localPacketBuf,
         }
         QPoint globalPos(qRound(hiResGlobal.x()), qRound(hiResGlobal.y()));
 
+        if (t == QEvent::TabletPress)
+        {
+            qt_button_down = QApplication::widgetAt(globalPos);
+        }
+
         // make sure the tablet event get's sent to the proper widget...
-        QWidget *w = QApplication::widgetAt(globalPos);
+        QWidget *w = 0;
+
         if (qt_button_down)
             w = qt_button_down; // Pass it to the thing that's grabbed it.
+        else
+            w = QApplication::widgetAt(globalPos);
 
         if (!w)
             w = this;
+
+        if (t == QEvent::TabletRelease)
+        {
+            if (qt_win_ignoreNextMouseReleaseEvent) {
+                qt_win_ignoreNextMouseReleaseEvent = false;
+                if (qt_button_down && qt_button_down->internalWinId() == autoCaptureWnd) {
+                    releaseAutoCapture();
+                    qt_button_down = 0;
+                }
+            }
+
+        }
+
         QPoint localPos = w->mapFromGlobal(globalPos);
 #ifndef QT_NO_TABLETEVENT
         if (currentTabletPointer.currentDevice == QTabletEvent::Airbrush) {
@@ -3926,9 +3952,9 @@ qt_CloseTouchInputHandlePtr QApplicationPrivate::CloseTouchInputHandle = 0;
 void QApplicationPrivate::initializeMultitouch_sys()
 {
     QLibrary library(QLatin1String("user32"));
-    RegisterTouchWindow = static_cast<qt_RegisterTouchWindowPtr>(library.resolve("RegisterTouchWindow"));
-    GetTouchInputInfo = static_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
-    CloseTouchInputHandle = static_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
+    RegisterTouchWindow = reinterpret_cast<qt_RegisterTouchWindowPtr>(library.resolve("RegisterTouchWindow"));
+    GetTouchInputInfo = reinterpret_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
+    CloseTouchInputHandle = reinterpret_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
 
     touchInputIDToTouchPointID.clear();
 }
@@ -3940,13 +3966,11 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 
 bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 {
-    Q_Q(QApplication);
-
     QWidget *widgetForHwnd = QWidget::find(msg.hwnd);
     if (!widgetForHwnd)
         return false;
 
-    QRect screenGeometry = q->desktop()->screenGeometry(widgetForHwnd);
+    QRect screenGeometry = QApplication::desktop()->screenGeometry(widgetForHwnd);
 
     QList<QTouchEvent::TouchPoint> touchPoints;
 

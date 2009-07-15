@@ -163,7 +163,7 @@ void QSystemTrayIconSys::setIconContents(NOTIFYICONDATA &tnd)
     }
 }
 
-int iconFlag( QSystemTrayIcon::MessageIcon icon )
+static int iconFlag( QSystemTrayIcon::MessageIcon icon )
 {
 #if NOTIFYICON_VERSION >= 3
     switch (icon) {
@@ -176,7 +176,7 @@ int iconFlag( QSystemTrayIcon::MessageIcon icon )
         case QSystemTrayIcon::NoIcon:
             return NIIF_NONE;
         default:
-            Q_ASSERT("Invalid QSystemTrayIcon::MessageIcon value", false);
+            Q_ASSERT_X(false, "QSystemTrayIconSys::showMessage", "Invalid QSystemTrayIcon::MessageIcon value");
             return NIIF_NONE;
     }
 #else
@@ -314,7 +314,6 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
                 emit q->activated(QSystemTrayIcon::Trigger);
                 break;
 
-#if !defined(Q_WS_WINCE)
             case WM_LBUTTONDBLCLK:
                 emit q->activated(QSystemTrayIcon::DoubleClick);
                 break;
@@ -322,20 +321,30 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
             case WM_RBUTTONUP:
                 if (q->contextMenu()) {
                     q->contextMenu()->popup(gpos);
+#if defined(Q_WS_WINCE)
+                    // We must ensure that the popup menu doesn't show up behind the task bar.
+                    QRect desktopRect = qApp->desktop()->availableGeometry();
+                    int maxY = desktopRect.y() + desktopRect.height() - q->contextMenu()->height();
+                    if (gpos.y() > maxY) {
+                        gpos.ry() = maxY;
+                        q->contextMenu()->move(gpos);
+                    }
+#endif
                     q->contextMenu()->activateWindow();
                     //Must be activated for proper keyboardfocus and menu closing on windows:
                 }
                 emit q->activated(QSystemTrayIcon::Context);
                 break;
 
+#if !defined(Q_WS_WINCE)
             case NIN_BALLOONUSERCLICK:
                 emit q->messageClicked();
                 break;
+#endif
 
             case WM_MBUTTONUP:
                 emit q->activated(QSystemTrayIcon::MiddleClick);
                 break;
-#endif
             default:
                         break;
             }

@@ -46,8 +46,8 @@
 #include <QMainWindow>
 #include <QAbstractEventDispatcher>
 
-#if defined(Q_OS_WINCE)
-#include "ui_wincemainwindow.h"
+#if defined(Q_WS_WINCE_WM)
+#include "ui_mainwindow_windowsmobile.h"
 #include <windows.h>
 #else
 #include "ui_mainwindow.h"

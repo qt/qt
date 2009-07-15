@@ -43,7 +43,7 @@ static const HashTableValue JSSVGPathSegMovetoAbsTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegMovetoAbsTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegMovetoAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGPathSegMovetoAbsTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGPathSegMovetoAbsPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegMovetoAbsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegMovetoAbsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegMovetoAbsPrototypeTableValues, 0 };
 #else

@@ -41,7 +41,7 @@ static const HashTableValue JSXMLHttpRequestProgressEventTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestProgressEventTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestProgressEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSXMLHttpRequestProgressEventTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSXMLHttpRequestProgressEventConstructorTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestProgressEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestProgressEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXMLHttpRequestProgressEventConstructorTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSXMLHttpRequestProgressEventPrototypeTableValues[1]
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXMLHttpRequestProgressEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestProgressEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXMLHttpRequestProgressEventPrototypeTableValues, 0 };
 #else

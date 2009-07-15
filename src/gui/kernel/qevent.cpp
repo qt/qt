@@ -114,6 +114,10 @@ QInputEvent::~QInputEvent()
     propagated up the parent widget chain until a widget accepts it
     with accept(), or an event filter consumes it.
 
+    \note If a mouse event is propagated to a \l{QWidget}{widget} for
+    which Qt::WA_NoMousePropagation has been set, that mouse event
+    will not be propagated further up the parent widget chain.
+
     The state of the keyboard modifier keys can be found by calling the
     \l{QInputEvent::modifiers()}{modifiers()} function, inhertied from
     QInputEvent.

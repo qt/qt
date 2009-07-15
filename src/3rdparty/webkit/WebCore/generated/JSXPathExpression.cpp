@@ -45,7 +45,7 @@ static const HashTableValue JSXPathExpressionTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathExpressionTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathExpressionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXPathExpressionTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSXPathExpressionConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathExpressionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathExpressionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXPathExpressionConstructorTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSXPathExpressionPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathExpressionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathExpressionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSXPathExpressionPrototypeTableValues, 0 };
 #else

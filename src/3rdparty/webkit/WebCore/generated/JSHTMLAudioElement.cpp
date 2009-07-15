@@ -41,7 +41,7 @@ static const HashTableValue JSHTMLAudioElementTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAudioElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAudioElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAudioElementTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSHTMLAudioElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAudioElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAudioElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAudioElementConstructorTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSHTMLAudioElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAudioElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAudioElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAudioElementPrototypeTableValues, 0 };
 #else

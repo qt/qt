@@ -57,6 +57,8 @@
 #include "private/qanimationgroup_p.h"
 #include <QtCore/QHash>
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 class QParallelAnimationGroupPrivate : public QAnimationGroupPrivate
@@ -81,5 +83,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ANIMATION
 
 #endif //QPARALLELANIMATIONGROUP_P_H

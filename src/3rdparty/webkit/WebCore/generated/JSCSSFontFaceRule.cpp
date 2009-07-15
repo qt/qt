@@ -42,7 +42,7 @@ static const HashTableValue JSCSSFontFaceRuleTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSFontFaceRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSFontFaceRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSCSSFontFaceRuleTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSCSSFontFaceRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSFontFaceRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSFontFaceRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSFontFaceRuleConstructorTableValues, 0 };
 #else
@@ -94,7 +94,7 @@ static const HashTableValue JSCSSFontFaceRulePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSFontFaceRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSFontFaceRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSFontFaceRulePrototypeTableValues, 0 };
 #else

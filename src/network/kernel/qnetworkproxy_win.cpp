@@ -49,7 +49,7 @@
 #include <qurl.h>
 
 #include <string.h>
-#include <windows.h>
+#include <qt_windows.h>
 #include <wininet.h>
 
 /*

@@ -42,7 +42,7 @@ static const HashTableValue JSEntityTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEntityTable =
+static JSC_CONST_HASHTABLE HashTable JSEntityTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSEntityTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSEntityConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEntityConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSEntityConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSEntityConstructorTableValues, 0 };
 #else
@@ -94,7 +94,7 @@ static const HashTableValue JSEntityPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEntityPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSEntityPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSEntityPrototypeTableValues, 0 };
 #else

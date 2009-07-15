@@ -43,7 +43,7 @@ static const HashTableValue JSMediaErrorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaErrorTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaErrorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSMediaErrorTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSMediaErrorConstructorTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaErrorConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaErrorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSMediaErrorConstructorTableValues, 0 };
 #else
@@ -103,7 +103,7 @@ static const HashTableValue JSMediaErrorPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaErrorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaErrorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSMediaErrorPrototypeTableValues, 0 };
 #else

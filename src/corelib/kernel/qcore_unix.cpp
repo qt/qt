@@ -138,19 +138,29 @@ static inline int syscall(...) { errno = ENOSYS; return -1;}
 #   define __NR_dup3        330
 #   define __NR_pipe2       331
 #  elif defined(__x86_64__)
-#   define __NR_accept4     288
 #   define __NR_dup3        292
 #   define __NR_pipe2       293
 #  elif defined(__ia64__)
-#   define __NR_accept4     -1
 #   define __NR_dup3        1316
 #   define __NR_pipe2       1317
 #  else
 //  set the syscalls to absurd numbers so that they'll cause ENOSYS errors
-#   warning "Please port the pipe2/dup3/accept4 code to this platform"
-#   define __NR_accept4     -1
+#   warning "Please port the pipe2/dup3 code to this platform"
 #   define __NR_dup3        -1
 #   define __NR_pipe2       -1
+#  endif
+# endif
+
+# if !defined(__NR_socketcall) && !defined(__NR_accept4)
+#  if defined(__x86_64__)
+#   define __NR_accept4     288
+#  elif defined(__ia64__)
+//  not assigned yet to IA-64
+#   define __NR_accept4     -1
+#  else
+//  set the syscalls to absurd numbers so that they'll cause ENOSYS errors
+#   warning "Please port the accept4 code to this platform"
+#   define __NR_accept4     -1
 #  endif
 # endif
 

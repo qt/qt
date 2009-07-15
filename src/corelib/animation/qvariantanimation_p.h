@@ -60,6 +60,8 @@
 
 #include "private/qabstractanimation_p.h"
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 class QVariantAnimationPrivate : public QAbstractAnimationPrivate
@@ -119,5 +121,7 @@ template<typename T > inline QVariant _q_interpolateVariant(const T &from, const
 
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ANIMATION
 
 #endif //QANIMATION_P_H

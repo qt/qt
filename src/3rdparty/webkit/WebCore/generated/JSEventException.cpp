@@ -45,7 +45,7 @@ static const HashTableValue JSEventExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEventExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSEventExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSEventExceptionTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSEventExceptionConstructorTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEventExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSEventExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSEventExceptionConstructorTableValues, 0 };
 #else
@@ -100,7 +100,7 @@ static const HashTableValue JSEventExceptionPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEventExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSEventExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSEventExceptionPrototypeTableValues, 0 };
 #else

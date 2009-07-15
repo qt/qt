@@ -2623,6 +2623,13 @@ void tst_QAccessibility::spinBoxTest()
         QVERIFY(childRect.isNull() == false);
     }
 
+    spinBox->setFocus();
+    QTestAccessibility::clearEvents();
+    QTest::keyPress(spinBox, Qt::Key_Up);
+    QTest::qWait(200);
+    EventList events = QTestAccessibility::events();
+    QTestAccessibilityEvent expectedEvent(spinBox, 0, (int)QAccessible::ValueChanged);
+    QVERIFY(events.contains(expectedEvent));
     delete spinBox;
     QTestAccessibility::clearEvents();
 #else

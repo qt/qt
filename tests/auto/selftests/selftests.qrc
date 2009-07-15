@@ -25,7 +25,7 @@
         <file>expected_fatal.txt</file>
         <file>expected_waitwithoutgui.txt</file>
         <file>expected_differentexec.txt</file>
-        <file>expected_exception.txt</file>
+        <file>expected_exceptionthrow.txt</file>
         <file>expected_qexecstringlist.txt</file>
         <file>expected_datatable.txt</file>
         <file>expected_commandlinedata.txt</file>

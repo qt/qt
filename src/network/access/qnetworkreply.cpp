@@ -442,6 +442,31 @@ QNetworkReply::NetworkError QNetworkReply::error() const
 }
 
 /*!
+    \since 4.6
+
+    Returns true when the reply has finished or was aborted.
+
+    \sa isRunning()
+*/
+bool QNetworkReply::isFinished() const
+{
+    return d_func()->isFinished();
+}
+
+/*!
+    \since 4.6
+
+    Returns true when the request is still processing and the
+    reply has not finished or was aborted yet.
+
+    \sa isFinished()
+*/
+bool QNetworkReply::isRunning() const
+{
+    return !isFinished();
+}
+
+/*!
     Returns the URL of the content downloaded or uploaded. Note that
     the URL may be different from that of the original request.
 

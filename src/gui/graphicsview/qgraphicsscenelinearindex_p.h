@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,36 +34,76 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
+#ifndef QGRAPHICSSCENELINEARINDEX_H
+#define QGRAPHICSSCENELINEARINDEX_H
 
-#include <QtTest/QtTest>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class tst_Exception: public QObject
+#include <QtCore/qlist.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+
+#include <QtCore/qrect.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qgraphicsitem.h>
+#include <private/qgraphicssceneindex_p.h>
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
     Q_OBJECT
 
-private slots:
-    void throwException() const;
+public:
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
+    { }
+
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const
+    { Q_UNUSED(order); return m_items; }
+
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const
+    {
+        Q_UNUSED(rect);
+        Q_UNUSED(order);
+        return m_items;
+    }
+
+protected :
+    virtual void clear()
+    { m_items.clear(); }
+
+    virtual void addItem(QGraphicsItem *item)
+    { m_items << item; }
+
+    virtual void removeItem(QGraphicsItem *item)
+    { m_items.removeOne(item); }
+
+private:
+    QList<QGraphicsItem*> m_items;
 };
 
-/*!
- \internal
+#endif // QT_NO_GRAPHICSVIEW
 
- We simply throw an exception to check that we get sane output/reporting.
- */
-void tst_Exception::throwException() const
-{
-    /* When exceptions are disabled, some compilers, at least linux-g++, treat
-     * exception clauses as hard errors. */
-#ifndef QT_NO_EXCEPTIONS
-    throw 3;
-#endif
-}
+QT_END_NAMESPACE
 
-QTEST_MAIN(tst_Exception)
+QT_END_HEADER
 
-#include "tst_exception.moc"
+#endif // QGRAPHICSSCENELINEARINDEX_H

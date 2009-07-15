@@ -228,7 +228,7 @@ void ChromeClientQt::setResizable(bool)
     notImplemented();
 }
 
-void ChromeClientQt::addMessageToConsole(MessageSource, MessageLevel, const String& message,
+void ChromeClientQt::addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message,
                                          unsigned int lineNumber, const String& sourceID)
 {
     QString x = message;
@@ -288,8 +288,9 @@ void ChromeClientQt::setStatusbarText(const String& msg)
 
 bool ChromeClientQt::shouldInterruptJavaScript()
 {
-    notImplemented();
-    return false;
+    bool shouldInterrupt = false;
+    QMetaObject::invokeMethod(m_webPage, "shouldInterruptJavaScript", Qt::DirectConnection, Q_RETURN_ARG(bool, shouldInterrupt));
+    return shouldInterrupt;
 }
 
 bool ChromeClientQt::tabsToLinks() const

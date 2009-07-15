@@ -43,7 +43,7 @@ static const HashTableValue JSSVGPathSegLinetoAbsTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoAbsTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGPathSegLinetoAbsTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGPathSegLinetoAbsPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoAbsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoAbsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoAbsPrototypeTableValues, 0 };
 #else

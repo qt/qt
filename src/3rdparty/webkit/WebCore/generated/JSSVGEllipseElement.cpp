@@ -73,7 +73,7 @@ static const HashTableValue JSSVGEllipseElementTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGEllipseElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGEllipseElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGEllipseElementTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSSVGEllipseElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGEllipseElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGEllipseElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGEllipseElementPrototypeTableValues, 0 };
 #else

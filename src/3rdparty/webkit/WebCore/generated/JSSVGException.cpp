@@ -48,7 +48,7 @@ static const HashTableValue JSSVGExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGExceptionTableValues, 0 };
 #else
@@ -65,7 +65,7 @@ static const HashTableValue JSSVGExceptionConstructorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGExceptionConstructorTableValues, 0 };
 #else
@@ -107,7 +107,7 @@ static const HashTableValue JSSVGExceptionPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGExceptionPrototypeTableValues, 0 };
 #else

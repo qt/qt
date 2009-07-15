@@ -54,7 +54,7 @@ static const HashTableValue JSHTMLFrameSetElementTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFrameSetElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFrameSetElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLFrameSetElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSHTMLFrameSetElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFrameSetElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFrameSetElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLFrameSetElementConstructorTableValues, 0 };
 #else
@@ -106,7 +106,7 @@ static const HashTableValue JSHTMLFrameSetElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLFrameSetElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLFrameSetElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLFrameSetElementPrototypeTableValues, 0 };
 #else

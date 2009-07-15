@@ -47,7 +47,7 @@ static const HashTableValue JSSVGTextPositioningElementTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextPositioningElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextPositioningElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGTextPositioningElementTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSSVGTextPositioningElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTextPositioningElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTextPositioningElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTextPositioningElementPrototypeTableValues, 0 };
 #else

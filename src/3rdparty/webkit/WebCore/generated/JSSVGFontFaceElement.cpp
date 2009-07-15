@@ -40,7 +40,7 @@ static const HashTableValue JSSVGFontFaceElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFontFaceElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFontFaceElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFontFaceElementPrototypeTableValues, 0 };
 #else

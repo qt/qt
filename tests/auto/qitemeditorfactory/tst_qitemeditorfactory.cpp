@@ -59,13 +59,13 @@ void tst_QItemEditorFactory::createEditor()
     QCOMPARE(w->metaObject()->className(), "QExpandingLineEdit");
 }
 
+//we make it inherit from QObject so that we can use QPointer
+class MyEditor : public QObject, public QStandardItemEditorCreator<QDoubleSpinBox>
+{
+};
+
 void tst_QItemEditorFactory::createCustomEditor()
 {
-    //we make it inherit from QObject so that we can use QPointer
-    class MyEditor : public QObject, public QStandardItemEditorCreator<QDoubleSpinBox>
-    {
-    };
-
     QPointer<MyEditor> creator = new MyEditor;
     QPointer<MyEditor> creator2 = new MyEditor;
 

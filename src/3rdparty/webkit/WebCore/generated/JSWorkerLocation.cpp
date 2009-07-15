@@ -52,7 +52,7 @@ static const HashTableValue JSWorkerLocationTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerLocationTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerLocationTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSWorkerLocationTableValues, 0 };
 #else
@@ -66,7 +66,7 @@ static const HashTableValue JSWorkerLocationConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerLocationConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerLocationConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWorkerLocationConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSWorkerLocationPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerLocationPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerLocationPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWorkerLocationPrototypeTableValues, 0 };
 #else
