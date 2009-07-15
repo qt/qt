@@ -1,1 +1,1 @@
-2:11:Cannot assign value to non-existant property "something"
+2:5:Cannot nest non-QObject property "value"

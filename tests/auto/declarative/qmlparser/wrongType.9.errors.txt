@@ -1,1 +1,1 @@
-2:19:Cannot assign value "12" to property timeProperty
+2:19:Invalid property assignment: time expected

@@ -110,8 +110,6 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
         if (!compiler.compile(engine, this, compiledComponent)) {
             status = Error;
             errors = compiler.errors();
-            for(int ii = 0; ii < errors.count(); ++ii)
-                errors[ii].setUrl(compiledComponent->url);
             compiledComponent->release();
             compiledComponent = 0;
         }

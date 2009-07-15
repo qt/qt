@@ -98,7 +98,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("nonExistantProperty.3") << "nonexistantProperty.3.txt" << "nonexistantProperty.3.errors.txt" << false;
     QTest::newRow("nonExistantProperty.4") << "nonexistantProperty.4.txt" << "nonexistantProperty.4.errors.txt" << false;
     QTest::newRow("nonExistantProperty.5") << "nonexistantProperty.5.txt" << "nonexistantProperty.5.errors.txt" << false;
-    QTest::newRow("nonExistantProperty.6") << "nonexistantProperty.6.txt" << "nonexistantProperty.6.errors.txt" << true;
+    QTest::newRow("nonExistantProperty.6") << "nonexistantProperty.6.txt" << "nonexistantProperty.6.errors.txt" << false;
 
     QTest::newRow("wrongType (string for int)") << "wrongType.1.txt" << "wrongType.1.errors.txt" << false;
     QTest::newRow("wrongType (int for bool)") << "wrongType.2.txt" << "wrongType.2.errors.txt" << false;
@@ -117,7 +117,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("wrongType (int for string)") << "wrongType.14.txt" << "wrongType.14.errors.txt" << false;
 
     QTest::newRow("readOnly.1") << "readOnly.1.txt" << "readOnly.1.errors.txt" << false;
-    QTest::newRow("readOnly.2") << "readOnly.2.txt" << "readOnly.2.errors.txt" << true;
+    QTest::newRow("readOnly.2") << "readOnly.2.txt" << "readOnly.2.errors.txt" << false;
 
     QTest::newRow("listAssignment.1") << "listAssignment.1.txt" << "listAssignment.1.errors.txt" << false;
     QTest::newRow("listAssignment.2") << "listAssignment.2.txt" << "listAssignment.2.errors.txt" << false;
@@ -344,8 +344,8 @@ void tst_qmlparser::dynamicProperties()
     QVERIFY(object != 0);
     QCOMPARE(object->property("intProperty"), QVariant(10));
     QCOMPARE(object->property("boolProperty"), QVariant(false));
-    QCOMPARE(object->property("doubleProperty"), QVariant((float)-10.1));
-    QCOMPARE(object->property("realProperty"), QVariant((float)-19.9));
+    QCOMPARE(object->property("doubleProperty"), QVariant(-10.1));
+    QCOMPARE(object->property("realProperty"), QVariant((qreal)-19.9));
     QCOMPARE(object->property("stringProperty"), QVariant("Hello World!"));
     QCOMPARE(object->property("colorProperty"), QVariant(QColor("red")));
     QCOMPARE(object->property("dateProperty"), QVariant(QDate(1945, 9, 2)));

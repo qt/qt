@@ -53,12 +53,9 @@ QT_BEGIN_NAMESPACE
 
 QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    const QMetaObject *other, 
-                                   QList<QString> *strData,
-                                   int slotData,
                                    const QmlVMEMetaData *meta,
                                    QmlRefCount *rc)
-: object(obj), ref(rc), metaData(meta), slotData(strData), 
-  slotDataIdx(slotData), parent(0)
+: object(obj), ref(rc), metaData(meta), parent(0)
 {
     if (ref)
         ref->addref();
@@ -208,7 +205,11 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
             id -= plainSignals;
 
             if (id < metaData->methodCount) {
-                QString code = slotData->at(id + slotDataIdx);
+                QmlVMEMetaData::MethodData *data = metaData->methodData() + id;
+                const QChar *body = 
+                    (const QChar *)(((const char*)metaData) + data->bodyOffset);
+
+                QString code = QString::fromRawData(body, data->bodyLength);
                 QmlContext *ctxt = qmlContext(object);
 
                 if (0 == (metaData->methodData() + id)->parameterCount) {

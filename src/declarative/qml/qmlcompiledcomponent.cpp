@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 
 QmlCompiledComponent::QmlCompiledComponent()
-: dumpStatus(NoDump)
 {
 }
 
@@ -59,7 +58,6 @@ QmlCompiledComponent::~QmlCompiledComponent()
     for (int ii = 0; ii < synthesizedMetaObjects.count(); ++ii)
         qFree(synthesizedMetaObjects.at(ii));
 }
-
 
 void QmlCompiledComponent::dumpInstructions()
 {
@@ -74,23 +72,6 @@ void QmlCompiledComponent::dumpInstructions()
         dump(&bytecode[ii], ii);
     }
     qWarning() << "-------------------------------------------------------------------------------";
-}
-
-void QmlCompiledComponent::dumpPre()
-{
-    if (!(dumpStatus & DumpPre)) {
-        dumpInstructions();
-        dumpStatus = (DumpStatus)(dumpStatus | DumpPre);
-    }
-}
-
-void QmlCompiledComponent::dumpPost()
-{
-    if (!(dumpStatus & DumpPost)) {
-        dumpInstructions();
-        dumpStatus = (DumpStatus)(dumpStatus | DumpPost);
-    }
-
 }
 
 QT_END_NAMESPACE

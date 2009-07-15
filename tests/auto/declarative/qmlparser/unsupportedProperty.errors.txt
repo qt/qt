@@ -1,1 +1,1 @@
-2:5:Cannot assign value to property matrix of unknown type
+2:13:Invalid property assignment: unknown type QVariant::QMatrix

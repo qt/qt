@@ -74,12 +74,8 @@ public:
     QmlCompiledComponent();
     ~QmlCompiledComponent();
 
-    void dumpPre();
-    void dumpPost();
-
-private:
-    enum DumpStatus { NoDump = 0x00, DumpPre = 0x01, DumpPost = 0x02 } dumpStatus;
     void dumpInstructions();
+private:
     void dump(QmlInstruction *, int idx = -1);
     friend class QmlCompiler;
     friend class QmlDomDocument;

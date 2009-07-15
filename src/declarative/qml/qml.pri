@@ -12,6 +12,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlproxymetaobject.cpp \
     qml/qmlvme.cpp \
     qml/qmlcompiler.cpp \
+    qml/qmlcompileddata.cpp \
     qml/qmlcompiledcomponent.cpp \
     qml/qmlboundsignal.cpp \
     qml/qmldom.cpp \
