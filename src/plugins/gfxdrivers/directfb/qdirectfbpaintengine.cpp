@@ -250,7 +250,6 @@ private:
     uint transformationType; // this is QTransform::type() + NegativeScale if qMin(transform.m11(), transform.m22()) < 0
 
     SurfaceCache *surfaceCache;
-    int lastLockedHeight;
 
     IDirectFB *fb;
 
@@ -260,7 +259,6 @@ private:
     bool dfbHandledClip;
     bool ignoreSystemClip;
     QDirectFBPaintDevice *dfbDevice;
-    void *lockedMemory;
     bool unsupportedCompositionMode;
 
     QDirectFBPaintEngine *q;
@@ -287,7 +285,6 @@ QDirectFBPaintEngine::~QDirectFBPaintEngine()
 bool QDirectFBPaintEngine::begin(QPaintDevice *device)
 {
     Q_D(QDirectFBPaintEngine);
-    d->lastLockedHeight = -1;
     if (device->devType() == QInternal::CustomRaster) {
         d->dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
     } else if (device->devType() == QInternal::Pixmap) {
@@ -304,11 +301,11 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
         qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
                device->devType());
     }
-    d->lockedMemory = 0;
 
     const bool status = QRasterPaintEngine::begin(device);
     // XXX: QRasterPaintEngine::begin() resets the capabilities
     gccaps |= PorterDuff;
+    d->prepare(d->dfbDevice);
     return status;
 }
 
@@ -385,9 +382,6 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
-    const QPoint bottom = state()->matrix.map(QPoint(0, int(path.controlPointRect().y2)));
-    if (bottom.y() > d->lastLockedHeight)
-        d->lock();
     QRasterPaintEngine::clip(path, op);
 }
 
@@ -395,12 +389,6 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
-    if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
-        const QPoint bottom = state()->matrix.map(QPoint(0, rect.bottom()));
-        if (bottom.y() > d->lastLockedHeight)
-            d->lock();
-    }
-
     QRasterPaintEngine::clip(rect, op);
 }
 
@@ -823,9 +811,8 @@ void QDirectFBPaintEngine::initImageCache(int size)
 
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), simplePen(false),
-      transformationType(0), lastLockedHeight(-1),
-      opacity(255), dirtyClip(true),
-      dfbHandledClip(false), dfbDevice(0), lockedMemory(0),
+      transformationType(0), opacity(255), dirtyClip(true),
+      dfbHandledClip(false), dfbDevice(0),
       unsupportedCompositionMode(false), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
@@ -866,12 +853,9 @@ void QDirectFBPaintEnginePrivate::lock()
     // lock so we need to call the base implementation of prepare so
     // it updates its rasterBuffer to point to the new buffer address.
     Q_ASSERT(dfbDevice);
-    if (dfbDevice->lockFlags() != (DSLF_WRITE|DSLF_READ)
-        || dfbDevice->height() != lastLockedHeight
-        || dfbDevice->memory() != lockedMemory) {
+    if (dfbDevice->lockFlags() != (DSLF_WRITE|DSLF_READ)) {
+        dfbDevice->lockDirectFB(DSLF_READ|DSLF_WRITE);
         prepare(dfbDevice);
-        lastLockedHeight = dfbDevice->height();
-        lockedMemory = dfbDevice->memory();
     }
 }
 
@@ -879,7 +863,6 @@ void QDirectFBPaintEnginePrivate::unlock()
 {
     Q_ASSERT(dfbDevice);
     dfbDevice->unlockDirectFB();
-    lockedMemory = 0;
 }
 
 void QDirectFBPaintEnginePrivate::setTransform(const QTransform &transform)

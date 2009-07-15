@@ -89,11 +89,6 @@ void QDirectFBPaintDevice::unlockDirectFB()
 
 void *QDirectFBPaintDevice::memory() const
 {
-    if (lock != (DSLF_READ|DSLF_WRITE)) {
-        QDirectFBPaintDevice *that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
-        Q_ASSERT(that->lockedImage);
-    }
     return mem;
 }
 
