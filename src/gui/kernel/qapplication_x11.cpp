@@ -117,7 +117,9 @@ extern "C" {
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
+#if !defined(QT_NO_XINPUT)
 #include <X11/extensions/XI.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -655,11 +657,13 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
         break;
 
     default:
+#if !defined(QT_NO_XINPUT)
         if (err->request_code == X11->xinput_major
             && err->error_code == (X11->xinput_errorbase + XI_BadDevice)
             && err->minor_code == 3 /* X_OpenDevice */) {
             return 0;
         }
+#endif
         break;
     }
 
