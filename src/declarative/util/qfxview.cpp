@@ -163,7 +163,7 @@ void QFxViewPrivate::init()
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     q->viewport()->setFocusPolicy(Qt::NoFocus);
 
-
+    scene.setStickyFocus(true);  //### needed for correct focus handling
 }
 
 /*!

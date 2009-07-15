@@ -256,6 +256,8 @@ public:
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
 
+    QHash<QGraphicsItem *, QGraphicsItem *> focusItemForFocusArea;
+
     void updateInputMethodSensitivityInViews();
 };
 

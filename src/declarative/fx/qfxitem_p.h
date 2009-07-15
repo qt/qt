@@ -95,6 +95,7 @@ public:
         q->setAcceptedMouseButtons(Qt::NoButton);
         q->setFlag(QGraphicsItem::ItemHasNoContents, true);
         q->setFlag(QGraphicsItem::ItemIsFocusable, true);
+        mouseSetsFocus = false;
     }
 
     QString _id;
@@ -195,6 +196,18 @@ public:
 
     void gvRemoveMouseFilter();
     void gvAddMouseFilter();
+
+    virtual void setActiveFocus(bool b) {
+        Q_Q(QFxItem);
+        QGraphicsItemPrivate::setActiveFocus(b);
+        q->activeFocusChanged(b);
+    }
+
+    virtual void setFocusItemForArea(bool b) {
+        Q_Q(QFxItem);
+        QGraphicsItemPrivate::setFocusItemForArea(b);
+        q->focusChanged(b);
+    }
 };
 
 QT_END_NAMESPACE

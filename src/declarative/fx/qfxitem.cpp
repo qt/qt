@@ -2074,6 +2074,9 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
             
         if (options() & QFxItem::MouseFilter)
             d->gvAddMouseFilter();
+
+        if (d->canvas && d->isFocusItemForArea)
+            d->canvas->setFocusItem(this);
     } else if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
         childrenChanged();
@@ -2409,13 +2412,28 @@ QFxItem *QFxItem::mouseGrabberItem() const
 
 bool QFxItem::hasFocus() const
 {
-    return false;
+    Q_D(const QFxItem);
+    return d->isFocusItemForArea;
 }
 
 void QFxItem::setFocus(bool focus)
 {
-    Q_UNUSED(focus)
-    return;
+    Q_D(QFxItem);
+    QGraphicsScene *s = scene();
+    if (s) {
+        if (d->hasActiveFocus)
+            s->setFocusItem(focus ? this : 0);
+        else if (focus)
+            s->setFocusItem(this);
+        else {
+            d->isFocusItemForArea = false;
+            focusChanged(false);
+        }
+
+    } else {
+        d->isFocusItemForArea = focus;
+        focusChanged(focus);
+    }
 }
 
 /*!
@@ -2425,7 +2443,8 @@ void QFxItem::setFocus(bool focus)
 
 bool QFxItem::hasActiveFocus() const
 {
-    return false;
+    Q_D(const QFxItem);
+    return d->hasActiveFocus;
 }
 
 bool QFxItem::activeFocusPanel() const
@@ -2460,6 +2479,13 @@ void QFxItem::setOptions(Options options, bool set)
     Q_D(QFxItem);
     Options old = (Options)d->options;
 
+    if (options & IsFocusRealm) {
+        if (!set) {
+            qWarning("QFxItem::setOptions: Cannot unset IsFocusRealm");
+            return;
+        }
+    }
+
     if (set)
         d->options |= options;
     else
@@ -2474,6 +2500,7 @@ void QFxItem::setOptions(Options options, bool set)
     setFiltersChildEvents(d->options & ChildMouseFilter);
     setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
     setAcceptHoverEvents(d->options & HoverEvents);
+    d->isFocusRealm = static_cast<bool>(d->options & IsFocusRealm);
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->options & MouseFilter)
