@@ -535,7 +535,7 @@ void QFxTextEdit::loadCursorDelegate()
         d->cursor->setHeight(QFontMetrics(d->font.font()).height());
         moveCursorDelegate();
     }else{
-        qWarning() << "Error loading cursor delegate for TextEdit:" + objectName();
+        qWarning() << QLatin1String("Error loading cursor delegate for TextEdit:") + objectName();
     }
 }
 

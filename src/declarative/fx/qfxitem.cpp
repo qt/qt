@@ -2178,13 +2178,11 @@ QPointF QFxItem::transformOriginPoint() const
 
 qreal QFxItem::z() const
 {
-    Q_D(const QFxItem);
     return zValue();
 }
 
 void QFxItem::setX(qreal x)
 {
-    Q_D(QFxItem);
     if (x == this->x())
         return;
 
@@ -2517,7 +2515,6 @@ void QFxItem::setOptions(Options options, bool set)
  */
 void QFxItem::setParent(QFxItem *p)
 {
-    Q_D(QFxItem);
     if (p == parent() || !p) return;
 
     QObject::setParent(p);
