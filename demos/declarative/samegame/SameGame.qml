@@ -1,17 +1,22 @@
 import "content"
 
 Rect {
-    width: 400
+    width: 460
     height: 700
     color: "white"
     Script { source: "content/samegame.js" }
     Rect{
         property int score: 0
-        x:20; y:20; width:360; height:600; id: gameCanvas;
+        y:20; width:400; height:600; id: gameCanvas;
+        //For Fixed Size
+        anchors.horizontalCenter: parent.horizontalCenter
+        //For flexible width
+        //anchors.left: parent.left; anchors.leftMargin: 30
+        //anchors.right: parent.right; anchors.rightMargin: 30
         color: "white"
         pen.width: 1
         Image { id:background;
-            source: "content/pics/qtlogo.png"
+            source: "content/pics/background.png"
             anchors.fill: parent
         }
 

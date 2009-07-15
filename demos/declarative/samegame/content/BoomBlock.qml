@@ -5,9 +5,8 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    x: targetX
+    x: Follow { source: targetX; spring: 1.2; damping: 0.1 }
     y: Follow { source: targetY; spring: 1.2; damping: 0.1 }
-    //y: Behavior { NumberAnimation { properties:"y"; duration: 200 } }
 
     Image { id: img
         source: {if(type==0){"pics/redStone.png";}else if(type==1){"pics/blueStone.png";}else{"pics/greenStone.png";}}
@@ -31,18 +30,4 @@ Item { id:block
             SetProperties { target: img; opacity: 0 }
         }
     ]
-//    transitions: [
-//        Transition {
-//            fromState: "SpawnState"
-//            NumberAnimation { properties: "opacity"; duration: 200 }
-//        },
-//        Transition {
-//            toState: "DeathState"
-//            SequentialAnimation {
-//                NumberAnimation { properties: "opacity"; duration: 200 }
-//                //TODO: Warning about following line, if it works
-//                //RunScriptAction { script: page.destroy() }
-//            }
-//        }
-//    ]
 }
