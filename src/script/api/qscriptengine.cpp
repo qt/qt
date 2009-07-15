@@ -869,15 +869,17 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
     QScriptValuePrivate *vv = QScriptValuePrivate::get(value);
     if (!vv)
         return JSC::JSValue();
-    switch (vv->type) {
-    case QScriptValuePrivate::JSC:
-        return vv->jscValue;
-    case QScriptValuePrivate::Number:
-        return JSC::jsNumber(currentFrame, vv->numberValue);
-    case QScriptValuePrivate::String:
-        return JSC::jsString(currentFrame, QScript::qtStringToJSCUString(*vv->stringValue));
+    if (vv->type != QScriptValuePrivate::JSC) {
+        Q_Q(QScriptEngine);
+        Q_ASSERT(!vv->engine || vv->engine == q);
+        vv->engine = q;
+        if (vv->type == QScriptValuePrivate::Number) {
+            vv->initFromJSCValue(JSC::jsNumber(currentFrame, vv->numberValue));
+        } else { //QScriptValuePrivate::String
+            vv->initFromJSCValue(JSC::jsString(currentFrame, QScript::qtStringToJSCUString(vv->stringValue)));
+        }
     }
-    return JSC::JSValue();
+    return vv->jscValue;
 }
 
 void QScriptEnginePrivate::releaseJSCValue(JSC::JSValue value)
@@ -933,7 +935,7 @@ JSC::JSValue QScriptEnginePrivate::jscValueFromVariant(const QVariant &v)
     case QScriptValuePrivate::Number:
         return JSC::jsNumber(currentFrame, p->numberValue);
     case QScriptValuePrivate::String: {
-        JSC::UString str = QScript::qtStringToJSCUString(*p->stringValue);
+        JSC::UString str = QScript::qtStringToJSCUString(p->stringValue);
         return JSC::jsString(currentFrame, str);
       }
     }

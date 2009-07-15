@@ -126,7 +126,7 @@ public:
     Type type;
     JSC::JSValue jscValue;
     double numberValue;
-    QString *stringValue;
+    QString stringValue;
 
     QBasicAtomicInt ref;
     bool valid; //object is valid ?

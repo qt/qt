@@ -299,7 +299,7 @@ void QScriptValuePrivate::initFromNumber(double value)
 void QScriptValuePrivate::initFromString(const QString &value)
 {
     type = String;
-    stringValue = new QString(value);
+    stringValue = value;
 }
 
 void QScriptValuePrivate::initFromJSCValue(QScriptValue &result,
@@ -1168,7 +1168,7 @@ bool QScriptValue::strictlyEquals(const QScriptValue &other) const
     case QScriptValuePrivate::Number:
         return (d->numberValue == other.d_ptr->numberValue);
     case QScriptValuePrivate::String:
-        return (*d->stringValue == *other.d_ptr->stringValue);
+        return (d->stringValue == other.d_ptr->stringValue);
     }
     return false;
 }
@@ -1200,7 +1200,7 @@ QString QScriptValue::toString() const
     case QScriptValuePrivate::Number:
         return QScript::qtStringFromJSCUString(JSC::UString::from(d->numberValue));
     case QScriptValuePrivate::String:
-        return *d->stringValue;
+        return d->stringValue;
     }
     return QString();
 }
@@ -1231,7 +1231,7 @@ qsreal QScriptValue::toNumber() const
     case QScriptValuePrivate::Number:
         return d->numberValue;
     case QScriptValuePrivate::String:
-        return QScript::qtStringToJSCUString(*d->stringValue).toDouble();
+        return QScript::qtStringToJSCUString(d->stringValue).toDouble();
     }
     return 0;
 }
@@ -1255,7 +1255,7 @@ bool QScriptValue::toBoolean() const
     case QScriptValuePrivate::Number:
         return (d->numberValue != 0) && !qIsNaN(d->numberValue);
     case QScriptValuePrivate::String:
-        return (d->stringValue->length() != 0);
+        return (!d->stringValue.isEmpty());
     }
     return false;
 }
@@ -1288,7 +1288,7 @@ bool QScriptValue::toBool() const
     case QScriptValuePrivate::Number:
         return (d->numberValue != 0) && !qIsNaN(d->numberValue);
     case QScriptValuePrivate::String:
-        return (d->stringValue->length() != 0);
+        return (!d->stringValue.isEmpty());
     }
     return false;
 }
@@ -1319,7 +1319,7 @@ qint32 QScriptValue::toInt32() const
     case QScriptValuePrivate::Number:
         return QScript::ToInt32(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToInt32(QScript::qtStringToJSCUString(*d->stringValue).toDouble());
+        return QScript::ToInt32(QScript::qtStringToJSCUString(d->stringValue).toDouble());
     }
     return 0;
 }
@@ -1350,7 +1350,7 @@ quint32 QScriptValue::toUInt32() const
     case QScriptValuePrivate::Number:
         return QScript::ToUint32(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToUint32(QScript::qtStringToJSCUString(*d->stringValue).toDouble());
+        return QScript::ToUint32(QScript::qtStringToJSCUString(d->stringValue).toDouble());
     }
     return 0;
 }
@@ -1380,7 +1380,7 @@ quint16 QScriptValue::toUInt16() const
     case QScriptValuePrivate::Number:
         return QScript::ToUint16(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToUint16(QScript::qtStringToJSCUString(*d->stringValue).toDouble());
+        return QScript::ToUint16(QScript::qtStringToJSCUString(d->stringValue).toDouble());
     }
     return 0;
 }
@@ -1411,7 +1411,7 @@ qsreal QScriptValue::toInteger() const
     case QScriptValuePrivate::Number:
         return QScript::ToInteger(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToInteger(QScript::qtStringToJSCUString(*d->stringValue).toDouble());
+        return QScript::ToInteger(QScript::qtStringToJSCUString(d->stringValue).toDouble());
     }
     return 0;
 }
@@ -1477,7 +1477,7 @@ QVariant QScriptValue::toVariant() const
     case QScriptValuePrivate::Number:
         return QVariant(d->numberValue);
     case QScriptValuePrivate::String:
-        return QVariant(*d->stringValue);
+        return QVariant(d->stringValue);
     }
     return QVariant();
 }
@@ -1608,13 +1608,15 @@ const QMetaObject *QScriptValue::toQMetaObject() const
 
   \sa property()
 */
+
 void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
                                const PropertyFlags &flags)
 {
     Q_D(QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return;
-    if (value.engine() && (value.engine() != engine())) {
+    QScriptEngine *valueEngine = value.engine();
+    if (valueEngine && (valueEngine != d->engine)) {
         qWarning("QScriptValue::setProperty(%s) failed: "
                  "cannot set value created in a different engine",
                  qPrintable(name));

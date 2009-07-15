@@ -1730,7 +1730,6 @@ void tst_QScriptValue::getSetProperty()
     QCOMPARE(strstr.engine(), (QScriptEngine *)0);
     object.setProperty("foo", strstr);
     QCOMPARE(object.property("foo").toString(), strstr.toString());
-    QEXPECT_FAIL("", "String engine binding not implemented", Continue);
     QCOMPARE(strstr.engine(), &eng); // the value has been bound to the engine
 
     QScriptValue numnum = QScriptValue(123.0);
@@ -1838,7 +1837,7 @@ void tst_QScriptValue::getSetProperty()
                      QScriptValue::PropertyGetter | QScriptValue::UserRange);
             object4.setProperty("x", num);
             QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-            
+
             // setter() sets this.x
             object4.setProperty("foo", eng.newFunction(setter),
                                 QScriptValue::PropertySetter | QScriptValue::UserRange);
@@ -1848,16 +1847,16 @@ void tst_QScriptValue::getSetProperty()
             object4.setProperty("foo", str);
             QCOMPARE(object4.property("x").strictlyEquals(str), true);
             QCOMPARE(object4.property("foo").strictlyEquals(str), true);
-            
+
             // kill the getter
             object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
             QCOMPARE(object4.property("foo").isValid(), false);
-            
+
             // setter should still work
             object4.setProperty("foo", num);
             QEXPECT_FAIL("", "Setter isn't called", Continue);
             QCOMPARE(object4.property("x").strictlyEquals(num), true);
-            
+
             // kill the setter too
             object4.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
             // now foo is just a regular property
@@ -1875,21 +1874,21 @@ void tst_QScriptValue::getSetProperty()
             QCOMPARE(object4.property("x").strictlyEquals(str), true);
             QEXPECT_FAIL("", "Property should be invalid now", Continue);
             QCOMPARE(object4.property("foo").isValid(), false);
-            
+
             // getter() returns this.x
             object4.setProperty("foo", eng.newFunction(getter), QScriptValue::PropertyGetter);
             object4.setProperty("x", num);
             QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-            
+
             // kill the setter
             object4.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
             QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: property 'foo' has a getter but no setter");
             object4.setProperty("foo", str);
-            
+
             // getter should still work
             QEXPECT_FAIL("", "Getter should still work", Continue);
             QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-            
+
             // kill the getter too
             object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
             // now foo is just a regular property
