@@ -2758,6 +2758,16 @@ void tst_QTextDocumentFragment::css_listStyleType()
     QVERIFY(cursor.currentList());
     QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListUpperAlpha);
 
+    doc->setHtml("<ul style=\"list-style-type: upper-roman\"><li>Blah</li></ul>");
+    cursor.movePosition(QTextCursor::End);
+    QVERIFY(cursor.currentList());
+    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListUpperRoman);
+
+    doc->setHtml("<ul style=\"list-style-type: lower-roman\"><li>Blah</li></ul>");
+    cursor.movePosition(QTextCursor::End);
+    QVERIFY(cursor.currentList());
+    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListLowerRoman);
+
     // ignore the unsupported list-style-position inside the list-style shorthand property
     doc->setHtml("<ul style=\"list-style: outside decimal\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);

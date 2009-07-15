@@ -85,6 +85,9 @@ void PluginMessageThrottlerWin::messageThrottleTimerFired(Timer<PluginMessageThr
     if (message == m_back)
         m_back = 0;
 
+    // Protect the PluginView from destruction while calling its window proc.
+    // <rdar://problem/6930280>
+    RefPtr<PluginView> protect(m_pluginView);
     ::CallWindowProc(m_pluginView->pluginWndProc(), message->hWnd, message->msg, message->wParam, message->lParam);
 
     freeMessage(message);

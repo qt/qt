@@ -43,7 +43,7 @@ static const HashTableValue JSCounterTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCounterTable =
+static JSC_CONST_HASHTABLE HashTable JSCounterTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSCounterTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSCounterConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCounterConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCounterConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCounterConstructorTableValues, 0 };
 #else
@@ -95,7 +95,7 @@ static const HashTableValue JSCounterPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCounterPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCounterPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCounterPrototypeTableValues, 0 };
 #else

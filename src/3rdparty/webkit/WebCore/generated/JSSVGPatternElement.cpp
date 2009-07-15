@@ -75,7 +75,7 @@ static const HashTableValue JSSVGPatternElementTableValues[19] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPatternElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPatternElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGPatternElementTableValues, 0 };
 #else
@@ -91,7 +91,7 @@ static const HashTableValue JSSVGPatternElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPatternElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPatternElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGPatternElementPrototypeTableValues, 0 };
 #else

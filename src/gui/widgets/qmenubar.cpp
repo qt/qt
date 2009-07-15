@@ -447,10 +447,7 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
         } else {
             const QString s = action->text();
             if(!s.isEmpty()) {
-                const int w = fm.width(s)
-                    - s.count(QLatin1Char('&')) * fm.width(QLatin1Char('&'))
-                    + s.count(QLatin1String("&&")) * fm.width(QLatin1Char('&'));
-                sz = QSize(w, fm.height());
+                sz = fm.size(Qt::TextShowMnemonic, s);
             }
 
             QIcon is = action->icon();

@@ -45,7 +45,7 @@ static const HashTableValue JSHTMLLegendElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLegendElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLegendElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLLegendElementTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSHTMLLegendElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLegendElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLegendElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLLegendElementConstructorTableValues, 0 };
 #else
@@ -97,7 +97,7 @@ static const HashTableValue JSHTMLLegendElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLegendElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLegendElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLLegendElementPrototypeTableValues, 0 };
 #else

@@ -47,7 +47,7 @@ static const HashTableValue JSCSSRuleTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSCSSRuleTableValues, 0 };
 #else
@@ -71,7 +71,7 @@ static const HashTableValue JSCSSRuleConstructorTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSCSSRuleConstructorTableValues, 0 };
 #else
@@ -119,7 +119,7 @@ static const HashTableValue JSCSSRulePrototypeTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSCSSRulePrototypeTableValues, 0 };
 #else

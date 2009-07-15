@@ -28,6 +28,7 @@
 #include "XSSAuditor.h"
 
 #include <wtf/StdLibExtras.h>
+#include <wtf/Vector.h>
 
 #include "Console.h"
 #include "CString.h"
@@ -35,6 +36,7 @@
 #include "DOMWindow.h"
 #include "Frame.h"
 #include "KURL.h"
+#include "PreloadScanner.h"
 #include "ResourceResponseBase.h"
 #include "ScriptSourceCode.h"
 #include "Settings.h"
@@ -43,6 +45,11 @@
 using namespace WTF;
 
 namespace WebCore {
+
+static bool isNonNullControlCharacter(UChar c)
+{
+    return (c > '\0' && c < ' ') || c == 127;
+}
 
 XSSAuditor::XSSAuditor(Frame* frame)
     : m_frame(frame)
@@ -64,9 +71,22 @@ bool XSSAuditor::canEvaluate(const String& sourceCode) const
     if (!isEnabled())
         return true;
 
-    if (findInRequest(sourceCode)) {
+    if (findInRequest(sourceCode, false, true, false)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
-        m_frame->domWindow()->console()->addMessage(JSMessageSource, ErrorMessageLevel, consoleMessage, 1, String());
+        m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
+        return false;
+    }
+    return true;
+}
+
+bool XSSAuditor::canEvaluateJavaScriptURL(const String& code) const
+{
+    if (!isEnabled())
+        return true;
+
+    if (findInRequest(code, false, false, true, true)) {
+        DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
+        m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
     }
     return true;
@@ -77,17 +97,22 @@ bool XSSAuditor::canCreateInlineEventListener(const String&, const String& code)
     if (!isEnabled())
         return true;
 
-    return canEvaluate(code);
+    if (findInRequest(code)) {
+        DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
+        m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
+        return false;
+    }
+    return true;
 }
 
-bool XSSAuditor::canLoadExternalScriptFromSrc(const String& url) const
+bool XSSAuditor::canLoadExternalScriptFromSrc(const String& context, const String& url) const
 {
     if (!isEnabled())
         return true;
 
-    if (findInRequest(url)) {
+    if (findInRequest(context + url)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
-        m_frame->domWindow()->console()->addMessage(JSMessageSource, ErrorMessageLevel, consoleMessage, 1, String());
+        m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
     }
     return true;
@@ -98,44 +123,112 @@ bool XSSAuditor::canLoadObject(const String& url) const
     if (!isEnabled())
         return true;
 
-    if (findInRequest(url)) {
+    if (findInRequest(url, false, false)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request"));
-        m_frame->domWindow()->console()->addMessage(OtherMessageSource, ErrorMessageLevel, consoleMessage, 1, String());
+        m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
     }
     return true;
 }
 
-String XSSAuditor::decodeURL(const String& str, const TextEncoding& encoding, bool allowControlCharacters)
+bool XSSAuditor::canSetBaseElementURL(const String& url) const
+{
+    if (!isEnabled())
+        return true;
+    
+    KURL baseElementURL(m_frame->document()->url(), url);
+    if (m_frame->document()->url().host() != baseElementURL.host() && findInRequest(url)) {
+        DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request"));
+        m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
+        return false;
+    }
+    return true;
+}
+
+String XSSAuditor::decodeURL(const String& str, const TextEncoding& encoding, bool allowNullCharacters,
+                             bool allowNonNullControlCharacters, bool decodeHTMLentities, bool leaveUndecodableHTMLEntitiesUntouched)
 {
     String result;
     String url = str;
 
     url.replace('+', ' ');
     result = decodeURLEscapeSequences(url);
-    if (!allowControlCharacters)
-        result.removeCharacters(&isControlCharacter);
-    result = encoding.decode(result.utf8().data(), result.length());
-    if (!allowControlCharacters)
-        result.removeCharacters(&isControlCharacter);
+    String decodedResult = encoding.decode(result.utf8().data(), result.length());
+    if (!decodedResult.isEmpty())
+        result = decodedResult;
+    if (decodeHTMLentities)
+        result = decodeHTMLEntities(result, leaveUndecodableHTMLEntitiesUntouched);
+    if (!allowNullCharacters)
+        result = StringImpl::createStrippingNullCharacters(result.characters(), result.length());
+    if (!allowNonNullControlCharacters) {
+        decodedResult = result.removeCharacters(&isNonNullControlCharacter);
+        if (!decodedResult.isEmpty())
+            result = decodedResult;
+    }
     return result;
 }
 
-bool XSSAuditor::findInRequest(const String& string) const
+String XSSAuditor::decodeHTMLEntities(const String& str, bool leaveUndecodableHTMLEntitiesUntouched)
+{
+    SegmentedString source(str);
+    SegmentedString sourceShadow;
+    Vector<UChar> result;
+    
+    while (!source.isEmpty()) {
+        UChar cc = *source;
+        source.advance();
+        
+        if (cc != '&') {
+            result.append(cc);
+            continue;
+        }
+        
+        if (leaveUndecodableHTMLEntitiesUntouched)
+            sourceShadow = source;
+        bool notEnoughCharacters = false;
+        unsigned entity = PreloadScanner::consumeEntity(source, notEnoughCharacters);
+        // We ignore notEnoughCharacters because we might as well use this loop
+        // to copy the remaining characters into |result|.
+
+        if (entity > 0xFFFF) {
+            result.append(U16_LEAD(entity));
+            result.append(U16_TRAIL(entity));
+        } else if (!leaveUndecodableHTMLEntitiesUntouched || entity != 0xFFFD){
+            result.append(entity);
+        } else {
+            result.append('&');
+            if (leaveUndecodableHTMLEntitiesUntouched)
+                source = sourceShadow;
+        }
+    }
+    
+    return String::adopt(result);
+}
+
+bool XSSAuditor::findInRequest(const String& string, bool matchNullCharacters, bool matchNonNullControlCharacters,
+                               bool decodeHTMLentities, bool leaveUndecodableHTMLEntitiesUntouched) const
 {
     bool result = false;
     Frame* parentFrame = m_frame->tree()->parent();
     if (parentFrame && m_frame->document()->url() == blankURL())
-        result = findInRequest(parentFrame, string);
+        result = findInRequest(parentFrame, string, matchNullCharacters, matchNonNullControlCharacters, 
+                               decodeHTMLentities, leaveUndecodableHTMLEntitiesUntouched);
     if (!result)
-        result = findInRequest(m_frame, string);
+        result = findInRequest(m_frame, string, matchNullCharacters, matchNonNullControlCharacters, 
+                               decodeHTMLentities, leaveUndecodableHTMLEntitiesUntouched);
     return result;
 }
 
-bool XSSAuditor::findInRequest(Frame* frame, const String& string) const
+bool XSSAuditor::findInRequest(Frame* frame, const String& string, bool matchNullCharacters, bool matchNonNullControlCharacters,
+                               bool decodeHTMLentities, bool leaveUndecodableHTMLEntitiesUntouched) const
 {
     ASSERT(frame->document());
     String pageURL = frame->document()->url().string();
+
+    if (!frame->document()->decoder()) {
+        // Note, JavaScript URLs do not have a charset.
+        return false;
+    }
 
     if (protocolIs(pageURL, "data"))
         return false;
@@ -145,7 +238,8 @@ bool XSSAuditor::findInRequest(Frame* frame, const String& string) const
 
     if (string.length() < pageURL.length()) {
         // The string can actually fit inside the pageURL.
-        String decodedPageURL = decodeURL(pageURL, frame->document()->decoder()->encoding());
+        String decodedPageURL = decodeURL(pageURL, frame->document()->decoder()->encoding(), matchNullCharacters,
+                                          matchNonNullControlCharacters, decodeHTMLentities, leaveUndecodableHTMLEntitiesUntouched);
         if (decodedPageURL.find(string, 0, false) != -1)
            return true;  // We've found the smoking gun.
     }
@@ -158,7 +252,8 @@ bool XSSAuditor::findInRequest(Frame* frame, const String& string) const
             // the url-encoded POST data because the length of the url-decoded
             // code is less than or equal to the length of the url-encoded
             // string.
-            String decodedFormData = decodeURL(formData, frame->document()->decoder()->encoding());
+            String decodedFormData = decodeURL(formData, frame->document()->decoder()->encoding(), matchNullCharacters,
+                                               matchNonNullControlCharacters, decodeHTMLentities, leaveUndecodableHTMLEntitiesUntouched);
             if (decodedFormData.find(string, 0, false) != -1)
                 return true;  // We found the string in the POST data.
         }

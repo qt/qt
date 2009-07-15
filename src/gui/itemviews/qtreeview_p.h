@@ -89,6 +89,8 @@ public:
     ~QTreeViewPrivate() {}
     void initialize();
 
+    QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
+
 #ifndef QT_NO_ANIMATION
     struct AnimatedOperation : public QVariantAnimation
     {

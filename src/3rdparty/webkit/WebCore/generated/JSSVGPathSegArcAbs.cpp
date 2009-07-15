@@ -48,7 +48,7 @@ static const HashTableValue JSSVGPathSegArcAbsTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegArcAbsTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGPathSegArcAbsTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSSVGPathSegArcAbsPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegArcAbsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcAbsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegArcAbsPrototypeTableValues, 0 };
 #else

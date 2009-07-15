@@ -56,8 +56,9 @@
 TestLUpdate::TestLUpdate()
 {
     childProc = 0;
-    m_cmdLupdate = QLatin1String("lupdate");
-    m_cmdQMake = QLatin1String("qmake");
+    QString binPath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    m_cmdLupdate = binPath + QLatin1String("/lupdate");
+    m_cmdQMake = binPath + QLatin1String("/qmake");
 }
 
 TestLUpdate::~TestLUpdate()

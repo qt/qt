@@ -50,7 +50,7 @@ static const HashTableValue JSKeyboardEventTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSKeyboardEventTable =
+static JSC_CONST_HASHTABLE HashTable JSKeyboardEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSKeyboardEventTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSKeyboardEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSKeyboardEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSKeyboardEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSKeyboardEventConstructorTableValues, 0 };
 #else
@@ -103,7 +103,7 @@ static const HashTableValue JSKeyboardEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSKeyboardEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSKeyboardEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSKeyboardEventPrototypeTableValues, 0 };
 #else

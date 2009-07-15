@@ -64,7 +64,7 @@ static const HashTableValue JSWebKitCSSMatrixTableValues[23] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSMatrixTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSMatrixTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSWebKitCSSMatrixTableValues, 0 };
 #else
@@ -86,7 +86,7 @@ static const HashTableValue JSWebKitCSSMatrixPrototypeTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSMatrixPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSMatrixPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSWebKitCSSMatrixPrototypeTableValues, 0 };
 #else

@@ -66,10 +66,9 @@ QStringList QVr41xxKbdDriver::keys() const
 QWSKeyboardHandler* QVr41xxKbdDriver::create(const QString &driver,
                                              const QString &device)
 {
-    Q_UNUSED(device);
     if (driver.compare(QLatin1String("VR41xx"), Qt::CaseInsensitive))
         return 0;
-    return new QWSVr41xxKeyboardHandler(driver);
+    return new QWSVr41xxKeyboardHandler(device);
 }
 
 Q_EXPORT_PLUGIN2(qwsvr41xxkbddriver, QVr41xxKbdDriver)

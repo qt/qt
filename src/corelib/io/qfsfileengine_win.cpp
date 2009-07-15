@@ -588,28 +588,28 @@ qint64 QFSFileEnginePrivate::nativePos() const
     if (fileHandle == INVALID_HANDLE_VALUE)
         return 0;
 
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     QFSFileEnginePrivate::resolveLibs();
     if (!ptrSetFilePointerEx) {
 #endif
-        DWORD newFilePointer = SetFilePointer(fileHandle, 0, NULL, FILE_CURRENT);
-        if (newFilePointer == 0xFFFFFFFF) {
+        LARGE_INTEGER filepos;
+        filepos.HighPart = 0;
+        DWORD newFilePointer = SetFilePointer(fileHandle, 0, &filepos.HighPart, FILE_CURRENT);
+        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
             thatQ->setError(QFile::UnspecifiedError, qt_error_string());
             return 0;
         }
 
-        // Note: returns <4GB; does not work with large files. This is the
-        // case for MOC, UIC, qmake and other bootstrapped tools, and for
-        // Win9x/ME.
-        return qint64(newFilePointer);
-#if !defined(QT_NO_LIBRARY)
+        // Note: This is the case for MOC, UIC, qmake and other
+        //       bootstrapped tools, and for Windows CE.
+        filepos.LowPart = newFilePointer;
+        return filepos.QuadPart;
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     }
 
-    // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
-    offset.LowPart = 0;
-    offset.HighPart = 0;
+    offset.QuadPart = 0;
     if (!ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return 0;
@@ -632,28 +632,27 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
         return seekFdFh(pos);
     }
 
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     QFSFileEnginePrivate::resolveLibs();
     if (!ptrSetFilePointerEx) {
 #endif
-        LONG seekToPos = LONG(pos); // <- lossy
-        DWORD newFilePointer = SetFilePointer(fileHandle, seekToPos, NULL, FILE_BEGIN);
-        if (newFilePointer == 0xFFFFFFFF) {
-            thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+        DWORD newFilePointer;
+        LARGE_INTEGER *li = reinterpret_cast<LARGE_INTEGER*>(&pos);
+        newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
+        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
+            thatQ->setError(QFile::PositionError, qt_error_string());
             return false;
         }
 
-        // Note: does not work with large files. This is the case for MOC,
-        // UIC, qmake and other bootstrapped tools, and for Win9x/ME.
+        // Note: This is the case for MOC, UIC, qmake and other
+        //       bootstrapped tools, and for Windows CE.
         return true;
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
     }
 
-    // This approach supports large files.
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
-    offset.LowPart = (unsigned int)(quint64(pos) & Q_UINT64_C(0xffffffff));
-    offset.HighPart = (unsigned int)((quint64(pos) >> 32) & Q_UINT64_C(0xffffffff));
+    offset.QuadPart = pos;
     if (ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN) == 0) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return false;

@@ -109,7 +109,8 @@ public:
         NoFlag = 0,
         AncestorHandlesChildEvents = 0x1,
         AncestorClipsChildren = 0x2,
-        AncestorIgnoresTransformations = 0x4
+        AncestorIgnoresTransformations = 0x4,
+        AncestorFiltersChildEvents = 0x8
     };
 
     inline QGraphicsItemPrivate()
@@ -157,6 +158,7 @@ public:
         ignoreOpacity(0),
         acceptTouchEvents(0),
         acceptedTouchBeginEvent(0),
+        filtersDescendantEvents(0),
         sceneTransformTranslateOnly(0),
         globalStackingOrder(-1),
         q_ptr(0)
@@ -421,7 +423,7 @@ public:
     quint32 handlesChildEvents : 1;
     quint32 itemDiscovered : 1;
     quint32 hasCursor : 1;
-    quint32 ancestorFlags : 3;
+    quint32 ancestorFlags : 4;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
     quint32 isWidget : 1;
@@ -433,13 +435,13 @@ public:
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
-    quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 13;
+    quint32 fullUpdatePending : 1;
+    quint32 flags : 12;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 dirtySceneTransform  : 1;
+    quint32 dirtySceneTransform : 1;
     quint32 geometryChanged : 1;
     quint32 inDestructor : 1;
     quint32 isObject : 1;
@@ -447,8 +449,9 @@ public:
     quint32 ignoreOpacity : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
+    quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
-    quint32 unused : 8; // feel free to use
+    quint32 unused : 7; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
@@ -502,6 +505,23 @@ struct QGraphicsItemPrivate::TransformData {
         return x;
     }
 };
+
+/*!
+    \internal
+*/
+inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Return true if sibling item1 is on top of item2.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr;
+    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
+    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
+    if (f1 != f2)
+        return f2;
+    if (d1->z != d2->z)
+        return d1->z > d2->z;
+    return d1->siblingIndex > d2->siblingIndex;
+}
 
 /*!
     \internal

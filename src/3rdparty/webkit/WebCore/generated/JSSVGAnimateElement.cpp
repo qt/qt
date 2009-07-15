@@ -40,7 +40,7 @@ static const HashTableValue JSSVGAnimateElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimateElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimateElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimateElementPrototypeTableValues, 0 };
 #else

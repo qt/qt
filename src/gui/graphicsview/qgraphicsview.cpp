@@ -821,13 +821,9 @@ void QGraphicsViewPrivate::processPendingUpdates()
     if (!scene)
         return;
 
-    if (fullUpdatePending) { // We have already called viewport->update()
-        dirtyBoundingRect = QRect();
-        dirtyRegion = QRegion();
-        return;
-    }
-
-    if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
+    if (fullUpdatePending) {
+        viewport->update();
+    } else if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
             viewport->update(dirtyBoundingRect.adjusted(-1, -1, 1, 1));
         else
@@ -971,7 +967,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // rect does not take into account untransformable items.
     const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 1, 1))
                                             .boundingRect();
-    if (exposedRegionSceneBounds.contains(scene->d_func()->growingItemsBoundingRect)) {
+    if (exposedRegionSceneBounds.contains(scene->sceneRect())) {
         Q_ASSERT(allItems);
         *allItems = true;
 

@@ -41,7 +41,7 @@ static const HashTableValue JSSVGAnimatedBooleanTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedBooleanTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedBooleanTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedBooleanTableValues, 0 };
 #else
@@ -55,7 +55,7 @@ static const HashTableValue JSSVGAnimatedBooleanPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedBooleanPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedBooleanPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedBooleanPrototypeTableValues, 0 };
 #else

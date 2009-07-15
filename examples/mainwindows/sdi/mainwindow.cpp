@@ -266,7 +266,7 @@ void MainWindow::createStatusBar()
 
 void MainWindow::readSettings()
 {
-    QSettings settings("Trolltech", "SDI Example");
+    QSettings settings;
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
     move(pos);
@@ -275,7 +275,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-    QSettings settings("Trolltech", "SDI Example");
+    QSettings settings;
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 }
@@ -352,9 +352,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
     textEdit->document()->setModified(false);
     setWindowModified(false);
-
-    setWindowTitle(tr("%1[*] - %2").arg(strippedName(curFile))
-                                       .arg(tr("SDI")));
+    setWindowFilePath(curFile);
 }
 
 QString MainWindow::strippedName(const QString &fullFileName)

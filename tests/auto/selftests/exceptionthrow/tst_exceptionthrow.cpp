@@ -66,4 +66,4 @@ void tst_Exception::throwException() const
 
 QTEST_MAIN(tst_Exception)
 
-#include "tst_exception.moc"
+#include "tst_exceptionthrow.moc"

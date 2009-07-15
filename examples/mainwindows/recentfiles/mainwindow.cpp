@@ -54,7 +54,7 @@ MainWindow::MainWindow()
     createMenus();
     (void)statusBar();
 
-    setWindowTitle(tr("Recent Files"));
+    setWindowFilePath(QString());
     resize(400, 300);
 }
 
@@ -209,13 +209,9 @@ void MainWindow::saveFile(const QString &fileName)
 void MainWindow::setCurrentFile(const QString &fileName)
 {
     curFile = fileName;
-    if (curFile.isEmpty())
-        setWindowTitle(tr("Recent Files"));
-    else
-        setWindowTitle(tr("%1 - %2").arg(strippedName(curFile))
-                                    .arg(tr("Recent Files")));
+    setWindowFilePath(curFile);
 
-    QSettings settings("Trolltech", "Recent Files Example");
+    QSettings settings;
     QStringList files = settings.value("recentFileList").toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
@@ -233,7 +229,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
 void MainWindow::updateRecentFileActions()
 {
-    QSettings settings("Trolltech", "Recent Files Example");
+    QSettings settings;
     QStringList files = settings.value("recentFileList").toStringList();
 
     int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);

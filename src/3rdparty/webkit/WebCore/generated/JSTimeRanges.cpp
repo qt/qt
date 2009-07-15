@@ -40,7 +40,7 @@ static const HashTableValue JSTimeRangesTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTimeRangesTable =
+static JSC_CONST_HASHTABLE HashTable JSTimeRangesTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTimeRangesTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSTimeRangesPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTimeRangesPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTimeRangesPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSTimeRangesPrototypeTableValues, 0 };
 #else

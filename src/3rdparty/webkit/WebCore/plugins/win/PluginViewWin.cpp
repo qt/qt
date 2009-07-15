@@ -110,11 +110,6 @@ static BYTE* endPaint;
 
 HDC WINAPI PluginView::hookedBeginPaint(HWND hWnd, PAINTSTRUCT* lpPaint)
 {
-#if (COMPILER(MINGW))
-    Q_UNUSED(hWnd)
-    Q_UNUSED(lpPaint)
-    return 0;
-#else     
     PluginView* pluginView = reinterpret_cast<PluginView*>(GetProp(hWnd, kWebPluginViewProperty));
     if (pluginView && pluginView->m_wmPrintHDC) {
         // We're secretly handling WM_PRINTCLIENT, so set up the PAINTSTRUCT so
@@ -125,6 +120,17 @@ HDC WINAPI PluginView::hookedBeginPaint(HWND hWnd, PAINTSTRUCT* lpPaint)
         return pluginView->m_wmPrintHDC;
     }
 
+#if COMPILER(GCC)
+    HDC result;
+    asm ("push    %2\n"
+         "push    %3\n"
+         "call    *%4\n"
+         : "=a" (result)
+         : "a" (beginPaintSysCall), "g" (lpPaint), "g" (hWnd), "m" (*beginPaint)
+         : "memory"
+        );
+    return result;
+#else
     // Call through to the original BeginPaint.
     __asm   mov     eax, beginPaintSysCall
     __asm   push    lpPaint
@@ -135,11 +141,6 @@ HDC WINAPI PluginView::hookedBeginPaint(HWND hWnd, PAINTSTRUCT* lpPaint)
 
 BOOL WINAPI PluginView::hookedEndPaint(HWND hWnd, const PAINTSTRUCT* lpPaint)
 {
-#if (COMPILER(MINGW))
-    Q_UNUSED(hWnd)
-    Q_UNUSED(lpPaint)
-    return FALSE;
-#else      
     PluginView* pluginView = reinterpret_cast<PluginView*>(GetProp(hWnd, kWebPluginViewProperty));
     if (pluginView && pluginView->m_wmPrintHDC) {
         // We're secretly handling WM_PRINTCLIENT, so we don't have to do any
@@ -147,15 +148,24 @@ BOOL WINAPI PluginView::hookedEndPaint(HWND hWnd, const PAINTSTRUCT* lpPaint)
         return TRUE;
     }
 
+#if COMPILER(GCC)
+    BOOL result;
+    asm ("push   %2\n"
+         "push   %3\n"
+         "call   *%4\n"
+         : "=a" (result)
+         : "a" (endPaintSysCall), "g" (lpPaint), "g" (hWnd), "g" (*endPaint)
+        );
+    return result;
+#else
     // Call through to the original EndPaint.
     __asm   mov     eax, endPaintSysCall
     __asm   push    lpPaint
     __asm   push    hWnd
     __asm   call    endPaint
-#endif      
+#endif
 }
 
-#if (!COMPILER(MINGW))
 static void hook(const char* module, const char* proc, unsigned& sysCallID, BYTE*& pProc, const void* pNewProc)
 {
     // See <http://www.fengyuan.com/article/wmprint.html> for an explanation of
@@ -163,7 +173,7 @@ static void hook(const char* module, const char* proc, unsigned& sysCallID, BYTE
 
     HINSTANCE hMod = GetModuleHandleA(module);
 
-    pProc = reinterpret_cast<BYTE*>(GetProcAddress(hMod, proc));
+    pProc = reinterpret_cast<BYTE*>(reinterpret_cast<ptrdiff_t>(GetProcAddress(hMod, proc)));
 
     if (pProc[0] != 0xB8)
         return;
@@ -193,10 +203,10 @@ static void setUpOffscreenPaintingHooks(HDC (WINAPI*hookedBeginPaint)(HWND, PAIN
     // we hook into BeginPaint/EndPaint to allow their normal WM_PAINT handling
     // to draw into a given HDC. Note that this hooking affects the entire
     // process.
-    hook("user32.dll", "BeginPaint", beginPaintSysCall, beginPaint, hookedBeginPaint);
-    hook("user32.dll", "EndPaint", endPaintSysCall, endPaint, hookedEndPaint);
+    hook("user32.dll", "BeginPaint", beginPaintSysCall, beginPaint, reinterpret_cast<const void *>(reinterpret_cast<ptrdiff_t>(hookedBeginPaint)));
+    hook("user32.dll", "EndPaint", endPaintSysCall, endPaint, reinterpret_cast<const void *>(reinterpret_cast<ptrdiff_t>(hookedEndPaint)));
+
 }
-#endif
 
 static bool registerPluginView()
 {
@@ -940,9 +950,8 @@ void PluginView::init()
 
     if (m_isWindowed) {
         registerPluginView();
-#if (!COMPILER(MINGW))       
         setUpOffscreenPaintingHooks(hookedBeginPaint, hookedEndPaint);
-#endif
+
         DWORD flags = WS_CHILD;
         if (isSelfVisible())
             flags |= WS_VISIBLE;

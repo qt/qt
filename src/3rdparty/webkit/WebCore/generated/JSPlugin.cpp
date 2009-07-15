@@ -50,7 +50,7 @@ static const HashTableValue JSPluginTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPluginTable =
+static JSC_CONST_HASHTABLE HashTable JSPluginTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPluginTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSPluginConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPluginConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSPluginConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSPluginConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSPluginPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPluginPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSPluginPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSPluginPrototypeTableValues, 0 };
 #else

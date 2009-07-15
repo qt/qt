@@ -69,7 +69,7 @@ static const HashTableValue JSCanvasRenderingContext2DTableValues[18] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasRenderingContext2DTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 8191, JSCanvasRenderingContext2DTableValues, 0 };
 #else
@@ -83,7 +83,7 @@ static const HashTableValue JSCanvasRenderingContext2DConstructorTableValues[1] 
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasRenderingContext2DConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCanvasRenderingContext2DConstructorTableValues, 0 };
 #else
@@ -165,7 +165,7 @@ static const HashTableValue JSCanvasRenderingContext2DPrototypeTableValues[45] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasRenderingContext2DPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 4095, JSCanvasRenderingContext2DPrototypeTableValues, 0 };
 #else

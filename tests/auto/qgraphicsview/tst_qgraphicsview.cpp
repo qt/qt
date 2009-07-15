@@ -3311,7 +3311,9 @@ void tst_QGraphicsView::mouseTracking2()
 
     EventSpy spy(&scene, QEvent::GraphicsSceneMouseMove);
     QCOMPARE(spy.count(), 0);
-    sendMouseMove(view.viewport(), view.viewport()->rect().center());
+    QMouseEvent event(QEvent::MouseMove,view.viewport()->rect().center(), Qt::NoButton,
+                      Qt::MouseButtons(Qt::NoButton), 0);
+    QApplication::sendEvent(view.viewport(), &event);
     QCOMPARE(spy.count(), 1);
 }
 

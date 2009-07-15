@@ -1239,9 +1239,8 @@ void VcprojGenerator::initDeploymentTool()
     foreach(QString item, project->values("DEPLOYMENT")) {
         // get item.path
         QString devicePath = project->first(item + ".path");
-        // if the path does not exist, skip it
         if (devicePath.isEmpty())
-            continue;
+            devicePath = targetPath;
         // check if item.path is relative (! either /,\ or %)
         if (!(devicePath.at(0) == QLatin1Char('/')
             || devicePath.at(0) == QLatin1Char('\\')

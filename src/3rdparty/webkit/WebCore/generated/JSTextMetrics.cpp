@@ -40,7 +40,7 @@ static const HashTableValue JSTextMetricsTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextMetricsTable =
+static JSC_CONST_HASHTABLE HashTable JSTextMetricsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSTextMetricsTableValues, 0 };
 #else
@@ -54,7 +54,7 @@ static const HashTableValue JSTextMetricsConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextMetricsConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSTextMetricsConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextMetricsConstructorTableValues, 0 };
 #else
@@ -92,7 +92,7 @@ static const HashTableValue JSTextMetricsPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextMetricsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTextMetricsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextMetricsPrototypeTableValues, 0 };
 #else

@@ -357,6 +357,9 @@ void QGraphicsScenePrivate::_q_emitUpdated()
         updateAll = false;
         for (int i = 0; i < views.size(); ++i)
             views.at(i)->d_func()->processPendingUpdates();
+        // It's important that we update all views before we dispatch, hence two for-loops.
+        for (int i = 0; i < views.size(); ++i)
+            views.at(i)->d_func()->dispatchPendingUpdateRequests();
         return;
     }
 
@@ -447,13 +450,8 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     }
 
     // Immediately dispatch all pending update requests on the views.
-    for (int i = 0; i < views.size(); ++i) {
-        QWidget *viewport = views.at(i)->d_func()->viewport;
-        if (qt_widget_private(viewport)->paintOnScreen())
-            QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
-        else
-            QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
-    }
+    for (int i = 0; i < views.size(); ++i)
+        views.at(i)->d_func()->dispatchPendingUpdateRequests();
 }
 
 /*!
@@ -853,6 +851,24 @@ void QGraphicsScenePrivate::removeSceneEventFilter(QGraphicsItem *watched, QGrap
 }
 
 /*!
+  \internal
+*/
+bool QGraphicsScenePrivate::filterDescendantEvent(QGraphicsItem *item, QEvent *event)
+{
+    if (item && (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorFiltersChildEvents)) {
+        QGraphicsItem *parent = item->parentItem();
+        while (parent) {
+            if (parent->d_ptr->filtersDescendantEvents && parent->sceneEventFilter(item, event))
+                return true;
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorFiltersChildEvents))
+                return false;
+            parent = parent->parentItem();
+        }
+    }
+    return false;
+}
+
+/*!
     \internal
 */
 bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
@@ -884,7 +900,9 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
     if (filterEvent(item, event))
         return false;
-    return (item && item->isEnabled()) ? item->sceneEvent(event) : false;
+    if (filterDescendantEvent(item, event))
+        return false;
+    return (item && item->isEnabled() ? item->sceneEvent(event) : false);
 }
 
 /*!
@@ -2730,7 +2748,7 @@ void QGraphicsScene::update(const QRectF &rect)
         if (directUpdates) {
             // Update all views.
             for (int i = 0; i < d->views.size(); ++i)
-                d->views.at(i)->d_func()->updateAll();
+                d->views.at(i)->d_func()->fullUpdatePending = true;
         }
     } else {
         if (directUpdates) {

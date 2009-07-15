@@ -43,7 +43,7 @@ static const HashTableValue JSProgressEventTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSProgressEventTable =
+static JSC_CONST_HASHTABLE HashTable JSProgressEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSProgressEventTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSProgressEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSProgressEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSProgressEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSProgressEventConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSProgressEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSProgressEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSProgressEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSProgressEventPrototypeTableValues, 0 };
 #else

@@ -47,7 +47,7 @@
 #include <qtemporaryfile.h>
 #include <qcoreapplication.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <shlobj.h>
 #if !defined(Q_OS_WINCE)
 #  include <intshcut.h>

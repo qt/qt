@@ -72,7 +72,7 @@ static const HashTableValue JSSVGCircleElementTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGCircleElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGCircleElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGCircleElementTableValues, 0 };
 #else
@@ -92,7 +92,7 @@ static const HashTableValue JSSVGCircleElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGCircleElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGCircleElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGCircleElementPrototypeTableValues, 0 };
 #else

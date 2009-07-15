@@ -45,7 +45,7 @@ static const HashTableValue JSClientRectListTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClientRectListTable =
+static JSC_CONST_HASHTABLE HashTable JSClientRectListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSClientRectListTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSClientRectListConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClientRectListConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSClientRectListConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSClientRectListConstructorTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSClientRectListPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSClientRectListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSClientRectListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSClientRectListPrototypeTableValues, 0 };
 #else
