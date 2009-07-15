@@ -439,7 +439,7 @@ void Configure::parseCmdLine()
     }
 
     for( ; i<configCmdLine.size(); ++i ) {
-        bool continueElse = false;
+        bool continueElse[] = {false, false};
         if( configCmdLine.at(i) == "-help"
             || configCmdLine.at(i) == "-h"
             || configCmdLine.at(i) == "-?" )
@@ -687,8 +687,8 @@ void Configure::parseCmdLine()
 
         // Work around compiler nesting limitation
         else
-            continueElse = true;
-        if (!continueElse) {
+            continueElse[1] = true;
+        if (!continueElse[1]) {
         }
 
         // OpenGL Support -------------------------------------------
@@ -907,8 +907,8 @@ void Configure::parseCmdLine()
 
         // Work around compiler nesting limitation
         else
-            continueElse = true;
-        if (!continueElse) {
+            continueElse[0] = true;
+        if (!continueElse[0]) {
         }
 
         else if( configCmdLine.at(i) == "-internal" )
