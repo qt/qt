@@ -909,7 +909,6 @@ void tst_QScriptExtQObject::getSetChildren()
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
 
-    QScriptValue mobj = m_engine->evaluate("myObject");
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::ReadOnly);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::Undeletable);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::SkipInEnumeration);
