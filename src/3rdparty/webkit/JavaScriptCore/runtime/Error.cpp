@@ -83,7 +83,7 @@ JSObject* Error::create(ExecState* exec, ErrorType type, const UString& message,
     JSObject* error = construct(exec, constructor, constructType, constructData, args);
 
     if (lineNumber != -1)
-        error->putWithAttributes(exec, Identifier(exec, "line"), jsNumber(exec, lineNumber), ReadOnly | DontDelete);
+        error->putWithAttributes(exec, Identifier(exec, JSC_ERROR_LINENUMBER_PROPERTYNAME), jsNumber(exec, lineNumber), ReadOnly | DontDelete);
     if (sourceID != -1)
         error->putWithAttributes(exec, Identifier(exec, "sourceId"), jsNumber(exec, sourceID), ReadOnly | DontDelete);
     if (!sourceURL.isNull())
