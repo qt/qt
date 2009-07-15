@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmlvme_p.h"
+#include "qmlcompiler_p.h"
 #include <private/qfxperf_p.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
@@ -49,7 +50,6 @@
 #include <private/qmlcustomparser_p.h>
 #include <QStack>
 #include <QWidget>
-#include <private/qmlcompiledcomponent_p.h>
 #include <QColor>
 #include <QPointF>
 #include <QSizeF>
@@ -98,7 +98,7 @@ struct ListInstance
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
-QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, int count)
+QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
 {
     QStack<QObject *> stack;
 
@@ -117,7 +117,7 @@ void QmlVME::runDeferred(QObject *object)
 
     QmlContext *ctxt = data->context;
     ctxt->activate();
-    QmlCompiledComponent *comp = data->deferredComponent;
+    QmlCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
     QStack<QObject *> stack;
@@ -127,7 +127,7 @@ void QmlVME::runDeferred(QObject *object)
     ctxt->deactivate();
 }
 
-QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComponent *comp, int start, int count)
+QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
 {
     // XXX - All instances of QmlContext::activeContext() here should be 
     // replaced with the use of ctxt.  However, this cannot be done until 
@@ -137,10 +137,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
     // sub-instances on that type.
     Q_ASSERT(comp);
     Q_ASSERT(ctxt);
-    const QList<QmlCompiledComponent::TypeReference> &types = comp->types;
+    const QList<QmlCompiledData::TypeReference> &types = comp->types;
     const QList<QString> &primitives = comp->primitives;
     const QList<QByteArray> &datas = comp->datas;
-    const QList<QMetaObject *> &synthesizedMetaObjects = comp->synthesizedMetaObjects;;
     const QList<QmlCompiledData::CustomTypeData> &customTypeData = comp->customTypeData;
     const QList<int> &intData = comp->intData;
     const QList<float> &floatData = comp->floatData;
@@ -237,8 +236,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 const QmlVMEMetaData *data = (const QmlVMEMetaData *)datas.at(instr.storeMeta.aliasData).constData();
 
                 (void)new QmlVMEMetaObject(target, &mo, data, comp);
-
-                // new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, (const QmlVMEMetaData *)datas.at(instr.storeMeta.aliasData).constData(), comp);
             }
             break;
 
@@ -464,7 +461,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
             {
                 QObject *target = stack.top();
                 void *a[1];
-                QmlCompiledComponent::CustomTypeData data = customTypeData.at(instr.assignCustomType.valueIndex);
+                QmlCompiledData::CustomTypeData data = customTypeData.at(instr.assignCustomType.valueIndex);
                 const QString &primitive = primitives.at(data.index);
                 QmlMetaType::StringConverter converter = 
                     QmlMetaType::customStringConverter(data.type);
@@ -776,7 +773,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
             break;
 
         default:
-            qFatal("QmlCompiledComponent: Internal error - unknown instruction %d", instr.type);
+            qFatal("QmlCompiledData: Internal error - unknown instruction %d", instr.type);
             break;
         }
     }

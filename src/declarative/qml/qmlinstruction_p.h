@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlCompiledComponent;
+class QmlCompiledData;
 class Q_DECLARATIVE_EXPORT QmlInstruction
 {
 public:
@@ -272,7 +272,7 @@ public:
         } defer;
     };
 
-    void dump(QmlCompiledComponent *);
+    void dump(QmlCompiledData *);
 };
 
 QT_END_NAMESPACE

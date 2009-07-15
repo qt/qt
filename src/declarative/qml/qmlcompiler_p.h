@@ -65,15 +65,12 @@ QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlComponent;
-class QmlCompiledComponent;
 class QmlContext;
 
-class QmlCompiledData 
+class QmlCompiledData : public QmlRefCount
 {
 public:
     QmlCompiledData();
-    QmlCompiledData(const QmlCompiledData &other);
-    QmlCompiledData &operator=(const QmlCompiledData &other);
     virtual ~QmlCompiledData();
 
     QByteArray name;
@@ -104,11 +101,14 @@ public:
     QList<int> intData;
     QList<CustomTypeData> customTypeData;
     QList<QByteArray> datas;
-    QList<QMetaObject *> synthesizedMetaObjects;
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
 
+    void dumpInstructions();
 private:
+    void dump(QmlInstruction *, int idx = -1);
+    QmlCompiledData(const QmlCompiledData &other);
+    QmlCompiledData &operator=(const QmlCompiledData &other);
     QByteArray packData;
     friend class QmlCompiler;
     int pack(const char *, size_t);
@@ -127,7 +127,7 @@ class Q_DECLARATIVE_EXPORT QmlCompiler
 public:
     QmlCompiler();
 
-    bool compile(QmlEngine *, QmlCompositeTypeData *, QmlCompiledComponent *);
+    bool compile(QmlEngine *, QmlCompositeTypeData *, QmlCompiledData *);
 
     bool isError() const;
     QList<QmlError> errors() const;
@@ -137,7 +137,7 @@ public:
     static bool isSignalPropertyName(const QByteArray &);
 
 private:
-    void reset(QmlCompiledComponent *, bool);
+    void reset(QmlCompiledData *);
 
     struct BindingContext {
         BindingContext()

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlCompiledComponent;
+class QmlCompiledData;
 class QByteArray;
 class QmlComponentPrivate;
 class QmlEngine;
@@ -102,7 +102,7 @@ protected:
     QmlComponent(QmlComponentPrivate &dd, QObject* parent);
 
 private:
-    QmlComponent(QmlEngine *, QmlCompiledComponent *, int, int, QObject *parent);
+    QmlComponent(QmlEngine *, QmlCompiledData *, int, int, QObject *parent);
 
     friend class QmlVME;
     friend struct QmlCompositeTypeData;

@@ -43,12 +43,14 @@
 #include "qmlengine.h"
 #include "qmlcomponent.h"
 #include "qmlcomponent_p.h"
-#include "qmlcompiledcomponent_p.h"
 #include "qmlcontext.h"
 #include "qmlcontext_p.h"
 #include <private/qobject_p.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 
 int QmlCompiledData::pack(const char *data, size_t size)
 {
@@ -153,30 +155,12 @@ QmlCompiledData::QmlCompiledData()
 {
 }
 
-QmlCompiledData::QmlCompiledData(const QmlCompiledData &other)
-{
-    *this = other;
-}
-
 QmlCompiledData::~QmlCompiledData()
 {
     for (int ii = 0; ii < types.count(); ++ii) {
         if (types.at(ii).ref)
             types.at(ii).ref->release();
     }
-}
-
-QmlCompiledData &QmlCompiledData::operator=(const QmlCompiledData &other)
-{
-    types = other.types;
-    root = other.root;
-    primitives = other.primitives;
-    floatData = other.floatData;
-    intData = other.intData;
-    customTypeData = other.customTypeData;
-    datas = other.datas;
-    bytecode = other.bytecode;
-    return *this;
 }
 
 QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
@@ -205,6 +189,21 @@ const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
         Q_ASSERT(component);
         return &static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
     }
+}
+
+void QmlCompiledData::dumpInstructions()
+{
+    if (!compilerDump())
+        return;
+
+    if (!name.isEmpty())
+        qWarning() << name;
+    qWarning() << "Index\tLine\tOperation\t\tData1\tData2\t\tComments";
+    qWarning() << "-------------------------------------------------------------------------------";
+    for (int ii = 0; ii < bytecode.count(); ++ii) {
+        dump(&bytecode[ii], ii);
+    }
+    qWarning() << "-------------------------------------------------------------------------------";
 }
 
 

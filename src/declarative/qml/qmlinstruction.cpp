@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "private/qmlinstruction_p.h"
-#include "private/qmlcompiledcomponent_p.h"
-#include <QDebug>
+#include "qmlinstruction_p.h"
+#include "qmlcompiler_p.h"
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
+void QmlCompiledData::dump(QmlInstruction *instr, int idx)
 {
     QByteArray lineNumber = QByteArray::number(instr->line);
     if (instr->line == (unsigned short)-1)

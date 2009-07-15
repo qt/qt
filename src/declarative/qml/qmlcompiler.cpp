@@ -52,7 +52,6 @@
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
-#include <private/qmlcompiledcomponent_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qmlengine_p.h>
 #include <qmlengine.h>
@@ -470,7 +469,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
     output->bytecode << instr;
 }
 
-void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
+void QmlCompiler::reset(QmlCompiledData *cc)
 {
     cc->types.clear();
     cc->primitives.clear();
@@ -478,17 +477,12 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     cc->intData.clear();
     cc->customTypeData.clear();
     cc->datas.clear();
-    if (deleteMemory) {
-        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
-            qFree(cc->synthesizedMetaObjects.at(ii));
-    }
-    cc->synthesizedMetaObjects.clear();
     cc->bytecode.clear();
 }
 
 bool QmlCompiler::compile(QmlEngine *engine, 
                           QmlCompositeTypeData *unit,
-                          QmlCompiledComponent *out)
+                          QmlCompiledData *out)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::Compilation> pc;
@@ -496,14 +490,14 @@ bool QmlCompiler::compile(QmlEngine *engine,
     exceptions.clear();
 
     Q_ASSERT(out);
-    reset(out, true);
+    reset(out);
 
     output = out;
 
     // Compile types
     for (int ii = 0; ii < unit->types.count(); ++ii) {
         QmlCompositeTypeData::TypeReference &tref = unit->types[ii];
-        QmlCompiledComponent::TypeReference ref;
+        QmlCompiledData::TypeReference ref;
         if (tref.type)
             ref.type = tref.type;
         else if (tref.unit) {
@@ -516,7 +510,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
                                      unit->data.types().at(ii));
                 exceptions << error;
                 exceptions << ref.component->errors();
-                reset(out, true);
+                reset(out);
                 return false;
             }
             ref.ref = tref.unit;
@@ -534,7 +528,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
     if (!isError()) {
         out->dumpInstructions();
     } else {
-        reset(out, true);
+        reset(out);
     }
 
     output = 0;

@@ -43,7 +43,6 @@
 #include "qmldom_p.h"
 #include "private/qmlcompiler_p.h"
 #include "private/qmlengine_p.h"
-#include "qmlcompiledcomponent_p.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 #include <QtCore/QString>
@@ -165,7 +164,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     d->errors.clear();
     d->imports.clear();
 
-    QmlCompiledComponent component;
+    QmlCompiledData component;
     QmlCompiler compiler;
 
     QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, url);
