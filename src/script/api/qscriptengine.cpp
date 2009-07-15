@@ -999,9 +999,19 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
     if (!object)
         return JSC::jsNull();
     JSC::ExecState* exec = currentFrame;
-    QScriptObject *result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
+    QScript::QObjectData *data = qobjectData(object);
+    bool preferExisting = (options & QScriptEngine::PreferExistingWrapperObject) != 0;
+    QScriptEngine::QObjectWrapOptions opt = options & ~QScriptEngine::PreferExistingWrapperObject;
+    QScriptObject *result = 0;
+    if (preferExisting)
+        result = data->findWrapper(ownership, opt);
+    if (!result) {
+        result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
+        if (preferExisting)
+            data->registerWrapper(result, ownership, opt);
+    }
+    Q_ASSERT(result != 0);
     result->setDelegate(new QScript::QObjectDelegate(object, ownership, options));
-    // ### TODO
     /*if (setDefaultPrototype)*/ {
         const QMetaObject *meta = object->metaObject();
         while (meta) {

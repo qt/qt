@@ -1926,6 +1926,17 @@ void QObjectData::mark()
 {
     if (connectionManager)
         connectionManager->mark();
+    {
+        QList<QScript::QObjectWrapperInfo>::iterator it;
+        for (it = wrappers.begin(); it != wrappers.end(); ) {
+            const QScript::QObjectWrapperInfo &info = *it;
+            if (info.object->marked()) {
+                ++it;
+            } else {
+                it = wrappers.erase(it);
+            }
+        }
+    }
 }
 
 bool QObjectData::addSignalHandler(QObject *sender,
@@ -1949,6 +1960,24 @@ bool QObjectData::removeSignalHandler(QObject *sender,
         return false;
     return connectionManager->removeSignalHandler(
         sender, signalIndex, receiver, slot);
+}
+
+QScriptObject *QObjectData::findWrapper(QScriptEngine::ValueOwnership ownership,
+                                        const QScriptEngine::QObjectWrapOptions &options) const
+{
+    for (int i = 0; i < wrappers.size(); ++i) {
+        const QObjectWrapperInfo &info = wrappers.at(i);
+        if ((info.ownership == ownership) && (info.options == options))
+            return info.object;
+    }
+    return 0;
+}
+
+void QObjectData::registerWrapper(QScriptObject *wrapper,
+                                  QScriptEngine::ValueOwnership ownership,
+                                  const QScriptEngine::QObjectWrapOptions &options)
+{
+    wrappers.append(QObjectWrapperInfo(wrapper, ownership, options));
 }
 
 } // namespace QScript

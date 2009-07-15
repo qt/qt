@@ -105,6 +105,18 @@ public:
 
 class QObjectConnectionManager;
 
+struct QObjectWrapperInfo
+{
+    QObjectWrapperInfo(QScriptObject *obj,
+                       QScriptEngine::ValueOwnership own,
+                       const QScriptEngine::QObjectWrapOptions &opt)
+        : object(obj), ownership(own), options(opt) {}
+
+    QScriptObject *object;
+    QScriptEngine::ValueOwnership ownership;
+    QScriptEngine::QObjectWrapOptions options;
+};
+
 class QObjectData // : public QObjectUserData
 {
 public:
@@ -121,12 +133,18 @@ public:
                              JSC::JSValue receiver,
                              JSC::JSValue slot);
 
+    QScriptObject *findWrapper(QScriptEngine::ValueOwnership ownership,
+                               const QScriptEngine::QObjectWrapOptions &options) const;
+    void registerWrapper(QScriptObject *wrapper,
+                         QScriptEngine::ValueOwnership ownership,
+                         const QScriptEngine::QObjectWrapOptions &options);
+
     void mark();
 
 private:
     QScriptEnginePrivate *engine;
     QScript::QObjectConnectionManager *connectionManager;
-//    QList<QScriptQObjectWrapperInfo> wrappers;
+    QList<QScript::QObjectWrapperInfo> wrappers;
 };
 
 class QtFunction: public JSC::InternalFunction
