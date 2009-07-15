@@ -209,11 +209,11 @@ void QLineGraph::paintEvent(QPaintEvent *)
     drawTime(&p, r);
 }
 
-class CanvasFrameRatePlugin : public QmlDebugClientPlugin
+class CanvasFrameRatePlugin : public QmlDebugClient
 {
 Q_OBJECT
 public:
-    CanvasFrameRatePlugin(QmlDebugClient *client);
+    CanvasFrameRatePlugin(QmlDebugConnection *client);
 
 signals:
     void sample(int, int, int, int, bool);
@@ -227,8 +227,8 @@ private:
     int ld;
 };
 
-CanvasFrameRatePlugin::CanvasFrameRatePlugin(QmlDebugClient *client)
-: QmlDebugClientPlugin(QLatin1String("CanvasFrameRate"), client), la(-1)
+CanvasFrameRatePlugin::CanvasFrameRatePlugin(QmlDebugConnection *client)
+: QmlDebugClient(QLatin1String("CanvasFrameRate"), client), la(-1)
 {
 }
 
@@ -248,7 +248,7 @@ void CanvasFrameRatePlugin::messageReceived(const QByteArray &data)
     ld = d;
 }
 
-CanvasFrameRate::CanvasFrameRate(QmlDebugClient *client, QWidget *parent)
+CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
 : QWidget(parent)
 {
     m_plugin = new CanvasFrameRatePlugin(client);
@@ -300,7 +300,7 @@ void CanvasFrameRate::stateChanged(int s)
 {
     bool checked = s != 0;
 
-    static_cast<QmlDebugClientPlugin *>(m_plugin)->setEnabled(checked);
+    static_cast<QmlDebugClient *>(m_plugin)->setEnabled(checked);
 }
 
 QT_END_NAMESPACE

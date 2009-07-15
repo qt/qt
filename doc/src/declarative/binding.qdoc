@@ -90,7 +90,7 @@ QFxView *view = new QFxView;
 view->setUrl("MyUI.qml");
 
 MyScreen *screen = new MyScreen;
-QmlBindContext *ctxt = view->rootContext();
+QmlContext *ctxt = view->rootContext();
 ctxt->setContextProperty("screen", screen);
 
 view->execute();

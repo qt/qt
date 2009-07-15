@@ -76,6 +76,7 @@ public:
 
     QmlContext *parent;
     QmlEngine *engine;
+    bool isInternal;
 
     QHash<QString, int> propertyNames;
     QList<QVariant> propertyValues;
@@ -110,6 +111,9 @@ public:
 
     QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;
+
+    // Only used for debugging
+    QList<QPointer<QObject> > instances;
 };
 
 QT_END_NAMESPACE

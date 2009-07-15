@@ -117,6 +117,7 @@ public:
     QmlContext *currentBindContext;
     QmlExpression *currentExpression;
     QmlEngine *q;
+    bool isDebugging;
 #ifdef QT_SCRIPTTOOLS_LIB
     QScriptEngineDebugger *debugger;
 #endif
@@ -164,7 +165,7 @@ public:
     mutable QNetworkAccessManager *networkAccessManager;
 
     QmlCompositeTypeManager typeManager;
-    QMap<QString,QString> nameSpacePaths;
+    QStringList fileImportPath;
 
     mutable quint32 uniqueId;
     quint32 getUniqueId() const {

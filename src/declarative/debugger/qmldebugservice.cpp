@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmldebugserver.h"
+#include "qmldebugservice.h"
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
@@ -62,8 +62,8 @@ private slots:
     void readyRead();
 
 private:
-    friend class QmlDebugServerPlugin;
-    friend class QmlDebugServerPluginPrivate;
+    friend class QmlDebugService;
+    friend class QmlDebugServicePrivate;
     QmlDebugServer(int); 
 };
 
@@ -76,15 +76,15 @@ public:
 
     QTcpSocket *connection;
     QPacketProtocol *protocol;
-    QHash<QString, QmlDebugServerPlugin *> plugins;
+    QHash<QString, QmlDebugService *> plugins;
     QStringList enabledPlugins;
 };
 
-class QmlDebugServerPluginPrivate : public QObjectPrivate
+class QmlDebugServicePrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlDebugServerPlugin)
+    Q_DECLARE_PUBLIC(QmlDebugService)
 public:
-    QmlDebugServerPluginPrivate();
+    QmlDebugServicePrivate();
 
     QString name;
     QmlDebugServer *server;
@@ -184,7 +184,7 @@ void QmlDebugServer::readyRead()
                 // Enable
                 if (!d->enabledPlugins.contains(plugin)) {
                     d->enabledPlugins.append(plugin);
-                    QHash<QString, QmlDebugServerPlugin *>::Iterator iter = 
+                    QHash<QString, QmlDebugService *>::Iterator iter = 
                         d->plugins.find(plugin);
                     if (iter != d->plugins.end())
                         (*iter)->enabledChanged(true);
@@ -194,7 +194,7 @@ void QmlDebugServer::readyRead()
                 // Disable
                 if (d->enabledPlugins.contains(plugin)) {
                     d->enabledPlugins.removeAll(plugin);
-                    QHash<QString, QmlDebugServerPlugin *>::Iterator iter = 
+                    QHash<QString, QmlDebugService *>::Iterator iter = 
                         d->plugins.find(plugin);
                     if (iter != d->plugins.end())
                         (*iter)->enabledChanged(false);
@@ -207,7 +207,7 @@ void QmlDebugServer::readyRead()
             QByteArray message;
             pack >> message;
 
-            QHash<QString, QmlDebugServerPlugin *>::Iterator iter = 
+            QHash<QString, QmlDebugService *>::Iterator iter = 
                 d->plugins.find(name);
             if (iter == d->plugins.end()) {
                 qWarning() << "QmlDebugServer: Message received for missing plugin" << name;
@@ -218,15 +218,15 @@ void QmlDebugServer::readyRead()
     }
 }
 
-QmlDebugServerPluginPrivate::QmlDebugServerPluginPrivate()
+QmlDebugServicePrivate::QmlDebugServicePrivate()
 : server(0)
 {
 }
 
-QmlDebugServerPlugin::QmlDebugServerPlugin(const QString &name, QObject *parent)
-: QObject(*(new QmlDebugServerPluginPrivate), parent)
+QmlDebugService::QmlDebugService(const QString &name, QObject *parent)
+: QObject(*(new QmlDebugServicePrivate), parent)
 {
-    Q_D(QmlDebugServerPlugin);
+    Q_D(QmlDebugService);
     d->name = name;
     d->server = QmlDebugServer::instance();
 
@@ -234,31 +234,112 @@ QmlDebugServerPlugin::QmlDebugServerPlugin(const QString &name, QObject *parent)
         return;
 
     if (d->server->d_func()->plugins.contains(name)) {
-        qWarning() << "QmlDebugServerPlugin: Conflicting plugin name" << name;
+        qWarning() << "QmlDebugService: Conflicting plugin name" << name;
         d->server = 0;
     } else {
         d->server->d_func()->plugins.insert(name, this);
     }
 }
 
-QString QmlDebugServerPlugin::name() const
+QString QmlDebugService::name() const
 {
-    Q_D(const QmlDebugServerPlugin);
+    Q_D(const QmlDebugService);
     return d->name;
 }
 
-bool QmlDebugServerPlugin::isEnabled() const
+bool QmlDebugService::isEnabled() const
 {
-    Q_D(const QmlDebugServerPlugin);
+    Q_D(const QmlDebugService);
     return (d->server && d->server->d_func()->enabledPlugins.contains(d->name));
 }
 
-bool QmlDebugServerPlugin::isDebuggingEnabled()
+namespace {
+
+    struct ObjectReference 
+    {
+        QPointer<QObject> object;
+        int id;
+    };
+
+    struct ObjectReferenceHash 
+    {
+        ObjectReferenceHash() : nextId(0) {}
+
+        QHash<QObject *, ObjectReference> objects;
+        QHash<int, QObject *> ids;
+
+        int nextId;
+    };
+
+}
+Q_GLOBAL_STATIC(ObjectReferenceHash, objectReferenceHash);
+
+
+/*!
+    Returns a unique id for \a object.  Calling this method multiple times
+    for the same object will return the same id.
+*/
+int QmlDebugService::idForObject(QObject *object)
+{
+    if (!object)
+        return -1;
+
+    ObjectReferenceHash *hash = objectReferenceHash();
+    QHash<QObject *, ObjectReference>::Iterator iter = 
+        hash->objects.find(object);
+
+    if (iter == hash->objects.end()) {
+        int id = hash->nextId++;
+
+        hash->ids.insert(id, object);
+        iter = hash->objects.insert(object, ObjectReference());
+        iter->object = object;
+        iter->id = id;
+    } else if (iter->object != object) {
+        int id = hash->nextId++;
+
+        hash->ids.remove(iter->id);
+
+        hash->ids.insert(id, object);
+        iter->object = object;
+        iter->id = id;
+    } 
+    return iter->id;
+}
+
+/*!
+    Returns the object for unique \a id.  If the object has not previously been
+    assigned an id, through idForObject(), then 0 is returned.  If the object
+    has been destroyed, 0 is returned.
+*/
+QObject *QmlDebugService::objectForId(int id)
+{
+    ObjectReferenceHash *hash = objectReferenceHash();
+
+    QHash<int, QObject *>::Iterator iter = hash->ids.find(id);
+    if (iter == hash->ids.end())
+        return 0;
+
+
+    QHash<QObject *, ObjectReference>::Iterator objIter = 
+        hash->objects.find(*iter);
+    Q_ASSERT(objIter != hash->objects.end());
+
+    if (objIter->object == 0) {
+        hash->ids.erase(iter);
+        hash->objects.erase(objIter);
+        return 0;
+    } else {
+        return *iter;
+    }
+}
+
+bool QmlDebugService::isDebuggingEnabled()
 {
     return QmlDebugServer::instance() != 0;
 }
 
-QString QmlDebugServerPlugin::objectToString(QObject *obj)
+QString QmlDebugService::objectToString(QObject *obj)
 {
     if(!obj)
         return QLatin1String("NULL");
@@ -273,9 +354,9 @@ QString QmlDebugServerPlugin::objectToString(QObject *obj)
     return rv;
 }
 
-void QmlDebugServerPlugin::sendMessage(const QByteArray &message)
+void QmlDebugService::sendMessage(const QByteArray &message)
 {
-    Q_D(QmlDebugServerPlugin);
+    Q_D(QmlDebugService);
 
     if (!d->server || !d->server->d_func()->connection)
         return;
@@ -286,14 +367,14 @@ void QmlDebugServerPlugin::sendMessage(const QByteArray &message)
     d->server->d_func()->connection->flush();
 }
 
-void QmlDebugServerPlugin::enabledChanged(bool)
+void QmlDebugService::enabledChanged(bool)
 {
 }
 
-void QmlDebugServerPlugin::messageReceived(const QByteArray &)
+void QmlDebugService::messageReceived(const QByteArray &)
 {
 }
 
 QT_END_NAMESPACE
 
-#include "qmldebugserver.moc"
+#include "qmldebugservice.moc"

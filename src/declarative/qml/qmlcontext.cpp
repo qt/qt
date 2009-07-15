@@ -54,8 +54,8 @@
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
-: parent(0), engine(0), notifyIndex(-1), highPriorityCount(0), 
-  startLine(-1), endLine(-1)
+: parent(0), engine(0), isInternal(false), notifyIndex(-1), 
+  highPriorityCount(0), startLine(-1), endLine(-1)
 {
 }
 
@@ -212,11 +212,25 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
 */
 
 /*! \internal */
-QmlContext::QmlContext(QmlEngine *e)
+QmlContext::QmlContext(QmlEngine *e, bool)
 : QObject(*(new QmlContextPrivate))
 {
     Q_D(QmlContext);
     d->engine = e;
+    d->init();
+}
+
+/*!
+    Create a new QmlContext as a child of \a engine's root context, and the
+    QObject \a parent.
+*/
+QmlContext::QmlContext(QmlEngine *engine, QObject *parent)
+: QObject(*(new QmlContextPrivate), parent)
+{
+    Q_D(QmlContext);
+    QmlContext *parentContext = engine?engine->rootContext():0;
+    d->parent = parentContext;
+    d->engine = parentContext->engine();
     d->init();
 }
 
@@ -230,6 +244,19 @@ QmlContext::QmlContext(QmlContext *parentContext, QObject *parent)
     Q_D(QmlContext);
     d->parent = parentContext;
     d->engine = parentContext->engine();
+    d->init();
+}
+
+/*!
+    \internal
+*/
+QmlContext::QmlContext(QmlContext *parentContext, QObject *parent, bool)
+: QObject(*(new QmlContextPrivate), parent)
+{
+    Q_D(QmlContext);
+    d->parent = parentContext;
+    d->engine = parentContext->engine();
+    d->isInternal = true;
     d->init();
 }
 
@@ -445,35 +472,6 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
         return QUrl();
     } else {
         return src;
-    }
-}
-
-/*!
-    Resolves the component URI \a src relative to the URL of the
-    containing component, and according to the
-    \l {QmlEngine::nameSpacePaths()} {namespace paths} of the
-    context's engine, returning the resolved URL.
-
-    \sa QmlEngine::componentUrl(), setBaseUrl()
-*/
-QUrl QmlContext::resolvedUri(const QUrl &src)
-{
-    QmlContext *ctxt = this;
-    if (src.isRelative()) {
-        if (ctxt) {
-            while(ctxt) {
-                if (ctxt->d_func()->url.isValid())
-                    break;
-                else
-                    ctxt = ctxt->parentContext();
-            }
-
-            if (ctxt)
-                return ctxt->d_func()->engine->componentUrl(src, ctxt->d_func()->url);
-        }
-        return QUrl();
-    } else {
-        return ctxt->d_func()->engine->componentUrl(src, QUrl());
     }
 }
 

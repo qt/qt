@@ -66,7 +66,7 @@ public:
     ~QmlDomDocumentPrivate();
 
     QList<QmlError> errors;
-    QList<QUrl> imports;
+    QList<QmlDomImport> imports;
     QmlParser::Object *root;
     QList<int> automaticSemicolonOffsets;
 };
@@ -127,6 +127,21 @@ public:
     ~QmlDomBasicValuePrivate();
 
     QmlParser::Value *value;
+};
+
+class QmlDomImportPrivate : public QSharedData
+{
+public:
+    QmlDomImportPrivate();
+    QmlDomImportPrivate(const QmlDomImportPrivate &);
+    ~QmlDomImportPrivate();
+
+    enum Type { Library, File };
+
+    Type type;
+    QString uri;
+    QString version;
+    QString qualifier;
 };
 
 QT_END_NAMESPACE

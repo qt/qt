@@ -10,10 +10,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class CanvasSceneClientPlugin : public QmlDebugClientPlugin
+class CanvasSceneClientPlugin : public QmlDebugClient
 {
 public:
-   CanvasSceneClientPlugin(QmlDebugClient *, CanvasScene *s);
+   CanvasSceneClientPlugin(QmlDebugConnection *, CanvasScene *s);
 
 protected:
    void messageReceived(const QByteArray &);
@@ -40,9 +40,9 @@ public:
     QFxImage *img;
 };
 
-CanvasSceneClientPlugin::CanvasSceneClientPlugin(QmlDebugClient *c, 
+CanvasSceneClientPlugin::CanvasSceneClientPlugin(QmlDebugConnection *c, 
                                                  CanvasScene *s)
-: QmlDebugClientPlugin(QLatin1String("CanvasScene"), c), scene(s)
+: QmlDebugClient(QLatin1String("CanvasScene"), c), scene(s)
 {
 }
 
@@ -144,7 +144,7 @@ void CanvasSceneClientPlugin::dump(QDataStream &ds, int indent)
         dump(ds, indent + 1);
 }
 
-CanvasScene::CanvasScene(QmlDebugClient *c, QWidget *parent)
+CanvasScene::CanvasScene(QmlDebugConnection *c, QWidget *parent)
 : QWidget(parent)
 {
     client = new CanvasSceneClientPlugin(c, this);

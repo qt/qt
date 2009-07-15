@@ -57,10 +57,10 @@
 #include <private/qmlscriptparser_p.h>
 #include <private/qmlrefcount_p.h>
 #include <QtDeclarative/qmlerror.h>
+#include <QtDeclarative/qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlEngine;
 class QmlCompiledComponent;
 class QmlComponentPrivate;
 class QmlComponent;
@@ -86,7 +86,8 @@ struct QmlCompositeTypeData : public QmlRefCount
 
     QList<QmlError> errors;
 
-    QString url;
+    QmlEngine::Imports imports;
+
     QList<QmlCompositeTypeData *> dependants;
 
     // Return a QmlComponent if the QmlCompositeTypeData is not in the Waiting 

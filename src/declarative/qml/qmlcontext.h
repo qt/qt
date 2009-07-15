@@ -62,6 +62,7 @@ class Q_DECLARATIVE_EXPORT QmlContext : public QObject
     Q_DECLARE_PRIVATE(QmlContext)
 
 public:
+    QmlContext(QmlEngine *parent, QObject *objParent=0);
     QmlContext(QmlContext *parent, QObject *objParent=0);
     virtual ~QmlContext();
 
@@ -77,7 +78,6 @@ public:
 
     static QmlContext *activeContext();
 
-    QUrl resolvedUri(const QUrl &);
     QUrl resolvedUrl(const QUrl &);
 
     void setBaseUrl(const QUrl &);
@@ -86,6 +86,7 @@ private Q_SLOTS:
     void objectDestroyed(QObject *);
 
 private:
+    friend class QmlVME;
     friend class QmlEngine;
     friend class QmlEnginePrivate;
     friend class QmlExpression;
@@ -97,7 +98,8 @@ private:
     friend class QmlScriptPrivate;
     friend class QmlBoundSignalProxy;
     friend class QmlSimpleDeclarativeData;
-    QmlContext(QmlEngine *);
+    QmlContext(QmlContext *parent, QObject *objParent, bool);
+    QmlContext(QmlEngine *, bool);
 };
 
 QT_END_NAMESPACE

@@ -47,22 +47,22 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlDebugClientPrivate : public QObject
+class QmlDebugConnectionPrivate : public QObject
 {
     Q_OBJECT
 public:
-    QmlDebugClientPrivate(QmlDebugClient *c);
-    QmlDebugClient *q;
+    QmlDebugConnectionPrivate(QmlDebugConnection *c);
+    QmlDebugConnection *q;
     QPacketProtocol *protocol;
 
     QStringList enabled;
-    QHash<QString, QmlDebugClientPlugin *> plugins;
+    QHash<QString, QmlDebugClient *> plugins;
 public slots:
     void connected();
     void readyRead();
 };
 
-QmlDebugClientPrivate::QmlDebugClientPrivate(QmlDebugClient *c)
+QmlDebugConnectionPrivate::QmlDebugConnectionPrivate(QmlDebugConnection *c)
 : QObject(c), q(c), protocol(0)
 {
     protocol = new QPacketProtocol(q, this);
@@ -70,54 +70,59 @@ QmlDebugClientPrivate::QmlDebugClientPrivate(QmlDebugClient *c)
     QObject::connect(protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
 }
 
-void QmlDebugClientPrivate::connected()
+void QmlDebugConnectionPrivate::connected()
 {
     QPacket pack;
     pack << QString(QLatin1String("QmlDebugServer")) << enabled;
     protocol->send(pack);
 }
 
-void QmlDebugClientPrivate::readyRead()
+void QmlDebugConnectionPrivate::readyRead()
 {
     QPacket pack = protocol->read();
     QString name; QByteArray message;
     pack >> name >> message;
 
-    QHash<QString, QmlDebugClientPlugin *>::Iterator iter = 
+    QHash<QString, QmlDebugClient *>::Iterator iter = 
         plugins.find(name);
     if (iter == plugins.end()) {
-        qWarning() << "QmlDebugClient: Message received for missing plugin" << name;
+        qWarning() << "QmlDebugConnection: Message received for missing plugin" << name;
     } else {
         (*iter)->messageReceived(message);
     }
 }
 
-QmlDebugClient::QmlDebugClient(QObject *parent)
-: QTcpSocket(parent), d(new QmlDebugClientPrivate(this))
+QmlDebugConnection::QmlDebugConnection(QObject *parent)
+: QTcpSocket(parent), d(new QmlDebugConnectionPrivate(this))
 {
 }
 
-class QmlDebugClientPluginPrivate : public QObjectPrivate
+bool QmlDebugConnection::isConnected() const
 {
-    Q_DECLARE_PUBLIC(QmlDebugClientPlugin);
+    return state() == ConnectedState;
+}
+
+class QmlDebugClientPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlDebugClient);
 public:
-    QmlDebugClientPluginPrivate();
+    QmlDebugClientPrivate();
 
     QString name;
-    QmlDebugClient *client;
+    QmlDebugConnection *client;
     bool enabled;
 };
 
-QmlDebugClientPluginPrivate::QmlDebugClientPluginPrivate()
+QmlDebugClientPrivate::QmlDebugClientPrivate()
 : client(0), enabled(false)
 {
 }
 
-QmlDebugClientPlugin::QmlDebugClientPlugin(const QString &name, 
-                                           QmlDebugClient *parent)
-: QObject(*(new QmlDebugClientPluginPrivate), parent)
+QmlDebugClient::QmlDebugClient(const QString &name, 
+                                           QmlDebugConnection *parent)
+: QObject(*(new QmlDebugClientPrivate), parent)
 {
-    Q_D(QmlDebugClientPlugin);
+    Q_D(QmlDebugClient);
     d->name = name;
     d->client = parent;
 
@@ -125,28 +130,28 @@ QmlDebugClientPlugin::QmlDebugClientPlugin(const QString &name,
         return;
 
     if (d->client->d->plugins.contains(name)) {
-        qWarning() << "QmlDebugClientPlugin: Conflicting plugin name" << name;
+        qWarning() << "QmlDebugClient: Conflicting plugin name" << name;
         d->client = 0;
     } else {
         d->client->d->plugins.insert(name, this);
     }
 }
 
-QString QmlDebugClientPlugin::name() const
+QString QmlDebugClient::name() const
 {
-    Q_D(const QmlDebugClientPlugin);
+    Q_D(const QmlDebugClient);
     return d->name;
 }
 
-bool QmlDebugClientPlugin::isEnabled() const
+bool QmlDebugClient::isEnabled() const
 {
-    Q_D(const QmlDebugClientPlugin);
+    Q_D(const QmlDebugClient);
     return d->enabled;
 }
 
-void QmlDebugClientPlugin::setEnabled(bool e)
+void QmlDebugClient::setEnabled(bool e)
 {
-    Q_D(QmlDebugClientPlugin);
+    Q_D(QmlDebugClient);
     if (e == d->enabled)
         return;
 
@@ -169,11 +174,18 @@ void QmlDebugClientPlugin::setEnabled(bool e)
     }
 }
 
-void QmlDebugClientPlugin::sendMessage(const QByteArray &message)
+bool QmlDebugClient::isConnected() const
 {
-    Q_D(QmlDebugClientPlugin);
+    Q_D(const QmlDebugClient);
 
-    if (!d->client || d->client->state() != QTcpSocket::ConnectedState)
+    return d->client->isConnected();
+}
+
+void QmlDebugClient::sendMessage(const QByteArray &message)
+{
+    Q_D(QmlDebugClient);
+
+    if (!d->client || !d->client->isConnected())
         return;
 
     QPacket pack;
@@ -181,7 +193,7 @@ void QmlDebugClientPlugin::sendMessage(const QByteArray &message)
     d->client->d->protocol->send(pack);
 }
 
-void QmlDebugClientPlugin::messageReceived(const QByteArray &)
+void QmlDebugClient::messageReceived(const QByteArray &)
 {
 }
 
