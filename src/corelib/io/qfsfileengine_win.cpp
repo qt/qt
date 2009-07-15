@@ -109,9 +109,9 @@ static QString qfsPrivateCurrentDir = QLatin1String("");
 QT_BEGIN_INCLUDE_NAMESPACE
 typedef DWORD (WINAPI *PtrGetNamedSecurityInfoW)(LPWSTR, SE_OBJECT_TYPE, SECURITY_INFORMATION, PSID*, PSID*, PACL*, PACL*, PSECURITY_DESCRIPTOR*);
 static PtrGetNamedSecurityInfoW ptrGetNamedSecurityInfoW = 0;
-typedef DECLSPEC_IMPORT BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
+typedef BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
 static PtrLookupAccountSidW ptrLookupAccountSidW = 0;
-typedef DECLSPEC_IMPORT BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
+typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
 static PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = 0;
 typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
@@ -119,7 +119,7 @@ typedef VOID (WINAPI *PtrBuildTrusteeWithNameW)(PTRUSTEE_W, unsigned short*);
 static PtrBuildTrusteeWithNameW ptrBuildTrusteeWithNameW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
-typedef DECLSPEC_IMPORT PVOID (WINAPI *PtrFreeSid)(PSID);
+typedef PVOID (WINAPI *PtrFreeSid)(PSID);
 static PtrFreeSid ptrFreeSid = 0;
 static TRUSTEE_W currentUserTrusteeW;
 
@@ -1519,8 +1519,8 @@ QString QFSFileEngine::fileName(FileName file) const
 
         if (!isRelativePath()) {
 #if !defined(Q_OS_WINCE)
-            if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
-                && d->filePath.at(2) != QLatin1Char('/') || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
+            if ((d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
+                && d->filePath.at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
                 d->filePath.startsWith(QLatin1Char('/'))    // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
                 ) {
                 ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(d->filePath));
