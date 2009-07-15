@@ -480,6 +480,10 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
                  "a different engine");
         return;
     }
+    if (d->frame == d->engine->globalObject->globalExec()) {
+        qWarning("QScriptContext::setThisObject(): setting this-object of global context is not supported");
+        return;
+    }
     JSC::JSValue jscThisObject = d->engine->scriptValueToJSCValue(thisObject);
     JSC::CodeBlock *cb = d->frame->codeBlock();
     if (cb != 0) {
