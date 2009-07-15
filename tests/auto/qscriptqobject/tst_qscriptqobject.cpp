@@ -1729,7 +1729,6 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_engine->evaluate("myObject = null");
     m_engine->collectGarbage();
     m_myObject->resetQtFunctionInvoked();
-    QSKIP("Crashes due to GC", SkipAll);
     m_myObject->emitMySignal();
     QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
 }
@@ -1823,7 +1822,6 @@ void tst_QScriptExtQObject::connectAndDisconnectWithBadArgs()
 
 void tst_QScriptExtQObject::cppConnectAndDisconnect()
 {
-    QSKIP("Crashes (GC-related)", SkipAll);
     QScriptEngine eng;
     QLineEdit edit;
     QLineEdit edit2;
@@ -1895,11 +1893,14 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
     // make sure we don't crash when engine is deleted
     {
         QScriptEngine *eng2 = new QScriptEngine;
-        QScriptValue fun2 = eng2->evaluate("function(text) { signalObject = this; signalArg = text; }");
+        QScriptValue fun2 = eng2->evaluate("(function(text) { signalObject = this; signalArg = text; })");
+        QVERIFY(fun2.isFunction());
         QVERIFY(qScriptConnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun2));
         delete eng2;
         edit.setText("ciao");
-        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun2));
+        QEXPECT_FAIL("", "Crashes", Continue);
+        QVERIFY(false);
+        // QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun2));
     }
 
     // mixing script-side and C++-side connect
@@ -1918,7 +1919,8 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
                 this, SLOT(onSignalHandlerException(QScriptValue)));
 
         eng.globalObject().setProperty("edit", eng.newQObject(&edit));
-        QScriptValue fun = eng.evaluate("function() { nonExistingFunction(); }");
+        QScriptValue fun = eng.evaluate("(function() { nonExistingFunction(); })");
+        QVERIFY(fun.isFunction());
         QVERIFY(qScriptConnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun));
 
         m_signalHandlerException = QScriptValue();

@@ -3130,9 +3130,11 @@ QStringList QScriptEngine::importedExtensions() const
 void QScriptEngine::collectGarbage()
 {
     Q_D(QScriptEngine);
+    // ### why isn't the global object always marked by the Collector?
+    if (!d->globalObject->marked())
+        d->globalObject->mark();
     JSC::JSLock lock(false);
-    JSC::ExecState* exec = d->globalObject->globalExec();
-    exec->heap()->collect();
+    d->globalData->heap.collect();
 }
 
 /*!
