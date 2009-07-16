@@ -53,7 +53,7 @@ static const HashTableValue JSSVGDescElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDescElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDescElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGDescElementTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSSVGDescElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDescElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDescElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGDescElementPrototypeTableValues, 0 };
 #else

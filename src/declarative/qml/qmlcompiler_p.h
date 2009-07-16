@@ -137,7 +137,7 @@ public:
     static bool isSignalPropertyName(const QByteArray &);
 
 private:
-    void reset(QmlCompiledData *);
+    static void reset(QmlCompiledData *);
 
     struct BindingContext {
         BindingContext()
@@ -185,7 +185,7 @@ private:
                                         QmlParser::Object *obj,
                                         QmlParser::Value *value,
                                         const BindingContext &ctxt);
-    bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    bool doesPropertyExist(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testLiteralAssignment(const QMetaProperty &prop, 
                                QmlParser::Value *value);
     enum DynamicMetaMode { IgnoreAliases, ResolveAliases };
@@ -224,25 +224,13 @@ private:
 
     QStringList deferredProperties(QmlParser::Object *);
 
-    struct IdReference {
-        QString id;
-        QmlParser::Object *object;
-        int instructionIdx;
-        int idx;
-    };
     void addId(const QString &, QmlParser::Object *);
-
-    struct AliasReference {
-        QmlParser::Object *object;
-        int instructionIdx;
-    };
 
     struct BindingReference {
         QmlParser::Variant expression;
         QmlParser::Property *property;
         QmlParser::Value *value;
         QByteArray compiledData;
-        int instructionIdx;
         BindingContext bindingContext;
     };
     void addBindingReference(const BindingReference &);
@@ -252,13 +240,13 @@ private:
         ComponentCompileState() 
             : parserStatusCount(0), savedObjects(0), 
               pushedProperties(0), root(0) {}
-        QHash<QString, IdReference> ids;
+        QHash<QString, QmlParser::Object *> ids;
         int parserStatusCount;
         int savedObjects;
         int pushedProperties;
-        QList<BindingReference> bindings;
-        QHash<QmlParser::Value *, int> bindingMap;
-        QList<AliasReference> aliases;
+
+        QHash<QmlParser::Value *, BindingReference> bindings;
+        QList<QmlParser::Object *> aliasingObjects;
         QmlParser::Object *root;
     };
     ComponentCompileState compileState;

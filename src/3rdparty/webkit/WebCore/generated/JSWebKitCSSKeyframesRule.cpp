@@ -47,7 +47,7 @@ static const HashTableValue JSWebKitCSSKeyframesRuleTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSKeyframesRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSKeyframesRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSWebKitCSSKeyframesRuleTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSWebKitCSSKeyframesRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSKeyframesRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSKeyframesRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitCSSKeyframesRuleConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSWebKitCSSKeyframesRulePrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSKeyframesRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSKeyframesRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSWebKitCSSKeyframesRulePrototypeTableValues, 0 };
 #else

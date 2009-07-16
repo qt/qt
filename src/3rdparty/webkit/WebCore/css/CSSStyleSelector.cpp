@@ -526,7 +526,7 @@ static void loadFullDefaultStyle()
     }
 
     // Strict-mode rules.
-    String defaultRules = String(html4UserAgentStyleSheet, sizeof(html4UserAgentStyleSheet)) + RenderTheme::defaultTheme()->extraDefaultStyleSheet();
+    String defaultRules = String(htmlUserAgentStyleSheet, sizeof(htmlUserAgentStyleSheet)) + RenderTheme::defaultTheme()->extraDefaultStyleSheet();
     CSSStyleSheet* defaultSheet = parseUASheet(defaultRules);
     defaultStyle->addRulesFromSheet(defaultSheet, screenEval());
     defaultPrintStyle->addRulesFromSheet(defaultSheet, printEval());
@@ -1404,6 +1404,22 @@ PassRefPtr<RenderStyle> CSSStyleSelector::pseudoStyleForElement(PseudoId pseudo,
     // Now return the style.
     return m_style.release();
 }
+
+#if ENABLE(DATAGRID)
+
+PassRefPtr<RenderStyle> CSSStyleSelector::pseudoStyleForDataGridColumn(DataGridColumn*, RenderStyle*)
+{
+    // FIXME: Implement
+    return 0;
+}
+
+PassRefPtr<RenderStyle> CSSStyleSelector::pseudoStyleForDataGridColumnHeader(DataGridColumn*, RenderStyle*)
+{
+    // FIXME: Implement
+    return 0;
+}
+
+#endif
 
 static void addIntrinsicMargins(RenderStyle* style)
 {
@@ -2481,6 +2497,15 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
             case CSSSelector::PseudoMediaControlsSeekForwardButton:
                 dynamicPseudo = MEDIA_CONTROLS_SEEK_FORWARD_BUTTON;
                 return true;
+            case CSSSelector::PseudoMediaControlsRewindButton:
+                dynamicPseudo = MEDIA_CONTROLS_REWIND_BUTTON;
+                return true;
+            case CSSSelector::PseudoMediaControlsReturnToRealtimeButton:
+                dynamicPseudo = MEDIA_CONTROLS_RETURN_TO_REALTIME_BUTTON;
+                return true;
+            case CSSSelector::PseudoMediaControlsStatusDisplay:
+                dynamicPseudo = MEDIA_CONTROLS_STATUS_DISPLAY;
+                return true;
             case CSSSelector::PseudoMediaControlsFullscreenButton:
                 dynamicPseudo = MEDIA_CONTROLS_FULLSCREEN_BUTTON;
                 return true;
@@ -3413,7 +3438,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         }
         
         int width = 0;
-        if (primitiveValue && primitiveValue->getIdent() == CSSValueNormal){
+        if (primitiveValue && primitiveValue->getIdent() == CSSValueNormal) {
             width = 0;
         } else {
             if (!primitiveValue)
@@ -4931,7 +4956,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         int type = primitiveValue->primitiveType();
         if (CSSPrimitiveValue::isUnitTypeLength(type))
             l = Length(primitiveValue->computeLengthIntForLength(style(), zoomFactor), Fixed);
-        else if(type == CSSPrimitiveValue::CSS_PERCENTAGE)
+        else if (type == CSSPrimitiveValue::CSS_PERCENTAGE)
             l = Length(primitiveValue->getDoubleValue(), Percent);
         else
             return;
@@ -4961,10 +4986,17 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
             m_style->setPerspective(0);
             return;
         }
-
-        if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_NUMBER)
+        
+        float perspectiveValue;
+        int type = primitiveValue->primitiveType();
+        if (CSSPrimitiveValue::isUnitTypeLength(type))
+            perspectiveValue = static_cast<float>(primitiveValue->computeLengthIntForLength(style(), zoomFactor));
+        else if (type == CSSPrimitiveValue::CSS_NUMBER) {
+            // For backward compatibility, treat valueless numbers as px.
+            perspectiveValue = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX)->computeLengthFloat(style(), zoomFactor);
+        } else
             return;
-        float perspectiveValue = static_cast<float>(primitiveValue->getDoubleValue());
+
         if (perspectiveValue >= 0.0f)
             m_style->setPerspective(perspectiveValue);
         return;
@@ -4994,7 +5026,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         int type = primitiveValue->primitiveType();
         if (CSSPrimitiveValue::isUnitTypeLength(type))
             l = Length(primitiveValue->computeLengthIntForLength(style(), zoomFactor), Fixed);
-        else if(type == CSSPrimitiveValue::CSS_PERCENTAGE)
+        else if (type == CSSPrimitiveValue::CSS_PERCENTAGE)
             l = Length(primitiveValue->getDoubleValue(), Percent);
         else
             return;
@@ -5718,7 +5750,7 @@ Color CSSStyleSelector::getColorFromPrimitiveValue(CSSPrimitiveValue* primitiveV
         } else if (ident == CSSValueWebkitActivelink)
             col = m_element->document()->activeLinkColor();
         else if (ident == CSSValueWebkitFocusRingColor)
-            col = RenderTheme::defaultTheme()->focusRingColor();
+            col = RenderTheme::focusRingColor();
         else if (ident == CSSValueCurrentcolor)
             col = m_style->color();
         else

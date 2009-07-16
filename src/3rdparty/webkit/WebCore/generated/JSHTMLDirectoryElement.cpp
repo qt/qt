@@ -39,7 +39,7 @@ static const HashTableValue JSHTMLDirectoryElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDirectoryElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDirectoryElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLDirectoryElementTableValues, 0 };
 #else
@@ -53,7 +53,7 @@ static const HashTableValue JSHTMLDirectoryElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDirectoryElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDirectoryElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDirectoryElementConstructorTableValues, 0 };
 #else
@@ -91,7 +91,7 @@ static const HashTableValue JSHTMLDirectoryElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDirectoryElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDirectoryElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDirectoryElementPrototypeTableValues, 0 };
 #else

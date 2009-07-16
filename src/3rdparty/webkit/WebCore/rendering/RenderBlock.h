@@ -35,7 +35,6 @@
 namespace WebCore {
 
 class InlineIterator;
-class Position;
 class RenderInline;
 class RootInlineBox;
 
@@ -142,23 +141,26 @@ public:
 
     virtual void updateBeforeAfterContent(PseudoId);
 
-    RootInlineBox* createRootInlineBox();
+    RootInlineBox* createAndAppendRootInlineBox();
+    virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG and Ruby.
 
     // Called to lay out the legend for a fieldset.
     virtual RenderObject* layoutLegend(bool /*relayoutChildren*/) { return 0; }
 
-    // the implementation of the following functions is in bidi.cpp
     struct FloatWithRect {
         FloatWithRect(RenderBox* f)
             : object(f)
             , rect(IntRect(f->x() - f->marginLeft(), f->y() - f->marginTop(), f->width() + f->marginLeft() + f->marginRight(), f->height() + f->marginTop() + f->marginBottom()))
+            , everHadLayout(f->m_everHadLayout)
         {
         }
 
         RenderBox* object;
         IntRect rect;
+        bool everHadLayout;
     };
 
+    // The following functions' implementations are in RenderBlockLineLayout.cpp.
     void bidiReorderLine(InlineBidiResolver&, const InlineIterator& end, bool previousLineBrokeCleanly);
     RootInlineBox* determineStartPosition(bool& firstLine, bool& fullLayout, bool& previousLineBrokeCleanly,
                                           InlineBidiResolver&, Vector<FloatWithRect>& floats, unsigned& numCleanFloats);
@@ -179,7 +181,7 @@ public:
     void checkLinesForOverflow();
     void deleteEllipsisLineBoxes();
     void checkLinesForTextOverflow();
-    // end bidi.cpp functions
+    // End of functions defined in RenderBlockLineLayout.cpp.
 
     virtual void paint(PaintInfo&, int tx, int ty);
     virtual void paintObject(PaintInfo&, int tx, int ty);
@@ -328,6 +330,14 @@ public:
     // style from this RenderBlock.
     RenderBlock* createAnonymousBlock() const;
 
+    // Delay update scrollbar until finishDelayRepaint() will be
+    // called.  This function is used when a flexbox is layouting its
+    // descendant.  If multiple startDelayRepaint() is called,
+    // finishDelayRepaint() will do nothing until finishDelayRepaint()
+    // is called same times.
+    static void startDelayUpdateScrollInfo();
+    static void finishDelayUpdateScrollInfo();
+
 private:
     void adjustPointToColumnContents(IntPoint&) const;
     void adjustForBorderFit(int x, int& left, int& right) const; // Helper function for borderFitAdjust
@@ -342,7 +352,6 @@ protected:
     virtual bool hasLineIfEmpty() const;
     bool layoutOnlyPositionedObjects();
 
-    virtual RootInlineBox* createRootBox(); // Subclassed by SVG.
     
 private:
     Position positionForBox(InlineBox*, bool start = true) const;
@@ -356,6 +365,8 @@ private:
     int layoutColumns(int endOfContent = -1);
 
     bool expandsToEncloseOverhangingFloats() const;
+
+    void updateScrollInfoAfterLayout();
 
 protected:
     struct FloatingObject {

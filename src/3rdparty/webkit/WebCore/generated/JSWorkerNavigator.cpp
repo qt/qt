@@ -47,7 +47,7 @@ static const HashTableValue JSWorkerNavigatorTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerNavigatorTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerNavigatorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSWorkerNavigatorTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSWorkerNavigatorPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWorkerNavigatorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWorkerNavigatorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWorkerNavigatorPrototypeTableValues, 0 };
 #else

@@ -45,7 +45,7 @@ static const HashTableValue JSSQLErrorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLErrorTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLErrorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSQLErrorTableValues, 0 };
 #else
@@ -59,7 +59,7 @@ static const HashTableValue JSSQLErrorPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSQLErrorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSQLErrorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSQLErrorPrototypeTableValues, 0 };
 #else

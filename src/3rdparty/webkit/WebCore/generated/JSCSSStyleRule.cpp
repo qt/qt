@@ -44,7 +44,7 @@ static const HashTableValue JSCSSStyleRuleTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSStyleRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSStyleRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSStyleRuleTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSCSSStyleRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSStyleRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSStyleRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSStyleRuleConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSCSSStyleRulePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSStyleRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSStyleRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSStyleRulePrototypeTableValues, 0 };
 #else

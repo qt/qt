@@ -46,7 +46,7 @@ static const HashTableValue JSSVGAltGlyphElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAltGlyphElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAltGlyphElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSSVGAltGlyphElementTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSSVGAltGlyphElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAltGlyphElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAltGlyphElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAltGlyphElementPrototypeTableValues, 0 };
 #else

@@ -750,26 +750,6 @@ case $rule_number: {
 }   break;
 ./
 
-UiMultilineStringLiteral: T_MULTILINE_STRING_LITERAL ;
-/.
-case $rule_number: {
-  AST::StringLiteral *node = makeAstNode<AST::StringLiteral> (driver->nodePool(), sym(1).sval);
-  node->literalToken = loc(1);
-  sym(1).Node = node;
-} break;
-./
-
-UiMultilineStringStatement: UiMultilineStringLiteral T_AUTOMATIC_SEMICOLON ;  -- automatic semicolon
-UiMultilineStringStatement: UiMultilineStringLiteral T_SEMICOLON ;
-/.
-case $rule_number: {
-  AST::ExpressionStatement *node = makeAstNode<AST::ExpressionStatement> (driver->nodePool(), sym(1).Expression);
-  node->semicolonToken = loc(2);
-  sym(1).Node = node;
-} break;
-./
-
-
 UiObjectMember: UiQualifiedId T_COLON Expression UiObjectInitializer ;
 /.
 case $rule_number: {
@@ -796,12 +776,6 @@ UiObjectMember: UiQualifiedId T_COLON EmptyStatement ;
 /.case $rule_number:./
 
 UiObjectMember: UiQualifiedId T_COLON ExpressionStatement ;
-/.case $rule_number:./
-
-UiObjectMember: UiQualifiedId T_COLON DebuggerStatement ;
-/.case $rule_number:./
-
-UiObjectMember: UiQualifiedId T_COLON UiMultilineStringStatement ;
 /.case $rule_number:./
 
 UiObjectMember: UiQualifiedId T_COLON IfStatement ; --- ### do we really want if statement in a binding?
@@ -1052,6 +1026,9 @@ case $rule_number: {
   sym(1).Node = node;
 } break;
 ./
+
+PrimaryExpression: T_MULTILINE_STRING_LITERAL ;
+/.case $rule_number:./
 
 PrimaryExpression: T_STRING_LITERAL ;
 /.

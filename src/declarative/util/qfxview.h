@@ -85,9 +85,9 @@ public:
     bool contentResizable() const;
     QSize sizeHint() const;
 
-    static void printErrorLine(const QmlError &);
 Q_SIGNALS:
     void sceneResized(QSize size);
+    void errors(const QList<QmlError> &error);
 
 private Q_SLOTS:
     void continueExecute();

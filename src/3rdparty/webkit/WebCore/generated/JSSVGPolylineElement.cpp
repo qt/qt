@@ -72,7 +72,7 @@ static const HashTableValue JSSVGPolylineElementTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPolylineElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPolylineElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGPolylineElementTableValues, 0 };
 #else
@@ -92,7 +92,7 @@ static const HashTableValue JSSVGPolylineElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPolylineElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPolylineElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGPolylineElementPrototypeTableValues, 0 };
 #else

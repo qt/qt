@@ -44,7 +44,7 @@ static const HashTableValue JSCSSVariablesRuleTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSVariablesRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSVariablesRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSCSSVariablesRuleTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSCSSVariablesRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSVariablesRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSVariablesRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSVariablesRuleConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSCSSVariablesRulePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSVariablesRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSVariablesRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSVariablesRulePrototypeTableValues, 0 };
 #else

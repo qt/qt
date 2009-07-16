@@ -2078,6 +2078,8 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \value ListDecimal     decimal values in ascending order
     \value ListLowerAlpha  lower case Latin characters in alphabetical order
     \value ListUpperAlpha  upper case Latin characters in alphabetical order
+    \value ListLowerRoman  lower case roman numerals (supports up to 4999 items only)
+    \value ListUpperRoman  upper case roman numerals (supports up to 4999 items only)
     \omitvalue ListStyleUndefined
 */
 

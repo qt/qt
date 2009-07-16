@@ -66,10 +66,9 @@ QStringList QYopyKbdDriver::keys() const
 QWSKeyboardHandler* QYopyKbdDriver::create(const QString &driver,
                                            const QString &device)
 {
-    Q_UNUSED(device);
     if (driver.compare(QLatin1String("Yopy"), Qt::CaseInsensitive))
         return 0;
-    return new QWSYopyKeyboardHandler(driver);
+    return new QWSYopyKeyboardHandler(device);
 }
 
 Q_EXPORT_PLUGIN2(qwsyopykbddriver, QYopyKbdDriver)

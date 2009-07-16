@@ -56,7 +56,7 @@ static const HashTableValue JSSVGFETileElementTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFETileElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFETileElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFETileElementTableValues, 0 };
 #else
@@ -71,7 +71,7 @@ static const HashTableValue JSSVGFETileElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFETileElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFETileElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFETileElementPrototypeTableValues, 0 };
 #else

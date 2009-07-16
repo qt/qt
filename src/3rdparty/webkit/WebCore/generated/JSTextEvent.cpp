@@ -43,7 +43,7 @@ static const HashTableValue JSTextEventTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextEventTable =
+static JSC_CONST_HASHTABLE HashTable JSTextEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSTextEventTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSTextEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSTextEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextEventConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSTextEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTextEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextEventPrototypeTableValues, 0 };
 #else

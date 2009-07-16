@@ -224,7 +224,7 @@ public:
     }
     
     virtual PassRefPtr<Element> createElement(const AtomicString& tagName, ExceptionCode&);
-    PassRefPtr<DocumentFragment> createDocumentFragment ();
+    PassRefPtr<DocumentFragment> createDocumentFragment();
     PassRefPtr<Text> createTextNode(const String& data);
     PassRefPtr<Comment> createComment(const String& data);
     PassRefPtr<CDATASection> createCDATASection(const String& data, ExceptionCode&);
@@ -403,7 +403,7 @@ public:
     PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();
     PassRefPtr<EditingText> createEditingTextNode(const String&);
 
-    virtual void recalcStyle( StyleChange = NoChange );
+    virtual void recalcStyle(StyleChange = NoChange);
     virtual void updateStyleIfNeeded();
     void updateLayout();
     void updateLayoutIgnorePendingStylesheets();
@@ -787,7 +787,7 @@ public:
     void parseDNSPrefetchControlHeader(const String&);
 
     virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL);
-    virtual void addMessage(MessageDestination, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
+    virtual void addMessage(MessageDestination, MessageSource, MessageType, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
     virtual void resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString);
     virtual void scriptImported(unsigned long, const String&);
     virtual void postTask(PassRefPtr<Task>); // Executes the task on context's thread asynchronously.
@@ -990,7 +990,7 @@ public:
     void setDashboardRegionsDirty(bool f) { m_dashboardRegionsDirty = f; }
     bool dashboardRegionsDirty() const { return m_dashboardRegionsDirty; }
     bool hasDashboardRegions () const { return m_hasDashboardRegions; }
-    void setHasDashboardRegions (bool f) { m_hasDashboardRegions = f; }
+    void setHasDashboardRegions(bool f) { m_hasDashboardRegions = f; }
     const Vector<DashboardRegionValue>& dashboardRegions() const;
     void setDashboardRegions(const Vector<DashboardRegionValue>&);
 #endif

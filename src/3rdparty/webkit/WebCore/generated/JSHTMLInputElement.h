@@ -82,6 +82,7 @@ void setJSHTMLInputElementDefaultValue(JSC::ExecState*, JSC::JSObject*, JSC::JSV
 JSC::JSValue jsHTMLInputElementDefaultChecked(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLInputElementDefaultChecked(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLInputElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLInputElementValidity(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLInputElementAccept(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLInputElementAccept(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLInputElementAccessKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -236,6 +236,7 @@ private slots:
     void contextMenuEvent();
     void contextMenuEvent_ItemIgnoresTransformations();
     void update();
+    void update2();
     void views();
     void event();
     void eventsToDisabledItems();
@@ -2777,6 +2778,32 @@ void tst_QGraphicsScene::update()
     foreach (QRectF rectF, qVariantValue<QList<QRectF> >(spy.at(0).at(0)))
         region |= rectF;
     QCOMPARE(region, QRectF(-100, -100, 200, 200));
+}
+
+void tst_QGraphicsScene::update2()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(-200, -200, 200, 200);
+    CustomView view;
+    view.setScene(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+    view.repaints = 0;
+
+    // Make sure QGraphicsScene::update only requires one event-loop iteration
+    // before the view is updated.
+    scene.update();
+    qApp->processEvents();
+    QCOMPARE(view.repaints, 1);
+    view.repaints = 0;
+
+    // The same for partial scene updates.
+    scene.update(QRectF(-100, -100, 100, 100));
+    qApp->processEvents();
+    QCOMPARE(view.repaints, 1);
 }
 
 void tst_QGraphicsScene::views()

@@ -64,12 +64,7 @@ struct ScriptInstruction {
         FetchD0Constant, // constant
         FetchD1Constant, // constant
 
-
-        Add,         // NA
-        Subtract,    // NA
-        Multiply,    // NA
         Equals,      // NA
-        And,         // NA
 
         Int,         // integer
         Bool,        // boolean
@@ -294,7 +289,7 @@ struct QmlBasicScriptCompiler
 
     QmlParser::Object *context;
     QmlParser::Object *component;
-    QHash<QString, QPair<QmlParser::Object *, int> > ids;
+    QHash<QString, QmlParser::Object *> ids;
 
     bool compile(QmlJS::AST::Node *);
 
@@ -448,15 +443,6 @@ void QmlBasicScript::dump()
             qWarning().nospace() << "FETCH\t\t" << instr.fetch.idx << "\t\t" 
                                  << QByteArray(data + instr.fetch.idx);
             break;
-        case ScriptInstruction::Add:
-            qWarning().nospace() << "ADD";
-            break;
-        case ScriptInstruction::Subtract:
-            qWarning().nospace() << "SUBTRACT";
-            break;
-        case ScriptInstruction::Multiply:
-            qWarning().nospace() << "MULTIPLY";
-            break;
         case ScriptInstruction::Equals:
             qWarning().nospace() << "EQUALS";
             break;
@@ -591,10 +577,10 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node,
 
         if (ids.contains(name)) {
             instr.type = ScriptInstruction::LoadIdObject;
-            instr.fetch.idx = ids.value(name).second;
+            instr.fetch.idx = ids.value(name)->idIndex;
 
             if (type)
-                *type = ids.value(name).first;
+                *type = ids.value(name);
 
         } else {
             int d0Idx = context->metaObject()->indexOfProperty(name.toUtf8().constData());
@@ -682,11 +668,7 @@ bool QmlBasicScriptCompiler::tryBinaryExpression(AST::Node *node)
         AST::BinaryExpression *expr = 
             static_cast<AST::BinaryExpression *>(node);
 
-        if (expr->op == QSOperator::Add ||
-            expr->op == QSOperator::Sub ||
-            expr->op == QSOperator::Equal ||
-            expr->op == QSOperator::And ||
-            expr->op == QSOperator::Mul)
+        if (expr->op == QSOperator::Equal)
             return true;
     }
     return false;
@@ -703,20 +685,8 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 
         ScriptInstruction instr;
         switch (expr->op) {
-        case QSOperator::Add:
-            instr.type = ScriptInstruction::Add;
-            break;
-        case QSOperator::Sub:
-            instr.type = ScriptInstruction::Subtract;
-            break;
         case QSOperator::Equal:
             instr.type = ScriptInstruction::Equals;
-            break;
-        case QSOperator::And:
-            instr.type = ScriptInstruction::And;
-            break;
-        case QSOperator::Mul:
-            instr.type = ScriptInstruction::Multiply;
             break;
         default:
             return false;
@@ -916,44 +886,12 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
             case ScriptInstruction::Bool:
                 stack.push(QVariant(instr.boolean.value));
                 break;
-            case ScriptInstruction::Add:
-                {
-                    QVariant rhs = stack.pop();
-                    QVariant lhs = stack.pop();
-
-                    stack.push(rhs.toDouble() + lhs.toDouble());
-                }
-                break;
-            case ScriptInstruction::Subtract:
-                {
-                    QVariant rhs = stack.pop();
-                    QVariant lhs = stack.pop();
-
-                    stack.push(lhs.toDouble() - rhs.toDouble());
-                }
-                break;
-            case ScriptInstruction::Multiply:
-                {
-                    QVariant rhs = stack.pop();
-                    QVariant lhs = stack.pop();
-
-                    stack.push(rhs.toDouble() * lhs.toDouble());
-                }
-                break;
             case ScriptInstruction::Equals:
                 {
                     QVariant rhs = stack.pop();
                     QVariant lhs = stack.pop();
 
                     stack.push(rhs == lhs);
-                }
-                break;
-            case ScriptInstruction::And:
-                {
-                    QVariant rhs = stack.pop();
-                    QVariant lhs = stack.pop();
-
-                    stack.push(rhs.toBool() && lhs.toBool());
                 }
                 break;
             default:

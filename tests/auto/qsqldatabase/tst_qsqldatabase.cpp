@@ -918,7 +918,7 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("varchar(20)", QVariant::String,       QString("blah2")),
         FieldDef("nchar(20)", QVariant::String,         QString("blah3")),
         FieldDef("nvarchar2(20)", QVariant::String,     QString("blah4")),
-        FieldDef("number(10,5)", QVariant::String,      1.1234567),
+        FieldDef("number(10,5)", QVariant::Double,      1.1234567),
         FieldDef("date", QVariant::DateTime,            dt),
 #ifdef QT3_SUPPORT
 //X?    FieldDef("long raw", QVariant::ByteArray,       QByteArray(Q3CString("blah5"))),

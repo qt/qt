@@ -46,7 +46,7 @@ static const HashTableValue JSCSSImportRuleTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSImportRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSImportRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSImportRuleTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSCSSImportRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSImportRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSImportRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSImportRuleConstructorTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSCSSImportRulePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSImportRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSImportRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSImportRulePrototypeTableValues, 0 };
 #else

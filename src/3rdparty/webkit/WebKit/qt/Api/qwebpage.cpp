@@ -325,11 +325,7 @@ bool QWebPagePrivate::acceptNavigationRequest(QWebFrame *frame, const QNetworkRe
 void QWebPagePrivate::createMainFrame()
 {
     if (!mainFrame) {
-        QWebFrameData frameData;
-        frameData.ownerElement = 0;
-        frameData.allowsScrolling = true;
-        frameData.marginWidth = 0;
-        frameData.marginHeight = 0;
+        QWebFrameData frameData(page);
         mainFrame = new QWebFrame(q, &frameData);
 
         emit q->frameCreated(mainFrame);
@@ -419,23 +415,6 @@ QMenu *QWebPagePrivate::createContextMenu(const WebCore::ContextMenu *webcoreMen
     return menu;
 }
 #endif // QT_NO_CONTEXTMENU
-
-QWebFrame *QWebPagePrivate::frameAt(const QPoint &pos) const
-{
-    QWebFrame *frame = mainFrame;
-
-redo:
-    QList<QWebFrame*> children = frame->childFrames();
-    for (int i = 0; i < children.size(); ++i) {
-        if (children.at(i)->geometry().contains(pos)) {
-            frame = children.at(i);
-            goto redo;
-        }
-    }
-    if (frame->geometry().contains(pos))
-        return frame;
-    return 0;
-}
 
 void QWebPagePrivate::_q_webActionTriggered(bool checked)
 {
@@ -844,7 +823,7 @@ void QWebPagePrivate::focusInEvent(QFocusEvent *ev)
     Frame *frame = focusController->focusedFrame();
     focusController->setActive(true);
     if (frame) {
-        frame->selection()->setFocused(true);
+        focusController->setFocused(true);
     } else {
         focusController->setFocusedFrame(QWebFramePrivate::core(mainFrame));
     }
@@ -857,10 +836,7 @@ void QWebPagePrivate::focusOutEvent(QFocusEvent *ev)
     // focusInEvent() we can re-activate the frame.
     FocusController *focusController = page->focusController();
     focusController->setActive(false);
-    Frame *frame = focusController->focusedFrame();
-    if (frame) {
-        frame->selection()->setFocused(false);
-    }
+    focusController->setFocused(false);
 }
 
 void QWebPagePrivate::dragEnterEvent(QDragEnterEvent *ev)
@@ -1337,6 +1313,21 @@ QWebFrame *QWebPage::currentFrame() const
     return static_cast<WebCore::FrameLoaderClientQt *>(d->page->focusController()->focusedOrMainFrame()->loader()->client())->webFrame();
 }
 
+
+/*!
+    Returns the frame at the given point \a pos.
+
+    \sa mainFrame(), currentFrame()
+*/
+QWebFrame* QWebPage::frameAt(const QPoint& pos) const
+{
+    QWebFrame* webFrame = mainFrame();
+    if (!webFrame->geometry().contains(pos))
+        return 0;
+    QWebHitTestResult hitTestResult = webFrame->hitTestContent(pos);
+    return hitTestResult.frame();
+}
+
 /*!
     Returns a pointer to the view's history of navigated web pages.
 */
@@ -1427,6 +1418,28 @@ bool QWebPage::javaScriptPrompt(QWebFrame *frame, const QString& msg, const QStr
     }
 #endif
     return ok;
+}
+
+/*!
+    \fn bool QWebPage::shouldInterruptJavaScript()
+    \since 4.6
+    This function is called when a JavaScript program is running for a long period of time.
+
+    If the user wanted to stop the JavaScript the implementation should return true; otherwise false.
+
+    The default implementation executes the query using QMessageBox::information with QMessageBox::Yes and QMessageBox::No buttons.
+
+    \warning Because of binary compatibility constraints, this function is not virtual. If you want to
+    provide your own implementation in a QWebPage subclass, reimplement the shouldInterruptJavaScript()
+    slot in your subclass instead. QtWebKit will dynamically detect the slot and call it.
+*/
+bool QWebPage::shouldInterruptJavaScript()
+{
+#ifdef QT_NO_MESSAGEBOX
+    return false;
+#else
+    return QMessageBox::Yes == QMessageBox::information(d->view, tr("JavaScript Problem - %1").arg(mainFrame()->url().host()), tr("The script on this page appears to have a problem. Do you want to stop the script?"), QMessageBox::Yes, QMessageBox::No);
+#endif
 }
 
 /*!
@@ -2193,9 +2206,9 @@ bool QWebPage::swallowContextMenuEvent(QContextMenuEvent *event)
 {
     d->page->contextMenuController()->clearContextMenu();
 
-    if (QWebFrame* webFrame = d->frameAt(event->pos())) {
+    if (QWebFrame* webFrame = frameAt(event->pos())) {
         Frame* frame = QWebFramePrivate::core(webFrame);
-        if (Scrollbar* scrollbar = frame->view()->scrollbarUnderPoint(PlatformMouseEvent(event, 1).pos())) {
+        if (Scrollbar* scrollbar = frame->view()->scrollbarAtPoint(PlatformMouseEvent(event, 1).pos())) {
             return scrollbar->contextMenu(PlatformMouseEvent(event, 1));
         }
     }

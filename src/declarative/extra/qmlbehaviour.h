@@ -54,12 +54,10 @@ QT_MODULE(Declarative)
 
 class QmlAbstractAnimation;
 class QmlBehaviourPrivate;
-class Q_DECLARATIVE_EXPORT QmlBehaviour : public QmlPropertyValueSource, 
-                                 public QmlParserStatus
+class Q_DECLARATIVE_EXPORT QmlBehaviour : public QmlPropertyValueSource
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlBehaviour)
-    Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue)
     Q_PROPERTY(QVariant to READ toValue WRITE setToValue)
@@ -79,10 +77,6 @@ public:
     QmlList<QmlAbstractAnimation *>* operations();
 
     static bool _ignore;
-
-protected:
-    virtual void classBegin();
-    virtual void classComplete();
 
 private Q_SLOTS:
     void propertyValueChanged();

@@ -58,11 +58,12 @@ ScrollView::~ScrollView()
     platformDestroy();
 }
 
-void ScrollView::addChild(Widget* child) 
+void ScrollView::addChild(PassRefPtr<Widget> prpChild) 
 {
+    Widget* child = prpChild.get();
     ASSERT(child != this && !child->parent());
     child->setParent(this);
-    m_children.add(child);
+    m_children.add(prpChild);
     if (child->platformWidget())
         platformAddChild(child);
 }
@@ -640,7 +641,7 @@ void ScrollView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppre
     }
 }
 
-Scrollbar* ScrollView::scrollbarUnderPoint(const IntPoint& windowPoint)
+Scrollbar* ScrollView::scrollbarAtPoint(const IntPoint& windowPoint)
 {
     if (platformWidget())
         return 0;
@@ -709,8 +710,8 @@ void ScrollView::frameRectsChanged()
     if (platformWidget())
         return;
 
-    HashSet<Widget*>::const_iterator end = m_children.end();
-    for (HashSet<Widget*>::const_iterator current = m_children.begin(); current != end; ++current)
+    HashSet<RefPtr<Widget> >::const_iterator end = m_children.end();
+    for (HashSet<RefPtr<Widget> >::const_iterator current = m_children.begin(); current != end; ++current)
         (*current)->frameRectsChanged();
 }
 
@@ -802,6 +803,39 @@ bool ScrollView::scrollbarCornerPresent() const
            (m_verticalScrollbar && height() - m_verticalScrollbar->height() > 0);
 }
 
+IntRect ScrollView::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& localRect) const
+{
+    // Scrollbars won't be transformed within us
+    IntRect newRect = localRect;
+    newRect.move(scrollbar->x(), scrollbar->y());
+    return newRect;
+}
+
+IntRect ScrollView::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+{
+    IntRect newRect = parentRect;
+    // Scrollbars won't be transformed within us
+    newRect.move(-scrollbar->x(), -scrollbar->y());
+    return newRect;
+}
+
+// FIXME: test these on windows
+IntPoint ScrollView::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& localPoint) const
+{
+    // Scrollbars won't be transformed within us
+    IntPoint newPoint = localPoint;
+    newPoint.move(scrollbar->x(), scrollbar->y());
+    return newPoint;
+}
+
+IntPoint ScrollView::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+{
+    IntPoint newPoint = parentPoint;
+    // Scrollbars won't be transformed within us
+    newPoint.move(-scrollbar->x(), -scrollbar->y());
+    return newPoint;
+}
+
 void ScrollView::setParentVisible(bool visible)
 {
     if (isParentVisible() == visible)
@@ -812,8 +846,8 @@ void ScrollView::setParentVisible(bool visible)
     if (!isSelfVisible())
         return;
         
-    HashSet<Widget*>::iterator end = m_children.end();
-    for (HashSet<Widget*>::iterator it = m_children.begin(); it != end; ++it)
+    HashSet<RefPtr<Widget> >::iterator end = m_children.end();
+    for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
         (*it)->setParentVisible(visible);
 }
 
@@ -822,8 +856,8 @@ void ScrollView::show()
     if (!isSelfVisible()) {
         setSelfVisible(true);
         if (isParentVisible()) {
-            HashSet<Widget*>::iterator end = m_children.end();
-            for (HashSet<Widget*>::iterator it = m_children.begin(); it != end; ++it)
+            HashSet<RefPtr<Widget> >::iterator end = m_children.end();
+            for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
                 (*it)->setParentVisible(true);
         }
     }
@@ -835,8 +869,8 @@ void ScrollView::hide()
 {
     if (isSelfVisible()) {
         if (isParentVisible()) {
-            HashSet<Widget*>::iterator end = m_children.end();
-            for (HashSet<Widget*>::iterator it = m_children.begin(); it != end; ++it)
+            HashSet<RefPtr<Widget> >::iterator end = m_children.end();
+            for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
                 (*it)->setParentVisible(false);
         }
         setSelfVisible(false);

@@ -24,7 +24,9 @@
 #include "HTMLFormElement.h"
 #include "HTMLTextAreaElement.h"
 #include "JSHTMLFormElement.h"
+#include "JSValidityState.h"
 #include "KURL.h"
+#include "ValidityState.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
@@ -38,10 +40,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLTextAreaElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLTextAreaElementTableValues[16] =
+static const HashTableValue JSHTMLTextAreaElementTableValues[17] =
 {
     { "defaultValue", DontDelete, (intptr_t)jsHTMLTextAreaElementDefaultValue, (intptr_t)setJSHTMLTextAreaElementDefaultValue },
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLTextAreaElementForm, (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLTextAreaElementValidity, (intptr_t)0 },
     { "accessKey", DontDelete, (intptr_t)jsHTMLTextAreaElementAccessKey, (intptr_t)setJSHTMLTextAreaElementAccessKey },
     { "cols", DontDelete, (intptr_t)jsHTMLTextAreaElementCols, (intptr_t)setJSHTMLTextAreaElementCols },
     { "disabled", DontDelete, (intptr_t)jsHTMLTextAreaElementDisabled, (intptr_t)setJSHTMLTextAreaElementDisabled },
@@ -58,11 +61,11 @@ static const HashTableValue JSHTMLTextAreaElementTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTextAreaElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTextAreaElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSHTMLTextAreaElementTableValues, 0 };
 #else
-    { 35, 31, JSHTMLTextAreaElementTableValues, 0 };
+    { 36, 31, JSHTMLTextAreaElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -72,7 +75,7 @@ static const HashTableValue JSHTMLTextAreaElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTextAreaElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTextAreaElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTextAreaElementConstructorTableValues, 0 };
 #else
@@ -112,7 +115,7 @@ static const HashTableValue JSHTMLTextAreaElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTextAreaElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTextAreaElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSHTMLTextAreaElementPrototypeTableValues, 0 };
 #else
@@ -160,6 +163,13 @@ JSValue jsHTMLTextAreaElementForm(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLTextAreaElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()))->impl());
+    return toJS(exec, WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLTextAreaElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)

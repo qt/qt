@@ -405,9 +405,10 @@ QString QmlComponent::errorsString() const
     QString ret;
     if(!isError())
         return ret;
-    foreach(const QmlError &e, d->errors){
-        ret += e.url().toString() + ":" + QString::number(e.line()) + " "
-                + e.description() + "\n";
+    foreach(const QmlError &e, d->errors) {
+        ret += e.url().toString() + QLatin1String(":") + 
+               QString::number(e.line()) + QLatin1String(" ") + 
+               e.description() + QLatin1String("\n");
     }
     return ret;
 }
@@ -532,15 +533,12 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         static_cast<QmlContextPrivate*>(ctxt->d_ptr)->startLine = d->cc->bytecode.at(d->start - 1).line;
         static_cast<QmlContextPrivate*>(ctxt->d_ptr)->endLine = d->cc->bytecode.at(d->start - 1).createComponent.endLine;
     }
-    ctxt->activate();
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);
 
     if (vme.isError()) 
         d->errors = vme.errors();
-
-    ctxt->deactivate();
 
     QmlEnginePrivate *ep = d->engine->d_func();
     if (ep->rootComponent == this) {

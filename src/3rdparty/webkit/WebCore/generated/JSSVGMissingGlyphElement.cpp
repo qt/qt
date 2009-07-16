@@ -40,7 +40,7 @@ static const HashTableValue JSSVGMissingGlyphElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMissingGlyphElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMissingGlyphElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGMissingGlyphElementPrototypeTableValues, 0 };
 #else

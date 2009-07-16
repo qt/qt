@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,36 +34,70 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
+#ifndef QMLREWRITE_P_H
+#define QMLREWRITE_P_H
 
-#include <QtTest/QtTest>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class tst_Exception: public QObject
+#include "rewriter/textwriter_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljsnodepool_p.h"
+
+QT_BEGIN_NAMESPACE
+
+namespace QmlRewrite {
+using namespace QmlJS;
+
+class RewriteBinding: protected AST::Visitor
 {
-    Q_OBJECT
+    unsigned _position;
+    TextWriter *_writer;
 
-private slots:
-    void throwException() const;
+public:
+    QString operator()(const QString &code);
+
+protected:
+    using AST::Visitor::visit;
+
+    void accept(AST::Node *node);
+    QString rewrite(QString code, unsigned position, AST::Statement *node);
+    virtual bool visit(AST::Block *ast);
+    virtual bool visit(AST::ExpressionStatement *ast);
+    virtual bool visit(AST::NumericLiteral *node);
 };
 
-/*!
- \internal
-
- We simply throw an exception to check that we get sane output/reporting.
- */
-void tst_Exception::throwException() const
+class RewriteNumericLiterals: protected AST::Visitor
 {
-    /* When exceptions are disabled, some compilers, at least linux-g++, treat
-     * exception clauses as hard errors. */
-#ifndef QT_NO_EXCEPTIONS
-    throw 3;
-#endif
-}
+    unsigned _position;
+    TextWriter *_writer;
 
-QTEST_MAIN(tst_Exception)
+public:
+    QString operator()(QString code, unsigned position, AST::Node *node);
 
-#include "tst_exception.moc"
+protected:
+    using AST::Visitor::visit;
+
+    virtual bool visit(AST::NumericLiteral *node);
+};
+
+} // namespace QmlRewrite
+
+QT_END_NAMESPACE
+
+#endif // QMLREWRITE_P_H
+

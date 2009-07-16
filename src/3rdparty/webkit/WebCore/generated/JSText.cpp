@@ -44,7 +44,7 @@ static const HashTableValue JSTextTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextTable =
+static JSC_CONST_HASHTABLE HashTable JSTextTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSTextTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSTextConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSTextConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextConstructorTableValues, 0 };
 #else
@@ -98,7 +98,7 @@ static const HashTableValue JSTextPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTextPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSTextPrototypeTableValues, 0 };
 #else

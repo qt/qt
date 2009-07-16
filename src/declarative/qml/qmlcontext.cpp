@@ -405,56 +405,6 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
 }
 
 /*!
-    Activate this bind context.
-
-    \sa QmlEngine::activeContext() QmlContext::activeContext()
-*/
-void QmlContext::activate()
-{
-    QmlEnginePrivate *ep = engine()->d_func();
-    ep->activeContexts.push(this);
-    ep->setCurrentBindContext(this);
-    ep->contextActivated(this);
-}
-
-/*!
-    Deactivate this bind context.  The previously active bind context will
-    become active, or, if there was no previously active bind context, no
-    context will be active.
-
-    \sa QmlEngine::activeContext() QmlContext::activeContext()
-*/
-void QmlContext::deactivate()
-{
-    QmlEnginePrivate *ep = engine()->d_func();
-    Q_ASSERT(ep->activeContexts.top() == this);
-    ep->activeContexts.pop();
-    if (ep->activeContexts.isEmpty())
-        ep->setCurrentBindContext(0);
-    else
-        ep->setCurrentBindContext(ep->activeContexts.top());
-    ep->contextDeactivated(this);
-}
-
-/*!
-    Returns the currently active context, or 0 if no context is active.
-
-    This method is thread-safe.  The active context is maintained individually
-    for each thread.  This method is equivalent to
-    \code
-    QmlEngine::activeEngine()->activeContext()
-    \endcode
-*/
-QmlContext *QmlContext::activeContext()
-{
-    QmlEngine *engine = QmlEngine::activeEngine();
-    if (engine)
-        return engine->activeContext();
-    else
-        return 0;
-}
-
-/*!
     Resolves the URL \a src relative to the URL of the
     containing component. If \a src is absolute, it is
     simply returned. If there is no containing component,

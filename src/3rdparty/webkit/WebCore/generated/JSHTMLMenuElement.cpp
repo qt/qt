@@ -39,7 +39,7 @@ static const HashTableValue JSHTMLMenuElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMenuElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMenuElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLMenuElementTableValues, 0 };
 #else
@@ -53,7 +53,7 @@ static const HashTableValue JSHTMLMenuElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMenuElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMenuElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLMenuElementConstructorTableValues, 0 };
 #else
@@ -91,7 +91,7 @@ static const HashTableValue JSHTMLMenuElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMenuElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMenuElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLMenuElementPrototypeTableValues, 0 };
 #else

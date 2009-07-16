@@ -46,7 +46,7 @@ static const HashTableValue JSSVGDocumentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDocumentTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDocumentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGDocumentTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSSVGDocumentPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGDocumentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGDocumentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGDocumentPrototypeTableValues, 0 };
 #else

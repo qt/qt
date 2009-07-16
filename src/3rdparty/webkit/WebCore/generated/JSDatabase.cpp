@@ -44,7 +44,7 @@ static const HashTableValue JSDatabaseTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDatabaseTable =
+static JSC_CONST_HASHTABLE HashTable JSDatabaseTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDatabaseTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSDatabasePrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDatabasePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDatabasePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSDatabasePrototypeTableValues, 0 };
 #else

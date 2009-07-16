@@ -212,6 +212,55 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                 }
             }
             break;
+        case QTextListFormat::ListLowerRoman:
+        case QTextListFormat::ListUpperRoman:
+            {
+                if (item < 5000) {
+                    QByteArray romanNumeral;
+
+                    // works for up to 4999 items
+                    static const char romanSymbolsLower[] = "iiivixxxlxcccdcmmmm";
+                    static const char romanSymbolsUpper[] = "IIIVIXXXLXCCCDCMMMM";
+                    QByteArray romanSymbols; // wrap to have "mid"
+                    if (style == QTextListFormat::ListLowerRoman)
+                        romanSymbols = QByteArray::fromRawData(romanSymbolsLower, sizeof(romanSymbolsLower));
+                    else
+                        romanSymbols = QByteArray::fromRawData(romanSymbolsUpper, sizeof(romanSymbolsUpper));
+
+                    int c[] = { 1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000 };
+                    int n = item;
+                    for (int i = 12; i >= 0; n %= c[i], i--) {
+                        int q = n / c[i];
+                        if (q > 0) {
+                            int startDigit = i + (i+3)/4;
+                            int numDigits;
+                            if (i % 4) { 
+                                // c[i] == 4|5|9|40|50|90|400|500|900
+                                if ((i-2) % 4) {
+                                    // c[i] == 4|9|40|90|400|900 => with substraction (IV, IX, XL, XC, ...)
+                                    numDigits = 2;
+                                }
+                                else {
+                                    // c[i] == 5|50|500 (V, L, D)
+                                    numDigits = 1;
+                                }
+                            }
+                            else {
+                                // c[i] == 1|10|100|1000 (I, II, III, X, XX, ...)
+                                numDigits = q;
+                            }
+
+                            romanNumeral.append(romanSymbols.mid(startDigit, numDigits));
+                        }
+                    }
+                    result = QString::fromLatin1(romanNumeral);
+                }
+                else {
+                    result = QLatin1String("?");
+                }
+
+	    }
+	    break;
         default:
             Q_ASSERT(false);
     }

@@ -60,7 +60,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <windows.h>
+#include <qt_windows.h>
 #include <limits.h>
 
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT-0 < 0x0500)

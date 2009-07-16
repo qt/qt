@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
-
 int QmlCompiledData::pack(const char *data, size_t size)
 {
     const char *p = packData.constData();
@@ -193,9 +191,6 @@ const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
 
 void QmlCompiledData::dumpInstructions()
 {
-    if (!compilerDump())
-        return;
-
     if (!name.isEmpty())
         qWarning() << name;
     qWarning() << "Index\tLine\tOperation\t\tData1\tData2\t\tComments";
