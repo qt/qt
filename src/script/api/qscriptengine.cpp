@@ -661,10 +661,9 @@ JSC::JSValue functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, c
             break;
         result.append(s);
     }
-    if (!exec->hadException()) {
-        qDebug(qPrintable(result));
+    if (exec->hadException())
         return exec->exception();
-    }
+    qDebug(qPrintable(result));
     return JSC::jsUndefined();
 }
 
