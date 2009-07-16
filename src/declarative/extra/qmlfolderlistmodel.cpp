@@ -161,7 +161,9 @@ void QmlFolderListModel::classComplete()
 bool QmlFolderListModel::isFolder(int index) const
 {
     Q_D(const QmlFolderListModel);
-    return d->model.isDir(d->model.index(index, 0, d->folderIndex));
+    if (index != -1)
+        return d->model.isDir(d->model.index(index, 0, d->folderIndex));
+    return false;
 }
 
 void QmlFolderListModel::refresh()
