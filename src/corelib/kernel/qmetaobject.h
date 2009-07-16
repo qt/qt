@@ -189,6 +189,7 @@ public:
     bool isUser(const QObject *obj = 0) const;
     bool isDynamic() const;
     bool isConstant() const;
+    bool isFinal() const;
 
     bool isFlagType() const;
     bool isEnumType() const;
