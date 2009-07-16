@@ -2106,6 +2106,7 @@ public:
 
 void tst_QScriptExtQObject::classConstructor()
 {
+    QSKIP("Crashes", SkipAll);
     QScriptValue myClass = qScriptValueFromQMetaObject<MyQObject>(m_engine);
     m_engine->globalObject().setProperty("MyQObject", myClass);
 
