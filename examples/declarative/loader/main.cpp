@@ -5,6 +5,7 @@
 #include <QmlContext>
 #include <QmlComponent>
 #include <qfxview.h>
+#include "qmlpalette.h"
 
 QFxView *canvas = 0;
 
@@ -61,6 +62,7 @@ int main(int argc, char *argv[])
     canvas = new QFxView;
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("qmlLauncher", launcher);
+    ctxt->setContextProperty("activePalette", new QmlPalette);
     canvas->setUrl(QUrl("qrc:/loader.qml"));
     canvas->execute();
     canvas->show();
