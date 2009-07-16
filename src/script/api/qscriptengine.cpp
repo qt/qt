@@ -2220,7 +2220,6 @@ QScriptValue QScriptEngine::create(int type, const void *ptr)
 
 QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
 {
-    Q_Q(QScriptEngine);
     Q_ASSERT(ptr != 0);
     QScriptValue result;
     QScriptTypeInfo *info = m_typeInfos.value(type);
@@ -2335,7 +2334,7 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
         }
     }
     if (result.isObject() && info && info->prototype
-        && result.prototype().strictlyEquals(q->globalObject().property(QLatin1String("prototype")))) {
+        && JSC::JSValue::strictEqual(scriptValueToJSCValue(result.prototype()), globalObject->objectPrototype())) {
         result.setPrototype(scriptValueFromJSCValue(info->prototype));
     }
     return result;
