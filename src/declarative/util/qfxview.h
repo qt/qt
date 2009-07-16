@@ -88,9 +88,9 @@ public:
 
     void dumpRoot();
 
-    static void printErrorLine(const QmlError &);
 Q_SIGNALS:
     void sceneResized(QSize size);
+    void errors(const QList<QmlError> &error);
 
 private Q_SLOTS:
     void continueExecute();
