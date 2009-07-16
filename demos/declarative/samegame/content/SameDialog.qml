@@ -5,8 +5,8 @@ Rect {
     opacity: 0
     opacity: Behavior { 
         SequentialAnimation {
-            NumberAnimation {property: "opacity"; duration: 1000 }
-            NumberAnimation {property: "opacity"; to: 0;  duration: 1000 }
+            NumberAnimation {property: "opacity"; duration: 1500 }
+            NumberAnimation {property: "opacity"; to: 0;  duration: 1500 }
         }
     }
     color: "white"

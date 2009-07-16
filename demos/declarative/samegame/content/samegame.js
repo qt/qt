@@ -145,13 +145,35 @@ function shuffleDown()
 
 function victoryCheck()
 {
-    //Only awards bonuses at the moment
+    //awards bonuses
     deservesBonus = true;
     for(xIdx=maxX-1; xIdx>=0; xIdx--)
         if(board[index(xIdx, maxY - 1)] != null)
             deservesBonus = false;
     if(deservesBonus)
-        gameCanvas.score += 250;
+        gameCanvas.score += 500;
+    //Checks for game over
+    if(deservesBonus || noMoreMoves()){
+        dialog.text = "Game Over. Your score is " + gameCanvas.score;
+        dialog.opacity = 1;
+    }
+}
+
+function noMoreMoves()
+{
+    return !floodMoveCheck(0, maxY-1, -1);
+}
+
+function floodMoveCheck(xIdx, yIdx, type)
+{
+    if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
+        return false;
+    if(board[index(xIdx, yIdx)] == null)
+        return false;
+    myType = board[index(xIdx, yIdx)].type;
+    if(type == myType)
+        return true;
+    return floodMoveCheck(xIdx + 1, yIdx, myType) || floodMoveCheck(xIdx, yIdx - 1, myType);
 }
 
 //Need a simpler method of doing this?
