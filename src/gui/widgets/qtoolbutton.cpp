@@ -378,7 +378,11 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     if (d->hasMenu())
         option->features |= QStyleOptionToolButton::HasMenu;
 #endif
-    option->toolButtonStyle = d->toolButtonStyle;
+    if (d->toolButtonStyle == Qt::ToolButtonSystemDefault) {
+        option->toolButtonStyle = Qt::ToolButtonStyle(style()->styleHint(QStyle::SH_ToolButtonStyle, option, this));
+    } else
+        option->toolButtonStyle = d->toolButtonStyle;
+
     if (d->icon.isNull() && d->arrowType == Qt::NoArrow && !forceNoText) {
         if (!d->text.isEmpty())
             option->toolButtonStyle = Qt::ToolButtonTextOnly;
@@ -475,6 +479,10 @@ QSize QToolButton::minimumSizeHint() const
     or text beside/below the icon.
 
     The default is Qt::ToolButtonIconOnly.
+
+    If you want your toolbars to depend on system settings,
+    as is possible in GNOME and KDE desktop environments you should
+    use the ToolButtonSystemDefault.
 
     QToolButton automatically connects this slot to the relevant
     signal in the QMainWindow in which is resides.

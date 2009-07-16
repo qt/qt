@@ -93,6 +93,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
 {
+    setToolButtonStyle(Qt::ToolButtonSystemDefault);
+
     if (usesDefaultCollection()) {
         MainWindow::collectionFileDirectory(true);
         m_helpEngine = new QHelpEngine(MainWindow::defaultHelpCollectionFileName(),
@@ -448,12 +450,14 @@ void MainWindow::setupActions()
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
         SLOT(copySelection()));
+    m_copyAction->setIconText("&Copy");
     m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
     m_copyAction->setShortcuts(QKeySequence::Copy);
     m_copyAction->setEnabled(false);
 
     m_findAction = menu->addAction(tr("&Find in Text..."), m_centralWidget,
         SLOT(showTextSearch()));
+    m_findAction->setIconText("&Find");
     m_findAction->setIcon(QIcon(resourcePath + QLatin1String("/find.png")));
     m_findAction->setShortcuts(QKeySequence::Find);
 
@@ -513,6 +517,7 @@ void MainWindow::setupActions()
 
     m_syncAction = menu->addAction(tr("Sync with Table of Contents"), this,
         SLOT(syncContents()));
+    m_syncAction->setIconText("Sync");
     m_syncAction->setIcon(QIcon(resourcePath + QLatin1String("/synctoc.png")));
 
     menu->addSeparator();

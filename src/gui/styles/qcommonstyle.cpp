@@ -840,6 +840,11 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 
 
 #ifdef Q_WS_X11 // These functions are used to parse the X11 freedesktop icon spec
+static int kdeVersion()
+{
+    static int kdeVersion = qgetenv("KDE_SESSION_VERSION").toInt();
+    return kdeVersion;
+}
 
 void QCommonStylePrivate::lookupIconTheme() const
 {
@@ -858,8 +863,7 @@ void QCommonStylePrivate::lookupIconTheme() const
 
     QFileInfo fileInfo(QLatin1String("/usr/share/icons/default.kde"));
     QDir dir(fileInfo.canonicalFilePath());
-    int kdeVersion = qgetenv("KDE_SESSION_VERSION").toInt();
-    QString kdeDefault = kdeVersion >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
+    QString kdeDefault = kdeVersion() >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
     QString defaultTheme = fileInfo.exists() ? dir.dirName() : kdeDefault;
     QSettings settings(QApplicationPrivate::kdeHome() +
                        QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
@@ -996,6 +1000,29 @@ QIcon QCommonStylePrivate::createIcon(const QString &name) const
     icon.addPixmap(findIcon(24, name));
     icon.addPixmap(findIcon(32, name));
     return icon;
+}
+/*!internal
+
+Checks if you are running KDE and looks up the toolbar
+from the KDE configuration file
+
+*/
+int QCommonStylePrivate::lookupToolButtonStyle() const
+{
+    int result = Qt::ToolButtonIconOnly;
+    if (kdeVersion() >= 4) {
+        QSettings settings(QApplicationPrivate::kdeHome() +
+                           QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        settings.beginGroup(QLatin1String("Toolbar style"));
+        QString toolbarStyle = settings.value(QLatin1String("ToolButtonStyle"), QLatin1String("TextBesideIcon")).toString();
+        if (toolbarStyle == QLatin1String("TextBesideIcon"))
+            result = Qt::ToolButtonTextBesideIcon;
+        else if (toolbarStyle == QLatin1String("TextOnly"))
+            result = Qt::ToolButtonTextOnly;
+        else if (toolbarStyle == QLatin1String("TextUnderIcon"))
+            result = Qt::ToolButtonTextUnderIcon;
+    }
+    return result;
 }
 
 #endif //Q_WS_X11
@@ -5289,6 +5316,16 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
 #endif
     case SH_DockWidget_ButtonsHaveFrame:
         ret = true;
+        break;
+    case SH_ToolButtonStyle:
+        ret = Qt::ToolButtonIconOnly;
+#ifdef Q_WS_X11
+        {
+            Q_D(const QCommonStyle);
+            static int buttonStyle = d->lookupToolButtonStyle();
+            return buttonStyle;
+        }
+#endif
         break;
     default:
         ret = 0;
