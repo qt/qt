@@ -188,6 +188,7 @@ void QmlFollowPrivate::start()
         property.write(currentValue);
     } else if (sourceValue != currentValue && clock.state() != QAbstractAnimation::Running) {
         lastTime = 0;
+        currentValue = property.read().toDouble();
         clock.start(); // infinity??
     }
 }
