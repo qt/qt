@@ -674,12 +674,9 @@ bool QStyledItemDelegate::eventFilter(QObject *object, QEvent *event)
     } else if (event->type() == QEvent::FocusOut || event->type() == QEvent::Hide) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
-            QWidget *w = QApplication::focusWidget();
-            while (w) { // don't worry about focus changes internally in the editor
-                if (w == editor)
-                    return false;
-                w = w->parentWidget();
-            }
+            if (editor->isAncestorOf(QApplication::focusWidget()))
+                return false; // don't worry about focus changes internally in the editor
+
 #ifndef QT_NO_DRAGANDDROP
             // The window may lose focus during an drag operation.
             // i.e when dragging involves the taskbar on Windows.
