@@ -109,7 +109,7 @@ public:
     void advance();
 
     void pushDirectory(const QFileInfo &fileInfo);
-    bool checkAndPushDirectory(const QFileInfo &);
+    void checkAndPushDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
     QSet<QString> visitedLinks;
@@ -210,35 +210,34 @@ void QDirIteratorPrivate::advance()
 /*!
     \internal
  */
-bool QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
+void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
 {
     // If we're doing flat iteration, we're done.
     if (!(iteratorFlags & QDirIterator::Subdirectories))
-        return false;
+        return;
 
     // Never follow non-directory entries
     if (!fileInfo.isDir())
-        return false;
+        return;
 
     // Follow symlinks only when asked
     if (!(iteratorFlags & QDirIterator::FollowSymlinks) && fileInfo.isSymLink())
-        return false;
+        return;
 
     // Never follow . and ..
     QString fileName = fileInfo.fileName();
     if (QLatin1String(".") == fileName || QLatin1String("..") == fileName)
-        return false;
+        return;
 
     // No hidden directories unless requested
     if (!(filters & QDir::AllDirs) && !(filters & QDir::Hidden) && fileInfo.isHidden())
-        return false;
+        return;
 
     // Stop link loops
     if (visitedLinks.contains(fileInfo.canonicalFilePath()))
-        return false;
+        return;
 
     pushDirectory(fileInfo);
-    return true;
 }
 
 /*!
