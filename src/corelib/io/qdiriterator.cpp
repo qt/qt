@@ -106,8 +106,7 @@ public:
                         QDir::Filters filters, QDirIterator::IteratorFlags flags);
     ~QDirIteratorPrivate();
 
-    void pushSubDirectory(const QFileInfo &fileInfo, const QStringList &nameFilters,
-                          QDir::Filters filters);
+    void pushSubDirectory(const QFileInfo &fileInfo);
     void advance();
     bool shouldFollowDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
@@ -141,7 +140,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
     if (QDir::NoFilter == filters)
         this->filters = QDir::AllEntries;
 
-    pushSubDirectory(nextFileInfo, nameFilters, filters);
+    pushSubDirectory(nextFileInfo);
 }
 
 /*!
@@ -155,8 +154,7 @@ QDirIteratorPrivate::~QDirIteratorPrivate()
 /*!
     \internal
 */
-void QDirIteratorPrivate::pushSubDirectory(const QFileInfo &fileInfo, const QStringList &nameFilters,
-                                           QDir::Filters filters)
+void QDirIteratorPrivate::pushSubDirectory(const QFileInfo &fileInfo)
 {
     QString path = fileInfo.filePath();
 
@@ -189,7 +187,7 @@ void QDirIteratorPrivate::advance()
     if (followNextDir) {
         // Start by navigating into the current directory.
         QAbstractFileEngineIterator *it = fileEngineIterators.top();
-        pushSubDirectory(it->currentFileInfo(), it->nameFilters(), it->filters());
+        pushSubDirectory(it->currentFileInfo());
         followNextDir = false;
     }
 
@@ -210,7 +208,7 @@ void QDirIteratorPrivate::advance()
                 return;
 
             } else if (shouldFollowDirectory(info)) {
-                pushSubDirectory(info, it->nameFilters(), it->filters());
+                pushSubDirectory(info);
                 foundDirectory = true;
                 break;
             }
