@@ -205,6 +205,7 @@ void QDirIteratorPrivate::advance()
     }
 
     currentFileInfo = nextFileInfo;
+    nextFileInfo = QFileInfo();
 }
 
 /*!
@@ -440,8 +441,6 @@ QDirIterator::~QDirIterator()
 */
 QString QDirIterator::next()
 {
-    if (!hasNext())
-        return QString();
     d->advance();
     return filePath();
 }
