@@ -324,6 +324,8 @@ QFxItem *QFxAnchors::fill() const
 void QFxAnchors::setFill(QFxItem *f)
 {
     Q_D(QFxAnchors);
+    if (!f)
+        return;
     if (f != d->item->itemParent() && f->itemParent() != d->item->itemParent()){
         qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
         return;
@@ -351,10 +353,8 @@ QFxItem *QFxAnchors::centeredIn() const
 void QFxAnchors::setCenteredIn(QFxItem* c)
 {
     Q_D(QFxAnchors);
-    if (!c){
-        qmlInfo(d->item) << "Cannot center in null item.";
+    if (!c)
         return;
-    }
     if (c != d->item->itemParent() && c->itemParent() != d->item->itemParent()){
         qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
         return;
