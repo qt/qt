@@ -2,7 +2,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,7 +35,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -154,15 +154,15 @@ public:
     T_XOR = 78,
     T_XOR_EQ = 79,
 
-    ACCEPT_STATE = 621,
-    RULE_COUNT = 341,
-    STATE_COUNT = 622,
+    ACCEPT_STATE = 616,
+    RULE_COUNT = 337,
+    STATE_COUNT = 617,
     TERMINAL_COUNT = 95,
-    NON_TERMINAL_COUNT = 105,
+    NON_TERMINAL_COUNT = 103,
 
-    GOTO_INDEX_OFFSET = 622,
-    GOTO_INFO_OFFSET = 2247,
-    GOTO_CHECK_OFFSET = 2247
+    GOTO_INDEX_OFFSET = 617,
+    GOTO_INFO_OFFSET = 2231,
+    GOTO_CHECK_OFFSET = 2231
   };
 
   static const char  *const spell [];

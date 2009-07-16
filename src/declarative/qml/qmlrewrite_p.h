@@ -39,76 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QFXVIEW_H
-#define QFXVIEW_H
+#ifndef QMLREWRITE_P_H
+#define QMLREWRITE_P_H
 
-#include <QtCore/qdatetime.h>
-#include <QtGui/qgraphicssceneevent.h>
-#include <QtGui/qwidget.h>
-#include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qsimplecanvas.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "rewriter/textwriter_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljsnodepool_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+namespace QmlRewrite {
+using namespace QmlJS;
 
-class QFxItem;
-class QmlEngine;
-class QmlContext;
-class QmlError;
-
-class QFxViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxView : public QSimpleCanvas
+class RewriteBinding: protected AST::Visitor
 {
-Q_OBJECT
+    unsigned _position;
+    TextWriter *_writer;
+
 public:
-    explicit QFxView(QWidget *parent = 0);
-    QFxView(QSimpleCanvas::CanvasMode mode, QWidget* parent = 0);
-
-    virtual ~QFxView();
-
-    void setUrl(const QUrl&);
-    void setQml(const QString &qml, const QString &filename=QString());
-    QString qml() const;
-    QmlEngine* engine();
-    QmlContext* rootContext();
-    virtual void execute();
-    virtual void reset();
-
-    virtual QFxItem* addItem(const QString &qml, QFxItem* parent=0);
-    virtual void clearItems();
-
-    virtual QFxItem *root() const;
-
-    void setContentResizable(bool);
-    bool contentResizable() const;
-    QSize sizeHint() const;
-
-    void dumpRoot();
-
-Q_SIGNALS:
-    void sceneResized(QSize size);
-    void errors(const QList<QmlError> &error);
-
-private Q_SLOTS:
-    void continueExecute();
-    void sizeChanged();
+    QString operator()(const QString &code);
 
 protected:
-    virtual void resizeEvent(QResizeEvent *);
-    void focusInEvent(QFocusEvent *);
-    void focusOutEvent(QFocusEvent *);
-    void timerEvent(QTimerEvent*);
+    using AST::Visitor::visit;
 
-private:
-    friend class QFxViewPrivate;
-    QFxViewPrivate *d;
+    void accept(AST::Node *node);
+    QString rewrite(QString code, unsigned position, AST::Statement *node);
+    virtual bool visit(AST::Block *ast);
+    virtual bool visit(AST::ExpressionStatement *ast);
+    virtual bool visit(AST::NumericLiteral *node);
 };
+
+class RewriteNumericLiterals: protected AST::Visitor
+{
+    unsigned _position;
+    TextWriter *_writer;
+
+public:
+    QString operator()(QString code, unsigned position, AST::Node *node);
+
+protected:
+    using AST::Visitor::visit;
+
+    virtual bool visit(AST::NumericLiteral *node);
+};
+
+} // namespace QmlRewrite
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QMLREWRITE_P_H
 
-#endif // QFXVIEW_H

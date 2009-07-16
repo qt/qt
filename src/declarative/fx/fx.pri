@@ -35,6 +35,8 @@ HEADERS += \
            fx/qfxrepeater_p.h \
            fx/qfxscalegrid.h \
            fx/qfxshadowfilter.h \
+           fx/qfxlineedit.h \
+           fx/qfxlineedit_p.h \
            fx/qfxtextedit.h \
            fx/qfxtextedit_p.h \
            fx/qfxtext.h \
@@ -70,6 +72,7 @@ SOURCES += \
            fx/qfxrepeater.cpp \
            fx/qfxscalegrid.cpp \
            fx/qfxshadowfilter.cpp \
+           fx/qfxlineedit.cpp \
            fx/qfxtext.cpp \
            fx/qfxtextedit.cpp \
            fx/qfxtransform.cpp \

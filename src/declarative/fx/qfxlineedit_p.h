@@ -39,76 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QFXVIEW_H
-#define QFXVIEW_H
+#ifndef QFXLINEEDIT_P_H
+#define QFXLINEEDIT_P_H
 
-#include <QtCore/qdatetime.h>
-#include <QtGui/qgraphicssceneevent.h>
-#include <QtGui/qwidget.h>
-#include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qsimplecanvas.h>
-
-QT_BEGIN_HEADER
+#include "qfxlineedit.h"
+#include "qml.h"
+#include "qfxpainteditem_p.h"
+#include "private/qlinecontrol_p.h"
+#include <QPointer>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QFxItem;
-class QmlEngine;
-class QmlContext;
-class QmlError;
-
-class QFxViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxView : public QSimpleCanvas
+class QFxLineEditPrivate : public QFxPaintedItemPrivate
 {
-Q_OBJECT
+    Q_DECLARE_PUBLIC(QFxLineEdit);
 public:
-    explicit QFxView(QWidget *parent = 0);
-    QFxView(QSimpleCanvas::CanvasMode mode, QWidget* parent = 0);
+    QFxLineEditPrivate() : control(new QLineControl(QString())),
+                 font(0), color((QRgb)0), style(QFxText::Normal),
+                 hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop),
+                 styleColor((QRgb)0), oldScroll(0), hscroll(0),
+                 focused(false), awesome(false)
+    {
+    }
 
-    virtual ~QFxView();
+    ~QFxLineEditPrivate()
+    {
+    }
 
-    void setUrl(const QUrl&);
-    void setQml(const QString &qml, const QString &filename=QString());
-    QString qml() const;
-    QmlEngine* engine();
-    QmlContext* rootContext();
-    virtual void execute();
-    virtual void reset();
+    void init();
+    void startCreatingCursor();
 
-    virtual QFxItem* addItem(const QString &qml, QFxItem* parent=0);
-    virtual void clearItems();
+    QLineControl* control;
 
-    virtual QFxItem *root() const;
+    QmlFont *font;
+    QColor  color;
+    QFxText::TextStyle style;
+    QColor  styleColor;
+    QFxText::HAlignment hAlign;
+    QFxText::VAlignment vAlign;
+    QPointer<QmlComponent> cursorComponent;
+    QPointer<QFxItem> cursorItem;
 
-    void setContentResizable(bool);
-    bool contentResizable() const;
-    QSize sizeHint() const;
+    int oldSelectLength;
+    int oldHeight;
+    int oldWidth;
+    bool oldValidity;
+    int hscroll;
+    int oldScroll;
+    bool focused;
+    bool awesome;
 
-    void dumpRoot();
-
-Q_SIGNALS:
-    void sceneResized(QSize size);
-    void errors(const QList<QmlError> &error);
-
-private Q_SLOTS:
-    void continueExecute();
-    void sizeChanged();
-
-protected:
-    virtual void resizeEvent(QResizeEvent *);
-    void focusInEvent(QFocusEvent *);
-    void focusOutEvent(QFocusEvent *);
-    void timerEvent(QTimerEvent*);
-
-private:
-    friend class QFxViewPrivate;
-    QFxViewPrivate *d;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif
 
-#endif // QFXVIEW_H

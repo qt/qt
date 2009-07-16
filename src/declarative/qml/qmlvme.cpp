@@ -116,7 +116,6 @@ void QmlVME::runDeferred(QObject *object)
         return;
 
     QmlContext *ctxt = data->context;
-    ctxt->activate();
     QmlCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
@@ -124,17 +123,10 @@ void QmlVME::runDeferred(QObject *object)
     stack.push(object);
 
     run(stack, ctxt, comp, start, count);
-    ctxt->deactivate();
 }
 
 QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
 {
-    // XXX - All instances of QmlContext::activeContext() here should be 
-    // replaced with the use of ctxt.  However, this cannot be done until 
-    // behaviours stop modifying the active context and expecting the 
-    // instantiation to notice.  Instead, QmlParserStatus::beginClass() should 
-    // be able to return a QmlContext that is used for expressions and 
-    // sub-instances on that type.
     Q_ASSERT(comp);
     Q_ASSERT(ctxt);
     const QList<QmlCompiledData::TypeReference> &types = comp->types;
@@ -169,7 +161,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::CreateObject:
             {
-                QObject *o = types.at(instr.create.type).createInstance(QmlContext::activeContext());
+                QObject *o = types.at(instr.create.type).createInstance(ctxt);
                 if (!o) {
                     if(types.at(instr.create.type).component)
                         vmeErrors << types.at(instr.create.type).component->errors();
@@ -203,8 +195,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         case QmlInstruction::SetId:
             {
                 QObject *target = stack.top();
-                QmlContext *ctxt = 
-                    QmlContext::activeContext();
                 ctxt->setContextProperty(primitives.at(instr.setId.value), target);
             }
             break;
@@ -213,7 +203,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         case QmlInstruction::SetDefault:
             {
                 QObject *target = stack.top();
-                QmlContext::activeContext()->addDefaultObject(target);
+                ctxt->addDefaultObject(target);
             }
             break;
 
@@ -515,9 +505,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                     target->metaObject()->method(instr.storeSignal.signalIndex);
 
                 if (signal.parameterTypes().isEmpty()) {
-                    (void *)new QmlBoundSignal(QmlContext::activeContext(), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
+                    (void *)new QmlBoundSignal(ctxt, primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
                 } else {
-                    (void *)new QmlBoundSignalProxy(new QmlContext(QmlContext::activeContext(), target, true), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
+                    (void *)new QmlBoundSignalProxy(new QmlContext(ctxt, target, true), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
                 }
             }
             break;
@@ -550,7 +540,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 QmlMetaProperty mp(target, instr.assignBinding.property,
                                    (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
 
-                QmlBindableValue *bind = new QmlBindableValue((void *)datas.at(instr.assignBinding.value).constData(), comp, context, QmlContext::activeContext(), 0);
+                QmlBindableValue *bind = new QmlBindableValue((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, 0);
                 bindValues.append(bind);
                 QmlBindableValuePrivate *p = 
                     static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bind));
@@ -570,7 +560,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 QmlMetaProperty mp(target, instr.assignBinding.property, 
                                    (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
 
-                QmlBindableValue *bind = new QmlBindableValue(primitives.at(instr.assignBinding.value), context, QmlContext::activeContext());
+                QmlBindableValue *bind = new QmlBindableValue(primitives.at(instr.assignBinding.value), context, ctxt);
                 bindValues.append(bind);
                 QmlBindableValuePrivate *p = 
                     static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bind));

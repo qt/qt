@@ -70,10 +70,7 @@ public:
     QmlEngine(QObject *p = 0);
     virtual ~QmlEngine();
 
-    static QmlEngine *activeEngine();
-
     QmlContext *rootContext();
-    QmlContext *activeContext();
 
     void clearComponentCache();
 
@@ -87,10 +84,13 @@ public:
         QUrl base;
         QmlImportsPrivate *d;
     };
+    struct ImportedNamespace;
+
     void addImportPath(const QString& dir);
     enum ImportType { LibraryImport, FileImport };
     bool addToImport(Imports*, const QString& uri, const QString& prefix, const QString& version, ImportType type) const;
-    bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
+    bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return=0) const;
+    void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
 
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;

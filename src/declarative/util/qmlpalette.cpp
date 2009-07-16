@@ -151,6 +151,16 @@ QColor QmlPalette::highlightedText() const
     return d->palette.color(d->group, QPalette::HighlightedText);
 }
 
+QColor QmlPalette::lighter(const QColor& color) const
+{
+    return color.lighter();
+}
+
+QColor QmlPalette::darker(const QColor& color) const
+{
+    return color.darker();
+}
+
 void QmlPalette::setColorGroup(QPalette::ColorGroup colorGroup)
 {
     Q_D(QmlPalette);

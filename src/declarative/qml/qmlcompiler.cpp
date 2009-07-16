@@ -68,23 +68,43 @@
 
 QT_BEGIN_NAMESPACE
 
+DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
+
 using namespace QmlParser;
 
+/*!
+    Instantiate a new QmlCompiler.
+*/
 QmlCompiler::QmlCompiler()
 : output(0)
 {
 }
 
+/*!
+    Returns true if the last call to compile() caused errors.
+
+    \sa errors()
+*/
 bool QmlCompiler::isError() const
 {
     return !exceptions.isEmpty(); 
 }
 
+/*!
+    Return the list of errors from the last call to compile(), or an empty list
+    if there were no errors.
+*/
 QList<QmlError> QmlCompiler::errors() const
 {
     return exceptions;
 }
 
+/*!
+    Returns true if \a val is a legal object id, false otherwise.
+
+    Legal ids must start with a letter or underscore, and contain only
+    letters, numbers and underscores.
+*/
 bool QmlCompiler::isValidId(const QString &val)
 {
     if (val.isEmpty())
@@ -122,13 +142,26 @@ bool QmlCompiler::isSignalPropertyName(const QByteArray &name)
            'A' <= name.at(2) && 'Z' >= name.at(2);
 }
 
-#define COMPILE_EXCEPTION2(token, desc) \
+/*!
+    Inserts an error into the QmlCompiler error list, and returns false 
+    (failure).
+
+    \a token is used to source the error line and column, and \a desc is the
+    error itself.  \a desc can be an expression that can be piped into QDebug.
+
+    For example:
+
+    \code
+    COMPILE_EXCEPTION(property, "Error for property" << property->name);
+    \endcode
+*/
+#define COMPILE_EXCEPTION(token, desc) \
     {  \
         QString exceptionDescription; \
         QmlError error; \
         error.setUrl(output->url); \
-        error.setLine(token->location.start.line); \
-        error.setColumn(token->location.start.column); \
+        error.setLine((token)->location.start.line); \
+        error.setColumn((token)->location.start.column); \
         QDebug d(&exceptionDescription); \
         d << desc;  \
         error.setDescription(exceptionDescription.trimmed()); \
@@ -136,33 +169,28 @@ bool QmlCompiler::isSignalPropertyName(const QByteArray &name)
         return false; \
     } 
 
-#define COMPILE_EXCEPTION(desc) \
-    {  \
-        QString exceptionDescription; \
-        QmlError error; \
-        error.setUrl(output->url); \
-        error.setLine(obj->location.start.line); \
-        error.setColumn(obj->location.start.column); \
-        QDebug d(&exceptionDescription); \
-        d << desc;  \
-        error.setDescription(exceptionDescription.trimmed()); \
-        exceptions << error; \
-        return false; \
-    } 
-
+/*!
+    Returns false if \a is false, otherwise does nothing.
+*/
 #define COMPILE_CHECK(a) \
     { \
         if (!a) return false; \
     }
 
-// Compile a simple assignment of v to prop into instr
+/*!
+    Returns true if literal \a v can be assigned to property \a prop, otherwise
+    false.
+
+    This test corresponds to action taken by genLiteralAssignment().  Any change
+    made here, must have a corresponding action in genLiteralAssigment().
+*/
 bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop, 
                                         QmlParser::Value *v)
 {
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION2(v, "Invalid property assignment: read-only property"); 
+        COMPILE_EXCEPTION(v, "Invalid property assignment: read-only property"); 
 
     if (prop.isEnumType()) {
         int value;
@@ -171,7 +199,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
         } else
             value = prop.enumerator().keyToValue(string.toLatin1().constData());
         if (value == -1)
-            COMPILE_EXCEPTION2(v, "Invalid property assignment: unknown enumeration");
+            COMPILE_EXCEPTION(v, "Invalid property assignment: unknown enumeration");
         return true;
     }
     int type = prop.userType();
@@ -179,61 +207,61 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case -1:
             break;
         case QVariant::String:
-            if (!v->value.isString()) COMPILE_EXCEPTION2(v, "Invalid property assignment: string expected");
+            if (!v->value.isString()) COMPILE_EXCEPTION(v, "Invalid property assignment: string expected");
             break;
         case QVariant::Url:
-            if (!v->value.isString()) COMPILE_EXCEPTION2(v, "Invalid property assignment: url expected");
+            if (!v->value.isString()) COMPILE_EXCEPTION(v, "Invalid property assignment: url expected");
             break;
         case QVariant::UInt:
             {
             bool ok;
             string.toUInt(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: unsigned int expected");
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, "Invalid property assignment: unsigned int expected");
             }
             break;
         case QVariant::Int:
             {
             bool ok;
             string.toInt(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: int expected");
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, "Invalid property assignment: int expected");
             }
             break;
         case QMetaType::Float:
             {
             bool ok;
             string.toFloat(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: float expected");
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, "Invalid property assignment: float expected");
             }
             break;
         case QVariant::Double:
             {
             bool ok;
             string.toDouble(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: double expected");
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, "Invalid property assignment: double expected");
             }
             break;
         case QVariant::Color:
             {
             QColor c = QmlStringConverters::colorFromString(string);
-            if (!c.isValid()) COMPILE_EXCEPTION2(v, "Invalid property assignment: color expected");
+            if (!c.isValid()) COMPILE_EXCEPTION(v, "Invalid property assignment: color expected");
             }
             break;
         case QVariant::Date:
             {
             QDate d = QDate::fromString(string, Qt::ISODate);
-            if (!d.isValid()) COMPILE_EXCEPTION2(v, "Invalid property assignment: date expected");
+            if (!d.isValid()) COMPILE_EXCEPTION(v, "Invalid property assignment: date expected");
             }
             break;
         case QVariant::Time:
             {
             QTime time = QTime::fromString(string, Qt::ISODate);
-            if (!time.isValid()) COMPILE_EXCEPTION2(v, "Invalid property assignment: time expected");
+            if (!time.isValid()) COMPILE_EXCEPTION(v, "Invalid property assignment: time expected");
             }
             break;
         case QVariant::DateTime:
             {
             QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
-            if (!dateTime.isValid()) COMPILE_EXCEPTION2(v, "Invalid property assignment: datetime expected");
+            if (!dateTime.isValid()) COMPILE_EXCEPTION(v, "Invalid property assignment: datetime expected");
             }
             break;
         case QVariant::Point:
@@ -241,7 +269,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QPointF point = QmlStringConverters::pointFFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: point expected");
+            if (!ok) COMPILE_EXCEPTION(v, "Invalid property assignment: point expected");
             }
             break;
         case QVariant::Size:
@@ -249,7 +277,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QSizeF size = QmlStringConverters::sizeFFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: size expected");
+            if (!ok) COMPILE_EXCEPTION(v, "Invalid property assignment: size expected");
             }
             break;
         case QVariant::Rect:
@@ -257,12 +285,12 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QRectF rect = QmlStringConverters::rectFFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION2(v, "Invalid property assignment: rect expected");
+            if (!ok) COMPILE_EXCEPTION(v, "Invalid property assignment: rect expected");
             }
             break;
         case QVariant::Bool:
             {
-            if (!v->value.isBoolean()) COMPILE_EXCEPTION2(v, "Invalid property assignment: boolean expected");
+            if (!v->value.isBoolean()) COMPILE_EXCEPTION(v, "Invalid property assignment: boolean expected");
             }
             break;
         default:
@@ -273,13 +301,19 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             QmlMetaType::StringConverter converter = 
                 QmlMetaType::customStringConverter(t);
             if (!converter) 
-                COMPILE_EXCEPTION2(v, "Invalid property assignment: unknown type" << prop.type());
+                COMPILE_EXCEPTION(v, "Invalid property assignment: unknown type" << prop.type());
             }
             break;
     }
     return true;
 }
 
+/*!
+    Generate a store instruction for assigning literal \a v to property \a prop.
+
+    Any literal assignment that is approved in testLiteralAssignment() must have
+    a corresponding action in this method.
+*/
 void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
                                        QmlParser::Value *v)
 {
@@ -469,17 +503,31 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
     output->bytecode << instr;
 }
 
-void QmlCompiler::reset(QmlCompiledData *cc)
+/*!
+    Resets data by clearing the lists that the QmlCompiler modifies.
+*/
+void QmlCompiler::reset(QmlCompiledData *data)
 {
-    cc->types.clear();
-    cc->primitives.clear();
-    cc->floatData.clear();
-    cc->intData.clear();
-    cc->customTypeData.clear();
-    cc->datas.clear();
-    cc->bytecode.clear();
+    data->types.clear();
+    data->primitives.clear();
+    data->floatData.clear();
+    data->intData.clear();
+    data->customTypeData.clear();
+    data->datas.clear();
+    data->bytecode.clear();
 }
 
+/*!
+    Compile \a unit, and store the output in \a out.  \a engine is the QmlEngine
+    with which the QmlCompiledData will be associated.
+
+    Returns true on success, false on failure.  On failure, the compile errors 
+    are available from errors().
+
+    If the environment variant QML_COMPILER_DUMP is set 
+    (eg. QML_COMPILER_DUMP=1) the compiled instructions will be dumped to stderr
+    on a successful compiler.
+*/
 bool QmlCompiler::compile(QmlEngine *engine, 
                           QmlCompositeTypeData *unit,
                           QmlCompiledData *out)
@@ -526,11 +574,14 @@ bool QmlCompiler::compile(QmlEngine *engine,
     compileTree(root);
 
     if (!isError()) {
-        out->dumpInstructions();
+        if (compilerDump())
+            out->dumpInstructions();
     } else {
         reset(out);
     }
 
+    compileState = ComponentCompileState();
+    savedCompileStates.clear();
     output = 0;
 
     return !isError();
@@ -622,7 +673,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
         bool canDefer = false;
         if (isCustomParser) {
-            if (testProperty(prop, obj)) {
+            if (doesPropertyExist(prop, obj)) {
                 int ids = compileState.ids.count();
                 COMPILE_CHECK(buildProperty(prop, obj, objCtxt));
                 canDefer = ids == compileState.ids.count();
@@ -651,7 +702,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
         bool canDefer = false;
         if (isCustomParser) {
-            if (testProperty(prop, obj)) {
+            if (doesPropertyExist(prop, obj)) {
                 int ids = compileState.ids.count();
                 COMPILE_CHECK(buildProperty(prop, obj, objCtxt));
                 canDefer = ids == compileState.ids.count();
@@ -676,7 +727,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         QmlCustomParser *cp = output->types.at(obj->type).type->customParser();
         obj->custom = cp->compile(customProps, &ok);
         if(!ok)
-            COMPILE_EXCEPTION("Failure compiling custom type");
+            COMPILE_EXCEPTION(obj, "Failure compiling custom type");
     }
 
     return true;
@@ -876,36 +927,36 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
        (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
-        COMPILE_EXCEPTION("Invalid component specification");
+        COMPILE_EXCEPTION(obj, "Invalid component specification");
 
     if (obj->properties.count()) 
         idProp = *obj->properties.begin();
     if (idProp && (idProp->value || idProp->values.count() > 1 || !isValidId(idProp->values.first()->primitive())))
-        COMPILE_EXCEPTION("Invalid component id specification");
+        COMPILE_EXCEPTION(obj, "Invalid component id specification");
 
     if (idProp) {
         QString idVal = idProp->values.first()->primitive().toUtf8();
 
         if (compileState.ids.contains(idVal))
-            COMPILE_EXCEPTION("id is not unique");
+            COMPILE_EXCEPTION(obj, "id is not unique");
 
         addId(idVal, obj);
 
-        obj->id = idVal.toUtf8();
+        obj->id = idVal;
     }
 
     // Check the Component tree is well formed
     if (obj->defaultProperty && 
        (obj->defaultProperty->value || obj->defaultProperty->values.count() > 1 ||
         (obj->defaultProperty->values.count() == 1 && !obj->defaultProperty->values.first()->object)))
-        COMPILE_EXCEPTION("Invalid component body specification");
+        COMPILE_EXCEPTION(obj, "Invalid component body specification");
 
     Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count()) 
         root = obj->defaultProperty->values.first()->object;
     
     if (!root)
-        COMPILE_EXCEPTION("Cannot create empty component specification");
+        COMPILE_EXCEPTION(obj, "Cannot create empty component specification");
 
     // Build the component tree
     COMPILE_CHECK(buildComponentFromRoot(root, ctxt));
@@ -989,7 +1040,7 @@ bool QmlCompiler::buildSignal(QmlParser::Property *prop, QmlParser::Object *obj,
     Q_ASSERT(obj->metaObject());
 
     if (prop->isEmpty())
-        COMPILE_EXCEPTION2(prop, "Empty property assignment");
+        COMPILE_EXCEPTION(prop, "Empty property assignment");
 
     QByteArray name = prop->name;
     Q_ASSERT(name.startsWith("on"));
@@ -1008,7 +1059,7 @@ bool QmlCompiler::buildSignal(QmlParser::Property *prop, QmlParser::Object *obj,
     }  else {
 
         if (prop->value || prop->values.count() > 1)
-            COMPILE_EXCEPTION("Incorrectly specified signal");
+            COMPILE_EXCEPTION(prop, "Incorrectly specified signal");
 
         prop->index = sigIdx;
         obj->addSignalProperty(prop);
@@ -1025,9 +1076,11 @@ bool QmlCompiler::buildSignal(QmlParser::Property *prop, QmlParser::Object *obj,
 }
 
 
-// Returns true if prop exists on obj, false otherwise
-bool QmlCompiler::testProperty(QmlParser::Property *prop, 
-                               QmlParser::Object *obj)
+/*!
+    Returns true if (value) property \a prop exists on obj, false otherwise.
+*/
+bool QmlCompiler::doesPropertyExist(QmlParser::Property *prop, 
+                                    QmlParser::Object *obj)
 {
     if(isAttachedPropertyName(prop->name) || prop->name == "id")
         return true;
@@ -1051,7 +1104,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
                                 const BindingContext &ctxt)
 {
     if (prop->isEmpty())
-        COMPILE_EXCEPTION2(prop, "Empty property assignment");
+        COMPILE_EXCEPTION(prop, "Empty property assignment");
 
     const QMetaObject *metaObject = obj->metaObject();
     Q_ASSERT(metaObject);
@@ -1063,16 +1116,16 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
             // Attached properties cannot be used on sub-objects.  Sub-objects
             // always exist in a binding sub-context, which is what we test
             // for here.
-            COMPILE_EXCEPTION2(prop, "Attached properties cannot be used here");
+            COMPILE_EXCEPTION(prop, "Attached properties cannot be used here");
         }
 
         QmlType *type = QmlMetaType::qmlType(prop->name);
 
         if (!type || !type->attachedPropertiesType())
-            COMPILE_EXCEPTION2(prop, "Non-existant attached object");
+            COMPILE_EXCEPTION(prop, "Non-existant attached object");
 
         if (!prop->value)
-            COMPILE_EXCEPTION2(prop, "Invalid attached object assignment");
+            COMPILE_EXCEPTION(prop, "Invalid attached object assignment");
 
         prop->value->metatype = type->attachedPropertiesType();
     } else {
@@ -1125,9 +1178,9 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
     } else if (prop->index == -1) {
 
         if (prop->isDefault) {
-            COMPILE_EXCEPTION2(prop->values.first(), "Cannot assign to non-existant default property");
+            COMPILE_EXCEPTION(prop->values.first(), "Cannot assign to non-existant default property");
         } else {
-            COMPILE_EXCEPTION2(prop, "Cannot assign to non-existant property" << prop->name);
+            COMPILE_EXCEPTION(prop, "Cannot assign to non-existant property" << prop->name);
         }
 
     } else if (prop->value) {
@@ -1280,17 +1333,17 @@ bool QmlCompiler::buildIdProperty(QmlParser::Property *prop,
     if (prop->value ||
         prop->values.count() > 1 ||
         prop->values.at(0)->object)
-        COMPILE_EXCEPTION2(prop, "Invalid use of id property");
+        COMPILE_EXCEPTION(prop, "Invalid use of id property");
 
     QString val = prop->values.at(0)->primitive();
 
     if (!isValidId(val))
-        COMPILE_EXCEPTION2(prop, val << "is not a valid object id");
+        COMPILE_EXCEPTION(prop, val << "is not a valid object id");
 
     if (compileState.ids.contains(val))
-        COMPILE_EXCEPTION2(prop, "id is not unique");
+        COMPILE_EXCEPTION(prop, "id is not unique");
 
-    obj->id = val.toUtf8();
+    obj->id = val;
 
     prop->values.at(0)->type = Value::Id;
 
@@ -1301,18 +1354,16 @@ bool QmlCompiler::buildIdProperty(QmlParser::Property *prop,
 
 void QmlCompiler::addId(const QString &id, QmlParser::Object *obj)
 {
-    IdReference reference;
-    reference.id = id;
-    reference.object = obj;
-    reference.idx = compileState.ids.count();
-    compileState.ids.insert(id, reference);
+    Q_ASSERT(!compileState.ids.contains(id));
+    Q_ASSERT(obj->id == id);
+    obj->idIndex = compileState.ids.count();
+    compileState.ids.insert(id, obj);
 }
 
 void QmlCompiler::addBindingReference(const BindingReference &ref)
 {
-    int id = compileState.bindings.count();
-    compileState.bindings << ref;
-    compileState.bindingMap.insert(ref.value, id);
+    Q_ASSERT(ref.value && !compileState.bindings.contains(ref.value));
+    compileState.bindings.insert(ref.value, ref);
 }
 
 void QmlCompiler::saveComponentState()
@@ -1368,7 +1419,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
     // Load the nested property's meta type
     prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
     if (!prop->value->metatype)
-        COMPILE_EXCEPTION2(prop, "Cannot nest non-QObject property" << prop->name);
+        COMPILE_EXCEPTION(prop, "Cannot nest non-QObject property" << prop->name);
 
     obj->addGroupedProperty(prop);
 
@@ -1408,12 +1459,12 @@ bool QmlCompiler::buildListProperty(QmlParser::Property *prop,
                 // at runtime.
                 if (!listTypeIsInterface) {
                     if (!canCoerce(listType, v->object)) {
-                        COMPILE_EXCEPTION("Cannot assign object to list");
+                        COMPILE_EXCEPTION(v, "Cannot assign object to list");
                     }
                 }
 
             } else {
-                COMPILE_EXCEPTION("Cannot assign primitives to lists");
+                COMPILE_EXCEPTION(v, "Cannot assign primitives to lists");
             }
         }
 
@@ -1432,19 +1483,19 @@ bool QmlCompiler::buildListProperty(QmlParser::Property *prop,
                 // at runtime.
                 if (!listTypeIsInterface) {
                     if (!canCoerce(listType, v->object)) {
-                        COMPILE_EXCEPTION("Cannot assign object to list");
+                        COMPILE_EXCEPTION(v, "Cannot assign object to list");
                     }
                 } 
 
             } else if (v->value.isScript()) {
                 if (assignedBinding)
-                    COMPILE_EXCEPTION("Can only assign one binding to lists");
+                    COMPILE_EXCEPTION(v, "Can only assign one binding to lists");
 
                 assignedBinding = true;
                 COMPILE_CHECK(buildBinding(v, prop, ctxt));
                 v->type = Value::PropertyBinding;
             } else {
-                COMPILE_EXCEPTION("Cannot assign primitives to lists");
+                COMPILE_EXCEPTION(v, "Cannot assign primitives to lists");
             }
         }
 
@@ -1570,7 +1621,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
 
             v->type = Value::ValueSource;
         } else {
-            COMPILE_EXCEPTION2(v->object, "Cannot assign object to property");
+            COMPILE_EXCEPTION(v->object, "Cannot assign object to property");
         }
     }
 
@@ -1615,12 +1666,12 @@ bool QmlCompiler::checkDynamicMeta(QmlParser::Object *obj)
 
         if (prop.isDefaultProperty) {
             if (seenDefaultProperty)
-                COMPILE_EXCEPTION("Duplicate default property");
+                COMPILE_EXCEPTION(obj, "Duplicate default property");
             seenDefaultProperty = true;
         } 
         
         if (propNames.contains(prop.name)) 
-            COMPILE_EXCEPTION("Duplicate property name");
+            COMPILE_EXCEPTION(obj, "Duplicate property name");
 
         propNames.insert(prop.name);
     }
@@ -1628,13 +1679,13 @@ bool QmlCompiler::checkDynamicMeta(QmlParser::Object *obj)
     for (int ii = 0; ii < obj->dynamicSignals.count(); ++ii) {
         QByteArray name = obj->dynamicSignals.at(ii).name;
         if (methodNames.contains(name))
-            COMPILE_EXCEPTION("Duplicate signal name");
+            COMPILE_EXCEPTION(obj, "Duplicate signal name");
         methodNames.insert(name);
     }
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
         QByteArray name = obj->dynamicSlots.at(ii).name;
         if (methodNames.contains(name))
-            COMPILE_EXCEPTION("Duplicate method name");
+            COMPILE_EXCEPTION(obj, "Duplicate method name");
         methodNames.insert(name);
     }
 
@@ -1656,7 +1707,7 @@ bool QmlCompiler::mergeDynamicMetaProperties(QmlParser::Object *obj)
             property = obj->getProperty(p.name);
 
         if (property->value)
-            COMPILE_EXCEPTION2(property, "Invalid property nesting");
+            COMPILE_EXCEPTION(property, "Invalid property nesting");
 
         for (int ii = 0; ii < p.defaultValue->values.count(); ++ii) {
             Value *v = p.defaultValue->values.at(ii);
@@ -1686,6 +1737,14 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     bool hasAlias = false;
     for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
         const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
+
+        int propIdx = 
+            obj->metaObject()->indexOfProperty(p.name.constData());
+        if (-1 != propIdx) {
+            QMetaProperty prop = obj->metaObject()->property(propIdx);
+            if (prop.isFinal())
+                COMPILE_EXCEPTION(&p, "Cannot override FINAL property");
+        }
 
         if (p.isDefaultProperty && 
             (p.type != Object::DynamicProperty::Alias || 
@@ -1797,14 +1856,8 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     obj->metadata = builder.toRelocatableData();
     builder.fromRelocatableData(&obj->extObject, obj->metatype, obj->metadata);
 
-    // ### Remove me
-    obj->extObjectData = &obj->extObject;
-
-    if (mode == IgnoreAliases && hasAlias) {
-        AliasReference alias;
-        alias.object = obj;
-        compileState.aliases << alias;
-    }
+    if (mode == IgnoreAliases && hasAlias) 
+        compileState.aliasingObjects << obj;
 
     obj->synthdata = dynamicData;
 
@@ -1836,34 +1889,34 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
                                const Object::DynamicProperty &prop)
 {
     if (!prop.defaultValue)
-        COMPILE_EXCEPTION("No property alias location");
+        COMPILE_EXCEPTION(obj, "No property alias location");
 
     if (prop.defaultValue->values.count() != 1 ||
         prop.defaultValue->values.at(0)->object ||
         !prop.defaultValue->values.at(0)->value.isScript()) 
-        COMPILE_EXCEPTION2(prop.defaultValue, "Invalid alias location");
+        COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
     QmlJS::AST::Node *node = prop.defaultValue->values.at(0)->value.asAST();
     if (!node) 
-        COMPILE_EXCEPTION("No property alias location"); // ### Can this happen?
+        COMPILE_EXCEPTION(obj, "No property alias location"); // ### Can this happen?
 
     QStringList alias = astNodeToStringList(node);
 
     if (alias.count() != 2) 
-        COMPILE_EXCEPTION2(prop.defaultValue, "Invalid alias location");
+        COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
     if (!compileState.ids.contains(alias.at(0))) 
-        COMPILE_EXCEPTION2(prop.defaultValue, "Invalid alias location");
+        COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
-    const IdReference &id = compileState.ids[alias.at(0)];
-    int propIdx = id.object->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
+    Object *idObject = compileState.ids[alias.at(0)];
+    int propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
 
     if (-1 == propIdx) 
-        COMPILE_EXCEPTION2(prop.defaultValue, "Invalid alias location");
+        COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
     
-    QMetaProperty aliasProperty = id.object->metaObject()->property(propIdx);
+    QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
 
-    data.append((const char *)&id.idx, sizeof(id.idx));
+    data.append((const char *)&idObject->idIndex, sizeof(idObject->idIndex));
     data.append((const char *)&propIdx, sizeof(propIdx));
 
     builder.addSignal(prop.name + "Changed()");
@@ -1881,13 +1934,12 @@ bool QmlCompiler::buildBinding(QmlParser::Value *value,
 
     QMetaProperty mp = prop->parent->metaObject()->property(prop->index);
     if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
-        COMPILE_EXCEPTION2(prop, "Invalid property assignment: read-only property"); 
+        COMPILE_EXCEPTION(prop, "Invalid property assignment: read-only property"); 
 
     BindingReference reference;
     reference.expression = value->value;
     reference.property = prop;
     reference.value = value;
-    reference.instructionIdx = output->bytecode.count();
     reference.bindingContext = ctxt;
     addBindingReference(reference);
 
@@ -1898,10 +1950,9 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
                                        QmlParser::Property *prop, 
                                        QmlParser::Object *obj)
 {
-    Q_ASSERT(compileState.bindingMap.contains(binding));
+    Q_ASSERT(compileState.bindings.contains(binding));
 
-    const BindingReference &ref = 
-        compileState.bindings.at(compileState.bindingMap.value(binding));
+    const BindingReference &ref = compileState.bindings.value(binding);
 
     QMetaProperty mp = obj->metaObject()->property(prop->index);
 
@@ -1927,21 +1978,17 @@ bool QmlCompiler::completeComponentBuild()
 {
     saveComponentState();
 
-    for (int ii = 0; ii < compileState.aliases.count(); ++ii) {
-        const AliasReference &alias = compileState.aliases.at(ii);
-        COMPILE_CHECK(buildDynamicMeta(alias.object, ResolveAliases));
+    for (int ii = 0; ii < compileState.aliasingObjects.count(); ++ii) {
+        Object *aliasObject = compileState.aliasingObjects.at(ii);
+        COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
-
 
     QmlBasicScript::Expression expr;
     expr.component = compileState.root;
-    foreach (const IdReference &id, compileState.ids) {
-        expr.ids.insert(id.id, qMakePair(id.object, id.idx));
-    }
+    expr.ids = compileState.ids;
 
-    for (int ii = 0; ii < compileState.bindings.count(); ++ii) {
-        BindingReference &binding = compileState.bindings[ii];
-
+    for (QHash<QmlParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
+        BindingReference &binding = *iter;
 
         QmlBasicScript bs;
         expr.context = binding.bindingContext.object;

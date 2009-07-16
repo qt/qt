@@ -473,8 +473,9 @@ void QFxParticlesPrivate::tick(int time)
                }
             }
         }
-        while(particles.count() < count && particles.count() < percCount && streamWidth--)
-                createParticle(time);
+        while(particles.count() < count &&
+                (!stream || (particles.count() < percCount && streamWidth--)))
+            createParticle(time);
     }
 
     lastAdvTime = time;
@@ -704,11 +705,13 @@ void QFxParticles::setCount(int cnt)
 {
     Q_D(QFxParticles);
     if (cnt != d->count) {
-        if (!d->count && d->clock.state() != QAbstractAnimation::Running)
-            d->clock.start(); // infinity??
+        int oldCount = d->count;
         d->count = cnt;
         d->addParticleTime = 0;
         d->addParticleCount = d->particles.count();
+        if (!oldCount && d->clock.state() != QAbstractAnimation::Running){
+            d->clock.start(); // infinity??
+        }
         update();
     }
 }

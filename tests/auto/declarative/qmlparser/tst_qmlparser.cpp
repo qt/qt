@@ -137,6 +137,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
     QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << false;
     QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << false;
+    QTest::newRow("finalOverride") << "finalOverride.txt" << "finalOverride.errors.txt" << false;
 }
 
 void tst_qmlparser::errors()
