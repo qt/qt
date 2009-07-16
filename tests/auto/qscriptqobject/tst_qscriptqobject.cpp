@@ -1422,7 +1422,6 @@ void tst_QScriptExtQObject::callQtInvokable()
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableReturningMyQObjectAsQObject()");
         QCOMPARE(m_myObject->qtFunctionInvoked(), 57);
         QVERIFY(ret.isQObject());
-        QEXPECT_FAIL("", "Doesn't work", Continue);
         QVERIFY(ret.prototype().strictlyEquals(myQObjectProto));
 
         qScriptRegisterMetaType<QObject*>(m_engine, 0, 0, QScriptValue());
