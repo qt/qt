@@ -671,7 +671,7 @@ bool QStyledItemDelegate::eventFilter(QObject *object, QEvent *event)
         if (editor->parentWidget())
             editor->parentWidget()->setFocus();
         return true;
-    } else if (event->type() == QEvent::FocusOut || event->type() == QEvent::Hide) {
+    } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
             if (editor->isAncestorOf(QApplication::focusWidget()))
