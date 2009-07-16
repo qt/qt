@@ -1485,15 +1485,13 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
         }
     }
 
-    {
+    if (!(opt & QScriptEngine::SkipMethodsInEnumeration)) {
         int i = (opt & QScriptEngine::ExcludeSuperClassMethods)
                     ? meta->methodOffset() : 0;
         for ( ; i < meta->methodCount(); ++i) {
             QMetaMethod method = meta->method(i);
             if (hasMethodAccess(method, i, opt)) {
                 QMetaMethod method = meta->method(i);
-                QString name = QString::fromLatin1(methodName(method));
-                propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
                 QString sig = QString::fromLatin1(method.signature());
                 propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(sig)));
             }
