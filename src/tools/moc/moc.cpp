@@ -912,6 +912,9 @@ void Moc::parseProperty(ClassDef *def)
         if (l[0] == 'C' && l == "CONSTANT") {
             propDef.constant = true;
             continue;
+        } else if(l[0] == 'F' && l == "FINAL") {
+            propDef.final = true;
+            continue;
         }
 
         QByteArray v, v2;

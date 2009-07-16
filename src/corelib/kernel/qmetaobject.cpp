@@ -161,7 +161,8 @@ enum PropertyFlags  {
     ResolveUser = 0x00200000,
     Notify = 0x00400000,
     Dynamic = 0x00800000,
-    Constant = 0x00000400
+    Constant = 0x00000400,
+    Final = 0x00000800
 };
 
 enum MethodFlags  {
@@ -2463,6 +2464,20 @@ bool QMetaProperty::isConstant() const
         return false;
     int flags = mobj->d.data[handle + 2];
     return flags & Constant;
+}
+
+/*!
+    Returns true if the property is final; otherwise returns false.
+
+    A property is final if the \c{Q_PROPERTY()}'s \c FINAL attribute
+    is set.
+*/
+bool QMetaProperty::isFinal() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Final;
 }
 
 /*!
