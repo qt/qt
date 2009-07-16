@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlCompiledComponent;
+class QmlCompiledData;
 class Q_DECLARATIVE_EXPORT QmlInstruction
 {
 public:
@@ -118,8 +118,6 @@ public:
 
         StoreSignal,              /* storeSignal */
 
-        // XXX need to handle storing objects in variants
-
         //
         // Unresolved single assignment
         //
@@ -154,14 +152,6 @@ public:
         // Deferred creation
         //
         Defer,                    /* defer */
-
-        //
-        // Expression optimizations
-        //
-        //    PushProperty - Save the property for later use
-        //    StoreStackObject - Assign the stack object (no checks)
-        PushProperty,            /* pushProperty */
-        StoreStackObject         /* assignStackObject */
     };
     QmlInstruction()
         : line(0) {}
@@ -170,7 +160,6 @@ public:
     unsigned short line;
     union {
         struct {
-            int dataSize;
             int bindingsSize;
             int parserStatusSize;
         } init;
@@ -185,7 +174,6 @@ public:
         } storeMeta;
         struct {
             int value;
-            int save;
         } setId;
         struct {
             int property;
@@ -198,7 +186,6 @@ public:
         } assignBinding;
         struct {
             int property;
-            bool isObject;
         } fetch;
         struct {
             int property;
@@ -281,18 +268,11 @@ public:
             int id;
         } fetchAttached;
         struct {
-            int property;
-        } pushProperty;
-        struct  {
-            int property;
-            int object;
-        } assignStackObject;
-        struct {
             int deferCount;
         } defer;
     };
 
-    void dump(QmlCompiledComponent *);
+    void dump(QmlCompiledData *);
 };
 
 QT_END_NAMESPACE

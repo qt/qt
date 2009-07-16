@@ -2,6 +2,6 @@ MyContainer {
     property var object : MyObjectId
 
     MyTypeObject {
-        id: MyObjectId
+        id: "MyObjectId"
     }
 }

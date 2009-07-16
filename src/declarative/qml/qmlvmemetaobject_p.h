@@ -78,6 +78,9 @@ struct QmlVMEMetaData
 
     struct MethodData {
         int parameterCount;
+        int bodyOffset;
+        int bodyLength;
+        int _dummy;
     };
 
     PropertyData *propertyData() const {
@@ -89,7 +92,7 @@ struct QmlVMEMetaData
     }
 
     MethodData *methodData() const {
-        return (MethodData *)(aliasData() + propertyCount);
+        return (MethodData *)(aliasData() + aliasCount);
     }
 };
 
@@ -97,7 +100,8 @@ class QmlRefCount;
 class QmlVMEMetaObject : public QAbstractDynamicMetaObject
 {
 public:
-    QmlVMEMetaObject(QObject *, const QMetaObject *, QList<QString> *, int slotData, const QmlVMEMetaData *data, QmlRefCount * = 0);
+    QmlVMEMetaObject(QObject *, const QMetaObject *, const QmlVMEMetaData *data,
+                     QmlRefCount * = 0);
     ~QmlVMEMetaObject();
 
 protected:
@@ -114,8 +118,10 @@ private:
     QVariant *data;
     QBitArray aConnected;
 
+#if 0
     QList<QString> *slotData;
     int slotDataIdx;
+#endif
 
     QAbstractDynamicMetaObject *parent;
 

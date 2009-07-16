@@ -1,1 +1,1 @@
-2:20:Cannot assign value "12" to property colorProperty
+2:20:Invalid property assignment: color expected

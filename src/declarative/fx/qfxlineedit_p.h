@@ -39,9 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPILEDCOMPONENT_P_H
-#define QMLCOMPILEDCOMPONENT_P_H
+#ifndef QFXLINEEDIT_P_H
+#define QFXLINEEDIT_P_H
 
+#include "qfxlineedit.h"
+#include "qml.h"
+#include "qfxpainteditem_p.h"
+#include "private/qlinecontrol_p.h"
+#include <QPointer>
 //
 //  W A R N I N G
 //  -------------
@@ -51,42 +56,51 @@
 // version without notice, or even be removed.
 //
 // We mean it.
-//
-
-#include <QtDeclarative/qml.h>
-#include <private/qmlinstruction_p.h>
-#include <private/qmlcompiler_p.h>
-#include <private/qmlrefcount_p.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-namespace QmlParser {
-    class Property;
-    class Object;
-    class Value;
-};
-
-class QmlCompiledComponent : public QmlRefCount, public QmlCompiledData
+class QFxLineEditPrivate : public QFxPaintedItemPrivate
 {
+    Q_DECLARE_PUBLIC(QFxLineEdit);
 public:
-    QmlCompiledComponent();
-    ~QmlCompiledComponent();
+    QFxLineEditPrivate() : control(new QLineControl(QString())),
+                 font(0), color((QRgb)0), style(QFxText::Normal),
+                 hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop),
+                 styleColor((QRgb)0), oldScroll(0), hscroll(0),
+                 focused(false), awesome(false)
+    {
+    }
 
-    void dumpPre();
-    void dumpPost();
+    ~QFxLineEditPrivate()
+    {
+    }
 
-private:
-    enum DumpStatus { NoDump = 0x00, DumpPre = 0x01, DumpPost = 0x02 } dumpStatus;
-    void dumpInstructions();
-    void dump(QmlInstruction *, int idx = -1);
-    friend class QmlCompiler;
-    friend class QmlDomDocument;
+    void init();
+    void startCreatingCursor();
+
+    QLineControl* control;
+
+    QmlFont *font;
+    QColor  color;
+    QFxText::TextStyle style;
+    QColor  styleColor;
+    QFxText::HAlignment hAlign;
+    QFxText::VAlignment vAlign;
+    QPointer<QmlComponent> cursorComponent;
+    QPointer<QFxItem> cursorItem;
+
+    int oldSelectLength;
+    int oldHeight;
+    int oldWidth;
+    bool oldValidity;
+    int hscroll;
+    int oldScroll;
+    bool focused;
+    bool awesome;
+
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif
 
-#endif // QMLCOMPILEDCOMPONENT_P_H

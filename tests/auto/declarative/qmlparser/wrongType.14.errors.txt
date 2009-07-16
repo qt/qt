@@ -1,1 +1,1 @@
-2:23:Cannot assign value 10 to property stringProperty
+2:21:Invalid property assignment: string expected

@@ -3,8 +3,8 @@ Item {
     width: 24
     height: 24
 
-    property string rating
-    property string on
+    property int rating
+    property bool on
 
     signal clicked
 

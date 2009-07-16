@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmlvme_p.h"
+#include "qmlcompiler_p.h"
 #include <private/qfxperf_p.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
@@ -49,7 +50,6 @@
 #include <private/qmlcustomparser_p.h>
 #include <QStack>
 #include <QWidget>
-#include <private/qmlcompiledcomponent_p.h>
 #include <QColor>
 #include <QPointF>
 #include <QSizeF>
@@ -98,7 +98,7 @@ struct ListInstance
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
-QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, int count)
+QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
 {
     QStack<QObject *> stack;
 
@@ -117,7 +117,7 @@ void QmlVME::runDeferred(QObject *object)
 
     QmlContext *ctxt = data->context;
     ctxt->activate();
-    QmlCompiledComponent *comp = data->deferredComponent;
+    QmlCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
     QStack<QObject *> stack;
@@ -127,7 +127,7 @@ void QmlVME::runDeferred(QObject *object)
     ctxt->deactivate();
 }
 
-QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComponent *comp, int start, int count)
+QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
 {
     // XXX - All instances of QmlContext::activeContext() here should be 
     // replaced with the use of ctxt.  However, this cannot be done until 
@@ -137,10 +137,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
     // sub-instances on that type.
     Q_ASSERT(comp);
     Q_ASSERT(ctxt);
-    const QList<QmlCompiledComponent::TypeReference> &types = comp->types;
+    const QList<QmlCompiledData::TypeReference> &types = comp->types;
     const QList<QString> &primitives = comp->primitives;
     const QList<QByteArray> &datas = comp->datas;
-    const QList<QMetaObject *> &synthesizedMetaObjects = comp->synthesizedMetaObjects;;
     const QList<QmlCompiledData::CustomTypeData> &customTypeData = comp->customTypeData;
     const QList<int> &intData = comp->intData;
     const QList<float> &floatData = comp->floatData;
@@ -152,7 +151,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
     QStack<ListInstance> qliststack;
 
     QStack<QmlMetaProperty> pushedProperties;
-    QObject **savedObjects = 0;
 
     vmeErrors.clear();
 
@@ -162,12 +160,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
         switch(instr.type) {
         case QmlInstruction::Init:
             {
-                if (instr.init.dataSize) {
-                    savedObjects = new QObject*[instr.init.dataSize];
-                    ::memset(savedObjects, 0,
-                            sizeof(QObject *)*instr.init.dataSize);
-                }
-
                 if (instr.init.bindingsSize) 
                     bindValues = QmlEnginePrivate::SimpleList<QmlBindableValue>(instr.init.bindingsSize);
                 if (instr.init.parserStatusSize)
@@ -214,9 +206,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 QmlContext *ctxt = 
                     QmlContext::activeContext();
                 ctxt->setContextProperty(primitives.at(instr.setId.value), target);
-
-                if (instr.setId.save != -1)
-                    savedObjects[instr.setId.save] = target;
             }
             break;
 
@@ -239,7 +228,14 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
         case QmlInstruction::StoreMetaObject:
             {
                 QObject *target = stack.top();
-                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, (const QmlVMEMetaData *)datas.at(instr.storeMeta.aliasData).constData(), comp);
+
+                QMetaObject mo;
+                const QByteArray &metadata = datas.at(instr.storeMeta.data);
+                QMetaObjectBuilder::fromRelocatableData(&mo, 0, metadata);
+
+                const QmlVMEMetaData *data = (const QmlVMEMetaData *)datas.at(instr.storeMeta.aliasData).constData();
+
+                (void)new QmlVMEMetaObject(target, &mo, data, comp);
             }
             break;
 
@@ -465,7 +461,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
             {
                 QObject *target = stack.top();
                 void *a[1];
-                QmlCompiledComponent::CustomTypeData data = customTypeData.at(instr.assignCustomType.valueIndex);
+                QmlCompiledData::CustomTypeData data = customTypeData.at(instr.assignCustomType.valueIndex);
                 const QString &primitive = primitives.at(data.index);
                 QmlMetaType::StringConverter converter = 
                     QmlMetaType::customStringConverter(data.type);
@@ -542,15 +538,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 QObject *target = stack.top();
                 QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.complete.castValue);
                 status->classComplete();
-            }
-            break;
-
-        case QmlInstruction::PushProperty:
-            {
-                QObject *target = stack.top();
-                QmlMetaProperty mp(target, instr.pushProperty.property,
-                                   QmlMetaProperty::Object);
-                pushedProperties.push(mp);
             }
             break;
 
@@ -745,22 +732,12 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 QObject *target = stack.top();
 
                 QObject *obj = 0;
-                if (instr.fetch.isObject) {
-                    // NOTE: This assumes a cast to QObject does not alter the 
-                    // object pointer
-                    void *a[1];
-                    a[0] = &obj;
-                    QMetaObject::metacall(target, QMetaObject::ReadProperty, 
-                                          instr.fetch.property, a);
-                } else {
-                    void *a[1];
-                    QVariant var;
-                    a[0] = &var;
-                    QMetaObject::metacall(target, QMetaObject::ReadProperty, 
-                                          instr.fetch.property, a);
-                    obj = QmlMetaType::toQObject(var);
-
-                }
+                // NOTE: This assumes a cast to QObject does not alter the 
+                // object pointer
+                void *a[1];
+                a[0] = &obj;
+                QMetaObject::metacall(target, QMetaObject::ReadProperty, 
+                                      instr.fetch.property, a);
 
                 if (!obj)
                     VME_EXCEPTION("Cannot set properties on" << target->metaObject()->property(instr.fetch.property).name() << "as it is null");
@@ -795,23 +772,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
             }
             break;
 
-        case QmlInstruction::StoreStackObject:
-            {
-                const QmlMetaProperty &prop = 
-                    pushedProperties.at(instr.assignStackObject.property);
-                QObject *obj = savedObjects[instr.assignStackObject.object];
-
-                // NOTE: This assumes a cast to QObject does not alter the 
-                // object pointer
-                void *a[1];
-                a[0] = (void *)&obj;
-                QMetaObject::metacall(prop.object(), QMetaObject::WriteProperty,
-                                      prop.coreIndex(), a);
-            }
-            break;
-
         default:
-            qFatal("QmlCompiledComponent: Internal error - unknown instruction %d", instr.type);
+            qFatal("QmlCompiledData: Internal error - unknown instruction %d", instr.type);
             break;
         }
     }
@@ -831,11 +793,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
         ep->bindValues << bindValues;
     if (parserStatus.count)
         ep->parserStatus << parserStatus;
-
-    comp->dumpPost();
-
-    if (savedObjects)
-        delete [] savedObjects;
 
     if (stack.isEmpty())
         return 0;

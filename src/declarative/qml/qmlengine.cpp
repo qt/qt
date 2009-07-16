@@ -43,6 +43,7 @@
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qobject_p.h>
+#include <private/qmlcompiler_p.h>
 
 #ifdef QT_SCRIPTTOOLS_LIB
 #include <QScriptEngineDebugger>
@@ -60,7 +61,6 @@
 #include <private/qfxperf_p.h>
 #include <QStack>
 #include "private/qmlbasicscript_p.h"
-#include "private/qmlcompiledcomponent_p.h"
 #include "qmlengine.h"
 #include "qmlcontext.h"
 #include "qmlexpression.h"

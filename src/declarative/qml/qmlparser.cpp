@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
 using namespace QmlParser;
 
 QmlParser::Object::Object()
-: type(-1), metatype(0), extObjectData(0), defaultProperty(0)
+: type(-1), metatype(0), extObjectData(0), defaultProperty(0), 
+  parserStatusCast(-1)
 {
 }
 
@@ -70,6 +71,14 @@ QmlParser::Object::~Object()
 { 
     if (defaultProperty) defaultProperty->release();
     foreach(Property *prop, properties)
+        prop->release();
+    foreach(Property *prop, valueProperties)
+        prop->release();
+    foreach(Property *prop, signalProperties)
+        prop->release();
+    foreach(Property *prop, attachedProperties)
+        prop->release();
+    foreach(Property *prop, groupedProperties)
         prop->release();
 }
 
@@ -88,6 +97,30 @@ QmlParser::Property *Object::getDefaultProperty()
         defaultProperty->parent = this;
     }
     return defaultProperty;
+}
+
+void QmlParser::Object::addValueProperty(Property *p)
+{
+    p->addref();
+    valueProperties << p;
+}
+
+void QmlParser::Object::addSignalProperty(Property *p)
+{
+    p->addref();
+    signalProperties << p;
+}
+
+void QmlParser::Object::addAttachedProperty(Property *p)
+{
+    p->addref();
+    attachedProperties << p;
+}
+
+void QmlParser::Object::addGroupedProperty(Property *p)
+{
+    p->addref();
+    groupedProperties << p;
 }
 
 Property *QmlParser::Object::getProperty(const QByteArray &name, bool create)
@@ -160,12 +193,13 @@ void QmlParser::Object::dump(int indent) const
 }
 
 QmlParser::Property::Property()
-: parent(0), type(0), index(-1), value(0), isDefault(true)
+: parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false)
 {
 }
 
 QmlParser::Property::Property(const QByteArray &n)
-: parent(0), type(0), index(-1), value(0), name(n), isDefault(false)
+: parent(0), type(0), index(-1), value(0), name(n), isDefault(false), 
+  isDeferred(false)
 {
 }
 
@@ -185,6 +219,11 @@ Object *QmlParser::Property::getValue()
 void QmlParser::Property::addValue(Value *v)
 {
     values << v;
+}
+
+bool QmlParser::Property::isEmpty() const
+{
+    return !value && values.isEmpty();
 }
 
 void QmlParser::Property::dump(int indent) const
@@ -231,9 +270,6 @@ void QmlParser::Value::dump(int indent) const
         break;
     case Value::SignalExpression:
         type = "SignalExpression";
-        break;
-    case Value::Component:
-        type = "Component";
         break;
     case Value::Id:
         type = "Id";

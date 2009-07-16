@@ -12,7 +12,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlproxymetaobject.cpp \
     qml/qmlvme.cpp \
     qml/qmlcompiler.cpp \
-    qml/qmlcompiledcomponent.cpp \
+    qml/qmlcompileddata.cpp \
     qml/qmlboundsignal.cpp \
     qml/qmldom.cpp \
     qml/qmlrefcount.cpp \
@@ -43,7 +43,6 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlboundsignal_p.h \
     qml/qmlparserstatus.h \
     qml/qmlproxymetaobject_p.h \
-    qml/qmlcompiledcomponent_p.h \
     qml/qmlvme_p.h \
     qml/qmlcompiler_p.h \
     qml/qmlengine_p.h \

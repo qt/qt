@@ -1,1 +1,1 @@
-2:-1:Cannot assign a binding to read-only property "readOnlyString"
+2:5:Invalid property assignment: read-only property

@@ -65,15 +65,12 @@ QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlComponent;
-class QmlCompiledComponent;
 class QmlContext;
 
-class QmlCompiledData 
+class QmlCompiledData : public QmlRefCount
 {
 public:
     QmlCompiledData();
-    QmlCompiledData(const QmlCompiledData &other);
-    QmlCompiledData &operator=(const QmlCompiledData &other);
     virtual ~QmlCompiledData();
 
     QByteArray name;
@@ -104,12 +101,18 @@ public:
     QList<int> intData;
     QList<CustomTypeData> customTypeData;
     QList<QByteArray> datas;
-    QList<QMetaObject *> synthesizedMetaObjects;
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
 
+    void dumpInstructions();
 private:
+    void dump(QmlInstruction *, int idx = -1);
+    QmlCompiledData(const QmlCompiledData &other);
+    QmlCompiledData &operator=(const QmlCompiledData &other);
+    QByteArray packData;
     friend class QmlCompiler;
+    int pack(const char *, size_t);
+
     int indexForString(const QString &);
     int indexForByteArray(const QByteArray &);
     int indexForFloat(float *, int);
@@ -124,7 +127,7 @@ class Q_DECLARATIVE_EXPORT QmlCompiler
 public:
     QmlCompiler();
 
-    bool compile(QmlEngine *, QmlCompositeTypeData *, QmlCompiledComponent *);
+    bool compile(QmlEngine *, QmlCompositeTypeData *, QmlCompiledData *);
 
     bool isError() const;
     QList<QmlError> errors() const;
@@ -134,7 +137,7 @@ public:
     static bool isSignalPropertyName(const QByteArray &);
 
 private:
-    void reset(QmlCompiledComponent *, bool);
+    void reset(QmlCompiledData *);
 
     struct BindingContext {
         BindingContext()
@@ -146,57 +149,79 @@ private:
             rv.stack = stack + 1;
             return rv;
         }
+        bool isSubContext() const { return stack != 0; }
         int stack;
         QmlParser::Object *object;
     };
 
     void compileTree(QmlParser::Object *tree);
-    bool compileObject(QmlParser::Object *obj, const BindingContext &);
-    bool compileComponent(QmlParser::Object *obj, const BindingContext &);
-    bool compileComponentFromRoot(QmlParser::Object *obj, const BindingContext &);
-    bool compileFetchedObject(QmlParser::Object *obj, const BindingContext &);
-    bool compileSignal(QmlParser::Property *prop, QmlParser::Object *obj);
-    bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
-    int signalByName(const QMetaObject *, const QByteArray &name);
-    bool compileProperty(QmlParser::Property *prop, QmlParser::Object *obj, const BindingContext &);
-    bool compileIdProperty(QmlParser::Property *prop, 
-                           QmlParser::Object *obj);
-    bool compileAttachedProperty(QmlParser::Property *prop, 
-                                 const BindingContext &ctxt);
-    bool compileNestedProperty(QmlParser::Property *prop,
-                               const BindingContext &ctxt);
-    bool compileListProperty(QmlParser::Property *prop,
-                             QmlParser::Object *obj,
-                             const BindingContext &ctxt);
-    bool compilePropertyAssignment(QmlParser::Property *prop,
-                                   QmlParser::Object *obj,
-                                   const BindingContext &ctxt);
-    bool compilePropertyObjectAssignment(QmlParser::Property *prop,
-                                         QmlParser::Value *value,
-                                         const BindingContext &ctxt);
-    bool compilePropertyLiteralAssignment(QmlParser::Property *prop,
-                                          QmlParser::Object *obj,
-                                          QmlParser::Value *value,
-                                          const BindingContext &ctxt);
-    bool compileStoreInstruction(QmlInstruction &instr, 
-                                 const QMetaProperty &prop, 
-                                 QmlParser::Value *value);
 
-    bool compileDynamicMeta(QmlParser::Object *obj, int preAlias = -1);
+
+    bool buildObject(QmlParser::Object *obj, const BindingContext &);
+    bool buildComponent(QmlParser::Object *obj, const BindingContext &);
+    bool buildSubObject(QmlParser::Object *obj, const BindingContext &);
+    bool buildSignal(QmlParser::Property *prop, QmlParser::Object *obj, 
+                     const BindingContext &);
+    bool buildProperty(QmlParser::Property *prop, QmlParser::Object *obj, 
+                       const BindingContext &);
+    bool buildIdProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    bool buildAttachedProperty(QmlParser::Property *prop, 
+                               QmlParser::Object *obj,
+                               const BindingContext &ctxt);
+    bool buildGroupedProperty(QmlParser::Property *prop,
+                              QmlParser::Object *obj,
+                              const BindingContext &ctxt);
+    bool buildListProperty(QmlParser::Property *prop,
+                           QmlParser::Object *obj,
+                           const BindingContext &ctxt);
+    bool buildPropertyAssignment(QmlParser::Property *prop,
+                                 QmlParser::Object *obj,
+                                 const BindingContext &ctxt);
+    bool buildPropertyObjectAssignment(QmlParser::Property *prop,
+                                       QmlParser::Object *obj,
+                                       QmlParser::Value *value,
+                                       const BindingContext &ctxt);
+    bool buildPropertyLiteralAssignment(QmlParser::Property *prop,
+                                        QmlParser::Object *obj,
+                                        QmlParser::Value *value,
+                                        const BindingContext &ctxt);
+    bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    bool testLiteralAssignment(const QMetaProperty &prop, 
+                               QmlParser::Value *value);
+    enum DynamicMetaMode { IgnoreAliases, ResolveAliases };
+    bool mergeDynamicMetaProperties(QmlParser::Object *obj);
+    bool buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode);
+    bool checkDynamicMeta(QmlParser::Object *obj);
+    bool buildBinding(QmlParser::Value *, QmlParser::Property *prop,
+                      const BindingContext &ctxt);
+    bool buildComponentFromRoot(QmlParser::Object *obj, const BindingContext &);
     bool compileAlias(QMetaObjectBuilder &, 
                       QByteArray &data,
                       QmlParser::Object *obj, 
                       const QmlParser::Object::DynamicProperty &);
-    bool compileBinding(QmlParser::Value *, QmlParser::Property *prop,
-                        const BindingContext &ctxt);
+    bool completeComponentBuild();
 
-    bool finalizeComponent(int patch);
-    struct BindingReference;
-    void finalizeBinding(const BindingReference &); 
-    struct AliasReference;
-    bool finalizeAlias(const AliasReference &);
 
-    bool canConvert(int, QmlParser::Object *);
+    void genObject(QmlParser::Object *obj);
+    void genObjectBody(QmlParser::Object *obj);
+    void genComponent(QmlParser::Object *obj);
+    void genValueProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    void genListProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    void genPropertyAssignment(QmlParser::Property *prop, 
+                               QmlParser::Object *obj);
+    void genLiteralAssignment(const QMetaProperty &prop, 
+                              QmlParser::Value *value);
+    void genBindingAssignment(QmlParser::Value *binding, 
+                              QmlParser::Property *prop, 
+                              QmlParser::Object *obj);
+
+
+    int componentTypeRef();
+
+    static int findSignalByName(const QMetaObject *, const QByteArray &name);
+    static bool canCoerce(int to, QmlParser::Object *from);
+    static QmlType *toQmlType(QmlParser::Object *from);
+
     QStringList deferredProperties(QmlParser::Object *);
 
     struct IdReference {
@@ -205,6 +230,7 @@ private:
         int instructionIdx;
         int idx;
     };
+    void addId(const QString &, QmlParser::Object *);
 
     struct AliasReference {
         QmlParser::Object *object;
@@ -215,28 +241,35 @@ private:
         QmlParser::Variant expression;
         QmlParser::Property *property;
         QmlParser::Value *value;
+        QByteArray compiledData;
         int instructionIdx;
         BindingContext bindingContext;
     };
+    void addBindingReference(const BindingReference &);
 
     struct ComponentCompileState
     {
-        ComponentCompileState() : parserStatusCount(0), savedObjects(0), pushedProperties(0), root(0) {}
+        ComponentCompileState() 
+            : parserStatusCount(0), savedObjects(0), 
+              pushedProperties(0), root(0) {}
         QHash<QString, IdReference> ids;
         int parserStatusCount;
         int savedObjects;
         int pushedProperties;
         QList<BindingReference> bindings;
+        QHash<QmlParser::Value *, int> bindingMap;
         QList<AliasReference> aliases;
         QmlParser::Object *root;
     };
     ComponentCompileState compileState;
 
+    void saveComponentState();
+    ComponentCompileState componentState(QmlParser::Object *);
+    QHash<QmlParser::Object *, ComponentCompileState> savedCompileStates;
+
     QList<QmlError> exceptions;
     QmlCompiledData *output;
-
 };
-
 QT_END_NAMESPACE
 
 #endif // QMLCOMPILER_P_H
