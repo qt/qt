@@ -99,6 +99,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QTextCodecFactoryInterface_iid, QLatin1String("/codecs")))
 #endif
 
+static char qtolower(register char c)
+{ if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
+static bool qisalnum(register char c)
+{ return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'z'); }
 
 static bool nameMatch(const QByteArray &name, const QByteArray &test)
 {
@@ -111,21 +115,21 @@ static bool nameMatch(const QByteArray &name, const QByteArray &test)
 
     // if the letters and numbers are the same, we have a match
     while (*n != '\0') {
-        if (isalnum((uchar)*n)) {
+        if (qisalnum(*n)) {
             for (;;) {
                 if (*h == '\0')
                     return false;
-                if (isalnum((uchar)*h))
+                if (qisalnum(*h))
                     break;
                 ++h;
             }
-            if (tolower((uchar)*n) != tolower((uchar)*h))
+            if (qtolower(*n) != qtolower(*h))
                 return false;
             ++h;
         }
         ++n;
     }
-    while (*h && !isalnum((uchar)*h))
+    while (*h && !qisalnum(*h))
            ++h;
     return (*h == '\0');
 }
