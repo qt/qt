@@ -4171,7 +4171,7 @@ void QOpenGLPaintEnginePrivate::strokePath(const QPainterPath &path, bool use_ca
 
         QPen pen = cpen;
         if (txscale != 1)
-            pen.setWidthF(pen.width() * txscale);
+            pen.setWidthF(pen.widthF() * txscale);
         if (use_cache)
             fillPath(qt_opengl_stroke_cache()->getStrokedPath(temp.map(path), pen));
         else
