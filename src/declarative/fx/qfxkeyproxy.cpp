@@ -49,16 +49,34 @@ QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
 
 /*!
     \qmlclass KeyProxy
-    \brief The KeyProxy item proxies key presses to a number of other items.
+    \brief The KeyProxy item proxies key events to a number of other items.
     \inherits Item
 
+    KeyProxy provides a way to forward key presses, key releases, and keyboard input
+    coming from input methods to other items. This can be useful when you want
+    one item to handle some keys (e.g. the up and down arrow keys), and another item to
+    handle other keys (e.g. the left and right arrow keys).
+
+    To receive key events, the KeyProxy item must be in the current focus chain,
+    just like any other item.
+
+    KeyProxy is an invisible item: it is never painted.
+
+    A simple KeyProxy that forward key events to two lists:
+    \qml
+    ListView { id: List1 ... }
+    ListView { id: List2 ... }
+    KeyProxy {
+        focus: true
+        targets: [List1, List2]
+    }
+    \endqml
 */
 
 /*!
     \internal
     \class QFxKeyProxy
-    \brief The QFxKeyProxy class proxies key presses to a number of other items.
-    \ingroup group_utility
+    \brief The QFxKeyProxy class proxies key events to a number of other items.
 */
 
 class QFxKeyProxyPrivate
@@ -87,12 +105,10 @@ QFxKeyProxy::~QFxKeyProxy()
 /*!
     \qmlproperty list<Item> KeyProxy::targets
 
-    The proxy targets.
-*/
+    An ordered list of the items that will be forwarded key events.
 
-/*!
-    \property QFxKeyProxy::targets
-    \brief the proxy targets.
+    The events will be forwarded to the targets in turn until one of them
+    accepts the event.
 */
 
 QList<QFxItem *> *QFxKeyProxy::targets() const
