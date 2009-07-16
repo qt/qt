@@ -45,11 +45,11 @@
 #include <qstyle.h>
 #include <qapplication.h>
 #include <qdir.h>
+#include <qpixmapcache.h>
 #if defined(Q_WS_WIN)
 #define _WIN32_IE 0x0500
 #include <objbase.h>
 #include <private/qpixmapdata_p.h>
-#include <qpixmapcache.h>
 #elif defined(Q_WS_MAC)
 #include <private/qt_mac_p.h>
 #endif
@@ -316,6 +316,31 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 QIcon QFileIconProviderPrivate::getMacIcon(const QFileInfo &fi) const
 {
     QIcon retIcon;
+    QString fileExtension = fi.suffix().toUpper();
+    fileExtension.prepend(QLatin1String("."));
+
+    const QString keyBase = QLatin1String("qt_") + fileExtension;
+
+    QPixmap pixmap;
+    if (fi.isFile() && !fi.isExecutable() && !fi.isSymLink()) {
+        QPixmapCache::find(keyBase + QLatin1String("16"), pixmap);
+    }
+
+    if (!pixmap.isNull()) {
+        retIcon.addPixmap(pixmap);
+        if (QPixmapCache::find(keyBase + QLatin1String("32"), pixmap)) {
+            retIcon.addPixmap(pixmap);
+            if (QPixmapCache::find(keyBase + QLatin1String("64"), pixmap)) {
+                retIcon.addPixmap(pixmap);
+                if (QPixmapCache::find(keyBase + QLatin1String("128"), pixmap)) {
+                    retIcon.addPixmap(pixmap);
+                    return retIcon;
+                }
+            }
+        }
+    }
+
+
     FSRef macRef;
     OSStatus status = FSPathMakeRef(reinterpret_cast<const UInt8*>(fi.canonicalFilePath().toUtf8().constData()),
                                     &macRef, 0);
@@ -334,6 +359,16 @@ QIcon QFileIconProviderPrivate::getMacIcon(const QFileInfo &fi) const
     extern void qt_mac_constructQIconFromIconRef(const IconRef, const IconRef, QIcon*, QStyle::StandardPixmap = QStyle::SP_CustomBase); // qmacstyle_mac.cpp
     qt_mac_constructQIconFromIconRef(iconRef, 0, &retIcon);
     ReleaseIconRef(iconRef);
+
+    pixmap = retIcon.pixmap(16);
+    QPixmapCache::insert(keyBase + QLatin1String("16"), pixmap);
+    pixmap = retIcon.pixmap(32);
+    QPixmapCache::insert(keyBase + QLatin1String("32"), pixmap);
+    pixmap = retIcon.pixmap(64);
+    QPixmapCache::insert(keyBase + QLatin1String("64"), pixmap);
+    pixmap = retIcon.pixmap(128);
+    QPixmapCache::insert(keyBase + QLatin1String("128"), pixmap);
+
     return retIcon;
 }
 #endif
