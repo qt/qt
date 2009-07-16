@@ -1182,8 +1182,14 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     }
 }
 
-/* Set sizehint to false to layout the elements inside opt->rect. Set sizehint to true to ignore
-   opt->rect and return rectangles in infinite space */
+/*! \internal
+    compute the position for the different component of an item (pixmap, text, checkbox)
+
+    Set sizehint to false to layout the elements inside opt->rect. Set sizehint to true to ignore
+   opt->rect and return rectangles in infinite space
+
+    Code duplicated in QItemDelegate::doLayout
+*/
 void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRect *checkRect,
                                          QRect *pixmapRect, QRect *textRect, bool sizehint) const
 {
@@ -1204,8 +1210,10 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRe
     int y = opt->rect.top();
     int w, h;
 
-    if (textRect->height() == 0 && !hasPixmap)
+    if (textRect->height() == 0 && (!hasPixmap || !sizehint)) {
+        //if there is no text, we still want to have a decent height for the item sizeHint and the editor size
         textRect->setHeight(opt->fontMetrics.height());
+    }
 
     QSize pm(0, 0);
     if (hasPixmap) {
