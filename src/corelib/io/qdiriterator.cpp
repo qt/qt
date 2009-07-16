@@ -160,16 +160,9 @@ QDirIteratorPrivate::~QDirIteratorPrivate()
 void QDirIteratorPrivate::pushSubDirectory(const QString &path, const QStringList &nameFilters,
                                            QDir::Filters filters)
 {
-    if (iteratorFlags & QDirIterator::FollowSymlinks) {
-        if (nextFileInfo.filePath() != path)
-            nextFileInfo.setFile(path);
-        if (nextFileInfo.isSymLink()) {
-            visitedLinks << nextFileInfo.canonicalFilePath();
-        } else {
-            visitedLinks << nextFileInfo.absoluteFilePath();
-        }
-    }
-    
+    if (iteratorFlags & QDirIterator::FollowSymlinks)
+        visitedLinks << nextFileInfo.canonicalFilePath();
+
     if (engine || (engine = QAbstractFileEngine::create(this->path))) {
         engine->setFileName(path);
         QAbstractFileEngineIterator *it = engine->beginEntryList(filters, nameFilters);
