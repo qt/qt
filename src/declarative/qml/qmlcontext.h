@@ -73,11 +73,6 @@ public:
     void setContextProperty(const QString &, QObject *);
     void setContextProperty(const QString &, const QVariant &);
 
-    void activate();
-    void deactivate();
-
-    static QmlContext *activeContext();
-
     QUrl resolvedUrl(const QUrl &);
 
     void setBaseUrl(const QUrl &);

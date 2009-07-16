@@ -587,7 +587,7 @@ QmlDomProperty QmlDomDynamicProperty::defaultValue() const
 int QmlDomDynamicProperty::position() const
 {
     if (isValid()) {
-        return d->property.range.offset;
+        return d->property.location.range.offset;
     } else
         return -1;
 }
@@ -599,7 +599,7 @@ int QmlDomDynamicProperty::position() const
 int QmlDomDynamicProperty::length() const
 {
     if (isValid())
-        return d->property.range.length;
+        return d->property.location.range.length;
     else
         return -1;
 }
@@ -769,7 +769,7 @@ QByteArray QmlDomObject::objectType() const
 Text { id: MyText }
     \endqml
 */
-QByteArray QmlDomObject::objectId() const
+QString QmlDomObject::objectId() const
 {
     if (d->object) return d->object->id;
     else return QByteArray();

@@ -43,10 +43,7 @@
 #include "qmlexpression_p.h"
 #include "qmlengine_p.h"
 #include "qmlcontext_p.h"
-#include "rewriter/textwriter_p.h"
-#include "parser/qmljslexer_p.h"
-#include "parser/qmljsparser_p.h"
-#include "parser/qmljsnodepool_p.h"
+#include "qmlrewrite_p.h"
 #include "QtCore/qdebug.h"
 
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -54,97 +51,6 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
-
-namespace {
-
-using namespace QmlJS;
-
-class RewriteBinding: protected AST::Visitor
-{
-    unsigned _position;
-    TextWriter *_writer;
-
-public:
-    QString operator()(const QString &code)
-    {
-        Engine engine;
-        NodePool pool(QString(), &engine);
-        Lexer lexer(&engine);
-        Parser parser(&engine);
-        lexer.setCode(code, 0);
-        parser.parseStatement();
-        return rewrite(code, 0, parser.statement());
-    }
-
-protected:
-    using AST::Visitor::visit;
-
-    void accept(AST::Node *node)
-    {
-        AST::Node::acceptChild(node, this);
-    }
-
-    QString rewrite(QString code, unsigned position, AST::Statement *node)
-    {
-        TextWriter w;
-        _writer = &w;
-        _position = position;
-
-        accept(node);
-
-        unsigned startOfStatement = node->firstSourceLocation().begin() - _position;
-        unsigned endOfStatement = node->lastSourceLocation().end() - _position;
-
-        _writer->replace(startOfStatement, 0, QLatin1String("function() {\n"));
-        _writer->replace(endOfStatement, 0, QLatin1String("\n}"));
-
-        w.write(&code);
-
-        return code;
-    }
-
-    virtual bool visit(AST::Block *ast)
-    {
-        for (AST::StatementList *it = ast->statements; it; it = it->next) {
-            if (! it->next) {
-                // we need to rewrite only the last statement of a block.
-                accept(it->statement);
-            }
-        }
-
-        return false;
-    }
-
-    virtual bool visit(AST::ExpressionStatement *ast)
-    {
-        unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
-        _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
-
-        return false;
-    }
-
-    virtual bool visit(AST::NumericLiteral *node)
-    {
-        if (node->suffix != AST::NumericLiteral::noSuffix) {
-            const int suffixLength = AST::NumericLiteral::suffixLength[node->suffix];
-            const char *suffixSpell = AST::NumericLiteral::suffixSpell[node->suffix];
-            QString pre;
-            pre += QLatin1String("qmlNumberFrom");
-            pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
-            pre += QLatin1String(&suffixSpell[1]);
-            pre += QLatin1Char('(');
-            _writer->replace(node->literalToken.begin() - _position, 0, pre);
-            _writer->replace(node->literalToken.end() - _position - suffixLength,
-                             suffixLength,
-                             QLatin1String(")"));
-        }
-
-        return false;
-    }
-};
-
-} // end of anonymous namespace
-
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
 : q(b), ctxt(0), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
@@ -332,7 +238,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
         scriptEngine->currentContext()->pushScope(ctxtPriv->scopeChain.at(i));
 
     if (!expressionFunctionValid) {
-        RewriteBinding rewriteBinding;
+        QmlRewrite::RewriteBinding rewriteBinding;
 
         const QString code = rewriteBinding(expression);
         expressionFunction = scriptEngine->evaluate(code, fileName.toString(), line);

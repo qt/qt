@@ -101,6 +101,9 @@ public:
     bool virtual eventFilter(QObject *watched, QEvent *event);
     bool virtual event(QEvent *event);
 
+    Q_INVOKABLE QColor lighter(const QColor&) const;
+    Q_INVOKABLE QColor darker(const QColor&) const;
+
 Q_SIGNALS:
     void paletteChanged();
 };

@@ -49,7 +49,7 @@
 #include "parser/qmljsastvisitor_p.h"
 #include "parser/qmljsast_p.h"
 
-#include "rewriter/textwriter_p.h"
+#include "qmlrewrite_p.h"
 
 #include <QStack>
 #include <QCoreApplication>
@@ -63,48 +63,6 @@ using namespace QmlJS;
 using namespace QmlParser;
 
 namespace {
-
-class RewriteNumericLiterals: protected AST::Visitor
-{
-    unsigned _position;
-    TextWriter *_writer;
-
-public:
-    QString operator()(QString code, unsigned position, AST::Node *node)
-    {
-        TextWriter w;
-        _writer = &w;
-        _position = position;
-
-        AST::Node::acceptChild(node, this);
-
-        w.write(&code);
-
-        return code;
-    }
-
-protected:
-    using AST::Visitor::visit;
-
-    virtual bool visit(AST::NumericLiteral *node)
-    {
-        if (node->suffix != AST::NumericLiteral::noSuffix) {
-            const int suffixLength = AST::NumericLiteral::suffixLength[node->suffix];
-            const char *suffixSpell = AST::NumericLiteral::suffixSpell[node->suffix];
-            QString pre;
-            pre += QLatin1String("qmlNumberFrom");
-            pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
-            pre += QLatin1String(&suffixSpell[1]);
-            pre += QLatin1Char('(');
-            _writer->replace(node->literalToken.begin() - _position, 0, pre);
-            _writer->replace(node->literalToken.end() - _position - suffixLength,
-                             suffixLength,
-                             QLatin1String(")"));
-        }
-
-        return false;
-    }
-};
 
 class ProcessAST: protected AST::Visitor
 {
@@ -196,7 +154,7 @@ protected:
                    const AST::SourceLocation &last) const
     { return _contents.mid(first.offset, last.offset + last.length - first.offset); }
 
-    RewriteNumericLiterals rewriteNumericLiterals;
+    QmlRewrite::RewriteNumericLiterals rewriteNumericLiterals;
 
     QString asString(AST::ExpressionNode *expr)
     {
@@ -572,8 +530,8 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;
         property.name = name.toUtf8();
-        property.range.offset = node->firstSourceLocation().offset;
-        property.range.length = node->semicolonToken.end() - property.range.offset;
+        property.location = location(node->firstSourceLocation(), 
+                                     node->lastSourceLocation());
 
         if (node->expression) { // default value
             property.defaultValue = new Property;

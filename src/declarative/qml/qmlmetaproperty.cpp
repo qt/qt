@@ -643,8 +643,7 @@ void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
 
     if (!expr.isEmpty()) {
         // XXX scope
-        (void *)new QmlBoundSignal(QmlContext::activeContext(), expr, object, 
-                                   coreIdx, object);
+        (void *)new QmlBoundSignal(qmlContext(object), expr, object, coreIdx, object);
     }
 }
 

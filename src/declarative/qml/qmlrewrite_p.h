@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBASICSCRIPT_P_H
-#define QMLBASICSCRIPT_P_H
+#ifndef QMLREWRITE_P_H
+#define QMLREWRITE_P_H
 
 //
 //  W A R N I N G
@@ -53,99 +53,51 @@
 // We mean it.
 //
 
-#include <QtCore/QList>
-#include <QtCore/QByteArray>
-#include <QtCore/QVariant>
-#include <private/qmlparser_p.h>
-
-QT_BEGIN_HEADER
+#include "rewriter/textwriter_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljsnodepool_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlRefCount;
-class QmlContext;
-class QmlBasicScriptPrivate;
-class QmlBasicScriptNodeCache;
-class QmlBasicScript
+namespace QmlRewrite {
+using namespace QmlJS;
+
+class RewriteBinding: protected AST::Visitor
 {
+    unsigned _position;
+    TextWriter *_writer;
+
 public:
-    QmlBasicScript();
-    QmlBasicScript(const char *, QmlRefCount * = 0);
-    ~QmlBasicScript();
+    QString operator()(const QString &code);
 
-    // Always 4-byte aligned
-    const char *compileData() const;
-    unsigned int compileDataSize() const;
+protected:
+    using AST::Visitor::visit;
 
-    QByteArray expression() const;
-
-    struct Expression
-    {
-        QmlParser::Object *component;
-        QmlParser::Object *context;
-        QmlParser::Property *property;
-        QmlParser::Variant expression;
-        QHash<QString, QmlParser::Object *> ids;
-    };
-
-    bool compile(const Expression &);
-    bool isValid() const;
-
-    void clear();
-
-    void dump();
-    void *newScriptState();
-    void deleteScriptState(void *);
-
-    enum CacheState { NoChange, Incremental, Reset };
-    QVariant run(QmlContext *, void *, CacheState *);
-
-    // Optimization opportunities
-    bool isSingleLoad() const;
-    QByteArray singleLoadTarget() const;
-
-private:
-    int flags;
-    QmlBasicScriptPrivate *d;
-    QmlRefCount *rc;
-
-    void clearCache(void *);
-    void guard(QmlBasicScriptNodeCache &);
-    bool valid(QmlBasicScriptNodeCache &, QObject *);
+    void accept(AST::Node *node);
+    QString rewrite(QString code, unsigned position, AST::Statement *node);
+    virtual bool visit(AST::Block *ast);
+    virtual bool visit(AST::ExpressionStatement *ast);
+    virtual bool visit(AST::NumericLiteral *node);
 };
 
-class QmlContextPrivate;
-class QDebug;
-class QmlBasicScriptNodeCache
+class RewriteNumericLiterals: protected AST::Visitor
 {
-public:
-    QObject *object;
-    const QMetaObject *metaObject;
-    enum { Invalid,
-           Core, 
-           Attached, 
-           SignalProperty, 
-           Variant
-    } type;
-    union {
-        int core;
-        QObject *attached;
-        QmlContextPrivate *context;
-    };
-    int coreType;
-    int contextIndex;
+    unsigned _position;
+    TextWriter *_writer;
 
-    bool isValid() const { return type != Invalid; }
-    bool isCore() const { return type == Core; }
-    bool isVariant() const { return type == Variant; }
-    void clear();
-    QVariant value(const char *) const;
+public:
+    QString operator()(QString code, unsigned position, AST::Node *node);
+
+protected:
+    using AST::Visitor::visit;
+
+    virtual bool visit(AST::NumericLiteral *node);
 };
 
-QDebug operator<<(QDebug, const QmlBasicScriptNodeCache &);
+} // namespace QmlRewrite
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QMLREWRITE_P_H
 
-#endif // QMLBASICSCRIPT_P_H
