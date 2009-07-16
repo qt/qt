@@ -1832,6 +1832,9 @@ void tst_QScriptValue::getSetProperty()
             // getter() returns this.x
             object4.setProperty("foo", eng.newFunction(getter),
                                 QScriptValue::PropertyGetter | QScriptValue::UserRange);
+            QCOMPARE(object4.propertyFlags("foo") & ~QScriptValue::UserRange,
+                        QScriptValue::PropertyGetter );
+
             QEXPECT_FAIL("", "User-range flags are not retained", Continue);
             QCOMPARE(object4.propertyFlags("foo"),
                      QScriptValue::PropertyGetter | QScriptValue::UserRange);
@@ -1841,9 +1844,12 @@ void tst_QScriptValue::getSetProperty()
             // setter() sets this.x
             object4.setProperty("foo", eng.newFunction(setter),
                                 QScriptValue::PropertySetter | QScriptValue::UserRange);
+            QCOMPARE(object4.propertyFlags("foo") & ~QScriptValue::UserRange,
+                                QScriptValue::PropertySetter | QScriptValue::PropertyGetter);
+
             QEXPECT_FAIL("", "User-range flags are not retained", Continue);
             QCOMPARE(object4.propertyFlags("foo"),
-                     QScriptValue::PropertySetter | QScriptValue::UserRange);
+                     QScriptValue::PropertySetter | QScriptValue::PropertyGetter | QScriptValue::UserRange);
             object4.setProperty("foo", str);
             QCOMPARE(object4.property("x").strictlyEquals(str), true);
             QCOMPARE(object4.property("foo").strictlyEquals(str), true);

@@ -144,16 +144,6 @@ bool QScriptObject::hasInstance(JSC::ExecState* exec, JSC::JSValue value, JSC::J
     return d->delegate->hasInstance(this, exec, value, proto);
 }
 
-JSC::JSValue QScriptObject::lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-}
-
-JSC::JSValue QScriptObject::lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-}
-
 QScriptObjectPrototype::QScriptObjectPrototype(JSC::ExecState*, WTF::PassRefPtr<JSC::Structure> structure,
                                                JSC::Structure* /*prototypeFunctionStructure*/)
     : QScriptObject(structure)

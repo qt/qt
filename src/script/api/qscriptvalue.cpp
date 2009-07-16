@@ -1821,13 +1821,13 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
         result |= QScriptValue::SkipInEnumeration;
     if (attribs & JSC::DontDelete)
         result |= QScriptValue::Undeletable;
-    if (attribs & JSC::Getter)
+    //We cannot rely on attribs JSC::Setter/Getter because they are not necesserly set by JSC (bug?)
+    if (attribs & JSC::Getter || !JSC::asObject(d->jscValue)->lookupGetter(exec, id).isUndefinedOrNull())
         result |= QScriptValue::PropertyGetter;
-    if (attribs & JSC::Setter)
+    if (attribs & JSC::Setter || !JSC::asObject(d->jscValue)->lookupSetter(exec, id).isUndefinedOrNull())
         result |= QScriptValue::PropertySetter;
     if (attribs & QScript::QObjectMemberAttribute)
         result |= QScriptValue::QObjectMember;
-
     result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
     return result;
 }
