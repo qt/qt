@@ -177,11 +177,12 @@ function finishCreatingBlock(xIdx,yIdx){
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
         dynamicObject.parent = gameCanvas;
+        dynamicObject.x = xIdx*tileSize;
         dynamicObject.targetX = xIdx*tileSize;
         dynamicObject.targetY = yIdx*tileSize;
         dynamicObject.width = tileSize;
         dynamicObject.height = tileSize;
-        dynamicObject.spawning = true;
+        dynamicObject.spawned = true;
         board[index(xIdx,yIdx)] = dynamicObject;
         return true;
     }else if(component.isError()){

@@ -1,7 +1,7 @@
 Rect { id:block
     //Note: These properties are the interface used to control the blocks
     property bool dying: false
-    property bool spawning: false
+    property bool spawned: false
     property int type: 0
     property int targetY: 0
     property int targetX: 0
@@ -17,7 +17,7 @@ Rect { id:block
 
     states: [
 
-        State{ name: "SpawnState"; when: spawning == true && dying == false
+        State{ name: "AliveState"; when: spawned == true && dying == false
             SetProperties { target: block; opacity: 1 }
         },
         State{ name: "DeathState"; when: dying == true

@@ -1,11 +1,11 @@
 Item { id:block
     property bool dying: false
-    property bool spawning: false
+    property bool spawned: false
     property int type: 0
     property int targetX: 0
     property int targetY: 0
 
-    x: Follow { source: targetX; spring: 1.2; damping: 0.1 }
+    x: Follow { enabled: spawned; source: targetX; spring: 1.2; damping: 0.1 }
     y: Follow { source: targetY; spring: 1.2; damping: 0.1 }
 
     Image { id: img
@@ -38,7 +38,7 @@ Item { id:block
     }
     states: [
 
-        State{ name: "AliveState"; when: spawning == true && dying == false
+        State{ name: "AliveState"; when: spawned == true && dying == false
             SetProperties { target: img; opacity: 1 }
         },
         State{ name: "DeathState"; when: dying == true

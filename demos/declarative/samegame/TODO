@@ -1,5 +1,3 @@
 Still to do before initial release
--Garbage collect on click
--Particles with count 0->50 should work properly
--Particles are too slow to start
--Everything is too slow, we should have four times the number of tiles there
+-Garbage collect after click
+-Second *good* theme
