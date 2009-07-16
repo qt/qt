@@ -183,29 +183,25 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
 void QDirIteratorPrivate::advance()
 {
     while (!fileEngineIterators.isEmpty()) {
-        QAbstractFileEngineIterator *it = fileEngineIterators.top();
 
         // Find the next valid iterator that matches the filters.
-        bool foundDirectory = false;
-        while (it->hasNext()) {
+        while (fileEngineIterators.top()->hasNext()) {
+            QAbstractFileEngineIterator *it = fileEngineIterators.top();
             it->next();
+
             const QFileInfo info = it->currentFileInfo();
+            checkAndPushDirectory(it->currentFileInfo());
+
             if (matchesFilters(it->currentFileName(), info)) {
                 currentFileInfo = nextFileInfo;
                 nextFileInfo = info;
 
-                checkAndPushDirectory(nextFileInfo);
-
                 //We found a matching entry.
                 return;
-
-            } else if (checkAndPushDirectory(info)) {
-                foundDirectory = true;
-                break;
             }
         }
-        if (!foundDirectory)
-            delete fileEngineIterators.pop();
+
+        delete fileEngineIterators.pop();
     }
 
     currentFileInfo = nextFileInfo;
