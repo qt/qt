@@ -69,6 +69,8 @@ public:
     void setLine(int);
     int column() const;
     void setColumn(int);
+
+    QString toString() const;
 private:
     QmlErrorPrivate *d;
 };

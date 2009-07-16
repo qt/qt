@@ -168,6 +168,21 @@ void QmlError::setColumn(int column)
 }
 
 /*!
+    Return the error as a human readable string.
+*/
+QString QmlError::toString() const
+{
+    QString rv;
+    rv = url().toString() + QLatin1String(":") + QString::number(line());
+    if(column() != -1) 
+        rv += QLatin1String(":") + QString::number(column());
+
+    rv += QLatin1String(": ") + description();
+
+    return rv;
+}
+
+/*!
     \relates QmlError
     \fn QDebug operator<<(QDebug debug, const QmlError &error)
 
@@ -176,19 +191,9 @@ void QmlError::setColumn(int column)
 
 QDebug operator<<(QDebug debug, const QmlError &error)
 {
+    debug << qPrintable(error.toString());
+
     QUrl url = error.url();
-
-    QString output;
-
-    output = url.toString() + QLatin1String(":") + 
-             QString::number(error.line());
-
-    if(error.column() != -1) 
-        output += QLatin1String(":") + QString::number(error.column());
-
-    output += QLatin1String(": ") + error.description();
-
-    debug << qPrintable(output);
 
     if (error.line() > 0 && url.scheme() == QLatin1String("file")) {
         QString file = url.toLocalFile();
