@@ -134,12 +134,12 @@ public:
 */
 QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
-    : engine(0), path(path), nextFileInfo(path), iteratorFlags(flags), followNextDir(false), first(true), done(false)
+    : engine(0), path(path), nextFileInfo(path), iteratorFlags(flags),
+      filters(filters), nameFilters(nameFilters),
+      followNextDir(false), first(true), done(false)
 {
-    if (filters == QDir::NoFilter)
-        filters = QDir::AllEntries;
-    this->filters = filters;
-    this->nameFilters = nameFilters;
+    if (QDir::NoFilter == filters)
+        this->filters = QDir::AllEntries;
 
     pushSubDirectory(nextFileInfo, nameFilters, filters);
 }
