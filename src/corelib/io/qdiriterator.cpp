@@ -235,15 +235,14 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
     if (!fileInfo.isDir())
         return false;
 
-    // Never follow . and ..
-    if (fileInfo.fileName() == QLatin1String(".") || fileInfo.fileName() == QLatin1String(".."))
+    // Follow symlinks only when asked
+    if (!(iteratorFlags & QDirIterator::FollowSymlinks) && fileInfo.isSymLink())
         return false;
 
-    // Check symlinks
-    if (!(iteratorFlags & QDirIterator::FollowSymlinks) && fileInfo.isSymLink()) {
-        // Follow symlinks only if FollowSymlinks was passed
+    // Never follow . and ..
+    QString fileName = fileInfo.fileName();
+    if (QLatin1String(".") == fileName || QLatin1String("..") == fileName)
         return false;
-    }
 
     // Stop link loops
     if (visitedLinks.contains(fileInfo.canonicalFilePath()))
