@@ -6114,8 +6114,34 @@ case "$XPLATFORM" in
 	canBuildWebKit="no"
 	;;
     aix-xlc*)
-	canBuildWebKit="no"
-	canBuildQtXmlPatterns="no"
+        # Get the xlC version
+        cat > xlcver.c <<EOF
+#include <stdio.h>
+int main()
+{
+    printf("%d.%d\n", __xlC__ >> 8, __xlC__ & 0xFF);
+    return 0;
+}
+EOF
+        xlcver=
+        if ${QMAKE_CONF_COMPILER} -o xlcver xlcver.c >/dev/null 2>/dev/null; then
+            xlcver=`./xlcver 2>/dev/null`
+            rm -f ./xlcver
+        fi
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            if [ -n "$xlcver" ]; then
+                echo Found IBM xlC version: $xlcver.
+            else
+                echo Could not determine IBM xlC version, assuming oldest supported.
+            fi
+        fi
+
+        case "$xlcver" in
+            *)
+                canBuildWebKit="no"
+                canBuildQtXmlPatterns="no"
+                ;;
+        esac
 	;;
     irix-cc*)
         canBuildWebKit="no"
