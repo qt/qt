@@ -86,8 +86,15 @@ void QmlContextPrivate::destroyed(QObject *obj)
         }
     }
 
-    for (int ii = 0; ii < notifies.count(); ++ii) {
-        QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
+    // There is no need to emit these notifications if our parent is in the 
+    // process of being deleted (which is *probably* why obj has been destroyed
+    // anyway), as we're about to get deleted which will invalidate all the
+    // expressions that could depend on us
+    QObject *parent = q->parent();
+    if (!parent || !QObjectPrivate::get(parent)->wasDeleted) {
+        for (int ii = 0; ii < notifies.count(); ++ii) {
+            QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
+        }
     }
 }
 

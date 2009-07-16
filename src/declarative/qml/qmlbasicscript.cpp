@@ -181,6 +181,9 @@ static QVariant toObjectOrVariant(const QVariant &v)
 
 static QVariant fetch_value(QObject *o, int idx, int type)
 {
+    if (!o)
+        return QVariant();
+
     switch(type) {
         case QVariant::String:
             {
@@ -823,7 +826,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 QObject *obj = contextPrivate->defaultObjects.at(0);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                if (instr.constant.notify != 0)
+                if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
                         QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
                 state = Reset;
@@ -835,7 +838,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 QObject *obj = contextPrivate->defaultObjects.at(1);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                if (instr.constant.notify != 0)
+                if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
                         QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
                 state = Reset;
@@ -848,7 +851,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 QObject *obj = qvariant_cast<QObject *>(o);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
-                if (instr.constant.notify != 0)
+                if (obj && instr.constant.notify != 0)
                     enginePrivate->capturedProperties <<
                         QmlEnginePrivate::CapturedProperty(obj, instr.constant.idx, instr.constant.notify); 
                 state = Reset;
