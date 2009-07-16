@@ -456,8 +456,8 @@ namespace Phonon
 
         HRESULT QPin::checkOutputMediaTypesConnection(IPin *pin)
         {
-            IEnumMediaTypes *emt = 0;
-            HRESULT hr = pin->EnumMediaTypes(&emt);
+            ComPointer<IEnumMediaTypes> emt;
+            HRESULT hr = pin->EnumMediaTypes(emt.pparam());
             if (hr != S_OK) {
                 return hr;
             }
