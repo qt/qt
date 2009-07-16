@@ -85,7 +85,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
         error = QSharedMemory::AlreadyExists;
         break;
     case ENOENT:
-        errorString = QSharedMemory::tr("%1: doesn't exists").arg(function);
+        errorString = QSharedMemory::tr("%1: doesn't exist").arg(function);
         error = QSharedMemory::NotFound;
         break;
     case EMFILE:
@@ -124,7 +124,7 @@ key_t QSharedMemoryPrivate::handle()
     // ftok requires that an actual file exists somewhere
     QString fileName = makePlatformSafeKey(key);
     if (!QFile::exists(fileName)) {
-        errorString = QSharedMemory::tr("%1: unix key file doesn't exists").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::NotFound;
         return 0;
     }

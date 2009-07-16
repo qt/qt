@@ -430,16 +430,15 @@ int QMetaType::registerType(const char *typeName, Destructor destructor,
 #endif
 
     QWriteLocker locker(customTypesLock());
-    static int currentIdx = User;
     int idx = qMetaTypeType_unlocked(normalizedTypeName);
 
     if (!idx) {
-        idx = currentIdx++;
-        ct->resize(ct->count() + 1);
-        QCustomTypeInfo &inf = (*ct)[idx - User];
+        QCustomTypeInfo inf;
         inf.typeName = normalizedTypeName;
         inf.constr = constructor;
         inf.destr = destructor;
+        idx = ct->size() + User;
+        ct->append(inf);
     }
     return idx;
 }

@@ -71,7 +71,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
     case ERROR_INVALID_PARAMETER:
 #endif
         error = QSharedMemory::NotFound;
-        errorString = QSharedMemory::tr("%1: doesn't exists").arg(function);
+        errorString = QSharedMemory::tr("%1: doesn't exist").arg(function);
         break;
     case ERROR_COMMITMENT_LIMIT:
         error = QSharedMemory::InvalidSize;

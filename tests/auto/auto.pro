@@ -393,7 +393,8 @@ SUBDIRS += _networkselftest \
            symbols \
            qrand \
            uic \
-           uic3
+           uic3 \
+           utf8
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 

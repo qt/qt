@@ -71,6 +71,8 @@ QTOBJS= \
 	qmalloc.o \
 	qmap.o \
 	qregexp.o \
+	qtextcodec.o \
+	qutfcodec.o \
 	qstring.o \
 	qstringlist.o \
 	qtextstream.o \
@@ -192,6 +194,9 @@ qvsnprintf.o: $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp
 qbytearraymatcher.o: $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp
 
+qutfcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
+
 qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 
@@ -231,8 +236,8 @@ qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 qfsfileengine_iterator.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp
 
-qtextcodec.o: $(SOURCE_PATH)/src/codecs/qtextcodec.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/codecs/qtextcodec.cpp
+qtextcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
 
 qregexp.o: $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <QStringList>
+#include <QFile>
 #include <qtest.h>
 
 class tst_QString: public QObject
@@ -47,6 +48,7 @@ class tst_QString: public QObject
 private slots:
     void equals() const;
     void equals_data() const;
+    void fromUtf8() const;
 };
 
 void tst_QString::equals() const
@@ -116,6 +118,22 @@ void tst_QString::equals_data() const
             << QString::fromRawData(ptr, 58) << QString::fromRawData(ptr + 1, 58);
     QTest::newRow("unaligned-unaligned-2n")
             << QString::fromRawData(ptr + 1, 58) << QString::fromRawData(ptr + 3, 58);
+}
+
+void tst_QString::fromUtf8() const
+{
+    QFile file(SRCDIR "utf-8.txt");
+    if (!file.open(QFile::ReadOnly)) {
+        qFatal("Cannot open input file");
+        return;
+    }
+    QByteArray data = file.readAll();
+    const char *d = data.constData();
+    int size = data.size();
+
+    QBENCHMARK {
+        QString::fromUtf8(d, size);
+    }
 }
 
 QTEST_MAIN(tst_QString)

@@ -72,6 +72,8 @@
 #include <windows.h> // for Sleep
 #endif
 #ifdef Q_OS_UNIX
+#include <errno.h>
+#include <signal.h>
 #include <time.h>
 #endif
 
@@ -1330,6 +1332,80 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestLog::stopLogging();
 }
 
+#ifdef Q_OS_UNIX
+class FatalSignalHandler
+{
+public:
+    FatalSignalHandler();
+    ~FatalSignalHandler();
+
+private:
+    static void signal(int);
+    sigset_t handledSignals;
+};
+
+void FatalSignalHandler::signal(int signum)
+{
+    qFatal("Received signal %d", signum);
+}
+
+FatalSignalHandler::FatalSignalHandler()
+{
+    sigemptyset(&handledSignals);
+
+    const int fatalSignals[] = {
+         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_handler = FatalSignalHandler::signal;
+
+    // Remove the handler after it is invoked.
+    act.sa_flags = SA_RESETHAND;
+
+    // Block all fatal signals in our signal handler so we don't try to close
+    // the testlog twice.
+    sigemptyset(&act.sa_mask);
+    for (int i = 0; fatalSignals[i]; ++i)
+        sigaddset(&act.sa_mask, fatalSignals[i]);
+
+    struct sigaction oldact;
+
+    for (int i = 0; fatalSignals[i]; ++i) {
+        sigaction(fatalSignals[i], &act, &oldact);
+        // Don't overwrite any non-default handlers
+        if (oldact.sa_flags & SA_SIGINFO || oldact.sa_handler != SIG_DFL) {
+            sigaction(fatalSignals[i], &oldact, 0);
+        } else {
+            sigaddset(&handledSignals, fatalSignals[i]);
+        }
+    }
+}
+
+
+FatalSignalHandler::~FatalSignalHandler()
+{
+    // Unregister any of our remaining signal handlers
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_handler = SIG_DFL;
+
+    struct sigaction oldact;
+
+    for (int i = 0; i < 32; ++i) {
+        if (!sigismember(&handledSignals, i))
+            continue;
+        sigaction(i, &act, &oldact);
+
+        // If someone overwrote it in the mean time, put it back
+        if (oldact.sa_handler != FatalSignalHandler::signal)
+            sigaction(i, &oldact, 0);
+    }
+}
+
+#endif
+
+
 } // namespace
 
 /*!
@@ -1424,14 +1500,14 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
         QBenchmarkValgrindUtils::cleanup();
 
-    } else {
+    } else
 #endif
-
+    {
+#ifdef Q_OS_UNIX
+        FatalSignalHandler handler;
+#endif
         qInvokeTestMethods(testObject);
-
-#ifdef QTESTLIB_USE_VALGRIND
     }
-#endif
 
  #ifndef QT_NO_EXCEPTIONS
      } catch (...) {

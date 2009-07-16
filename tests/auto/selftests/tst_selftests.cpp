@@ -297,7 +297,9 @@ void tst_Selftests::runSubTest()
 
 void tst_Selftests::initTestCase()
 {
-    m_checkXMLBlacklist.append("crashes"); // This test crashes
+#ifndef Q_OS_UNIX
+    m_checkXMLBlacklist.append("crashes"); // This test crashes (XML valid on Unix only)
+#endif
     m_checkXMLBlacklist.append("waitwithoutgui"); // This test is not a QTestLib test.
 
     /* Output from several tests is broken with the XML output method,

@@ -252,8 +252,11 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
     if (mask.format() == QImage::Format_RGB32) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, m_height - c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
-        mask = mask.convertToFormat(QImage::Format_Indexed8);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
+        // If the width of the uploaded data is not a multiple of four bytes, we get some garbage
+        // in the glyph cache, probably because of a driver bug.
+        // Convert to ARGB32 to get a multiple of 4 bytes per line.
+        mask = mask.convertToFormat(QImage::Format_ARGB32);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     }
 }
 
