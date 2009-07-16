@@ -106,9 +106,10 @@ public:
                         QDir::Filters filters, QDirIterator::IteratorFlags flags);
     ~QDirIteratorPrivate();
 
-    void pushSubDirectory(const QFileInfo &fileInfo);
     void advance();
-    bool shouldFollowDirectory(const QFileInfo &);
+
+    void pushDirectory(const QFileInfo &fileInfo);
+    bool checkAndPushDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
     QSet<QString> visitedLinks;
@@ -137,7 +138,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
         this->filters = QDir::AllEntries;
 
     // Populate fields for hasNext() and next()
-    pushSubDirectory(QFileInfo(path));
+    pushDirectory(QFileInfo(path));
     advance();
 }
 
@@ -152,7 +153,7 @@ QDirIteratorPrivate::~QDirIteratorPrivate()
 /*!
     \internal
 */
-void QDirIteratorPrivate::pushSubDirectory(const QFileInfo &fileInfo)
+void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
 {
     QString path = fileInfo.filePath();
 
@@ -193,14 +194,12 @@ void QDirIteratorPrivate::advance()
                 currentFileInfo = nextFileInfo;
                 nextFileInfo = info;
 
-                if(shouldFollowDirectory(nextFileInfo))
-                    pushSubDirectory(nextFileInfo);
+                checkAndPushDirectory(nextFileInfo);
 
                 //We found a matching entry.
                 return;
 
-            } else if (shouldFollowDirectory(info)) {
-                pushSubDirectory(info);
+            } else if (checkAndPushDirectory(info)) {
                 foundDirectory = true;
                 break;
             }
@@ -215,7 +214,7 @@ void QDirIteratorPrivate::advance()
 /*!
     \internal
  */
-bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
+bool QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
 {
     // If we're doing flat iteration, we're done.
     if (!(iteratorFlags & QDirIterator::Subdirectories))
@@ -242,6 +241,7 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
     if (visitedLinks.contains(fileInfo.canonicalFilePath()))
         return false;
 
+    pushDirectory(fileInfo);
     return true;
 }
 
