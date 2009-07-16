@@ -2926,9 +2926,8 @@ void tst_QScriptEngine::forInStatement()
         QScriptValue ret = eng.evaluate("o = { p: 123 }; r = [];"
                                         "for (var p in o) { r[r.length] = p; o.q = 456; } r");
         QStringList lst = qscriptvalue_cast<QStringList>(ret);
-        QCOMPARE(lst.size(), 2);
+        QCOMPARE(lst.size(), 1);
         QCOMPARE(lst.at(0), QString::fromLatin1("p"));
-        QCOMPARE(lst.at(1), QString::fromLatin1("q"));
     }
 
     // arrays
@@ -2945,9 +2944,9 @@ void tst_QScriptEngine::forInStatement()
                                         "for (var p in a) r[r.length] = p; r");
         QStringList lst = qscriptvalue_cast<QStringList>(ret);
         QCOMPARE(lst.size(), 3);
-        QCOMPARE(lst.at(0), QString::fromLatin1("foo"));
-        QCOMPARE(lst.at(1), QString::fromLatin1("0"));
-        QCOMPARE(lst.at(2), QString::fromLatin1("1"));
+        QCOMPARE(lst.at(0), QString::fromLatin1("0"));
+        QCOMPARE(lst.at(1), QString::fromLatin1("1"));
+        QCOMPARE(lst.at(2), QString::fromLatin1("foo"));
     }
     {
         QScriptValue ret = eng.evaluate("a = [123, 456]; a.foo = 'bar';"
@@ -2956,10 +2955,11 @@ void tst_QScriptEngine::forInStatement()
                                         "for (var p in a) r[r.length] = p; r");
         QStringList lst = qscriptvalue_cast<QStringList>(ret);
         QCOMPARE(lst.size(), 5);
-        QCOMPARE(lst.at(0), QString::fromLatin1("foo"));
-        QCOMPARE(lst.at(1), QString::fromLatin1("0"));
-        QCOMPARE(lst.at(2), QString::fromLatin1("1"));
-        QCOMPARE(lst.at(3), QString::fromLatin1("bar"));
+        QCOMPARE(lst.at(0), QString::fromLatin1("0"));
+        QCOMPARE(lst.at(1), QString::fromLatin1("1"));
+        QCOMPARE(lst.at(2), QString::fromLatin1("foo"));
+        QCOMPARE(lst.at(3), QString::fromLatin1("2"));
+        QCOMPARE(lst.at(4), QString::fromLatin1("bar"));
     }
 
     // null and undefined
