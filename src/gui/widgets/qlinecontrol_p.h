@@ -78,8 +78,7 @@ class Q_GUI_EXPORT QLineControl : public QObject
 
 public:
     QLineControl(const QString &txt = QString())
-        : m_emitingEditingFinished(0),
-        m_cursor(0), m_preeditCursor(0), m_layoutDirection(Qt::LeftToRight),
+        : m_cursor(0), m_preeditCursor(0), m_layoutDirection(Qt::LeftToRight),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
         m_validInput(1), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
@@ -229,8 +228,6 @@ public:
     void draw(QPainter *, const QPoint &, const QRect &, int flags = DrawAll);
 
     bool processEvent(QEvent *ev);
-
-    bool m_emitingEditingFinished; //Needed in QLineEdit FocusOut event
 
 private:
     void init(const QString &txt);

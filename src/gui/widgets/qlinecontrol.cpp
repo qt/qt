@@ -1497,9 +1497,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
         if (hasAcceptableInput() || fixup()) {
             emit accepted();
-            m_emitingEditingFinished = true;
             emit editingFinished();
-            m_emitingEditingFinished = false;
         }
         if (inlineCompletionAccepted)
             event->accept();

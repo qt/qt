@@ -1393,15 +1393,10 @@ bool QLineEdit::event(QEvent * e)
         } else if (e->type() == QEvent::LeaveEditFocus) {
             d->setCursorVisible(false);
             d->control->setCursorBlinkPeriod(0);
-            if (!d->control->emitingEditingFinished) {
-                if (d->control->hasAcceptableInput() || d->control->fixup()) {
-                    d->control->emitingEditingFinished = true;
-                    emit editingFinished();
-                    d->control->emitingEditingFinished = false;
-                }
-            }
+            if (d->control->hasAcceptableInput() || d->control->fixup())
+                emit editingFinished();
         }
-        return;
+        return true;
     }
 #endif
     return QWidget::event(e);
@@ -1727,13 +1722,8 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
 #endif
     if (reason != Qt::PopupFocusReason
         || !(QApplication::activePopupWidget() && QApplication::activePopupWidget()->parentWidget() == this)) {
-        if (!d->control->m_emitingEditingFinished) {
-            if (hasAcceptableInput() || d->control->fixup()) {
-                d->control->m_emitingEditingFinished = true;
+            if (hasAcceptableInput() || d->control->fixup())
                 emit editingFinished();
-                d->control->m_emitingEditingFinished = false;
-            }
-        }
 #ifdef QT3_SUPPORT
         emit lostFocus();
 #endif
