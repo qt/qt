@@ -1591,11 +1591,15 @@ bool QMetaObjectWrapperObject::getOwnPropertySlot(
     if (!meta)
         return false;
 
-    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
-    if (name == "prototype") {
-        qWarning("getting of metaobject.prototype not implemented");
-        return false;
+    if (propertyName == exec->propertyNames().prototype) {
+        if (data->ctor)
+            slot.setValue(data->ctor.get(exec, propertyName));
+        else
+            slot.setValue(data->prototype);
+        return true;
     }
+
+    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
@@ -1614,6 +1618,13 @@ bool QMetaObjectWrapperObject::getOwnPropertySlot(
 void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                    JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
+    if (propertyName == exec->propertyNames().prototype) {
+        if (data->ctor)
+            data->ctor.put(exec, propertyName, value, slot);
+        else
+            data->prototype = value;
+        return;
+    }
     const QMetaObject *meta = data->value;
     if (meta) {
         QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
@@ -1631,6 +1642,8 @@ void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& 
 bool QMetaObjectWrapperObject::deleteProperty(
     JSC::ExecState *exec, const JSC::Identifier& propertyName)
 {
+    if (propertyName == exec->propertyNames().prototype)
+        return false;
     const QMetaObject *meta = data->value;
     if (meta) {
         QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
@@ -1649,6 +1662,10 @@ bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
                                                      const JSC::Identifier &propertyName,
                                                      unsigned &attributes) const
 {
+    if (propertyName == exec->propertyNames().prototype) {
+        attributes = JSC::DontDelete;
+        return true;
+    }
     const QMetaObject *meta = data->value;
     if (meta) {
         QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
@@ -1676,6 +1693,84 @@ void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::Prope
             propertyNames.add(JSC::Identifier(exec, e.key(j)));
     }
     JSC::JSObject::getPropertyNames(exec, propertyNames);
+}
+
+void QMetaObjectWrapperObject::mark()
+{
+    Q_ASSERT(!marked());
+    if (data->ctor && !data->ctor.marked())
+        data->ctor.mark();
+    if (data->prototype && !data->prototype.marked())
+        data->prototype.mark();
+    JSC::JSObject::mark();
+}
+
+JSC::CallType QMetaObjectWrapperObject::getCallData(JSC::CallData& callData)
+{
+    callData.native.function = call;
+    return JSC::CallTypeHost;
+}
+
+JSC::ConstructType QMetaObjectWrapperObject::getConstructData(JSC::ConstructData& constructData)
+{
+    constructData.native.function = construct;
+    return JSC::ConstructTypeHost;
+}
+
+JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
+    JSC::ExecState *exec, JSC::JSObject *callee,
+    JSC::JSValue thisValue, const JSC::ArgList &args)
+{
+    if (!callee->isObject(&QMetaObjectWrapperObject::info))
+        return throwError(exec, JSC::TypeError, "callee is not a QMetaObject");
+    QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    eng_p->currentFrame = exec;
+    JSC::JSValue result = self->execute(exec, args);
+    eng_p->currentFrame = previousFrame;
+    return result;
+}
+
+JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JSObject *callee, const JSC::ArgList &args)
+{
+    QMetaObjectWrapperObject *self = static_cast<QMetaObjectWrapperObject*>(callee);
+    QScriptEnginePrivate *eng_p = static_cast<QScript::GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    JSC::ExecState *previousFrame = eng_p->currentFrame;
+    eng_p->currentFrame = exec;
+    JSC::JSValue result = self->execute(exec, args);
+    eng_p->currentFrame = previousFrame;
+    if (!result || !result.isObject())
+        return 0;
+    return JSC::asObject(result);
+}
+
+JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
+                                               const JSC::ArgList &args)
+{
+    if (data->ctor) {
+        JSC::CallData callData;
+        JSC::CallType callType = data->ctor.getCallData(callData);
+        return JSC::call(exec, data->ctor, callType, callData, /*thisValue=*/JSC::JSValue(), args);
+    } else {
+        if (data->value->constructorCount() > 0) {
+            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+#if 0
+            callQtMethod(context, QMetaMethod::Constructor, /*thisQObject=*/0,
+                         value, value->constructorCount()-1, /*maybeOverloaded=*/true);
+            if (context->state() == QScriptContext::NormalState) {
+                ExtQObject::Instance *inst = ExtQObject::Instance::get(context->m_result);
+                Q_ASSERT(inst != 0);
+                inst->ownership = QScriptEngine::AutoOwnership;
+                context->m_result.setPrototype(prototype);
+            }
+#endif
+        } else {
+            QString message = QString::fromLatin1("no constructor for %0")
+                              .arg(QLatin1String(data->value->className()));
+            return JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
+        }
+    }
 }
 
 struct StaticQtMetaObject : public QObject

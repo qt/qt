@@ -111,6 +111,7 @@ public:
     void releaseContextForFrame(JSC::ExecState *frame);
 
     bool isCollecting() const;
+    void collectGarbage();
 
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,

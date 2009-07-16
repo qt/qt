@@ -243,6 +243,7 @@ public:
     {
         const QMetaObject *value;
         JSC::JSValue ctor;
+        JSC::JSValue prototype;
 
         Data(const QMetaObject *mo, JSC::JSValue c)
             : value(mo), ctor(c) {}
@@ -263,9 +264,19 @@ public:
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void mark();
+
+    virtual JSC::CallType getCallData(JSC::CallData&);
+    virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
+
+    static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,
+                                           JSC::JSValue, const JSC::ArgList&);
+    static JSC::JSObject* construct(JSC::ExecState *, JSC::JSObject *, const JSC::ArgList &);
+
+    JSC::JSValue execute(JSC::ExecState *exec, const JSC::ArgList &args);
 
     inline const QMetaObject *value() const { return data->value; }
     inline void setValue(const QMetaObject* value) { data->value = value; }

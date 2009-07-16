@@ -669,8 +669,8 @@ JSC::JSValue functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, c
 
 JSC::JSValue functionGC(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
 {
-    JSC::JSLock lock(false);
-    exec->heap()->collect();
+    QScriptEnginePrivate *engine = static_cast<GlobalObject*>(exec->lexicalGlobalObject())->engine;
+    engine->collectGarbage();
     return JSC::jsUndefined();
 }
 
@@ -1048,6 +1048,15 @@ void QScriptEnginePrivate::releaseContextForFrame(JSC::ExecState *frame)
 bool QScriptEnginePrivate::isCollecting() const
 {
     return globalObject->globalData()->heap.isBusy();
+}
+
+void QScriptEnginePrivate::collectGarbage()
+{
+    // ### why isn't the global object always marked by the Collector?
+    if (!globalObject->marked())
+        globalObject->mark();
+    JSC::JSLock lock(false);
+    globalData->heap.collect();
 }
 
 #ifndef QT_NO_QOBJECT
@@ -3135,11 +3144,7 @@ QStringList QScriptEngine::importedExtensions() const
 void QScriptEngine::collectGarbage()
 {
     Q_D(QScriptEngine);
-    // ### why isn't the global object always marked by the Collector?
-    if (!d->globalObject->marked())
-        d->globalObject->mark();
-    JSC::JSLock lock(false);
-    d->globalData->heap.collect();
+    d->collectGarbage();
 }
 
 /*!
