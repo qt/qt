@@ -2470,6 +2470,21 @@ QGraphicsItem *QGraphicsScene::focusItem() const
 }
 
 /*!
+    \internal
+    Returns the focus item for \a item. In the presence of focus realms,
+    the focus item is the leaf descendant of \a item that would gain active
+    focus if \a item were given active focus. If not focus realms are involved,
+    \a item is returned.
+*/
+QGraphicsItem *QGraphicsScene::focusItem(QGraphicsItem *item) const
+{
+    Q_D(const QGraphicsScene);
+    while (item && d->focusItemForFocusArea.contains(item))
+        item = d->focusItemForFocusArea.value(item);
+    return item;
+}
+
+/*!
     Sets the scene's focus item to \a item, with the focus reason \a
     focusReason, after removing focus from any previous item that may have had
     focus.

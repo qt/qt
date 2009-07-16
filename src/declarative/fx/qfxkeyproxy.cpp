@@ -102,11 +102,13 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
+    if (!scene())
+        return;
     if (!d->inPress) {
         d->inPress = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
-            QFxItem *i = d->targets.at(ii); //### FocusRealm
-            if (i && scene())
+            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            if (i)
                 scene()->sendEvent(i, e);
             if (e->isAccepted()) {
                 d->inPress = false;
@@ -119,11 +121,13 @@ void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
+    if (!scene())
+        return;
     if (!d->inRelease) {
         d->inRelease = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
-            QFxItem *i = d->targets.at(ii); //### FocusRealm
-            if (i && scene())
+            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            if (i)
                 scene()->sendEvent(i, e);
             if (e->isAccepted()) {
                 d->inRelease = false;
@@ -136,11 +140,13 @@ void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 
 void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
 {
+    if (!scene())
+        return;
     if (!d->inIM) {
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
-            QFxItem *i = d->targets.at(ii); //### FocusRealm
-            if (i && scene())
+            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            if (i)
                 scene()->sendEvent(i, e);
             if (e->isAccepted()) {
                 d->inIM = false;
