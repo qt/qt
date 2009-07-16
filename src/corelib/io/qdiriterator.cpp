@@ -121,7 +121,6 @@ public:
     QDirIterator::IteratorFlags iteratorFlags;
     QDir::Filters filters;
     QStringList nameFilters;
-    bool followNextDir;
     bool first;
     bool done;
 
@@ -135,7 +134,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
     : engine(0), path(path), iteratorFlags(flags),
       filters(filters), nameFilters(nameFilters),
-      followNextDir(false), first(true), done(false)
+      first(true), done(false)
 {
     if (QDir::NoFilter == filters)
         this->filters = QDir::AllEntries;
@@ -183,14 +182,6 @@ void QDirIteratorPrivate::pushSubDirectory(const QFileInfo &fileInfo)
 */
 void QDirIteratorPrivate::advance()
 {
-    // Advance to the next entry
-    if (followNextDir) {
-        // Start by navigating into the current directory.
-        QAbstractFileEngineIterator *it = fileEngineIterators.top();
-        pushSubDirectory(it->currentFileInfo());
-        followNextDir = false;
-    }
-
     while (!fileEngineIterators.isEmpty()) {
         QAbstractFileEngineIterator *it = fileEngineIterators.top();
 
@@ -202,8 +193,10 @@ void QDirIteratorPrivate::advance()
             if (matchesFilters(it->currentFileName(), info)) {
                 currentFileInfo = nextFileInfo;
                 nextFileInfo = info;
-                // Signal that we want to follow this entry.
-                followNextDir = shouldFollowDirectory(nextFileInfo);
+
+                if(shouldFollowDirectory(nextFileInfo))
+                    pushSubDirectory(nextFileInfo);
+
                 //We found a matching entry.
                 return;
 
