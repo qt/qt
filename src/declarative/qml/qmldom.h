@@ -150,7 +150,7 @@ public:
     bool isValid() const;
 
     QByteArray objectType() const;
-    QByteArray objectId() const;
+    QString objectId() const;
 
     void setObjectId(const QByteArray &);
 

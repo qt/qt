@@ -70,10 +70,7 @@ public:
     QmlEngine(QObject *p = 0);
     virtual ~QmlEngine();
 
-    static QmlEngine *activeEngine();
-
     QmlContext *rootContext();
-    QmlContext *activeContext();
 
     void clearComponentCache();
 

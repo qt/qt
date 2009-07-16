@@ -268,6 +268,8 @@ private:
     Q_DECLARE_PRIVATE(QLineEdit)
     Q_PRIVATE_SLOT(d_func(), void _q_handleWindowActivate())
     Q_PRIVATE_SLOT(d_func(), void _q_deleteSelected())
+    Q_PRIVATE_SLOT(d_func(), void _q_textEdited(const QString &))
+    Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged(int, int))
 #ifndef QT_NO_COMPLETER
     Q_PRIVATE_SLOT(d_func(), void _q_completionHighlighted(QString))
 #endif

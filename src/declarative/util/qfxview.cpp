@@ -246,44 +246,6 @@ void QFxView::execute()
     }
 }
 
-/*!
-    \internal
-*/
-void QFxView::printErrorLine(const QmlError &error)
-{
-    QUrl url = error.url();
-    if (error.line() > 0 && error.column() > 0 && 
-        url.scheme() == QLatin1String("file")) {
-        QString file = url.toLocalFile();
-        QFile f(file);
-        if (f.open(QIODevice::ReadOnly)) {
-            QByteArray data = f.readAll();
-            QTextStream stream(data, QIODevice::ReadOnly);
-            const QString code = stream.readAll();
-            const QStringList lines = code.split(QLatin1Char('\n'));
-
-            if (lines.count() >= error.line()) {
-                const QString &line = lines.at(error.line() - 1);
-                qWarning() << qPrintable(line);
-
-                int column = qMax(0, error.column() - 1);
-                column = qMin(column, line.length()); 
-
-                QByteArray ind;
-                ind.reserve(column);
-                for (int i = 0; i < column; ++i) {
-                    const QChar ch = line.at(i);
-                    if (ch.isSpace())
-                        ind.append(ch.unicode());
-                    else
-                        ind.append(' ');
-                }
-                ind.append('^');
-                qWarning() << ind.constData();
-            }
-        }
-    }
-}
 
 /*!
   \internal
@@ -292,14 +254,15 @@ void QFxView::continueExecute()
 {
     disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
 
-    if (!d->component){
+    if (!d->component) {
         qWarning() << "Error in loading" << d->source;
         return;
     }
 
     if(d->component->isError()) {
-        QList<QmlError> errors = d->component->errors();
-        foreach (const QmlError &error, errors) {
+        QList<QmlError> errorList = d->component->errors();
+        emit errors(errorList);
+        foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
 
@@ -309,8 +272,9 @@ void QFxView::continueExecute()
     QObject *obj = d->component->create();
 
     if(d->component->isError()) {
-        QList<QmlError> errors = d->component->errors();
-        foreach (const QmlError &error, errors) {
+        QList<QmlError> errorList = d->component->errors();
+        emit errors(errorList);
+        foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
 
@@ -360,6 +324,10 @@ void QFxView::continueExecute()
 
 /*! \fn void QFxView::sceneResized(QSize size)
   This signal is emitted when the view is resized to \a size.
+ */
+
+/*! \fn void QFxView::error(const QList<QmlError> &errors)
+  This signal is emitted when the qml loaded contains errors.
  */
 
 /*!
@@ -453,8 +421,9 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
 
     QmlComponent component(&d->engine, qml.toUtf8(), QUrl());
     if(d->component->isError()) {
-        QList<QmlError> errors = d->component->errors();
-        foreach (const QmlError &error, errors) {
+        QList<QmlError> errorList = d->component->errors();
+        emit errors(errorList);
+        foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
 
@@ -463,8 +432,9 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
 
     QObject *obj = component.create();
     if(d->component->isError()) {
-        QList<QmlError> errors = d->component->errors();
-        foreach (const QmlError &error, errors) {
+        QList<QmlError> errorList = d->component->errors();
+        emit errors(errorList);
+        foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
 

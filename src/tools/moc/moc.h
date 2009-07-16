@@ -115,10 +115,11 @@ struct FunctionDef
 
 struct PropertyDef
 {
-    PropertyDef():notifyId(-1), constant(false), gspec(ValueSpec){}
+    PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec){}
     QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify;
     int notifyId;
     bool constant;
+    bool final;
     enum Specification  { ValueSpec, ReferenceSpec, PointerSpec };
     Specification gspec;
     bool stdCppSet() const {
