@@ -240,7 +240,7 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
         return false;
 
     // Check symlinks
-    if (fileInfo.isSymLink() && !(iteratorFlags & QDirIterator::FollowSymlinks)) {
+    if (!(iteratorFlags & QDirIterator::FollowSymlinks) && fileInfo.isSymLink()) {
         // Follow symlinks only if FollowSymlinks was passed
         return false;
     }
