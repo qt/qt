@@ -386,8 +386,8 @@ qfsfileengine_iterator.obj: $(SOURCE_PATH)\src\corelib\io\qfsfileengine_iterator
 qabstractfileengine.obj: $(SOURCE_PATH)\src\corelib\io\qabstractfileengine.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qabstractfileengine.cpp
 
-qtextcodec.obj: $(SOURCE_PATH)\src\codecs\qtextcodec.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\codecs\qtextcodec.cpp
+qtextcodec.obj: $(SOURCE_PATH)\src\corelib\codecs\qtextcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\codecs\qtextcodec.cpp
 
 qregexp.obj: $(SOURCE_PATH)\src\corelib\tools\qregexp.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qregexp.cpp

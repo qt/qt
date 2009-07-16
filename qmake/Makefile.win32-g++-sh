@@ -235,8 +235,8 @@ qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 qfsfileengine_iterator.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp
 
-qtextcodec.o: $(SOURCE_PATH)/src/codecs/qtextcodec.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/codecs/qtextcodec.cpp
+qtextcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
 
 qregexp.o: $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp
