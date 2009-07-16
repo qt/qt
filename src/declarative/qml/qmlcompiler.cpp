@@ -160,8 +160,8 @@ bool QmlCompiler::isSignalPropertyName(const QByteArray &name)
         QString exceptionDescription; \
         QmlError error; \
         error.setUrl(output->url); \
-        error.setLine(token->location.start.line); \
-        error.setColumn(token->location.start.column); \
+        error.setLine((token)->location.start.line); \
+        error.setColumn((token)->location.start.column); \
         QDebug d(&exceptionDescription); \
         d << desc;  \
         error.setDescription(exceptionDescription.trimmed()); \
@@ -1737,6 +1737,14 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     bool hasAlias = false;
     for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
         const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
+
+        int propIdx = 
+            obj->metaObject()->indexOfProperty(p.name.constData());
+        if (-1 != propIdx) {
+            QMetaProperty prop = obj->metaObject()->property(propIdx);
+            if (prop.isFinal())
+                COMPILE_EXCEPTION(&p, "Cannot override FINAL property");
+        }
 
         if (p.isDefaultProperty && 
             (p.type != Object::DynamicProperty::Alias || 

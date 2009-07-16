@@ -169,7 +169,7 @@ namespace QmlParser
             Type type;
             QByteArray name;
             QmlParser::Property *defaultValue;
-            LocationRange range;
+            LocationSpan location;
         };
         struct DynamicSignal {
             DynamicSignal();
