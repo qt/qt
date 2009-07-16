@@ -769,7 +769,7 @@ QByteArray QmlDomObject::objectType() const
 Text { id: MyText }
     \endqml
 */
-QByteArray QmlDomObject::objectId() const
+QString QmlDomObject::objectId() const
 {
     if (d->object) return d->object->id;
     else return QByteArray();

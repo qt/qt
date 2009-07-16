@@ -289,7 +289,7 @@ struct QmlBasicScriptCompiler
 
     QmlParser::Object *context;
     QmlParser::Object *component;
-    QHash<QString, QPair<QmlParser::Object *, int> > ids;
+    QHash<QString, QmlParser::Object *> ids;
 
     bool compile(QmlJS::AST::Node *);
 
@@ -577,10 +577,10 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node,
 
         if (ids.contains(name)) {
             instr.type = ScriptInstruction::LoadIdObject;
-            instr.fetch.idx = ids.value(name).second;
+            instr.fetch.idx = ids.value(name)->idIndex;
 
             if (type)
-                *type = ids.value(name).first;
+                *type = ids.value(name);
 
         } else {
             int d0Idx = context->metaObject()->indexOfProperty(name.toUtf8().constData());
