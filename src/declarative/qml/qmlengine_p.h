@@ -93,9 +93,6 @@ public:
 
     void init();
 
-    void contextActivated(QmlContext *);
-    void contextDeactivated(QmlContext *);
-
     bool fetchCache(QmlBasicScriptNodeCache &cache, const QString &propName, QObject *);
     bool loadCache(QmlBasicScriptNodeCache &cache, const QString &propName, QmlContextPrivate *context);
 

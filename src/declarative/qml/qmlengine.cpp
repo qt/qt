@@ -90,49 +90,6 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
-
-struct QmlEngineStack {
-    QmlEngineStack();
-
-    QStack<QmlEngine *> mainThreadEngines;
-    QThread *mainThread;
-
-    QThreadStorage<QStack<QmlEngine *> *> storage;
-
-    QStack<QmlEngine *> *engines();
-};
-
-Q_GLOBAL_STATIC(QmlEngineStack, engineStack);
-
-QmlEngineStack::QmlEngineStack()
-: mainThread(0)
-{
-}
-
-QStack<QmlEngine *> *QmlEngineStack::engines()
-{
-    if (mainThread== 0) {
-        if (!QCoreApplication::instance())
-            return 0;
-        mainThread = QCoreApplication::instance()->thread();
-    }
-
-    // Note: This is very slightly faster than just using the thread storage
-    // for everything.
-    QStack<QmlEngine *> *engines = 0;
-    if (QThread::currentThread() == mainThread) {
-        engines = &mainThreadEngines;
-    } else {
-        engines = storage.localData();
-        if (!engines) {
-            engines = new QStack<QmlEngine *>;
-            storage.setLocalData(engines);
-        }
-    }
-    return engines;
-}
-
-
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentBindContext(0), currentExpression(0), q(e), 
   isDebugging(false), rootComponent(0), networkAccessManager(0), typeManager(e),
@@ -295,30 +252,6 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
     return QScriptValue();
 }
 
-void QmlEnginePrivate::contextActivated(QmlContext *)
-{
-    Q_Q(QmlEngine);
-    QmlEngineStack *stack = engineStack();
-    if (!stack)
-        return;
-    QStack<QmlEngine *> *engines = stack->engines();
-    if (engines)
-        engines->push(q);
-}
-
-void QmlEnginePrivate::contextDeactivated(QmlContext *)
-{
-    QmlEngineStack *stack = engineStack();
-    if (!stack)
-        return;
-    QStack<QmlEngine *> *engines = stack->engines();
-    if (engines) {
-        Q_ASSERT(engines->top() == q_func());
-        engines->pop();
-    }
-}
-
-
 ////////////////////////////////////////////////////////////////////
 
 bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString &propName, QObject *obj)
@@ -469,40 +402,12 @@ QmlContext *QmlEngine::rootContext()
 }
 
 /*!
-    Returns this engine's active context, or 0 if no context is active on this 
-    engine.
+    Sets the common QNetworkAccessManager, \a network, used by all QML elements
+    instantiated by this engine.
 
-    Contexts are activated and deactivated by calling QmlContext::activate() and
-    QmlContext::deactivate() respectively.
-
-    Context activation holds no special semantic, other than it allows types
-    instantiated by QML to access "their" context without having it passed as
-    a parameter in their constructor, as shown below.
-    \code
-    class MyClass : ... {
-    ...
-        MyClass() { 
-            qWarning() << "I was instantiated in this context:" 
-                       << QmlContext::activeContext();
-        }
-    };
-    \endcode
-*/
-QmlContext *QmlEngine::activeContext()
-{
-    Q_D(QmlEngine);
-    if (d->currentBindContext)
-        return d->currentBindContext;
-    else
-        return 0;
-}
-
-/*!
-    Sets the common QNetworkAccessManager, \a network, used by all QML elements instantiated
-    by this engine.
-
-    Any previously set manager is deleted and \a network is owned by the QmlEngine.  This
-    method should only be called before any QmlComponents are instantiated.
+    Any previously set manager is deleted and \a network is owned by the
+    QmlEngine.  This method should only be called before any QmlComponents are
+    instantiated.
 */
 void QmlEngine::setNetworkAccessManager(QNetworkAccessManager *network)
 {
@@ -669,30 +574,6 @@ QScriptEngine *QmlEngine::scriptEngine()
 }
 
 /*!
-    Returns the currently active QmlEngine.
-
-    The active engine is the engine associated with the last activated 
-    QmlContext.  This method is thread-safe - the "active" engine is maintained
-    independently for each thread.
-*/
-QmlEngine *QmlEngine::activeEngine()
-{
-    QmlEngineStack *stack = engineStack();
-    if (!stack) return 0;
-
-    QStack<QmlEngine *> *engines = stack->engines();
-    if (!engines) {
-        qWarning("QmlEngine::activeEngine() cannot be called before the construction of QCoreApplication");
-        return 0;
-    }
-
-    if (engines->isEmpty())
-        return 0;
-    else
-        return engines->top();
-}
-
-/*!
     Creates a QScriptValue allowing you to use \a object in QML script.
     \a engine is the QmlEngine it is to be created in.
 
@@ -777,7 +658,6 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
         QUrl url = QUrl(activeEngine->d_func()->currentExpression->context()
                 ->resolvedUrl(ctxt->argument(0).toString()));
         if(!url.isValid()){
-            qDebug() << "Error A:" << url << activeEngine->activeContext() << QmlEngine::activeEngine() << activeEngine;
             url = QUrl(ctxt->argument(0).toString());
         }
         c = new QmlComponent(activeEngine, url, activeEngine);
