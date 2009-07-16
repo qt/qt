@@ -1739,7 +1739,7 @@ OptionalPriority: /* Empty. */                                                  
         const AtomicValue::Ptr val(Decimal::fromLexical($2));
         if(val->hasError())
         {
-            parseInfo->staticContext->error(QtXmlPatterns::tr("The value of attribute %1 must of type %2, which %3 isn't.")
+            parseInfo->staticContext->error(QtXmlPatterns::tr("The value of attribute %1 must be of type %2, which %3 isn't.")
                                                              .arg(formatKeyword(QLatin1String("priority")),
                                                                   formatType(parseInfo->staticContext->namePool(), BuiltinTypes::xsDecimal),
                                                                   formatData($2)),

@@ -1783,7 +1783,7 @@ bool QODBCDriver::open(const QString & db,
 
     if (!d->checkDriver()) {
         setLastError(qMakeError(tr("Unable to connect - Driver doesn't support all "
-                     "needed functionality"), QSqlError::ConnectionError, d));
+                     "functionality required"), QSqlError::ConnectionError, d));
         setOpenError(true);
         return false;
     }
