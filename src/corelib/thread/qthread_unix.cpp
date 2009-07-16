@@ -470,6 +470,13 @@ void QThread::start(Priority priority)
     }
 #endif // _POSIX_THREAD_PRIORITY_SCHEDULING
 
+#ifdef Q_OS_SYMBIAN
+    if (d->stackSize == 0)
+        // The default stack size on Symbian is very small, making even basic
+        // operations like file I/O fail, so we increase it by default.
+        d->stackSize = 0x14000; // Maximum stack size on Symbian.
+#endif
+
     if (d->stackSize > 0) {
 #if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0)
         int code = pthread_attr_setstacksize(&attr, d->stackSize);
