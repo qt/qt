@@ -78,6 +78,7 @@ private slots:
     void newQMetaObject();
     void newActivationObject();
     void getSetGlobalObject();
+    void globalObjectProperties();
     void checkSyntax_data();
     void checkSyntax();
     void canEvaluate_data();
@@ -911,6 +912,150 @@ void tst_QScriptEngine::getSetGlobalObject()
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
+}
+
+void tst_QScriptEngine::globalObjectProperties()
+{
+    QScriptEngine eng;
+    QScriptValue global = eng.globalObject();
+
+    QVERIFY(global.property("NaN").isNumber());
+    QVERIFY(qIsNaN(global.property("NaN").toNumber()));
+    QCOMPARE(global.propertyFlags("NaN"), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+
+    QVERIFY(global.property("Infinity").isNumber());
+    QVERIFY(qIsInf(global.property("Infinity").toNumber()));
+    QCOMPARE(global.propertyFlags("NaN"), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+
+    QVERIFY(global.property("undefined").isUndefined());
+    QCOMPARE(global.propertyFlags("undefined"), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+
+    QVERIFY(global.property("eval").isFunction());
+    QCOMPARE(global.propertyFlags("eval"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("parseInt").isFunction());
+    QCOMPARE(global.propertyFlags("parseInt"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("parseFloat").isFunction());
+    QCOMPARE(global.propertyFlags("parseFloat"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("isNaN").isFunction());
+    QCOMPARE(global.propertyFlags("isNaN"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("isFinite").isFunction());
+    QCOMPARE(global.propertyFlags("isFinite"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("decodeURI").isFunction());
+    QCOMPARE(global.propertyFlags("decodeURI"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("decodeURIComponent").isFunction());
+    QCOMPARE(global.propertyFlags("decodeURIComponent"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("encodeURI").isFunction());
+    QCOMPARE(global.propertyFlags("encodeURI"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("encodeURIComponent").isFunction());
+    QCOMPARE(global.propertyFlags("encodeURIComponent"), QScriptValue::SkipInEnumeration);
+
+    QVERIFY(global.property("Object").isFunction());
+    QCOMPARE(global.propertyFlags("Object"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Function").isFunction());
+    QCOMPARE(global.propertyFlags("Function"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Array").isFunction());
+    QCOMPARE(global.propertyFlags("Array"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("String").isFunction());
+    QCOMPARE(global.propertyFlags("String"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Boolean").isFunction());
+    QCOMPARE(global.propertyFlags("Boolean"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Number").isFunction());
+    QCOMPARE(global.propertyFlags("Number"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Date").isFunction());
+    QCOMPARE(global.propertyFlags("Date"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("RegExp").isFunction());
+    QCOMPARE(global.propertyFlags("RegExp"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Error").isFunction());
+    QCOMPARE(global.propertyFlags("Error"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("EvalError").isFunction());
+    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QCOMPARE(global.propertyFlags("EvalError"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("RangeError").isFunction());
+    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QCOMPARE(global.propertyFlags("RangeError"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("ReferenceError").isFunction());
+    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QCOMPARE(global.propertyFlags("ReferenceError"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("SyntaxError").isFunction());
+    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QCOMPARE(global.propertyFlags("SyntaxError"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("TypeError").isFunction());
+    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QCOMPARE(global.propertyFlags("TypeError"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("URIError").isFunction());
+    QEXPECT_FAIL("", "JSC doesn't set DontEnum flag for Error constructors", Continue);
+    QCOMPARE(global.propertyFlags("URIError"), QScriptValue::SkipInEnumeration);
+    QVERIFY(global.property("Math").isObject());
+    QVERIFY(!global.property("Math").isFunction());
+    QEXPECT_FAIL("", "JSC sets DontDelete flag for Math object", Continue);
+    QCOMPARE(global.propertyFlags("Math"), QScriptValue::SkipInEnumeration);
+
+    // enumeration
+    QSet<QString> expectedNames;
+    expectedNames
+        << "isNaN"
+        << "parseFloat"
+        << "String"
+        << "EvalError"
+        << "URIError"
+        << "Math"
+        << "encodeURIComponent"
+        << "RangeError"
+        << "eval"
+        << "isFinite"
+        << "ReferenceError"
+        << "Infinity"
+        << "Function"
+        << "RegExp"
+        << "Number"
+        << "parseInt"
+        << "Object"
+        << "decodeURI"
+        << "TypeError"
+        << "Boolean"
+        << "encodeURI"
+        << "NaN"
+        << "Error"
+        << "decodeURIComponent"
+        << "Date"
+        << "Array"
+        << "escape"
+        << "unescape"
+        << "SyntaxError"
+        << "undefined"
+        // non-standard
+        << "gc"
+        << "version"
+        << "print"
+        ;
+    QSet<QString> actualNames;
+    {
+        QScriptValueIterator it(global);
+        while (it.hasNext()) {
+            it.next();
+            actualNames.insert(it.name());
+        }
+    }
+    QSet<QString> remainingNames = actualNames;
+    {
+        QSet<QString>::const_iterator it;
+        for (it = expectedNames.constBegin(); it != expectedNames.constEnd(); ++it) {
+            QString name = *it;
+            if (!actualNames.contains(name))
+                QEXPECT_FAIL("", "JSC getPropertyNames() doesn't include DontEnum properties", Abort);
+            QVERIFY(actualNames.contains(name));
+            remainingNames.remove(name);
+        }
+    }
+    QVERIFY(remainingNames.isEmpty());
 }
 
 void tst_QScriptEngine::checkSyntax_data()
