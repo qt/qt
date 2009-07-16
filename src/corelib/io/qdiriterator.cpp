@@ -119,7 +119,6 @@ public:
     QFileInfo nextFileInfo;
     //This fileinfo is the current that we will return from the public API
     QFileInfo currentFileInfo;
-    QString currentFilePath;
     QDirIterator::IteratorFlags iteratorFlags;
     QDir::Filters filters;
     QStringList nameFilters;
@@ -188,10 +187,6 @@ void QDirIteratorPrivate::pushSubDirectory(const QString &path, const QStringLis
 */
 void QDirIteratorPrivate::advance()
 {
-    // Store the current entry
-    if (!fileEngineIterators.isEmpty())
-        currentFilePath = fileEngineIterators.top()->currentFilePath();
-
     // Advance to the next entry
     if (followNextDir) {
         // Start by navigating into the current directory.
@@ -534,7 +529,7 @@ QString QDirIterator::fileName() const
 */
 QString QDirIterator::filePath() const
 {
-    return d->currentFilePath;
+    return d->currentFileInfo.filePath();
 }
 
 /*!
