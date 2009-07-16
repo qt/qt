@@ -553,20 +553,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateTopLevelItems(const QRectF &
 }
 
 /*!
-    \fn virtual QList<QGraphicsItem *>
-    QGraphicsSceneIndex::estimateItems(const QRectF &rect, Qt::SortOrder
-    order, const QTransform &deviceTransform) const = 0
-
-    This pure virtual function return an estimation of items in the \a rect.
-    This method return a list sorted using \a order.
-
-    \a deviceTransform is the transformation apply to the view.
-*/
-
-/*!
-    \fn virtual QList<QGraphicsItem *>
-    QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const
-    = 0; This pure virtual function all items in the index and sort them using
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const
+    
+    This pure virtual function all items in the index and sort them using
     \a order.
 */
 
