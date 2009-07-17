@@ -55,7 +55,7 @@
 #include <private/qmlanimation_p.h>
 
 #include "qfxparticles.h"
-
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 #define PI_SQR 9.8696044

@@ -44,6 +44,7 @@
 #include <QValidator>
 #include <QApplication>
 #include <QFontMetrics>
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxLineEdit,LineEdit);
