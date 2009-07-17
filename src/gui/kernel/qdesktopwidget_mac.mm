@@ -97,15 +97,13 @@ QT_USE_NAMESPACE
 Q_GLOBAL_STATIC(QDesktopWidgetImplementation, qdesktopWidgetImplementation)
 
 QDesktopWidgetImplementation::QDesktopWidgetImplementation()
-    : appScreen(0), displays(0)
+    : appScreen(0)
 {
     onResize();
 }
 
 QDesktopWidgetImplementation::~QDesktopWidgetImplementation()
 {
-    if (displays)
-        [displays release];
 }
 
 QDesktopWidgetImplementation *QDesktopWidgetImplementation::instance()
@@ -118,13 +116,7 @@ QRect QDesktopWidgetImplementation::availableRect(int screenIndex) const
     if (screenIndex < 0 || screenIndex >= screenCount)
         screenIndex = appScreen;
 
-    NSRect r = [[displays objectAtIndex:screenIndex] visibleFrame];
-    NSRect primaryRect = [[displays objectAtIndex:0] frame];
-
-    const int flippedY = - r.origin.y +                // account for position offset and
-              primaryRect.size.height - r.size.height; // height difference.
-    return QRectF(r.origin.x, flippedY,
-            r.size.width, r.size.height).toRect();
+	return availableRects[screenIndex].toRect(); 
 }
 
 QRect QDesktopWidgetImplementation::screenRect(int screenIndex) const
@@ -132,22 +124,28 @@ QRect QDesktopWidgetImplementation::screenRect(int screenIndex) const
     if (screenIndex < 0 || screenIndex >= screenCount)
         screenIndex = appScreen;
 
-    NSRect r = [[displays objectAtIndex:screenIndex] frame];
-    NSRect primaryRect = [[displays objectAtIndex:0] frame];
-
-    const int flippedY = - r.origin.y +                // account for position offset and
-              primaryRect.size.height - r.size.height; // height difference.
-    return QRectF(r.origin.x, flippedY,
-            r.size.width, r.size.height).toRect();
+    return screenRects[screenIndex].toRect();
 }
 
 void QDesktopWidgetImplementation::onResize()
 {
-    if (displays)
-        [displays release];
-
-    displays = [[NSScreen screens] retain];
-    screenCount = [displays count];
+    QMacCocoaAutoReleasePool pool; 
+    NSArray *displays = [NSScreen screens]; 
+    screenCount = [displays count]; 
+ 
+    screenRects.clear(); 
+    availableRects.clear(); 
+    NSRect primaryRect = [[displays objectAtIndex:0] frame]; 
+    for (int i = 0; i<screenCount; i++) { 
+        NSRect r = [[displays objectAtIndex:i] frame]; 
+        const int flippedY = - r.origin.y +            // account for position offset and 
+              primaryRect.size.height - r.size.height; // height difference. 
+        screenRects.append(QRectF(r.origin.x, flippedY, 
+            r.size.width, r.size.height)); 
+        r = [[displays objectAtIndex:i] visibleFrame]; 
+        availableRects.append(QRectF(r.origin.x, flippedY, 
+                r.size.width, r.size.height)); 
+    } 
 }
 
 
@@ -195,7 +193,7 @@ const QRect QDesktopWidget::screenGeometry(int screen) const
 
 int QDesktopWidget::screenNumber(const QWidget *widget) const
 {
-   QDesktopWidgetImplementation *d = qdesktopWidgetImplementation();
+    QDesktopWidgetImplementation *d = qdesktopWidgetImplementation();
     if (!widget)
         return d->appScreen;
     QRect frame = widget->frameGeometry();
@@ -216,7 +214,7 @@ int QDesktopWidget::screenNumber(const QWidget *widget) const
 
 int QDesktopWidget::screenNumber(const QPoint &point) const
 {
-   QDesktopWidgetImplementation *d = qdesktopWidgetImplementation();
+    QDesktopWidgetImplementation *d = qdesktopWidgetImplementation();
     int closestScreen = -1;
     int shortestDistance = INT_MAX;
     for (int i = 0; i < d->screenCount; ++i) {
@@ -232,13 +230,25 @@ int QDesktopWidget::screenNumber(const QPoint &point) const
 
 void QDesktopWidget::resizeEvent(QResizeEvent *)
 {
-   QDesktopWidgetImplementation *d = qdesktopWidgetImplementation();
+    QDesktopWidgetImplementation *d = qdesktopWidgetImplementation();
+
+    const int oldScreenCount = d->screenCount;
+    const QVector<QRectF> oldRects(d->screenRects);
+    const QVector<QRectF> oldWorks(d->availableRects);
 
     d->onResize();
 
-    for (int i = 0; i < d->screenCount; ++i) {
-        emit resized(i);
+    for (int i = 0; i < qMin(oldScreenCount, d->screenCount); ++i) {
+        if (oldRects.at(i) != d->screenRects.at(i))
+            emit resized(i);
     }
+    for (int i = 0; i < qMin(oldScreenCount, d->screenCount); ++i) {
+        if (oldWorks.at(i) != d->availableRects.at(i))
+            emit workAreaResized(i);
+    }
+
+    if (oldscreencount != d->screenCount)
+        emit screenCountChanged(d->screenCount);
 }
 
 QT_END_NAMESPACE

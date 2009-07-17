@@ -85,6 +85,7 @@ public:
 Q_SIGNALS:
     void resized(int);
     void workAreaResized(int);
+    void screenCountChanged(int);
 
 protected:
     void resizeEvent(QResizeEvent *e);
@@ -96,6 +97,9 @@ private:
     friend class QApplication;
     friend class QApplicationPrivate;
 };
+
+inline int QDesktopWidget::screenCount() const
+{ return numScreens(); }
 
 QT_END_NAMESPACE
 
