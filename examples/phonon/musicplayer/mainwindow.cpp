@@ -181,7 +181,7 @@ void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State /* oldSt
         QMessageBox::warning(this, tr("Error opening files"),
             metaInformationResolver->errorString());
         while (!sources.isEmpty() &&
-               !(sources.takeLast() == metaInformationResolver->currentSource()));
+               !(sources.takeLast() == metaInformationResolver->currentSource())) /* loop */;
         return;
     }
 
