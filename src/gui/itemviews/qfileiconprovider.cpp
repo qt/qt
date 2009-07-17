@@ -53,7 +53,7 @@
 #include <private/qpixmapdata_p.h>
 #include <qpixmapcache.h>
 #elif defined(Q_WS_MAC)
-#include <private/qt_mac_p.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 #include <private/qfunctions_p.h>
 
@@ -326,10 +326,11 @@ QIcon QFileIconProviderPrivate::getMacIcon(const QFileInfo &fi) const
         return retIcon;
     IconRef iconRef;
     SInt16 iconLabel;
-    status = GetIconRefFromFileInfo(&macRef, macName.length, macName.unicode, kIconServicesCatalogInfoMask, &info, kIconServicesNormalUsageFlag, &iconRef, &iconLabel);
+    status = GetIconRefFromFileInfo(&macRef, macName.length, macName.unicode,
+                                    kIconServicesCatalogInfoMask, &info, kIconServicesNormalUsageFlag,
+                                    &iconRef, &iconLabel);
     if (status != noErr)
         return retIcon;
-    extern void qt_mac_constructQIconFromIconRef(const IconRef, const IconRef, QIcon*, QStyle::StandardPixmap = QStyle::SP_CustomBase); // qmacstyle_mac.cpp
     qt_mac_constructQIconFromIconRef(iconRef, 0, &retIcon);
     ReleaseIconRef(iconRef);
     return retIcon;
