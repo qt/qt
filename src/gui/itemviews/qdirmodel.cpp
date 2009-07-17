@@ -227,7 +227,10 @@ void QDirModelPrivate::invalidate()
 
     \note QDirModel requires an instance of a GUI application.
 
-    \sa nameFilters(), setFilter(), filter(), QListView, QTreeView,
+    \note The usage of QDirModel is not recommended anymore. The
+    QFileSystemModel class is a more performant alternative.
+
+    \sa nameFilters(), setFilter(), filter(), QListView, QTreeView, QFileSystemModel
     {Dir View Example}, {Model Classes}
 */
 
