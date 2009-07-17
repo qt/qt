@@ -303,9 +303,7 @@ namespace Phonon
 
             setConnected(0);
             setConnectedType(defaultMediaType);
-            if (m_direction == PINDIR_INPUT) {
-                setMemoryAllocator(0);
-            }
+            setMemoryAllocator(0);
             return S_OK;
         }
 
