@@ -940,9 +940,9 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
         if (compileState.ids.contains(idVal))
             COMPILE_EXCEPTION(obj, "id is not unique");
 
-        addId(idVal, obj);
-
         obj->id = idVal;
+
+        addId(idVal, obj);
     }
 
     // Check the Component tree is well formed
