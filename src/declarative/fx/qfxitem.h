@@ -273,6 +273,8 @@ public:
 
     static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;  //### for KeyProxy
+
 public Q_SLOTS:
     void newChild(const QString &url);
 
