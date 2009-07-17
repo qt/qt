@@ -56,7 +56,6 @@
 #include "qgraphicsitem.h"
 #include "qset.h"
 #include "qpixmapcache.h"
-#include "qgraphicsview_p.h"
 
 #include <QtCore/qpoint.h>
 
