@@ -81,7 +81,7 @@ static QString qt_strippedText(QString s)
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
-                                   menuRole(QAction::TextHeuristicRole), iconVisibleInMenu(-1)
+                                   menuRole(QAction::TextHeuristicRole), priority(QAction::NormalPriority), iconVisibleInMenu(-1)
 {
 #ifdef QT3_SUPPORT
     static int qt_static_action_id = -1;
@@ -909,6 +909,31 @@ QString QAction::whatsThis() const
     return d->whatsthis;
 }
 
+/*!
+    \property QAction::priority
+    \since 4.6
+
+    \brief tells collapsible layouts how the action should be prioritized
+
+    This property can be set to indicate that an action should be prioritied
+    in a layout. For instance when toolbars have the Qt::ToolButtonTextBesideIcon
+    mode is set, lower priority actions will hide text labels to preserve space.
+*/
+void QAction::setPriority(Priority priority)
+{
+    Q_D(QAction);
+    if (d->priority == priority)
+        return;
+
+    d->priority = priority;
+    d->sendDataChanged();
+}
+
+QAction::Priority QAction::priority() const
+{
+    Q_D(const QAction);
+    return d->priority;
+}
 
 /*!
     \property QAction::checkable

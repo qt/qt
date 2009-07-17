@@ -1865,7 +1865,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_DockWidget_ButtonsHaveFrame Determines if dockwidget buttons should have frames. Default is true.
 
-    \value SH_ToolButtonStyle Determines the default system style for tool buttons that uses Qt::ToolButtonSystemDefault.
+    \value SH_ToolButtonStyle Determines the default system style for tool buttons that uses Qt::ToolButtonFollowStyle.
 
     \omitvalue SH_UnderlineAccelerator
 

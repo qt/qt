@@ -93,7 +93,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
 {
-    setToolButtonStyle(Qt::ToolButtonSystemDefault);
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
     if (usesDefaultCollection()) {
         MainWindow::collectionFileDirectory(true);
@@ -431,6 +431,7 @@ void MainWindow::setupActions()
         SLOT(printPreview()));
 
     m_printAction = menu->addAction(tr("&Print..."), m_centralWidget, SLOT(print()));
+    m_printAction->setPriority(QAction::LowPriority);
     m_printAction->setIcon(QIcon(resourcePath + QLatin1String("/print.png")));
     m_printAction->setShortcut(QKeySequence::Print);
 
@@ -450,6 +451,7 @@ void MainWindow::setupActions()
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
         SLOT(copySelection()));
+    m_copyAction->setPriority(QAction::LowPriority);
     m_copyAction->setIconText("&Copy");
     m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
     m_copyAction->setShortcuts(QKeySequence::Copy);
@@ -476,16 +478,19 @@ void MainWindow::setupActions()
     m_viewMenu = menuBar()->addMenu(tr("&View"));
     m_zoomInAction = m_viewMenu->addAction(tr("Zoom &in"), m_centralWidget,
         SLOT(zoomIn()));
+    m_zoomInAction->setPriority(QAction::LowPriority);
     m_zoomInAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomin.png")));
     m_zoomInAction->setShortcut(QKeySequence::ZoomIn);
 
     m_zoomOutAction = m_viewMenu->addAction(tr("Zoom &out"), m_centralWidget,
         SLOT(zoomOut()));
+    m_zoomOutAction->setPriority(QAction::LowPriority);
     m_zoomOutAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomout.png")));
     m_zoomOutAction->setShortcut(QKeySequence::ZoomOut);
 
     m_resetZoomAction = m_viewMenu->addAction(tr("Normal &Size"), m_centralWidget,
         SLOT(resetZoom()));
+    m_resetZoomAction->setPriority(QAction::LowPriority);
     m_resetZoomAction->setIcon(QIcon(resourcePath + QLatin1String("/resetzoom.png")));
     m_resetZoomAction->setShortcut(tr("Ctrl+0"));
 
@@ -511,6 +516,7 @@ void MainWindow::setupActions()
     m_backAction->setIcon(QIcon(resourcePath + QLatin1String("/previous.png")));
 
     m_nextAction = menu->addAction(tr("&Forward"), m_centralWidget, SLOT(forward()));
+    m_nextAction->setPriority(QAction::LowPriority);
     m_nextAction->setEnabled(false);
     m_nextAction->setShortcuts(QKeySequence::Forward);
     m_nextAction->setIcon(QIcon(resourcePath + QLatin1String("/next.png")));

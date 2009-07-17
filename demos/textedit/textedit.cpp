@@ -159,6 +159,7 @@ void TextEdit::setupFileActions()
     QAction *a;
 
     a = new QAction(QIcon(rsrcPath + "/filenew.png"), tr("&New"), this);
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::New);
     connect(a, SIGNAL(triggered()), this, SLOT(fileNew()));
     tb->addAction(a);
@@ -180,6 +181,7 @@ void TextEdit::setupFileActions()
     menu->addAction(a);
 
     a = new QAction(tr("Save &As..."), this);
+    a->setPriority(QAction::LowPriority);
     connect(a, SIGNAL(triggered()), this, SLOT(fileSaveAs()));
     menu->addAction(a);
     menu->addSeparator();
@@ -196,6 +198,7 @@ void TextEdit::setupFileActions()
     menu->addAction(a);
 
     a = new QAction(QIcon(rsrcPath + "/exportpdf.png"), tr("&Export PDF..."), this);
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrintPdf()));
     tb->addAction(a);
@@ -225,19 +228,23 @@ void TextEdit::setupEditActions()
     tb->addAction(a);
     menu->addAction(a);
     a = actionRedo = new QAction(QIcon(rsrcPath + "/editredo.png"), tr("&Redo"), this);
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Redo);
     tb->addAction(a);
     menu->addAction(a);
     menu->addSeparator();
     a = actionCut = new QAction(QIcon(rsrcPath + "/editcut.png"), tr("Cu&t"), this);
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Cut);
     tb->addAction(a);
     menu->addAction(a);
     a = actionCopy = new QAction(QIcon(rsrcPath + "/editcopy.png"), tr("&Copy"), this);
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Copy);
     tb->addAction(a);
     menu->addAction(a);
     a = actionPaste = new QAction(QIcon(rsrcPath + "/editpaste.png"), tr("&Paste"), this);
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Paste);
     tb->addAction(a);
     menu->addAction(a);
@@ -254,6 +261,7 @@ void TextEdit::setupTextActions()
     menuBar()->addMenu(menu);
 
     actionTextBold = new QAction(QIcon(rsrcPath + "/textbold.png"), tr("&Bold"), this);
+    actionTextBold->setPriority(QAction::LowPriority);
     actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
     QFont bold;
     bold.setBold(true);
@@ -264,6 +272,7 @@ void TextEdit::setupTextActions()
     actionTextBold->setCheckable(true);
 
     actionTextItalic = new QAction(QIcon(rsrcPath + "/textitalic.png"), tr("&Italic"), this);
+    actionTextItalic->setPriority(QAction::LowPriority);
     actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
     QFont italic;
     italic.setItalic(true);
@@ -274,6 +283,7 @@ void TextEdit::setupTextActions()
     actionTextItalic->setCheckable(true);
 
     actionTextUnderline = new QAction(QIcon(rsrcPath + "/textunder.png"), tr("&Underline"), this);
+    actionTextUnderline->setPriority(QAction::LowPriority);
     actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
     QFont underline;
     underline.setUnderline(true);
@@ -302,12 +312,16 @@ void TextEdit::setupTextActions()
 
     actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
     actionAlignLeft->setCheckable(true);
+    actionAlignLeft->setPriority(QAction::LowPriority);
     actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
     actionAlignCenter->setCheckable(true);
+    actionAlignCenter->setPriority(QAction::LowPriority);
     actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
     actionAlignRight->setCheckable(true);
+    actionAlignRight->setPriority(QAction::LowPriority);
     actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
     actionAlignJustify->setCheckable(true);
+    actionAlignJustify->setPriority(QAction::LowPriority);
 
     tb->addActions(grp->actions());
     menu->addActions(grp->actions());
