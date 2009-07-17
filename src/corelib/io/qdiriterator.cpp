@@ -131,7 +131,7 @@ public:
 */
 QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
-    : engine(0), path(path), iteratorFlags(flags),
+    : engine(QAbstractFileEngine::create(path)), path(path), iteratorFlags(flags),
       filters(filters), nameFilters(nameFilters)
 {
     if (QDir::NoFilter == filters)
@@ -165,7 +165,7 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
     if (iteratorFlags & QDirIterator::FollowSymlinks)
         visitedLinks << fileInfo.canonicalFilePath();
 
-    if (engine || (engine = QAbstractFileEngine::create(this->path))) {
+    if (engine) {
         engine->setFileName(path);
         QAbstractFileEngineIterator *it = engine->beginEntryList(filters, nameFilters);
         if (it) {
