@@ -243,13 +243,12 @@ static void writeComment(QTextStream &ts, const TranslatorMessage &msg, const QR
     }
 }
 
-static void writeTransUnits(QTextStream &ts, const TranslatorMessage &msg, const QRegExp &drops, int indent,
-                            const Translator &translator, ConversionData &cd, bool *ok)
+static void writeTransUnits(QTextStream &ts, const TranslatorMessage &msg, const QRegExp &drops, int indent)
 {
     static int msgid;
     QString msgidstr = !msg.id().isEmpty() ? msg.id() : QString::fromAscii("_msg%1").arg(++msgid);
 
-    QStringList translns = translator.normalizedTranslations(msg, cd, ok);
+    QStringList translns = msg.translations();
     QHash<QString, QString>::const_iterator it;
     QString pluralStr;
     QStringList sources(msg.sourceText());
@@ -347,8 +346,7 @@ static void writeTransUnits(QTextStream &ts, const TranslatorMessage &msg, const
     }
 }
 
-static void writeMessage(QTextStream &ts, const TranslatorMessage &msg, const QRegExp &drops, int indent,
-                         const Translator &translator, ConversionData &cd, bool *ok)
+static void writeMessage(QTextStream &ts, const TranslatorMessage &msg, const QRegExp &drops, int indent)
 {
     if (msg.isPlural()) {
         writeIndent(ts, indent);
@@ -362,12 +360,12 @@ static void writeMessage(QTextStream &ts, const TranslatorMessage &msg, const QR
         writeLineNumber(ts, msg, indent);
         writeComment(ts, msg, drops, indent);
 
-        writeTransUnits(ts, msg, drops, indent, translator, cd, ok);
+        writeTransUnits(ts, msg, drops, indent);
         --indent;
         writeIndent(ts, indent);
         ts << "</group>\n";
     } else {
-        writeTransUnits(ts, msg, drops, indent, translator, cd, ok);
+        writeTransUnits(ts, msg, drops, indent);
     }
 }
 
@@ -790,7 +788,7 @@ bool saveXLIFF(const Translator &translator, QIODevice &dev, ConversionData &cd)
             }
 
             foreach (const TranslatorMessage &msg, messageOrder[fn][ctx])
-                writeMessage(ts, msg, drops, indent, translator, cd, &ok);
+                writeMessage(ts, msg, drops, indent);
 
             if (!ctx.isEmpty()) {
                 --indent;

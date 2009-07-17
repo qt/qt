@@ -238,6 +238,11 @@ int main(int argc, char *argv[])
     if (dropTranslations)
         tr.dropTranslations();
 
+    tr.normalizeTranslations(cd);
+    if (!cd.errors().isEmpty()) {
+        qWarning("%s", qPrintable(cd.error()));
+        cd.clearErrors();
+    }
     if (!tr.save(outFileName, cd, outFormat)) {
         qWarning("%s", qPrintable(cd.error()));
         return 3;

@@ -199,6 +199,11 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
             out.stripObsoleteMessages();
         out.stripEmptyContexts();
 
+        out.normalizeTranslations(cd);
+        if (!cd.errors().isEmpty()) {
+            printOut(cd.error());
+            cd.clearErrors();
+        }
         if (!out.save(fileName, cd, QLatin1String("auto"))) {
             printOut(cd.error());
             *fail = true;

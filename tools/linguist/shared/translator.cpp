@@ -497,16 +497,10 @@ QList<TranslatorMessage> Translator::translatedMessages() const
     return result;
 }
 
-QStringList Translator::normalizedTranslations(const TranslatorMessage &msg,
-    QLocale::Language language, QLocale::Country country)
+QStringList Translator::normalizedTranslations(const TranslatorMessage &msg, int numPlurals)
 {
     QStringList translations = msg.translations();
-    int numTranslations = 1;
-    if (msg.isPlural() && language != QLocale::C) {
-        QStringList forms;
-        if (getNumerusInfo(language, country, 0, &forms))
-            numTranslations = forms.count(); // includes singular
-    }
+    int numTranslations = msg.isPlural() ? numPlurals : 1;
 
     // make sure that the stringlist always have the size of the
     // language's current numerus, or 1 if its not plural
@@ -520,21 +514,39 @@ QStringList Translator::normalizedTranslations(const TranslatorMessage &msg,
     return translations;
 }
 
-QStringList Translator::normalizedTranslations(const TranslatorMessage &msg,
-    ConversionData &cd, bool *ok) const
+void Translator::normalizeTranslations(ConversionData &cd)
 {
+    bool truncated = false;
     QLocale::Language l;
     QLocale::Country c;
     languageAndCountry(languageCode(), &l, &c);
-    QStringList translns = normalizedTranslations(msg, l, c);
-    if (msg.translations().size() > translns.size() && ok) {
+    int numPlurals = 1;
+    if (l != QLocale::C) {
+        QStringList forms;
+        if (getNumerusInfo(l, c, 0, &forms))
+            numPlurals = forms.count(); // includes singular
+    }
+    for (int i = 0; i < m_messages.count(); ++i) {
+        const TranslatorMessage &msg = m_messages.at(i);
+        QStringList tlns = msg.translations();
+        int ccnt = msg.isPlural() ? numPlurals : 1;
+        if (tlns.count() != ccnt) {
+            while (tlns.count() < ccnt)
+                tlns.append(QString());
+            while (tlns.count() > ccnt) {
+                tlns.removeLast();
+                truncated = true;
+            }
+            TranslatorMessage msg2(msg);
+            msg2.setTranslations(tlns);
+            m_messages[i] = msg2;
+        }
+    }
+    if (truncated)
         cd.appendError(QLatin1String(
             "Removed plural forms as the target language has less "
             "forms.\nIf this sounds wrong, possibly the target language is "
             "not set or recognized.\n"));
-        *ok = false;
-    }
-    return translns;
 }
 
 QString Translator::guessLanguageCodeFromFileName(const QString &filename)

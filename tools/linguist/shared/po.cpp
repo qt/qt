@@ -547,7 +547,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     return !error && cd.errors().isEmpty();
 }
 
-bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
+bool savePO(const Translator &translator, QIODevice &dev, ConversionData &)
 {
     bool ok = true;
     QTextStream out(&dev);
@@ -633,7 +633,7 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
             if (plural.isEmpty())
                 plural = msg.sourceText();
             out << poEscapedString(prefix, QLatin1String("msgid_plural"), noWrap, plural);
-            QStringList translations = translator.normalizedTranslations(msg, cd, &ok);
+            const QStringList &translations = msg.translations();
             for (int i = 0; i != translations.size(); ++i) {
                 out << poEscapedString(prefix, QString::fromLatin1("msgstr[%1]").arg(i), noWrap,
                                        translations.at(i));
