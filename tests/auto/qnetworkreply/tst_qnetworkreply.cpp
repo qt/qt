@@ -3124,6 +3124,7 @@ public slots:
     }
 
     void bytesWrittenSlot(qint64 amount) {
+        Q_UNUSED(amount);
         if (dataSent == dataSize && client) {
             // close eventually
 
