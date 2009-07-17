@@ -62,7 +62,7 @@ public:
     MyWidget(int = 370, int = 480, QWidget *parent=0, Qt::WindowFlags flags=0);
     ~MyWidget();
 
-    Q_PROPERTY(QList<Tile *> *tiles READ tiles);
+    Q_PROPERTY(QList<Tile *> *tiles READ tiles CONSTANT);
     QList<Tile *> *tiles() { return &_tiles; }
 
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged);
@@ -134,9 +134,7 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     canvas->setQml(qml, fileName);
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->activate();
     ctxt->addDefaultObject(this);
-    ctxt->deactivate();
 
     canvas->execute();
 }
