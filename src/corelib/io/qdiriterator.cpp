@@ -121,7 +121,6 @@ public:
     QDirIterator::IteratorFlags iteratorFlags;
     QDir::Filters filters;
     QStringList nameFilters;
-    bool first;
 
     QDirIterator *q;
 };
@@ -132,13 +131,14 @@ public:
 QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
     : engine(0), path(path), iteratorFlags(flags),
-      filters(filters), nameFilters(nameFilters),
-      first(true)
+      filters(filters), nameFilters(nameFilters)
 {
     if (QDir::NoFilter == filters)
         this->filters = QDir::AllEntries;
 
+    // Populate fields for hasNext() and next()
     pushSubDirectory(QFileInfo(path));
+    advance();
 }
 
 /*!
@@ -459,10 +459,6 @@ QString QDirIterator::next()
 */
 bool QDirIterator::hasNext() const
 {
-    if (d->first) {
-        d->first = false;
-        d->advance();
-    }
     return !d->fileEngineIterators.isEmpty();
 }
 
