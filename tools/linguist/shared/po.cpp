@@ -359,6 +359,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     const QChar quote = QLatin1Char('"');
     const QChar newline = QLatin1Char('\n');
     QTextStream in(&dev);
+    in.setCodec(cd.m_codecForSource.isEmpty() ? "UTF-8" : cd.m_codecForSource);
     bool error = false;
 
     // format of a .po file entry:
@@ -547,11 +548,11 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     return !error && cd.errors().isEmpty();
 }
 
-bool savePO(const Translator &translator, QIODevice &dev, ConversionData &)
+bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     bool ok = true;
     QTextStream out(&dev);
-    //qDebug() << "OUT CODEC: " << out.codec()->name();
+    out.setCodec(cd.m_outputCodec.isEmpty() ? "UTF-8" : cd.m_outputCodec);
 
     bool first = true;
     if (translator.messages().isEmpty() || !translator.messages().first().sourceText().isEmpty()) {
