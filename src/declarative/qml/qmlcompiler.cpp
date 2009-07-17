@@ -903,6 +903,11 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
 
     genObject(root);
 
+    QmlInstruction def;
+    init.line = 0;
+    def.type = QmlInstruction::SetDefault;
+    output->bytecode << def;
+
     output->bytecode[count - 1].createComponent.count =
         output->bytecode.count() - count;
 
