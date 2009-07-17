@@ -299,6 +299,7 @@ void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMod
 QColor QGL2PaintEngineExPrivate::premultiplyColor(QColor c, GLfloat opacity)
 {
     qreal alpha = c.alphaF() * opacity;
+    c.setAlphaF(alpha);
     c.setRedF(c.redF() * alpha);
     c.setGreenF(c.greenF() * alpha);
     c.setBlueF(c.blueF() * alpha);
