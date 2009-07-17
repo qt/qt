@@ -1396,6 +1396,18 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
                 color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 pal.setColor(QPalette::ButtonText, color);
+
+            color = kdeColor(QLatin1String("linkColor"), theKdeSettings);
+            if (!color.isValid())
+                color = kdeColor(QLatin1String("Colors:View/ForegroundLink"), theKdeSettings);
+            if (color.isValid())
+                pal.setColor(QPalette::Link, color);
+
+            color = kdeColor(QLatin1String("visitedLinkColor"), theKdeSettings);
+            if (!color.isValid())
+                color = kdeColor(QLatin1String("Colors:View/ForegroundVisited"), theKdeSettings);
+            if (color.isValid())
+                pal.setColor(QPalette::LinkVisited, color);
         }
 
         if (highlight.isValid() && highlightText.isValid()) {
