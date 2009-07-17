@@ -56,20 +56,17 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 }
 
 
-void QDirectFBPaintDevice::lockDirectFB(uint flags)
+void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
 {
     if (!(lock & flags)) {
         if (lock)
             unlockDirectFB();
-        if ((mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl))) {
-            const QSize s = size();
-            lockedImage = new QImage(mem, s.width(), s.height(), bpl,
-                                     QDirectFBScreen::getImageFormat(dfbSurface));
-            lock = flags;
-            Q_ASSERT(mem);
-        } else {
-            lock = 0;
-        }
+        mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl);
+        Q_ASSERT(mem);
+        const QSize s = size();
+        lockedImage = new QImage(mem, s.width(), s.height(), bpl,
+                                 QDirectFBScreen::getImageFormat(dfbSurface));
+        lock = flags;
     }
 }
 
@@ -83,7 +80,7 @@ void QDirectFBPaintDevice::unlockDirectFB()
     delete lockedImage;
     lockedImage = 0;
     mem = 0;
-    lock = 0;
+    lock = DFBSurfaceLockFlags(0);
 }
 
 

@@ -208,7 +208,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
 {
     DFBSurfaceDescription desc;
     memset(&desc, 0, sizeof(DFBSurfaceDescription));
-    desc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH|DSDESC_HEIGHT);
+    desc.flags |= DSDESC_WIDTH|DSDESC_HEIGHT;
     if (!QDirectFBScreen::initSurfaceDescriptionPixelFormat(&desc, format))
         return 0;
     desc.width = size.width();
@@ -230,9 +230,9 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, 
         // Add the video only capability. This means the surface will be created in video ram
         if (!(desc.flags & DSDESC_CAPS)) {
             desc.caps = DSCAPS_VIDEOONLY;
-            desc.flags = DFBSurfaceDescriptionFlags(desc.flags | DSDESC_CAPS);
+            desc.flags |= DSDESC_CAPS;
         } else {
-            desc.caps = DFBSurfaceCapabilities(desc.caps | DSCAPS_VIDEOONLY);
+            desc.caps |= DSCAPS_VIDEOONLY;
         }
         result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &desc, &newSurface);
         if (result != DFB_OK
@@ -247,11 +247,11 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, 
                      desc.preallocated[0].data, desc.preallocated[0].pitch,
                      DirectFBErrorString(result));
         }
-        desc.caps = DFBSurfaceCapabilities(desc.caps & ~DSCAPS_VIDEOONLY);
+        desc.caps &= ~DSCAPS_VIDEOONLY;
     }
 
     if (d_ptr->directFBFlags & SystemOnly)
-        desc.caps = DFBSurfaceCapabilities(desc.caps | DSCAPS_SYSTEMONLY);
+        desc.caps |= DSCAPS_SYSTEMONLY;
 
     if (!newSurface)
         result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &desc, &newSurface);
@@ -459,20 +459,16 @@ DFBSurfaceDescription QDirectFBScreen::getSurfaceDescription(const QImage &image
     const DFBSurfacePixelFormat format = getSurfacePixelFormat(image.format());
 
     if (format == DSPF_UNKNOWN || image.isNull()) {
-        description.flags = DFBSurfaceDescriptionFlags(0);
+        description.flags = DSDESC_NONE;
         return description;
     }
 
-    description.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH
-                                                   | DSDESC_HEIGHT
-#ifndef QT_NO_DIRECTFB_PREALLOCATED
-                                                   | DSDESC_PREALLOCATED
-#endif
-                                                   | DSDESC_PIXELFORMAT);
+    description.flags = DSDESC_WIDTH|DSDESC_HEIGHT|DSDESC_PIXELFORMAT;
     QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description, image.format());
     description.width = image.width();
     description.height = image.height();
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
+    description.flags |= DSDESC_PREALLOCATED;
     description.preallocated[0].data = (void*)(image.bits());
     description.preallocated[0].pitch = image.bytesPerLine();
     description.preallocated[1].data = 0;
@@ -491,11 +487,7 @@ DFBSurfaceDescription QDirectFBScreen::getSurfaceDescription(const uint *buffer,
     DFBSurfaceDescription description;
     memset(&description, 0, sizeof(DFBSurfaceDescription));
 
-    description.flags = DFBSurfaceDescriptionFlags(DSDESC_CAPS
-                                                   | DSDESC_WIDTH
-                                                   | DSDESC_HEIGHT
-                                                   | DSDESC_PIXELFORMAT
-                                                   | DSDESC_PREALLOCATED);
+    description.flags = DSDESC_CAPS|DSDESC_WIDTH|DSDESC_HEIGHT|DSDESC_PIXELFORMAT|DSDESC_PREALLOCATED;
     description.caps = DSCAPS_PREMULTIPLIED;
     description.width = length;
     description.height = 1;
@@ -504,8 +496,7 @@ DFBSurfaceDescription QDirectFBScreen::getSurfaceDescription(const uint *buffer,
     description.preallocated[0].pitch = length * sizeof(uint);
     description.preallocated[1].data = 0;
     description.preallocated[1].pitch = 0;
-
-    return description;
+return description;
 }
 
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -727,19 +718,19 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
         flipFlags = DSFLIP_NONE;
         foreach(const QString &flip, flips) {
             if (flip == QLatin1String("wait"))
-                flipFlags = DFBSurfaceFlipFlags(flipFlags | DSFLIP_WAIT);
+                flipFlags |= DSFLIP_WAIT;
             else if (flip == QLatin1String("blit"))
-                flipFlags = DFBSurfaceFlipFlags(flipFlags | DSFLIP_BLIT);
+                flipFlags |= DSFLIP_BLIT;
             else if (flip == QLatin1String("onsync"))
-                flipFlags = DFBSurfaceFlipFlags(flipFlags | DSFLIP_ONSYNC);
+                flipFlags |= DSFLIP_ONSYNC;
             else if (flip == QLatin1String("pipeline"))
-                flipFlags = DFBSurfaceFlipFlags(flipFlags | DSFLIP_PIPELINE);
+                flipFlags |= DSFLIP_PIPELINE;
             else
                 qWarning("QDirectFBScreen: Unknown flip argument: %s",
                          qPrintable(flip));
         }
     } else {
-        flipFlags = DFBSurfaceFlipFlags(DSFLIP_BLIT);
+        flipFlags = DSFLIP_BLIT;
     }
 }
 
@@ -933,13 +924,13 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     DFBSurfaceDescription description;
     memset(&description, 0, sizeof(DFBSurfaceDescription));
 
-    description.flags = DFBSurfaceDescriptionFlags(DSDESC_CAPS);
+    description.flags = DSDESC_CAPS;
     if (::setIntOption(displayArgs, QLatin1String("width"), &description.width))
-        description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_WIDTH);
+        description.flags |= DSDESC_WIDTH;
     if (::setIntOption(displayArgs, QLatin1String("height"), &description.height))
-        description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_HEIGHT);
+        description.flags |= DSDESC_HEIGHT;
 
-    uint caps = DSCAPS_PRIMARY|DSCAPS_DOUBLE;
+    description.caps = DSCAPS_PRIMARY|DSCAPS_DOUBLE;
     struct {
         const char *name;
         const DFBSurfaceCapabilities cap;
@@ -953,14 +944,13 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     };
     for (int i=0; capabilities[i].name; ++i) {
         if (displayArgs.contains(QString::fromLatin1(capabilities[i].name), Qt::CaseInsensitive))
-            caps |= capabilities[i].cap;
+            description.caps |= capabilities[i].cap;
     }
 
     if (displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive)) {
-        caps |= DSCAPS_PREMULTIPLIED;
+        description.caps |= DSCAPS_PREMULTIPLIED;
     }
 
-    description.caps = DFBSurfaceCapabilities(caps);
     // We don't track the primary surface as it's released in disconnect
     d_ptr->dfbSurface = createDFBSurface(description, DontTrackSurface);
     if (!d_ptr->dfbSurface) {
@@ -1218,10 +1208,10 @@ void QDirectFBScreen::compose(const QRegion &region)
 
         DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
         if (!win->isOpaque()) {
-            flags = DFBSurfaceBlittingFlags(flags | DSBLIT_BLEND_ALPHACHANNEL);
+            flags |= DSBLIT_BLEND_ALPHACHANNEL;
             const uint opacity = win->opacity();
             if (opacity < 255) {
-                flags = DFBSurfaceBlittingFlags(flags | DSBLIT_BLEND_COLORALPHA);
+                flags |= DSBLIT_BLEND_COLORALPHA;
                 d_ptr->dfbSurface->SetColor(d_ptr->dfbSurface, 0xff, 0xff, 0xff, opacity);
             }
         }
@@ -1361,14 +1351,14 @@ bool QDirectFBScreen::initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *d
     const DFBSurfacePixelFormat pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
     if (pixelformat == DSPF_UNKNOWN)
         return false;
-    description->flags = DFBSurfaceDescriptionFlags(description->flags | DSDESC_PIXELFORMAT);
+    description->flags |= DSDESC_PIXELFORMAT;
     description->pixelformat = pixelformat;
     if (QDirectFBScreen::isPremultiplied(format)) {
         if (!(description->flags & DSDESC_CAPS)) {
             description->caps = DSCAPS_PREMULTIPLIED;
-            description->flags = DFBSurfaceDescriptionFlags(description->flags | DSDESC_CAPS);
+            description->flags |= DSDESC_CAPS;
         } else {
-            description->caps = DFBSurfaceCapabilities(description->caps | DSCAPS_PREMULTIPLIED);
+            description->caps |= DSCAPS_PREMULTIPLIED;
         }
     }
     return true;

@@ -374,7 +374,7 @@ QImage *QDirectFBPixmapData::buffer()
     return lockedImage;
 }
 
-QImage * QDirectFBPixmapData::buffer(uint lockFlags)
+QImage * QDirectFBPixmapData::buffer(DFBSurfaceLockFlags lockFlags)
 {
     lockDirectFB(lockFlags);
     return lockedImage;
