@@ -10,4 +10,3 @@ function createNewBlock() {
     obj.ref = ImagePanel;
     maximumColumn += 5;
 }
-

@@ -42,7 +42,6 @@ Rect {
             axis { startX: 0; startY: 0; endX: 0; endY: 1 }
             angle: MyLayout.deform * 100
         }
-            
     }
 
     Script {
@@ -64,9 +63,5 @@ Rect {
         rightArrow: "rightPressed()"
         upArrow: "if (selectedItemRow > 0) selectedItemRow = selectedItemRow - 1"
         downArrow: "if (selectedItemRow < 3) selectedItemRow = selectedItemRow + 1"
-    }
-
-    Text {
-        text: MyLayout.deform
     }
 }
