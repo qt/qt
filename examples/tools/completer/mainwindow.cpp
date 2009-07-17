@@ -75,15 +75,15 @@ MainWindow::MainWindow(QWidget *parent)
     caseCombo->addItem(tr("Case Insensitive"));
     caseCombo->addItem(tr("Case Sensitive"));
     caseCombo->setCurrentIndex(0);
+//! [0]
 
+//! [1]
     QLabel *maxVisibleLabel = new QLabel;
     maxVisibleLabel->setText(tr("Max Visible Items"));
     maxVisibleSpinBox = new QSpinBox;
     maxVisibleSpinBox->setRange(3,25);
     maxVisibleSpinBox->setValue(10);
-//! [0]
 
-//! [1]
     wrapCheckBox = new QCheckBox;
     wrapCheckBox->setText(tr("Wrap around completions"));
     wrapCheckBox->setChecked(true);

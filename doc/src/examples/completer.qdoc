@@ -100,9 +100,9 @@
 
     \section1 MainWindow Class Definition
 
-    The \c MainWindow class is a subclass of QMainWindow and implements four
-    private slots - \c about(), \c changeCase(), \c changeMode(), and
-    \c changeModel().
+    The \c MainWindow class is a subclass of QMainWindow and implements five
+    private slots - \c about(), \c changeCase(), \c changeMode(), \c changeModel(),
+    and \c changeMaxVisible().
 
     \snippet examples/tools/completer/mainwindow.h 0
 
@@ -125,6 +125,9 @@
     to "Case Insensitive".
 
     \snippet examples/tools/completer/mainwindow.cpp 0
+
+    The \c maxVisibleSpinBox is created and determines the number of visible
+    item in the completer
 
     The \c wrapCheckBox is then set up. This \c checkBox determines if the
     \c{completer}'s \l{QCompleter::setWrapAround()}{setWrapAround()} property
@@ -242,9 +245,14 @@
 
     \snippet examples/tools/completer/mainwindow.cpp 14
 
-    The \c about() function provides a brief description about the example.
+    The \c changeMaxVisible() update the maximum number of visible items in
+    the completer.
 
     \snippet examples/tools/completer/mainwindow.cpp 15
+
+    The \c about() function provides a brief description about the example.
+
+    \snippet examples/tools/completer/mainwindow.cpp 16
 
     \section1 \c main() Function
 
