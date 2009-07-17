@@ -59,6 +59,7 @@
 
 #include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
+#include "qgraphicsview_p.h"
 #include "qgraphicsitem_p.h"
 
 #include <private/qobject_p.h>
