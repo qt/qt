@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <windows.h>
+#include <qt_windows.h>
 
 #include "qmutex.h"
 #include <qatomic.h>

@@ -51,7 +51,7 @@ static const HashTableValue JSSVGComponentTransferFunctionElementTableValues[9] 
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGComponentTransferFunctionElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGComponentTransferFunctionElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGComponentTransferFunctionElementTableValues, 0 };
 #else
@@ -71,7 +71,7 @@ static const HashTableValue JSSVGComponentTransferFunctionElementConstructorTabl
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGComponentTransferFunctionElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGComponentTransferFunctionElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGComponentTransferFunctionElementConstructorTableValues, 0 };
 #else
@@ -115,7 +115,7 @@ static const HashTableValue JSSVGComponentTransferFunctionElementPrototypeTableV
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGComponentTransferFunctionElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGComponentTransferFunctionElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGComponentTransferFunctionElementPrototypeTableValues, 0 };
 #else

@@ -285,10 +285,7 @@ void QMenuPrivate::updateActionRects() const
                         tabWidth = qMax(int(tabWidth), qfm.width(seq));
     #endif
                 }
-                int w = fm.boundingRect(QRect(), Qt::TextSingleLine, s).width();
-                w -= s.count(QLatin1Char('&')) * fm.width(QLatin1Char('&'));
-                w += s.count(QLatin1String("&&")) * fm.width(QLatin1Char('&'));
-                sz.setWidth(w);
+                sz.setWidth(fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, s).width());
                 sz.setHeight(qMax(fm.height(), qfm.height()));
 
                 QIcon is = action->icon();

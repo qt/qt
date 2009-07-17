@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSDataGridColumn.h"
 
 #include "DataGridColumn.h"
@@ -47,7 +50,7 @@ static const HashTableValue JSDataGridColumnTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSDataGridColumnTableValues, 0 };
 #else
@@ -67,7 +70,7 @@ static const HashTableValue JSDataGridColumnConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSDataGridColumnConstructorTableValues, 0 };
 #else
@@ -111,7 +114,7 @@ static const HashTableValue JSDataGridColumnPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDataGridColumnPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDataGridColumnPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSDataGridColumnPrototypeTableValues, 0 };
 #else
@@ -287,3 +290,5 @@ DataGridColumn* toDataGridColumn(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(DATAGRID)

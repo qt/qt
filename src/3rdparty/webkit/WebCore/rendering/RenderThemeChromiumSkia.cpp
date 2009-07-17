@@ -133,7 +133,7 @@ String RenderThemeChromiumSkia::extraMediaControlsStyleSheet()
 
 bool RenderThemeChromiumSkia::supportsHover(const RenderStyle* style) const
 {
-  return true;
+    return true;
 }
 
 bool RenderThemeChromiumSkia::supportsFocusRing(const RenderStyle* style) const
@@ -162,7 +162,7 @@ Color RenderThemeChromiumSkia::platformInactiveSelectionForegroundColor() const
     return Color(0x32, 0x32, 0x32);
 }
 
-Color RenderThemeChromiumSkia::focusRingColor() const
+Color RenderThemeChromiumSkia::platformFocusRingColor() const
 {
     static Color focusRingColor(229, 151, 0, 255);
     return focusRingColor;
@@ -212,8 +212,16 @@ bool RenderThemeChromiumSkia::paintCheckbox(RenderObject* o, const RenderObject:
 {
     static Image* const checkedImage = Image::loadPlatformResource("linuxCheckboxOn").releaseRef();
     static Image* const uncheckedImage = Image::loadPlatformResource("linuxCheckboxOff").releaseRef();
+    static Image* const disabledCheckedImage = Image::loadPlatformResource("linuxCheckboxDisabledOn").releaseRef();
+    static Image* const disabledUncheckedImage = Image::loadPlatformResource("linuxCheckboxDisabledOff").releaseRef();
 
-    Image* image = this->isChecked(o) ? checkedImage : uncheckedImage;
+    Image* image;
+
+    if (this->isEnabled(o))
+        image = this->isChecked(o) ? checkedImage : uncheckedImage;
+    else
+        image = this->isChecked(o) ? disabledCheckedImage : disabledUncheckedImage;
+
     i.context->drawImage(image, rect);
     return false;
 }
@@ -237,8 +245,15 @@ bool RenderThemeChromiumSkia::paintRadio(RenderObject* o, const RenderObject::Pa
 {
     static Image* const checkedImage = Image::loadPlatformResource("linuxRadioOn").releaseRef();
     static Image* const uncheckedImage = Image::loadPlatformResource("linuxRadioOff").releaseRef();
+    static Image* const disabledCheckedImage = Image::loadPlatformResource("linuxRadioDisabledOn").releaseRef();
+    static Image* const disabledUncheckedImage = Image::loadPlatformResource("linuxRadioDisabledOff").releaseRef();
 
-    Image* image = this->isChecked(o) ? checkedImage : uncheckedImage;
+    Image* image;
+    if (this->isEnabled(o))
+        image = this->isChecked(o) ? checkedImage : uncheckedImage;
+    else
+        image = this->isChecked(o) ? disabledCheckedImage : disabledUncheckedImage;
+
     i.context->drawImage(image, rect);
     return false;
 }

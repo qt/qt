@@ -164,24 +164,6 @@ public:
                           bool cached, bool onlyTopLevelItems = false);
 };
 
-
-/*!
-    \internal
-*/
-inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    // Return true if sibling item1 is on top of item2.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
-    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
-    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
-    if (f1 != f2)
-        return f2;
-    if (d1->z != d2->z)
-        return d1->z > d2->z;
-    return d1->siblingIndex > d2->siblingIndex;
-}
-
 static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
 {
     qreal xp = s.left();

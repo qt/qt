@@ -130,6 +130,14 @@ bool WorkerContext::hasPendingActivity() const
         if (iter->first->hasPendingActivity())
             return true;
     }
+
+    // Keep the worker active as long as there is a MessagePort with pending activity or that is remotely entangled.
+    HashSet<MessagePort*>::const_iterator messagePortsEnd = messagePorts().end();
+    for (HashSet<MessagePort*>::const_iterator iter = messagePorts().begin(); iter != messagePortsEnd; ++iter) {
+        if ((*iter)->hasPendingActivity() || ((*iter)->isEntangled() && !(*iter)->locallyEntangledPort()))
+            return true;
+    }
+
     return false;
 }
 
@@ -138,9 +146,9 @@ void WorkerContext::reportException(const String& errorMessage, int lineNumber, 
     m_thread->workerObjectProxy().postExceptionToWorkerObject(errorMessage, lineNumber, sourceURL);
 }
 
-void WorkerContext::addMessage(MessageDestination destination, MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
+void WorkerContext::addMessage(MessageDestination destination, MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
 {
-    m_thread->workerObjectProxy().postConsoleMessageToWorkerObject(destination, source, level, message, lineNumber, sourceURL);
+    m_thread->workerObjectProxy().postConsoleMessageToWorkerObject(destination, source, type, level, message, lineNumber, sourceURL);
 }
 
 void WorkerContext::resourceRetrievedByXMLHttpRequest(unsigned long, const ScriptString&)
@@ -155,12 +163,20 @@ void WorkerContext::scriptImported(unsigned long, const String&)
     notImplemented();
 }
 
-void WorkerContext::postMessage(const String& message)
+void WorkerContext::postMessage(const String& message, ExceptionCode& ec)
+{
+    postMessage(message, 0, ec);
+}
+
+void WorkerContext::postMessage(const String& message, MessagePort* port, ExceptionCode& ec)
 {
     if (m_closing)
         return;
-
-    m_thread->workerObjectProxy().postMessageToWorkerObject(message);
+    // Disentangle the port in preparation for sending it to the remote context.
+    OwnPtr<MessagePortChannel> channel = port ? port->disentangle(ec) : 0;
+    if (ec)
+        return;
+    m_thread->workerObjectProxy().postMessageToWorkerObject(message, channel.release());
 }
 
 void WorkerContext::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> eventListener, bool)
@@ -239,11 +255,11 @@ void WorkerContext::clearInterval(int timeoutId)
     DOMTimer::removeById(scriptExecutionContext(), timeoutId);
 }
 
-void WorkerContext::dispatchMessage(const String& message)
+void WorkerContext::dispatchMessage(const String& message, PassRefPtr<MessagePort> port)
 {
     // Since close() stops the thread event loop, this should not ever get called while closing.
     ASSERT(!m_closing);
-    RefPtr<Event> evt = MessageEvent::create(message, "", "", 0, 0);
+    RefPtr<Event> evt = MessageEvent::create(message, "", "", 0, port);
 
     if (m_onmessageListener.get()) {
         evt->setTarget(this);
@@ -283,7 +299,7 @@ void WorkerContext::importScripts(const Vector<String>& urls, const String& call
         }
 
         scriptExecutionContext()->scriptImported(scriptLoader.identifier(), scriptLoader.script());
-        scriptExecutionContext()->addMessage(InspectorControllerDestination, JSMessageSource, LogMessageLevel, "Worker script imported: \"" + *it + "\".", callerLine, callerURL);
+        scriptExecutionContext()->addMessage(InspectorControllerDestination, JSMessageSource, LogMessageType, LogMessageLevel, "Worker script imported: \"" + *it + "\".", callerLine, callerURL);
 
         ScriptValue exception;
         m_script->evaluate(ScriptSourceCode(scriptLoader.script(), *it), &exception);

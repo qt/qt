@@ -49,7 +49,7 @@ static const HashTableValue JSAttrTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSAttrTable =
+static JSC_CONST_HASHTABLE HashTable JSAttrTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSAttrTableValues, 0 };
 #else
@@ -63,7 +63,7 @@ static const HashTableValue JSAttrConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSAttrConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSAttrConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSAttrConstructorTableValues, 0 };
 #else
@@ -101,7 +101,7 @@ static const HashTableValue JSAttrPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSAttrPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSAttrPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSAttrPrototypeTableValues, 0 };
 #else

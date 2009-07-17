@@ -437,6 +437,11 @@ void MediaPlayer::paint(GraphicsContext* p, const IntRect& r)
     m_private->paint(p, r);
 }
 
+void MediaPlayer::paintCurrentFrameInContext(GraphicsContext* p, const IntRect& r)
+{
+    m_private->paintCurrentFrameInContext(p, r);
+}
+
 MediaPlayer::SupportsType MediaPlayer::supportsType(ContentType contentType)
 {
     String type = contentType.type();
@@ -490,6 +495,17 @@ bool MediaPlayer::supportsAcceleratedRendering() const
 }
 #endif // USE(ACCELERATED_COMPOSITING)
 
+bool MediaPlayer::hasSingleSecurityOrigin() const
+{
+    return m_private->hasSingleSecurityOrigin();
+}
+
+MediaPlayer::MovieLoadType MediaPlayer::movieLoadType() const
+{
+    return m_private->movieLoadType();
+}
+
+// Client callbacks.
 void MediaPlayer::networkStateChanged()
 {
     if (m_mediaPlayerClient)
@@ -538,10 +554,6 @@ void MediaPlayer::rateChanged()
         m_mediaPlayerClient->mediaPlayerRateChanged(this);
 }
 
-bool MediaPlayer::hasSingleSecurityOrigin() const
-{
-    return m_private->hasSingleSecurityOrigin();
 }
 
-}
 #endif

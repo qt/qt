@@ -216,6 +216,9 @@ public:
     bool acceptTouchEvents() const;
     void setAcceptTouchEvents(bool enabled);
 
+    bool filtersChildEvents() const;
+    void setFiltersChildEvents(bool enabled);
+
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);
 

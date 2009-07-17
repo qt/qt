@@ -58,7 +58,7 @@ static const HashTableValue JSNavigatorTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNavigatorTable =
+static JSC_CONST_HASHTABLE HashTable JSNavigatorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSNavigatorTableValues, 0 };
 #else
@@ -73,7 +73,7 @@ static const HashTableValue JSNavigatorPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNavigatorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNavigatorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNavigatorPrototypeTableValues, 0 };
 #else

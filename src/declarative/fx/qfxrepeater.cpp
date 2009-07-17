@@ -57,12 +57,13 @@ QFxRepeaterPrivate::~QFxRepeaterPrivate()
 
 QFxItem *QFxRepeaterPrivate::addItem(QmlContext *ctxt, QFxItem *lastItem)
 {
+    Q_UNUSED(lastItem)
     Q_Q(QFxRepeater);
     QObject *nobj = component->create(ctxt);
     QFxItem *item = qobject_cast<QFxItem *>(nobj);
     if (item) {
         item->setParent(q->itemParent());
-        item->stackUnder(lastItem);
+//        item->stackUnder(lastItem);
         deletables << nobj;
     } else {
         delete nobj;
@@ -243,7 +244,7 @@ void QFxRepeater::componentComplete()
 /*!
     \internal
  */
-void QFxRepeater::parentChanged(QSimpleCanvasItem *o, QSimpleCanvasItem *n)
+void QFxRepeater::parentChanged(QFxItem *o, QFxItem *n)
 {
     QFxItem::parentChanged(o, n);
     regenerate();

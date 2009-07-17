@@ -46,7 +46,7 @@ static const HashTableValue JSCSSMediaRuleTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSMediaRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSMediaRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSMediaRuleTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSCSSMediaRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSMediaRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSMediaRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSMediaRuleConstructorTableValues, 0 };
 #else
@@ -100,7 +100,7 @@ static const HashTableValue JSCSSMediaRulePrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSMediaRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSMediaRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSCSSMediaRulePrototypeTableValues, 0 };
 #else

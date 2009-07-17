@@ -70,7 +70,7 @@ static const HashTableValue JSSVGClipPathElementTableValues[13] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGClipPathElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGClipPathElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGClipPathElementTableValues, 0 };
 #else
@@ -90,7 +90,7 @@ static const HashTableValue JSSVGClipPathElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGClipPathElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGClipPathElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGClipPathElementPrototypeTableValues, 0 };
 #else

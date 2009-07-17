@@ -60,7 +60,7 @@ static const HashTableValue JSSVGFESpecularLightingElementTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFESpecularLightingElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFESpecularLightingElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGFESpecularLightingElementTableValues, 0 };
 #else
@@ -75,7 +75,7 @@ static const HashTableValue JSSVGFESpecularLightingElementPrototypeTableValues[2
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFESpecularLightingElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFESpecularLightingElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFESpecularLightingElementPrototypeTableValues, 0 };
 #else

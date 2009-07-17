@@ -243,20 +243,32 @@ static JSNode* createHTMLTableColElementWrapper(ExecState* exec, PassRefPtr<HTML
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLTableColElement, element.get());
 }
 
+#if ENABLE(DATAGRID)
+
 static JSNode* createHTMLDataGridElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridElement, element.get());
 }
+
+#endif
+
+#if ENABLE(DATAGRID)
 
 static JSNode* createHTMLDataGridCellElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridCellElement, element.get());
 }
 
+#endif
+
+#if ENABLE(DATAGRID)
+
 static JSNode* createHTMLDataGridColElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridColElement, element.get());
 }
+
+#endif
 
 static JSNode* createHTMLModElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
@@ -278,10 +290,14 @@ static JSNode* createHTMLDListElementWrapper(ExecState* exec, PassRefPtr<HTMLEle
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLDListElement, element.get());
 }
 
+#if ENABLE(DATAGRID)
+
 static JSNode* createHTMLDataGridRowElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, HTMLDataGridRowElement, element.get());
 }
+
+#endif
 
 static JSNode* createHTMLEmbedElementWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
 {
@@ -526,14 +542,22 @@ JSNode* createJSHTMLWrapper(ExecState* exec, PassRefPtr<HTMLElement> element)
        map.set(captionTag.localName().impl(), createHTMLTableCaptionElementWrapper);
        map.set(colTag.localName().impl(), createHTMLTableColElementWrapper);
        map.set(colgroupTag.localName().impl(), createHTMLTableColElementWrapper);
+#if ENABLE(DATAGRID)
        map.set(datagridTag.localName().impl(), createHTMLDataGridElementWrapper);
+#endif
+#if ENABLE(DATAGRID)
        map.set(dcellTag.localName().impl(), createHTMLDataGridCellElementWrapper);
+#endif
+#if ENABLE(DATAGRID)
        map.set(dcolTag.localName().impl(), createHTMLDataGridColElementWrapper);
+#endif
        map.set(delTag.localName().impl(), createHTMLModElementWrapper);
        map.set(dirTag.localName().impl(), createHTMLDirectoryElementWrapper);
        map.set(divTag.localName().impl(), createHTMLDivElementWrapper);
        map.set(dlTag.localName().impl(), createHTMLDListElementWrapper);
+#if ENABLE(DATAGRID)
        map.set(drowTag.localName().impl(), createHTMLDataGridRowElementWrapper);
+#endif
        map.set(embedTag.localName().impl(), createHTMLEmbedElementWrapper);
        map.set(fieldsetTag.localName().impl(), createHTMLFieldSetElementWrapper);
        map.set(fontTag.localName().impl(), createHTMLFontElementWrapper);

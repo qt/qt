@@ -78,6 +78,7 @@ public:
 
 public Q_SLOTS:
     void rehighlight();
+    void rehighlightBlock(const QTextBlock &block);
 
 protected:
     virtual void highlightBlock(const QString &text) = 0;

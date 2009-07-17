@@ -44,7 +44,7 @@ static const HashTableValue JSWebKitTransitionEventTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitTransitionEventTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitTransitionEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSWebKitTransitionEventTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSWebKitTransitionEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitTransitionEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitTransitionEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitTransitionEventConstructorTableValues, 0 };
 #else
@@ -97,7 +97,7 @@ static const HashTableValue JSWebKitTransitionEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitTransitionEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitTransitionEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWebKitTransitionEventPrototypeTableValues, 0 };
 #else

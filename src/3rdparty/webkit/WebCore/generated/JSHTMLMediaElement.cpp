@@ -72,7 +72,7 @@ static const HashTableValue JSHTMLMediaElementTableValues[25] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMediaElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMediaElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSHTMLMediaElementTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSHTMLMediaElementConstructorTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMediaElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMediaElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLMediaElementConstructorTableValues, 0 };
 #else
@@ -148,7 +148,7 @@ static const HashTableValue JSHTMLMediaElementPrototypeTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMediaElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMediaElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLMediaElementPrototypeTableValues, 0 };
 #else

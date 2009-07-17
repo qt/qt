@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qfxwidgetcontainer.h"
-#include <qsimplecanvas.h>
 #include <qgraphicswidget.h>
 
 QT_BEGIN_NAMESPACE
@@ -83,17 +82,7 @@ void QFxWidgetContainer::setGraphicsWidget(QGraphicsWidget *widget)
 
     _graphicsWidget = widget;
 
-    QSimpleCanvas *c = canvas();
-    if (!c)
-        return;
-
-    if (c->canvasMode() != QSimpleCanvas::GraphicsView) {
-        qWarning("QFxWidgetContainer: Cannot add a widget to a non-graphicsview canvas. You might need to set QFX_USE_GRAPHICSVIEW=1");
-        return;
-    }
-
-    QGraphicsItem *item = (QGraphicsItem *)(*this);
-    _graphicsWidget->setParentItem(item);
+    _graphicsWidget->setParentItem(this);
 }
 
 void QFxWidgetContainer::canvasChanged()

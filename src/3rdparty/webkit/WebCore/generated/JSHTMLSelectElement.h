@@ -84,6 +84,7 @@ void setJSHTMLSelectElementValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLSelectElementLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLSelectElementLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLSelectElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLSelectElementValidity(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLSelectElementWillValidate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLSelectElementOptions(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLSelectElementDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -410,7 +410,7 @@ QmlXmlListModel::~QmlXmlListModel()
 }
 
 /*!
-    \qmlproperty list<XmlRole> QmlListModel::roles
+    \qmlproperty list<XmlRole> XmlListModel::roles
 
     The roles to make available for this model.
 */

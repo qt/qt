@@ -351,6 +351,7 @@ private slots:
 #endif
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
+    void inputFocus_task257832();
 
     void focusWidget_task254563();
     void rectOutsideCoordinatesLimit_task144779();
@@ -9150,6 +9151,20 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 
     QRect center(100, 100, 200, 200); // to avoid the decorations
     QCOMPARE(pixmap.toImage().copy(center), correct.toImage().copy(center));
+}
+
+void tst_QWidget::inputFocus_task257832()
+{
+      QLineEdit *widget = new QLineEdit;
+      QInputContext *context = widget->inputContext();
+      if (!context)
+            QSKIP("No input context", SkipSingle);
+      widget->setFocus();
+      context->setFocusWidget(widget);
+      QCOMPARE(context->focusWidget(), widget);
+      widget->setReadOnly(true);
+      QVERIFY(!context->focusWidget());
+      delete widget;
 }
 
 QTEST_MAIN(tst_QWidget)

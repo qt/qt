@@ -49,7 +49,7 @@ static const HashTableValue JSSVGLengthTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLengthTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLengthTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGLengthTableValues, 0 };
 #else
@@ -74,7 +74,7 @@ static const HashTableValue JSSVGLengthConstructorTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLengthConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLengthConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSSVGLengthConstructorTableValues, 0 };
 #else
@@ -125,7 +125,7 @@ static const HashTableValue JSSVGLengthPrototypeTableValues[14] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGLengthPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGLengthPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSSVGLengthPrototypeTableValues, 0 };
 #else

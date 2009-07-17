@@ -58,7 +58,9 @@
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 #include <QtGui/qevent.h>
+#include <QtCore/qcoreapplication.h>
 #include "qgraphicssceneevent.h"
+#include <QtGui/qstyleoption.h>
 #include <private/qabstractscrollarea_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -167,6 +169,15 @@ public:
         dirtyBoundingRect = QRect();
         dirtyRegion = QRegion();
     }
+
+    inline void dispatchPendingUpdateRequests()
+    {
+        if (qt_widget_private(viewport)->paintOnScreen())
+            QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
+        else
+            QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
+    }
+
     bool updateRect(const QRect &rect);
     bool updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;

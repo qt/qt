@@ -11,8 +11,8 @@ Rect {
             onClicked: { print('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')') }
             onDoubleClicked: { print('double click (x: ' + mouse.x + ' y: ' + mouse.y + ')') }
             onPressAndHold: { print('press and hold') }
-            onExitedWhilePressed: { print('exiting while pressed') }
-            onReenteredWhilePressed: { print('reentering while pressed') }
+            onEntered: { print('entered ' + pressed) }
+            onExited: { print('exited ' + pressed) }
             anchors.fill: parent
         }
     }
@@ -30,8 +30,6 @@ Rect {
             onClicked: { print('click' + '(wasHeld: ' + mouse.wasHeld + ')') }
             onDoubleClicked: { print('double click') }
             onPressAndHold: { print('press and hold') }
-            onExitedWhilePressed: { print('exiting while pressed') }
-            onReenteredWhilePressed: { print('reentering while pressed') }
             anchors.fill: parent
         }
     }

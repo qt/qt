@@ -181,7 +181,7 @@ private slots:
     void rainbowRedraw();
 
 private:
-    Q_DECLARE_PRIVATE(QFxLineEdit);
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxLineEdit);
 };
 
 QT_END_NAMESPACE

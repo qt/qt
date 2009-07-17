@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#undef QT3_SUPPORT // don't want it here - it just causes bugs (which is why we removed it)
+
 #include <QMetaProperty>
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
@@ -993,11 +995,73 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 }
 
 
+struct QmlEngine::ImportedNamespace {
+    QStringList urls;
+    QStringList versions;
+    QList<bool> isLibrary;
+
+    QUrl find(const QString& type) const
+    {
+        for (int i=0; i<urls.count(); ++i) {
+            QUrl url = QUrl(urls.at(i) + QLatin1String("/") + type + QLatin1String(".qml"));
+            QString version = versions.at(i);
+            // XXX search non-files too! (eg. zip files, see QT-524)
+            QFileInfo f(url.toLocalFile());
+            if (f.exists()) {
+                bool ok=true;
+                if (!version.isEmpty()) {
+                    ok=false;
+                    // Check version file - XXX cache these in QmlEngine!
+                    QFile qmldir(urls.at(i)+QLatin1String("/qmldir"));
+                    if (qmldir.open(QIODevice::ReadOnly)) {
+                        do {
+                            QString line = QString::fromUtf8(qmldir.readLine());
+                            if (line.at(0) == QLatin1Char('#'))
+                                continue;
+                            int space1 = line.indexOf(QLatin1Char(' '));
+                            int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
+                            QStringRef maptype = line.leftRef(space1);
+                            QStringRef mapversion = line.midRef(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
+                            QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
+                            if (maptype==type && mapversion==version) {
+                                if (mapfile.isEmpty())
+                                    return url;
+                                else
+                                    return url.resolved(mapfile.toString());
+                            }
+                        } while (!qmldir.atEnd());
+                    }
+                }
+                if (ok)
+                    return url;
+            }
+        }
+        return QUrl();
+    }
+
+    QmlType *findBuiltin(const QByteArray& type, QByteArray* found=0) const
+    {
+        for (int i=0; i<urls.count(); ++i) {
+            QByteArray version = versions.at(i).toLatin1();
+            QByteArray qt = urls.at(i).toLatin1();
+            if (version.isEmpty())
+                qt += "/";
+            else
+                qt += "/" + version + "/";
+            qt += type;
+            QmlType *t = QmlMetaType::qmlType(qt);
+            if (found) *found = qt;
+            if (t) return t;
+        }
+        return 0;
+    }
+};
+
 class QmlImportsPrivate {
 public:
-    bool add(const QString& uri, const QString& prefix, const QString& version, QmlEngine::ImportType importType, const QStringList& importPath)
+    bool add(const QUrl& base, const QString& uri, const QString& prefix, const QString& version, QmlEngine::ImportType importType, const QStringList& importPath)
     {
-        TypeSet *s;
+        QmlEngine::ImportedNamespace *s;
         if (prefix.isEmpty()) {
             if (importType == QmlEngine::LibraryImport && version.isEmpty()) {
                 // unversioned library imports are always qualified - if only by final URI component
@@ -1005,14 +1069,14 @@ public:
                 QString defaultprefix = uri.mid(lastdot+1);
                 s = set.value(defaultprefix);
                 if (!s)
-                    set.insert(defaultprefix,(s=new TypeSet));
+                    set.insert(defaultprefix,(s=new QmlEngine::ImportedNamespace));
             } else {
                 s = &unqualifiedset;
             }
         } else {
             s = set.value(prefix);
             if (!s)
-                set.insert(prefix,(s=new TypeSet));
+                set.insert(prefix,(s=new QmlEngine::ImportedNamespace));
         }
         QString url = uri;
         if (importType == QmlEngine::LibraryImport) {
@@ -1026,8 +1090,11 @@ public:
                     break;
                 }
             }
-            if (!found)
-                return false;
+            if (!found) {
+                // XXX assume it is a built-in type qualifier
+            }
+        } else {
+            url = base.resolved(QUrl(url)).toString();
         }
         s->urls.append(url);
         s->versions.append(version);
@@ -1035,9 +1102,9 @@ public:
         return true;
     }
 
-    QUrl find(const QUrl& base, const QString& type)
+    QUrl find(const QString& type) const
     {
-        TypeSet *s = 0;
+        const QmlEngine::ImportedNamespace *s = 0;
         int slash = type.indexOf(QLatin1Char('/'));
         if (slash >= 0) {
             while (!s) {
@@ -1052,48 +1119,16 @@ public:
             s = &unqualifiedset;
         }
         QString unqualifiedtype = type.mid(slash+1);
-        if (s) {
-            for (int i=0; i<s->urls.count(); ++i) {
-                QUrl url = base.resolved(QUrl(s->urls.at(i) +QLatin1String("/")+ unqualifiedtype + QLatin1String(".qml")));
-                QString version = s->versions.at(i);
-                // XXX search non-files too! (eg. zip files, see QT-524)
-                QFileInfo f(url.toLocalFile());
-                if (f.exists()) {
-                    bool ok=true;
-                    if (!version.isEmpty()) {
-                        ok=false;
-                        // Check version file - XXX cache these in QmlEngine!
-                        QFile qmldir(s->urls.at(i)+QLatin1String("/qmldir"));
-                        if (qmldir.open(QIODevice::ReadOnly)) {
-                            do {
-                                QString line = QString::fromUtf8(qmldir.readLine());
-                                if (line.at(0) == QLatin1Char('#'))
-                                    continue;
-                                int space1 = line.indexOf(QLatin1Char(' '));
-                                int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
-                                QStringRef maptype = line.leftRef(space1);
-                                QStringRef mapversion = line.midRef(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
-                                QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
-                                if (maptype==unqualifiedtype && mapversion==version) {
-                                    if (mapfile.isEmpty())
-                                        return url;
-                                    else
-                                        return url.resolved(mapfile.toString());
-                                }
-                            } while (!qmldir.atEnd());
-                        }
-                    }
-                    if (ok)
-                        return url;
-                }
-            }
-        }
-        return base.resolved(QUrl(type + QLatin1String(".qml")));
+        if (s)
+            return s->find(unqualifiedtype);
+        else
+            return QUrl();
     }
 
-    QmlType *findBuiltin(const QUrl& base, const QByteArray& type)
+
+    QmlType *findBuiltin(const QByteArray& type, QByteArray* found=0)
     {
-        TypeSet *s = 0;
+        QmlEngine::ImportedNamespace *s = 0;
         int slash = type.indexOf('/');
         if (slash >= 0) {
             while (!s) {
@@ -1108,23 +1143,20 @@ public:
             s = &unqualifiedset;
         }
         QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
-        if (s) {
-            for (int i=0; i<s->urls.count(); ++i) {
-                QmlType *t = QmlMetaType::qmlType(s->urls.at(i).toLatin1()+"/"+unqualifiedtype);
-                if (t) return t;
-            }
-        }
-        return QmlMetaType::qmlType(type);
+        if (s)
+            return s->findBuiltin(unqualifiedtype,found);
+        else
+            return 0;
+    }
+
+    QmlEngine::ImportedNamespace *findNamespace(const QString& type)
+    {
+        return set.value(type);
     }
 
 private:
-    struct TypeSet {
-        QStringList urls;
-        QStringList versions;
-        QList<bool> isLibrary;
-    };
-    TypeSet unqualifiedset;
-    QHash<QString,TypeSet* > set;
+    QmlEngine::ImportedNamespace unqualifiedset;
+    QHash<QString,QmlEngine::ImportedNamespace* > set;
 };
 
 QmlEngine::Imports::Imports() :
@@ -1136,11 +1168,24 @@ QmlEngine::Imports::~Imports()
 {
 }
 
+/*!
+  Sets the base URL to be used for all relative file imports added.
+*/
 void QmlEngine::Imports::setBaseUrl(const QUrl& url)
 {
     base = url;
 }
 
+/*!
+  Adds \a path as a directory where installed QML components are
+  defined in a URL-based directory structure.
+
+  For example, if you add \c /opt/MyApp/lib/qml and then load QML
+  that imports \c com.mycompany.Feature, then QmlEngine will look
+  in \c /opt/MyApp/lib/qml/com/mycompany/Feature/ for the components
+  provided by that module (and in the case of versioned imports,
+  for the \c qmldir file definiting the type version mapping.
+*/
 void QmlEngine::addImportPath(const QString& path)
 {
     if (qmlImportTrace()) 
@@ -1149,36 +1194,87 @@ void QmlEngine::addImportPath(const QString& path)
     d->fileImportPath.prepend(path);
 }
 
+/*!
+  Adds information to \a imports such that subsequent calls to resolveType()
+  will resolve types qualified by \a prefix by considering types found at the given \a uri.
+
+  The uri is either a directory (if importType is FileImport), or a URI resolved using paths
+  added via addImportPath() (if importType is LibraryImport).
+
+  The \a prefix may be empty, in which case the import location is considered for
+  unqualified types.
+
+  The base URL must already have been set with Import::setBaseUrl().
+*/
 bool QmlEngine::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, ImportType importType) const
 {
     Q_D(const QmlEngine);
-    bool ok = imports->d->add(uri,prefix,version,importType,d->fileImportPath);
+    bool ok = imports->d->add(imports->base,uri,prefix,version,importType,d->fileImportPath);
     if (qmlImportTrace()) 
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==LibraryImport ? "Library" : "File") << ": " << ok;
     return ok;
 }
 
-bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return) const
+/*!
+  Using the given \a imports, the given (namespace qualified) \a type is resolved to either
+  an ImportedNamespace stored at \a ns_return,
+  a QmlType stored at \a type_return, or
+  a component located at \a url_return.
+
+  If any return pointer is 0, the corresponding search is not done.
+
+  \sa addToImport()
+*/
+bool QmlEngine::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return) const
 {
-    Q_D(const QmlEngine);
-    QmlType* t = imports.d->findBuiltin(imports.base,type);
-    if (t) {
-        if (type_return) *type_return = t;
-        if (qmlImportTrace()) 
-            qDebug() << "QmlEngine::resolveType" << type << "= (builtin)";
-        return true;
+    if (ns_return) {
+        *ns_return = imports.d->findNamespace(QLatin1String(type));
+        if (*ns_return)
+            return true;
     }
-    QUrl url = imports.d->find(imports.base,type);
-    if (url.isValid()) {
-        if (url_return) *url_return = url;
-        if (qmlImportTrace()) 
-            qDebug() << "QmlEngine::resolveType" << type << "=" << url;
-        return true;
+    if (type_return) {
+        QmlType* t = imports.d->findBuiltin(type);
+        if (!t) t = QmlMetaType::qmlType(type);
+        if (t) {
+            if (type_return) *type_return = t;
+            if (qmlImportTrace()) 
+                qDebug() << "QmlEngine::resolveType" << type << "= (builtin)";
+            return true;
+        }
+    }
+    if (url_return) {
+        QUrl url = imports.d->find(QLatin1String(type));
+        if (!url.isValid())
+            url = imports.base.resolved(QUrl(QLatin1String(type + ".qml")));
+
+        if (url.isValid()) {
+            if (url_return) *url_return = url;
+            if (qmlImportTrace()) 
+                qDebug() << "QmlEngine::resolveType" << type << "=" << url;
+            return true;
+        }
     }
     if (qmlImportTrace()) 
         qDebug() << "QmlEngine::resolveType" << type << " not found";
     return false;
 }
 
+/*!
+  Searching \e only in the namespace \a ns (previously returned in a call to
+  resolveType(), \a type is found and returned to either
+  a QmlType stored at \a type_return, or
+  a component located at \a url_return.
+
+  If either return pointer is 0, the corresponding search is not done.
+*/
+void QmlEngine::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const
+{
+    if (type_return) {
+        *type_return = ns->findBuiltin(type);
+    }
+    if (url_return) {
+        *url_return = ns->find(QLatin1String(type));
+    }
+}
 
 QT_END_NAMESPACE

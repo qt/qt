@@ -41,13 +41,7 @@
 
 #include <qfxtextedit.h>
 #include "qfxtextedit_p.h"
-
 #include <private/qtextcontrol_p.h>
-
-#if defined(QFX_RENDER_OPENGL2)
-#include "glbasicshaders.h"
-#endif
-
 #include <private/qfxperf_p.h>
 #include "qfxevents_p.h"
 #include <QTextLayout>
@@ -72,7 +66,6 @@ TextEdit {
     id: edit
     text: "<b>Hello</b> <i>World!</i>"
     focus: true
-    focusable: true
     font.family: "Helvetica"
     font.size: 20
     color: "blue"
@@ -542,7 +535,7 @@ void QFxTextEdit::loadCursorDelegate()
         d->cursor->setHeight(QFontMetrics(d->font.font()).height());
         moveCursorDelegate();
     }else{
-        qWarning() << "Error loading cursor delegate for TextEdit:" + objectName();
+        qWarning() << QLatin1String("Error loading cursor delegate for TextEdit:") + objectName();
     }
 }
 
@@ -683,16 +676,6 @@ void QFxTextEdit::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.width() != oldGeometry.width())
         updateSize();
     QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
-}
-
-/*!
-    \internal
-*/
-void QFxTextEdit::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << propertyInfo();
-    QFxPaintedItem::dump(depth);
 }
 
 /*!

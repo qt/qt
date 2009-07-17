@@ -17,7 +17,6 @@
 #include <QMenuBar>
 #include <QBasicTimer>
 #include <QTime>
-#include <qfxtestengine.h>
 #include <QList>
 
 QT_BEGIN_NAMESPACE
@@ -32,7 +31,7 @@ class QmlViewer : public QWidget
 {
 Q_OBJECT
 public:
-    QmlViewer(QFxTestEngine::TestMode = QFxTestEngine::NoTest, const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
+    QmlViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
 
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
@@ -79,7 +78,6 @@ private:
     QFxView *canvas;
     QmlPalette *palette;
     QmlPalette *disabledPalette;
-    void init(QFxTestEngine::TestMode, const QString &, const QString& fileName);
     QBasicTimer recordTimer;
     QList<QImage*> frames;
     QProcess* frame_stream;
@@ -95,8 +93,6 @@ private:
     QString currentSkin;
     bool scaleSkin;
     mutable QMenuBar *mb;
-
-    QFxTestEngine *testEngine;
 };
 
 QT_END_NAMESPACE

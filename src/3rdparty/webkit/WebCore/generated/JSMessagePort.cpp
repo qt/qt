@@ -48,7 +48,7 @@ static const HashTableValue JSMessagePortTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessagePortTable =
+static JSC_CONST_HASHTABLE HashTable JSMessagePortTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSMessagePortTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSMessagePortConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessagePortConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMessagePortConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMessagePortConstructorTableValues, 0 };
 #else
@@ -106,7 +106,7 @@ static const HashTableValue JSMessagePortPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessagePortPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMessagePortPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSMessagePortPrototypeTableValues, 0 };
 #else

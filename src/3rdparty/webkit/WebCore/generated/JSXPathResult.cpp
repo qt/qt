@@ -54,7 +54,7 @@ static const HashTableValue JSXPathResultTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathResultTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathResultTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSXPathResultTableValues, 0 };
 #else
@@ -78,7 +78,7 @@ static const HashTableValue JSXPathResultConstructorTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathResultConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathResultConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSXPathResultConstructorTableValues, 0 };
 #else
@@ -128,7 +128,7 @@ static const HashTableValue JSXPathResultPrototypeTableValues[13] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSXPathResultPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSXPathResultPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSXPathResultPrototypeTableValues, 0 };
 #else

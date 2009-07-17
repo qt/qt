@@ -73,7 +73,7 @@ static const HashTableValue JSSVGForeignObjectElementTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGForeignObjectElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGForeignObjectElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGForeignObjectElementTableValues, 0 };
 #else
@@ -93,7 +93,7 @@ static const HashTableValue JSSVGForeignObjectElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGForeignObjectElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGForeignObjectElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGForeignObjectElementPrototypeTableValues, 0 };
 #else

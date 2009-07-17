@@ -126,7 +126,7 @@ int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly
 QApplication::Type qt_appType=QApplication::Tty;
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-QInputContext *QApplicationPrivate::inputContext;
+QInputContext *QApplicationPrivate::inputContext = 0;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 

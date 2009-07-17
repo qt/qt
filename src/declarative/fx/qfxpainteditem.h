@@ -66,11 +66,7 @@ public:
     QFxPaintedItem(QFxItem *parent=0);
     ~QFxPaintedItem();
 
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
     bool isSmooth() const;
     QSize contentsSize() const;
@@ -99,7 +95,7 @@ protected Q_SLOTS:
 private:
     void init();
     Q_DISABLE_COPY(QFxPaintedItem)
-    Q_DECLARE_PRIVATE(QFxPaintedItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPaintedItem)
 };
 
 QT_END_NAMESPACE

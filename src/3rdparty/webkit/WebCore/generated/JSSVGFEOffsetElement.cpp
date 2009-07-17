@@ -59,7 +59,7 @@ static const HashTableValue JSSVGFEOffsetElementTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEOffsetElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEOffsetElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEOffsetElementTableValues, 0 };
 #else
@@ -74,7 +74,7 @@ static const HashTableValue JSSVGFEOffsetElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEOffsetElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEOffsetElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEOffsetElementPrototypeTableValues, 0 };
 #else

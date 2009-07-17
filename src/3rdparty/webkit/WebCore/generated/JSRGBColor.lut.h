@@ -11,6 +11,6 @@ static const struct HashTableValue JSRGBColorTableValues[4] = {
    { 0, 0, 0, 0 }
 };
 
-extern const struct HashTable JSRGBColorTable =
+extern JSC_CONST_HASHTABLE HashTable JSRGBColorTable =
     { 8, 7, JSRGBColorTableValues, 0 };
 } // namespace

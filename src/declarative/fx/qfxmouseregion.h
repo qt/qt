@@ -129,8 +129,6 @@ Q_SIGNALS:
     void doubleClicked(QFxMouseEvent *mouse);
     void entered();
     void exited();
-    void exitedWhilePressed();
-    void reenteredWhilePressed();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -151,7 +149,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxMouseRegion)
-    Q_DECLARE_PRIVATE(QFxMouseRegion)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxMouseRegion)
 };
 
 QT_END_NAMESPACE

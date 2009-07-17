@@ -40,7 +40,7 @@ static const HashTableValue JSWebKitCSSTransformValueTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSTransformValueTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSTransformValueTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSWebKitCSSTransformValueTableValues, 0 };
 #else
@@ -75,7 +75,7 @@ static const HashTableValue JSWebKitCSSTransformValueConstructorTableValues[22] 
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSTransformValueConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSTransformValueConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSWebKitCSSTransformValueConstructorTableValues, 0 };
 #else
@@ -134,7 +134,7 @@ static const HashTableValue JSWebKitCSSTransformValuePrototypeTableValues[22] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSTransformValuePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSTransformValuePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSWebKitCSSTransformValuePrototypeTableValues, 0 };
 #else

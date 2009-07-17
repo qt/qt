@@ -275,6 +275,19 @@ static Page* toPage(JSGlobalObject* globalObject)
     return frame ? frame->page() : 0;
 }
 
+void JavaScriptDebugServer::detach(JSGlobalObject* globalObject)
+{
+    // If we're detaching from the currently executing global object, manually tear down our
+    // stack, since we won't get further debugger callbacks to do so. Also, resume execution,
+    // since there's no point in staying paused once a window closes.
+    if (m_currentCallFrame && m_currentCallFrame->dynamicGlobalObject() == globalObject) {
+        m_currentCallFrame = 0;
+        m_pauseOnCallFrame = 0;
+        continueProgram();
+    }
+    Debugger::detach(globalObject);
+}
+
 void JavaScriptDebugServer::sourceParsed(ExecState* exec, const SourceCode& source, int errorLine, const UString& errorMessage)
 {
     if (m_callingListeners)
@@ -387,12 +400,12 @@ void JavaScriptDebugServer::setJavaScriptPaused(FrameView* view, bool paused)
     if (!view)
         return;
 
-    const HashSet<Widget*>* children = view->children();
+    const HashSet<RefPtr<Widget> >* children = view->children();
     ASSERT(children);
 
-    HashSet<Widget*>::const_iterator end = children->end();
-    for (HashSet<Widget*>::const_iterator it = children->begin(); it != end; ++it) {
-        Widget* widget = *it;
+    HashSet<RefPtr<Widget> >::const_iterator end = children->end();
+    for (HashSet<RefPtr<Widget> >::const_iterator it = children->begin(); it != end; ++it) {
+        Widget* widget = (*it).get();
         if (!widget->isPluginView())
             continue;
         static_cast<PluginView*>(widget)->setJavaScriptPaused(paused);

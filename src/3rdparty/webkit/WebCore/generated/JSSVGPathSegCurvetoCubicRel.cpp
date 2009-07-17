@@ -47,7 +47,7 @@ static const HashTableValue JSSVGPathSegCurvetoCubicRelTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegCurvetoCubicRelTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegCurvetoCubicRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGPathSegCurvetoCubicRelTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSSVGPathSegCurvetoCubicRelPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegCurvetoCubicRelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegCurvetoCubicRelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegCurvetoCubicRelPrototypeTableValues, 0 };
 #else

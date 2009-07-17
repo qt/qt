@@ -21,6 +21,8 @@
 #ifndef JSHTMLDataGridCellElement_h
 #define JSHTMLDataGridCellElement_h
 
+#if ENABLE(DATAGRID)
+
 #include "JSHTMLElement.h"
 
 namespace WebCore {
@@ -70,5 +72,7 @@ void setJSHTMLDataGridCellElementProgress(JSC::ExecState*, JSC::JSObject*, JSC::
 JSC::JSValue jsHTMLDataGridCellElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)
 
 #endif

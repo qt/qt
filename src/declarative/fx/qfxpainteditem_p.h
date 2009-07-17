@@ -54,11 +54,6 @@
 //
 
 #include <private/qfxitem_p.h>
-#include <QtDeclarative/qsimplecanvas.h>
-
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -77,11 +72,7 @@ public:
         ~ImageCacheItem() { }
         int age;
         QRect area;
-#if defined(QFX_RENDER_QPAINTER) 
         QPixmap image;
-#else
-        GLTexture image;
-#endif
     };
 
     QList<ImageCacheItem*> imagecache;
