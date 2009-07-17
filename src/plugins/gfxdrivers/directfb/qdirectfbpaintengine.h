@@ -78,10 +78,8 @@ public:
     void drawPixmap(const QRectF &r, const QPixmap &pixmap, const QRectF &sr);
     void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr);
 
-    void drawColorSpans(const QSpan *spans, int count, uint color);
     void drawBufferSpan(const uint *buffer, int bufsize,
                         int x, int y, int length, uint const_alpha);
-
 
     // The following methods simply lock the surface & call the base implementation
     void stroke(const QVectorPath &path, const QPen &pen);

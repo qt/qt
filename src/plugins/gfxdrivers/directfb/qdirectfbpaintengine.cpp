@@ -672,38 +672,6 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     }
 }
 
-void QDirectFBPaintEngine::drawColorSpans(const QSpan *spans, int count,
-                                          uint color)
-{
-    Q_D(QDirectFBPaintEngine);
-    color = INV_PREMUL(color);
-
-    QVarLengthArray<DFBRegion> lines(count);
-    int j = 0;
-    for (int i = 0; i < count; ++i) {
-        if (spans[i].coverage == 255) {
-            lines[j].x1 = spans[i].x;
-            lines[j].y1 = spans[i].y;
-            lines[j].x2 = spans[i].x + spans[i].len - 1;
-            lines[j].y2 = spans[i].y;
-            ++j;
-        } else {
-            DFBSpan span = { spans[i].x, spans[i].len };
-            uint c = BYTE_MUL(color, spans[i].coverage);
-            // ### how does this play with setDFBColor
-            d->surface->SetColor(d->surface,
-                                 qRed(c), qGreen(c), qBlue(c), qAlpha(c));
-            d->surface->FillSpans(d->surface, spans[i].y, &span, 1);
-        }
-    }
-    if (j > 0) {
-        d->surface->SetColor(d->surface,
-                             qRed(color), qGreen(color), qBlue(color),
-                             qAlpha(color));
-        d->surface->DrawLines(d->surface, lines.data(), j);
-    }
-}
-
 void QDirectFBPaintEngine::drawBufferSpan(const uint *buffer, int bufsize,
                                           int x, int y, int length,
                                           uint const_alpha)
