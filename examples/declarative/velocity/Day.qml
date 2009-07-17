@@ -11,7 +11,6 @@ Rect {
         x: 10
         y: 10
         source: "cork.jpg"
-        opaque: true
     }
     Text {
         x: 20

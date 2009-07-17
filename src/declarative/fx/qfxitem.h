@@ -149,8 +149,7 @@ public:
                   SimpleItem = 0x00000020,
                   IsFocusPanel = 0x00000040,
                   IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100,
-                  IsOpaque = 0x00000200 };
+                  AcceptsInputMethods = 0x00000100 };
     Q_DECLARE_FLAGS(Options, Option)
 
     enum TransformOrigin {

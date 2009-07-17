@@ -219,44 +219,6 @@ void QFxImage::setTiled(bool tile)
     d->tiled = tile;
 }
 
-/*!
-    \qmlproperty bool Image::opaque
-
-    Set this property if you know that the image is opaque to give your 
-    application a significant performance boost.  
-
-    \note
-    This is a performance hint to Qt Declarative.  Unfortunately whether or not an image
-    is opaque is not automatically detected.  Setting this property to true when
-    the image is not opaque will lead to drawing artifacts.  However, leaving it as 
-    false will always work correctly - although possibly not at maximum performance. 
- */
-
-/*!
-    \property QFxImage::opaque
-    \brief whether the image is opaque (non-transparent).
-
-    This property is provided purely for the purpose of optimization. An opaque
-    image can be optimized more than a non-opaque one.
-*/
-bool QFxImage::isOpaque() const
-{
-    Q_D(const QFxImage);
-    return d->opaque;
-}
-
-void QFxImage::setOpaque(bool o)
-{
-    Q_D(QFxImage);
-    if (o == d->opaque)
-        return;
-    d->opaque = o;
-
-    setOptions(IsOpaque, o);
-
-    update();
-}
-
 void QFxImage::componentComplete()
 {
     QFxItem::componentComplete();
