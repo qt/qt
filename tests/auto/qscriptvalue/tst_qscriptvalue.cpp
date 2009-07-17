@@ -392,11 +392,11 @@ void tst_QScriptValue::toString()
             "  o.toString = function() { throw new Error('toString'); };"
             "  return o;"
             "})()");
-        QEXPECT_FAIL("", "Validate this behavior", Continue);
+        QEXPECT_FAIL("", "Should produce an error message (or should it?)", Continue);
         QCOMPARE(objectObject.toString(), QLatin1String("Error: toString"));
         QEXPECT_FAIL("", "hasUncaughtException() should return true", Continue);
         QVERIFY(eng.hasUncaughtException());
-        QEXPECT_FAIL("", "Validate this behavior", Continue);
+        QEXPECT_FAIL("", "Should produce an error message (or should it?)", Continue);
         QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: toString"));
     }
     {
@@ -1281,7 +1281,7 @@ void tst_QScriptValue::toVariant()
         QRegExp rx = QRegExp("[0-9a-z]+");
         QScriptValue rxObject = eng.newRegExp(rx);
         QVariant var = rxObject.toVariant();
-        QEXPECT_FAIL("", "toRegExp() is broken", Continue);
+        QEXPECT_FAIL("", "toRegExp() is broken (doesn't remember patternSyntax of original regexp)", Continue);
         QCOMPARE(var, QVariant(rx));
     }
 
@@ -2142,13 +2142,11 @@ void tst_QScriptValue::getSetPrototype()
     QScriptValue old = object.prototype();
     QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cyclic prototype value");
     object.setPrototype(object);
-    QEXPECT_FAIL("", "Cyclic prototype detection not implemented", Continue);
     QCOMPARE(object.prototype().strictlyEquals(old), true);
 
     object2.setPrototype(object);
     QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cyclic prototype value");
     object.setPrototype(object2);
-    QEXPECT_FAIL("", "Cyclic prototype detection not implemented", Continue);
     QCOMPARE(object.prototype().strictlyEquals(old), true);
 
     {

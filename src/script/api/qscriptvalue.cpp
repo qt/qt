@@ -840,9 +840,20 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
                  "a different engine");
         return;
     }
-    // ### check for cycle
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::JSValue other = eng_p->scriptValueToJSCValue(prototype);
+
+    // check for cycle
+    JSC::JSValue nextPrototypeValue = other;
+    while (nextPrototypeValue && nextPrototypeValue.isObject()) {
+        JSC::JSObject *nextPrototype = JSC::asObject(nextPrototypeValue);
+        if (nextPrototype == JSC::asObject(d->jscValue)) {
+            qWarning("QScriptValue::setPrototype() failed: cyclic prototype value");
+            return;
+        }
+        nextPrototypeValue = nextPrototype->prototype();
+    }
+
     JSC::asObject(d->jscValue)->setPrototype(other);
 }
 
