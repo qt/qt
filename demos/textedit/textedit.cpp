@@ -75,7 +75,7 @@ const QString rsrcPath = ":/images/win";
 TextEdit::TextEdit(QWidget *parent)
     : QMainWindow(parent)
 {
-    setToolButtonStyle(Qt::ToolButtonSystemDefault);
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
     setupFileActions();
     setupEditActions();
     setupTextActions();
