@@ -443,6 +443,18 @@ void QmlBasicScript::dump()
             qWarning().nospace() << "FETCH\t\t" << instr.fetch.idx << "\t\t" 
                                  << QByteArray(data + instr.fetch.idx);
             break;
+        case ScriptInstruction::LoadIdObject:
+            qWarning().nospace() << "LOAD_ID_OBJECT";
+            break;
+        case ScriptInstruction::FetchConstant:
+            qWarning().nospace() << "FETCH_CONSTANT";
+            break;
+        case ScriptInstruction::FetchD0Constant:
+            qWarning().nospace() << "FETCH_D0_CONSTANT";
+            break;
+        case ScriptInstruction::FetchD1Constant:
+            qWarning().nospace() << "FETCH_D1_CONSTANT";
+            break;
         case ScriptInstruction::Equals:
             qWarning().nospace() << "EQUALS";
             break;
