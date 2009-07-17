@@ -232,11 +232,7 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
                device->devType());
     }
 
-    const bool status = QRasterPaintEngine::begin(device);
-    // XXX: QRasterPaintEngine::begin() resets the capabilities
-    gccaps |= PorterDuff;
-    d->prepare(d->dfbDevice);
-    return status;
+    return QRasterPaintEngine::begin(device);
 }
 
 bool QDirectFBPaintEngine::end()
