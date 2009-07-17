@@ -269,10 +269,8 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
         // public prototype should be the one we passed
         QCOMPARE(fun.property("prototype").strictlyEquals(proto), true);
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
-        QEXPECT_FAIL("", "Flags are wrong", Continue);
         QCOMPARE(proto.propertyFlags("constructor"),
                  QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
 

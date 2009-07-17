@@ -1415,9 +1415,10 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(this, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
-    result.setProperty(QLatin1String("prototype"), prototype);
+    result.setProperty(QLatin1String("prototype"), prototype, QScriptValue::Undeletable);
     const_cast<QScriptValue&>(prototype)
-        .setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
+        .setProperty(QLatin1String("constructor"), result,
+                     QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     return result;
 }
 
