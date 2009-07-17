@@ -410,7 +410,6 @@ public:
 
 };
 
-//TODO: Stop the clock if no visible particles and not emitting (restart on emittingChanged)
 void QFxParticlesPrivate::tick(int time)
 {
     Q_Q(QFxParticles);
@@ -465,12 +464,9 @@ void QFxParticlesPrivate::tick(int time)
     }
 
     lastAdvTime = time;
-    if (oldCount || particles.count()) {
-        if (q->itemParent())
-            q->itemParent()->update();
-        else
-            q->update();
-    } else if (!count) {
+    paintItem->updateSize();
+    paintItem->update();
+    if (!(oldCount || particles.count()) && (!count || !emitting)) {
         lastAdvTime = 0;
         clock.stop();
     }
@@ -641,7 +637,8 @@ void QFxParticles::imageLoaded()
 {
     Q_D(QFxParticles);
     d->image = QFxPixmap(d->url);
-    update();
+    d->paintItem->updateSize();
+    d->paintItem->update();
 }
 
 void QFxParticles::setSource(const QUrl &name)
@@ -656,7 +653,8 @@ void QFxParticles::setSource(const QUrl &name)
     if (name.isEmpty()) {
         d->url = name;
         d->image = QPixmap();
-        update();
+        d->paintItem->updateSize();
+        d->paintItem->update();
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
@@ -687,10 +685,11 @@ void QFxParticles::setCount(int cnt)
         d->count = cnt;
         d->addParticleTime = 0;
         d->addParticleCount = d->particles.count();
-        if (!oldCount && d->clock.state() != QAbstractAnimation::Running){
-            d->clock.start(); // infinity??
+        if (!oldCount && d->clock.state() != QAbstractAnimation::Running) {
+            d->clock.start();
         }
-        update();
+        d->paintItem->updateSize();
+        d->paintItem->update();
     }
 }
 
@@ -1006,6 +1005,8 @@ void QFxParticles::setEmitting(bool r)
 {
     Q_D(QFxParticles);
     d->emitting = r;
+    if (d->count && r)
+        d->clock.start();
 }
 /*!
     \qmlproperty ParticleMotion Particles::motion
@@ -1046,17 +1047,10 @@ QString QFxParticles::propertyInfo() const
     return d->url.toString();
 }
 
-void QFxParticlesPainter::updateSize(){
-    setX(-500);
-    setY(-500);
-    setWidth(1000);
-    setHeight(1000);
-    return ;
+void QFxParticlesPainter::updateSize()
+{
     const int parentX = parentItem()->x();
     const int parentY = parentItem()->y();
-    //Have to use statistical approach to needed size as arbitrary particle
-    //motions make it impossible to calculate.
-    //max/min vars stored to give a never shrinking rect
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
         if(particle.x > maxX)
@@ -1090,7 +1084,6 @@ void QFxParticlesPainter::paintContents(QPainter &p)
     if (d->image.isNull())
         return;
 
-    updateSize();
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
@@ -1099,15 +1092,16 @@ void QFxParticlesPainter::paintContents(QPainter &p)
         p.setOpacity(particle.opacity);
         p.drawPixmap(particle.x - myX, particle.y - myY, d->image);
     }
-    update();//Should I need this? (GV does)
 }
 
 void QFxParticles::componentComplete()
 {
     Q_D(QFxParticles);
     QFxItem::componentComplete();
-    if (d->count)
-        d->clock.start(); // infinity??
+    if (d->count) {
+        d->paintItem->updateSize();
+        d->clock.start();
+    }
     if (d->lifeSpanDev > d->lifeSpan)
         d->lifeSpanDev = d->lifeSpan;
 }
