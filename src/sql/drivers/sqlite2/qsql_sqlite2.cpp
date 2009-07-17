@@ -388,7 +388,7 @@ bool QSQLite2Driver::open(const QString & db, const QString &, const QString &, 
     char* err = 0;
     d->access = sqlite_open(QFile::encodeName(db), 0, &err);
     if (err) {
-        setLastError(QSqlError(tr("Error to open database"), QString::fromAscii(err),
+        setLastError(QSqlError(tr("Error opening database"), QString::fromAscii(err),
                      QSqlError::ConnectionError));
         sqlite_freemem(err);
         err = 0;
@@ -463,7 +463,7 @@ bool QSQLite2Driver::rollbackTransaction()
     if (res == SQLITE_OK)
         return true;
 
-    setLastError(QSqlError(tr("Unable to rollback Transaction"),
+    setLastError(QSqlError(tr("Unable to rollback transaction"),
                            QString::fromAscii(err), QSqlError::TransactionError, res));
     sqlite_freemem(err);
     return false;

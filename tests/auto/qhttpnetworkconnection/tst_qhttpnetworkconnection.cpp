@@ -244,8 +244,8 @@ void tst_QHttpNetworkConnection::get()
     QByteArray ba;
     do {
         QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
         if (stopWatch.elapsed() >= 30000)
             break;
     } while (!reply->isFinished());
@@ -327,7 +327,8 @@ void tst_QHttpNetworkConnection::put()
 
     if (reply->isFinished()) {
         QByteArray ba;
-        ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
     } else if(finishedWithErrorCalled) {
         if(!succeed) {
             delete reply;
@@ -417,8 +418,8 @@ void tst_QHttpNetworkConnection::post()
     QByteArray ba;
     do {
         QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
         if (stopWatch.elapsed() >= 30000)
             break;
     } while (!reply->isFinished());
@@ -616,8 +617,8 @@ void tst_QHttpNetworkConnection::compression()
     QByteArray ba;
     do {
         QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
         if (stopWatch.elapsed() >= 30000)
             break;
     } while (!reply->isFinished());

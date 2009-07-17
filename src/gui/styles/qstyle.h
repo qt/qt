@@ -730,7 +730,7 @@ public:
         SH_ItemView_DrawDelegateFrame,
         SH_TabBar_CloseButtonPosition,
         SH_DockWidget_ButtonsHaveFrame,
-
+        SH_ToolButtonStyle,
         // Add new style hint values here
 
 #ifdef QT3_SUPPORT
