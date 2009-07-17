@@ -69,7 +69,8 @@ class QFxImagePrivate : public QFxItemPrivate
 public:
     QFxImagePrivate()
       : scaleGrid(0), tiled(false), smooth(false), opaque(false),
-        status(QFxImage::Idle), sciReply(0), progress(0.0)
+        preserveAspect(false), status(QFxImage::Idle), sciReply(0), 
+        progress(0.0)
     {
     }
 
@@ -92,6 +93,7 @@ public:
     bool tiled : 1;
     bool smooth : 1;
     bool opaque : 1;
+    bool preserveAspect : 1;
 
     QFxImage::Status status;
     QUrl url;

@@ -66,6 +66,7 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
     Q_PROPERTY(bool opaque READ isOpaque WRITE setOpaque)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
+    Q_PROPERTY(bool preserveAspect READ preserveAspect WRITE setPreserveAspect);
 public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
@@ -87,6 +88,9 @@ public:
     enum Status { Idle, Loading, Error };
     Status status() const;
     qreal progress() const;
+
+    bool preserveAspect() const;
+    void setPreserveAspect(bool);
 
     QUrl source() const;
     virtual void setSource(const QUrl &url);

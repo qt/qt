@@ -339,9 +339,22 @@ void QFxImage::paintContents(QPainter &p)
         p.restore();
     } else if (!d->scaleGrid || d->scaleGrid->isNull()) {
         if (width() != pix.width() || height() != pix.height()) {
+            qreal widthScale = width() / qreal(pix.width());
+            qreal heightScale = height() / qreal(pix.height());
+
             QTransform scale;
-            scale.scale(width() / qreal(pix.width()), 
-                        height() / qreal(pix.height()));
+
+            if (d->preserveAspect) {
+                if (widthScale < heightScale) {
+                    heightScale = widthScale;
+                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
+                } else if(heightScale < widthScale) {
+                    widthScale = heightScale;
+                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                }
+            }
+
+            scale.scale(widthScale, heightScale);
             QTransform old = p.transform();
             p.setWorldTransform(scale * old);
             p.drawPixmap(0, 0, pix);
@@ -484,6 +497,22 @@ QUrl QFxImage::source() const
 {
     Q_D(const QFxImage);
     return d->url;
+}
+
+bool QFxImage::preserveAspect() const
+{
+    Q_D(const QFxImage);
+    return d->preserveAspect;
+}
+
+void QFxImage::setPreserveAspect(bool p)
+{
+    Q_D(QFxImage);
+
+    if (p == d->preserveAspect)
+        return;
+    d->preserveAspect = p;
+    update();
 }
 
 void QFxImage::setSource(const QUrl &url)
