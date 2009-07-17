@@ -207,23 +207,6 @@ QString QFxLineEdit::selectedText() const
     return d->control->selectedText();
 }
 
-bool QFxLineEdit::isAwesome() const
-{
-    Q_D(const QFxLineEdit);
-    return d->awesome;
-}
-
-#include <QTimer> //Can be removed along wit the property
-void QFxLineEdit::setAwesome(bool a)
-{
-    Q_D(QFxLineEdit);
-    d->awesome = a;
-    if(a){
-        setColor(QColor(0,0,255));
-        rainbowRedraw();
-    }
-}
-
 QObject* QFxLineEdit::validator() const
 {
     Q_D(const QFxLineEdit);
@@ -462,7 +445,7 @@ void QFxLineEditPrivate::init()
 {
         Q_Q(QFxLineEdit);
         control->setCursorWidth(1);
-        control->setPasswordCharacter('*');
+        control->setPasswordCharacter(QLatin1Char('*'));
         control->setLayoutDirection(Qt::LeftToRight);
         control->setSelection(0,0);
         q->setSmooth(true);
@@ -530,14 +513,5 @@ void QFxLineEdit::updateSize()
     setContentsSize(QSize(width(), height()));
 }
 
-void QFxLineEdit::rainbowRedraw()
-{
-    Q_D(QFxLineEdit);
-    if(!d->awesome)
-        return;
-    setColor(QColor::fromHsv((d->color.hue() + 5)%360, d->color.saturation(), d->color.value()));
-    updateAll();
-    QTimer::singleShot(50, this, SLOT(rainbowRedraw()));
-}
 QT_END_NAMESPACE
 

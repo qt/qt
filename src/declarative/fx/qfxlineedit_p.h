@@ -65,9 +65,9 @@ class QFxLineEditPrivate : public QFxPaintedItemPrivate
 public:
     QFxLineEditPrivate() : control(new QLineControl(QString())),
                  font(0), color((QRgb)0), style(QFxText::Normal),
+                 styleColor((QRgb)0),
                  hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop),
-                 styleColor((QRgb)0), oldScroll(0), hscroll(0),
-                 focused(false), awesome(false)
+                 hscroll(0), oldScroll(0), focused(false)
     {
     }
 
@@ -96,8 +96,6 @@ public:
     int hscroll;
     int oldScroll;
     bool focused;
-    bool awesome;
-
 };
 
 QT_END_NAMESPACE

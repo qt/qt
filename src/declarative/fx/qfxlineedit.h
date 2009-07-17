@@ -84,8 +84,7 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     /*
     Q_PROPERTY(int scrollDuration READ scrollDuration SET setScrollDuration NOTIFY scrollDurationChanged);
     */
-    //### Requested by Aaron K.(Remove before release?)
-    Q_PROPERTY(bool awesome READ isAwesome WRITE setAwesome);
+
 public:
     QFxLineEdit(QFxItem* parent=0);
     ~QFxLineEdit();
@@ -148,9 +147,6 @@ public:
 
     bool hasAcceptableInput() const;
 
-    bool isAwesome() const;
-    void setAwesome(bool a);
-
     void drawContents(QPainter *p,const QRect &r);
 Q_SIGNALS:
     void textChanged();
@@ -178,7 +174,6 @@ private slots:
     void updateAll();
     void createCursor();
     void moveCursor();
-    void rainbowRedraw();
 
 private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxLineEdit);
