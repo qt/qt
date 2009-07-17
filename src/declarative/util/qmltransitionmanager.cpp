@@ -109,13 +109,10 @@ void QmlTransitionManager::transition(const QList<Action> &list,
     QmlStateOperation::ActionList applyList = list;
     // Determine which actions are binding changes.
     foreach(const Action &action, applyList) {
-        if (action.toBinding) {
+        if (action.toBinding)
             d->bindingsList << action;
-            if (action.fromBinding)
-                action.property.setBinding(0); // Disable current binding
-        } else if (action.fromBinding) {
+        if (action.fromBinding)
             action.property.setBinding(0); // Disable current binding
-        }
     }
 
     // Animated transitions need both the start and the end value for
@@ -156,7 +153,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
                 continue;
 
             if (action.toBinding)
-                action.property.setBinding(0);
+                action.property.setBinding(0); // Make sure this is disabled during the transition
 
             action.property.write(action.fromValue);
         }
