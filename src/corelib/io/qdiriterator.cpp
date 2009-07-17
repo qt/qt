@@ -122,7 +122,6 @@ public:
     QDir::Filters filters;
     QStringList nameFilters;
     bool first;
-    bool done;
 
     QDirIterator *q;
 };
@@ -134,7 +133,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
     : engine(0), path(path), iteratorFlags(flags),
       filters(filters), nameFilters(nameFilters),
-      first(true), done(false)
+      first(true)
 {
     if (QDir::NoFilter == filters)
         this->filters = QDir::AllEntries;
@@ -209,8 +208,8 @@ void QDirIteratorPrivate::advance()
         if (!foundDirectory)
             delete fileEngineIterators.pop();
     }
+
     currentFileInfo = nextFileInfo;
-    done = true;
 }
 
 /*!
@@ -464,7 +463,7 @@ bool QDirIterator::hasNext() const
         d->first = false;
         d->advance();
     }
-    return !d->done;
+    return !d->fileEngineIterators.isEmpty();
 }
 
 /*!
