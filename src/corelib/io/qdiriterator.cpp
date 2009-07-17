@@ -244,6 +244,10 @@ bool QDirIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo)
     if (QLatin1String(".") == fileName || QLatin1String("..") == fileName)
         return false;
 
+    // No hidden directories unless requested
+    if (!(filters & QDir::AllDirs) && !(filters & QDir::Hidden) && fileInfo.isHidden())
+        return false;
+
     // Stop link loops
     if (visitedLinks.contains(fileInfo.canonicalFilePath()))
         return false;
