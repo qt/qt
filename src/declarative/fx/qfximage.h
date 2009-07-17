@@ -64,8 +64,8 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
     Q_PROPERTY(bool tile READ isTiled WRITE setTiled)
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
-    Q_PROPERTY(bool opaque READ isOpaque WRITE setOpaque)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
+
 public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
@@ -77,9 +77,6 @@ public:
 
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &);
-
-    bool isOpaque() const;
-    void setOpaque(bool);
 
     bool smoothTransform() const;
     void setSmoothTransform(bool);

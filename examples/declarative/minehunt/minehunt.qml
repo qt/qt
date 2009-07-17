@@ -46,7 +46,7 @@ Item {
                         text: modelData.hint
                         color: "white"
                         font.bold: true
-                        opacity: modelData.hasMine == false && modelData.hint > 0
+                        opacity: !modelData.hasMine && modelData.hint > 0
                     }
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -57,13 +57,13 @@ Item {
                     Explosion {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
-                        explode: modelData.hasMine==true && modelData.flipped==true
+                        explode: modelData.hasMine && modelData.flipped
                     }
                 }
                 states: [
                     State {
                         name: "back"
-                        when: modelData.flipped == true
+                        when: modelData.flipped
                         SetProperties { target: flipable; rotation: 180 }
                     }
                 ]
@@ -71,7 +71,19 @@ Item {
                     Transition {
                         SequentialAnimation {
                             PauseAnimation {
-                                duration: {var ret = Math.abs(flipable.parent.x-field.clickx) + Math.abs(flipable.parent.y-field.clicky); if (ret > 0) {if(modelData.hasMine==true && modelData.flipped==true){ret*3;}else{ret;}} else {0}}
+                                duration: {
+                                    var ret = Math.abs(flipable.parent.x-field.clickx)
+                                            + Math.abs(flipable.parent.y-field.clicky);
+                                    if (ret > 0) {
+                                        if (modelData.hasMine && modelData.flipped) {
+                                            ret*3
+                                        } else {
+                                            ret
+                                        }
+                                    } else {
+                                        0
+                                    }
+                                }
                             }
                             NumberAnimation {
                                 easing: "easeInOutQuad"
@@ -82,7 +94,17 @@ Item {
                 ]
                 MouseRegion {
                     anchors.fill: parent
-                    onClicked: { field.clickx = flipable.parent.x; field.clicky = flipable.parent.y; row = Math.floor(index/9); col = index - (Math.floor(index/9) * 9); if(mouse.button==undefined || mouse.button==Qt.RightButton){flag(row,col);}else{flip(row,col);} }
+                    onClicked: {
+                        field.clickx = flipable.parent.x;
+                        field.clicky = flipable.parent.y;
+                        row = Math.floor(index/9);
+                        col = index - (Math.floor(index/9) * 9);
+                        if (mouse.button==undefined || mouse.button==Qt.RightButton) {
+                            flag(row,col);
+                        } else {
+                            flip(row,col);
+                        }
+                    }
                 }
             }
         }
@@ -146,7 +168,7 @@ Item {
         Image {
             x: 280
             y: 10
-            source: if(isPlaying==true){'pics/face-smile.png'}else{if(hasWon==true){'pics/face-smile-big.png'}else{'pics/face-sad.png'}}
+            source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
             MouseRegion {
                 anchors.fill: parent
                 onClicked: { reset() }

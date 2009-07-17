@@ -120,7 +120,7 @@ Item {
     
         anchors.fill: parent
 
-        Image { source: "content/pics/background.png"; opaque: true; anchors.fill: parent }
+        Image { source: "content/pics/background.png"; anchors.fill: parent }
 
         Loading { anchors.centeredIn: parent; visible: FeedModel.status != 0 }
 
