@@ -98,6 +98,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
     Q_PROPERTY(QmlList<XmlListModelRole *> *roles READ roleObjects)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_CLASSINFO("DefaultProperty", "roles")
 
 public:
@@ -130,6 +131,7 @@ public:
 signals:
     void statusChanged(Status);
     void progressChanged(qreal progress);
+    void countChanged();
 
 public Q_SLOTS:
     void reload();
