@@ -56,13 +56,23 @@
 #if defined(Q_OS_WIN)
 #undef S_IFREG
 #define S_IFREG 0100000
-#  define S_ISDIR(x) ((x) & 0040000) > 0
-#  define S_ISREG(x) ((x) & 0170000) == S_IFREG
+#  ifndef S_ISDIR
+#    define S_ISDIR(x) ((x) & 0040000) > 0
+#  endif
+#  ifndef S_ISREG
+#    define S_ISREG(x) ((x) & 0170000) == S_IFREG
+#  endif
 #  define S_IFLNK 020000
 #  define S_ISLNK(x) ((x) & S_IFLNK) > 0
-#  define S_IRUSR 0400
-#  define S_IWUSR 0200
-#  define S_IXUSR 0100
+#  ifndef S_IRUSR
+#    define S_IRUSR 0400
+#  endif
+#  ifndef S_IWUSR
+#    define S_IWUSR 0200
+#  endif
+#  ifndef S_IXUSR
+#    define S_IXUSR 0100
+#  endif
 #  define S_IRGRP 0040
 #  define S_IWGRP 0020
 #  define S_IXGRP 0010

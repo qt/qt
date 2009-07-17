@@ -343,8 +343,8 @@ void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
 {
     bool modern = ((info.wizStyle == QWizard::ModernStyle)
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
-        || ((info.wizStyle == QWizard::AeroStyle)
-            && (QVistaHelper::vistaState() == QVistaHelper::Classic) || vistaDisabled())
+        || ((info.wizStyle == QWizard::AeroStyle
+            && QVistaHelper::vistaState() == QVistaHelper::Classic) || vistaDisabled())
 #endif
     );
 

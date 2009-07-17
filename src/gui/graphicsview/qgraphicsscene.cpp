@@ -1626,6 +1626,20 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
 */
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h,
+        Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \overload
+    \since 4.6
+
+    Returns all visible items that, depending on \a mode, are either inside or
+    intersect with the rectangle defined by \a x, \a y, \a w and \a h, in a list
+    sorted using \a order.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
+*/
+
+/*!
     \overload
 
     Returns all visible items that, depending on \a mode, are either inside or
@@ -1660,13 +1674,16 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
 }
 
 /*!
+    \since 4.6
+
     Returns all visible items that, depending on \a mode, are at the specified \a pos
-    and return a list sorted using \a order.
+    in a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with \a pos are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1679,6 +1696,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
 
 /*!
     \overload
+    \since 4.6
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a rect and return a list sorted using \a order.
@@ -1686,7 +1704,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rect are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1699,6 +1718,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
 
 /*!
     \overload
+    \since 4.6
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a polygon and return a list sorted using \a order.
@@ -1706,7 +1726,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1718,7 +1739,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 }
 
 /*!
-   \overload
+    \overload
+    \since 4.6
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a path and return a list sorted using \a order.
@@ -1726,7 +1748,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
 
-    \a deviceTransform is the transformation apply to the view.
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa itemAt()
 */
@@ -1767,8 +1790,6 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 }
 
 /*!
-    \fn QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
-
     Returns the topmost visible item at the specified \a position, or 0 if
     there are no items at this position.
 
@@ -1776,15 +1797,29 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     \sa items(), collidingItems(), QGraphicsItem::setZValue()
 */
-QGraphicsItem *QGraphicsScene::itemAt(const QPointF &pos) const
+QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
 {
-    QList<QGraphicsItem *> itemsAtPoint = items(pos);
+    QList<QGraphicsItem *> itemsAtPoint = items(position);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
-QGraphicsItem *QGraphicsScene::itemAt(const QPointF &pos, const QTransform &deviceTransform) const
+/*!
+    \overload
+    \since 4.6
+
+    Returns the topmost visible item at the specified \a position, or 0
+    if there are no items at this position.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
+
+    \note The topmost item is the one with the highest Z-value.
+
+    \sa items(), collidingItems(), QGraphicsItem::setZValue()
+    */
+QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
-    QList<QGraphicsItem *> itemsAtPoint = items(pos, Qt::IntersectsItemShape,
+    QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
                                                 Qt::AscendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
@@ -1869,10 +1904,13 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectio
 
 /*!
     \overload
-    \since 4.3
+    \since 4.6
 
     Sets the selection area to \a path using \a mode to determine if items are
     included in the selection area.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
 
     \sa clearSelection(), selectionArea()
 */

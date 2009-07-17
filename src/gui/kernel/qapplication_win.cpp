@@ -275,6 +275,8 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define GET_XBUTTON_WPARAM(wParam)      (HIWORD(wParam))
 #define XBUTTON1      0x0001
 #define XBUTTON2      0x0002
+#endif
+#ifndef MK_XBUTTON1
 #define MK_XBUTTON1         0x0020
 #define MK_XBUTTON2         0x0040
 #endif
@@ -807,9 +809,10 @@ void qt_init(QApplicationPrivate *priv, int)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
 
     // Notify Vista and Windows 7 that we support highter DPI settings
-    if (ptrSetProcessDPIAware = (PtrSetProcessDPIAware)
-        QLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware"))
-    ptrSetProcessDPIAware();
+    ptrSetProcessDPIAware = (PtrSetProcessDPIAware)
+        QLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware");
+    if (ptrSetProcessDPIAware)
+        ptrSetProcessDPIAware();
 #endif
 
     priv->lastGestureId = 0;
@@ -1006,6 +1009,8 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
 #ifndef QT_NO_DEBUG
     if (!atom)
         qErrnoWarning("QApplication::regClass: Registering window class failed.");
+#else
+    Q_UNUSED(atom);
 #endif
 
     winclassNames()->insert(cname, 1);
@@ -1351,13 +1356,13 @@ static int inputcharset = CP_ACP;
 
 static bool qt_is_translatable_mouse_event(UINT message)
 {
-    return (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST ||
-                message >= WM_XBUTTONDOWN && message <= WM_XBUTTONDBLCLK)
+    return (((message >= WM_MOUSEFIRST && message <= WM_MOUSELAST) ||
+                (message >= WM_XBUTTONDOWN && message <= WM_XBUTTONDBLCLK))
             && message != WM_MOUSEWHEEL
-            && message != WM_MOUSEHWHEEL
+            && message != WM_MOUSEHWHEEL)
 
 #ifndef Q_WS_WINCE
-            || message >= WM_NCMOUSEMOVE && message <= WM_NCMBUTTONDBLCLK
+            || (message >= WM_NCMOUSEMOVE && message <= WM_NCMBUTTONDBLCLK)
 #endif
             ;
 }
@@ -2601,7 +2606,7 @@ bool qt_try_modal(QWidget *widget, MSG *msg, int& ret)
 
     bool block_event = false;
 #ifndef Q_WS_WINCE
-    if (type != WM_NCHITTEST)
+    if (type != WM_NCHITTEST) {
 #endif
         if ((type >= WM_MOUSEFIRST && type <= WM_MOUSELAST) ||
              type == WM_MOUSEWHEEL || type == WM_MOUSEHWHEEL ||
@@ -2631,17 +2636,18 @@ bool qt_try_modal(QWidget *widget, MSG *msg, int& ret)
             block_event = true;
         }
 #ifndef Q_WS_WINCE
-    else if (type == WM_MOUSEACTIVATE || type == WM_NCLBUTTONDOWN){
-        if (!top->isActiveWindow()) {
-            top->activateWindow();
-        } else {
-            QApplication::beep();
-        }
-        block_event = true;
-        ret = MA_NOACTIVATEANDEAT;
-    } else if (type == WM_SYSCOMMAND) {
-        if (!(msg->wParam == SC_RESTORE && widget->isMinimized()))
+        else if (type == WM_MOUSEACTIVATE || type == WM_NCLBUTTONDOWN){
+            if (!top->isActiveWindow()) {
+                top->activateWindow();
+            } else {
+                QApplication::beep();
+            }
             block_event = true;
+            ret = MA_NOACTIVATEANDEAT;
+        } else if (type == WM_SYSCOMMAND) {
+            if (!(msg->wParam == SC_RESTORE && widget->isMinimized()))
+                block_event = true;
+        }
     }
 #endif
 
@@ -2843,7 +2849,7 @@ void qt_win_eatMouseMove()
     // remove all those messages (usually 1) and post the last one with a
     // reset button state
 
-    MSG msg = {0, 0, 0, 0, 0, 0, 0};
+    MSG msg = {0, 0, 0, 0, 0, {0, 0} };
     while (PeekMessage(&msg, 0, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE))
         ;
     if (msg.message == WM_MOUSEMOVE)

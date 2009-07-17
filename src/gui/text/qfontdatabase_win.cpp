@@ -1026,6 +1026,8 @@ static void getFamiliesAndSignatures(const QByteArray &fontData, QFontDatabasePr
 
             signature.fsCsb[0] = qFromBigEndian<quint32>(table + 78);
             signature.fsCsb[1] = qFromBigEndian<quint32>(table + 82);
+        } else {
+            memset(&signature, 0, sizeof(signature));
         }
         appFont->signatures << signature;
     }

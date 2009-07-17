@@ -839,6 +839,27 @@
     with the \c fn:id() function. See
     \l{http://www.w3.org/TR/xml-id/}{xml:id Version 1.0} for details.
 
+    \section2 XML Schema 1.0
+
+    The QtXmlPatterns implementation of XML Schema validation supports
+    the schema specification version 1.0 in large parts. Known problems
+    of the implementation and areas where conformancy may be questionable
+    are:
+
+    \list
+    \o Large \c minOccurs or \c maxOccurs values or deeply nested ones
+       require huge amount of memory which might cause the system to freeze.
+       Such a schema should be rewritten to use \c unbounded as value instead
+       of large numbers. This restriction will hopefully be fixed in a later release.
+    \o Comparison of really small or large floating point values might lead to
+       wrong results in some cases. However such numbers should not be relevant
+       for day-to-day usage.
+    \o Regular expression support is currently not conformant but follows
+       Qt's QRegExp standard syntax.
+    \o Identity constraint checks can not use the values of default or fixed
+       attribute definitions.
+    \endlist
+
     \section2 Resource Loading
 
     When QtXmlPatterns loads an XML resource, e.g., using the

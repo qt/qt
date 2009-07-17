@@ -705,7 +705,7 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
-#      define Q_DECL_EXPORT     __attribute__((visibility("default"))
+#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else

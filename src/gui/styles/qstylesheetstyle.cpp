@@ -4171,7 +4171,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         if (!rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
             if (autoFillDisabledWidgets->contains(container)
-                && (container == w || !renderRule(container, opt).hasDrawable())) {
+                && (container == w || !renderRule(container, opt).hasBackground())) {
                 //we do not have a background, but we disabled the autofillbackground anyway. so fill the background now.
                 // (this may happen if we have rules like :focus)
                 p->fillRect(opt->rect, opt->palette.brush(w->backgroundRole()));

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtXmlPatterns of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,31 +39,61 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
 
-#include <QtTest/QtTest>
+#ifndef Patternist_XsdIdCache_H
+#define Patternist_XsdIdCache_H
 
-class tst_Exception: public QObject
+#include "qschemacomponent_p.h"
+
+#include <QtCore/QExplicitlySharedDataPointer>
+#include <QtCore/QReadWriteLock>
+#include <QtCore/QSet>
+#include <QtCore/QString>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+namespace QPatternist
 {
-    Q_OBJECT
+    /**
+     * @short Helper class for keeping track of all existing IDs in a schema.
+     *
+     * @ingroup Patternist_schema
+     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     */
+    class XsdIdCache : public QSharedData
+    {
+        public:
+            typedef QExplicitlySharedDataPointer<XsdIdCache> Ptr;
 
-private slots:
-    void throwException() const;
-};
+            /**
+             * Adds an @p id to the id cache.
+             */
+            void addId(const QString &id);
 
-/*!
- \internal
+            /**
+             * Returns whether the id cache contains the given @p id already.
+             */
+            bool hasId(const QString &id) const;
 
- We simply throw an exception to check that we get sane output/reporting.
- */
-void tst_Exception::throwException() const
-{
-    /* When exceptions are disabled, some compilers, at least linux-g++, treat
-     * exception clauses as hard errors. */
-#ifndef QT_NO_EXCEPTIONS
-    throw 3;
-#endif
+        private:
+            QSet<QString>          m_ids;
+            mutable QReadWriteLock m_lock;
+    };
 }
 
-QTEST_MAIN(tst_Exception)
+QT_END_NAMESPACE
 
-#include "tst_exception.moc"
+QT_END_HEADER
+
+#endif
