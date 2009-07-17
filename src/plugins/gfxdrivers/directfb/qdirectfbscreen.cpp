@@ -226,7 +226,9 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, 
         return 0;
     }
 
-    if (d_ptr->directFBFlags & VideoOnly && !(desc.flags & DSDESC_PREALLOCATED)) {
+    if (d_ptr->directFBFlags & VideoOnly
+        && !(desc.flags & DSDESC_PREALLOCATED)
+        && (!(desc.flags & DSDESC_CAPS) || !(desc.caps & DSCAPS_SYSTEMONLY))) {
         // Add the video only capability. This means the surface will be created in video ram
         if (!(desc.flags & DSDESC_CAPS)) {
             desc.caps = DSCAPS_VIDEOONLY;
