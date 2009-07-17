@@ -54,9 +54,9 @@
     Systems with more than one graphics card and monitor can manage the
     physical screen space available either as multiple desktops, or as a
     large virtual desktop, which usually has the size of the bounding
-    rectangle of all the screens (see isVirtualDesktop()). For an
+    rectangle of all the screens (see virtualDesktop). For an
     application, one of the available screens is the primary screen, i.e.
-    the screen where the main widget resides (see primaryScreen()). All
+    the screen where the main widget resides (see primaryScreen). All
     windows opened in the context of the application should be
     constrained to the boundaries of the primary screen; for example,
     it would be inconvenient if a dialog box popped up on a different
@@ -64,16 +64,16 @@
 
     The QDesktopWidget provides information about the geometry of the
     available screens with screenGeometry(). The number of screens
-    available is returned by numScreens(). The screen number that a
-    particular point or widget is located in is returned by
-    screenNumber().
+    available is returned by screenCount, and the screenCountChanged
+    signal is emitted when screens are added or removed during runtime.
+    The screen number that a particular point or widget is located in
+    is returned by screenNumber().
 
     Widgets provided by Qt use this class, for example, to place
     tooltips, menus and dialog boxes according to the parent or
-    application widget.
-
-    Applications can use this class to save window positions, or to place
-    child widgets on one screen.
+    application widget. Applications can use this class to save window
+    positions, or to place child widgets and dialogs on one particular
+    screen.
 
     \img qdesktopwidget.png Managing Multiple Screens
 
@@ -115,30 +115,15 @@
 */
 
 /*!
-    \fn bool QDesktopWidget::isVirtualDesktop() const
-
-    Returns true if the system manages the available screens in a
-    virtual desktop; otherwise returns false.
-
-    For virtual desktops, screen() will always return the same widget.
-    The size of the virtual desktop is the size of this desktop
-    widget.
-*/
-
-/*!
-    \fn int QDesktopWidget::primaryScreen() const
-
-    Returns the index of the primary screen.
-
-    \sa numScreens()
-*/
-
-/*!
     \fn int QDesktopWidget::numScreens() const
-
+    
     Returns the number of available screens.
+    
+    \obsolete
 
-    \sa primaryScreen()
+    This function is deprecated. Use screenCount instead.
+
+    \sa primaryScreen
 */
 
 /*!
@@ -146,13 +131,12 @@
 
     Returns a widget that represents the screen with index \a screen
     (a value of -1 means the default screen).
-    
 
     If the system uses a virtual desktop, the returned widget will
     have the geometry of the entire virtual desktop; i.e., bounding
     every \a screen.
 
-    \sa primaryScreen(), numScreens(), isVirtualDesktop()
+    \sa primaryScreen, screenCount, virtualDesktop
 */
 
 /*!
@@ -216,7 +200,7 @@
     Returns the index of the screen that contains the largest
     part of \a widget, or -1 if the widget not on a screen.
 
-    \sa primaryScreen()
+    \sa primaryScreen
 */
 
 /*!
@@ -226,7 +210,7 @@
     Returns the index of the screen that contains the \a point, or the
     screen which is the shortest distance from the \a point.
 
-    \sa primaryScreen()
+    \sa primaryScreen
 */
 
 /*!
@@ -244,4 +228,35 @@
     \fn void QDesktopWidget::workAreaResized(int screen)
 
     This signal is emitted when the work area available on \a screen changes.
+*/
+
+/*!
+    \property QDesktopWidget::screenCount
+    \brief the number of screens currently available on the system.
+    
+    \sa screenCountChanged()
+*/
+
+/*!
+    \property QDesktopWidget::primaryScreen
+    \brief the index of the screen that is configured to be the primary screen
+    on the system.
+*/
+
+/*!
+    \property QDesktopWidget::virtualDesktop
+
+    \brief if the system manages the available screens in a virtual desktop.
+
+    For virtual desktops, screen() will always return the same widget.
+    The size of the virtual desktop is the size of this desktop
+    widget.
+*/
+
+/*!
+    \fn void QDesktopWidget::screenCountChanged(int newCount)
+
+    This signal is emitted when the number of screens changes to \a newCount.
+    
+    \sa screenCount
 */

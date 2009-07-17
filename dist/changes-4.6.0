@@ -68,3 +68,7 @@ information about a particular change.
       to the item's position and transformation, you can set the flag
       QGraphicsItem::ItemSendsGeometryChanges (which is enabled by default by
       QGraphicsWidget and QGraphicsProxyWidget).
+
+- QDesktopWidget on X11 no longer emits the resized(int) signal when screens
+  are added or removed. This was not done on other platforms. Use the 
+  screenCountChanged signal instead
