@@ -29,8 +29,4 @@ Item {
             wrap: true
         }
     }
-    filter: Shadow {
-        xOffset: 5
-        yOffset: 5
-    }
 }
