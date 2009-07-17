@@ -3958,9 +3958,10 @@ qt_CloseTouchInputHandlePtr QApplicationPrivate::CloseTouchInputHandle = 0;
 void QApplicationPrivate::initializeMultitouch_sys()
 {
     QLibrary library(QLatin1String("user32"));
-    RegisterTouchWindow = reinterpret_cast<qt_RegisterTouchWindowPtr>(library.resolve("RegisterTouchWindow"));
-    GetTouchInputInfo = reinterpret_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
-    CloseTouchInputHandle = reinterpret_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
+    // MinGW (g++ 3.4.5) accepts only C casts.
+    RegisterTouchWindow = (qt_RegisterTouchWindowPtr)(library.resolve("RegisterTouchWindow"));
+    GetTouchInputInfo = (qt_GetTouchInputInfoPtr)(library.resolve("GetTouchInputInfo"));
+    CloseTouchInputHandle = (qt_CloseTouchInputHandlePtr)(library.resolve("CloseTouchInputHandle"));
 
     touchInputIDToTouchPointID.clear();
 }

@@ -599,6 +599,26 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
 
     break;
 
+    case SH_ToolButtonStyle:
+    {
+        if (QGtk::isKDE4Session())
+            return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
+        GtkWidget *gtkToolbar = QGtk::gtkWidget(QLS("GtkToolbar"));
+        GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
+        g_object_get(gtkToolbar, "toolbar-style", &toolbar_style, NULL);
+        switch (toolbar_style) {
+        case GTK_TOOLBAR_TEXT:
+            return Qt::ToolButtonTextOnly;
+        case GTK_TOOLBAR_BOTH:
+            return Qt::ToolButtonTextUnderIcon;
+        case GTK_TOOLBAR_BOTH_HORIZ:
+            return Qt::ToolButtonTextBesideIcon;
+        case GTK_TOOLBAR_ICONS:
+        default:
+            return Qt::ToolButtonIconOnly;
+        }
+    }
+    break;
     case SH_SpinControls_DisableOnBounds:
         return int(true);
 

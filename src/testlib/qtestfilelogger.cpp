@@ -72,15 +72,24 @@ void QTestFileLogger::init()
     QTest::qt_snprintf(filename, sizeof(filename), "%s.log",
                 QTestResult::currentTestObjectName());
 
-    #if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
-    if (::fopen_s(&QTest::stream, filename, "wt")) {
-        #else
-        QTest::stream = ::fopen(filename, "wt");
-        if (!QTest::stream) {
-            #endif
-            printf("Unable to open file for simple logging: %s", filename);
-            ::exit(1);
+    // Keep filenames simple
+    for (int i = 0; i < sizeof(filename) && filename[i]; ++i) {
+        char& c = filename[i];
+        if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-'
+            || c == '.')) {
+            c = '_';
         }
+    }
+
+#if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
+    if (::fopen_s(&QTest::stream, filename, "wt")) {
+#else
+    QTest::stream = ::fopen(filename, "wt");
+    if (!QTest::stream) {
+#endif
+        printf("Unable to open file for simple logging: %s", filename);
+        ::exit(1);
+    }
 }
 
 void QTestFileLogger::flush(const char *msg)

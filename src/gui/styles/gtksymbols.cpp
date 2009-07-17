@@ -68,6 +68,7 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenuBar>
 #include <QtGui/QToolBar>
+#include <QtGui/QToolButton>
 #include <QtGui/QX11Info>
 
 #include <X11/Xlib.h>
@@ -633,6 +634,20 @@ GtkStyle* QGtk::gtkStyle(const QString &path)
     return 0;
 }
 
+static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *pspec, gpointer user_data)
+{
+    GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
+    g_object_get(gtkToolBar, "toolbar-style", &toolbar_style, NULL);
+    QWidgetList widgets = QApplication::allWidgets();
+    for (int i = 0; i < widgets.size(); ++i) {
+        QWidget *widget = widgets.at(i);
+        if (qobject_cast<QToolButton*>(widget)) {
+            QEvent event(QEvent::StyleChange);
+            QApplication::sendEvent(widget, &event);
+        }
+    }
+}
+
 void QGtk::initGtkWidgets()
 {
     // From gtkmain.c
@@ -679,6 +694,7 @@ void QGtk::initGtkWidgets()
             add_widget(QGtk::gtk_spin_button_new((GtkAdjustment*)
                                              (QGtk::gtk_adjustment_new(1, 0, 1, 0, 0, 0)), 0.1, 3));
             GtkWidget *toolbar = QGtk::gtk_toolbar_new();
+            g_signal_connect (toolbar, "notify::toolbar-style", G_CALLBACK (update_toolbar_style), toolbar);
             QGtk::gtk_toolbar_insert((GtkToolbar*)toolbar, QGtk::gtk_separator_tool_item_new(), -1);
             add_widget(toolbar);
             init_gtk_treeview();
