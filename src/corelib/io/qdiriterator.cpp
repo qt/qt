@@ -112,16 +112,19 @@ public:
     void checkAndPushDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
-    QSet<QString> visitedLinks;
-    QAbstractFileEngine *engine;
+    QAbstractFileEngine * const engine;
+
+    const QString path;
+    const QStringList nameFilters;
+    const QDir::Filters filters;
+    const QDirIterator::IteratorFlags iteratorFlags;
+
     QStack<QAbstractFileEngineIterator *> fileEngineIterators;
-    QString path;
-    QFileInfo nextFileInfo;
-    //This fileinfo is the current that we will return from the public API
     QFileInfo currentFileInfo;
-    QDirIterator::IteratorFlags iteratorFlags;
-    QDir::Filters filters;
-    QStringList nameFilters;
+    QFileInfo nextFileInfo;
+
+    // Loop protection
+    QSet<QString> visitedLinks;
 
     QDirIterator *q;
 };
@@ -131,12 +134,12 @@ public:
 */
 QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                                          QDir::Filters filters, QDirIterator::IteratorFlags flags)
-    : engine(QAbstractFileEngine::create(path)), path(path), iteratorFlags(flags),
-      filters(filters), nameFilters(nameFilters)
+    : engine(QAbstractFileEngine::create(path))
+      , path(path)
+      , nameFilters(nameFilters)
+      , filters(QDir::NoFilter == filters ? QDir::AllEntries : filters)
+      , iteratorFlags(flags)
 {
-    if (QDir::NoFilter == filters)
-        this->filters = QDir::AllEntries;
-
     // Populate fields for hasNext() and next()
     pushDirectory(QFileInfo(path));
     advance();
