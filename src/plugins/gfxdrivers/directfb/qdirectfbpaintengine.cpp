@@ -232,6 +232,8 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
                device->devType());
     }
 
+    d->prepare(d->dfbDevice);
+
     return QRasterPaintEngine::begin(device);
 }
 
