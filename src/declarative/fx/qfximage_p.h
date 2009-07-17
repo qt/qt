@@ -55,10 +55,6 @@
 
 #include "qfxitem_p.h"
 
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QSvgRenderer;
@@ -73,9 +69,6 @@ class QFxImagePrivate : public QFxItemPrivate
 public:
     QFxImagePrivate()
       : scaleGrid(0), tiled(false), smooth(false), opaque(false),
-#if defined(QFX_RENDER_OPENGL)
-        texDirty(true), tex(0),
-#endif
         status(QFxImage::Idle), sciReply(0), progress(0.0)
     {
     }
@@ -99,11 +92,6 @@ public:
     bool tiled : 1;
     bool smooth : 1;
     bool opaque : 1;
-#if defined(QFX_RENDER_OPENGL)
-    bool texDirty : 1;
-    void checkDirty();
-    QSimpleCanvasItem::CachedTexture *tex;
-#endif
 
     QFxImage::Status status;
     QUrl url;

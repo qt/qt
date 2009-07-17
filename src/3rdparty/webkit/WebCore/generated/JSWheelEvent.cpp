@@ -54,7 +54,7 @@ static const HashTableValue JSWheelEventTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWheelEventTable =
+static JSC_CONST_HASHTABLE HashTable JSWheelEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSWheelEventTableValues, 0 };
 #else
@@ -68,7 +68,7 @@ static const HashTableValue JSWheelEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWheelEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWheelEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWheelEventConstructorTableValues, 0 };
 #else
@@ -106,7 +106,7 @@ static const HashTableValue JSWheelEventPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWheelEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWheelEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWheelEventPrototypeTableValues, 0 };
 #else

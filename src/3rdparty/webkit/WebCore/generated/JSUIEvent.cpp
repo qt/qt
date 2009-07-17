@@ -51,7 +51,7 @@ static const HashTableValue JSUIEventTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSUIEventTable =
+static JSC_CONST_HASHTABLE HashTable JSUIEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSUIEventTableValues, 0 };
 #else
@@ -65,7 +65,7 @@ static const HashTableValue JSUIEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSUIEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSUIEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSUIEventConstructorTableValues, 0 };
 #else
@@ -104,7 +104,7 @@ static const HashTableValue JSUIEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSUIEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSUIEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSUIEventPrototypeTableValues, 0 };
 #else

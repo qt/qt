@@ -60,7 +60,7 @@ static const HashTableValue JSHTMLAnchorElementTableValues[21] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAnchorElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAnchorElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSHTMLAnchorElementTableValues, 0 };
 #else
@@ -74,7 +74,7 @@ static const HashTableValue JSHTMLAnchorElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAnchorElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAnchorElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAnchorElementConstructorTableValues, 0 };
 #else
@@ -113,7 +113,7 @@ static const HashTableValue JSHTMLAnchorElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLAnchorElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLAnchorElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLAnchorElementPrototypeTableValues, 0 };
 #else

@@ -91,6 +91,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
+    if (state != Working)
+        return;
     if (!copyDevice || !q->isOpen())
         return;
 
@@ -461,8 +463,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 void QNetworkReplyImplPrivate::finished()
 {
     Q_Q(QNetworkReplyImpl);
-    Q_ASSERT_X(state != Finished, "QNetworkReplyImpl",
-               "Backend called finished/finishedWithError more than once");
+    if (state == Finished || state == Aborted)
+        return;
 
     state = Finished;
     pendingNotifications.clear();
@@ -528,6 +530,11 @@ void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 #else
     Q_UNUSED(errors);
 #endif
+}
+
+bool QNetworkReplyImplPrivate::isFinished() const
+{
+    return (state == Finished || state == Aborted);
 }
 
 QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)

@@ -73,12 +73,12 @@ private:
 
 protected:
     virtual void componentComplete();
-    virtual void parentChanged(QSimpleCanvasItem *, QSimpleCanvasItem *);
+    virtual void parentChanged(QFxItem *, QFxItem *);
     QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent);
 
 private:
     Q_DISABLE_COPY(QFxRepeater)
-    Q_DECLARE_PRIVATE(QFxRepeater)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxRepeater)
 };
 
 QT_END_NAMESPACE

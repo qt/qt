@@ -105,7 +105,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     Q_Q(const QMimeData);
 
     QVariant data = q->retrieveData(format, type);
-    if (data.type() == type || data.type() == QVariant::Invalid)
+    if (data.type() == type || !data.isValid())
         return data;
 
     // provide more conversion possiblities than just what QVariant provides

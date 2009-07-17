@@ -40,34 +40,61 @@
 ****************************************************************************/
 
 #include "qfxkeyproxy.h"
-
+#include <QGraphicsScene>
+#include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
 
 /*!
     \qmlclass KeyProxy
-    \brief The KeyProxy item proxies key presses to a number of other items.
+    \brief The KeyProxy item proxies key events to a number of other items.
     \inherits Item
 
+    KeyProxy provides a way to forward key presses, key releases, and keyboard input
+    coming from input methods to other items. This can be useful when you want
+    one item to handle some keys (e.g. the up and down arrow keys), and another item to
+    handle other keys (e.g. the left and right arrow keys).
+
+    To receive key events, the KeyProxy item must be in the current focus chain,
+    just like any other item.
+
+    KeyProxy is an invisible item: it is never painted.
+
+    A simple KeyProxy that forward key events to two lists:
+    \qml
+    ListView { id: List1 ... }
+    ListView { id: List2 ... }
+    KeyProxy {
+        focus: true
+        targets: [List1, List2]
+    }
+    \endqml
 */
 
 /*!
     \internal
     \class QFxKeyProxy
-    \brief The QFxKeyProxy class proxies key presses to a number of other items.
-    \ingroup group_utility
+    \brief The QFxKeyProxy class proxies key events to a number of other items.
 */
 
 class QFxKeyProxyPrivate
 {
 public:
+    QFxKeyProxyPrivate() : inPress(false), inRelease(false), inIM(false) {}
     QList<QFxItem *> targets;
+
+    //loop detection
+    bool inPress:1;
+    bool inRelease:1;
+    bool inIM:1;
 };
 
 QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
 : QFxItem(parent), d(new QFxKeyProxyPrivate)
 {
+    setOptions(AcceptsInputMethods);
 }
 
 QFxKeyProxy::~QFxKeyProxy()
@@ -78,12 +105,10 @@ QFxKeyProxy::~QFxKeyProxy()
 /*!
     \qmlproperty list<Item> KeyProxy::targets
 
-    The proxy targets.
-*/
+    An ordered list of the items that will be forwarded key events.
 
-/*!
-    \property QFxKeyProxy::targets
-    \brief the proxy targets.
+    The events will be forwarded to the targets in turn until one of them
+    accepts the event.
 */
 
 QList<QFxItem *> *QFxKeyProxy::targets() const
@@ -93,23 +118,58 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = canvas()->focusItem(d->targets.at(ii));
-        if (i)
-            i->keyPressEvent(e);
-        if (e->isAccepted())
-            return;
+    if (!scene())
+        return;
+    if (!d->inPress) {
+        d->inPress = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            if (i)
+                scene()->sendEvent(i, e);
+            if (e->isAccepted()) {
+                d->inPress = false;
+                return;
+            }
+        }
+        d->inPress = false;
     }
 }
 
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = canvas()->focusItem(d->targets.at(ii));
-        if (i)
-            i->keyReleaseEvent(e);
-        if (e->isAccepted())
-            return;
+    if (!scene())
+        return;
+    if (!d->inRelease) {
+        d->inRelease = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            if (i)
+                scene()->sendEvent(i, e);
+            if (e->isAccepted()) {
+                d->inRelease = false;
+                return;
+            }
+        }
+        d->inRelease = false;
+    }
+}
+
+void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
+{
+    if (!scene())
+        return;
+    if (!d->inIM) {
+        d->inIM = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+            if (i)
+                scene()->sendEvent(i, e);
+            if (e->isAccepted()) {
+                d->inIM = false;
+                return;
+            }
+        }
+        d->inIM = false;
     }
 }
 

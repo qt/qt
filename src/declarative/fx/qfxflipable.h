@@ -44,9 +44,6 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QTransform>
-#if defined(QFX_RENDER_OPENGL)
-#include <QtGui/qmatrix4x4.h>
-#endif
 #include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
@@ -87,7 +84,7 @@ public:
     Side side() const;
 
 protected:
-    virtual void transformChanged(const QSimpleCanvas::Matrix &);
+    virtual void transformChanged(const QTransform &);
 
 Q_SIGNALS:
     void sideChanged();
@@ -95,7 +92,7 @@ Q_SIGNALS:
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateAxis())
     Q_DISABLE_COPY(QFxFlipable)
-    Q_DECLARE_PRIVATE(QFxFlipable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxFlipable)
 };
 
 QT_END_NAMESPACE

@@ -5449,8 +5449,6 @@ QString QWidget::windowIconText() const
 
     \list
     \o The file name of the specified path, obtained using QFileInfo::fileName().
-    \o An optional \c{*} character, if the \l windowModified property is set,
-    as per the Apple Human Interface Guidelines.
     \endlist
 
     On Windows and X11:
@@ -5499,7 +5497,7 @@ void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
 {
     if (extra->topextra && extra->topextra->caption.isEmpty()) {
 #ifdef Q_WS_MAC
-        setWindowTitle_helper(filePath);
+        setWindowTitle_helper(QFileInfo(filePath).fileName());
 #else
         Q_Q(QWidget);
         Q_UNUSED(filePath);
@@ -9905,11 +9903,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
         QInputContext *ic = d->ic;
-        if (!ic) {
-            // implicitly create input context only if we have a focus
-            if (hasFocus())
-                ic = d->inputContext();
-        }
+        if (!ic && (!on || hasFocus()))
+            ic = d->inputContext();
         if (ic) {
             if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);

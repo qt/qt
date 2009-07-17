@@ -139,7 +139,6 @@ public:
     QAction *forwardAction() const;
     QAction *stopAction() const;
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
     QWebPage *page() const;
@@ -159,6 +158,9 @@ public:
     QObject *settingsObject() const;
 
     QString status() const;
+
+    int cacheSize() const;
+    void setCacheSize(int pixels);
 
 Q_SIGNALS:
     void idealWidthChanged();
@@ -204,7 +206,7 @@ private:
     void init();
     virtual void componentComplete();
     Q_DISABLE_COPY(QFxWebView)
-    Q_DECLARE_PRIVATE(QFxWebView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxWebView)
 };
 
 QT_END_NAMESPACE

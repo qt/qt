@@ -44,9 +44,8 @@
 
 #include <QtCore/QString>
 #include <QtGui/QPixmap>
-#include <QtDeclarative/qsimplecanvas.h>
 #include <QtDeclarative/qfxglobal.h>
-
+#include <QtCore/qurl.h>
 
 QT_BEGIN_HEADER
 

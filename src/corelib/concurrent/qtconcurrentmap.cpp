@@ -41,13 +41,14 @@
 
 /*!
     \namespace QtConcurrent
+    \inmodule QtCore
     \since 4.4
     \brief The QtConcurrent namespace provides high-level APIs that make it
     possible to write multi-threaded programs without using low-level
     threading primitives.
 
     See the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} section in the \l{threads.html}{threading} documentation.
-    
+    \inheaderfile QtCore
     \ingroup thread
 */
 

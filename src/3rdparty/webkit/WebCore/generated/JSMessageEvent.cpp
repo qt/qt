@@ -50,7 +50,7 @@ static const HashTableValue JSMessageEventTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessageEventTable =
+static JSC_CONST_HASHTABLE HashTable JSMessageEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSMessageEventTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSMessageEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessageEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMessageEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMessageEventConstructorTableValues, 0 };
 #else
@@ -103,7 +103,7 @@ static const HashTableValue JSMessageEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMessageEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMessageEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMessageEventPrototypeTableValues, 0 };
 #else

@@ -24,9 +24,14 @@
  */
 
 #include "config.h"
-#include "HTMLDataGridColElement.h"
 
+#if ENABLE(DATAGRID)
+
+#include "DataGridColumn.h"
+#include "HTMLDataGridElement.h"
+#include "HTMLDataGridColElement.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "Text.h"
 
 namespace WebCore {
@@ -35,9 +40,48 @@ using namespace HTMLNames;
 
 HTMLDataGridColElement::HTMLDataGridColElement(const QualifiedName& name, Document* doc)
     : HTMLElement(name, doc)
+    , m_dataGrid(0)
 {
 }
 
+HTMLDataGridElement* HTMLDataGridColElement::findDataGridAncestor() const
+{
+    if (parent() && parent()->hasTagName(datagridTag))
+        return static_cast<HTMLDataGridElement*>(parent());
+    return 0;
+}
+
+void HTMLDataGridColElement::ensureColumn()
+{
+    if (m_column)
+        return;
+    m_column = DataGridColumn::create(getAttribute(idAttr), label(), type(), primary(), sortable());
+}
+
+void HTMLDataGridColElement::insertedIntoTree(bool deep)
+{
+    HTMLElement::insertedIntoTree(deep);
+    if (dataGrid()) // We're connected to a datagrid already.
+        return;
+    m_dataGrid = findDataGridAncestor();
+    if (dataGrid() && dataGrid()->dataSource()->isDOMDataGridDataSource()) {
+        ensureColumn();
+        m_dataGrid->columns()->add(column()); // FIXME: Deal with ordering issues (complicated, since columns can be made outside the DOM).
+    }
+}
+
+void HTMLDataGridColElement::removedFromTree(bool deep)
+{
+    HTMLElement::removedFromTree(deep);
+    if (dataGrid() && dataGrid()->dataSource()->isDOMDataGridDataSource()) {
+        HTMLDataGridElement* grid = findDataGridAncestor();
+        if (!grid && column()) {
+            dataGrid()->columns()->remove(column());
+            m_dataGrid = 0;
+        }
+    }
+}
+    
 String HTMLDataGridColElement::label() const
 {
     return getAttribute(labelAttr);
@@ -60,12 +104,14 @@ void HTMLDataGridColElement::setType(const String& type)
 
 unsigned short HTMLDataGridColElement::sortable() const
 {
-    return hasAttribute(sortableAttr);
+    if (!hasAttribute(sortableAttr))
+        return 2;
+    return getAttribute(sortableAttr).toInt(0);
 }
 
 void HTMLDataGridColElement::setSortable(unsigned short sortable)
 {
-    setAttribute(sortableAttr, sortable ? "" : 0);
+    setAttribute(sortableAttr, String::number(sortable));
 }
 
 unsigned short HTMLDataGridColElement::sortDirection() const
@@ -99,4 +145,27 @@ void HTMLDataGridColElement::setPrimary(bool primary)
     setAttribute(primaryAttr, primary ? "" : 0);
 }
 
+void HTMLDataGridColElement::parseMappedAttribute(MappedAttribute* attr) 
+{
+    HTMLElement::parseMappedAttribute(attr);
+     
+    if (!column())
+        return;
+
+    if (attr->name() == labelAttr)
+        column()->setLabel(label());
+    else if (attr->name() == typeAttr)
+        column()->setType(type());
+    else if (attr->name() == primaryAttr)
+        column()->setPrimary(primary());
+    else if (attr->name() == sortableAttr)
+        column()->setSortable(sortable());
+    else if (attr->name() == sortdirectionAttr)
+        column()->setSortDirection(sortDirection());
+    else if (attr->name() == idAttr)
+        column()->setId(getAttribute(idAttr));
+}
+
 } // namespace WebCore
+
+#endif

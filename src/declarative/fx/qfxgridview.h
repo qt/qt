@@ -54,7 +54,7 @@ class QFxGridViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxGridView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxGridView)
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_CLASSINFO("DefaultProperty", "delegate")

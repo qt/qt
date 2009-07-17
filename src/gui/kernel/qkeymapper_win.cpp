@@ -41,7 +41,7 @@
 
 #include "qkeymapper_p.h"
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <qdebug.h>
 #include <private/qevent_p.h>
 #include <private/qlocale_p.h>

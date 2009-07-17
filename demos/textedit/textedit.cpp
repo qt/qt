@@ -336,6 +336,8 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Ordered List (Decimal)");
     comboStyle->addItem("Ordered List (Alpha lower)");
     comboStyle->addItem("Ordered List (Alpha upper)");
+    comboStyle->addItem("Ordered List (Roman lower)");
+    comboStyle->addItem("Ordered List (Roman upper)");
     connect(comboStyle, SIGNAL(activated(int)),
             this, SLOT(textStyle(int)));
 
@@ -572,6 +574,12 @@ void TextEdit::textStyle(int styleIndex)
                 break;
             case 6:
                 style = QTextListFormat::ListUpperAlpha;
+                break;
+            case 7:
+                style = QTextListFormat::ListLowerRoman;
+                break;
+            case 8:
+                style = QTextListFormat::ListUpperRoman;
                 break;
         }
 

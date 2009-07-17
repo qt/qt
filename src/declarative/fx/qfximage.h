@@ -91,15 +91,8 @@ public:
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-    uint glSimpleItemData(float *vertices, float *texVertices,
-                          GLTexture **texture, uint count);
-#endif
 
 Q_SIGNALS:
     void sourceChanged(const QUrl &);
@@ -117,7 +110,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE(QFxImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
 };
 

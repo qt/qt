@@ -3,7 +3,7 @@ import "content"
 Rect {
     width: 460
     height: 700
-    color: "white"
+    color: activePalette.window
     Script { source: "content/samegame.js" }
     Rect{
         property int score: 0

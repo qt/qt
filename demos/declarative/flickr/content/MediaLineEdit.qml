@@ -98,7 +98,6 @@ Item {
         id: Proxy
         anchors.left: Container.left
         anchors.fill: Container
-        focusable: true
         targets: [(ReturnKey), (Editor)]
     }
     KeyActions {

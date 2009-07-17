@@ -125,7 +125,7 @@ private:
     friend class QFxPathViewAttached;
     static QHash<QObject*, QObject*> attachedProperties;
     Q_DISABLE_COPY(QFxPathView)
-    Q_DECLARE_PRIVATE(QFxPathView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPathView)
 };
 
 QT_END_NAMESPACE

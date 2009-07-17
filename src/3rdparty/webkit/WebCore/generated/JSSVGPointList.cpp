@@ -43,7 +43,7 @@ static const HashTableValue JSSVGPointListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPointListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPointListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPointListTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSSVGPointListPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPointListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPointListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGPointListPrototypeTableValues, 0 };
 #else

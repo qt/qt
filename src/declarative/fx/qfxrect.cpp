@@ -251,17 +251,8 @@ QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
 
 void QFxRect::doUpdate()
 {
-#if defined(QFX_RENDER_QPAINTER)
     Q_D(QFxRect);
     d->rectImage = QPixmap();
-#endif
-#if defined(QFX_RENDER_OPENGL)
-    Q_D(QFxRect);
-    if (d->rectTexture) {
-        d->rectTexture->release();
-        d->rectTexture = 0;
-    }
-#endif
     const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
     setPaintMargin((pw+1)/2);
     update();
@@ -361,23 +352,8 @@ void QFxRect::setRadius(qreal radius)
         return;
 
     d->radius = radius;
-#if defined(QFX_RENDER_QPAINTER)
     d->rectImage = QPixmap();
-#elif defined(QFX_RENDER_OPENGL)
-    if (d->rectTexture) {
-        d->rectTexture->release();
-        d->rectTexture = 0;
-    }
-#endif
     update();
-}
-
-void QFxRect::dump(int depth)
-{
-    Q_D(QFxRect);
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "QFxRect:" << d->color;
-    QFxItem::dump(depth);
 }
 
 /*!
@@ -412,15 +388,7 @@ void QFxRect::setColor(const QColor &c)
         return;
 
     d->color = c;
-#if defined(QFX_RENDER_QPAINTER)
     d->rectImage = QPixmap();
-#endif
-#if defined(QFX_RENDER_OPENGL)
-    if (d->rectTexture) {
-        d->rectTexture->release();
-        d->rectTexture = 0;
-    }
-#endif
     update();
 }
 
@@ -488,7 +456,6 @@ QColor QFxRectPrivate::getColor()
 }
 
 
-#if defined(QFX_RENDER_QPAINTER)
 void QFxRect::generateRoundedRect()
 {
     Q_D(QFxRect);
@@ -535,72 +502,7 @@ void QFxRect::generateBorderedRect()
             p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
     }
 }
-#elif defined(QFX_RENDER_OPENGL)
-void QFxRect::generateRoundedRect()
-{
-    Q_D(QFxRect);
-    if (!d->rectTexture) {
-        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        QString key = QString("QFxRect://r_%1_%2_%3_%4").arg(pw).arg(d->radius).arg((d->pen && d->pen->isValid())?d->pen->color().name():QString()).arg(d->color.name());
 
-        d->rectTexture = cachedTexture(key);
-
-        if (!d->rectTexture) {
-            QPixmap roundRect(d->radius*2 + 4 + pw*2, d->radius*2 + 4 + pw*2);
-            roundRect.fill(Qt::transparent);
-            QPainter p(&roundRect);
-            p.setRenderHint(QPainter::Antialiasing);
-            if (d->pen && d->pen->isValid()) {
-                QPen pn(QColor(pen()->color()), pen()->width());
-                p.setPen(pn);
-            } else {
-                p.setPen(Qt::NoPen);
-            }
-            p.setBrush(d->color);
-            if (pw%2)
-            p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, roundRect.width()-(pw+1), roundRect.height()-(pw+1)), d->radius, d->radius);
-        else
-            p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, roundRect.width()-pw, roundRect.height()-pw), d->radius, d->radius);
-
-            d->rectTexture = cachedTexture(key, roundRect);
-        }
-    }
-}
-
-void QFxRect::generateBorderedRect()
-{
-    Q_D(QFxRect);
-    if (!d->rectTexture) {
-        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        QString key = QString("QFxRect://b_%1_%2_%3_%4").arg(pw).arg(d->radius).arg((d->pen && d->pen->isValid())?d->pen->color().name():QString()).arg(d->color.name());
-
-        d->rectTexture = cachedTexture(key);
-
-        if (!d->rectTexture) {
-            QPixmap borderedRect(pw*2 + 4, pw*2 + 4);
-            borderedRect.fill(Qt::transparent);
-            QPainter p(&(borderedRect));
-            p.setRenderHint(QPainter::Antialiasing);
-            if (d->pen && d->pen->isValid()) {
-                QPen pn(QColor(pen()->color()), pen()->width());
-                pn.setJoinStyle(Qt::MiterJoin);
-                p.setPen(pn);
-            } else {
-                p.setPen(Qt::NoPen);
-            }
-            p.setBrush(d->color);
-            if (pw%2)
-                p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, borderedRect.width()-(pw+1), borderedRect.height()-(pw+1)));
-            else
-                p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, borderedRect.width()-pw, borderedRect.height()-pw));
-            d->rectTexture = cachedTexture(key, borderedRect);
-        }
-    }
-}
-#endif
-
-
-#if defined(QFX_RENDER_QPAINTER)
 void QFxRect::paintContents(QPainter &p)
 {
     Q_D(QFxRect);
@@ -701,258 +603,5 @@ void QFxRect::drawRect(QPainter &p)
                         QRect(d->rectImage.width()-xOffset, d->rectImage.height() - yOffset, xOffset, yOffset));
     }
 }
-#endif
-
-#if defined(QFX_RENDER_OPENGL2)
-#include "glbasicshaders.h"
-
-void QFxRect::paintGLContents(GLPainter &p)
-{
-    Q_D(QFxRect);
-    if (d->radius == 0 && (!d->pen || !d->pen->isValid())) {
-        if (d->gradient) {
-            float widthV = width();
-            float heightV = height();
-
-            GLfloat vertices[] = { 0, heightV,
-                                   widthV, heightV,
-                                   0, 0,
-                                   widthV, 0 };
-
-            int count = d->gradient->stops()->size();
-            GLfloat colors[count*8];
-            for (int i = 0; i < count; i += 8) {
-                QFxGradientStop *g = d->gradient->stops()->at(i);
-                QColor c = g->color();
-                colors[i] = c.redF(); colors[i+4] = colors[i];
-                colors[i+1] = c.greenF(); colors[i+5] = colors[i+1];
-                colors[i+2] = c.blueF(); colors[i+6] = colors[i+2];
-                colors[i+3] = c.alphaF() * p.activeOpacity; colors[i+7] = colors[i+3];
-            }
-
-            p.invalidate();
-            ColorShader *shader = basicShaders()->color();
-            shader->enable();
-            shader->setTransform(p.activeTransform);
-
-            shader->setAttributeArray(ColorShader::Vertices, vertices, 2);
-            shader->setAttributeArray(ColorShader::Colors, colors, 4);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, count*2);
-            shader->disableAttributeArray(ColorShader::Vertices);
-            shader->disableAttributeArray(ColorShader::Colors);
-        } else {
-
-            p.fillRect(QRectF(0, 0, width(), height()), d->getColor());
-
-        }
-    } else {
-        qreal offset = 0;
-        qreal pw = d->pen && d->pen->isValid() ? d->pen->width() : 0.0;
-
-        if (d->radius > 0) {
-            generateRoundedRect();
-            offset = d->radius + pw+1.5;
-        } else {
-            generateBorderedRect();
-            offset = pw+1.5;
-        }
-
-        QGLShaderProgram *shader = p.useTextureShader();
-
-        float texWidth = d->rectTexture->width();
-        float texHeight = d->rectTexture->height();
-        if (!texWidth || !texHeight)
-            return;
-
-        float widthV = qreal(width())+pw/2;
-        float heightV = qreal(height())+pw/2;
-
-        float xOffset = offset;
-        bool xMiddles = true;
-        if (xOffset*2 > width()+pw) {
-            xMiddles = false;
-            xOffset = (width()+pw)/2;
-        }
-        float yOffset = offset;
-        bool yMiddles = true;
-        if (yOffset*2 > height()+pw) {
-            yMiddles = false;
-            yOffset = (height()+pw)/2;
-        }
-
-        float texleft = xOffset / texWidth;
-        float imgleft = xOffset-pw/2;
-        float texright = (texWidth-xOffset) / texWidth;
-        float imgright = widthV - xOffset;
-
-        float textop = yOffset / texHeight;
-        float imgtop = yOffset-pw/2;
-        float texbottom = (texHeight-yOffset) / texHeight;
-        float imgbottom = heightV - yOffset;
-
-        //Bug 231768: Inappropriate interpolation was occuring on 3x3 textures
-        if (offset==1)
-            texleft=texright=textop=texbottom=0.5;
-
-        texleft *= d->rectTexture->glWidth();
-        texright *= d->rectTexture->glWidth();
-        textop *= d->rectTexture->glHeight();
-        texbottom *= d->rectTexture->glHeight();
-
-        float vert1[] = { -pw/2, -pw/2, 
-                          -pw/2, imgtop,
-                          imgleft, -pw/2, 
-
-                          -pw/2, imgtop,
-                          imgleft, -pw/2, 
-                          imgleft, imgtop,
-
-                          imgleft, -pw/2, 
-                          imgleft, imgtop,
-                          imgright, -pw/2,
-
-                          imgleft, imgtop,
-                          imgright, -pw/2,
-                          imgright, imgtop,
-
-                          imgright, -pw/2,
-                          imgright, imgtop,
-                          widthV, -pw/2,
-
-                          imgright, imgtop,
-                          widthV, -pw/2,
-                          widthV, imgtop,
-
-                          -pw/2, heightV,
-                          -pw/2, imgbottom,
-                          imgleft, heightV,
-
-                          -pw/2, imgbottom,
-                          imgleft, heightV,
-                          imgleft, imgbottom,
-
-                          imgleft, heightV,
-                          imgleft, imgbottom,
-                          imgright, heightV,
-
-                          imgleft, imgbottom,
-                          imgright, heightV,
-                          imgright, imgbottom,
-
-                          imgright, heightV,
-                          imgright, imgbottom,
-                          widthV, heightV,
-
-                          imgright, imgbottom,
-                          widthV, heightV,
-                          widthV, imgbottom,
-
-                          -pw/2, imgtop,
-                          -pw/2, imgbottom,
-                          imgleft, imgtop,
-
-                          -pw/2, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-                          imgright, imgbottom,
-
-                          imgright, imgtop,
-                          imgright, imgbottom,
-                          widthV, imgtop,
-
-                          imgright, imgbottom,
-                          widthV, imgtop,
-                          widthV, imgbottom };
-
-
-        float tex1[] = { 0, 0, 
-                         0, textop,
-                         texleft, 0,
-
-                         0, textop,
-                         texleft, 0,
-                         texleft, textop,
-
-                         texleft, 0,
-                         texleft, textop,
-                         texright, 0,
-
-                         texleft, textop,
-                         texright, 0,
-                         texright, textop,
-
-                         texright, 0,
-                         texright, textop,
-                         d->rectTexture->glWidth(), 0,
-
-                         texright, textop,
-                         d->rectTexture->glWidth(), 0,
-                         d->rectTexture->glWidth(), textop,
-
-                         0, d->rectTexture->glHeight(),
-                         0, texbottom,
-                         texleft, d->rectTexture->glHeight(),
-
-                         0, texbottom,
-                         texleft, d->rectTexture->glHeight(),
-                         texleft, texbottom,
-
-                         texleft, d->rectTexture->glHeight(),
-                         texleft, texbottom,
-                         texright, d->rectTexture->glHeight(),
-
-                         texleft, texbottom,
-                         texright, d->rectTexture->glHeight(),
-                         texright, texbottom,
-
-                         texright, d->rectTexture->glHeight(),
-                         texright, texbottom,
-                         d->rectTexture->glWidth(), d->rectTexture->glHeight(),
-
-                         texright, texbottom,
-                         d->rectTexture->glWidth(), d->rectTexture->glHeight(),
-                         d->rectTexture->glWidth(), texbottom,
-
-                         0, textop,
-                         0, texbottom,
-                         texleft, textop,
-
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-
-                         texright, textop,
-                         texright, texbottom,
-                         d->rectTexture->glWidth(), textop,
-
-                         texright, texbottom,
-                         d->rectTexture->glWidth(), textop,
-                         d->rectTexture->glWidth(), texbottom };
-
-
-
-        glBindTexture(GL_TEXTURE_2D, d->rectTexture->texture());
-
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);
-        glDrawArrays(GL_TRIANGLES, 0, 36 + (yMiddles?18:0));
-    }
-}
-#endif
 
 QT_END_NAMESPACE

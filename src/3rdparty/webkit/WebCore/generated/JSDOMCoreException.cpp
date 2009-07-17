@@ -45,7 +45,7 @@ static const HashTableValue JSDOMCoreExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMCoreExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSDOMCoreExceptionTableValues, 0 };
 #else
@@ -81,7 +81,7 @@ static const HashTableValue JSDOMCoreExceptionConstructorTableValues[23] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMCoreExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSDOMCoreExceptionConstructorTableValues, 0 };
 #else
@@ -142,7 +142,7 @@ static const HashTableValue JSDOMCoreExceptionPrototypeTableValues[24] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMCoreExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSDOMCoreExceptionPrototypeTableValues, 0 };
 #else

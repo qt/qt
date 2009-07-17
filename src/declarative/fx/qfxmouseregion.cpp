@@ -173,28 +173,12 @@ void QFxDrag::setYmax(int m)
     \qmlsignal MouseRegion::onEntered
 
     This handler is called when the mouse enters the mouse region.
-
-    \warning This handler is not yet implemented.
 */
 
 /*!
     \qmlsignal MouseRegion::onExited
 
     This handler is called when the mouse exists the mouse region.
-
-    \warning This handler is not yet implemented.
-*/
-
-/*!
-    \qmlsignal MouseRegion::onReenteredWhilePressed
-
-    This handler is called when the mouse reenters the mouse region while pressed.
-*/
-
-/*!
-    \qmlsignal MouseRegion::onExitedWhilePressed
-
-    This handler is called when the mouse exists the mouse region while pressed.
 */
 
 /*!
@@ -322,10 +306,6 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (!d->absorb)
         QFxItem::mousePressEvent(event);
     else {
-        if (!d->inside) {
-            d->inside = true;
-            emit hoveredChanged();
-        }
         d->longPress = false;
         d->saveEvent(event);
         d->dragX = drag()->axis().contains(QLatin1String("x"));
@@ -352,17 +332,13 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     d->saveEvent(event);
 
     // ### we should skip this if these signals aren't used
+    // ### can GV handle this for us?
     const QRect &bounds = itemBoundingRect();
     bool contains = bounds.contains(d->lastPos.toPoint());
-    if (d->inside && !contains) {
-        d->inside = false;
-        emit hoveredChanged();
-        emit exitedWhilePressed();
-    } else if (!d->inside && contains) {
-        d->inside = true;
-        emit hoveredChanged();
-        emit reenteredWhilePressed();
-    }
+    if (d->hovered && !contains)
+        setHovered(false);
+    else if (!d->hovered && contains)
+        setHovered(true);
 
     if (drag()->target()) {
         if (!d->moved) {
@@ -373,8 +349,8 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QPointF startLocalPos;
         QPointF curLocalPos;
         if (drag()->target()->parent()) {
-            startLocalPos = drag()->target()->parent()->mapFromScene(d->startScene);
-            curLocalPos = drag()->target()->parent()->mapFromScene(event->scenePos());
+            startLocalPos = drag()->target()->parentItem()->mapFromScene(d->startScene);
+            curLocalPos = drag()->target()->parentItem()->mapFromScene(event->scenePos());
         } else {
             startLocalPos = d->startScene;
             curLocalPos = event->scenePos();
@@ -424,8 +400,6 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->saveEvent(event);
         setPressed(false);
-        //d->inside = false;
-        //emit hoveredChanged();
         event->accept();
     }
 }
@@ -436,8 +410,6 @@ void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     if (!d->absorb)
         QFxItem::mouseDoubleClickEvent(event);
     else {
-        //d->inside = true;
-        //emit hoveredChanged();
         d->saveEvent(event);
         setPressed(true);
         QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
@@ -453,7 +425,6 @@ void QFxMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         QFxItem::hoverEnterEvent(event);
     else {
         setHovered(true);
-        emit entered();
     }
 }
 
@@ -464,7 +435,6 @@ void QFxMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
         QFxItem::hoverLeaveEvent(event);
     else {
         setHovered(false);
-        emit exited();
     }
 }
 
@@ -475,7 +445,6 @@ void QFxMouseRegion::mouseUngrabEvent()
         // if our mouse grab has been removed (probably by Flickable), fix our 
         // state
         d->pressed = false;
-        //d->inside = false;
         setKeepMouseGrab(false);
         emit pressedChanged();
         //emit hoveredChanged();
@@ -487,7 +456,7 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
     Q_D(QFxMouseRegion);
     if (event->timerId() == d->pressAndHoldTimer.timerId()) {
         d->pressAndHoldTimer.stop();
-        if (d->pressed && d->dragged == false && d->inside == true) {
+        if (d->pressed && d->dragged == false && d->hovered == true) {
             d->longPress = true;
             QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
             emit pressAndHold(&me);
@@ -504,7 +473,7 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
 bool QFxMouseRegion::hovered()
 {
     Q_D(QFxMouseRegion);
-    return d->hovered || d->inside;
+    return d->hovered;
 }
 
 /*!
@@ -523,13 +492,14 @@ void QFxMouseRegion::setHovered(bool h)
     if (d->hovered != h) {
         d->hovered = h;
         emit hoveredChanged();
+        d->hovered ? emit entered() : emit exited();
     }
 }
 
 void QFxMouseRegion::setPressed(bool p)
 {
     Q_D(QFxMouseRegion);
-    bool isclick = d->pressed == true && p == false && d->dragged == false && d->inside == true;
+    bool isclick = d->pressed == true && p == false && d->dragged == false && d->hovered == true;
 
     if (d->pressed != p) {
         d->pressed = p;

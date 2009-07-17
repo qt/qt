@@ -508,7 +508,7 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
     int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = 0;
-    if (::ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
+    if (qt_safe_ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
         available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -634,8 +634,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
     ssize_t sentBytes;
     do {
-        sentBytes = ::sendto(socketDescriptor, data, len,
-                             0, sockAddrPtr, sockAddrSize);
+        sentBytes = qt_safe_sendto(socketDescriptor, data, len,
+                                   0, sockAddrPtr, sockAddrSize);
     } while (sentBytes == -1 && errno == EINTR);
 
     if (sentBytes < 0) {

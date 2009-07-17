@@ -40,7 +40,7 @@ static const HashTableValue JSConsoleTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSConsoleTable =
+static JSC_CONST_HASHTABLE HashTable JSConsoleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSConsoleTableValues, 0 };
 #else
@@ -70,7 +70,7 @@ static const HashTableValue JSConsolePrototypeTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSConsolePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSConsolePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSConsolePrototypeTableValues, 0 };
 #else

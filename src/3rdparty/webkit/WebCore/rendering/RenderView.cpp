@@ -343,8 +343,8 @@ void RenderView::setMaximalOutlineSize(int o)
     if (o != m_maximalOutlineSize) {
         m_maximalOutlineSize = o;
 
-        if (m_frameView)
-            m_frameView->updateCompositingLayers(FrameView::ForcedCompositingUpdate);
+        // maximalOutlineSize affects compositing layer dimensions.
+        compositor()->setCompositingLayersNeedRebuild();    // FIXME: this really just needs to be a geometry update.
     }
 }
 #endif

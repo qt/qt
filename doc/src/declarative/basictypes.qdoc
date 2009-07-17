@@ -39,7 +39,7 @@
 
     Setting bools looks like this:
     \code
-    Item { focusable: true; clip: false }
+    Item { focus: true; clip: false }
     \endcode
 
     \note Technically bool treats an empty string, "false" and "0" as false and

@@ -40,7 +40,6 @@
 #include "DatabaseTracker.h"
 #include "Document.h"
 #include "ExceptionCode.h"
-#include "FileSystem.h"
 #include "Frame.h"
 #include "InspectorController.h"
 #include "Logging.h"
@@ -48,6 +47,7 @@
 #include "Page.h"
 #include "OriginQuotaManager.h"
 #include "SQLiteDatabase.h"
+#include "SQLiteFileSystem.h"
 #include "SQLiteStatement.h"
 #include "SQLResultSet.h"
 #include <wtf/MainThread.h>
@@ -59,6 +59,9 @@
 #endif
 
 namespace WebCore {
+
+// If we sleep for more the 30 seconds while blocked on SQLITE_BUSY, give up.
+static const int maxSqliteBusyWaitTime = 30000;
 
 const String& Database::databaseInfoTableName()
 {
@@ -132,6 +135,7 @@ Database::Database(Document* document, const String& name, const String& expecte
     , m_expectedVersion(expectedVersion)
     , m_deleted(false)
     , m_stopped(false)
+    , m_opened(false)
 {
     ASSERT(document);
     m_securityOrigin = document->securityOrigin();
@@ -316,7 +320,13 @@ void Database::markAsDeletedAndClose()
 
 void Database::close()
 {
-    m_sqliteDatabase.close();
+    if (m_opened) {
+        ASSERT(m_document->databaseThread());
+        ASSERT(currentThread() == document()->databaseThread()->getThreadID());
+        m_sqliteDatabase.close();
+        m_document->databaseThread()->recordDatabaseClosed(this);
+        m_opened = false;
+    }
 }
 
 void Database::stop()
@@ -338,10 +348,7 @@ void Database::stop()
 
 unsigned long long Database::databaseSize() const
 {
-    long long size;
-    if (!getFileSize(m_filename, size))
-        size = 0;
-    return size;
+    return SQLiteFileSystem::getDatabaseFileSize(m_filename);
 }
 
 unsigned long long Database::maximumSize() const
@@ -426,8 +433,13 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
         return false;
     }
 
+    m_opened = true;
+    if (m_document->databaseThread())
+        m_document->databaseThread()->recordDatabaseOpen(this);
+
     ASSERT(m_databaseAuthorizer);
     m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer);
+    m_sqliteDatabase.setBusyTimeout(maxSqliteBusyWaitTime);
 
     if (!m_sqliteDatabase.tableExists(databaseInfoTableName())) {
         if (!m_sqliteDatabase.executeCommand("CREATE TABLE " + databaseInfoTableName() + " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {

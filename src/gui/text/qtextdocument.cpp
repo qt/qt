@@ -2416,7 +2416,10 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
 static bool isOrderedList(int style)
 {
     return style == QTextListFormat::ListDecimal || style == QTextListFormat::ListLowerAlpha
-           || style == QTextListFormat::ListUpperAlpha;
+           || style == QTextListFormat::ListUpperAlpha
+           || style == QTextListFormat::ListUpperRoman
+           || style == QTextListFormat::ListLowerRoman
+	   ;
 }
 
 void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
@@ -2513,6 +2516,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 case QTextListFormat::ListSquare: html += QLatin1String("<ul type=\"square\""); break;
                 case QTextListFormat::ListLowerAlpha: html += QLatin1String("<ol type=\"a\""); break;
                 case QTextListFormat::ListUpperAlpha: html += QLatin1String("<ol type=\"A\""); break;
+                case QTextListFormat::ListLowerRoman: html += QLatin1String("<ol type=\"i\""); break;
+                case QTextListFormat::ListUpperRoman: html += QLatin1String("<ol type=\"I\""); break;
                 default: html += QLatin1String("<ul"); // ### should not happen
             }
 

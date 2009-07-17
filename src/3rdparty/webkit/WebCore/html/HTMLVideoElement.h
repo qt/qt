@@ -35,8 +35,7 @@ namespace WebCore {
 
 class HTMLImageLoader;
 
-class HTMLVideoElement : public HTMLMediaElement
-{
+class HTMLVideoElement : public HTMLMediaElement {
 public:
     HTMLVideoElement(const QualifiedName&, Document*);
     
@@ -67,8 +66,9 @@ public:
 
     void updatePosterImage();
 
-    // Used by canvas to gain raw pixel access
     void paint(GraphicsContext*, const IntRect&);
+    // Used by canvas to gain raw pixel access
+    void paintCurrentFrameInContext(GraphicsContext*, const IntRect&);
 
 private:
     OwnPtr<HTMLImageLoader> m_imageLoader;

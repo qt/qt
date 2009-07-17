@@ -5,7 +5,6 @@ SOURCES += \
            extra/qfxintegermodel.cpp \
            extra/qmlfolderlistmodel.cpp \
            extra/qfxanimatedimageitem.cpp \
-           extra/qfxblendedimage.cpp \
            extra/qfxflowview.cpp \
            extra/qfxparticles.cpp \
            extra/qmlbehaviour.cpp \
@@ -19,7 +18,6 @@ HEADERS += \
            extra/qmlfolderlistmodel.h \
            extra/qfxanimatedimageitem.h \
            extra/qfxanimatedimageitem_p.h \
-           extra/qfxblendedimage.h \
            extra/qfxflowview.h \
            extra/qfxparticles.h \
            extra/qmlbehaviour.h \

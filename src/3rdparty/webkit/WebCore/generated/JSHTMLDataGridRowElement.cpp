@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSHTMLDataGridRowElement.h"
 
 #include "HTMLDataGridRowElement.h"
@@ -41,7 +44,7 @@ static const HashTableValue JSHTMLDataGridRowElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDataGridRowElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridRowElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLDataGridRowElementTableValues, 0 };
 #else
@@ -55,7 +58,7 @@ static const HashTableValue JSHTMLDataGridRowElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDataGridRowElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridRowElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDataGridRowElementConstructorTableValues, 0 };
 #else
@@ -93,7 +96,7 @@ static const HashTableValue JSHTMLDataGridRowElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDataGridRowElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridRowElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDataGridRowElementPrototypeTableValues, 0 };
 #else
@@ -179,3 +182,5 @@ JSValue JSHTMLDataGridRowElement::getConstructor(ExecState* exec)
 
 
 }
+
+#endif // ENABLE(DATAGRID)

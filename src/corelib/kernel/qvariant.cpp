@@ -1905,7 +1905,7 @@ void QVariant::load(QDataStream &s)
     create(static_cast<int>(u), 0);
     d.is_null = is_null;
 
-    if (d.type == QVariant::Invalid) {
+    if (!isValid()) {
         // Since we wrote something, we should read something
         QString x;
         s >> x;
@@ -1949,7 +1949,7 @@ void QVariant::save(QDataStream &s) const
         s << QMetaType::typeName(userType());
     }
 
-    if (d.type == QVariant::Invalid) {
+    if (!isValid()) {
         s << QString();
         return;
     }

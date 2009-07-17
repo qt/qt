@@ -111,7 +111,7 @@ void QFxFlickablePrivate::init()
     QObject::connect(&_tl, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
-    q->setOptions(QSimpleCanvasItem::ChildMouseFilter | QSimpleCanvasItem::MouseEvents);
+    q->setOptions(QFxItem::ChildMouseFilter | QFxItem::MouseEvents);
     QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
@@ -740,6 +740,7 @@ void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QFxFlickable);
     d->handleMouseReleaseEvent(event);
     event->accept();
+    ungrabMouse();
 }
 
 qreal QFxFlickable::minYExtent() const
@@ -1047,7 +1048,7 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
         grabber = static_cast<QFxItem*>(mouseGrabberItem());
-        if (grabber && d->stealMouse && !grabber->keepMouseGrab())
+        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this)
             grabMouse();
 
         return d->stealMouse;

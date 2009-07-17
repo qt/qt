@@ -107,7 +107,7 @@ static const HashTableValue JSSVGPathElementTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGPathElementTableValues, 0 };
 #else
@@ -149,7 +149,7 @@ static const HashTableValue JSSVGPathElementPrototypeTableValues[29] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGPathElementPrototypeTableValues, 0 };
 #else

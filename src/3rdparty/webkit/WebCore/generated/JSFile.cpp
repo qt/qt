@@ -43,7 +43,7 @@ static const HashTableValue JSFileTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSFileTable =
+static JSC_CONST_HASHTABLE HashTable JSFileTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSFileTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSFileConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSFileConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSFileConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSFileConstructorTableValues, 0 };
 #else
@@ -95,7 +95,7 @@ static const HashTableValue JSFilePrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSFilePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSFilePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSFilePrototypeTableValues, 0 };
 #else

@@ -48,7 +48,7 @@ static const HashTableValue JSSVGZoomEventTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGZoomEventTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGZoomEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGZoomEventTableValues, 0 };
 #else
@@ -62,7 +62,7 @@ static const HashTableValue JSSVGZoomEventPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGZoomEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGZoomEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGZoomEventPrototypeTableValues, 0 };
 #else

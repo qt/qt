@@ -43,7 +43,7 @@ static const HashTableValue JSOverflowEventTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSOverflowEventTable =
+static JSC_CONST_HASHTABLE HashTable JSOverflowEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSOverflowEventTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSOverflowEventConstructorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSOverflowEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSOverflowEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSOverflowEventConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSOverflowEventPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSOverflowEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSOverflowEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSOverflowEventPrototypeTableValues, 0 };
 #else

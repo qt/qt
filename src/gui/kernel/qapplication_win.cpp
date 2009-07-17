@@ -107,7 +107,6 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #endif
 #endif // QT_NO_ACCESSIBILITY
 
-#include <winuser.h>
 #if !defined(WINABLEAPI)
 #  if defined(Q_WS_WINCE)
 #    include <bldver.h>
@@ -270,6 +269,8 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define WM_XBUTTONDOWN                  0x020B
 #define WM_XBUTTONUP                    0x020C
 #define WM_XBUTTONDBLCLK                0x020D
+#endif
+#ifndef GET_KEYSTATE_WPARAM
 #define GET_KEYSTATE_WPARAM(wParam)     (LOWORD(wParam))
 #define GET_XBUTTON_WPARAM(wParam)      (HIWORD(wParam))
 #define XBUTTON1      0x0001
@@ -278,14 +279,12 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define MK_XBUTTON2         0x0040
 #endif
 
-#ifdef Q_WS_WINCE
-#define GET_KEYSTATE_WPARAM(wParam)     (LOWORD(wParam))
-#endif
-
 // support for multi-media-keys
 #ifndef WM_APPCOMMAND
 #define WM_APPCOMMAND                   0x0319
+#endif
 
+#ifndef FAPPCOMMAND_MOUSE
 #define FAPPCOMMAND_MOUSE 0x8000
 #define FAPPCOMMAND_KEY   0
 #define FAPPCOMMAND_OEM   0x1000
@@ -353,7 +352,7 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define APPCOMMAND_MEDIA_CHANNEL_DOWN     52
 #endif // APPCOMMAND_MICROPHONE_VOLUME_MUTE
 
-#endif // WM_APPCOMMAND
+#endif // FAPPCOMMAND_MOUSE
 
 #if (_WIN32_WINNT < 0x0400)
 // This struct is defined in winuser.h if the _WIN32_WINNT >= 0x0400 -- in the
@@ -3953,9 +3952,9 @@ qt_CloseTouchInputHandlePtr QApplicationPrivate::CloseTouchInputHandle = 0;
 void QApplicationPrivate::initializeMultitouch_sys()
 {
     QLibrary library(QLatin1String("user32"));
-    RegisterTouchWindow = static_cast<qt_RegisterTouchWindowPtr>(library.resolve("RegisterTouchWindow"));
-    GetTouchInputInfo = static_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
-    CloseTouchInputHandle = static_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
+    RegisterTouchWindow = reinterpret_cast<qt_RegisterTouchWindowPtr>(library.resolve("RegisterTouchWindow"));
+    GetTouchInputInfo = reinterpret_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
+    CloseTouchInputHandle = reinterpret_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
 
     touchInputIDToTouchPointID.clear();
 }

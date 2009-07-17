@@ -38,7 +38,7 @@ static const HashTableValue JSCDATASectionTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCDATASectionTable =
+static JSC_CONST_HASHTABLE HashTable JSCDATASectionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCDATASectionTableValues, 0 };
 #else
@@ -52,7 +52,7 @@ static const HashTableValue JSCDATASectionConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCDATASectionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCDATASectionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCDATASectionConstructorTableValues, 0 };
 #else
@@ -90,7 +90,7 @@ static const HashTableValue JSCDATASectionPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCDATASectionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCDATASectionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCDATASectionPrototypeTableValues, 0 };
 #else

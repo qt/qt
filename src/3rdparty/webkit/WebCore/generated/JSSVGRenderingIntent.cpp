@@ -41,7 +41,7 @@ static const HashTableValue JSSVGRenderingIntentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRenderingIntentTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRenderingIntentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGRenderingIntentTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSSVGRenderingIntentConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRenderingIntentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRenderingIntentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGRenderingIntentConstructorTableValues, 0 };
 #else
@@ -105,7 +105,7 @@ static const HashTableValue JSSVGRenderingIntentPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGRenderingIntentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGRenderingIntentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGRenderingIntentPrototypeTableValues, 0 };
 #else

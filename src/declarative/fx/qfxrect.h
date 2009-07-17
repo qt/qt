@@ -43,6 +43,7 @@
 #define QFXRECT_H
 
 #include <QtDeclarative/qfxitem.h>
+#include <QtGui/qbrush.h>
 
 
 QT_BEGIN_HEADER
@@ -156,14 +157,7 @@ public:
     qreal radius() const;
     void setRadius(qreal radius);
 
-    virtual void dump(int depth);
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#endif
-
-#if defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
 private Q_SLOTS:
     void doUpdate();
@@ -179,7 +173,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxRect)
-    Q_DECLARE_PRIVATE(QFxRect)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxRect)
 };
 
 QT_END_NAMESPACE

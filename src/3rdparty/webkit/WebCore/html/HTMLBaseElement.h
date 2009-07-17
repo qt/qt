@@ -26,8 +26,7 @@
 
 namespace WebCore {
 
-class HTMLBaseElement : public HTMLElement
-{
+class HTMLBaseElement : public HTMLElement {
 public:
     HTMLBaseElement(const QualifiedName&, Document*);
     ~HTMLBaseElement();
@@ -48,6 +47,7 @@ public:
     void setTarget(const String&);
 
 protected:
+    String m_hrefAttrValue;
     String m_href;
     String m_target;
 };

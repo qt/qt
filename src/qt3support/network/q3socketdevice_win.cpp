@@ -47,19 +47,14 @@
 
 #include <string.h>
 
+#  include <qt_windows.h>
 #if defined (QT_NO_IPV6)
-#  include <windows.h>
 #  include <winsock.h>
 #else
 #  if defined (Q_CC_BOR) || defined (Q_CC_GNU)
 #    include <winsock2.h>
-#  elif defined (Q_CC_INTEL)
-#    include <winsock.h>
 #  else
-#    include <windows.h>
-#  if defined(Q_OS_WINCE)
 #    include <winsock.h>
-#  endif
 #  endif
 // Use our own defines and structs which we know are correct
 #  define QT_SS_MAXSIZE 128

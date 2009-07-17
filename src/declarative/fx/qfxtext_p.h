@@ -58,10 +58,6 @@
 #include "qml.h"
 #include <QtGui/qtextlayout.h>
 
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QTextLayout;
@@ -116,9 +112,6 @@ public:
     QColor  styleColor;
     QString activeLink;
     bool imgDirty;
-#if defined(QFX_RENDER_OPENGL)
-    GLTexture tex;
-#endif
     QPixmap imgCache;
     QPixmap imgStyleCache;
     QFxText::HAlignment hAlign;
