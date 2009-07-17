@@ -82,13 +82,15 @@ QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
 class QFxKeyProxyPrivate
 {
 public:
-    QFxKeyProxyPrivate() : inPress(false), inRelease(false), inIM(false) {}
+    QFxKeyProxyPrivate() : inPress(false), inRelease(false), inIM(false), imeItem(0) {}
     QList<QFxItem *> targets;
 
     //loop detection
     bool inPress:1;
     bool inRelease:1;
     bool inIM:1;
+
+    QFxItem *imeItem;
 };
 
 QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
@@ -124,11 +126,12 @@ void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
         d->inPress = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
-            if (i)
+            if (i) {
                 scene()->sendEvent(i, e);
-            if (e->isAccepted()) {
-                d->inPress = false;
-                return;
+                if (e->isAccepted()) {
+                    d->inPress = false;
+                    return;
+                }
             }
         }
         d->inPress = false;
@@ -143,11 +146,12 @@ void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
         d->inRelease = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
-            if (i)
+            if (i) {
                 scene()->sendEvent(i, e);
-            if (e->isAccepted()) {
-                d->inRelease = false;
-                return;
+                if (e->isAccepted()) {
+                    d->inRelease = false;
+                    return;
+                }
             }
         }
         d->inRelease = false;
@@ -162,15 +166,31 @@ void QFxKeyProxy::inputMethodEvent(QInputMethodEvent *e)
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
-            if (i)
+            if (i && (i->options() & AcceptsInputMethods)) {
                 scene()->sendEvent(i, e);
-            if (e->isAccepted()) {
-                d->inIM = false;
-                return;
+                if (e->isAccepted()) {
+                    d->imeItem = i;
+                    d->inIM = false;
+                    return;
+                }
             }
         }
         d->inIM = false;
     }
+}
+
+QVariant QFxKeyProxy::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    for (int ii = 0; ii < d->targets.count(); ++ii) {
+        QFxItem *i = qobject_cast<QFxItem *>(scene()->focusItem(d->targets.at(ii)));
+        if (i && (i->options() & AcceptsInputMethods) && i == d->imeItem) { //### how robust is i == d->imeItem check?
+            QVariant v = i->inputMethodQuery(query);
+            if (v.type() == QVariant::RectF)
+                v = mapRectFromItem(i, v.toRectF());  //### cost?
+            return v;
+        }
+    }
+    return QFxItem::inputMethodQuery(query);
 }
 
 QT_END_NAMESPACE

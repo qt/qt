@@ -39,44 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef QFXWIDGETCONTAINER_H
-#define QFXWIDGETCONTAINER_H
-
-#include <QtDeclarative/qfxitem.h>
-
-QT_BEGIN_HEADER
+#include "qfxgraphicsobjectcontainer.h"
+#include <QGraphicsObject>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+/*!
+    \qmlclass GraphicsObjectContainer QFxGraphicsObjectContainer
+    \brief The GraphicsObjectContainer element allows you to add QGraphicsObjects into Fluid UI elements.
+*/
 
-class QGraphicsWidget;
+/*!
+    \internal
+    \class QFxGraphicsObjectContainer
+    \brief The QFxGraphicsObjectContainer class allows you to add QGraphicsObjects into Fluid UI applications.
+*/
 
-class Q_DECLARATIVE_EXPORT QFxWidgetContainer : public QFxItem
+QML_DEFINE_TYPE(QFxGraphicsObjectContainer, GraphicsObjectContainer)
+
+QFxGraphicsObjectContainer::QFxGraphicsObjectContainer(QFxItem *parent)
+: QFxItem(parent), _graphicsObject(0)
 {
-    Q_OBJECT
+}
 
-    Q_CLASSINFO("DefaultProperty", "graphicsWidget")
-    Q_PROPERTY(QGraphicsWidget *graphicsWidget READ graphicsWidget WRITE setGraphicsWidget)
+QFxGraphicsObjectContainer::~QFxGraphicsObjectContainer()
+{
+}
 
-public:
-    QFxWidgetContainer(QFxItem *parent = 0);
-    ~QFxWidgetContainer();
+QGraphicsObject *QFxGraphicsObjectContainer::graphicsObject() const
+{
+    return _graphicsObject;
+}
 
-    QGraphicsWidget *graphicsWidget() const;
-    void setGraphicsWidget(QGraphicsWidget *);
+/*!
+    \qmlproperty QGraphicsObject GraphicsObjectContainer::graphicsObject
+    The QGraphicsObject associated with this element.
+*/
+void QFxGraphicsObjectContainer::setGraphicsObject(QGraphicsObject *object)
+{
+    if (object == _graphicsObject)
+        return;
 
-protected:
-    virtual void canvasChanged();
+    _graphicsObject = object;
 
-private:
-    QGraphicsWidget         *_graphicsWidget;
-};
+    _graphicsObject->setParentItem(this);
+}
+
+QVariant QFxGraphicsObjectContainer::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == ItemSceneHasChanged) {
+        QGraphicsObject *o = _graphicsObject;
+        _graphicsObject = 0;
+        setGraphicsObject(o);
+    }
+    return QFxItem::itemChange(change, value);
+}
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QFxWidgetContainer)
-
-QT_END_HEADER
-
-#endif // QFXGRAPHICSWIDGET_H

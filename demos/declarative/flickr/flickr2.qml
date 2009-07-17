@@ -180,7 +180,7 @@ Item {
         id: Background
         property var imageDetails: ImageDetails
 
-        Image { source: "content/pics/background.png"; opaque: true }
+        Image { source: "content/pics/background.png" }
 
         GridView {
             id: PhotoGridView; model: MyVisualModel.parts.gridView

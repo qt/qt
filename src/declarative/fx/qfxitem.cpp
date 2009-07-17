@@ -2556,4 +2556,9 @@ QPixmap QFxItem::string(const QString &str, const QColor &c, const QFont &f)
     return img;
 }
 
+QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    return QGraphicsItem::inputMethodQuery(query);
+}
+
 QT_END_NAMESPACE

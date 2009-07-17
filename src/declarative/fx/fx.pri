@@ -40,7 +40,7 @@ HEADERS += \
            fx/qfxpixmap.cpp \
            fx/qfxvisualitemmodel.h \
            fx/qfxlistview.h \
-           fx/qfxwidgetcontainer.h \
+           fx/qfxgraphicsobjectcontainer.h \
 
 SOURCES += \
            fx/qfxanchors.cpp \
@@ -69,7 +69,7 @@ SOURCES += \
            fx/qfxpixmap.cpp \
            fx/qfxvisualitemmodel.cpp \
            fx/qfxlistview.cpp \
-           fx/qfxwidgetcontainer.cpp \
+           fx/qfxgraphicsobjectcontainer.cpp \
 
 contains(QT_CONFIG, webkit) {
     QT+=webkit

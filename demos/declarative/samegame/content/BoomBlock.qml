@@ -5,8 +5,9 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    x: Follow { source: targetX; spring: 1.2; damping: 0.1 }
-    y: Follow { source: targetY; spring: 1.2; damping: 0.1 }
+    x: Follow { source: targetX; spring: 2; damping: 0.2 }
+    y: Follow { source: targetY; spring: 2; damping: 0.2 }
+
 
     Image { id: img
         source: {
@@ -22,9 +23,10 @@ Item { id:block
         opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
         anchors.fill: parent
     }
+
     Particles { id: particles
         width:1; height:1; anchors.centeredIn: parent; opacity: 0
-        lifeSpan: 1000000000; count:0; streamIn: false
+        lifeSpan: 700; lifeSpanDeviation: 600; count:0; streamIn: false
         angle: 0; angleDeviation: 360; velocity: 100; velocityDeviation:30
         source: {
             if(type == 0){
@@ -36,6 +38,7 @@ Item { id:block
             }
         }
     }
+
     states: [
 
         State{ name: "AliveState"; when: spawning == true && dying == false
@@ -44,6 +47,7 @@ Item { id:block
         State{ name: "DeathState"; when: dying == true
             SetProperties { target: particles; count: 50 }
             SetProperties { target: particles; opacity: 1 }
+            SetProperties { target: particles; emitting: false } // i.e. emit only once
             SetProperties { target: img; opacity: 0 }
         }
     ]
