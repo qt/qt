@@ -620,8 +620,8 @@ void QAbstractAnimation::start(DeletionPolicy policy)
     Q_D(QAbstractAnimation);
     if (d->state == Running)
         return;
-    d->setState(Running);
     d->deleteWhenStopped = policy;
+    d->setState(Running);
 }
 
 /*!

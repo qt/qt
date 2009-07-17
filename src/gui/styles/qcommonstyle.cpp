@@ -84,6 +84,8 @@
 
 #ifdef Q_WS_X11
 #   include <private/qt_x11_p.h>
+#elif defined(Q_WS_MAC)
+#   include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1182,8 +1184,14 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     }
 }
 
-/* Set sizehint to false to layout the elements inside opt->rect. Set sizehint to true to ignore
-   opt->rect and return rectangles in infinite space */
+/*! \internal
+    compute the position for the different component of an item (pixmap, text, checkbox)
+
+    Set sizehint to false to layout the elements inside opt->rect. Set sizehint to true to ignore
+   opt->rect and return rectangles in infinite space
+
+    Code duplicated in QItemDelegate::doLayout
+*/
 void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRect *checkRect,
                                          QRect *pixmapRect, QRect *textRect, bool sizehint) const
 {
@@ -1204,8 +1212,10 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRe
     int y = opt->rect.top();
     int w, h;
 
-    if (textRect->height() == 0 && !hasPixmap)
+    if (textRect->height() == 0 && (!hasPixmap || !sizehint)) {
+        //if there is no text, we still want to have a decent height for the item sizeHint and the editor size
         textRect->setHeight(opt->fontMetrics.height());
+    }
 
     QSize pm(0, 0);
     if (hasPixmap) {
@@ -4868,7 +4878,14 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(13.));
         break;
     case PM_MessageBoxIconSize:
-        ret = int(QStyleHelper::dpiScaled(32.));
+#ifdef Q_WS_MAC
+        if (QApplication::desktopSettingsAware()) {
+            ret = 64; // No DPI scaling, it's handled elsewhere.
+        } else
+#endif
+        {
+            ret = int(QStyleHelper::dpiScaled(32.));
+        }
         break;
     case PM_TextCursorWidth:
         ret = 1;
@@ -5766,9 +5783,9 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                                                const QWidget *widget) const
 {
     QIcon icon;
-#ifdef Q_WS_X11
-    Q_D(const QCommonStyle);
     if (QApplication::desktopSettingsAware()) {
+#ifdef Q_WS_X11
+        Q_D(const QCommonStyle);
         d->lookupIconTheme();
         QPixmap pixmap;
         switch (standardIcon) {
@@ -5786,6 +5803,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
             }
         case SP_MessageBoxWarning:
             {
+                icon = d->createIcon(QLatin1String("dialog-warning.png"));
                 icon = d->createIcon(QLatin1String("dialog-warning.png"));
                 if (icon.isNull())
                     icon = d->createIcon(QLatin1String("messagebox_warning.png"));
@@ -6012,8 +6030,101 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         }
         if (!icon.isNull())
             return icon;
+#elif defined(Q_WS_MAC)
+    OSType iconType = 0;
+    switch (standardIcon) {
+    case QStyle::SP_MessageBoxQuestion:
+    case QStyle::SP_MessageBoxInformation:
+    case QStyle::SP_MessageBoxWarning:
+    case QStyle::SP_MessageBoxCritical:
+        iconType = kGenericApplicationIcon;
+        break;
+    case SP_DesktopIcon:
+        iconType = kDesktopIcon;
+        break;
+    case SP_TrashIcon:
+        iconType = kTrashIcon;
+        break;
+    case SP_ComputerIcon:
+        iconType = kComputerIcon;
+        break;
+    case SP_DriveFDIcon:
+        iconType = kGenericFloppyIcon;
+        break;
+    case SP_DriveHDIcon:
+        iconType = kGenericHardDiskIcon;
+        break;
+    case SP_DriveCDIcon:
+    case SP_DriveDVDIcon:
+        iconType = kGenericCDROMIcon;
+        break;
+    case SP_DriveNetIcon:
+        iconType = kGenericNetworkIcon;
+        break;
+    case SP_DirOpenIcon:
+        iconType = kOpenFolderIcon;
+        break;
+    case SP_DirClosedIcon:
+    case SP_DirLinkIcon:
+        iconType = kGenericFolderIcon;
+        break;
+    case SP_FileLinkIcon:
+    case SP_FileIcon:
+        iconType = kGenericDocumentIcon;
+        break;
+    case SP_DirIcon: {
+        // A rather special case
+        QIcon closeIcon = QStyle::standardIcon(SP_DirClosedIcon, option, widget);
+        QIcon openIcon = QStyle::standardIcon(SP_DirOpenIcon, option, widget);
+        closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
+        closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
+        closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
+        closeIcon.addPixmap(openIcon.pixmap(128, 128), QIcon::Normal, QIcon::On);
+        return closeIcon;
     }
-#endif//Q_WS_X11
+    case SP_TitleBarNormalButton:
+    case SP_TitleBarCloseButton: {
+        QIcon titleBarIcon;
+        if (standardIcon == SP_TitleBarCloseButton) {
+            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-16.png"));
+            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
+        } else {
+            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-16.png"));
+            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
+        }
+        return titleBarIcon;
+    }
+    default:
+        break;
+    }
+    if (iconType != 0) {
+        QIcon retIcon;
+        IconRef icon;
+        IconRef overlayIcon = 0;
+        if (iconType != kGenericApplicationIcon) {
+            GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
+        } else {
+            FSRef fsRef;
+            ProcessSerialNumber psn = { 0, kCurrentProcess };
+            GetProcessBundleLocation(&psn, &fsRef);
+            GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
+            if (standardIcon == SP_MessageBoxCritical) {
+                overlayIcon = icon;
+                GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
+            }
+        }
+        if (icon) {
+            qt_mac_constructQIconFromIconRef(icon, overlayIcon, &retIcon, standardIcon);
+            ReleaseIconRef(icon);
+        }
+        if (overlayIcon)
+            ReleaseIconRef(overlayIcon);
+        return retIcon;
+    }
+
+#endif //Q_WS_X11 || Q_WS_MAC
+    }
+
 
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG

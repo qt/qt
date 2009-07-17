@@ -217,9 +217,9 @@ qint64 QNetworkAccessBackend::nextDownstreamBlockSize() const
     return reply->nextDownstreamBlockSize();
 }
 
-void QNetworkAccessBackend::writeDownstreamData(const QByteArray &data)
+void QNetworkAccessBackend::writeDownstreamData(QByteDataBuffer &list)
 {
-    reply->appendDownstreamData(data);
+    reply->appendDownstreamData(list);
 }
 
 void QNetworkAccessBackend::writeDownstreamData(QIODevice *data)

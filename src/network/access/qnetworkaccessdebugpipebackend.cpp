@@ -155,7 +155,11 @@ void QNetworkAccessDebugPipeBackend::pushFromSocketToDownstream()
             // have read something
             buffer.resize(haveRead);
             bytesDownloaded += haveRead;
-            writeDownstreamData(buffer);
+
+            QByteDataBuffer list;
+            list.append(buffer);
+            buffer.clear(); // important because of implicit sharing!
+            writeDownstreamData(list);
         }
     }
 }

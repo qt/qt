@@ -146,6 +146,7 @@ public:
         const QModelIndex &source_parent) const;
     QModelIndex proxy_to_source(const QModelIndex &proxyIndex) const;
     QModelIndex source_to_proxy(const QModelIndex &sourceIndex) const;
+    bool can_create_mapping(const QModelIndex &source_parent) const;
 
     void remove_from_mapping(const QModelIndex &source_parent);
 
@@ -352,6 +353,25 @@ QModelIndex QSortFilterProxyModelPrivate::source_to_proxy(const QModelIndex &sou
     if (proxy_row == -1 || proxy_column == -1)
         return QModelIndex();
     return create_index(proxy_row, proxy_column, it);
+}
+
+bool QSortFilterProxyModelPrivate::can_create_mapping(const QModelIndex &source_parent) const
+{
+    if (source_parent.isValid()) {
+        QModelIndex source_grand_parent = source_parent.parent();
+        IndexMap::const_iterator it = source_index_mapping.constFind(source_grand_parent);
+        if (it == source_index_mapping.constEnd()) {
+            // Don't care, since we don't have mapping for the grand parent
+            return false;
+        }
+        Mapping *gm = it.value();
+        if (gm->proxy_rows.at(source_parent.row()) == -1 ||
+            gm->proxy_columns.at(source_parent.column()) == -1) {
+            // Don't care, since parent is filtered
+            return false;
+        }
+    }
+    return true;
 }
 
 /*!
@@ -659,20 +679,8 @@ void QSortFilterProxyModelPrivate::source_items_inserted(
         return;
     IndexMap::const_iterator it = source_index_mapping.constFind(source_parent);
     if (it == source_index_mapping.constEnd()) {
-        if (source_parent.isValid()) {
-            QModelIndex source_grand_parent = source_parent.parent();
-            it = source_index_mapping.constFind(source_grand_parent);
-            if (it == source_index_mapping.constEnd()) {
-                // Don't care, since we don't have mapping for the grand parent
-                return;
-            }
-            Mapping *gm = it.value();
-            if (gm->proxy_rows.at(source_parent.row()) == -1 || 
-                gm->proxy_columns.at(source_parent.column()) == -1) {
-                // Don't care, since parent is filtered
-                return;
-            }
-        }
+        if (!can_create_mapping(source_parent))
+            return;
         it = create_mapping(source_parent);
         Mapping *m = it.value();
         QModelIndex proxy_parent = q->mapFromSource(source_parent);
@@ -1186,7 +1194,8 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeInserted(
     Q_UNUSED(end);
     //Force the creation of a mapping now, even if its empty.
     //We need it because the proxy can be acessed at the moment it emits rowsAboutToBeInserted in insert_source_items
-    create_mapping(source_parent);
+    if (can_create_mapping(source_parent))
+        create_mapping(source_parent);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsInserted(
@@ -1217,7 +1226,8 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeInserted(
     Q_UNUSED(end);
     //Force the creation of a mapping now, even if its empty.
     //We need it because the proxy can be acessed at the moment it emits columnsAboutToBeInserted in insert_source_items
-    create_mapping(source_parent);
+    if (can_create_mapping(source_parent))
+        create_mapping(source_parent);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsInserted(

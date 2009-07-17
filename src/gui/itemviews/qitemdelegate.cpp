@@ -861,6 +861,8 @@ void QItemDelegate::drawBackground(QPainter *painter,
 
 /*!
     \internal
+
+    Code duplicated in QCommonStylePrivate::viewItemLayout
 */
 
 void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
@@ -882,8 +884,10 @@ void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
     int w, h;
 
     textRect->adjust(-textMargin, 0, textMargin, 0); // add width padding
-    if (textRect->height() == 0 && !hasPixmap)
+    if (textRect->height() == 0 && (!hasPixmap || !hint)) {
+        //if there is no text, we still want to have a decent height for the item sizeHint and the editor size
         textRect->setHeight(option.fontMetrics.height());
+    }
 
     QSize pm(0, 0);
     if (hasPixmap) {

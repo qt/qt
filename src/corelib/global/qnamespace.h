@@ -1411,7 +1411,7 @@ public:
         ToolButtonTextOnly,
         ToolButtonTextBesideIcon,
         ToolButtonTextUnderIcon,
-        ToolButtonSystemDefault
+        ToolButtonFollowStyle
     };
 
     enum LayoutDirection {

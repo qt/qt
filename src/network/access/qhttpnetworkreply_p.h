@@ -80,6 +80,7 @@ static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qauthenticator_p.h>
 #include <private/qringbuffer_p.h>
+#include <private/qbytedata_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -122,7 +123,6 @@ public:
 
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
-    QByteArray read(qint64 maxSize = -1);
     QByteArray readAny();
 
     bool isFinished() const;
@@ -160,14 +160,14 @@ public:
     bool parseStatus(const QByteArray &status);
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
-    qint64 readBody(QAbstractSocket *socket, QIODevice *out);
-    qint64 readBodyFast(QAbstractSocket *socket, QRingBuffer *rb);
+    qint64 readBody(QAbstractSocket *socket, QByteDataBuffer *out);
+    qint64 readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb);
     bool findChallenge(bool forProxy, QByteArray &challenge) const;
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
 
-    qint64 readReplyBodyRaw(QIODevice *in, QIODevice *out, qint64 size);
-    qint64 readReplyBodyChunked(QIODevice *in, QIODevice *out);
+    qint64 readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size);
+    qint64 readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out);
     qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
 
     qint64 bytesAvailable() const;
@@ -209,7 +209,7 @@ public:
 #endif
     bool autoDecompress;
 
-    QRingBuffer responseData; // uncompressed body
+    QByteDataBuffer responseData; // uncompressed body
     QByteArray compressedData; // compressed body (temporary)
     bool requestIsPrepared;
 };

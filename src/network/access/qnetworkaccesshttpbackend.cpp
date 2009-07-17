@@ -653,10 +653,15 @@ void QNetworkAccessHttpBackend::readFromHttp()
     // this is not a critical thing since it is already in the
     // memory anyway
 
-    while (httpReply->bytesAvailable() != 0 && nextDownstreamBlockSize() != 0) {
-        const QByteArray data = httpReply->readAny();
-        writeDownstreamData(data);
+    QByteDataBuffer list;
+
+    while (httpReply->bytesAvailable() != 0 && nextDownstreamBlockSize() != 0 && nextDownstreamBlockSize() > list.byteAmount()) {
+        QByteArray data = httpReply->readAny();
+        list.append(data);
     }
+
+    if (!list.isEmpty())
+      writeDownstreamData(list);
 }
 
 void QNetworkAccessHttpBackend::replyFinished()
