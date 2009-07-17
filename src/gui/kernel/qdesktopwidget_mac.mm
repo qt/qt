@@ -247,7 +247,7 @@ void QDesktopWidget::resizeEvent(QResizeEvent *)
             emit workAreaResized(i);
     }
 
-    if (oldscreencount != d->screenCount)
+    if (oldScreenCount != d->screenCount)
         emit screenCountChanged(d->screenCount);
 }
 
