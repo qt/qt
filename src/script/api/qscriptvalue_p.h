@@ -122,6 +122,9 @@ public:
         engine=0;
     }
 
+    static void saveException(JSC::ExecState*, JSC::JSValue*);
+    static void restoreException(JSC::ExecState*, JSC::JSValue);
+
     QScriptValueAutoRegister engine;
     Type type;
     JSC::JSValue jscValue;

@@ -455,12 +455,11 @@ void tst_QScriptEngine::newRegExp()
         QCOMPARE(rexp.isValid(), true);
         QCOMPARE(rexp.isRegExp(), true);
         QCOMPARE(rexp.isObject(), true);
-        QEXPECT_FAIL("", "RegExp objects are functions in JSC (OK, I guess)", Continue);
-        QVERIFY(!rexp.isFunction());
+        QVERIFY(rexp.isFunction()); // in JSC, RegExp objects are callable
         // prototype should be RegExp.prototype
         QCOMPARE(rexp.prototype().isValid(), true);
-        QEXPECT_FAIL("", "prototype of a RegExp should also be a RegExp", Continue);
-        QCOMPARE(rexp.prototype().isRegExp(), true);
+        QCOMPARE(rexp.prototype().isObject(), true);
+        QCOMPARE(rexp.prototype().isRegExp(), false);
         QCOMPARE(rexp.prototype().strictlyEquals(eng.evaluate("RegExp.prototype")), true);
 
         QCOMPARE(rexp.toRegExp().pattern(), QRegExp("foo").pattern());
@@ -477,7 +476,6 @@ void tst_QScriptEngine::newRegExp()
 
         QScriptValue r3 = rxCtor.call(QScriptValue(), QScriptValueList() << r << "gim");
         QVERIFY(r3.isError());
-        QEXPECT_FAIL("", "Should give an error message ('Cannot supply flags when constructing one RegExp from another.')", Continue);
         QCOMPARE(r3.toString(), QString::fromLatin1("TypeError: Cannot supply flags when constructing one RegExp from another."));
 
         QScriptValue r4 = rxCtor.call(QScriptValue(), QScriptValueList() << "foo" << "gim");
@@ -485,9 +483,8 @@ void tst_QScriptEngine::newRegExp()
 
         QScriptValue r5 = rxCtor.construct(QScriptValueList() << r);
         QVERIFY(r5.isRegExp());
-        QEXPECT_FAIL("", "regexp.toString() produces empty string", Continue);
         QCOMPARE(r5.toString(), QString::fromLatin1("/foo/gim"));
-        QEXPECT_FAIL("", "Constructing regexp with same pattern+flags twice gives identical object (not a bug?)", Continue);
+        QEXPECT_FAIL("", "Constructing regexp from another gives back identical object (bug in JSC?)", Continue);
         QVERIFY(!r5.strictlyEquals(r));
 
         QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
@@ -1922,7 +1919,6 @@ void tst_QScriptEngine::castWithPrototypeChain()
         {
             QScriptValue ret = toBaz.call(scriptZoo, QScriptValueList() << baz2Value);
             QVERIFY(ret.isError());
-            QEXPECT_FAIL("", "Should give an error message ('Incompatible type of argument(s) ...')", Continue);
             QCOMPARE(ret.toString(), QLatin1String("TypeError: incompatible type of argument(s) in call to toBaz(); candidates were\n    toBaz(Bar*)"));
         }
 

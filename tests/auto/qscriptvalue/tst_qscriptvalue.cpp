@@ -2153,11 +2153,10 @@ void tst_QScriptValue::getSetPrototype()
 
     {
         QScriptValue ret = eng.evaluate("o = { }; p = { }; o.__proto__ = p; p.__proto__ = o");
-        QEXPECT_FAIL("", "Cyclic prototype detection not implemented", Abort);
         QCOMPARE(eng.hasUncaughtException(), true);
         QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: cycle in prototype chain"));
+        QCOMPARE(ret.toString(), QLatin1String("Error: cyclic __proto__ value"));
     }
     {
         QScriptValue ret = eng.evaluate("p.__proto__ = { }");

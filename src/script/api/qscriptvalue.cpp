@@ -382,6 +382,22 @@ void QScriptValuePrivate::setVariantValue(const QVariant &value)
     static_cast<QScript::QVariantDelegate*>(delegate)->setValue(value);
 }
 
+void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
+{
+    if (exec) {
+        *val = exec->exception();
+        exec->clearException();
+    } else {
+        *val = JSC::JSValue();
+    }
+}
+
+void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
+{
+    if (exec && !exec->hadException() && val)
+        exec->setException(val);
+}
+
 /*!
   Constructs an invalid QScriptValue.
 */
@@ -933,8 +949,13 @@ QScriptValue ToPrimitive(const QScriptValue &object, JSC::PreferredPrimitiveType
     Q_ASSERT(object.isObject());
     QScriptValuePrivate *pp = QScriptValuePrivate::get(object);
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(pp->engine);
+    Q_ASSERT(eng_p != 0);
     JSC::ExecState *exec = eng_p->currentFrame;
-    return eng_p->scriptValueFromJSCValue(JSC::asObject(pp->jscValue)->toPrimitive(exec, hint));
+    JSC::JSValue savedException;
+    QScriptValuePrivate::saveException(exec, &savedException);
+    JSC::JSValue result = JSC::asObject(pp->jscValue)->toPrimitive(exec, hint);
+    QScriptValuePrivate::restoreException(exec, savedException);
+    return eng_p->scriptValueFromJSCValue(result);
 }
 
 static bool IsNumerical(const QScriptValue &value)
@@ -1120,8 +1141,16 @@ bool QScriptValue::equals(const QScriptValue &other) const
             eng_p = QScriptEnginePrivate::get(other.d_ptr->engine);
         if (eng_p) {
             JSC::ExecState *exec = eng_p->currentFrame;
-            if (JSC::JSValue::equal(exec, d->jscValue, other.d_ptr->jscValue))
-                return true;
+            JSC::JSValue savedException;
+            QScriptValuePrivate::saveException(exec, &savedException);
+            bool result = JSC::JSValue::equal(exec, d->jscValue, other.d_ptr->jscValue);
+            QScriptValuePrivate::restoreException(exec, savedException);
+            // special QtScript rules
+            if (!result && isQObject() && other.isQObject())
+                result = (toQObject() == other.toQObject());
+            else if (!result && isVariant() && other.isVariant())
+                result = (toVariant() == other.toVariant());
+            return result;
         }
     }
     return QScript::Equals(*this, other);
@@ -1194,7 +1223,10 @@ QString QScriptValue::toString() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
         JSC::UString str = d->jscValue.toString(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
         return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
     }
     case QScriptValuePrivate::Number:
@@ -1226,7 +1258,11 @@ qsreal QScriptValue::toNumber() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
-        return d->jscValue.toNumber(exec);
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        qsreal result = d->jscValue.toNumber(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return result;
     }
     case QScriptValuePrivate::Number:
         return d->numberValue;
@@ -1250,7 +1286,11 @@ bool QScriptValue::toBoolean() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
-        return d->jscValue.toBoolean(exec);
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        bool result = d->jscValue.toBoolean(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return result;
     }
     case QScriptValuePrivate::Number:
         return (d->numberValue != 0) && !qIsNaN(d->numberValue);
@@ -1283,7 +1323,11 @@ bool QScriptValue::toBool() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
-        return d->jscValue.toBoolean(exec);
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        bool result = d->jscValue.toBoolean(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return result;
     }
     case QScriptValuePrivate::Number:
         return (d->numberValue != 0) && !qIsNaN(d->numberValue);
@@ -1314,7 +1358,11 @@ qint32 QScriptValue::toInt32() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
-        return d->jscValue.toInt32(exec);
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        qint32 result = d->jscValue.toInt32(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return result;
     }
     case QScriptValuePrivate::Number:
         return QScript::ToInt32(d->numberValue);
@@ -1345,7 +1393,11 @@ quint32 QScriptValue::toUInt32() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
-        return d->jscValue.toUInt32(exec);
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        quint32 result = d->jscValue.toUInt32(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return result;
     }
     case QScriptValuePrivate::Number:
         return QScript::ToUint32(d->numberValue);
@@ -1374,7 +1426,7 @@ quint16 QScriptValue::toUInt16() const
         return 0;
     switch (d->type) {
     case QScriptValuePrivate::JSC: {
-        // no equivalent function in JSC
+        // ### no equivalent function in JSC
         return QScript::ToUint16(toNumber());
     }
     case QScriptValuePrivate::Number:
@@ -1406,7 +1458,11 @@ qsreal QScriptValue::toInteger() const
     case QScriptValuePrivate::JSC: {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
         JSC::ExecState *exec = eng_p ? eng_p->currentFrame : 0;
-        return d->jscValue.toInteger(exec);
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        qsreal result = d->jscValue.toInteger(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return result;
     }
     case QScriptValuePrivate::Number:
         return QScript::ToInteger(d->numberValue);
@@ -1463,7 +1519,10 @@ QVariant QScriptValue::toVariant() const
             // try to convert to primitive
             QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine());
             JSC::ExecState *exec = eng_p->currentFrame;
+            JSC::JSValue savedException;
+            QScriptValuePrivate::saveException(exec, &savedException);
             JSC::JSValue prim = d->jscValue.toPrimitive(exec);
+            QScriptValuePrivate::restoreException(exec, savedException);
             if (!prim.isObject())
                 return eng_p->scriptValueFromJSCValue(prim).toVariant();
         } else if (isNumber()) {
@@ -1497,8 +1556,13 @@ QScriptValue QScriptValue::toObject() const
         if (JSC::JSImmediate::isUndefinedOrNull(d->jscValue))
             return QScriptValue();
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
+        Q_ASSERT(eng_p != 0);
         JSC::ExecState *exec = eng_p->currentFrame;
-        return eng_p->scriptValueFromJSCValue(d->jscValue.toObject(exec));
+        JSC::JSValue savedException;
+        QScriptValuePrivate::saveException(exec, &savedException);
+        JSC::JSObject *result = d->jscValue.toObject(exec);
+        QScriptValuePrivate::restoreException(exec, savedException);
+        return eng_p->scriptValueFromJSCValue(result);
     }
     case QScriptValuePrivate::Number:
     case QScriptValuePrivate::String:
