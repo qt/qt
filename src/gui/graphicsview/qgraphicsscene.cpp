@@ -1587,9 +1587,15 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 }
 
 /*!
+    \obsolete
+
     Returns all visible items at position \a pos in the scene. The items are
     listed in descending stacking order (i.e., the first item in the list is the
     top-most item, and the last item is the bottom-most item).
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa itemAt()
 */
@@ -1600,9 +1606,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
-
     \overload
+    \obsolete
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the specified \a rectangle.
@@ -1610,19 +1615,28 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rectangle are returned.
 
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
+
     \sa itemAt()
 */
-QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode) const
+QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(rect, mode, Qt::AscendingOrder);
+    return d->index->items(rectangle, mode, Qt::AscendingOrder);
 }
 
 /*!
     \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode) const
+    \obsolete
     \since 4.3
 
     This convenience function is equivalent to calling items(QRectF(\a x, \a y, \a w, \a h), \a mode).
+    
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 */
 
 /*!
@@ -1641,12 +1655,17 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
 
 /*!
     \overload
+    \obsolete
 
     Returns all visible items that, depending on \a mode, are either inside or
     intersect with the polygon \a polygon.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa itemAt()
 */
@@ -1658,12 +1677,17 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 
 /*!
     \overload
+    \obsolete
 
     Returns all visible items that, depending on \a path, are either inside or
     intersect with the path \a path.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa itemAt()
 */
@@ -1790,10 +1814,17 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 }
 
 /*!
+    \overload
+    \obsolete
+
     Returns the topmost visible item at the specified \a position, or 0 if
     there are no items at this position.
 
     \note The topmost item is the one with the highest Z-value.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \sa items(), collidingItems(), QGraphicsItem::setZValue()
 */
@@ -1804,7 +1835,6 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
 }
 
 /*!
-    \overload
     \since 4.6
 
     Returns the topmost visible item at the specified \a position, or 0
@@ -1825,14 +1855,36 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
 }
 
 /*!
+    \fn QGraphicsScene::itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
+    \overload
+    \since 4.6
+
+    Returns the topmost item at the position specified by (\a x, \a
+    y), or 0 if there are no items at this position.
+
+    \a deviceTransform is the transformation that applies to the view, and needs to
+    be provided if the scene contains items that ignore transformations.
+
+    This convenience function is equivalent to calling \c
+    {itemAt(QPointF(x, y), deviceTransform)}.
+
+    \note The topmost item is the one with the highest Z-value.
+*/
+
+/*!
     \fn QGraphicsScene::itemAt(qreal x, qreal y) const
     \overload
+    \obsolete
 
     Returns the topmost item at the position specified by (\a x, \a
     y), or 0 if there are no items at this position.
 
     This convenience function is equivalent to calling \c
     {itemAt(QPointF(x, y))}.
+
+    This function is deprecated and returns incorrect results if the scene
+    contains items that ignore transformations. Use the overload that takes
+    a QTransform instead.
 
     \note The topmost item is the one with the highest Z-value.
 */
