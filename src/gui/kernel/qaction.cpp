@@ -910,14 +910,35 @@ QString QAction::whatsThis() const
 }
 
 /*!
+    \enum QAction::Priority
+    \since 4.6
+
+    This enum defines priorities for actions in user interface.
+
+    \value LowPriority The action will not be prioritized in
+    collapsible layouts when not enough space for all actions is
+    available.
+
+    \value NormalPriority
+
+    \value HighPriority The action will be prioritized by
+    collapsible layouts when not enough space for all actions is
+    available.
+
+    \sa priority
+*/
+
+
+/*!
     \property QAction::priority
     \since 4.6
 
-    \brief tells collapsible layouts how the action should be prioritized
+    \brief the actions's priority in the user interface.
 
-    This property can be set to indicate that an action should be prioritied
-    in a layout. For instance when toolbars have the Qt::ToolButtonTextBesideIcon
-    mode is set, lower priority actions will hide text labels to preserve space.
+    This property can be set to indicate how the action should be prioritized
+    in a collapsible layout. For instance, when toolbars have the Qt::ToolButtonTextBesideIcon
+    mode set, then lower priority actions will hide text labels to preserve 
+    horizontal space if necessary.
 */
 void QAction::setPriority(Priority priority)
 {

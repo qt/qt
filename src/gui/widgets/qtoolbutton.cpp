@@ -486,9 +486,8 @@ QSize QToolButton::minimumSizeHint() const
 
     The default is Qt::ToolButtonIconOnly.
 
-    If you want your toolbars to depend on system settings,
-    as is possible in GNOME and KDE desktop environments you should
-    use the ToolButtonFollowStyle.
+    To have the style of toolbuttons follow the system settings (as available
+    in GNOME and KDE desktop environments), set this property to Qt::ToolButtonFollowStyle.
 
     QToolButton automatically connects this slot to the relevant
     signal in the QMainWindow in which is resides.
