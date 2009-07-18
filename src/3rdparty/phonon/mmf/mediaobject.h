@@ -19,8 +19,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_MEDIAOBJECT_H
 #define PHONON_MMF_MEDIAOBJECT_H
 
+/* We use the extra qualification include/ to avoid picking up the include
+ * Phonon has. */
+#include <include/VideoPlayer.h>
+
 #include <DrmAudioSamplePlayer.h>
-#include <VideoPlayer.h>
 
 #include <Phonon/MediaSource>
 #include <Phonon/mediaobjectinterface.h>
@@ -44,6 +47,7 @@ namespace Phonon
                           , public MediaObjectInterface
                           , public MDrmAudioPlayerCallback
                           , public MAudioLoadingObserver
+                          , public MVideoLoadingObserver
                           //, public MVideoPlayerUtilityObserver
         {
             Q_OBJECT

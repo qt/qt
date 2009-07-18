@@ -28,9 +28,10 @@ using namespace Phonon::MMF;
 
 Backend::Backend(QObject *parent)
 {
+    qDebug() << Q_FUNC_INFO;
     setParent(parent);
 
-    setProperty("identifier",     QLatin1String("mmf"));
+    setProperty("identifier",     QLatin1String("phonon_mmf"));
     setProperty("backendName",    QLatin1String("MMF"));
     setProperty("backendComment", QLatin1String("Backend using Nokia's S60 Multimedia Framework Architecture (MMF)."));
     setProperty("backendVersion", QLatin1String("0.1"));

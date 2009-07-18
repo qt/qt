@@ -42,6 +42,9 @@ namespace Phonon
             virtual bool disconnectNodes(QObject *, QObject *);
             virtual bool endConnectionChange(QSet<QObject *>);
             virtual QStringList availableMimeTypes() const;
+
+        Q_SIGNALS:
+            void objectDescriptionChanged(ObjectDescriptionType);
         };
     }
 }
