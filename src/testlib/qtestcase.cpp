@@ -714,14 +714,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QTest::QTouchEventSequence::~QTouchEventSequence()
-    \since 4.6
 
     Commits this sequence of touch events and frees allocated resources.
 */
 
 /*!
     \fn QTouchEventSequence &QTest::QTouchEventSequence::press(int touchId, const QPoint &pt, QWidget *widget)
-    \since 4.6
 
     Adds a press event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
@@ -734,7 +732,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QTouchEventSequence &QTest::QTouchEventSequence::move(int touchId, const QPoint &pt, QWidget *widget)
-    \since 4.6
 
     Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
@@ -747,7 +744,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QTouchEventSequence &QTest::QTouchEventSequence::release(int touchId, const QPoint &pt, QWidget *widget)
-    \since 4.6
 
     Adds a release event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
@@ -760,7 +756,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QTouchEventSequence &QTest::QTouchEventSequence::stationary(int touchId)
-    \since 4.6
 
     Adds a stationary event for touchpoint \a touchId to this sequence and returns
     a reference to this QTouchEventSequence.
@@ -770,7 +765,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchEvent::DeviceType deviceType)
-    \since 4.6
 
     Creates and returns a QTouchEventSequence for the device \a deviceType to
     simulate events for \a widget.

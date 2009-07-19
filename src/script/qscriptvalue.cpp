@@ -574,9 +574,11 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
 }
 
 /*!
-  Returns the scope object of this QScriptValue. This function is only
-  relevant for function objects. The scope determines how variables are
-  resolved when the function is invoked.
+    \since 4.6
+
+    Returns the scope object of this QScriptValue. This function is only
+    relevant for function objects. The scope determines how variables are
+    resolved when the function is invoked.
 */
 QScriptValue QScriptValue::scope() const
 {
@@ -588,9 +590,11 @@ QScriptValue QScriptValue::scope() const
 }
 
 /*!
-  Sets the \a scope object of this QScriptValue. This function is only
-  relevant for function objects. Changing the scope is useful when creating
-  closures; see \l{Nested Functions and the Scope Chain}.
+    \since 4.6
+
+    Sets the \a scope object of this QScriptValue. This function is only
+    relevant for function objects. Changing the scope is useful when creating
+    closures; see \l{Nested Functions and the Scope Chain}.
 */
 void QScriptValue::setScope(const QScriptValue &scope)
 {

@@ -2304,6 +2304,8 @@ QMetaMethod QMetaProperty::notifySignal() const
 }
 
 /*!
+    \since 4.6
+
     Returns the index of the property change notifying signal if one was 
     specified, otherwise returns -1.
 

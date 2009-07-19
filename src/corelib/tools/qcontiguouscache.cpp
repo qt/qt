@@ -61,6 +61,7 @@ void QContiguousCacheData::dump() const
     \ingroup tools
     \ingroup shared
     \reentrant
+    \since 4.6
 
     The QContiguousCache class provides an efficient way of caching items for
     display in a user interface view.  Unlike QCache, it adds a restriction

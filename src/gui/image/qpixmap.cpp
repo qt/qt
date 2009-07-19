@@ -380,6 +380,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
 
 /*!
     \fn QPixmap::scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed)
+    \since 4.6
 
     This convenience function is equivalent to calling QPixmap::scroll(\a dx,
     \a dy, QRect(\a x, \a y, \a width, \a height), \a exposed).
@@ -388,6 +389,8 @@ QPixmap QPixmap::copy(const QRect &rect) const
 */
 
 /*!
+    \since 4.6
+
     Scrolls the area \a rect of this pixmap by (\a dx, \a dy). The exposed
     region is left unchanged. You can optionally pass a pointer to an empty
     QRegion to get the region that is \a exposed by the scroll operation.

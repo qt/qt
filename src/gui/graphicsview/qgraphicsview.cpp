@@ -3552,6 +3552,8 @@ QTransform QGraphicsView::viewportTransform() const
 }
 
 /*!
+    \since 4.6
+
     Returns true if the view is transformed (i.e., a non-identity transform
     has been assigned, or the scrollbars are adjusted).
 

@@ -1667,12 +1667,12 @@ void QAbstractXmlNodeModel::copyNodeTo(const QXmlNodeModelIndex &node,
 }
 
 /*!
-  Returns the source location for the object with the given \a index
-  or a default constructed QSourceLocation in case no location
-  information is available.
+    Returns the source location for the object with the given \a index
+    or a default constructed QSourceLocation in case no location
+    information is available.
 
-  \since TODO
- */
+    \since 4.6
+*/
 QSourceLocation QAbstractXmlNodeModel::sourceLocation(const QXmlNodeModelIndex &index) const
 {
     // TODO: make this method virtual in Qt5 to allow source location support in custom models
