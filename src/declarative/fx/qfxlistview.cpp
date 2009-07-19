@@ -46,6 +46,7 @@
 #include "qfxlistview.h"
 #include <qmlexpression.h>
 
+#include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
 class QFxListViewAttached : public QObject
@@ -292,7 +293,7 @@ public:
         }
         return -1; // Not in visibleList
     }
-    
+
     bool mapRangeFromModel(int &index, int &count) const {
         if (index + count < visibleIndex)
             return false;

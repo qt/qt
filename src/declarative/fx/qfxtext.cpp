@@ -49,7 +49,7 @@
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
-
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxText,Text)
@@ -68,7 +68,7 @@ QML_DEFINE_TYPE(QFxText,Text)
 
     \image declarative-text.png
 
-    If height and width are not explicitly set, Text will attempt to determine how 
+    If height and width are not explicitly set, Text will attempt to determine how
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
     prefer width to height (all text will be placed on a single line).
 
@@ -86,7 +86,7 @@ QML_DEFINE_TYPE(QFxText,Text)
 
     \brief The QFxText class provides a formatted text item that you can add to a QFxView.
 
-    Text was designed for read-only text; it does not allow for any text editing. 
+    Text was designed for read-only text; it does not allow for any text editing.
     It can display both plain and rich text. For example:
 
     \qml
@@ -96,7 +96,7 @@ QML_DEFINE_TYPE(QFxText,Text)
 
     \image text.png
 
-    If height and width are not explicitly set, Text will attempt to determine how 
+    If height and width are not explicitly set, Text will attempt to determine how
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
     prefer width to height (all text will be placed on a single line).
 
@@ -161,9 +161,9 @@ void QFxText::setText(const QString &n)
     if (d->richText) {
         if (!d->doc)
         {
-            d->control = new QTextControl(this); 
+            d->control = new QTextControl(this);
             d->control->setTextInteractionFlags(Qt::TextBrowserInteraction);
-            d->doc = d->control->document(); 
+            d->doc = d->control->document();
             d->doc->setDocumentMargin(0);
         }
         d->doc->setHtml(n);
@@ -299,8 +299,8 @@ QColor QFxText::styleColor() const
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and 
-    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom 
+    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
 
@@ -479,7 +479,7 @@ QString QFxText::activeLink() const
     return d->activeLink;
 }
 
-void QFxText::geometryChanged(const QRectF &newGeometry, 
+void QFxText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxText);
@@ -516,7 +516,7 @@ void QFxTextPrivate::updateSize()
         QSize size(0, 0);
 
         //setup instance of QTextLayout for all cases other than richtext
-        if (!richText) 
+        if (!richText)
             {
                 tmp = text;
                 tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
@@ -545,7 +545,7 @@ void QFxTextPrivate::updateSize()
             dy -= (int)doc->size().height();
         } else {
             dy -= size.height();
-        } 
+        }
         int yoff = 0;
 
         if (q->heightValid()) {
@@ -555,7 +555,7 @@ void QFxTextPrivate::updateSize()
                 yoff = dy/2;
         }
         q->setBaselineOffset(fm.ascent() + yoff);
-        
+
         if (!q->widthValid()) {
             int newWidth = (richText ? (int)doc->idealWidth() : size.width());
             q->setImplicitWidth(newWidth);
@@ -645,7 +645,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
         QTextLine line = layout->createLine();
         if (!line.isValid())
             break;
-        
+
         if ((wrap || elideMode != Qt::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
@@ -686,7 +686,7 @@ QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
     if (drawStyle) {
         p.setPen(styleColor);
     }
-    else 
+    else
         p.setPen(color);
     p.setFont(f);
     layout.draw(&p, QPointF(0, 0));
@@ -813,7 +813,7 @@ void QFxText::paintContents(QPainter &p)
         break;
     }
 
-    bool needClip = !clip() && (d->imgCache.width() > width() || 
+    bool needClip = !clip() && (d->imgCache.width() > width() ||
                                 d->imgCache.height() > height());
 
     if (needClip) {
@@ -862,7 +862,7 @@ void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (!event->isAccepted())
         QFxItem::mousePressEvent(event);
- 
+
 }
 
 /*!

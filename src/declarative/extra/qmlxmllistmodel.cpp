@@ -645,6 +645,7 @@ void QmlXmlListModel::queryCompleted(int id, int size)
     if (size > 0) {
         d->data = d->qmlXmlQuery.modelData();
         emit itemsInserted(0, d->size);
+        emit countChanged();
     }
 }
 

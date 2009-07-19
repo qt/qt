@@ -42,6 +42,7 @@
 #include "qfxrect.h"
 #include "qfxrect_p.h"
 
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxPen,Pen)
@@ -331,7 +332,7 @@ void QFxRect::setGradient(QFxGradient *gradient)
     This property holds the corner radius used to draw a rounded rect.
 
     If radius is non-zero, the rect will be painted as a rounded rectangle, otherwise it will be
-    painted as a normal rectangle. The same radius is used by all 4 corners; there is currently 
+    painted as a normal rectangle. The same radius is used by all 4 corners; there is currently
     no way to specify different radii for different corners.
 */
 
@@ -591,7 +592,7 @@ void QFxRect::drawRect(QPainter &p)
         if (yMiddles)
             p.drawPixmap(QRect(width()-xOffset+pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->rectImage,
                                 QRect(d->rectImage.width()-xOffset, d->rectImage.height()/2, xOffset, 1));
-        // Lower left 
+        // Lower left
         p.drawPixmap(QPoint(-pw/2, height() - yOffset + pw/2), d->rectImage, QRect(0, d->rectImage.height() - yOffset, xOffset, yOffset));
 
         // Lower Middle

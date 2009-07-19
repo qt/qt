@@ -50,7 +50,7 @@
 #include <QGraphicsSceneMouseEvent>
 
 #include <QDebug>
-
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxTextEdit, TextEdit)
@@ -353,8 +353,8 @@ void QFxTextEdit::setHighlightedTextColor(const QColor &color)
     Sets the horizontal and vertical alignment of the text within the TextEdit items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and 
-    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom 
+    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
 
@@ -670,7 +670,7 @@ void QFxTextEdit::setTextMargin(qreal margin)
     d->document->setDocumentMargin(d->textMargin);
 }
 
-void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
+void QFxTextEdit::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
     if (newGeometry.width() != oldGeometry.width())
@@ -762,7 +762,7 @@ Qt::TextInteractionFlags QFxTextEdit::textInteractionFlags() const
 }
 
 /*!
-    Returns the cursor for the point at the given \a pos on the 
+    Returns the cursor for the point at the given \a pos on the
     text edit.
 */
 QTextCursor QFxTextEdit::cursorForPosition(const QPoint &pos) const
@@ -1130,9 +1130,9 @@ void QFxTextEdit::updateSize()
         if (!heightValid()) {
             if (d->text.isEmpty()) {
                 setImplicitHeight(fm.height());
-            } else { 
+            } else {
                 setImplicitHeight((int)d->document->size().height());
-            } 
+            }
         }
         setContentsSize(QSize(width(), height()));
     } else {
@@ -1146,7 +1146,7 @@ void QFxTextEditPrivate::updateDefaultTextOption()
     QTextOption opt = document->defaultTextOption();
     int oldAlignment = opt.alignment();
     opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
-    
+
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
 
     if (wrap)
