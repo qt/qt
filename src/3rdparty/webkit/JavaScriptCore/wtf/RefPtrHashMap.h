@@ -205,14 +205,23 @@ namespace WTF {
     HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(const KeyType& key, const MappedType& mapped) 
     {
         typedef HashMapTranslator<ValueType, ValueTraits, HashFunctions> TranslatorType;
-        return m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
+        pair<typename HashTableType::iterator, bool> p = m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
+//        typename HashMap<RefPtr<T>, U, V, W, X>::iterator temp = p.first;
+        return make_pair<typename HashMap<RefPtr<T>, U, V, W, X>::iterator, bool>(
+            typename HashMap<RefPtr<T>, U, V, W, X>::iterator(p.first), p.second);
+
+//        return m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
     inline pair<typename HashMap<RefPtr<T>, U, V, W, X>::iterator, bool>
     HashMap<RefPtr<T>, U, V, W, X>::inlineAdd(RawKeyType key, const MappedType& mapped) 
     {
-        return m_impl.template add<RawKeyType, MappedType, RawKeyTranslator>(key, mapped);
+        pair<typename HashTableType::iterator, bool> p = m_impl.template add<RawKeyType, MappedType, RawKeyTranslator>(key, mapped);
+        return make_pair<typename HashMap<RefPtr<T>, U, V, W, X>::iterator, bool>(
+            typename HashMap<RefPtr<T>, U, V, W, X>::iterator(p.first), p.second);
+
+ //       return m_impl.template add<RawKeyType, MappedType, RawKeyTranslator>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
