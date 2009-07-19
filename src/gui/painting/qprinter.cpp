@@ -793,7 +793,8 @@ QPrinter::OutputFormat QPrinter::outputFormat() const
 
 
 
-/*! \reimp */
+/*! \internal
+*/
 int QPrinter::devType() const
 {
     return QInternal::Printer;

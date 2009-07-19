@@ -149,7 +149,7 @@ QWebSecurityOrigin QWebDatabase::origin() const
 }
 
 /*!
-    Removes the database, \a db, from its security origin. All data stored in this database
+    Removes the database \a db from its security origin. All data stored in this database
     will be destroyed.
 */
 void QWebDatabase::removeDatabase(const QWebDatabase &db)

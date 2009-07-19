@@ -1260,7 +1260,7 @@ QGraphicsItem *QGraphicsItem::topLevelItem() const
 }
 
 /*!
-    \since 4.4
+    \since 4.6
 
     Returns a pointer to the item's parent, cast to a QGraphicsObject. returns 0 if the parent item
     is not a QGraphicsObject.
@@ -2361,6 +2361,8 @@ void QGraphicsItem::setAcceptTouchEvents(bool enabled)
 }
 
 /*!
+    \since 4.6
+
     Returns true if this item filters child events (i.e., all events
     intended for any of its children are instead sent to this item);
     otherwise, false is returned.
@@ -2375,13 +2377,15 @@ bool QGraphicsItem::filtersChildEvents() const
 }
 
 /*!
+    \since 4.6
+
     If \a enabled is true, this item is set to filter all events for
     all its children (i.e., all events intented for any of its
     children are instead sent to this item); otherwise, if \a enabled
     is false, this item will only handle its own events. The default
     value is false.
 
-  \sa filtersChildEvents()
+    \sa filtersChildEvents()
 */
 void QGraphicsItem::setFiltersChildEvents(bool enabled)
 {
@@ -2661,10 +2665,12 @@ QPointF QGraphicsItem::pos() const
 */
 
 /*!
-  Set's the \a x coordinate of the item's position. Equivalent to
-  calling setPos(x, y()).
+    \since 4.6
 
-  \sa x(), setPos()
+    Set's the \a x coordinate of the item's position. Equivalent to
+    calling setPos(x, y()).
+
+    \sa x(), setPos()
 */
 void QGraphicsItem::setX(qreal x)
 {
@@ -2680,10 +2686,12 @@ void QGraphicsItem::setX(qreal x)
 */
 
 /*!
-  Set's the \a y coordinate of the item's position. Equivalent to
-  calling setPos(x(), y).
+    \since 4.6
 
-  \sa x(), setPos()
+    Set's the \a y coordinate of the item's position. Equivalent to
+    calling setPos(x(), y).
+
+    \sa x(), setPos()
 */
 void QGraphicsItem::setY(qreal y)
 {
@@ -3181,7 +3189,7 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
 /*!
     \since 4.6
 
-    Returns the origin point used for transformation in item coordinate.
+    Returns the origin point for the transformation in item coordinates.
 
     The default is QPointF(0,0).
 
@@ -3197,7 +3205,7 @@ QPointF QGraphicsItem::transformOrigin() const
 /*!
     \since 4.6
 
-    Sets the \a origin for transformation in item coordinate
+    Sets the \a origin point for the transformation in item coordinates.
 
     \sa transformOrigin(), {Transformations}
 */
@@ -3218,9 +3226,9 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
     \since 4.6
     \overload
 
-    Sets the origin for the transformation to the point
-    composed of \a x and \a y.
-    
+    Sets the origin point for the transformation in item coordinates.
+    This is equivalent to calling setTransformOrigin(QPointF(\a x, \a y)).
+
     \sa setTransformOrigin(), {Transformations}
 */
 
