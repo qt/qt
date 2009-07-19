@@ -1032,8 +1032,7 @@ GLuint QGLFramebufferObject::handle() const
 }
 
 /*! \fn int QGLFramebufferObject::devType() const
-
-    \reimp
+    \internal
 */
 
 

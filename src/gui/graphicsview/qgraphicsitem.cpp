@@ -3189,7 +3189,7 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
 /*!
     \since 4.6
 
-    Returns the origin point used for transformation in item coordinate.
+    Returns the origin point for the transformation in item coordinates.
 
     The default is QPointF(0,0).
 
@@ -3205,7 +3205,7 @@ QPointF QGraphicsItem::transformOrigin() const
 /*!
     \since 4.6
 
-    Sets the \a origin for transformation in item coordinate
+    Sets the \a origin point for the transformation in item coordinates.
 
     \sa transformOrigin(), {Transformations}
 */
@@ -3226,9 +3226,9 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
     \since 4.6
     \overload
 
-    Sets the origin for the transformation to the point
-    composed of \a x and \a y.
-    
+    Sets the origin point for the transformation in item coordinates.
+    This is equivalent to calling setTransformOrigin(QPointF(\a x, \a y)).
+
     \sa setTransformOrigin(), {Transformations}
 */
 

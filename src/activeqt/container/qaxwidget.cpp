@@ -2034,7 +2034,7 @@ bool QAxWidget::doVerb(const QString &verb)
 */
 
 /*!
-    \reimp
+    \internal
 */
 const QMetaObject *QAxWidget::metaObject() const
 {
@@ -2042,7 +2042,7 @@ const QMetaObject *QAxWidget::metaObject() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 const QMetaObject *QAxWidget::parentMetaObject() const
 {
@@ -2060,7 +2060,7 @@ void *QAxWidget::qt_metacast(const char *cname)
 }
 
 /*!
-    \reimp
+    \internal
 */
 const char *QAxWidget::className() const
 {
@@ -2068,7 +2068,7 @@ const char *QAxWidget::className() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 int QAxWidget::qt_metacall(QMetaObject::Call call, int id, void **v)
 {

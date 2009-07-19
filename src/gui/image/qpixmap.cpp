@@ -1782,7 +1782,7 @@ bool QPixmap::hasAlphaChannel() const
 }
 
 /*!
-  \reimp
+    \internal
 */
 int QPixmap::metric(PaintDeviceMetric metric) const
 {
@@ -1857,7 +1857,7 @@ QPixmap QPixmap::alphaChannel() const
 }
 
 /*!
-  \reimp
+    \internal
 */
 QPaintEngine *QPixmap::paintEngine() const
 {

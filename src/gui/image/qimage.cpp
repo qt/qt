@@ -5269,7 +5269,7 @@ QPaintEngine *QImage::paintEngine() const
 
 
 /*!
-    \reimp
+    \internal
 
     Returns the size for the specified \a metric on the device.
 */
