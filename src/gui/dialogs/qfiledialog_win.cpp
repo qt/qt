@@ -60,7 +60,6 @@
 
 #include <shlobj.h>
 
-#include <shobjidl.h>
 #include <objbase.h>
 
 #if defined(__IFileDialog_INTERFACE_DEFINED__) \
