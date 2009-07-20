@@ -53,13 +53,13 @@
 // We mean it.
 //
 
-#include <private/qobject_p.h>
 #include <QtDeclarative/qmlbinding.h>
 #include <QtDeclarative/qmlmetaproperty.h>
+#include "qmlexpression_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlBindingPrivate : public QObjectPrivate
+class QmlBindingPrivate : public QmlExpressionPrivate
 {
     Q_DECLARE_PUBLIC(QmlBinding)
 public:

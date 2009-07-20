@@ -61,13 +61,15 @@ QmlBindingPrivate::QmlBindingPrivate()
 
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindingPrivate, parent), QmlExpression(ctxt, data, rc, obj)
+: QmlExpression(ctxt, data, rc, obj, *new QmlBindingPrivate)
 {
+    setParent(parent);
 }
 
 QmlBinding::QmlBinding(const QString &str, QObject *obj, QmlContext *ctxt, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindingPrivate, parent), QmlExpression(ctxt, str, obj)
+: QmlExpression(ctxt, str, obj, *new QmlBindingPrivate)
 {
+    setParent(parent);
 }
 
 QmlBinding::~QmlBinding()

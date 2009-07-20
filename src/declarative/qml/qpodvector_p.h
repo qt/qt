@@ -64,7 +64,7 @@ public:
     QPODVector()
     : m_count(0), m_capacity(0), m_data(0) {}
 
-    const T &at(int idx) {
+    const T &at(int idx) const {
         return m_data[idx];
     }
 

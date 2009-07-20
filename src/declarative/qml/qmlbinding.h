@@ -57,8 +57,7 @@ QT_MODULE(Declarative)
 class QmlExpression;
 class QmlContext;
 class QmlBindingPrivate;
-class Q_DECLARATIVE_EXPORT QmlBinding : public QmlPropertyValueSource, 
-                                        public QmlExpression
+class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression
 {
 Q_OBJECT
 public:

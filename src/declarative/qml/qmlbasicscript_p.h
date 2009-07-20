@@ -70,8 +70,9 @@ class QmlBasicScript
 {
 public:
     QmlBasicScript();
-    QmlBasicScript(const char *, QmlRefCount * = 0);
     ~QmlBasicScript();
+
+    void load(const char *, QmlRefCount * = 0);
 
     // Always 4-byte aligned
     const char *compileData() const;

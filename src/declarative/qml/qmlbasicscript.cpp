@@ -265,7 +265,7 @@ QmlBasicScript::QmlBasicScript()
 }
 
 /*!
-    Create a new QmlBasicScript instance from saved \a data.
+    Load the QmlBasicScript instance with saved \a data.
 
     \a data \b must be data previously acquired from calling compileData() on a
     previously created QmlBasicScript instance.  Any other data will almost
@@ -277,9 +277,12 @@ QmlBasicScript::QmlBasicScript()
     If \a owner is set, it is referenced on creation and dereferenced on 
     destruction of this instance.
 */
-QmlBasicScript::QmlBasicScript(const char *data, QmlRefCount *owner)
-: flags(0), d((QmlBasicScriptPrivate *)data), rc(owner)
+
+void QmlBasicScript::load(const char *data, QmlRefCount *owner)
 {
+    clear();
+    d = (QmlBasicScriptPrivate *)data;
+    rc = owner;
     if (rc) rc->addref();
 }
 
@@ -504,7 +507,6 @@ QmlBasicScriptCompiler::fetch(int type, const QMetaObject *mo, int idx)
 
 bool QmlBasicScriptCompiler::parseName(AST::Node *node)
 {
-
     QStringList nameParts;
     if (!buildName(nameParts, node))
         return false;
@@ -550,6 +552,8 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node)
                     return false;
                 }
 
+            } else {
+                return false;
             }
         } else {
 

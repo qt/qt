@@ -55,23 +55,24 @@
 
 #include "qmlbasicscript_p.h"
 #include "qmlexpression.h"
+#include "qmlengine_p.h"
+#include <private/qguard_p.h>
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlExpression;
 class QString;
-class QmlExpressionLog;
-class QmlExpressionBindProxy;
-class QmlExpressionPrivate
+class QmlExpressionPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QmlExpression)
 public:
-    QmlExpressionPrivate(QmlExpression *);
-    QmlExpressionPrivate(QmlExpression *, const QString &expr);
-    QmlExpressionPrivate(QmlExpression *, void *expr, QmlRefCount *rc);
+    QmlExpressionPrivate();
     ~QmlExpressionPrivate();
 
-    QmlExpression *q;
+    void init(QmlContext *, const QString &, QObject *);
+    void init(QmlContext *, void *, QmlRefCount *, QObject *);
+
     QmlContext *ctxt;
     QString expression;
     bool expressionFunctionValid;
@@ -79,7 +80,6 @@ public:
 
     QmlBasicScript sse;
     void *sseData;
-    QmlExpressionBindProxy *proxy;
     QObject *me;
     bool trackChange;
 
@@ -88,53 +88,30 @@ public:
 
     quint32 id;
 
-    void addLog(const QmlExpressionLog &);
-    QList<QmlExpressionLog> *log;
-
     QVariant evalSSE(QmlBasicScript::CacheState &cacheState);
     QVariant evalQtScript();
-};
 
-class QmlExpressionBindProxy : public QObject
-{
-Q_OBJECT
-public:
-    QmlExpressionBindProxy(QmlExpression *be)
-    :e(be) { }
+    struct SignalGuard : public QGuard<QObject> {
+        SignalGuard() : isDuplicate(false), notifyIndex(-1) {}
 
-private:
-    QmlExpression *e;
+        SignalGuard &operator=(QObject *obj) {
+            QGuard<QObject>::operator=(obj);
+            return *this;
+        }
+        SignalGuard &operator=(const SignalGuard &o) {
+            QGuard<QObject>::operator=(o);
+            isDuplicate = o.isDuplicate;
+            notifyIndex = o.notifyIndex;
+            return *this;
+        }
 
-private Q_SLOTS:
-    void changed() { e->valueChanged(); }
-};
-
-class QmlExpressionLog
-{
-public:
-    QmlExpressionLog();
-    QmlExpressionLog(const QmlExpressionLog &);
-    ~QmlExpressionLog();
-
-    QmlExpressionLog &operator=(const QmlExpressionLog &);
-
-    void setTime(quint32);
-    quint32 time() const;
-
-    QString expression() const;
-    void setExpression(const QString &);
-
-    QStringList warnings() const;
-    void addWarning(const QString &);
-
-    QVariant result() const;
-    void setResult(const QVariant &);
-
-private:
-    quint32 m_time;
-    QString m_expression;
-    QVariant m_result;
-    QStringList m_warnings;
+        bool isDuplicate:1;
+        int notifyIndex:31;
+    };
+    SignalGuard *guardList;
+    int guardListLength;
+    void updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties);
+    void clearGuards();
 };
 
 QT_END_NAMESPACE
