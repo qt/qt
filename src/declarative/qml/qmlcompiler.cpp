@@ -940,7 +940,7 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
         COMPILE_EXCEPTION(obj, "Invalid component id specification");
 
     if (idProp) {
-        QString idVal = idProp->values.first()->primitive().toUtf8();
+        QString idVal = idProp->values.first()->primitive();
 
         if (compileState.ids.contains(idVal))
             COMPILE_EXCEPTION(obj, "id is not unique");
