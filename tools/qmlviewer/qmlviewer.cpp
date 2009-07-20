@@ -699,17 +699,22 @@ void QmlViewer::setupProxy()
     nam->setProxyFactory(new SystemProxyFactory);
 }
 
-void QmlViewer::setCacheEnabled(bool on)
+void QmlViewer::setNetworkCacheSize(int size)
 {
     QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    if (on == !!nam->cache())
-        return;
-    if (on) {
-        // Setup a caching network manager
-        QNetworkDiskCache *cache = new QNetworkDiskCache;
+    QNetworkDiskCache *cache = qobject_cast<QNetworkDiskCache*>(nam->cache());
+    if (!cache) {
+        if (size==0)
+            return;
+        cache = new QNetworkDiskCache;
         cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-duiviewer-network-cache"));
-        cache->setMaximumCacheSize(8000000);
         nam->setCache(cache);
+    }
+    if (size == cache->maximumCacheSize())
+        return;
+    if (size>0) {
+        // Setup a caching network manager
+        cache->setMaximumCacheSize(size);
     } else {
         nam->setCache(0);
     }

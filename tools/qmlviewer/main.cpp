@@ -36,7 +36,7 @@ void usage()
     qWarning("  -record arg .............................. add a recording process argument");
     qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop");
     qWarning("  -devicekeys .............................. use numeric keys (see F1)");
-    qWarning("  -cache ................................... disk cache remote content");
+    qWarning("  -netcache <size> ......................... set disk cache to size bytes");
     qWarning("  -recordtest <directory> .................. record an autotest");
     qWarning("  -runtest <directory> ..................... run a previously recorded test");
     qWarning("  -translation <translationfile> ........... set the language to run in");
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
     QStringList libraries;
     QString skin;
     bool devkeys = false;
-    bool cache = false;
+    int cache = 0;
     QString translationFile;
 
     for (int i = 1; i < argc; ++i) {
@@ -83,8 +83,8 @@ int main(int argc, char ** argv)
             frameless = true;
         } else if (arg == "-skin") {
             skin = QString(argv[++i]);
-        } else if (arg == "-cache") {
-            cache = true;
+        } else if (arg == "-netcache") {
+            cache = QString(argv[++i]).toInt();
         } else if (arg == "-recordperiod") {
             period = QString(argv[++i]).toInt();
         } else if (arg == "-recordfile") {
@@ -127,7 +127,7 @@ int main(int argc, char ** argv)
     QmlViewer viewer(0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
-    viewer.setCacheEnabled(cache);
+    viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
     if (period>0)
         viewer.setRecordPeriod(period);
