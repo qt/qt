@@ -89,7 +89,8 @@ public:
     QPointer<QmlComponent> cursorComponent;
     QPointer<QFxItem> cursorItem;
 
-    int oldSelectLength;
+    int lastSelectionStart;
+    int lastSelectionEnd;
     int oldHeight;
     int oldWidth;
     bool oldValidity;

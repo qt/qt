@@ -1,4 +1,5 @@
-// Here, we implement "Scale and Crop" behaviour.
+// Here, we implement "Scale to Fit" behaviour, using the
+// preserveAspect property.
 //
 Rect {
     // default size: whole image, unscaled
@@ -10,8 +11,7 @@ Rect {
     Image {
         id: Image
         source: "pics/face.png"
-        x: (parent.width-width*scale)/2
-        y: (parent.height-height*scale)/2
-        scale: Math.max(parent.width/width,parent.height/height)
+        preserveAspect: true
+        anchors.fill: parent
     }
 }

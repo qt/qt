@@ -244,14 +244,19 @@ void QLineControl::setSelection(int start, int length)
     }
 
     if (length > 0) {
+        if (start == m_selstart && start + length == m_selend)
+            return;
         m_selstart = start;
         m_selend = qMin(start + length, (int)m_text.length());
         m_cursor = m_selend;
     } else {
+        if (start == m_selend && start + length == m_selstart)
+            return;
         m_selstart = qMax(start + length, 0);
         m_selend = start;
         m_cursor = m_selstart;
     }
+    emit selectionChanged();
 }
 
 void QLineControl::_q_clipboardChanged()

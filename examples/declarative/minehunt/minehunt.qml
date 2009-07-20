@@ -55,9 +55,10 @@ Item {
                         opacity: modelData.hasMine
                     }
                     Explosion {
+                        id: expl
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
-                        explode: modelData.hasMine && modelData.flipped
+                        //explode: modelData.hasMine && modelData.flipped//Doesn't wait for the pause
                     }
                 }
                 states: [
@@ -88,6 +89,10 @@ Item {
                             NumberAnimation {
                                 easing: "easeInOutQuad"
                                 properties: "rotation"
+                            }
+                            RunScriptAction{
+                                script: if(modelData.hasMine && modelData.flipped)
+                                            {expl.explode = true;}
                             }
                         }
                     }

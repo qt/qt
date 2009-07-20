@@ -62,17 +62,13 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QmlFont *font READ font)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    /*
-    Q_PROPERTY(QFxText::TextStyle style READ style WRITE setStyle)
-    Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)
     Q_PROPERTY(QFxText::HAlignment hAlign READ hAlign WRITE setHAlign)
-    Q_PROPERTY(QFxText::VAlignment vAlign READ vAlign WRITE setVAlign)
-    */
 
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly);
     Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength);
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged);
-    Q_PROPERTY(int selectionLength READ selectionLength WRITE setSelectionLength NOTIFY selectionLengthChanged);
+    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged);
 
     Q_PROPERTY(QObject* validator READ validator WRITE setValidator);
@@ -81,10 +77,6 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode);
 
     Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate);
-    /*
-    Q_PROPERTY(int scrollDuration READ scrollDuration SET setScrollDuration NOTIFY scrollDurationChanged);
-    */
-
 public:
     QFxLineEdit(QFxItem* parent=0);
     ~QFxLineEdit();
@@ -100,19 +92,8 @@ public:
     //### Should we have this function or x variants of properties?
     Q_INVOKABLE int xToPos(int x);
 
-    /*
-    QFxText::TextStyle style() const;
-    void setStyle(QFxText::TextStyle style);
-
-    QColor styleColor() const;
-    void setStyleColor(const QColor &c);
-    */
-
     QFxText::HAlignment hAlign() const;
     void setHAlign(QFxText::HAlignment align);
-
-    QFxText::VAlignment vAlign() const;
-    void setVAlign(QFxText::VAlignment align);
 
     bool isReadOnly() const;
     void setReadOnly(bool);
@@ -123,8 +104,11 @@ public:
     int cursorPosition() const;
     void setCursorPosition(int cp);
 
-    int selectionLength() const;
-    void setSelectionLength(int len);
+    int selectionStart() const;
+    void setSelectionStart(int);
+
+    int selectionEnd() const;
+    void setSelectionEnd(int);
 
     QString selectedText() const;
 
@@ -140,18 +124,14 @@ public:
     QmlComponent* cursorDelegate() const;
     void setCursorDelegate(QmlComponent*);
 
-    /*
-    int scrollDuration() const;
-    void setScrollDuration(int);
-    */
-
     bool hasAcceptableInput() const;
 
     void drawContents(QPainter *p,const QRect &r);
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
-    void selectionLengthChanged();
+    void selectionStartChanged();
+    void selectionEndChanged();
     void selectedTextChanged();
     void accepted();
     void acceptableInputChanged();
@@ -174,6 +154,7 @@ private slots:
     void updateAll();
     void createCursor();
     void moveCursor();
+    void cursorPosChanged();
 
 private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxLineEdit);

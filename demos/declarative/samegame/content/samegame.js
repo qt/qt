@@ -6,23 +6,17 @@ var tileSize = 40;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
-var backSrc = "content/pics/background.png";
 var swapped = false;
 
 var compSrc;
 var component;
 
 function swapTileSrc(){
-    if(swapped)
-        return;
-    if(tileSrc == "content/FastBlock.qml"){
+    if(tileSrc == "content/SpinBlock.qml"){
         tileSrc = "content/BoomBlock.qml";
-        backSrc = "content/pics/background.png";
     }else{
-        backSrc = "content/pics/qtlogo.png";
-        tileSrc = "content/FastBlock.qml";
+        tileSrc = "content/SpinBlock.qml";
     }
-    swapped = true;
 }
 
 function index(xIdx,yIdx){
@@ -37,8 +31,6 @@ function initBoard()
             board[i].destroy();
     }
 
-    background.source = backSrc;
-    swapped = false;
     maxX = Math.floor(gameCanvas.width/tileSize);
     maxY = Math.floor(gameCanvas.height/tileSize);
     maxIndex = maxX*maxY;
@@ -145,13 +137,35 @@ function shuffleDown()
 
 function victoryCheck()
 {
-    //Only awards bonuses at the moment
+    //awards bonuses
     deservesBonus = true;
     for(xIdx=maxX-1; xIdx>=0; xIdx--)
         if(board[index(xIdx, maxY - 1)] != null)
             deservesBonus = false;
     if(deservesBonus)
-        gameCanvas.score += 250;
+        gameCanvas.score += 500;
+    //Checks for game over
+    if(deservesBonus || noMoreMoves()){
+        dialog.text = "Game Over. Your score is " + gameCanvas.score;
+        dialog.opacity = 1;
+    }
+}
+
+function noMoreMoves()
+{
+    return !floodMoveCheck(0, maxY-1, -1);
+}
+
+function floodMoveCheck(xIdx, yIdx, type)
+{
+    if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
+        return false;
+    if(board[index(xIdx, yIdx)] == null)
+        return false;
+    myType = board[index(xIdx, yIdx)].type;
+    if(type == myType)
+        return true;
+    return floodMoveCheck(xIdx + 1, yIdx, myType) || floodMoveCheck(xIdx, yIdx - 1, myType);
 }
 
 //Need a simpler method of doing this?
@@ -177,11 +191,12 @@ function finishCreatingBlock(xIdx,yIdx){
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
         dynamicObject.parent = gameCanvas;
+        dynamicObject.x = xIdx*tileSize;
         dynamicObject.targetX = xIdx*tileSize;
         dynamicObject.targetY = yIdx*tileSize;
         dynamicObject.width = tileSize;
         dynamicObject.height = tileSize;
-        dynamicObject.spawning = true;
+        dynamicObject.spawned = true;
         board[index(xIdx,yIdx)] = dynamicObject;
         return true;
     }else if(component.isError()){

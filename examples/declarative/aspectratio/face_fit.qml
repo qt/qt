@@ -1,7 +1,3 @@
-// The Image primitive does not have any special handling for maintaining
-// aspect ratio. This example shows that you can provide whatever specific
-// behaviour you like.
-//
 // Here, we implement a hybrid of the "scale to fit" and "scale and crop"
 // behaviours which will crop up to 25% from *one* dimension if necessary
 // to fully scale the other. This is a realistic algorithm, for example

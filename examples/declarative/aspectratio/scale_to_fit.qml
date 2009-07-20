@@ -1,8 +1,5 @@
-// The Image primitive does not have any special handling for maintaining
-// aspect ratio. This example shows that you can provide whatever specific
-// behaviour you like.
-//
-// Here, we implement "Scale to Fit" behaviour.
+// Here, we implement "Scale to Fit" behaviour "manually", rather
+// than using the preserveAspect property.
 //
 Rect {
     // default size: whole image, unscaled

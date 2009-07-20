@@ -251,7 +251,6 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
                 error.setUrl(url);
                 error.setDescription(tr("Import %1 unavailable").arg(imp.uri));
                 unit->errors << error;
-qDebug() << "ERR";
                 ok = false;
             }
         }
