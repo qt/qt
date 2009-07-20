@@ -12,14 +12,11 @@ var compSrc;
 var component;
 
 function swapTileSrc(){
-    if(swapped)
-        return;
     if(tileSrc == "content/SpinBlock.qml"){
         tileSrc = "content/BoomBlock.qml";
     }else{
         tileSrc = "content/SpinBlock.qml";
     }
-    swapped = true;
 }
 
 function index(xIdx,yIdx){
