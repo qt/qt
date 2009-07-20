@@ -222,6 +222,7 @@ private Q_SLOTS:
     void bindVariableQXmlNameQXmlQuerySignature() const;
     void bindVariableQXmlNameQXmlQuery() const;
     void bindVariableQXmlQueryInvalidate() const;
+    void unknownSourceLocation() const;
 
     void identityConstraintSuccess() const;
     void identityConstraintFailure() const;
@@ -3279,6 +3280,23 @@ void tst_QXmlQuery::bindVariableQXmlQueryInvalidate() const
 
     query.bindVariable(QLatin1String("name"), query);
     QVERIFY(!query.isValid());
+}
+
+void tst_QXmlQuery::unknownSourceLocation() const
+{
+    QBuffer b;
+    b.setData("<a><b/><b/></a>");
+    b.open(QIODevice::ReadOnly);
+
+    MessageSilencer silencer;
+    QXmlQuery query;
+    query.bindVariable(QLatin1String("inputDocument"), &b);
+    query.setMessageHandler(&silencer);
+
+    query.setQuery(QLatin1String("doc($inputDocument)/a/(let $v := b/string() return if ($v) then $v else ())"));
+
+    QString output;
+    query.evaluateTo(&output);
 }
 
 void tst_QXmlQuery::identityConstraintSuccess() const

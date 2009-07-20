@@ -693,8 +693,8 @@ bool saveTS(const Translator &translator, QIODevice &dev, ConversionData &cd, in
                     t << " type=\"obsolete\"";
                 if (msg.isPlural()) {
                     t << ">";
-                    QStringList translns = translator.normalizedTranslations(msg, cd, &result);
-                    for (int j = 0; j < qMax(1, translns.count()); ++j) {
+                    const QStringList &translns = msg.translations();
+                    for (int j = 0; j < translns.count(); ++j) {
                         t << "\n            <numerusform";
                         writeVariants(t, "            ", translns[j]);
                         t << "</numerusform>";
