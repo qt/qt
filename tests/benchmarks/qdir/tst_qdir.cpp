@@ -87,8 +87,7 @@ private slots:
 
         WIN32_FIND_DATA fd;
         HANDLE hSearch = FindFirstFileW(appendedPath, &fd);
-        if (hSearch != INVALID_HANDLE_VALUE)
-            return;
+        QVERIFY(hSearch == INVALID_HANDLE_VALUE);
 
         QBENCHMARK {
             do {
@@ -99,8 +98,7 @@ private slots:
 #else
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         DIR *dir = opendir(qPrintable(testdir.absolutePath()));
-        if (!dir)
-            return;
+        QVERIFY(dir);
 
         QVERIFY(!chdir(qPrintable(testdir.absolutePath())));
         QBENCHMARK {
