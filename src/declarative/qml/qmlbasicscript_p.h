@@ -100,49 +100,11 @@ public:
     enum CacheState { NoChange, Incremental, Reset };
     QVariant run(QmlContext *, void *, CacheState *);
 
-    // Optimization opportunities
-    bool isSingleLoad() const;
-    QByteArray singleLoadTarget() const;
-
 private:
     int flags;
     QmlBasicScriptPrivate *d;
     QmlRefCount *rc;
-
-    void clearCache(void *);
-    void guard(QmlBasicScriptNodeCache &);
-    bool valid(QmlBasicScriptNodeCache &, QObject *);
 };
-
-class QmlContextPrivate;
-class QDebug;
-class QmlBasicScriptNodeCache
-{
-public:
-    QObject *object;
-    const QMetaObject *metaObject;
-    enum { Invalid,
-           Core, 
-           Attached, 
-           SignalProperty, 
-           Variant
-    } type;
-    union {
-        int core;
-        QObject *attached;
-        QmlContextPrivate *context;
-    };
-    int coreType;
-    int contextIndex;
-
-    bool isValid() const { return type != Invalid; }
-    bool isCore() const { return type == Core; }
-    bool isVariant() const { return type == Variant; }
-    void clear();
-    QVariant value(const char *) const;
-};
-
-QDebug operator<<(QDebug, const QmlBasicScriptNodeCache &);
 
 QT_END_NAMESPACE
 
