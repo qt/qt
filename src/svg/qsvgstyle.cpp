@@ -81,12 +81,25 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillRule(Qt::WindingFill), m_fillOpacitySet(false), m_fillOpacity(1.0), m_gradientResolved (true)
+    : m_fill(brush)
+    , m_style(0)
+    , m_fillRuleSet(false)
+    , m_fillRule(Qt::WindingFill)
+    , m_fillOpacitySet(false)
+    , m_fillOpacity(1.0)
+    , m_gradientResolved(true)
+    , m_fillSet(true)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillRule(Qt::WindingFill), m_fillOpacitySet(false), m_fillOpacity(1.0), m_gradientResolved (true)
+    : m_style(style)
+    , m_fillRuleSet(false)
+    , m_fillRule(Qt::WindingFill)
+    , m_fillOpacitySet(false)
+    , m_fillOpacity(1.0)
+    , m_gradientResolved(true)
+    , m_fillSet(style != 0)
 {
 }
 
@@ -105,11 +118,14 @@ void QSvgFillStyle::setFillOpacity(qreal opacity)
 void QSvgFillStyle::setFillStyle(QSvgStyleProperty* style)
 {
     m_style = style;
+    m_fillSet = true;
 }
 
 void QSvgFillStyle::setBrush(QBrush brush)
 {
     m_fill = brush;
+    m_style = 0;
+    m_fillSet = true;
 }
 
 static void recursivelySetFill(QSvgNode *node, Qt::FillRule f)
@@ -136,20 +152,26 @@ void QSvgFillStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgE
         recursivelySetFill(node, m_fillRule);
         m_fillRuleSet = false;//set it only on the first run
     }
-    p->setBrush(m_fill);
+    if (m_fillSet) {
+        if (m_style)
+            m_style->apply(p, rect, node, states);
+        else
+            p->setBrush(m_fill);
+    }
     if (m_fillOpacitySet)
         states.fillOpacity = m_fillOpacity;
-    if (m_style)
-        m_style->apply(p, rect, node, states);
 }
 
 void QSvgFillStyle::revert(QPainter *p, QSvgExtraStates &states)
 {
-    if (m_style)
-        m_style->revert(p, states);
-    p->setBrush(m_oldFill);
     if (m_fillOpacitySet)
         states.fillOpacity = m_oldOpacity;
+    if (m_fillSet) {
+        if (m_style)
+            m_style->revert(p, states);
+        else
+            p->setBrush(m_oldFill);
+    }
 }
 
 QSvgViewportFillStyle::QSvgViewportFillStyle(const QBrush &brush)

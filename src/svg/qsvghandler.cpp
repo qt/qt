@@ -644,26 +644,19 @@ static void parseBrush(QSvgNode *node,
     QString opacity = attributes.value(QLatin1String("fill-opacity")).toString();
     QString myId = someId(attributes);
 
-    QSvgFillStyle *inherited =
-                static_cast<QSvgFillStyle*>(node->parent()->styleProperty(
-                                                QSvgStyleProperty::FILL));
-    QSvgFillStyle *prop = new QSvgFillStyle(QColor(Qt::black));
+    QSvgFillStyle *prop = new QSvgFillStyle(0);
 
     //fill-rule attribute handling
-    Qt::FillRule f = Qt::WindingFill;
     if (!fillRule.isEmpty() && fillRule != QLatin1String("inherit")) {
         if (fillRule == QLatin1String("evenodd"))
-            f = Qt::OddEvenFill;
-    } else if (inherited) {
-        f = inherited->fillRule();
+            prop->setFillRule(Qt::OddEvenFill);
+        else if (fillRule == QLatin1String("nonzero"))
+            prop->setFillRule(Qt::WindingFill);
     }
 
     //fill-opacity atttribute handling
-    qreal fillOpacity = 1.0;
     if (!opacity.isEmpty() && opacity != QLatin1String("inherit")) {
-        fillOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
-    } else if (inherited) {
-        fillOpacity = inherited->fillOpacity();
+        prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity))));
     }
 
     //fill attribute handling
@@ -685,15 +678,7 @@ static void parseBrush(QSvgNode *node,
         } else {
             prop->setBrush(QBrush(Qt::NoBrush));
         }
-    } else if (inherited) {
-        if (inherited->style()) {
-            prop->setFillStyle(inherited->style());
-        } else {
-            prop->setBrush(inherited->qbrush());
-        }
     }
-    prop->setFillOpacity(fillOpacity);
-    prop->setFillRule(f);
     node->appendStyleProperty(prop,myId);
 }
 
