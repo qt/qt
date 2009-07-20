@@ -347,7 +347,11 @@ QVariant QmlExpression::value()
     QmlBasicScript::CacheState cacheState = QmlBasicScript::Reset;
 
     QmlEnginePrivate *ep = engine()->d_func();
+
     QmlExpression *lastCurrentExpression = ep->currentExpression;
+    QPODVector<QmlEnginePrivate::CapturedProperty> lastCapturedProperties;
+    ep->capturedProperties.copyAndClear(lastCapturedProperties);
+
     ep->currentExpression = this;
 
     if (d->sse.isValid()) {
@@ -364,7 +368,7 @@ QVariant QmlExpression::value()
         d->updateGuards(ep->capturedProperties);
     }
 
-    ep->capturedProperties.clear();
+    lastCapturedProperties.copyAndClear(ep->capturedProperties);
 
     return rv;
 }
@@ -471,6 +475,7 @@ void QmlExpressionPrivate::clearGuards()
 
 void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties)
 {
+    //clearGuards();
     Q_Q(QmlExpression);
 
     static int notifyIdx = -1;
@@ -499,7 +504,7 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
                 needGuard = false;
                 ++hit;
             }
-        } else if(guardList[ii].data()) {
+        } else if(guardList[ii].data() && !guardList[ii].isDuplicate) {
             // Cache miss
             QMetaObject::disconnect(guardList[ii].data(), 
                                     guardList[ii].notifyIndex, 
@@ -548,7 +553,7 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
     }
 
     for (int ii = properties.count(); ii < guardListLength; ++ii) {
-        if (guardList[ii].data()) {
+        if (guardList[ii].data() && !guardList[ii].isDuplicate) {
             QMetaObject::disconnect(guardList[ii].data(), 
                                     guardList[ii].notifyIndex, 
                                     q, notifyIdx);
@@ -560,7 +565,6 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
         guardList = newGuardList;
         guardListLength = properties.count();
     }
-    //qWarning() << hit << properties.count() << q->expression();
 }
 
 /*!
