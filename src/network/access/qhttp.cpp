@@ -1152,7 +1152,7 @@ int QHttpResponseHeader::minorVersion() const
     return d->minVer;
 }
 
-/*! \reimp
+/*! \internal
 */
 bool QHttpResponseHeader::parseLine(const QString &line, int number)
 {
@@ -1366,7 +1366,7 @@ int QHttpRequestHeader::minorVersion() const
     return d->minVer;
 }
 
-/*! \reimp
+/*! \internal
 */
 bool QHttpRequestHeader::parseLine(const QString &line, int number)
 {

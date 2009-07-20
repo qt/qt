@@ -77,7 +77,7 @@
 
 /*!
     \fn void QGraphicsSceneLinearIndex::clear()
-    \reimp
+    \internal
     Clear the all the BSP index.
 */
 
