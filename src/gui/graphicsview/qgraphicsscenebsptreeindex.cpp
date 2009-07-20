@@ -75,6 +75,8 @@
     \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex
 */
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_GRAPHICSVIEW
 
 #include <private/qgraphicsscene_p.h>

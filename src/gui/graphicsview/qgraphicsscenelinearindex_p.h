@@ -53,13 +53,7 @@
 // We mean it.
 //
 
-#include <QtCore/qlist.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
+#include <QtCore/qglobal.h>
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -67,6 +61,12 @@ QT_MODULE(Gui)
 #include <QtCore/qlist.h>
 #include <QtGui/qgraphicsitem.h>
 #include <private/qgraphicssceneindex_p.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
 
 class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
