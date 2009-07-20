@@ -47,6 +47,9 @@
 #include <QFile>
 #include <QtDeclarative/qmlengine.h>
 
+#include <QKeyEvent>
+#include <QPainter>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -233,12 +236,12 @@ void QFxImage::componentComplete()
     \qmlproperty bool Image::smooth
 
     Set this property if you want the image to be smoothly filtered when scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If 
-    the Image is displayed at its natural size, this property has no visual or 
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the Image is displayed at its natural size, this property has no visual or
     performance effect.
 
-    \note Generally scaling artifacts are only visible if the image is stationary on 
-    the screen.  A common pattern when animating an image is to disable smooth 
+    \note Generally scaling artifacts are only visible if the image is stationary on
+    the screen.  A common pattern when animating an image is to disable smooth
     filtering at the beginning of the animation and reenable it at the conclusion.
  */
 
@@ -247,7 +250,7 @@ void QFxImage::componentComplete()
     \brief whether the image is smoothly transformed.
 
     This property is provided purely for the purpose of optimization. Turning
-    smooth transforms off is faster, but looks worse; turning smooth 
+    smooth transforms off is faster, but looks worse; turning smooth
     transformations on is slower, but looks better.
 
     By default smooth transformations are off.
@@ -348,7 +351,7 @@ void QFxImage::paintContents(QPainter &p)
             p.drawPixmap(QRect(sgl, 0, w - xSide, sgt), pix,
                         QRect(sgl, 0, pix.width() - xSide, sgt));
         // Upper right
-        if (sgt && pix.width() - sgr) 
+        if (sgt && pix.width() - sgr)
             p.drawPixmap(QPoint(w-sgr, 0), pix,
                         QRect(pix.width()-sgr, 0, sgr, sgt));
         // Middle left
@@ -359,13 +362,13 @@ void QFxImage::paintContents(QPainter &p)
         // Middle
         if (pix.width() - xSide && pix.height() - ySide)
             p.drawPixmap(QRect(sgl, sgt, w - xSide, h - ySide),
-                        pix, 
+                        pix,
                         QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
         // Middle right
         if (sgr && pix.height() - ySide)
             p.drawPixmap(QRect(w-sgr, sgt, sgr, h - ySide), pix,
                         QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
-        // Lower left 
+        // Lower left
         if (sgl && sgr)
             p.drawPixmap(QPoint(0, h - sgb), pix,
                         QRect(0, pix.height() - sgb, sgl, sgb));
