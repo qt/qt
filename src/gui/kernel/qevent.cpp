@@ -3531,21 +3531,23 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 #endif
 
 /*! \class QTouchEvent
-    \brief The QTouchEvent class contains parameters that describe a touch event
-.
+    \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
     \ingroup events
 
     Touch events occur when pressing, releasing, or moving one or more
     touch points on a touch device (such as a touch-screen or
-    track-pad), and if the widget has the Qt::WA_AcceptTouchEvents
-    attribute.
+    track-pad). To receive touch events, widgets have to have the
+    Qt::WA_AcceptTouchEvents attribute set and graphics items need to have
+    the \l{QGraphicsItem::setAcceptsTouchEvents}{setAcceptsTouchEvents}
+    attribute set to true.
 
     All touch events are of type QEvent::TouchBegin,
     QEvent::TouchUpdate, or QEvent::TouchEnd. The touchPoints()
     function returns a list of all touch points contained in the event.
     Information about each touch point can be retreived using the
-    QTouchEvent::TouchPoint class.
+    QTouchEvent::TouchPoint class. The Qt::TouchPointState enum
+    describes the different states that a touch point may have.
 
     Similar to QMouseEvent, Qt automatically grabs each touch point on
     the first press inside a widget; the widget will receive all
@@ -3563,10 +3565,11 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     then mouse events are simulated from the state of the first touch
     point.
 
-    The Qt::TouchPointState enum describes the different states that a
-    touch point may have.
+    Reimplement QWidget::event() for widgets and QGraphicsItem::sceneEvent()
+    for items in a graphics view to receive touch events.
 
-    QTouchEvent::TouchPoint Qt::TouchPointState Qt::WA_AcceptTouchEvents
+    \sa QTouchEvent::TouchPoint, Qt::TouchPointState, Qt::WA_AcceptTouchEvents,
+    QGraphicsItem::acceptTouchEvents
 */
 
 /*! \enum Qt::TouchPointState
@@ -3584,13 +3587,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     \omitvalue TouchPointPrimary
 */
 
-/*! \class QTouchEvent::TouchPoint
-    \brief The QTouchEvent::TouchPoint class provide information about a touch point in a QTouchEvent.
-    \since 4.6
-*/
-
 /*! \enum QTouchEvent::DeviceType
-    \since 4.6
 
     This enum represents the type of device that generated a QTouchEvent.
 
@@ -3669,6 +3666,11 @@ QTouchEvent::~QTouchEvent()
     Sets the list of touch points for this event.
 */
 
+/*! \class QTouchEvent::TouchPoint
+    \brief The QTouchEvent::TouchPoint class provides information about a touch point in a QTouchEvent.
+    \since 4.6
+*/
+
 /*! \internal
 
     Constructs a QTouchEvent::TouchPoint for use in a QTouchEvent.
@@ -3728,7 +3730,9 @@ bool QTouchEvent::TouchPoint::isPrimary() const
 
 /*!
     Returns the position of this touch point, relative to the widget
-    or item that received the event.
+    or QGraphicsItem that received the event.
+
+    \sa startPos(), lastPos(), screenPos(), scenePos(), normalizedPos()
 */
 QPointF QTouchEvent::TouchPoint::pos() const
 {
@@ -3737,6 +3741,13 @@ QPointF QTouchEvent::TouchPoint::pos() const
 
 /*!
     Returns the scene position of this touch point.
+
+    The scene position is the position in QGraphicsScene coordinates
+    if the QTouchEvent is handled by a QGraphicsItem::touchEvent()
+    reimplementation, and identical to the screen position for
+    widgets.
+
+    \sa startScenePos(), lastScenePos(), pos()
 */
 QPointF QTouchEvent::TouchPoint::scenePos() const
 {
@@ -3745,6 +3756,8 @@ QPointF QTouchEvent::TouchPoint::scenePos() const
 
 /*!
     Returns the screen position of this touch point.
+
+    \sa startScreenPos(), lastScreenPos(), pos()
 */
 QPointF QTouchEvent::TouchPoint::screenPos() const
 {
@@ -3752,8 +3765,12 @@ QPointF QTouchEvent::TouchPoint::screenPos() const
 }
 
 /*!
-    Returns the position of this touch point. The coordinates are normalized to size of the touch
-    device, i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+    Returns the normalized position of this touch point.
+
+    The coordinates are normalized to the size of the touch device,
+    i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+
+    \sa startNormalizedPos(), lastNormalizedPos(), pos()
 */
 QPointF QTouchEvent::TouchPoint::normalizedPos() const
 {
@@ -3762,7 +3779,9 @@ QPointF QTouchEvent::TouchPoint::normalizedPos() const
 
 /*!
     Returns the starting position of this touch point, relative to the
-    widget that received the event.
+    widget or QGraphicsItem that received the event.
+
+    \sa pos(), lastPos()
 */
 QPointF QTouchEvent::TouchPoint::startPos() const
 {
@@ -3771,6 +3790,13 @@ QPointF QTouchEvent::TouchPoint::startPos() const
 
 /*!
     Returns the starting scene position of this touch point.
+
+    The scene position is the position in QGraphicsScene coordinates
+    if the QTouchEvent is handled by a QGraphicsItem::touchEvent()
+    reimplementation, and identical to the screen position for
+    widgets.
+
+    \sa scenePos(), lastScenePos()
 */
 QPointF QTouchEvent::TouchPoint::startScenePos() const
 {
@@ -3779,6 +3805,8 @@ QPointF QTouchEvent::TouchPoint::startScenePos() const
 
 /*!
     Returns the starting screen position of this touch point.
+
+    \sa screenPos(), lastScreenPos()
 */
 QPointF QTouchEvent::TouchPoint::startScreenPos() const
 {
@@ -3786,8 +3814,12 @@ QPointF QTouchEvent::TouchPoint::startScreenPos() const
 }
 
 /*!
-    Returns the starting position of this touch point. The coordinates are normalized to size of
-    the touch device, i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+    Returns the normalized starting position of this touch point.
+
+    The coordinates are normalized to the size of the touch device,
+    i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+
+    \sa normalizedPos(), lastNormalizedPos()
 */
 QPointF QTouchEvent::TouchPoint::startNormalizedPos() const
 {
@@ -3796,7 +3828,9 @@ QPointF QTouchEvent::TouchPoint::startNormalizedPos() const
 
 /*!
     Returns the position of this touch point from the previous touch
-    event, relative to the widget that received the event.
+    event, relative to the widget or QGraphicsItem that received the event.
+
+    \sa pos(), startPos()
 */
 QPointF QTouchEvent::TouchPoint::lastPos() const
 {
@@ -3806,6 +3840,13 @@ QPointF QTouchEvent::TouchPoint::lastPos() const
 /*!
     Returns the scene position of this touch point from the previous
     touch event.
+
+    The scene position is the position in QGraphicsScene coordinates
+    if the QTouchEvent is handled by a QGraphicsItem::touchEvent()
+    reimplementation, and identical to the screen position for
+    widgets.
+
+    \sa scenePos(), startScenePos()
 */
 QPointF QTouchEvent::TouchPoint::lastScenePos() const
 {
@@ -3815,6 +3856,8 @@ QPointF QTouchEvent::TouchPoint::lastScenePos() const
 /*!
     Returns the screen position of this touch point from the previous
     touch event.
+
+    \sa screenPos(), startScreenPos()
 */
 QPointF QTouchEvent::TouchPoint::lastScreenPos() const
 {
@@ -3822,9 +3865,13 @@ QPointF QTouchEvent::TouchPoint::lastScreenPos() const
 }
 
 /*!
-    Returns the position of this touch point from the previous touch event. The coordinates are
-    normalized to size of the touch device, i.e. (0,0) is the top-left corner and (1,1) is the
-    bottom-right corner.
+    Returns the normalized position of this touch point from the
+    previous touch event.
+
+    The coordinates are normalized to the size of the touch device,
+    i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+
+    \sa normalizedPos(), startNormalizedPos()
 */
 QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
 {
@@ -3832,8 +3879,11 @@ QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
 }
 
 /*!
-    Returns the rect for this touch point. The rect is centered around the point returned by pos().
-    Note this function returns an empty rect if the device does not report touch point sizes.
+    Returns the rect for this touch point, relative to the widget
+    or QGraphicsItem that received the event. The rect is centered
+    around the point returned by pos().
+
+    \note This function returns an empty rect if the device does not report touch point sizes.
 */
 QRectF QTouchEvent::TouchPoint::rect() const
 {
@@ -3842,6 +3892,10 @@ QRectF QTouchEvent::TouchPoint::rect() const
 
 /*!
     Returns the rect for this touch point in scene coordinates.
+
+    \note This function returns an empty rect if the device does not report touch point sizes.
+
+    \sa scenePos(), rect()
 */
 QRectF QTouchEvent::TouchPoint::sceneRect() const
 {
@@ -3850,6 +3904,10 @@ QRectF QTouchEvent::TouchPoint::sceneRect() const
 
 /*!
     Returns the rect for this touch point in screen coordinates.
+
+    \note This function returns an empty rect if the device does not report touch point sizes.
+
+    \sa screenPos(), rect()
 */
 QRectF QTouchEvent::TouchPoint::screenRect() const
 {
