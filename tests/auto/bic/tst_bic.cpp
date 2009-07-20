@@ -145,7 +145,7 @@ void tst_Bic::initTestCase_data()
 
 void tst_Bic::initTestCase()
 {
-    QString qtDir = QString::fromLocal8Bit(getenv("QTDIR"));
+    QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
     QVERIFY2(!qtDir.isEmpty(), "This test needs $QTDIR");
 
     if (qgetenv("PATH").contains("teambuilder"))
@@ -220,7 +220,7 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
     tmpQFile.write(tmpFileContents);
     tmpQFile.flush();
 
-    QString qtDir = QString::fromLocal8Bit(getenv("QTDIR"));
+    QString qtDir = QString::fromLocal8Bit(qgetenv("QTDIR"));
 #ifdef Q_OS_WIN
     qtDir.replace('\\', '/');
 #endif
