@@ -3296,7 +3296,7 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
 {
     bool initMatchState = !priv->eng;
 #if !defined(QT_NO_REGEXP_OPTIM)
-    if (!priv->eng) {
+    if (!priv->eng && globalEngineCache()) {
         QMutexLocker locker(mutex());
         priv->eng = globalEngineCache()->take(priv->engineKey);
         if (priv->eng != 0)
