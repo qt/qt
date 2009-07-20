@@ -6,7 +6,6 @@ var tileSize = 40;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
-var backSrc = "content/pics/background.png";
 var swapped = false;
 
 var compSrc;
@@ -15,12 +14,10 @@ var component;
 function swapTileSrc(){
     if(swapped)
         return;
-    if(tileSrc == "content/FastBlock.qml"){
+    if(tileSrc == "content/SpinBlock.qml"){
         tileSrc = "content/BoomBlock.qml";
-        backSrc = "content/pics/background.png";
     }else{
-        backSrc = "content/pics/qtlogo.png";
-        tileSrc = "content/FastBlock.qml";
+        tileSrc = "content/SpinBlock.qml";
     }
     swapped = true;
 }
@@ -37,8 +34,6 @@ function initBoard()
             board[i].destroy();
     }
 
-    background.source = backSrc;
-    swapped = false;
     maxX = Math.floor(gameCanvas.width/tileSize);
     maxY = Math.floor(gameCanvas.height/tileSize);
     maxIndex = maxX*maxY;

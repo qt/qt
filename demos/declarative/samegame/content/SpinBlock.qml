@@ -1,4 +1,4 @@
-Rect { id:block
+Item { id:block
     //Note: These properties are the interface used to control the blocks
     property bool dying: false
     property bool spawned: false
@@ -6,14 +6,21 @@ Rect { id:block
     property int targetY: 0
     property int targetX: 0
 
-    color: {if(type==0){"red";}else if(type==1){"blue";}else{"green";}}
-    pen.width: 1
-    pen.color: "black"
+    AnimatedImage {
+        source: if(type == 0) {
+                    "pics/gnome/redStone.gif"; 
+                } else if (type == 1) { 
+                    "pics/gnome/blueStone.gif"; 
+                } else {
+                    "pics/gnome/greenStone.gif"; 
+                }
+    }
     opacity: 0
     y: targetY
     x: targetX
-    //y: Behavior { NumberAnimation { properties:"y"; duration: 200 } }
-    //opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
+    y: Behavior { NumberAnimation { properties:"y"; duration: 200 } }
+    x: Behavior { NumberAnimation { properties:"x"; duration: 200 } }
+    opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
 
     states: [
 
