@@ -44,7 +44,7 @@ static const HashTableValue JSCSSValueListTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSValueListTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSValueListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSCSSValueListTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSCSSValueListConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSValueListConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSValueListConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSValueListConstructorTableValues, 0 };
 #else
@@ -97,7 +97,7 @@ static const HashTableValue JSCSSValueListPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSValueListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSValueListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSValueListPrototypeTableValues, 0 };
 #else

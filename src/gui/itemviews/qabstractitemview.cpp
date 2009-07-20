@@ -3881,34 +3881,45 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
     return true;
 }
 
-QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
+/*
+  \internal
+
+  returns the pair QRect/QModelIndex that should be painted on the viewports's rect
+  */
+
+QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const
 {
     Q_ASSERT(r);
     Q_Q(const QAbstractItemView);
     QRect &rect = *r;
     const QRect viewportRect = viewport->rect();
-    QList<QRect> rects;
-    QModelIndexList paintedIndexes;
+    QItemViewPaintPairs ret;
     for (int i = 0; i < indexes.count(); ++i) {
         const QModelIndex &index = indexes.at(i);
         const QRect current = q->visualRect(index);
         if (current.intersects(viewportRect)) {
-            paintedIndexes += index;
-            rects += current;
+            ret += qMakePair(current, index);
             rect |= current;
         }
     }
-    rect = rect.intersected(viewportRect);
-    if (rect.isEmpty())
+    rect &= viewportRect;
+    return ret;
+}
+
+QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
+{
+    Q_ASSERT(r);
+    QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
+    if (paintPairs.isEmpty())
         return QPixmap();
-    QPixmap pixmap(rect.size());
+    QPixmap pixmap(r->size());
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     QStyleOptionViewItemV4 option = viewOptionsV4();
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < paintedIndexes.count(); ++j) {
-        const QModelIndex &current = paintedIndexes.at(j);
-        option.rect = QRect(rects.at(j).topLeft() - rect.topLeft(), rects.at(j).size());
+    for (int j = 0; j < paintPairs.count(); ++j) {
+        option.rect = paintPairs.at(j).first.translated(-r->topLeft());
+        const QModelIndex &current = paintPairs.at(j).second;
         delegateForIndex(current)->paint(&painter, option, current);
     }
     return pixmap;

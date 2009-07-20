@@ -71,7 +71,7 @@ static const HashTableValue JSSVGMarkerElementTableValues[16] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMarkerElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMarkerElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGMarkerElementTableValues, 0 };
 #else
@@ -91,7 +91,7 @@ static const HashTableValue JSSVGMarkerElementConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMarkerElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMarkerElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGMarkerElementConstructorTableValues, 0 };
 #else
@@ -138,7 +138,7 @@ static const HashTableValue JSSVGMarkerElementPrototypeTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMarkerElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMarkerElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSSVGMarkerElementPrototypeTableValues, 0 };
 #else

@@ -2,7 +2,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,7 +35,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,8 +59,8 @@ class QmlJSGrammar
 public:
   enum {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 91,
-    SHIFT_THERE = 90,
+    REDUCE_HERE = 94,
+    SHIFT_THERE = 93,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
@@ -85,6 +85,9 @@ public:
     T_EQ_EQ = 18,
     T_EQ_EQ_EQ = 19,
     T_FALSE = 82,
+    T_FEED_JS_EXPRESSION = 92,
+    T_FEED_JS_STATEMENT = 91,
+    T_FEED_UI_PROGRAM = 90,
     T_FINALLY = 20,
     T_FOR = 21,
     T_FUNCTION = 22,
@@ -151,26 +154,20 @@ public:
     T_XOR = 78,
     T_XOR_EQ = 79,
 
-    ACCEPT_STATE = 615,
-    RULE_COUNT = 338,
-    STATE_COUNT = 616,
-    TERMINAL_COUNT = 92,
-    NON_TERMINAL_COUNT = 104,
+    ACCEPT_STATE = 616,
+    RULE_COUNT = 337,
+    STATE_COUNT = 617,
+    TERMINAL_COUNT = 95,
+    NON_TERMINAL_COUNT = 103,
 
-    GOTO_INDEX_OFFSET = 616,
-    GOTO_INFO_OFFSET = 2139,
-    GOTO_CHECK_OFFSET = 2139
+    GOTO_INDEX_OFFSET = 617,
+    GOTO_INFO_OFFSET = 2231,
+    GOTO_CHECK_OFFSET = 2231
   };
 
   static const char  *const spell [];
   static const int            lhs [];
   static const int            rhs [];
-
-#ifndef QLALR_NO_QMLJSGRAMMAR_DEBUG_INFO
-  static const int     rule_index [];
-  static const int      rule_info [];
-#endif // QLALR_NO_QMLJSGRAMMAR_DEBUG_INFO
-
   static const int   goto_default [];
   static const int action_default [];
   static const int   action_index [];

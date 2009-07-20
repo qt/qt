@@ -61,7 +61,7 @@ static const HashTableValue JSSVGFEColorMatrixElementTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEColorMatrixElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEColorMatrixElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEColorMatrixElementTableValues, 0 };
 #else
@@ -80,7 +80,7 @@ static const HashTableValue JSSVGFEColorMatrixElementConstructorTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEColorMatrixElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEColorMatrixElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGFEColorMatrixElementConstructorTableValues, 0 };
 #else
@@ -124,7 +124,7 @@ static const HashTableValue JSSVGFEColorMatrixElementPrototypeTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEColorMatrixElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEColorMatrixElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGFEColorMatrixElementPrototypeTableValues, 0 };
 #else

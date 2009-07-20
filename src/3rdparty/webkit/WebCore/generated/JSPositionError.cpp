@@ -43,7 +43,7 @@ static const HashTableValue JSPositionErrorTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPositionErrorTable =
+static JSC_CONST_HASHTABLE HashTable JSPositionErrorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSPositionErrorTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSPositionErrorConstructorTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPositionErrorConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSPositionErrorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPositionErrorConstructorTableValues, 0 };
 #else
@@ -103,7 +103,7 @@ static const HashTableValue JSPositionErrorPrototypeTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSPositionErrorPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSPositionErrorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPositionErrorPrototypeTableValues, 0 };
 #else

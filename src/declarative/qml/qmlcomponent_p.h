@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlComponent;
 class QmlEngine;
-class QmlCompiledComponent;
+class QmlCompiledData;
 
 class QmlComponentPrivate : public QObjectPrivate
 {
@@ -86,7 +86,7 @@ public:
 
     int start;
     int count;
-    QmlCompiledComponent *cc;
+    QmlCompiledData *cc;
 
     QList<QmlEnginePrivate::SimpleList<QmlBindableValue> > bindValues;
     QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;

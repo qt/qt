@@ -8,8 +8,8 @@
 class MyQmlObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool trueProperty READ trueProperty)
-    Q_PROPERTY(bool falseProperty READ falseProperty)
+    Q_PROPERTY(bool trueProperty READ trueProperty CONSTANT)
+    Q_PROPERTY(bool falseProperty READ falseProperty CONSTANT)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged);
 public:
@@ -64,14 +64,14 @@ QML_DECLARE_TYPE(MyQmlObject);
 class MyQmlContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<MyQmlContainer*>* children READ children)
+    Q_PROPERTY(QList<MyQmlObject*>* children READ children)
 public:
     MyQmlContainer() {}
 
-    QList<MyQmlContainer*> *children() { return &m_children; }
+    QList<MyQmlObject*> *children() { return &m_children; }
 
 private:
-    QList<MyQmlContainer*> m_children;
+    QList<MyQmlObject*> m_children;
 };
 
 QML_DECLARE_TYPE(MyQmlContainer);
@@ -94,8 +94,8 @@ public:
 class MyDefaultObject1 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int horseLegs READ horseLegs);
-    Q_PROPERTY(int antLegs READ antLegs);
+    Q_PROPERTY(int horseLegs READ horseLegs CONSTANT);
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
 public:
     int horseLegs() const { return 4; }
     int antLegs() const { return 6; }
@@ -104,8 +104,8 @@ public:
 class MyDefaultObject2 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs);
-    Q_PROPERTY(int emuLegs READ emuLegs);
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
+    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT);
 public:
     int antLegs() const { return 5; } // Had an accident
     int emuLegs() const { return 2; }
@@ -114,8 +114,8 @@ public:
 class MyDefaultObject3 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs);
-    Q_PROPERTY(int humanLegs READ humanLegs);
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
+    Q_PROPERTY(int humanLegs READ humanLegs CONSTANT);
 public:
     int antLegs() const { return 7; } // Mutant
     int humanLegs() const { return 2; }

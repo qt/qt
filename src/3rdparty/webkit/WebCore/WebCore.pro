@@ -58,6 +58,12 @@ freebsd-*: DEFINES += HAVE_PTHREAD_NP_H
 
 DEFINES += BUILD_WEBKIT
 
+# Remove whole program optimizations due to miscompilations
+win32-msvc2005|win32-msvc2008:{
+    QMAKE_CFLAGS_RELEASE -= -GL
+    QMAKE_CXXFLAGS_RELEASE -= -GL
+}
+
 win32-*: DEFINES += _HAS_TR1=0
 wince* {
 #    DEFINES += ENABLE_SVG=0 ENABLE_XPATH=0 ENABLE_XBL=0 \
@@ -100,6 +106,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_OFFLINE_WEB_APPLICATIONS=.): DEFINES += ENABLE_OFFLINE_WEB_APPLICATIONS=1
 !contains(DEFINES, ENABLE_DOM_STORAGE=.): DEFINES += ENABLE_DOM_STORAGE=1
 !contains(DEFINES, ENABLE_ICONDATABASE=.): DEFINES += ENABLE_ICONDATABASE=1
+!contains(DEFINES, ENABLE_CHANNEL_MESSAGING=.): DEFINES += ENABLE_CHANNEL_MESSAGING=1
 
 # turn on SQLITE support if any of the dependent features are turned on
 !contains(DEFINES, ENABLE_SQLITE=.) {
@@ -116,6 +123,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_XSLT=.): DEFINES += ENABLE_XSLT=0
 #!contains(DEFINES, ENABLE_XBL=.): DEFINES += ENABLE_XBL=1
 !contains(DEFINES, ENABLE_WML=.): DEFINES += ENABLE_WML=0
+!contains(DEFINES, ENABLE_SHARED_WORKERS=.): DEFINES += ENABLE_SHARED_WORKERS=0
 !contains(DEFINES, ENABLE_WORKERS=.): DEFINES += ENABLE_WORKERS=1
 !contains(DEFINES, ENABLE_XHTMLMP=.): DEFINES += ENABLE_XHTMLMP=0
 
@@ -246,7 +254,7 @@ SVGCSSPROPERTIES = $$PWD/css/SVGCSSPropertyNames.in
 SVGCSSVALUES = $$PWD/css/SVGCSSValueKeywords.in
 
 STYLESHEETS_EMBED = \
-    $$PWD/css/html4.css \
+    $$PWD/css/html.css \
     $$PWD/css/quirks.css \
     $$PWD/css/svg.css \
     $$PWD/css/view-source.css \
@@ -404,6 +412,7 @@ IDL_BINDINGS += \
     html/ImageData.idl \
     html/MediaError.idl \
     html/TextMetrics.idl \
+    html/ValidityState.idl \
     html/VoidCallback.idl \
     inspector/InspectorController.idl \
     page/BarInfo.idl \
@@ -748,6 +757,7 @@ SOURCES += \
     html/CollectionCache.cpp \
     html/DataGridColumn.cpp \
     html/DataGridColumnList.cpp \
+    html/DOMDataGridDataSource.cpp \
     html/File.cpp \
     html/FileList.cpp \
     html/FormDataList.cpp \
@@ -833,6 +843,7 @@ SOURCES += \
     html/HTMLViewSourceDocument.cpp \
     html/ImageData.cpp \
     html/PreloadScanner.cpp \
+    html/ValidityState.cpp \
     inspector/ConsoleMessage.cpp \
     inspector/InspectorDatabaseResource.cpp \
     inspector/InspectorDOMStorageResource.cpp \
@@ -1012,7 +1023,6 @@ SOURCES += \
     plugins/PluginStream.cpp \
     plugins/PluginView.cpp \
     rendering/AutoTableLayout.cpp \
-    rendering/bidi.cpp \
     rendering/break_lines.cpp \
     rendering/CounterNode.cpp \
     rendering/EllipsisBox.cpp \
@@ -1025,6 +1035,7 @@ SOURCES += \
     rendering/RenderApplet.cpp \
     rendering/RenderArena.cpp \
     rendering/RenderBlock.cpp \
+    rendering/RenderBlockLineLayout.cpp \
     rendering/RenderBox.cpp \
     rendering/RenderBoxModelObject.cpp \
     rendering/RenderBR.cpp \
@@ -1106,7 +1117,6 @@ SOURCES += \
 HEADERS += \
     $$PWD/platform/graphics/qt/StillImageQt.h \
     $$PWD/platform/qt/QWebPopup.h \
-    $$PWD/../WebKit/qt/Api/qwebpluginfactory.h \
     $$PWD/../WebKit/qt/WebCoreSupport/FrameLoaderClientQt.h \
     $$PWD/platform/network/qt/QNetworkReplyHandler.h \
     $$PWD/rendering/style/CursorData.h \
@@ -1114,9 +1124,7 @@ HEADERS += \
     $$PWD/rendering/style/StyleInheritedData.h \
     $$PWD/rendering/style/StyleRareInheritedData.h \
     $$PWD/rendering/style/StyleRareNonInheritedData.h \
-    $$PWD/rendering/style/StyleReflection.h \
-    $$PWD/../WebKit/qt/Api/qwebsecurityorigin.h \
-    $$PWD/../WebKit/qt/Api/qwebdatabase.h
+    $$PWD/rendering/style/StyleReflection.h
 
 
 SOURCES += \
@@ -1293,6 +1301,10 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
         plugins/PluginViewNone.cpp
 }
 
+contains(DEFINES, ENABLE_CHANNEL_MESSAGING=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_CHANNEL_MESSAGING=1
+}
+
 contains(DEFINES, ENABLE_DASHBOARD_SUPPORT=0) {
     DASHBOARDSUPPORTCSSPROPERTIES -= $$PWD/css/DashboardSupportCSSPropertyNames.in
 }
@@ -1322,6 +1334,7 @@ contains(DEFINES, ENABLE_SQLITE=1) {
     SOURCES += \
         platform/sql/SQLiteAuthorizer.cpp \
         platform/sql/SQLiteDatabase.cpp \
+        platform/sql/SQLiteFileSystem.cpp \
         platform/sql/SQLiteStatement.cpp \
         platform/sql/SQLiteTransaction.cpp \
         platform/sql/SQLValue.cpp \
@@ -1368,10 +1381,12 @@ contains(DEFINES, ENABLE_DOM_STORAGE=1) {
         storage/LocalStorageThread.h \
         storage/Storage.h \
         storage/StorageArea.h \
+        storage/StorageAreaImpl.h \
         storage/StorageAreaSync.h \
         storage/StorageEvent.h \
         storage/StorageMap.h \
         storage/StorageNamespace.h \
+        storage/StorageNamespaceImpl.h \
         storage/StorageSyncManager.h
 
     SOURCES += \
@@ -1380,10 +1395,12 @@ contains(DEFINES, ENABLE_DOM_STORAGE=1) {
         storage/LocalStorageThread.cpp \
         storage/Storage.cpp \
         storage/StorageArea.cpp \
+        storage/StorageAreaImpl.cpp \
         storage/StorageAreaSync.cpp \
         storage/StorageEvent.cpp \
         storage/StorageMap.cpp \
         storage/StorageNamespace.cpp \
+        storage/StorageNamespaceImpl.cpp \
         storage/StorageSyncManager.cpp
 
     IDL_BINDINGS += \
@@ -1425,6 +1442,21 @@ contains(DEFINES, ENABLE_WORKERS=1) {
         workers/WorkerRunLoop.cpp \
         workers/WorkerThread.cpp \
         workers/WorkerScriptLoader.cpp
+}
+
+contains(DEFINES, SHARED_WORKERS=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_SHARED_WORKERS=1
+
+    IDL_BINDINGS += \
+        workers/AbstractWorker.idl \
+        workers/SharedWorker.idl
+
+    SOURCES += \
+        bindings/js/JSAbstractWorkerCustom.cpp \
+        bindings/js/JSSharedWorkerConstructor.cpp \
+        bindings/js/JSSharedWorkerCustom.cpp \
+        workers/AbstractWorker.cpp \
+        workers/SharedWorker.cpp
 }
 
 contains(DEFINES, ENABLE_VIDEO=1) {
@@ -2168,8 +2200,6 @@ HEADERS += $$WEBKIT_API_HEADERS
     target.path = $$[QT_INSTALL_LIBS]
     headers.files = $$WEBKIT_API_HEADERS
     headers.path = $$[QT_INSTALL_HEADERS]/QtWebKit
-    prf.files = $$PWD/../WebKit/qt/Api/qtwebkit.prf
-    prf.path = $$[QT_INSTALL_PREFIX]/mkspecs/features
 
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
@@ -2182,7 +2212,7 @@ HEADERS += $$WEBKIT_API_HEADERS
     }
 
 
-    INSTALLS += target headers prf
+    INSTALLS += target headers
 
     unix {
         CONFIG += create_pc create_prl

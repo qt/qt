@@ -41,6 +41,7 @@
 
 #include "qmlcomponent.h"
 #include "qmlcomponent_p.h"
+#include "qmlcompiler_p.h"
 #include "private/qmlcontext_p.h"
 #include "private/qmlengine_p.h"
 #include "qmlvme_p.h"
@@ -51,7 +52,6 @@
 #include <qmlengine.h>
 #include <QFileInfo>
 #include <qmlbindablevalue.h>
-#include "qmlcompiledcomponent_p.h"
 #include <QtCore/qdebug.h>
 #include <QApplication>
 
@@ -123,7 +123,7 @@ void QmlComponentPrivate::typeDataReady()
 void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
 {
     url = data->imports.baseUrl();
-    QmlCompiledComponent *c = data->toCompiledComponent(engine);
+    QmlCompiledData *c = data->toCompiledComponent(engine);
 
     if (!c) {
         Q_ASSERT(data->status == QmlCompositeTypeData::Error);
@@ -303,7 +303,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QByteArray &data, const QUrl
 /*!
     \internal
 */
-QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int start, int count, QObject *parent)
+QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledData *cc, int start, int count, QObject *parent)
     : QObject(*(new QmlComponentPrivate), parent)
 {
     Q_D(QmlComponent);
@@ -405,9 +405,10 @@ QString QmlComponent::errorsString() const
     QString ret;
     if(!isError())
         return ret;
-    foreach(const QmlError &e, d->errors){
-        ret += e.url().toString() + ":" + QString::number(e.line()) + " "
-                + e.description() + "\n";
+    foreach(const QmlError &e, d->errors) {
+        ret += e.url().toString() + QLatin1String(":") + 
+               QString::number(e.line()) + QLatin1String(" ") + 
+               e.description() + QLatin1String("\n");
     }
     return ret;
 }
@@ -532,15 +533,12 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         static_cast<QmlContextPrivate*>(ctxt->d_ptr)->startLine = d->cc->bytecode.at(d->start - 1).line;
         static_cast<QmlContextPrivate*>(ctxt->d_ptr)->endLine = d->cc->bytecode.at(d->start - 1).createComponent.endLine;
     }
-    ctxt->activate();
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);
 
     if (vme.isError()) 
         d->errors = vme.errors();
-
-    ctxt->deactivate();
 
     QmlEnginePrivate *ep = d->engine->d_func();
     if (ep->rootComponent == this) {

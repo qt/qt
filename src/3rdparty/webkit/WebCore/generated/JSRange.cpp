@@ -53,7 +53,7 @@ static const HashTableValue JSRangeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSRangeTableValues, 0 };
 #else
@@ -75,7 +75,7 @@ static const HashTableValue JSRangeConstructorTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSRangeConstructorTableValues, 0 };
 #else
@@ -144,7 +144,7 @@ static const HashTableValue JSRangePrototypeTableValues[32] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSRangePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSRangePrototypeTableValues, 0 };
 #else

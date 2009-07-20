@@ -40,9 +40,6 @@
 ****************************************************************************/
 
 #include "private/qfxitem_p.h"
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
 
 #include <stdlib.h>
 #include <math.h>
@@ -58,7 +55,7 @@
 #include <private/qmlanimation_p.h>
 
 #include "qfxparticles.h"
-
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 #define PI_SQR 9.8696044
@@ -350,11 +347,7 @@ public:
         maxX = minX = maxY = minY = 0;
     }
 
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &p);
-#elif defined(QFX_RENDER_OPENGL2)
-    void paintGLContents(GLPainter &);
-#endif
 
     void updateSize();
 
@@ -375,9 +368,6 @@ public:
         , angle(0), angleDev(0), velocity(0), velocityDev(0)
         , addParticleTime(0), addParticleCount(0), lastAdvTime(0), stream(false), streamDelay(0)
         , emitting(true), motion(0), clock(this)
-#if defined(QFX_RENDER_OPENGL)
-        , texDirty(true)
-#endif
     {
     }
 
@@ -418,13 +408,8 @@ public:
     QList<QFxParticle> particles;
     QTickAnimationProxy<QFxParticlesPrivate, &QFxParticlesPrivate::tick> clock;
 
-#if defined(QFX_RENDER_OPENGL)
-    bool texDirty;
-    GLTexture tex;
-#endif
 };
 
-//TODO: Stop the clock if no visible particles and not emitting (restart on emittingChanged)
 void QFxParticlesPrivate::tick(int time)
 {
     Q_Q(QFxParticles);
@@ -473,17 +458,15 @@ void QFxParticlesPrivate::tick(int time)
                }
             }
         }
-        while(particles.count() < count && particles.count() < percCount && streamWidth--)
-                createParticle(time);
+        while(particles.count() < count &&
+                (!stream || (particles.count() < percCount && streamWidth--)))
+            createParticle(time);
     }
 
     lastAdvTime = time;
-    if (oldCount || particles.count()) {
-        if (q->itemParent())
-            q->itemParent()->update();
-        else
-            q->update();
-    } else if (!count) {
+    paintItem->updateSize();
+    paintItem->update();
+    if (!(oldCount || particles.count()) && (!count || !emitting)) {
         lastAdvTime = 0;
         clock.stop();
     }
@@ -654,11 +637,8 @@ void QFxParticles::imageLoaded()
 {
     Q_D(QFxParticles);
     d->image = QFxPixmap(d->url);
-#if defined(QFX_RENDER_OPENGL)
-    d->texDirty = true;
-    d->tex.clear();
-#endif
-    update();
+    d->paintItem->updateSize();
+    d->paintItem->update();
 }
 
 void QFxParticles::setSource(const QUrl &name)
@@ -673,11 +653,8 @@ void QFxParticles::setSource(const QUrl &name)
     if (name.isEmpty()) {
         d->url = name;
         d->image = QPixmap();
-#if defined(QFX_RENDER_OPENGL)
-        d->texDirty = true;
-        d->tex.clear();
-#endif
-        update();
+        d->paintItem->updateSize();
+        d->paintItem->update();
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
@@ -704,12 +681,15 @@ void QFxParticles::setCount(int cnt)
 {
     Q_D(QFxParticles);
     if (cnt != d->count) {
-        if (!d->count && d->clock.state() != QAbstractAnimation::Running)
-            d->clock.start(); // infinity??
+        int oldCount = d->count;
         d->count = cnt;
         d->addParticleTime = 0;
         d->addParticleCount = d->particles.count();
-        update();
+        if (!oldCount && d->clock.state() != QAbstractAnimation::Running) {
+            d->clock.start();
+        }
+        d->paintItem->updateSize();
+        d->paintItem->update();
     }
 }
 
@@ -1025,6 +1005,8 @@ void QFxParticles::setEmitting(bool r)
 {
     Q_D(QFxParticles);
     d->emitting = r;
+    if (d->count && r)
+        d->clock.start();
 }
 /*!
     \qmlproperty ParticleMotion Particles::motion
@@ -1059,31 +1041,16 @@ void QFxParticles::setMotion(QFxParticleMotion *motion)
     d->motion = motion;
 }
 
-void QFxParticles::dump(int depth)
-{
-    Q_D(QFxParticles);
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "URL:" << d->url << "Count:" << d->count;
-    QFxItem::dump(depth);
-}
-
 QString QFxParticles::propertyInfo() const
 {
     Q_D(const QFxParticles);
     return d->url.toString();
 }
 
-void QFxParticlesPainter::updateSize(){
-    setX(-500);
-    setY(-500);
-    setWidth(1000);
-    setHeight(1000);
-    return ;
-    const int parentX = parent()->x();
-    const int parentY = parent()->y();
-    //Have to use statistical approach to needed size as arbitrary particle
-    //motions make it impossible to calculate.
-    //max/min vars stored to give a never shrinking rect
+void QFxParticlesPainter::updateSize()
+{
+    const int parentX = parentItem()->x();
+    const int parentY = parentItem()->y();
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
         if(particle.x > maxX)
@@ -1106,7 +1073,6 @@ void QFxParticlesPainter::updateSize(){
     setY(myY);
 }
 
-#if defined(QFX_RENDER_QPAINTER) 
 void QFxParticles::paintContents(QPainter &p)
 {
     Q_UNUSED(p);
@@ -1118,82 +1084,24 @@ void QFxParticlesPainter::paintContents(QPainter &p)
     if (d->image.isNull())
         return;
 
-    updateSize();
-    const int myX = x() + parent()->x();
-    const int myY = y() + parent()->y();
+    const int myX = x() + parentItem()->x();
+    const int myY = y() + parentItem()->y();
 
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
         p.setOpacity(particle.opacity);
         p.drawPixmap(particle.x - myX, particle.y - myY, d->image);
     }
-    update();//Should I need this? (GV does)
 }
-#elif defined(QFX_RENDER_OPENGL2)
-void QFxParticles::paintGLContents(GLPainter &)
-{
-    //painting is done by the ParticlesPainter, so it can have the right size
-}
-
-void QFxParticlesPainter::paintGLContents(GLPainter &p)
-{
-
-    if (d->image.isNull())
-        return;
-
-    updateSize();
-
-    if (d->texDirty && !d->image.isNull()) {
-        d->tex.setImage(d->image.toImage());
-        d->tex.setHorizontalWrap(GLTexture::Repeat);
-        d->tex.setVerticalWrap(GLTexture::Repeat);
-    }
-    d->texDirty = false;
-
-    SingleTextureOpacityShader *shader = basicShaders()->singleTextureOpacity();
-    shader->enable();
-    shader->setTransform(p.activeTransform);
-
-    glBindTexture(GL_TEXTURE_2D, d->tex.texture());
-
-    const int myX = (int)(x() + parent()->x());
-    const int myY = (int)(y() + parent()->y());
-    float widthV = d->image.width();
-    float heightV = d->image.height();
-    for (int i = 0; i < d->particles.count(); ++i) {
-        const QFxParticle &particle = d->particles.at(i);
-        float left = particle.x - myX;
-        float right = particle.x - myX + widthV;
-        float top = particle.y - myY;
-        float bottom = particle.y - myY + heightV;
-
-        GLfloat vertices[] = { left, bottom,
-            right, bottom,
-            left, top,
-            right, top };
-
-        GLfloat texVertices[] = { 0, 0,
-            1, 0,
-            0, 1,
-            1, 1 };
-
-        shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
-        shader->setOpacity(particle.opacity * p.activeOpacity);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
-
-    shader->disableAttributeArray(SingleTextureShader::Vertices);
-    shader->disableAttributeArray(SingleTextureShader::TextureCoords);
-}
-#endif
 
 void QFxParticles::componentComplete()
 {
     Q_D(QFxParticles);
     QFxItem::componentComplete();
-    if (d->count)
-        d->clock.start(); // infinity??
+    if (d->count) {
+        d->paintItem->updateSize();
+        d->clock.start();
+    }
     if (d->lifeSpanDev > d->lifeSpan)
         d->lifeSpanDev = d->lifeSpan;
 }

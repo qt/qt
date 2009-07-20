@@ -1,1 +1,1 @@
-2:21:Cannot assign value "Hello World" to the read-only property readOnlyString
+2:21:Invalid property assignment: read-only property

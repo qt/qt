@@ -71,7 +71,7 @@ public:
                                                 bool create = false);
 };
 
-class QmlCompiledComponent;
+class QmlCompiledData;
 class QmlInstanceDeclarativeData : public QmlSimpleDeclarativeData
 {
 public:
@@ -79,7 +79,7 @@ public:
 
     virtual void destroyed(QObject *);
 
-    QmlCompiledComponent *deferredComponent;
+    QmlCompiledData *deferredComponent;
     unsigned int deferredIdx;
 
     static inline QmlInstanceDeclarativeData *get(QObject *object, 

@@ -43,7 +43,6 @@
 #include "qmldom_p.h"
 #include "private/qmlcompiler_p.h"
 #include "private/qmlengine_p.h"
-#include "qmlcompiledcomponent_p.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 #include <QtCore/QString>
@@ -165,7 +164,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     d->errors.clear();
     d->imports.clear();
 
-    QmlCompiledComponent component;
+    QmlCompiledData component;
     QmlCompiler compiler;
 
     QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, url);
@@ -588,7 +587,7 @@ QmlDomProperty QmlDomDynamicProperty::defaultValue() const
 int QmlDomDynamicProperty::position() const
 {
     if (isValid()) {
-        return d->property.range.offset;
+        return d->property.location.range.offset;
     } else
         return -1;
 }
@@ -600,7 +599,7 @@ int QmlDomDynamicProperty::position() const
 int QmlDomDynamicProperty::length() const
 {
     if (isValid())
-        return d->property.range.length;
+        return d->property.location.range.length;
     else
         return -1;
 }
@@ -770,7 +769,7 @@ QByteArray QmlDomObject::objectType() const
 Text { id: MyText }
     \endqml
 */
-QByteArray QmlDomObject::objectId() const
+QString QmlDomObject::objectId() const
 {
     if (d->object) return d->object->id;
     else return QByteArray();
@@ -1384,7 +1383,6 @@ QmlDomValue::Type QmlDomValue::type() const
         return PropertyBinding;
     case QmlParser::Value::ValueSource:
         return ValueSource;
-    case QmlParser::Value::Component:
     case QmlParser::Value::CreatedObject:
         return Object;
     case QmlParser::Value::SignalObject:

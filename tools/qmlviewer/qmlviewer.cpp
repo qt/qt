@@ -20,7 +20,6 @@
 #include "qmlpalette.h"
 #include "qml.h"
 #include <private/qperformancelog_p.h>
-#include "qfxtestengine.h"
 #include "deviceskin.h"
 
 #include <QNetworkDiskCache>
@@ -41,6 +40,7 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QNetworkProxyFactory>
+#include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
 
@@ -127,10 +127,9 @@ void PreviewDeviceSkin::slotPopupMenu()
 }
 
 
-QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
+QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
 {
-    testEngine = 0;
     devicemode = false;
     skin = 0;
     canvas = 0;
@@ -146,9 +145,7 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
-
-    if(testMode != QFxTestEngine::NoTest)
-        testEngine = new QFxTestEngine(testMode, testDir, canvas, this);
+    canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
 
@@ -194,7 +191,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), parent);
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
-    
+
     recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
@@ -299,7 +296,7 @@ void QmlViewer::takeSnapShot()
 {
     static int snapshotcount = 1;
     QString snapFileName = QString(QLatin1String("snapshot%1.png")).arg(snapshotcount);
-    canvas->asImage().save(snapFileName);
+    QPixmap::grabWidget(canvas).save(snapFileName);
     qDebug() << "Wrote" << snapFileName;
     ++snapshotcount;
 }
@@ -502,15 +499,6 @@ void QmlViewer::setRecordFile(const QString& f)
     record_file = f;
 }
 
-bool QmlViewer::event(QEvent *event)
-{
-    if (event->type() == QEvent::PaletteChange) {
-        setupPalettes();
-        return true;
-    }
-    return QWidget::event(event);
-}
-
 void QmlViewer::setRecordPeriod(int ms)
 {
     record_period = ms;
@@ -543,22 +531,11 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
         toggleRecording();
     } else if (event->key() == Qt::Key_F3 || (event->key() == Qt::Key_3 && devicemode)) {
         takeSnapShot();
-    } else if (event->key() == Qt::Key_F4 || (event->key() == Qt::Key_4 && devicemode)) {
-        canvas->dumpItems();
-        canvas->checkState();
     } else if (event->key() == Qt::Key_F5 || (event->key() == Qt::Key_5 && devicemode)) {
         reload();
-    } else if (event->key() == Qt::Key_F6 || (event->key() == Qt::Key_6 && devicemode)) {
-        canvas->dumpRoot();
-    } else if (event->key() == Qt::Key_F7 || (event->key() == Qt::Key_7 && devicemode)) {
-        canvas->dumpTiming();
     } else if (event->key() == Qt::Key_F8 || (event->key() == Qt::Key_8 && devicemode)) {
         QPerformanceLog::displayData();
         QPerformanceLog::clear();
-    } else if (event->key() == Qt::Key_F9) {
-        if(testEngine) testEngine->save();
-    } else if (event->key() == Qt::Key_F10) {
-        if(testEngine) testEngine->captureFullFrame();
     }
 
     QWidget::keyPressEvent(event);
@@ -686,10 +663,10 @@ void QmlViewer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == recordTimer.timerId()) {
         if (frame_stream) {
-            QImage frame(canvas->asImage());
+            QImage frame = QPixmap::grabWidget(canvas).toImage();
             frame_stream->write((char*)frame.bits(),frame.numBytes());
         } else {
-            frames.append(new QImage(canvas->asImage()));
+            frames.append(new QImage(QPixmap::grabWidget(canvas).toImage()));
         }
         if (record_autotime && autoTimer.elapsed() >= record_autotime)
             setRecording(false);

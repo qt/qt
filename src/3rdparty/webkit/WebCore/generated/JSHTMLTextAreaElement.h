@@ -69,6 +69,7 @@ JSC::JSValue JSC_HOST_CALL jsHTMLTextAreaElementPrototypeFunctionSetSelectionRan
 JSC::JSValue jsHTMLTextAreaElementDefaultValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLTextAreaElementDefaultValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLTextAreaElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTextAreaElementValidity(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsHTMLTextAreaElementAccessKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLTextAreaElementAccessKey(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLTextAreaElementCols(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

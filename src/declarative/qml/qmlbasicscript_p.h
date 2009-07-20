@@ -85,7 +85,7 @@ public:
         QmlParser::Object *context;
         QmlParser::Property *property;
         QmlParser::Variant expression;
-        QHash<QString, QPair<QmlParser::Object *, int> > ids;
+        QHash<QString, QmlParser::Object *> ids;
     };
 
     bool compile(const Expression &);

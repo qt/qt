@@ -86,6 +86,9 @@ struct QEditorInfo
 
 };
 
+typedef QPair<QRect, QModelIndex> QItemViewPaintPair;
+typedef QList<QItemViewPaintPair> QItemViewPaintPairs;
+
 class QEmptyModel : public QAbstractItemModel
 {
 public:
@@ -176,7 +179,9 @@ public:
             q_func()->style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, painter, q_func());
         }
     }
+
 #endif
+    virtual QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
 
     inline void releaseEditor(QWidget *editor) const {
         if (editor) {

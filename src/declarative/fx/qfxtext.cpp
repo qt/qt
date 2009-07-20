@@ -43,18 +43,13 @@
 #include "qfxtext_p.h"
 
 #include <private/qtextcontrol_p.h>
-
-#if defined(QFX_RENDER_OPENGL2)
-#include "glbasicshaders.h"
-#endif
-
 #include <private/qfxperf_p.h>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
-
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxText,Text)
@@ -73,7 +68,7 @@ QML_DEFINE_TYPE(QFxText,Text)
 
     \image declarative-text.png
 
-    If height and width are not explicitly set, Text will attempt to determine how 
+    If height and width are not explicitly set, Text will attempt to determine how
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
     prefer width to height (all text will be placed on a single line).
 
@@ -91,7 +86,7 @@ QML_DEFINE_TYPE(QFxText,Text)
 
     \brief The QFxText class provides a formatted text item that you can add to a QFxView.
 
-    Text was designed for read-only text; it does not allow for any text editing. 
+    Text was designed for read-only text; it does not allow for any text editing.
     It can display both plain and rich text. For example:
 
     \qml
@@ -101,7 +96,7 @@ QML_DEFINE_TYPE(QFxText,Text)
 
     \image text.png
 
-    If height and width are not explicitly set, Text will attempt to determine how 
+    If height and width are not explicitly set, Text will attempt to determine how
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
     prefer width to height (all text will be placed on a single line).
 
@@ -166,9 +161,9 @@ void QFxText::setText(const QString &n)
     if (d->richText) {
         if (!d->doc)
         {
-            d->control = new QTextControl(this); 
+            d->control = new QTextControl(this);
             d->control->setTextInteractionFlags(Qt::TextBrowserInteraction);
-            d->doc = d->control->document(); 
+            d->doc = d->control->document();
             d->doc->setDocumentMargin(0);
         }
         d->doc->setHtml(n);
@@ -304,8 +299,8 @@ QColor QFxText::styleColor() const
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and 
-    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom 
+    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
 
@@ -484,7 +479,7 @@ QString QFxText::activeLink() const
     return d->activeLink;
 }
 
-void QFxText::geometryChanged(const QRectF &newGeometry, 
+void QFxText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxText);
@@ -521,7 +516,7 @@ void QFxTextPrivate::updateSize()
         QSize size(0, 0);
 
         //setup instance of QTextLayout for all cases other than richtext
-        if (!richText) 
+        if (!richText)
             {
                 tmp = text;
                 tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
@@ -550,7 +545,7 @@ void QFxTextPrivate::updateSize()
             dy -= (int)doc->size().height();
         } else {
             dy -= size.height();
-        } 
+        }
         int yoff = 0;
 
         if (q->heightValid()) {
@@ -560,7 +555,7 @@ void QFxTextPrivate::updateSize()
                 yoff = dy/2;
         }
         q->setBaselineOffset(fm.ascent() + yoff);
-        
+
         if (!q->widthValid()) {
             int newWidth = (richText ? (int)doc->idealWidth() : size.width());
             q->setImplicitWidth(newWidth);
@@ -579,13 +574,6 @@ void QFxTextPrivate::updateSize()
 
 // ### text layout handling should be profiled and optimized as needed
 // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
-
-void QFxText::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << propertyInfo();
-    QFxItem::dump(depth);
-}
 
 QString QFxText::propertyInfo() const
 {
@@ -657,7 +645,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
         QTextLine line = layout->createLine();
         if (!line.isValid())
             break;
-        
+
         if ((wrap || elideMode != Qt::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
@@ -698,7 +686,7 @@ QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
     if (drawStyle) {
         p.setPen(styleColor);
     }
-    else 
+    else
         p.setPen(color);
     p.setFont(f);
     layout.draw(&p, QPointF(0, 0));
@@ -765,10 +753,6 @@ void QFxTextPrivate::checkImgCache()
             break;
         }
 
-#if defined(QFX_RENDER_OPENGL)
-    tex.setImage(imgCache.toImage(), GLTexture::PowerOfTwo);
-#endif
-
     imgDirty = false;
 }
 
@@ -787,7 +771,6 @@ void QFxText::setSmoothTransform(bool s)
     update();
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 void QFxText::paintContents(QPainter &p)
 {
     Q_D(QFxText);
@@ -830,7 +813,7 @@ void QFxText::paintContents(QPainter &p)
         break;
     }
 
-    bool needClip = !clip() && (d->imgCache.width() > width() || 
+    bool needClip = !clip() && (d->imgCache.width() > width() ||
                                 d->imgCache.height() > height());
 
     if (needClip) {
@@ -846,85 +829,6 @@ void QFxText::paintContents(QPainter &p)
         p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
 }
-
-#elif defined(QFX_RENDER_OPENGL2)
-void QFxText::paintGLContents(GLPainter &p)
-{
-    //return;
-    Q_D(QFxText);
-    d->checkImgCache();
-    if (d->imgCache.isNull())
-        return;
-
-    int w = width();
-    int h = height();
-
-    float x = 0;
-    float y = 0;
-
-    switch (d->hAlign) {
-    case AlignLeft:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - d->imgCache.width();
-        break;
-    case AlignHCenter:
-        x = (w - d->imgCache.width()) / 2;
-        break;
-    }
-
-    switch (d->vAlign) {
-    case AlignTop:
-        y = 0;
-        break;
-    case AlignBottom:
-        y = h - d->imgCache.height();
-        break;
-    case AlignVCenter:
-        y = (h - d->imgCache.height()) / 2;
-        break;
-    }
-
-    float widthV = d->imgCache.width();
-    float heightV = d->imgCache.height();
-    float glWidth = d->tex.glWidth();
-    float glHeight = d->tex.glHeight();
-
-    QGLShaderProgram *shader = p.useTextureShader();
-
-    float deltaX = 0.5 / qreal(d->tex.glSize().width());
-    float deltaY = 0.5 / qreal(d->tex.glSize().height());
-    glWidth -= deltaX;
-    glHeight -= deltaY;
-
-    GLfloat vertices[] = { x, y + heightV,
-                           x + widthV, y + heightV,
-                           x, y, 
-
-                           x + widthV, y + heightV,
-                           x, y, 
-                           x + widthV, y };
-
-    GLfloat texVertices[] = { deltaX, deltaY, 
-                              glWidth, deltaY, 
-                              deltaX, glHeight,
-
-                              glWidth, deltaY, 
-                              deltaX, glHeight,
-                              glWidth, glHeight };
-
-    shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
-    shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
-
-    glBindTexture(GL_TEXTURE_2D, d->tex.texture());
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    shader->disableAttributeArray(SingleTextureShader::Vertices);
-    shader->disableAttributeArray(SingleTextureShader::TextureCoords);
-}
-
-#endif
 
 void QFxText::componentComplete()
 {
@@ -958,7 +862,7 @@ void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (!event->isAccepted())
         QFxItem::mousePressEvent(event);
- 
+
 }
 
 /*!

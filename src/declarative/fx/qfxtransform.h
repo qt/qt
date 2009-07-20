@@ -44,9 +44,6 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QTransform>
-#if defined(QFX_RENDER_OPENGL)
-#include <QtGui/qmatrix4x4.h>
-#endif
 #include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
@@ -65,7 +62,7 @@ public:
     void update();
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 };
 
 class Q_DECLARATIVE_EXPORT QFxScale : public QFxTransform
@@ -93,7 +90,7 @@ public:
     void setYScale(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 Q_SIGNALS:
     void scaleChanged();
@@ -107,7 +104,7 @@ private:
     qreal _yScale;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 
 class Q_DECLARATIVE_EXPORT QFxAxis : public QObject
@@ -170,7 +167,7 @@ public:
     void setAngle(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 Q_SIGNALS:
     void angleChanged();
@@ -183,7 +180,7 @@ private:
     qreal _angle;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 
 class Q_DECLARATIVE_EXPORT QFxRotation3D : public QFxTransform
@@ -202,7 +199,7 @@ public:
     void setAngle(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 private Q_SLOTS:
     void update();
@@ -211,7 +208,7 @@ private:
     qreal _angle;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 
 class Q_DECLARATIVE_EXPORT QFxTranslation3D : public QFxTransform
@@ -230,7 +227,7 @@ public:
     void setDistance(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 private Q_SLOTS:
     void update();
@@ -239,7 +236,7 @@ private:
     qreal _distance;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 
 class Q_DECLARATIVE_EXPORT QFxPerspective : public QFxTransform
@@ -270,10 +267,6 @@ public:
     qreal scale() const { return _scale; }
     void setScale(qreal v) { _scale = v; update(); }
 
-#if defined(QFX_RENDER_OPENGL)
-    virtual bool isIdentity() const;
-    virtual QMatrix4x4 transform() const;
-#endif
 private:
     qreal _scale;
     qreal _x;
@@ -339,7 +332,7 @@ public:
     void setbottomRight_x(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 private:
     QPointF p;

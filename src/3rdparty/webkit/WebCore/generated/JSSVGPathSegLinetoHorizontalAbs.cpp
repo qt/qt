@@ -42,7 +42,7 @@ static const HashTableValue JSSVGPathSegLinetoHorizontalAbsTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoHorizontalAbsTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoHorizontalAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoHorizontalAbsTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGPathSegLinetoHorizontalAbsPrototypeTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoHorizontalAbsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoHorizontalAbsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoHorizontalAbsPrototypeTableValues, 0 };
 #else

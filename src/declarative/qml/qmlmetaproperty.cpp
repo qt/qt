@@ -643,8 +643,7 @@ void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
 
     if (!expr.isEmpty()) {
         // XXX scope
-        (void *)new QmlBoundSignal(QmlContext::activeContext(), expr, object, 
-                                   coreIdx, object);
+        (void *)new QmlBoundSignal(qmlContext(object), expr, object, coreIdx, object);
     }
 }
 
@@ -662,9 +661,6 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
         prop.write(object, v);
         return;
     }
-
-    if (!value.isValid())
-        return;
 
     int t = propertyType();
     int vt = value.userType();
@@ -684,19 +680,22 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
 
         QObject *o = QmlMetaType::toQObject(value);
 
-        if (!o)
-            return;
+        const QMetaObject *valMo = 0;
 
-        const QMetaObject *valMo = o->metaObject();
-        const QMetaObject *propMo = QmlMetaType::rawMetaObjectForType(t);
+        if (o) {
 
-        while (valMo) {
-            if (valMo == propMo)
-                break;
-            valMo = valMo->superClass();
+            valMo = o->metaObject();
+            const QMetaObject *propMo = QmlMetaType::rawMetaObjectForType(t);
+
+            while (valMo) {
+                if (valMo == propMo)
+                    break;
+                valMo = valMo->superClass();
+            }
+
         }
 
-        if (valMo) {
+        if (valMo || !o) {
 
             void *args[] = { &o, 0 };
             QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, 

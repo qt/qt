@@ -51,7 +51,7 @@ private:
 class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
 {
     Q_OBJECT
-    Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(int value READ value WRITE setValue FINAL)
     Q_PROPERTY(QString readOnlyString READ readOnlyString)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(QRect rect READ rect WRITE setRect)

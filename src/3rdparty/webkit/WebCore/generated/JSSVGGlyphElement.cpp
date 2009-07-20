@@ -40,7 +40,7 @@ static const HashTableValue JSSVGGlyphElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGGlyphElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGGlyphElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGGlyphElementPrototypeTableValues, 0 };
 #else

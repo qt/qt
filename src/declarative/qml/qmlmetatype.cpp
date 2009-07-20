@@ -426,7 +426,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     for (int ii = 0; ii < name.count(); ++ii) {
         QChar ch = name.at(ii);
-        if (!ch.isLetterOrNumber() && ch != QChar::fromLatin1('/')) {
+        if (!ch.isLetterOrNumber() && ch != QChar::fromLatin1('/') && ch != QChar::fromLatin1('.')) {
             qWarning("QmlMetaType: Invalid QML name %s", cname);
             return -1;
         }

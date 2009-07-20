@@ -169,7 +169,7 @@ static const HashTableValue JSDocumentTableValues[69] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSDocumentTableValues, 0 };
 #else
@@ -183,7 +183,7 @@ static const HashTableValue JSDocumentConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDocumentConstructorTableValues, 0 };
 #else
@@ -257,7 +257,7 @@ static const HashTableValue JSDocumentPrototypeTableValues[37] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDocumentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDocumentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSDocumentPrototypeTableValues, 0 };
 #else

@@ -41,7 +41,7 @@
 
 #include "qfxkeyactions.h"
 #include <qmlexpression.h>
-
+#include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxKeyActions,KeyActions)

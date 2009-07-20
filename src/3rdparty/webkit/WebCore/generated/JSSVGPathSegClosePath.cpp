@@ -40,7 +40,7 @@ static const HashTableValue JSSVGPathSegClosePathPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegClosePathPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegClosePathPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegClosePathPrototypeTableValues, 0 };
 #else

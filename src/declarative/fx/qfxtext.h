@@ -125,14 +125,9 @@ public:
     bool smoothTransform() const;
     void setSmoothTransform(bool);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
-#if defined(QFX_RENDER_QPAINTER) 
     void paintContents(QPainter &p);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
     virtual void componentComplete();
 
@@ -153,7 +148,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxText)
-    Q_DECLARE_PRIVATE(QFxText)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxText)
 };
 
 QT_END_NAMESPACE

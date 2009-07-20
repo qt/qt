@@ -1,1 +1,1 @@
-2:20:Cannot assign value "apples" to property pointProperty
+2:20:Invalid property assignment: point expected

@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlCompiledComponent;
+class QmlCompiledData;
 class QmlComponentPrivate;
 class QmlComponent;
 class QmlDomDocument;
@@ -94,9 +94,9 @@ struct QmlCompositeTypeData : public QmlRefCount
     // state.  The QmlComponent is owned by the QmlCompositeTypeData, so a 
     // reference should be kept to keep the QmlComponent alive.
     QmlComponent *toComponent(QmlEngine *);
-    // Return a QmlCompiledComponent if possible, or 0 if an error
+    // Return a QmlCompiledData if possible, or 0 if an error
     // occurs
-    QmlCompiledComponent *toCompiledComponent(QmlEngine *);
+    QmlCompiledData *toCompiledComponent(QmlEngine *);
 
     struct TypeReference 
     {
@@ -123,7 +123,7 @@ private:
     QmlScriptParser data;
     QList<QmlComponentPrivate *> waiters;
     QmlComponent *component;
-    QmlCompiledComponent *compiledComponent;
+    QmlCompiledData *compiledComponent;
 };
 
 class QmlCompositeTypeManager : public QObject

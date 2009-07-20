@@ -73,6 +73,8 @@ void QmlContextPrivate::dump(int depth)
 
 void QmlContextPrivate::destroyed(QObject *obj)
 {
+    Q_Q(QmlContext);
+
     defaultObjects.removeAll(obj);
 
     QVariant variantObject = QVariant::fromValue(obj);
@@ -84,10 +86,16 @@ void QmlContextPrivate::destroyed(QObject *obj)
         }
     }
 
-    // ### Work around bug in shutdown
-    // for (int ii = 0; ii < notifies.count(); ++ii) {
-    //    QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
-    // }
+    // There is no need to emit these notifications if our parent is in the 
+    // process of being deleted (which is *probably* why obj has been destroyed
+    // anyway), as we're about to get deleted which will invalidate all the
+    // expressions that could depend on us
+    QObject *parent = q->parent();
+    if (!parent || !QObjectPrivate::get(parent)->wasDeleted) {
+        for (int ii = 0; ii < notifies.count(); ++ii) {
+            QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
+        }
+    }
 }
 
 void QmlContextPrivate::init()
@@ -394,56 +402,6 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
         d->propertyValues[*iter] = QVariant::fromValue(value);
         QMetaObject::activate(this, *iter + d->notifyIndex, 0);
     }
-}
-
-/*!
-    Activate this bind context.
-
-    \sa QmlEngine::activeContext() QmlContext::activeContext()
-*/
-void QmlContext::activate()
-{
-    QmlEnginePrivate *ep = engine()->d_func();
-    ep->activeContexts.push(this);
-    ep->setCurrentBindContext(this);
-    ep->contextActivated(this);
-}
-
-/*!
-    Deactivate this bind context.  The previously active bind context will
-    become active, or, if there was no previously active bind context, no
-    context will be active.
-
-    \sa QmlEngine::activeContext() QmlContext::activeContext()
-*/
-void QmlContext::deactivate()
-{
-    QmlEnginePrivate *ep = engine()->d_func();
-    Q_ASSERT(ep->activeContexts.top() == this);
-    ep->activeContexts.pop();
-    if (ep->activeContexts.isEmpty())
-        ep->setCurrentBindContext(0);
-    else
-        ep->setCurrentBindContext(ep->activeContexts.top());
-    ep->contextDeactivated(this);
-}
-
-/*!
-    Returns the currently active context, or 0 if no context is active.
-
-    This method is thread-safe.  The active context is maintained individually
-    for each thread.  This method is equivalent to
-    \code
-    QmlEngine::activeEngine()->activeContext()
-    \endcode
-*/
-QmlContext *QmlContext::activeContext()
-{
-    QmlEngine *engine = QmlEngine::activeEngine();
-    if (engine)
-        return engine->activeContext();
-    else
-        return 0;
 }
 
 /*!

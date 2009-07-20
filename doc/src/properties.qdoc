@@ -128,6 +128,11 @@
     constant value may be different for different instances of the object.  A
     constant property cannot have a \c WRITE method or a \c NOTIFY signal.
 
+    \o The presence of the \c FINAL attribute indicates that the property
+    will not be overridden by a derived class.  This can be used for performance
+    optimizations in some cases, but is not enforced by moc.  Care must be taken
+    never to override a \c FINAL property.
+
     \endlist
 
     The \c READ, \c WRITE, and \c RESET functions can be inherited.

@@ -62,7 +62,6 @@
 #include "qfxitem_p.h"
 #include "qfxitem.h"
 #include "qfxevents_p.h"
-#include <qsimplecanvasfilter.h>
 #include <qmlcomponent.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +72,6 @@ QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QFxContents)
 QML_DEFINE_TYPE(QFxItem,Item)
-QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter)
 
 /*!
     \group group_animation
@@ -162,9 +160,9 @@ void QFxContents::calcHeight()
     qreal top = FLT_MAX;
     qreal bottom = 0;
 
-    const QList<QSimpleCanvasItem *> &children = m_item->QSimpleCanvasItem::children();
+    QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        const QSimpleCanvasItem *child = children.at(i);
+        QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
         qreal y = child->y();
         if (y + child->height() > bottom)
             bottom = y + child->height();
@@ -185,10 +183,10 @@ void QFxContents::calcWidth()
     qreal left = FLT_MAX;
     qreal right = 0;
 
-    const QList<QSimpleCanvasItem *> &children = m_item->QSimpleCanvasItem::children();
+    QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        const QSimpleCanvasItem *child = children.at(i);
-        qreal x = int(child->x());
+        QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        qreal x = child->x();
         if (x + child->width() > right)
             right = x + child->width();
         if (x < left)
@@ -204,9 +202,9 @@ void QFxContents::setItem(QFxItem *item)
 {
     m_item = item;
 
-    const QList<QSimpleCanvasItem *> &children = m_item->QSimpleCanvasItem::children();
+    QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        const QSimpleCanvasItem *child = children.at(i);
+        QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
         connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
@@ -258,11 +256,6 @@ void QFxContents::setItem(QFxItem *item)
     
     \ingroup group_coreitems
 */
-
-/*!
-  \property QFxItem::activeFocus
-  This property indicates whether the item has the active focus.
- */
 
 /*!
     \fn void QFxItem::activeFocusChanged()
@@ -384,7 +377,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the item's focus state changes.
 
-    \sa QSimpleCanvasItem::setFocus()
+    \sa QFxItem::setFocus()
 */
 
 /*!
@@ -393,7 +386,7 @@ void QFxContents::setItem(QFxItem *item)
     Constructs a QFxItem with the given \a parent.
 */
 QFxItem::QFxItem(QFxItem* parent)
-  : QSimpleCanvasItem(*(new QFxItemPrivate), parent)
+  : QGraphicsObject(*(new QFxItemPrivate), parent, 0)
 {
     Q_D(QFxItem);
     d->init(parent);
@@ -402,7 +395,7 @@ QFxItem::QFxItem(QFxItem* parent)
 /*! \internal
 */
 QFxItem::QFxItem(QFxItemPrivate &dd, QFxItem *parent)
-  : QSimpleCanvasItem(dd, parent)
+  : QGraphicsObject(dd, parent, 0)
 {
     Q_D(QFxItem);
     d->init(parent);
@@ -535,7 +528,12 @@ void QFxItem::moveToParent(QFxItem *parent)
 */
 QFxItem *QFxItem::itemParent() const
 {
-    return qobject_cast<QFxItem *>(QObject::parent());
+    return qobject_cast<QFxItem *>(QGraphicsItem::parentItem());
+}
+
+QFxItem *QFxItem::parentItem() const
+{
+    return itemParent();
 }
 
 /*!
@@ -699,7 +697,7 @@ int QFxItemPrivate::children_count() const
 void QFxItemPrivate::children_append(QFxItem *i)
 {
     Q_Q(QFxItem);
-    i->setParent(q);
+    i->setParentItem(q);
 }
 
 void QFxItemPrivate::children_insert(int, QFxItem *)
@@ -785,6 +783,16 @@ QFxContents *QFxItem::contents()
         d->_contents->setItem(this);
     }
     return d->_contents;
+}
+
+bool QFxItem::clip() const
+{
+    return flags() & ItemClipsChildrenToShape;
+}
+
+void QFxItem::setClip(bool c)
+{
+    setFlag(ItemClipsChildrenToShape, c);
 }
 
 /*!
@@ -1089,52 +1097,6 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
         QFxAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->update(this, newGeometry, oldGeometry);
     }
-}
-
-/*!
-  \qmlproperty bool Item::flipVertically
-  \qmlproperty bool Item::flipHorizontally
-
-  When set, the item will be displayed flipped horizontally or vertically
-  about its center.
- */
-
-/*!
-  \property QFxItem::flipVertically
-
-  When set, the item will be displayed flipped horizontally or vertically
-  about its center.
- */
-bool QFxItem::flipVertically() const
-{
-    return flip() & VerticalFlip;
-}
-
-void QFxItem::setFlipVertically(bool v)
-{
-    if (v)
-        setFlip((QSimpleCanvasItem::Flip)(flip() | VerticalFlip));
-    else
-        setFlip((QSimpleCanvasItem::Flip)(flip() & ~VerticalFlip));
-}
-
-/*!
-  \property QFxItem::flipHorizontally
-
-  When set, the item will be displayed flipped horizontally or vertically
-  about its center.
- */
-bool QFxItem::flipHorizontally() const
-{
-    return flip() & HorizontalFlip;
-}
-
-void QFxItem::setFlipHorizontally(bool v)
-{
-    if (v)
-        setFlip((QSimpleCanvasItem::Flip)(flip() | HorizontalFlip));
-    else
-        setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
 }
 
 /*! \fn void QFxItem::keyPress(QFxKeyEvent *event)
@@ -1503,19 +1465,7 @@ void QFxItem::setRotation(qreal rotation)
     if (d->_rotation == rotation)
         return;
     d->_rotation = rotation;
-#if defined(QFX_RENDER_OPENGL)
-    QMatrix4x4 trans;
-    QPointF to = transformOriginPoint();
-    trans.translate(to.x(), to.y());
-    trans.rotate(d->_rotation, 0, 0, 1);
-    trans.translate(-to.x(), -to.y());
-#else
-    QPointF to = d->transformOrigin();
-    QTransform trans = QTransform::fromTranslate(to.x(), to.y());
-    trans.rotate(d->_rotation);
-    trans.translate(-to.x(), -to.y());
-#endif
-    setTransform(trans);
+    setTransform(d->transform);
     emit rotationChanged();
 }
 
@@ -1569,18 +1519,6 @@ void QFxItem::setRotation(qreal rotation)
 
   Scaling is from the item's transformOrigin.
 */
-qreal QFxItem::scale() const
-{
-    return QSimpleCanvasItem::scale();
-}
-
-void QFxItem::setScale(qreal s)
-{
-    if (QSimpleCanvasItem::scale() == s) return;
-    QSimpleCanvasItem::setScale(s);
-    emit scaleChanged();
-    update();
-}
 
 /*!
   \qmlproperty real Item::opacity
@@ -1638,19 +1576,12 @@ void QFxItem::setScale(qreal s)
   also applied individually to child items. 
 */
 
-qreal QFxItem::opacity() const
-{
-    return QSimpleCanvasItem::visible();
-}
-
 void QFxItem::setOpacity(qreal v)
 {
-    if (v == QSimpleCanvasItem::visible())
+    if (v == opacity())
         return;
 
-    if (v < 0) v = 0;
-    else if (v > 1) v = 1;
-    QSimpleCanvasItem::setVisible(v);
+    QGraphicsItem::setOpacity(v);
 
     emit opacityChanged();
 }
@@ -1909,16 +1840,6 @@ QList<QFxTransform *> *QFxItem::transform()
 }
 
 /*!
-  \property QFxItem::focus
-  This property holds the item's focus state.
-*/
-
-/*!
-  \property QFxItem::focusable
-  This property holds whether the item has focus state.
-*/
-
-/*!
   Returns true if the item is visible; otherwise returns false.
 
   An item is considered visible if its opacity is not 0.
@@ -1954,14 +1875,6 @@ void QFxItem::setVisible(bool visible)
     }
 
     emit visibleChanged();
-}
-
-/*! \internal
-*/
-void QFxItem::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << metaObject()->className() << "(" << (void *)static_cast<QFxItem*>(this) << ", " << (void *)static_cast<QSimpleCanvasItem*>(this) << "):" << x() << y() << width() << height() << (void *) itemParent();
 }
 
 /*! \internal
@@ -2045,27 +1958,13 @@ void QFxItem::componentComplete()
         updateTransform();
 }
 
-/*! \internal
-*/
-void QFxItem::parentChanged(QSimpleCanvasItem *, QSimpleCanvasItem *)
-{
-    emit parentChanged();
-}
-
-/*! \internal
-*/
-void QFxItem::reparentItems()
-{
-    qFatal("EEK");
-}
-
 /*!
     \internal
 */
 void QFxItem::updateTransform()
 {
     Q_D(QFxItem);
-    QSimpleCanvas::Matrix trans;
+    QTransform trans;
     for (int ii = d->_transform.count() - 1; ii >= 0; --ii) {
         QFxTransform *a = d->_transform.at(ii);
         if (!a->isIdentity()) 
@@ -2079,7 +1978,7 @@ void QFxItem::updateTransform()
 /*!
     \internal
 */
-void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
+void QFxItem::transformChanged(const QTransform &)
 {
 }
 
@@ -2113,6 +2012,553 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     vCenter.anchorLine = QFxAnchorLine::VCenter;
     baseline.item = q;
     baseline.anchorLine = QFxAnchorLine::Baseline;
+}
+
+QPointF QFxItemPrivate::transformOrigin() const
+{
+    Q_Q(const QFxItem);
+
+    QRectF br = q->boundingRect();
+
+    switch(origin) {
+    default:
+    case QFxItem::TopLeft:
+        return QPointF(0, 0);
+    case QFxItem::TopCenter:
+        return QPointF(br.width() / 2., 0);
+    case QFxItem::TopRight:
+        return QPointF(br.width(), 0);
+    case QFxItem::MiddleLeft:
+        return QPointF(0, br.height() / 2.);
+    case QFxItem::Center:
+        return QPointF(br.width() / 2., br.height() / 2.);
+    case QFxItem::MiddleRight:
+        return QPointF(br.width(), br.height() / 2.);
+    case QFxItem::BottomLeft:
+        return QPointF(0, br.height());
+    case QFxItem::BottomCenter:
+        return QPointF(br.width() / 2., br.height());
+    case QFxItem::BottomRight:
+        return QPointF(br.width(), br.height());
+    }
+}
+
+QFxItem::Options QFxItem::options() const
+{
+    Q_D(const QFxItem);
+    return (QFxItem::Options)d->options;
+}
+
+bool QFxItem::mouseFilter(QGraphicsSceneMouseEvent *)
+{
+    return false;
+}
+
+bool QFxItem::sceneEvent(QEvent *event)
+{
+    bool rv = QGraphicsItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse)
+        mouseUngrabEvent();
+    return rv;
+}
+
+QVariant QFxItem::itemChange(GraphicsItemChange change, 
+                                       const QVariant &value)
+{
+    Q_D(QFxItem);
+    if (change == ItemSceneHasChanged) {
+        if (options() & QFxItem::MouseFilter)
+            d->gvRemoveMouseFilter();
+
+        d->canvas = qvariant_cast<QGraphicsScene *>(value);
+            
+        if (options() & QFxItem::MouseFilter)
+            d->gvAddMouseFilter();
+
+        if (d->canvas && d->isFocusItemForArea)
+            d->canvas->setFocusItem(this);
+    } else if (change == ItemChildAddedChange ||
+               change == ItemChildRemovedChange) {
+        childrenChanged();
+    }
+
+    return QGraphicsItem::itemChange(change, value);
+}
+
+
+void QFxItem::mouseUngrabEvent()
+{
+}
+
+void QFxItem::childrenChanged()
+{
+}
+
+void QFxItem::setPaintMargin(qreal margin)
+{
+    Q_D(QFxItem);
+    if (margin < d->paintmargin)
+        update(); // schedule repaint of old boundingRect
+    d->paintmargin = margin;
+}
+
+QRectF QFxItem::boundingRect() const
+{
+    Q_D(const QFxItem);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+}
+
+void QFxItem::paintContents(QPainter &)
+{
+}
+
+void QFxItem::parentChanged(QFxItem *, QFxItem *)
+{
+    emit parentChanged();
+}
+
+/*!
+    Returns the item's (0, 0) point relative to its parent.
+ */
+QPointF QFxItem::pos() const
+{
+    return QPointF(x(),y());
+}
+
+/*!
+    Returns the item's (0, 0) point mapped to scene coordinates.
+ */
+QPointF QFxItem::scenePos() const
+{
+    return mapToScene(QPointF(0, 0));
+}
+
+/*!
+    \enum QFxItem::TransformOrigin
+
+    Controls the point about which simple transforms like scale apply.
+
+    \value TopLeft The top-left corner of the item.
+    \value TopCenter The center point of the top of the item.
+    \value TopRight The top-right corner of the item.
+    \value MiddleLeft The left most point of the vertical middle.
+    \value Center The center of the item.
+    \value MiddleRight The right most point of the vertical middle.
+    \value BottomLeft The bottom-left corner of the item.
+    \value BottomCenter The center point of the bottom of the item. 
+    \value BottomRight The bottom-right corner of the item.
+*/
+
+/*!
+    Returns the current transform origin.
+*/
+QFxItem::TransformOrigin QFxItem::transformOrigin() const
+{
+    Q_D(const QFxItem);
+    return d->origin;
+}
+
+/*!
+    Set the transform \a origin.
+*/
+void QFxItem::setTransformOrigin(TransformOrigin origin)
+{
+    Q_D(QFxItem);
+    if (origin != d->origin) {
+        d->origin = origin;
+        update();
+    }
+}
+
+QPointF QFxItem::transformOriginPoint() const
+{
+    Q_D(const QFxItem);
+    return d->transformOrigin();
+}
+
+qreal QFxItem::z() const
+{
+    return zValue();
+}
+
+void QFxItem::setX(qreal x)
+{
+    if (x == this->x())
+        return;
+
+    qreal oldX = this->x();
+
+    QGraphicsItem::setPos(x, y());
+
+    geometryChanged(QRectF(this->x(), y(), width(), height()), 
+                    QRectF(oldX, y(), width(), height()));
+}
+
+void QFxItem::setY(qreal y)
+{
+    if (y == this->y())
+        return;
+
+    qreal oldY = this->y();
+
+    QGraphicsItem::setPos(x(), y);
+
+    geometryChanged(QRectF(x(), this->y(), width(), height()), 
+                    QRectF(x(), oldY, width(), height()));
+}
+
+void QFxItem::setZ(qreal z)
+{
+    if (z == this->z())
+        return;
+
+    if (z < 0)
+        setFlag(QGraphicsItem::ItemStacksBehindParent, true);
+    else
+        setFlag(QGraphicsItem::ItemStacksBehindParent, false);
+
+    setZValue(z);
+}
+
+qreal QFxItem::width() const
+{
+    Q_D(const QFxItem);
+    return d->width;
+}
+
+void QFxItem::setWidth(qreal w)
+{
+    Q_D(QFxItem);
+    d->widthValid = true;
+    if (d->width == w)
+        return;
+
+    qreal oldWidth = d->width;
+
+    d->width = w;
+    update();
+
+    geometryChanged(QRectF(x(), y(), width(), height()), 
+                    QRectF(x(), y(), oldWidth, height()));
+}
+
+void QFxItem::setImplicitWidth(qreal w)
+{
+    Q_D(QFxItem);
+    if (d->width == w || widthValid())
+        return;
+
+    qreal oldWidth = d->width;
+
+    d->width = w;
+    update();
+
+    geometryChanged(QRectF(x(), y(), width(), height()), 
+                    QRectF(x(), y(), oldWidth, height()));
+}
+
+bool QFxItem::widthValid() const
+{
+    Q_D(const QFxItem);
+    return d->widthValid;
+}
+
+qreal QFxItem::height() const
+{
+    Q_D(const QFxItem);
+    return d->height;
+}
+
+void QFxItem::setHeight(qreal h)
+{
+    Q_D(QFxItem);
+    d->heightValid = true;
+    if (d->height == h)
+        return;
+
+    qreal oldHeight = d->height;
+
+    d->height = h;
+    update();
+
+    geometryChanged(QRectF(x(), y(), width(), height()), 
+                    QRectF(x(), y(), width(), oldHeight));
+}
+
+void QFxItem::setImplicitHeight(qreal h)
+{
+    Q_D(QFxItem);
+    if (d->height == h || heightValid())
+        return;
+
+    qreal oldHeight = d->height;
+
+    d->height = h;
+    update();
+
+    geometryChanged(QRectF(x(), y(), width(), height()), 
+                    QRectF(x(), y(), width(), oldHeight));
+}
+
+bool QFxItem::heightValid() const
+{
+    Q_D(const QFxItem);
+    return d->heightValid;
+}
+
+void QFxItem::setPos(const QPointF &point)
+{
+    qreal oldX = x();
+    qreal oldY = y();
+
+    QGraphicsItem::setPos(point);
+
+    geometryChanged(QRectF(x(), y(), width(), height()), 
+                    QRectF(oldX, oldY, width(), height()));
+}
+
+qreal QFxItem::scale() const
+{
+    Q_D(const QFxItem);
+    return d->scale;
+}
+
+void QFxItem::setScale(qreal s)
+{
+    Q_D(QFxItem);
+    if (d->scale == s)
+        return;
+
+    d->scale = s;
+    setTransform(d->transform);
+
+    emit scaleChanged();
+}
+
+QRect QFxItem::itemBoundingRect()
+{
+    return boundingRect().toAlignedRect();
+}
+
+QPointF QFxItem::mapFromScene(const QPointF &p) const
+{
+    return QGraphicsItem::mapFromScene(p);
+}
+
+QRectF QFxItem::mapFromScene(const QRectF &r) const
+{
+    return QGraphicsItem::mapFromScene(r).boundingRect();
+}
+
+QPointF QFxItem::mapToScene(const QPointF &p) const
+{
+    return QGraphicsItem::mapToScene(p);
+}
+
+QRectF QFxItem::mapToScene(const QRectF &r) const
+{
+    return QGraphicsItem::mapToScene(r).boundingRect();
+}
+
+QTransform QFxItem::transform() const
+{
+    Q_D(const QFxItem);
+    return d->transform;
+}
+
+//### optimize (perhaps cache scale and rot transforms, and have dirty flags)
+//### we rely on there not being an "if (d->transform == m) return;" check
+void QFxItem::setTransform(const QTransform &m)
+{
+    Q_D(QFxItem);
+    d->transform = m;
+    QTransform scaleTransform, rotTransform;
+    if (d->scale != 1) {
+        QPointF to = transformOriginPoint();
+        if (to.x() != 0. || to.y() != 0.)
+            scaleTransform.translate(to.x(), to.y());
+        scaleTransform.scale(d->scale, d->scale);
+        if (to.x() != 0. || to.y() != 0.)
+            scaleTransform.translate(-to.x(), -to.y());
+    }
+    if (d->_rotation != 0) {
+        QPointF to = d->transformOrigin();
+        if (to.x() != 0. || to.y() != 0.)
+            rotTransform.translate(to.x(), to.y());
+        rotTransform.rotate(d->_rotation);
+        if (to.x() != 0. || to.y() != 0.)
+            rotTransform.translate(-to.x(), -to.y());
+    }
+    QGraphicsItem::setTransform(scaleTransform * rotTransform * d->transform);
+}
+
+QFxItem *QFxItem::mouseGrabberItem() const
+{
+    QGraphicsScene *s = scene();
+    if (s) {
+        QGraphicsItem *item = s->mouseGrabberItem();
+        return static_cast<QFxItem*>(item); // ###
+    }
+    return 0;
+}
+
+/*!
+  \qmlproperty bool Item::focus
+  This property indicates whether the item has has an active focus request. Set this
+  property to true to request active focus.
+*/
+
+bool QFxItem::hasFocus() const
+{
+    Q_D(const QFxItem);
+    return d->isFocusItemForArea;
+}
+
+void QFxItem::setFocus(bool focus)
+{
+    Q_D(QFxItem);
+    QGraphicsScene *s = scene();
+    if (s) {
+        if (d->hasActiveFocus)
+            s->setFocusItem(focus ? this : 0);
+        else if (focus)
+            s->setFocusItem(this);
+        else {
+            d->isFocusItemForArea = false;
+            focusChanged(false);
+        }
+
+    } else {
+        d->isFocusItemForArea = focus;
+        focusChanged(focus);
+    }
+}
+
+/*!
+  \qmlproperty bool Item::activeFocus
+  This property indicates whether the item has the active focus.
+*/
+
+bool QFxItem::hasActiveFocus() const
+{
+    Q_D(const QFxItem);
+    return d->hasActiveFocus;
+}
+
+bool QFxItem::activeFocusPanel() const
+{
+    return false;
+}
+
+void QFxItem::setActiveFocusPanel(bool b)
+{
+    Q_UNUSED(b)
+}
+
+bool QFxItem::sceneEventFilter(QGraphicsItem *w, QEvent *e)
+{
+    switch(e->type()) {
+    case QEvent::GraphicsSceneMouseDoubleClick:
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseRelease:
+        if (mouseFilter(static_cast<QGraphicsSceneMouseEvent *>(e))) 
+            return true;
+        break;
+    default:
+        break;
+    }
+
+    return QGraphicsItem::sceneEventFilter(w, e);
+}
+
+void QFxItem::setOptions(Options options, bool set)
+{
+    Q_D(QFxItem);
+    Options old = (Options)d->options;
+
+    if (options & IsFocusRealm) {
+        if (!set) {
+            qWarning("QFxItem::setOptions: Cannot unset IsFocusRealm");
+            return;
+        }
+    }
+
+    if (set)
+        d->options |= options;
+    else
+        d->options &= ~options;
+
+    if ((d->options & IsFocusPanel) && (d->options & IsFocusRealm)) {
+        qWarning("QFxItem::setOptions: Cannot set both IsFocusPanel and IsFocusRealm.  IsFocusRealm will be unset.");
+        d->options &= ~IsFocusRealm;
+    }
+
+    setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
+    setFiltersChildEvents(d->options & ChildMouseFilter);
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, (d->options & AcceptsInputMethods));
+    setAcceptHoverEvents(d->options & HoverEvents);
+    d->isFocusRealm = static_cast<bool>(d->options & IsFocusRealm);
+
+    if ((old & MouseFilter) != (d->options & MouseFilter)) {
+        if (d->options & MouseFilter)
+            d->gvAddMouseFilter();
+        else
+            d->gvRemoveMouseFilter();
+    }
+}
+
+/*!
+    \fn void QFxItem::setParent(QFxItem *parent)
+
+    Sets the parent of the item to \a parent.
+ */
+void QFxItem::setParent(QFxItem *p)
+{
+    if (p == parent() || !p) return;
+
+    QObject::setParent(p);
+
+    QFxItem *oldParent = itemParent();
+    setParentItem(p);
+    parentChanged(p, oldParent);
+}
+
+void QFxItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    paintContents(*p);
+}
+
+void QFxItemPrivate::gvRemoveMouseFilter()
+{
+    Q_Q(QFxItem);
+    if (q->scene())
+        q->removeSceneEventFilter(q);
+}
+
+void QFxItemPrivate::gvAddMouseFilter()
+{
+    Q_Q(QFxItem);
+    if (q->scene())
+        q->installSceneEventFilter(q);
+}
+
+QPixmap QFxItem::string(const QString &str, const QColor &c, const QFont &f)
+{
+    QFontMetrics fm(f);
+    QSize size(fm.width(str), fm.height()*(str.count(QLatin1Char('\n'))+1)); //fm.boundingRect(str).size();
+    QPixmap img(size);
+    img.fill(Qt::transparent);
+    QPainter p(&img);
+    p.setPen(c);
+    p.setFont(f);
+    p.drawText(img.rect(), Qt::AlignVCenter, str);
+    return img;
+}
+
+QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    return QGraphicsItem::inputMethodQuery(query);
 }
 
 QT_END_NAMESPACE

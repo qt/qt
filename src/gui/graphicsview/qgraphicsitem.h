@@ -48,6 +48,7 @@
 #include <QtCore/qrect.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmap.h>
+#include <QtGui/qstyleoption.h>
 
 class tst_QGraphicsItem;
 
@@ -215,6 +216,9 @@ public:
     void setAcceptHoverEvents(bool enabled);
     bool acceptTouchEvents() const;
     void setAcceptTouchEvents(bool enabled);
+
+    bool filtersChildEvents() const;
+    void setFiltersChildEvents(bool enabled);
 
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);

@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 class QmlInstruction;
-class QmlCompiledComponent;
+class QmlCompiledData;
 class QmlCompiledData;
 class QmlContext;
 
@@ -70,14 +70,14 @@ class QmlVME
 public:
     QmlVME();
 
-    QObject *run(QmlContext *, QmlCompiledComponent *, int start = -1, int count = -1);
+    QObject *run(QmlContext *, QmlCompiledData *, int start = -1, int count = -1);
     void runDeferred(QObject *);
 
     bool isError() const;
     QList<QmlError> errors() const;
 
 private:
-    QObject *run(QStack<QObject *> &, QmlContext *, QmlCompiledComponent *, int start, int count);
+    QObject *run(QStack<QObject *> &, QmlContext *, QmlCompiledData *, int start, int count);
     QList<QmlError> vmeErrors;
 };
 

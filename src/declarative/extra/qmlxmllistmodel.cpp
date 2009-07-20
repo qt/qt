@@ -410,7 +410,7 @@ QmlXmlListModel::~QmlXmlListModel()
 }
 
 /*!
-    \qmlproperty list<XmlRole> QmlListModel::roles
+    \qmlproperty list<XmlRole> XmlListModel::roles
 
     The roles to make available for this model.
 */
@@ -645,6 +645,7 @@ void QmlXmlListModel::queryCompleted(int id, int size)
     if (size > 0) {
         d->data = d->qmlXmlQuery.modelData();
         emit itemsInserted(0, d->size);
+        emit countChanged();
     }
 }
 

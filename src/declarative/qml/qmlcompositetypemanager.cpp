@@ -41,7 +41,6 @@
 
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlscriptparser_p.h>
-#include <private/qmlcompiledcomponent_p.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <private/qmlengine_p.h>
@@ -49,6 +48,7 @@
 #include <QtCore/qfile.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlcomponent_p.h>
+#include <private/qmlcompiler_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,7 +83,7 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
 {
     if (!component) {
 
-        QmlCompiledComponent *cc = toCompiledComponent(engine);
+        QmlCompiledData *cc = toCompiledComponent(engine);
         if (cc) {
             component = new QmlComponent(engine, cc, -1, -1, 0);
         } else {
@@ -97,12 +97,12 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
     return component;
 }
 
-QmlCompiledComponent *
+QmlCompiledData *
 QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
 {
     if (status == Complete && !compiledComponent) {
 
-        compiledComponent = new QmlCompiledComponent;
+        compiledComponent = new QmlCompiledData;
         compiledComponent->url = imports.baseUrl();
         compiledComponent->name = compiledComponent->url.toString().toLatin1(); // ###
 
@@ -110,8 +110,6 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
         if (!compiler.compile(engine, this, compiledComponent)) {
             status = Error;
             errors = compiler.errors();
-            for(int ii = 0; ii < errors.count(); ++ii)
-                errors[ii].setUrl(compiledComponent->url);
             compiledComponent->release();
             compiledComponent = 0;
         }

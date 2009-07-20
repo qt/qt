@@ -75,14 +75,12 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l TextEdit
 \o \l Rect
 \o \l AnimatedImage
-\o \l BlendedImage
 \endlist
 
 \o
 \list
 \o \l MouseRegion
 \o \l KeyActions
-\o \l FocusPanel
 \o \l FocusRealm
 \o \l KeyProxy
 \endlist
@@ -97,12 +95,8 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o
 \list
 \o \l Repeater
-\o \l ContentWrapper
-    \list
-    \o \l Content
-    \endlist
 \o \l ComponentInstance
-\o \l WidgetContainer
+\o \l GraphicsObjectContainer
 \endlist
 
 \header
@@ -148,10 +142,6 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l Shadow
-\o \l Reflection
-\o \l Blur
-\o \l Highlight
 \o \l Particles
     \list
     \o \l ParticleMotionLinear

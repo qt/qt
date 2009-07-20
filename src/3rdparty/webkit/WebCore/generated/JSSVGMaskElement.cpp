@@ -68,7 +68,7 @@ static const HashTableValue JSSVGMaskElementTableValues[15] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMaskElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMaskElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGMaskElementTableValues, 0 };
 #else
@@ -84,7 +84,7 @@ static const HashTableValue JSSVGMaskElementPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGMaskElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGMaskElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGMaskElementPrototypeTableValues, 0 };
 #else

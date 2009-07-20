@@ -44,7 +44,7 @@ static const HashTableValue JSHTMLMapElementTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMapElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMapElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLMapElementTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSHTMLMapElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMapElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMapElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLMapElementConstructorTableValues, 0 };
 #else
@@ -96,7 +96,7 @@ static const HashTableValue JSHTMLMapElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLMapElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLMapElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLMapElementPrototypeTableValues, 0 };
 #else

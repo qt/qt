@@ -116,6 +116,8 @@ public:
     QNetworkAccessManager::Operation operation() const;
     QNetworkRequest request() const;
     NetworkError error() const;
+    bool isFinished() const;
+    bool isRunning() const;
     QUrl url() const;
 
     // "cooked" headers

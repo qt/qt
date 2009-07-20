@@ -1,1 +1,1 @@
-2:23:Cannot assign value "12" to property dateTimeProperty
+2:23:Invalid property assignment: datetime expected

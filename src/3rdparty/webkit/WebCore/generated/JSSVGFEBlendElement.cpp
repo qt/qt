@@ -60,7 +60,7 @@ static const HashTableValue JSSVGFEBlendElementTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEBlendElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEBlendElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEBlendElementTableValues, 0 };
 #else
@@ -80,7 +80,7 @@ static const HashTableValue JSSVGFEBlendElementConstructorTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEBlendElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEBlendElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFEBlendElementConstructorTableValues, 0 };
 #else
@@ -125,7 +125,7 @@ static const HashTableValue JSSVGFEBlendElementPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEBlendElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEBlendElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFEBlendElementPrototypeTableValues, 0 };
 #else

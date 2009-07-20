@@ -59,6 +59,7 @@
 
 #include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
+#include "qgraphicsview_p.h"
 #include "qgraphicsitem_p.h"
 
 #include <private/qobject_p.h>
@@ -172,6 +173,7 @@ public:
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
     void installSceneEventFilter(QGraphicsItem *watched, QGraphicsItem *filter);
     void removeSceneEventFilter(QGraphicsItem *watched, QGraphicsItem *filter);
+    bool filterDescendantEvent(QGraphicsItem *item, QEvent *event);
     bool filterEvent(QGraphicsItem *item, QEvent *event);
     bool sendEvent(QGraphicsItem *item, QEvent *event);
 
@@ -254,6 +256,8 @@ public:
     bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
+
+    QHash<QGraphicsItem *, QGraphicsItem *> focusItemForFocusArea;
 
     void updateInputMethodSensitivityInViews();
 };

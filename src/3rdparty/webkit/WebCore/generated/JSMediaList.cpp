@@ -44,7 +44,7 @@ static const HashTableValue JSMediaListTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaListTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSMediaListTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSMediaListConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaListConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaListConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMediaListConstructorTableValues, 0 };
 #else
@@ -99,7 +99,7 @@ static const HashTableValue JSMediaListPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMediaListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMediaListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSMediaListPrototypeTableValues, 0 };
 #else

@@ -64,8 +64,8 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
     Q_PROPERTY(bool tile READ isTiled WRITE setTiled)
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
-    Q_PROPERTY(bool opaque READ isOpaque WRITE setOpaque)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
+    Q_PROPERTY(bool preserveAspect READ preserveAspect WRITE setPreserveAspect);
 public:
     QFxImage(QFxItem *parent=0);
     ~QFxImage();
@@ -78,9 +78,6 @@ public:
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &);
 
-    bool isOpaque() const;
-    void setOpaque(bool);
-
     bool smoothTransform() const;
     void setSmoothTransform(bool);
 
@@ -88,18 +85,14 @@ public:
     Status status() const;
     qreal progress() const;
 
+    bool preserveAspect() const;
+    void setPreserveAspect(bool);
+
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-    uint glSimpleItemData(float *vertices, float *texVertices,
-                          GLTexture **texture, uint count);
-#endif
 
 Q_SIGNALS:
     void sourceChanged(const QUrl &);
@@ -117,7 +110,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE(QFxImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
 };
 

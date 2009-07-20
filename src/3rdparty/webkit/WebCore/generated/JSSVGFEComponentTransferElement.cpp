@@ -56,7 +56,7 @@ static const HashTableValue JSSVGFEComponentTransferElementTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEComponentTransferElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEComponentTransferElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEComponentTransferElementTableValues, 0 };
 #else
@@ -71,7 +71,7 @@ static const HashTableValue JSSVGFEComponentTransferElementPrototypeTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEComponentTransferElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEComponentTransferElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEComponentTransferElementPrototypeTableValues, 0 };
 #else

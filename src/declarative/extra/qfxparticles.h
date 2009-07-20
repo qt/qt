@@ -44,10 +44,6 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -207,14 +203,9 @@ public:
     QFxParticleMotion *motion() const;
     void setMotion(QFxParticleMotion *);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
-#if defined(QFX_RENDER_QPAINTER) 
     void paintContents(QPainter &p);
-#elif defined(QFX_RENDER_OPENGL2)
-    void paintGLContents(GLPainter &);
-#endif
 
 protected:
     virtual void componentComplete();
@@ -225,7 +216,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxParticles)
-    Q_DECLARE_PRIVATE(QFxParticles)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxParticles)
 };
 
 QT_END_NAMESPACE

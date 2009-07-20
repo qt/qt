@@ -45,7 +45,7 @@ static const HashTableValue JSRangeExceptionTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeExceptionTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeExceptionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSRangeExceptionTableValues, 0 };
 #else
@@ -61,7 +61,7 @@ static const HashTableValue JSRangeExceptionConstructorTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeExceptionConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeExceptionConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSRangeExceptionConstructorTableValues, 0 };
 #else
@@ -102,7 +102,7 @@ static const HashTableValue JSRangeExceptionPrototypeTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSRangeExceptionPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSRangeExceptionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSRangeExceptionPrototypeTableValues, 0 };
 #else

@@ -48,11 +48,7 @@
 #include <QEvent>
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
-
-#if defined(QFX_RENDER_OPENGL2)
-#include <QtOpenGL/qglframebufferobject.h>
-#include <glsave.h>
-#endif
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 
@@ -210,26 +206,16 @@ void QFxPaintedItem::init()
     connect(this,SIGNAL(visibleChanged()),this,SLOT(clearCache()));
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 /*!
     \reimp
 */
 void QFxPaintedItem::paintContents(QPainter &p)
-#elif defined(QFX_RENDER_OPENGL)
-/*!
-    \reimp
-*/
-void QFxPaintedItem::paintGLContents(GLPainter &p)
-#else
-#error "What render?"
-#endif
 {
     Q_D(QFxPaintedItem);
     const QRect content(QPoint(0,0),d->contentsSize);
     if (content.width() <= 0 || content.height() <= 0)
         return;
 
-#if defined(QFX_RENDER_QPAINTER)
     bool oldAntiAliasing = p.testRenderHint(QPainter::Antialiasing);
     bool oldSmoothPixmap = p.testRenderHint(QPainter::SmoothPixmapTransform);
     if (oldAntiAliasing)
@@ -242,28 +228,11 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
     else
         clipf = mapToScene(clipf);
 
-#elif defined(QFX_RENDER_OPENGL2)
-    p.useTextureShader();
-    const QRectF clipf = p.sceneClipRect;
-
-#elif defined(QFX_RENDER_OPENGL1)
-    p.useTextureShader();
-    const QRectF clipf = p.sceneClipRect;
-#endif
-
     const QRect clip = mapFromScene(clipf).toRect();
 
     QRegion topaint(clip);
     topaint &= content;
     QRegion uncached(content);
-
-#if defined(QFX_RENDER_OPENGL2)
-    glEnableVertexAttribArray(SingleTextureShader::Vertices);
-    glEnableVertexAttribArray(SingleTextureShader::TextureCoords);
-#elif defined(QFX_RENDER_OPENGL1)
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-#endif
 
     int cachesize=0;
     for (int i=0; i<d->imagecache.count(); ++i) {
@@ -312,29 +281,17 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
             }
             QFxPaintedItemPrivate::ImageCacheItem *newitem = new QFxPaintedItemPrivate::ImageCacheItem;
             newitem->area = r;
-#if defined(QFX_RENDER_QPAINTER)
             newitem->image = img;
-#else
-            newitem->image.setImage(img.toImage());
-#endif
             d->imagecache.append(newitem);
             QRectF target(r.x(), r.y(), r.width(), r.height());
             p.drawPixmap(target.toRect(), newitem->image);
         }
     }
-#if defined(QFX_RENDER_OPENGL2)
-    glDisableVertexAttribArray(SingleTextureShader::Vertices);
-    glDisableVertexAttribArray(SingleTextureShader::TextureCoords);
-#elif defined(QFX_RENDER_OPENGL1)
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-#endif
-#if defined(QFX_RENDER_QPAINTER)
+
     if (oldAntiAliasing)
         p.setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
     if (d->smooth)
         p.setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
-#endif
 }
 
 /*!

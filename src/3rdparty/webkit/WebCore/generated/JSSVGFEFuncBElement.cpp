@@ -40,7 +40,7 @@ static const HashTableValue JSSVGFEFuncBElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFuncBElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFuncBElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEFuncBElementPrototypeTableValues, 0 };
 #else

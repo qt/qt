@@ -42,7 +42,7 @@ static const HashTableValue JSSVGFEMergeNodeElementTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEMergeNodeElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEMergeNodeElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEMergeNodeElementTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGFEMergeNodeElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEMergeNodeElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEMergeNodeElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEMergeNodeElementPrototypeTableValues, 0 };
 #else

@@ -42,7 +42,7 @@ static const HashTableValue JSSVGAnimatedEnumerationTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedEnumerationTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedEnumerationTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedEnumerationTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGAnimatedEnumerationPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedEnumerationPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedEnumerationPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedEnumerationPrototypeTableValues, 0 };
 #else

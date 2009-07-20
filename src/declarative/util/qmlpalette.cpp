@@ -41,6 +41,7 @@
 
 #include "private/qobject_p.h"
 #include "qmlpalette.h"
+#include <QApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +64,9 @@ QmlPalette::QmlPalette(QObject *parent)
     : QObject(*(new QmlPalettePrivate), parent)
 {
     Q_D(QmlPalette);
+    d->palette = qApp->palette();
     d->group = QPalette::Active;
+    qApp->installEventFilter(this);
 }
 
 QmlPalette::~QmlPalette()
@@ -148,6 +151,16 @@ QColor QmlPalette::highlightedText() const
     return d->palette.color(d->group, QPalette::HighlightedText);
 }
 
+QColor QmlPalette::lighter(const QColor& color) const
+{
+    return color.lighter();
+}
+
+QColor QmlPalette::darker(const QColor& color) const
+{
+    return color.darker();
+}
+
 void QmlPalette::setColorGroup(QPalette::ColorGroup colorGroup)
 {
     Q_D(QmlPalette);
@@ -158,6 +171,28 @@ QPalette QmlPalette::palette() const
 {
     Q_D(const QmlPalette);
     return d->palette;
+}
+
+bool QmlPalette::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == qApp) {
+        if (event->type() == QEvent::ApplicationPaletteChange) {
+            QApplication::postEvent(this, new QEvent(QEvent::ApplicationPaletteChange));
+            return false;
+        }
+    }
+    return QObject::eventFilter(watched, event);
+}
+
+bool QmlPalette::event(QEvent *event)
+{
+    Q_D(QmlPalette);
+    if (event->type() == QEvent::ApplicationPaletteChange) {
+        d->palette = qApp->palette();
+        emit paletteChanged();
+        return true;
+    }
+    return QObject::event(event);
 }
 
 QT_END_NAMESPACE

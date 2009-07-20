@@ -86,11 +86,16 @@
 %token T_IMPORT "import"
 %token T_AS "as"
 
+--- feed tokens
+%token T_FEED_UI_PROGRAM
+%token T_FEED_JS_STATEMENT
+%token T_FEED_JS_EXPRESSION
+
 %nonassoc SHIFT_THERE
 %nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY
 %nonassoc REDUCE_HERE
 
-%start UiProgram
+%start TopLevel
 
 /.
 /****************************************************************************
@@ -272,10 +277,29 @@ public:
     Parser(Engine *engine);
     ~Parser();
 
-    bool parse();
+    // parse a UI program
+    bool parse() { return parse(T_FEED_UI_PROGRAM); }
+    bool parseStatement() { return parse(T_FEED_JS_STATEMENT); }
+    bool parseExpression() { return parse(T_FEED_JS_EXPRESSION); }
 
-    AST::UiProgram *ast()
-    { return program; }
+    AST::UiProgram *ast() const
+    { return AST::cast<AST::UiProgram *>(program); }
+
+    AST::Statement *statement() const
+    {
+        if (! program)
+            return 0;
+
+        return program->statementCast();
+    }
+
+    AST::ExpressionNode *expression() const
+    {
+        if (! program)
+            return 0;
+
+        return program->expressionCast();
+    }
 
     QList<DiagnosticMessage> diagnosticMessages() const
     { return diagnostic_messages; }
@@ -300,6 +324,8 @@ public:
     { return diagnosticMessage().loc.startColumn; }
 
 protected:
+    bool parse(int startToken);
+
     void reallocateStack();
 
     inline Value &sym(int index)
@@ -318,7 +344,7 @@ protected:
     int *state_stack;
     AST::SourceLocation *location_stack;
 
-    AST::UiProgram *program;
+    AST::Node *program;
 
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };
@@ -439,14 +465,16 @@ AST::UiQualifiedId *Parser::reparseAsQualifiedId(AST::ExpressionNode *expr)
     return 0;
 }
 
-bool Parser::parse()
+bool Parser::parse(int startToken)
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;
     int yytoken = -1;
     int action = 0;
 
-    first_token = last_token = 0;
+    token_buffer[0].token = startToken;
+    first_token = &token_buffer[0];
+    last_token = &token_buffer[1];
 
     tos = -1;
     program = 0;
@@ -494,12 +522,35 @@ bool Parser::parse()
 -- Declarative UI
 --------------------------------------------------------------------------------------------------------
 
+TopLevel: T_FEED_UI_PROGRAM UiProgram ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(2).Node;
+  program = sym(1).Node;
+} break;
+./
+
+TopLevel: T_FEED_JS_STATEMENT Statement ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(2).Node;
+  program = sym(1).Node;
+} break;
+./
+
+TopLevel: T_FEED_JS_EXPRESSION Expression ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(2).Node;
+  program = sym(1).Node;
+} break;
+./
+
 UiProgram: UiImportListOpt UiRootMember ;
 /.
 case $rule_number: {
-  program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
+  sym(1).UiProgram = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
         sym(2).UiObjectMemberList->finish());
-  sym(1).UiProgram = program;
 } break;
 ./
 
@@ -699,26 +750,6 @@ case $rule_number: {
 }   break;
 ./
 
-UiMultilineStringLiteral: T_MULTILINE_STRING_LITERAL ;
-/.
-case $rule_number: {
-  AST::StringLiteral *node = makeAstNode<AST::StringLiteral> (driver->nodePool(), sym(1).sval);
-  node->literalToken = loc(1);
-  sym(1).Node = node;
-} break;
-./
-
-UiMultilineStringStatement: UiMultilineStringLiteral T_AUTOMATIC_SEMICOLON ;  -- automatic semicolon
-UiMultilineStringStatement: UiMultilineStringLiteral T_SEMICOLON ;
-/.
-case $rule_number: {
-  AST::ExpressionStatement *node = makeAstNode<AST::ExpressionStatement> (driver->nodePool(), sym(1).Expression);
-  node->semicolonToken = loc(2);
-  sym(1).Node = node;
-} break;
-./
-
-
 UiObjectMember: UiQualifiedId T_COLON Expression UiObjectInitializer ;
 /.
 case $rule_number: {
@@ -745,12 +776,6 @@ UiObjectMember: UiQualifiedId T_COLON EmptyStatement ;
 /.case $rule_number:./
 
 UiObjectMember: UiQualifiedId T_COLON ExpressionStatement ;
-/.case $rule_number:./
-
-UiObjectMember: UiQualifiedId T_COLON DebuggerStatement ;
-/.case $rule_number:./
-
-UiObjectMember: UiQualifiedId T_COLON UiMultilineStringStatement ;
 /.case $rule_number:./
 
 UiObjectMember: UiQualifiedId T_COLON IfStatement ; --- ### do we really want if statement in a binding?
@@ -1001,6 +1026,9 @@ case $rule_number: {
   sym(1).Node = node;
 } break;
 ./
+
+PrimaryExpression: T_MULTILINE_STRING_LITERAL ;
+/.case $rule_number:./
 
 PrimaryExpression: T_STRING_LITERAL ;
 /.
@@ -2962,7 +2990,8 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         }
 
         for (int tk = 1; tk < TERMINAL_COUNT; ++tk) {
-            if (tk == T_AUTOMATIC_SEMICOLON)
+            if (tk == T_AUTOMATIC_SEMICOLON || tk == T_FEED_UI_PROGRAM    ||
+                tk == T_FEED_JS_STATEMENT   || tk == T_FEED_JS_EXPRESSION)
                continue;
 
             int a = t_action(errorState, tk);

@@ -43,7 +43,7 @@ static const HashTableValue JSSVGAnimatedPreserveAspectRatioTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedPreserveAspectRatioTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedPreserveAspectRatioTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedPreserveAspectRatioTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGAnimatedPreserveAspectRatioPrototypeTableValues
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedPreserveAspectRatioPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedPreserveAspectRatioPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedPreserveAspectRatioPrototypeTableValues, 0 };
 #else

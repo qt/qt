@@ -3991,8 +3991,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
                 const int xm = macItemFrame + maxpmw + macItemHMargin;
                 QFont myFont = mi->font;
-                if (mi->state & QStyle::State_Mini)
-                    myFont.setPointSize(mi->font.pointSize());
+                // myFont may not have any "hard" flags set. We override
+                // the point size so that when it is resolved against the device, this font will win.
+                // This is mainly to handle cases where someone sets the font on the window
+                // and then the combo inherits it and passes it onward. At that point the resolve mask
+                // is very, very weak. This makes it stonger.
+                myFont.setPointSizeF(mi->font.pointSizeF());
                 p->setFont(myFont);
                 p->drawText(xpos, yPos, contentRect.width() - xm - tabwidth + 1,
                             contentRect.height(), text_flags ^ Qt::AlignRight, s);

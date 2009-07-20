@@ -2,6 +2,7 @@ Rect {
     id: Root
     width: parent.width
     height: parent.height
+    color: activePalette.base
     FolderListModel {
         id: folders
         nameFilters: [ "*.qml" ]
@@ -13,12 +14,26 @@ Rect {
         Rect {
             id: Wrapper
             width: Root.width
-            height: NameText.height
+            height: 32
+            color: activePalette.base
+            Rect {
+                id: Highlight; visible: false
+                anchors.fill: parent
+                gradient: Gradient {
+                    GradientStop { id: t1; position: 0.0; color: activePalette.highlight }
+                    GradientStop { id: t2; position: 1.0; color: activePalette.lighter(activePalette.highlight) }
+                }
+            }
+            Item {
+                width: 32; height: 32
+                Image { source: "images/fileopen.png"; anchors.centeredIn: parent; visible: folders.isFolder(index)}
+            }
             Text {
                 id: NameText
-                text: fileName
-                font.bold: true
-                font.size: 12
+                anchors.fill: parent; vAlign: "AlignVCenter"
+                text: fileName; anchors.leftMargin: 32
+                font.size: 10
+                color: activePalette.windowText
             }
             MouseRegion {
                 id: Mouse
@@ -35,7 +50,8 @@ Rect {
                 State {
                     name: "pressed"
                     when: Mouse.pressed
-                    SetProperties { target: Wrapper; color: "#bbbbbb" }
+                    SetProperties { target: Highlight; visible: true }
+                    SetProperties { target: NameText; color: activePalette.highlightedText }
                 }
             ]
         }
@@ -48,24 +64,36 @@ Rect {
         }
     }
 
-    Rect {
-        id: UpButton
-        width: 30
-        height: UpText.height
-        color: "grey"
-        MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
-        Text { id: UpText; text: "Up" }
-    }
-
-    Text { anchors.left: UpButton.right; text: folders.folder }
-
     ListView {
-        anchors.top: UpButton.bottom
+        anchors.top: TitleBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         model: folders
         delegate: FolderDelegate
         clip: true
+    }
+
+    Rect {
+        id: TitleBar
+        width: parent.width
+        height: 32
+        color: activePalette.button; pen.color: activePalette.mid
+
+        Rect {
+            id: UpButton
+            width: 30
+            height: TitleBar.height
+            pen.color: activePalette.mid; color: "transparent"
+            MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
+            Image { anchors.centeredIn: parent; source: "images/up.png" }
+        }
+
+        Text {
+            anchors.left: UpButton.right; anchors.right: parent.right; height: parent.height
+            anchors.leftMargin: 4; anchors.rightMargin: 4
+            text: folders.folder; color: activePalette.buttonText
+            elide: "ElideLeft"; hAlign: "AlignRight"; vAlign: "AlignVCenter"
+        }
     }
 }

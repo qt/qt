@@ -55,9 +55,7 @@
 
 #include "qfxitem_p.h"
 
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,14 +71,12 @@ class QFxImagePrivate : public QFxItemPrivate
 public:
     QFxImagePrivate()
       : scaleGrid(0), tiled(false), smooth(false), opaque(false),
-#if defined(QFX_RENDER_OPENGL)
-        texDirty(true), tex(0),
-#endif
-        status(QFxImage::Idle), sciReply(0), progress(0.0)
+        preserveAspect(false), status(QFxImage::Idle), sciReply(0),
+        progress(0.0)
     {
     }
 
-    ~QFxImagePrivate() 
+    ~QFxImagePrivate()
     {
         delete scaleGrid;
     }
@@ -89,21 +85,17 @@ public:
 
     QFxScaleGrid *getScaleGrid()
     {
-        if (!scaleGrid) 
+        if (!scaleGrid)
             scaleGrid = new QFxScaleGrid;
         return scaleGrid;
     }
-            
+
     QFxScaleGrid *scaleGrid;
     QPixmap pix;
     bool tiled : 1;
     bool smooth : 1;
     bool opaque : 1;
-#if defined(QFX_RENDER_OPENGL)
-    bool texDirty : 1;
-    void checkDirty();
-    QSimpleCanvasItem::CachedTexture *tex;
-#endif
+    bool preserveAspect : 1;
 
     QFxImage::Status status;
     QUrl url;

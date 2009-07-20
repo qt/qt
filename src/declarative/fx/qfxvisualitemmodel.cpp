@@ -51,6 +51,7 @@
 #include "qmlopenmetaobject.h"
 #include "qmllistaccessor.h"
 #include "qfxvisualitemmodel.h"
+#include <QtCore/qdebug.h>
 
 QML_DECLARE_TYPE(QListModelInterface)
 

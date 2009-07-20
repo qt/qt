@@ -21,6 +21,8 @@
 #ifndef JSHTMLDataGridRowElement_h
 #define JSHTMLDataGridRowElement_h
 
+#if ENABLE(DATAGRID)
+
 #include "JSHTMLElement.h"
 
 namespace WebCore {
@@ -66,5 +68,7 @@ void setJSHTMLDataGridRowElementExpanded(JSC::ExecState*, JSC::JSObject*, JSC::J
 JSC::JSValue jsHTMLDataGridRowElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)
 
 #endif

@@ -1422,7 +1422,7 @@ QMap<int, QVariant> QAbstractItemModel::itemData(const QModelIndex &index) const
     QMap<int, QVariant> roles;
     for (int i = 0; i < Qt::UserRole; ++i) {
         QVariant variantData = data(index, i);
-        if (variantData.type() != QVariant::Invalid)
+        if (variantData.isValid())
             roles.insert(i, variantData);
     }
     return roles;

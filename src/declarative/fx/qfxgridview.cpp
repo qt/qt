@@ -45,6 +45,8 @@
 #include "private/qfxflickable_p.h"
 #include "qfxgridview.h"
 
+#include <QKeyEvent>
+
 QT_BEGIN_NAMESPACE
 
 class QFxGridViewAttached : public QObject
@@ -811,7 +813,7 @@ QFxItem *QFxGridView::currentItem()
     Q_D(QFxGridView);
     if (!d->currentItem) {
         // Always return something valid
-        if (!d->tmpCurrent) 
+        if (!d->tmpCurrent)
             d->tmpCurrent = new QFxItem(viewport());
         return d->tmpCurrent;
     }

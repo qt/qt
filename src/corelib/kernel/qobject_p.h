@@ -60,6 +60,7 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qvariant.h"
+#include "qguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -184,6 +185,7 @@ public:
     static void resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch);
 
     int *deleteWatch;
+    QGuard<QObject> *objectGuards;
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();

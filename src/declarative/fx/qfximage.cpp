@@ -42,13 +42,13 @@
 #include "qfximage.h"
 #include "qfximage_p.h"
 #include <private/qfxperf_p.h>
-#if defined(QFX_RENDER_OPENGL)
-#include <glsave.h>
-#endif
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
 #include <QtDeclarative/qmlengine.h>
+
+#include <QKeyEvent>
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 
@@ -131,12 +131,6 @@ QFxImage::~QFxImage()
         QFxPixmap::cancelGet(d->url, this);
     if (!d->sciurl.isEmpty())
         QFxPixmap::cancelGet(d->sciurl, this);
-#if defined(QFX_RENDER_OPENGL)
-    if (d->tex) {
-        d->tex->release();
-        d->tex = 0;
-    }
-#endif
 }
 
 /*!
@@ -164,13 +158,6 @@ void QFxImage::setPixmap(const QPixmap &pix)
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
 
-#if defined(QFX_RENDER_OPENGL)
-    d->texDirty = true;
-    if (d->tex) {
-        d->tex->release();
-        d->tex = 0;
-    }
-#endif
     update();
 }
 
@@ -235,44 +222,6 @@ void QFxImage::setTiled(bool tile)
     d->tiled = tile;
 }
 
-/*!
-    \qmlproperty bool Image::opaque
-
-    Set this property if you know that the image is opaque to give your 
-    application a significant performance boost.  
-
-    \note
-    This is a performance hint to Qt Declarative.  Unfortunately whether or not an image
-    is opaque is not automatically detected.  Setting this property to true when
-    the image is not opaque will lead to drawing artifacts.  However, leaving it as 
-    false will always work correctly - although possibly not at maximum performance. 
- */
-
-/*!
-    \property QFxImage::opaque
-    \brief whether the image is opaque (non-transparent).
-
-    This property is provided purely for the purpose of optimization. An opaque
-    image can be optimized more than a non-opaque one.
-*/
-bool QFxImage::isOpaque() const
-{
-    Q_D(const QFxImage);
-    return d->opaque;
-}
-
-void QFxImage::setOpaque(bool o)
-{
-    Q_D(QFxImage);
-    if (o == d->opaque)
-        return;
-    d->opaque = o;
-
-    setOptions(IsOpaque, o);
-
-    update();
-}
-
 void QFxImage::componentComplete()
 {
     QFxItem::componentComplete();
@@ -287,12 +236,12 @@ void QFxImage::componentComplete()
     \qmlproperty bool Image::smooth
 
     Set this property if you want the image to be smoothly filtered when scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If 
-    the Image is displayed at its natural size, this property has no visual or 
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the Image is displayed at its natural size, this property has no visual or
     performance effect.
 
-    \note Generally scaling artifacts are only visible if the image is stationary on 
-    the screen.  A common pattern when animating an image is to disable smooth 
+    \note Generally scaling artifacts are only visible if the image is stationary on
+    the screen.  A common pattern when animating an image is to disable smooth
     filtering at the beginning of the animation and reenable it at the conclusion.
  */
 
@@ -301,7 +250,7 @@ void QFxImage::componentComplete()
     \brief whether the image is smoothly transformed.
 
     This property is provided purely for the purpose of optimization. Turning
-    smooth transforms off is faster, but looks worse; turning smooth 
+    smooth transforms off is faster, but looks worse; turning smooth
     transformations on is slower, but looks better.
 
     By default smooth transformations are off.
@@ -321,15 +270,6 @@ void QFxImage::setSmoothTransform(bool s)
     update();
 }
 
-void QFxImage::dump(int depth)
-{
-    Q_D(QFxImage);
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "URL:" << d->url;
-    QFxItem::dump(depth);
-}
-
-#if defined(QFX_RENDER_QPAINTER)
 void QFxImage::paintContents(QPainter &p)
 {
     Q_D(QFxImage);
@@ -364,9 +304,22 @@ void QFxImage::paintContents(QPainter &p)
         p.restore();
     } else if (!d->scaleGrid || d->scaleGrid->isNull()) {
         if (width() != pix.width() || height() != pix.height()) {
+            qreal widthScale = width() / qreal(pix.width());
+            qreal heightScale = height() / qreal(pix.height());
+
             QTransform scale;
-            scale.scale(width() / qreal(pix.width()), 
-                        height() / qreal(pix.height()));
+
+            if (d->preserveAspect) {
+                if (widthScale < heightScale) {
+                    heightScale = widthScale;
+                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
+                } else if(heightScale < widthScale) {
+                    widthScale = heightScale;
+                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                }
+            }
+
+            scale.scale(widthScale, heightScale);
             QTransform old = p.transform();
             p.setWorldTransform(scale * old);
             p.drawPixmap(0, 0, pix);
@@ -398,7 +351,7 @@ void QFxImage::paintContents(QPainter &p)
             p.drawPixmap(QRect(sgl, 0, w - xSide, sgt), pix,
                         QRect(sgl, 0, pix.width() - xSide, sgt));
         // Upper right
-        if (sgt && pix.width() - sgr) 
+        if (sgt && pix.width() - sgr)
             p.drawPixmap(QPoint(w-sgr, 0), pix,
                         QRect(pix.width()-sgr, 0, sgr, sgt));
         // Middle left
@@ -409,13 +362,13 @@ void QFxImage::paintContents(QPainter &p)
         // Middle
         if (pix.width() - xSide && pix.height() - ySide)
             p.drawPixmap(QRect(sgl, sgt, w - xSide, h - ySide),
-                        pix, 
+                        pix,
                         QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
         // Middle right
         if (sgr && pix.height() - ySide)
             p.drawPixmap(QRect(w-sgr, sgt, sgr, h - ySide), pix,
                         QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
-        // Lower left 
+        // Lower left
         if (sgl && sgr)
             p.drawPixmap(QPoint(0, h - sgb), pix,
                         QRect(0, pix.height() - sgb, sgl, sgb));
@@ -434,333 +387,6 @@ void QFxImage::paintContents(QPainter &p)
         p.setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
 }
-#elif defined(QFX_RENDER_OPENGL)
-uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
-                                GLTexture **texture, uint count)
-{
-    Q_D(QFxImage);
-
-    if (d->pix.isNull() || (d->scaleGrid && !d->scaleGrid->isNull()))
-        return 0;
-
-    if (count < 8) 
-        return 8;
-
-    d->checkDirty();
-
-    float widthV = width();
-    float heightV = height();
-
-    vertices[0] = 0; vertices[1] = heightV;
-    vertices[2] = widthV; vertices[3] = heightV;
-    vertices[4] = 0; vertices[5] = 0;
-    vertices[6] = widthV; vertices[7] = 0;
-
-    *texture = d->tex;
-
-    if (d->tiled) {
-        float tileWidth = widthV / d->pix.width();
-        float tileHeight = heightV / d->pix.height();
-        texVertices[0] = 0; texVertices[1] = 0;
-        texVertices[2] = tileWidth; texVertices[3] = 0;
-        texVertices[4] = 0; texVertices[5] = tileHeight;
-        texVertices[6] = tileWidth; texVertices[7] = tileHeight;
-    } else {
-        texVertices[0] = 0; texVertices[1] = 0;
-        texVertices[2] = d->tex->glWidth(); texVertices[3] = 0;
-        texVertices[4] = 0; texVertices[5] = d->tex->glHeight();
-        texVertices[6] = d->tex->glWidth(); texVertices[7] = d->tex->glHeight();
-    }
-
-    return 8;
-}
-
-void QFxImagePrivate::checkDirty()
-{
-    Q_Q(QFxImage);
-    if (texDirty && !pix.isNull()) 
-        tex = q->cachedTexture(url.toString(), pix);
-    texDirty = false;
-}
-
-#if defined(QFX_RENDER_OPENGL2)
-void QFxImage::paintGLContents(GLPainter &p)
-{
-    Q_D(QFxImage);
-    if (d->pix.isNull())
-        return;
-
-    QGLShaderProgram *shader = p.useTextureShader();
-
-    bool restoreBlend = false;
-    if (p.blendEnabled && isOpaque() && p.activeOpacity == 1) {
-        glDisable(GL_BLEND);
-        restoreBlend = true;
-    }
-
-    d->checkDirty();
-
-    if (d->tiled || (!d->scaleGrid || d->scaleGrid->isNull())) {
-
-        if (!d->tiled) {
-
-            float widthV = width();
-            float heightV = height();
-            float glWidth = d->tex->glWidth();
-            float glHeight = d->tex->glHeight();
-
-            float deltaX = 0.5 / qreal(d->tex->glSize().width());
-            float deltaY = 0.5 / qreal(d->tex->glSize().height());
-            glWidth -= deltaX;
-            glHeight -= deltaY;
-            
-
-            float vert[] = {
-                0, heightV,
-                widthV, heightV,
-                0, 0,
-
-                widthV, heightV,
-                0, 0,
-                widthV, 0 };
-
-            float tex[] = {
-                deltaX, deltaY,
-                glWidth, deltaY,
-                deltaX, glHeight,
-
-                glWidth, deltaY,
-                deltaX, glHeight,
-                glWidth, glHeight
-            };
-
-            shader->setAttributeArray(SingleTextureShader::Vertices, vert, 2);
-            shader->setAttributeArray(SingleTextureShader::TextureCoords, tex, 2);
-            glBindTexture(GL_TEXTURE_2D, d->tex->texture());
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        } else {
-
-            GLfloat vertices[8];
-            GLfloat texVertices[8];
-            GLTexture *tex = 0;
-
-            QFxImage::glSimpleItemData(vertices, texVertices, &tex, 8);
-
-            shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
-            shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
-
-            glBindTexture(GL_TEXTURE_2D, tex->texture());
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        }
-
-    } else {
-
-        float imgWidth = d->pix.width();
-        float imgHeight = d->pix.height();
-        if (!imgWidth || !imgHeight) {
-            if (restoreBlend)
-                glEnable(GL_BLEND);
-            return;
-        }
-
-        float widthV = width();
-        float heightV = height();
-        float glWidth = d->tex->glWidth();
-        float glHeight = d->tex->glHeight();
-        float deltaX = 0.5 / qreal(d->tex->glSize().width());
-        float deltaY = 0.5 / qreal(d->tex->glSize().height());
-        glHeight -= deltaY;
-        glWidth -= deltaX;
-
-        float texleft = deltaX;
-        float texright = glWidth;
-        float textop = glHeight;
-        float texbottom = deltaY;
-        float imgleft = 0;
-        float imgright = widthV;
-        float imgtop = 0;
-        float imgbottom = heightV;
-
-        const int sgl = d->scaleGrid->left();
-        const int sgr = d->scaleGrid->right();
-        const int sgt = d->scaleGrid->top();
-        const int sgb = d->scaleGrid->bottom();
-
-        if (sgl) {
-            texleft = deltaX + d->tex->glWidth() * float(sgl) / imgWidth;
-            imgleft = sgl;
-        }
-        if (sgr) {
-            texright = d->tex->glWidth() - float(sgr) / imgWidth - deltaX;
-            imgright = widthV - sgr;
-        }
-        if (sgt) {
-            textop = d->tex->glHeight() - float(sgb) / imgHeight - deltaY;
-            imgtop = sgt;
-        }
-        if (sgb) {
-            texbottom = deltaY + d->tex->glHeight() * float(sgt) / imgHeight;
-            imgbottom = heightV - sgb;
-        }
-
-        float vert1[] = { 0, 0, 
-                          0, imgtop,
-                          imgleft, 0, 
-
-                          0, imgtop,
-                          imgleft, 0, 
-                          imgleft, imgtop,
-
-                          imgleft, 0, 
-                          imgleft, imgtop,
-                          imgright, 0,
-
-                          imgleft, imgtop,
-                          imgright, 0,
-                          imgright, imgtop,
-
-                          imgright, 0,
-                          imgright, imgtop,
-                          widthV, 0,
-
-                          imgright, imgtop,
-                          widthV, 0,
-                          widthV, imgtop,
-
-                          0, imgtop,
-                          0, imgbottom,
-                          imgleft, imgtop,
-
-                          0, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-                          imgright, imgbottom,
-
-                          imgright, imgtop,
-                          imgright, imgbottom,
-                          widthV, imgtop,
-
-                          imgright, imgbottom,
-                          widthV, imgtop,
-                          widthV, imgbottom, 
-
-                          0, imgbottom,
-                          0, heightV,
-                          imgleft, imgbottom,
-
-                          0, heightV,
-                          imgleft, imgbottom,
-                          imgleft, heightV,
-
-                          imgleft, imgbottom,
-                          imgleft, heightV,
-                          imgright, imgbottom,
-
-                          imgleft, heightV,
-                          imgright, imgbottom,
-                          imgright, heightV,
-
-                          imgright, imgbottom,
-                          imgright, heightV,
-                          widthV, imgbottom,
-
-                          imgright, heightV,
-                          widthV, imgbottom,
-                          widthV, heightV };
-
-        float tex1[] = { deltaX, glHeight, 
-                         deltaX, textop,
-                         texleft, glHeight,
-
-                         deltaX, textop,
-                         texleft, glHeight,
-                         texleft, textop,
-
-                         texleft, glHeight,
-                         texleft, textop,
-                         texright, glHeight,
-
-                         texleft, textop,
-                         texright, glHeight,
-                         texright, textop,
-
-                         texright, glHeight,
-                         texright, textop,
-                         glWidth, glHeight,
-
-                         texright, textop,
-                         glWidth, glHeight,
-                         glWidth, textop,
-
-                         deltaX, textop,
-                         deltaX, texbottom,
-                         texleft, textop,
-
-                         deltaX, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-
-                         texright, textop,
-                         texright, texbottom,
-                         glWidth, textop,
-
-                         texright, texbottom,
-                         glWidth, textop,
-                         glWidth, texbottom,
-
-                         deltaX, texbottom,
-                         deltaX, deltaY,
-                         texleft, texbottom,
-
-                         deltaX, deltaY,
-                         texleft, texbottom,
-                         texleft, deltaY,
-
-                         texleft, texbottom,
-                         texleft, deltaY,
-                         texright, texbottom,
-
-                         texleft, deltaY,
-                         texright, texbottom,
-                         texright, deltaY,
-
-                         texright, texbottom,
-                         texright, deltaY,
-                         glWidth, texbottom,
-
-                         texright, deltaY,
-                         glWidth, texbottom,
-                         glWidth, deltaY };
-
-        glBindTexture(GL_TEXTURE_2D, d->tex->texture());
-
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);
-        glDrawArrays(GL_TRIANGLES, 0, 54);
-    }
-
-    if (restoreBlend) 
-        glEnable(GL_BLEND);
-}
-#endif
-
-#endif
 
 QString QFxImage::propertyInfo() const
 {
@@ -838,6 +464,22 @@ QUrl QFxImage::source() const
     return d->url;
 }
 
+bool QFxImage::preserveAspect() const
+{
+    Q_D(const QFxImage);
+    return d->preserveAspect;
+}
+
+void QFxImage::setPreserveAspect(bool p)
+{
+    Q_D(QFxImage);
+
+    if (p == d->preserveAspect)
+        return;
+    d->preserveAspect = p;
+    update();
+}
+
 void QFxImage::setSource(const QUrl &url)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -870,13 +512,6 @@ void QFxImage::setSource(const QUrl &url)
         d->progress = 1.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
-#if defined(QFX_RENDER_OPENGL)
-        d->texDirty = true;
-        if (d->tex) {
-            d->tex->release();
-            d->tex = 0;
-        }
-#endif
         emit statusChanged(d->status);
         emit sourceChanged(d->url);
         emit progressChanged(1.0);
@@ -934,13 +569,6 @@ void QFxImage::requestFinished()
     if (d->status == Loading)
         d->status = Idle;
     d->progress = 1.0;
-#if defined(QFX_RENDER_OPENGL)
-    d->texDirty = true;
-    if (d->tex) {
-        d->tex->release();
-        d->tex = 0;
-    }
-#endif
     emit statusChanged(d->status);
     emit sourceChanged(d->url);
     emit progressChanged(1.0);

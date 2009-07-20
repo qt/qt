@@ -12,7 +12,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlproxymetaobject.cpp \
     qml/qmlvme.cpp \
     qml/qmlcompiler.cpp \
-    qml/qmlcompiledcomponent.cpp \
+    qml/qmlcompileddata.cpp \
     qml/qmlboundsignal.cpp \
     qml/qmldom.cpp \
     qml/qmlrefcount.cpp \
@@ -26,6 +26,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlerror.cpp \
     qml/qmlscriptparser.cpp \
     qml/qmlenginedebug.cpp \
+    qml/qmlrewrite.cpp \
     qml/qmlbasicscript.cpp 
 
 HEADERS += qml/qmlparser_p.h \
@@ -43,7 +44,6 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlboundsignal_p.h \
     qml/qmlparserstatus.h \
     qml/qmlproxymetaobject_p.h \
-    qml/qmlcompiledcomponent_p.h \
     qml/qmlvme_p.h \
     qml/qmlcompiler_p.h \
     qml/qmlengine_p.h \
@@ -68,10 +68,11 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlscriptparser_p.h \
     qml/qmlbasicscript_p.h \
     qml/qmlenginedebug_p.h \
+    qml/qmlrewrite_p.h \
     qml/qpodvector_p.h
 
 # for qtscript debugger
-QT += scripttools
+contains(QT_CONFIG, scripttools):QT += scripttools
 
 include(script/script.pri)
 include(parser/parser.pri)

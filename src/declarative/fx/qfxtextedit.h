@@ -161,7 +161,6 @@ public:
     qreal textMargin() const;
     void setTextMargin(qreal margin);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
     virtual void componentComplete();
@@ -229,7 +228,7 @@ private:
 
     friend class QmlFont;
     Q_DISABLE_COPY(QFxTextEdit)
-    Q_DECLARE_PRIVATE(QFxTextEdit)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextEdit)
 };
 
 QT_END_NAMESPACE
