@@ -127,6 +127,8 @@ private slots:
     void size_data();
     void size();
 
+    void systemFiles();
+
     void compare_data();
     void compare();
 
@@ -354,8 +356,9 @@ void tst_QFileInfo::exists_data()
     QTest::newRow("data6") << "resources/*" << false;
     QTest::newRow("data7") << "resources/*.foo" << false;
     QTest::newRow("data8") << "resources/*.ext1" << false;
-    QTest::newRow("data9") << "." << true;
-    QTest::newRow("data10") << ". " << false;
+    QTest::newRow("data9") << "resources/file?.ext1" << false;
+    QTest::newRow("data10") << "." << true;
+    QTest::newRow("data11") << ". " << false;
 
     QTest::newRow("simple dir") << "resources" << true;
     QTest::newRow("simple dir with slash") << "resources/" << true;
@@ -739,6 +742,17 @@ void tst_QFileInfo::size()
     QFileInfo fi(file);
     (void)fi.permissions();     // see task 104198
     QTEST(int(fi.size()), "size");
+}
+
+void tst_QFileInfo::systemFiles()
+{
+#ifndef Q_OS_WIN
+    QSKIP("This is a Windows only test", SkipAll);
+#endif
+    QFileInfo fi("c:\\pagefile.sys");
+    QVERIFY(fi.exists());      // task 167099
+    QVERIFY(fi.size() > 0);    // task 189202
+    QVERIFY(fi.lastModified().isValid());
 }
 
 void tst_QFileInfo::compare_data()

@@ -527,6 +527,29 @@ qint64 QFSFileEnginePrivate::nativeSize() const
         WIN32_FILE_ATTRIBUTE_DATA attribData;
         bool ok = ::GetFileAttributesEx((const wchar_t*)nativeFilePath.constData(),
                                         GetFileExInfoStandard, &attribData);
+        if (!ok) {
+            int errorCode = GetLastError();
+            if (errorCode != ERROR_INVALID_NAME
+                && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                QByteArray path = nativeFilePath;
+                // path for the FindFirstFile should not end with a trailing slash
+                while (path.endsWith('\\'))
+                    path.chop(1);
+
+                // FindFirstFile can not handle drives
+                if (!path.endsWith(':')) {
+                    WIN32_FIND_DATA findData;
+                    HANDLE hFind = ::FindFirstFile((const wchar_t*)path.constData(),
+                                                   &findData);
+                    if (hFind != INVALID_HANDLE_VALUE) {
+                        ::FindClose(hFind);
+                        ok = true;
+                        attribData.nFileSizeHigh = findData.nFileSizeHigh;
+                        attribData.nFileSizeLow = findData.nFileSizeLow;
+                    }
+                }
+            }
+        }
         if (ok) {
             qint64 size = attribData.nFileSizeHigh;
             size <<= 32;
@@ -878,6 +901,26 @@ static inline bool isDirPath(const QString &dirPath, bool *existed)
         path += QLatin1Char('\\');
 
     DWORD fileAttrib = ::GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
+    if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
+        int errorCode = GetLastError();
+        if (errorCode != ERROR_INVALID_NAME
+            && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+            // path for the FindFirstFile should not end with a trailing slash
+            while (path.endsWith(QLatin1Char('\\')))
+                path.chop(1);
+
+            // FindFirstFile can not handle drives
+            if (!path.endsWith(QLatin1Char(':'))) {
+                WIN32_FIND_DATA findData;
+                HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                               &findData);
+                if (hFind != INVALID_HANDLE_VALUE) {
+                    ::FindClose(hFind);
+                    fileAttrib = findData.dwFileAttributes;
+                }
+            }
+        }
+    }
 
     if (existed)
         *existed = fileAttrib != INVALID_FILE_ATTRIBUTES;
@@ -1149,6 +1192,27 @@ bool QFSFileEnginePrivate::doStat() const
 #endif
         } else {
             fileAttrib = GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(fname).utf16());
+            if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
+                int errorCode = GetLastError();
+                if (errorCode != ERROR_INVALID_NAME
+                    && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                    QString path = QDir::toNativeSeparators(fname);
+                    // path for the FindFirstFile should not end with a trailing slash
+                    while (path.endsWith(QLatin1Char('\\')))
+                        path.chop(1);
+
+                    // FindFirstFile can not handle drives
+                    if (!path.endsWith(QLatin1Char(':'))) {
+                        WIN32_FIND_DATA findData;
+                        HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                                       &findData);
+                        if (hFind != INVALID_HANDLE_VALUE) {
+                            ::FindClose(hFind);
+                            fileAttrib = findData.dwFileAttributes;
+                        }
+                    }
+                }
+            }
             could_stat = fileAttrib != INVALID_FILE_ATTRIBUTES;
             if (!could_stat) {
 #if !defined(Q_OS_WINCE)
@@ -1744,6 +1808,30 @@ QDateTime QFSFileEngine::fileTime(FileTime time) const
     } else {
         WIN32_FILE_ATTRIBUTE_DATA attribData;
         bool ok = ::GetFileAttributesEx((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), GetFileExInfoStandard, &attribData);
+        if (!ok) {
+            int errorCode = GetLastError();
+            if (errorCode != ERROR_INVALID_NAME
+                && errorCode != ERROR_FILE_NOT_FOUND && errorCode != ERROR_PATH_NOT_FOUND) {
+                QString path = QDir::toNativeSeparators(d->filePath);
+                // path for the FindFirstFile should not end with a trailing slash
+                while (path.endsWith(QLatin1Char('\\')))
+                    path.chop(1);
+
+                // FindFirstFile can not handle drives
+                if (!path.endsWith(QLatin1Char(':'))) {
+                    WIN32_FIND_DATA findData;
+                    HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                                   &findData);
+                    if (hFind != INVALID_HANDLE_VALUE) {
+                        ::FindClose(hFind);
+                        ok = true;
+                        attribData.ftCreationTime = findData.ftCreationTime;
+                        attribData.ftLastWriteTime = findData.ftLastWriteTime;
+                        attribData.ftLastAccessTime = findData.ftLastAccessTime;
+                    }
+                }
+            }
+        }
         if (ok) {
             if(time == CreationTime)
                 ret = fileTimeToQDateTime(&attribData.ftCreationTime);
