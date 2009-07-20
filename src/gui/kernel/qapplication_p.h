@@ -196,6 +196,21 @@ typedef BOOL (WINAPI *qt_RegisterTouchWindowPtr)(HWND, ULONG);
 typedef BOOL (WINAPI *qt_GetTouchInputInfoPtr)(HANDLE, UINT, PVOID, int);
 typedef BOOL (WINAPI *qt_CloseTouchInputHandlePtr)(HANDLE);
 
+typedef BOOL (WINAPI *PtrGetGestureInfo)(HANDLE hGestureInfo, PVOID pGestureInfo);
+typedef BOOL (WINAPI *PtrGetGestureExtraArgs)(HANDLE hGestureInfo, UINT cbExtraArgs, PBYTE pExtraArgs);
+typedef BOOL (WINAPI *PtrCloseGestureInfoHandle)(HANDLE hGestureInfo);
+typedef BOOL (WINAPI *PtrSetGestureConfig)(HWND hwnd, DWORD dwReserved, UINT cIDs,
+                                    PVOID pGestureConfig,
+                                    UINT cbSize);
+typedef BOOL (WINAPI *PtrGetGestureConfig)(HWND hwnd, DWORD dwReserved,
+                                    DWORD dwFlags, PUINT pcIDs,
+                                    PVOID pGestureConfig,
+                                    UINT cbSize);
+
+typedef BOOL (WINAPI *PtrBeginPanningFeedback)(HWND hwnd);
+typedef BOOL (WINAPI *PtrUpdatePanningFeedback)(HWND hwnd, LONG, LONG, BOOL);
+typedef BOOL (WINAPI *PtrEndPanningFeedback)(HWND hwnd, BOOL);
+
 #ifndef WM_GESTURE
 
 #define WM_GESTURE 0x0119
@@ -271,22 +286,8 @@ typedef struct tagGESTURECONFIG {
 #define GCF_INCLUDE_ANCESTORS           0x00000001      // If specified, GetGestureConfig returns consolidated configuration
                                                         // for the specified window and it's parent window chain
 
-typedef BOOL (*PtrGetGestureInfo)(HGESTUREINFO hGestureInfo, PGESTUREINFO pGestureInfo);
-typedef BOOL (*PtrGetGestureExtraArgs)(HGESTUREINFO hGestureInfo, UINT cbExtraArgs, PBYTE pExtraArgs);
-typedef BOOL (*PtrCloseGestureInfoHandle)(HGESTUREINFO hGestureInfo);
-typedef BOOL (*PtrSetGestureConfig)(HWND hwnd, DWORD dwReserved, UINT cIDs,
-                                    PGESTURECONFIG pGestureConfig,
-                                    UINT cbSize);
-typedef BOOL (*PtrGetGestureConfig)(HWND hwnd, DWORD dwReserved,
-                                    DWORD dwFlags, PUINT pcIDs,
-                                    PGESTURECONFIG pGestureConfig,
-                                    UINT cbSize);
-
-typedef BOOL (*PtrBeginPanningFeedback)(HWND hwnd);
-typedef BOOL (*PtrUpdatePanningFeedback)(HWND hwnd, LONG, LONG, BOOL);
-typedef BOOL (*PtrEndPanningFeedback)(HWND hwnd, BOOL);
-
 #endif // WM_GESTURE
+
 #endif // Q_WS_WIN
 
 class QPanGesture;
