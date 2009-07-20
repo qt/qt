@@ -59,7 +59,6 @@ QmlBindingPrivate::QmlBindingPrivate()
 {
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, QObject *parent)
 : QmlExpression(ctxt, data, rc, obj, *new QmlBindingPrivate)
 {
@@ -100,12 +99,6 @@ void QmlBinding::init()
     if (d->inited)
         return;
     d->inited = true;
-    update();
-}
-
-void QmlBinding::setExpression(const QString &expr)
-{
-    QmlExpression::setExpression(expr);
     update();
 }
 

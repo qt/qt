@@ -65,12 +65,8 @@ public:
     QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
     ~QmlBinding();
 
-    virtual void setTarget(const QmlMetaProperty &);
+    void setTarget(const QmlMetaProperty &);
     QmlMetaProperty property() const;
-
-    Q_CLASSINFO("DefaultProperty", "expression")
-    Q_PROPERTY(QString expression READ expression WRITE setExpression)
-    virtual void setExpression(const QString &);
 
     void init();
     void forceUpdate();
@@ -88,9 +84,9 @@ private:
     Q_DECLARE_PRIVATE(QmlBinding)
 };
 
-QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QmlBinding*);
 
-QML_DECLARE_TYPE(QmlBinding)
+QT_END_NAMESPACE
 
 QT_END_HEADER
 
