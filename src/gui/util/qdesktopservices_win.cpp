@@ -67,7 +67,7 @@ static bool openDocument(const QUrl &file)
     if (!file.isValid())
         return false;
     QString filePath = file.toLocalFile();
-    if (filePath.isEmpty()
+    if (filePath.isEmpty())
         filePath = file.toString();
     quintptr returnValue = (quintptr)ShellExecute(0, 0, (wchar_t*)filePath.utf16(), 0, 0, SW_SHOWNORMAL);
     return (returnValue > 32); //ShellExecute returns a value greater than 32 if successful
