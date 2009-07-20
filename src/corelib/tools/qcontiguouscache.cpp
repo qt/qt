@@ -191,8 +191,6 @@ MyRecord record(int row) const
 
 /*! \fn int QContiguousCache::count() const
 
-    \overload
-
     Same as size().
 */
 
