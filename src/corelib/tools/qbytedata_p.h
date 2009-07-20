@@ -45,6 +45,8 @@
 #include <qbytearray.h>
 
 
+QT_BEGIN_NAMESPACE
+
 // this class handles a list of QByteArrays. It is a variant of QRingBuffer
 // that avoid malloc/realloc/memcpy.
 class QByteDataBuffer
@@ -196,5 +198,6 @@ public:
     }
 };
 
+QT_END_NAMESPACE
 
 #endif // QBYTEDATA_H
