@@ -119,7 +119,7 @@ QInputEvent::~QInputEvent()
     will not be propagated further up the parent widget chain.
 
     The state of the keyboard modifier keys can be found by calling the
-    \l{QInputEvent::modifiers()}{modifiers()} function, inhertied from
+    \l{QInputEvent::modifiers()}{modifiers()} function, inherited from
     QInputEvent.
 
     The functions pos(), x(), and y() give the cursor position
@@ -3539,13 +3539,13 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     touch points on a touch device (such as a touch-screen or
     track-pad). To receive touch events, widgets have to have the
     Qt::WA_AcceptTouchEvents attribute set and graphics items need to have
-    the \l{QGraphicsItem::setAcceptsTouchEvents}{setAcceptsTouchEvents}
+    the \l{QGraphicsItem::setAcceptTouchEvents()}{acceptTouchEvents}
     attribute set to true.
 
     All touch events are of type QEvent::TouchBegin,
     QEvent::TouchUpdate, or QEvent::TouchEnd. The touchPoints()
     function returns a list of all touch points contained in the event.
-    Information about each touch point can be retreived using the
+    Information about each touch point can be retrieved using the
     QTouchEvent::TouchPoint class. The Qt::TouchPointState enum
     describes the different states that a touch point may have.
 
@@ -3569,7 +3569,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     for items in a graphics view to receive touch events.
 
     \sa QTouchEvent::TouchPoint, Qt::TouchPointState, Qt::WA_AcceptTouchEvents,
-    QGraphicsItem::acceptTouchEvents
+    QGraphicsItem::acceptTouchEvents()
 */
 
 /*! \enum Qt::TouchPointState

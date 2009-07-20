@@ -2332,8 +2332,8 @@ void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
 
 /*! \since 4.6
 
-    Returns true if an item accepts touch events (QTouchEvent); otherwise, returns false. By
-    default, items do not accept touch events.
+    Returns true if an item accepts \l{QTouchEvent}{touch events};
+    otherwise, returns false. By default, items do not accept touch events.
 
     \sa setAcceptTouchEvents()
 */
@@ -2345,7 +2345,7 @@ bool QGraphicsItem::acceptTouchEvents() const
 /*!
     \since 4.6
 
-    If \a enabled is true, this item will accept touch events;
+    If \a enabled is true, this item will accept \l{QTouchEvent}{touch events};
     otherwise, it will ignore them. By default, items do not accept
     touch events.
 */
