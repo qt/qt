@@ -2,6 +2,7 @@ Rect { id:block
     //Note: These properties are the interface used to control the blocks
     property bool dying: false
     property bool spawned: false
+    property bool selected: false
     property int type: 0
     property int targetY: 0
     property int targetX: 0

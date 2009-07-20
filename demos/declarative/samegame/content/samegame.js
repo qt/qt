@@ -46,55 +46,82 @@ function initBoard()
     //TODO: a flag that handleMouse uses to ignore clicks when we're loading
 }
 
-var removed;
+var fillFound;
 var floodBoard;
+
+var lastHoveredIdx = -1
+function handleHover(x,y, btn)
+{
+    xIdx = Math.floor(x/tileSize);
+    yIdx = Math.floor(y/tileSize);
+    if(index(xIdx, yIdx) == lastHoveredIdx)
+        return;
+    lastHoveredIdx = index(xIdx, yIdx);
+    //if(btn != 0)
+    //    return;
+    floodFill(xIdx, yIdx, -1, "hover");
+    for(i=0; i<maxIndex; i++){
+        if(floodBoard[i] != 1 && board[i] != null)
+            board[i].selected = false;
+    }
+    //Could use the fillFound value to tell the player how many stones/points
+}
+
 function handleClick(x,y)
 {
-    //NOTE: Be careful with vars named x,y - they can set to the calling object?
+    //NOTE: Be careful with vars named x,y - they can set to the calling object
     xIdx = Math.floor(x/tileSize);
     yIdx = Math.floor(y/tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
         return;
-    removed = 0;
-    floodBoard = new Array(maxIndex);
-    floodKill(xIdx,yIdx, -1);
-    if(removed <= 0)
+    floodFill(xIdx,yIdx, -1, "kill");
+    if(fillFound <= 0)
         return;
-    gameCanvas.score += (removed - 1) * (removed - 1);
+    gameCanvas.score += (fillFound - 1) * (fillFound - 1);
     shuffleDown();
     victoryCheck();
 }
 
-function floodKill(xIdx,yIdx,type)
+//cmd = "kill" is the removal case, cmd = "hover" is the mouse overed case
+function floodFill(xIdx,yIdx,type, cmd)
 {
-    if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
-        return;
-    if(floodBoard[index(xIdx, yIdx)] == 1)
-        return;
     if(board[index(xIdx, yIdx)] == null)
         return;
     var first = false;
     if(type == -1){
-        type = board[index(xIdx,yIdx)].type;
         first = true;
-    }else{
-        if(type != board[index(xIdx,yIdx)].type)
-            return;
+        type = board[index(xIdx,yIdx)].type;
+        
+        //Flood fill initialization
+        fillFound = 0;
+        floodBoard = new Array(maxIndex);
     }
+    if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
+        return;
+    if(floodBoard[index(xIdx, yIdx)] == 1)
+        return;
+    if(!first && type != board[index(xIdx,yIdx)].type)
+            return;
     floodBoard[index(xIdx, yIdx)] = 1;
-    floodKill(xIdx+1,yIdx,type);
-    floodKill(xIdx-1,yIdx,type);
-    floodKill(xIdx,yIdx+1,type);
-    floodKill(xIdx,yIdx-1,type);
-    if(first==true && removed == 0){
+    floodFill(xIdx+1,yIdx,type,cmd);
+    floodFill(xIdx-1,yIdx,type,cmd);
+    floodFill(xIdx,yIdx+1,type,cmd);
+    floodFill(xIdx,yIdx-1,type,cmd);
+    if(first==true && fillFound == 0){
         //TODO: Provide a way to inform the delegate
         return;//Can't remove single tiles
     }
-    board[index(xIdx,yIdx)].dying = true;
-    board[index(xIdx,yIdx)] = null;//They'll have to destroy themselves(can we do that?)
-    removed += 1;
+    if(cmd == "kill"){
+        board[index(xIdx,yIdx)].dying = true;
+        board[index(xIdx,yIdx)] = null;//They'll have to destroy themselves(can we do that?)
+    }else if(cmd == "hover"){
+        board[index(xIdx,yIdx)].selected = true;
+    }else{
+        print ("Flood Error");
+    }
+    fillFound += 1;
 }
 
 function shuffleDown()
