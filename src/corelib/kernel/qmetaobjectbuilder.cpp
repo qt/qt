@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "qmetaobjectbuilder_p.h"
-#include <QDebug>
+#ifndef Q_OS_WIN
+#include <stdint.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

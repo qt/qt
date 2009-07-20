@@ -39,59 +39,44 @@
 **
 ****************************************************************************/
 
-#include "qfxwidgetcontainer.h"
-#include <qgraphicswidget.h>
+#ifndef QFXGRAPHICSOBJECTCONTAINER_H
+#define QFXGRAPHICSOBJECTCONTAINER_H
+
+#include <QtDeclarative/qfxitem.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlclass WidgetContainer QFxWidgetContainer
-    \brief The WidgetContainer element allows you to add QGraphicsWidgets into Fluid UI elements.
-*/
+QT_MODULE(Declarative)
 
-/*!
-    \internal
-    \class QFxWidgetContainer
-    \brief The QFxWidgetContainer class allows you to add QGraphicsWidgets into Fluid UI applications.
-*/
+class QGraphicsObject;
 
-QML_DEFINE_TYPE(QFxWidgetContainer, WidgetContainer)
-
-QFxWidgetContainer::QFxWidgetContainer(QFxItem *parent)
-: QFxItem(parent), _graphicsWidget(0)
+class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
 {
-}
+    Q_OBJECT
 
-QFxWidgetContainer::~QFxWidgetContainer()
-{
-}
+    Q_CLASSINFO("DefaultProperty", "graphicsObject")
+    Q_PROPERTY(QGraphicsObject *graphicsObject READ graphicsObject WRITE setGraphicsObject)
 
-QGraphicsWidget *QFxWidgetContainer::graphicsWidget() const
-{
-    return _graphicsWidget;
-}
+public:
+    QFxGraphicsObjectContainer(QFxItem *parent = 0);
+    ~QFxGraphicsObjectContainer();
 
-/*!
-    \qmlproperty QGraphicsWidget QFxWidgetContainer::graphicsWidget
-    The QGraphicsWidget associated with this element.
-*/
-void QFxWidgetContainer::setGraphicsWidget(QGraphicsWidget *widget)
-{
-    if (widget == _graphicsWidget)
-        return;
+    QGraphicsObject *graphicsObject() const;
+    void setGraphicsObject(QGraphicsObject *);
 
-    _graphicsWidget = widget;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    _graphicsWidget->setParentItem(this);
-}
-
-void QFxWidgetContainer::canvasChanged()
-{
-    if (_graphicsWidget) {
-        QGraphicsWidget *w = _graphicsWidget;
-        _graphicsWidget = 0;
-        setGraphicsWidget(w);
-    }
-}
+private:
+    QGraphicsObject *_graphicsObject;
+};
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxGraphicsObjectContainer)
+
+QT_END_HEADER
+
+#endif // QFXGRAPHICSOBJECTCONTAINER_H

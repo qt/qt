@@ -48,6 +48,7 @@
 #include <QEvent>
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,7 +42,7 @@ public:
     bool isRecording() const { return recordTimer.isActive(); }
     void setAutoRecord(int from, int to);
     void setDeviceKeys(bool);
-    void setCacheEnabled(bool);
+    void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
 
     QMenuBar *menuBar() const;

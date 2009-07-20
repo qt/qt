@@ -432,6 +432,10 @@ QHash<int,QVariant> QmlXmlListModel::data(int index, const QList<int> &roles) co
     return rv;
 }
 
+/*!
+    \qmlproperty int XmlListModel::count
+    The number of data entries in the model.
+*/
 int QmlXmlListModel::count() const
 {
     Q_D(const QmlXmlListModel);
@@ -645,6 +649,7 @@ void QmlXmlListModel::queryCompleted(int id, int size)
     if (size > 0) {
         d->data = d->qmlXmlQuery.modelData();
         emit itemsInserted(0, d->size);
+        emit countChanged();
     }
 }
 

@@ -43,6 +43,8 @@
 #include <QPen>
 #include <QFile>
 #include <QEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 #include <QBasicTimer>
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
