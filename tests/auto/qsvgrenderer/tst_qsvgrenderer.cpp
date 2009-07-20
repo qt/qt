@@ -83,6 +83,7 @@ private slots:
     void strokeInherit();
     void testFillInheritance();
     void testStopOffsetOpacity();
+    void testUseElement();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -1203,6 +1204,107 @@ void tst_QSvgRenderer::testStopOffsetOpacity()
     QCOMPARE(images[0], images[1]);
     QCOMPARE(images[0], images[2]);
     QCOMPARE(images[0], images[3]);
+}
+
+void tst_QSvgRenderer::testUseElement()
+{
+    static const char *svgs[] = {
+        //Use refering to non group node (1)
+        "<svg viewBox = \"0 0 200 200\">"
+        " <polygon points=\"20,20 50,120 100,10 40,80 50,80\"/>"
+        " <polygon points=\"20,80 50,180 100,70 40,140 50,140\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
+        " <use y = \"60\" xlink:href = \"#usedPolyline\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
+        " <g fill = \" red\" fill-opacity =\"0.2\">"
+        "<use y = \"60\" xlink:href = \"#usedPolyline\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
+        "</g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
+        " <g stroke-width = \"3\" stroke = \"yellow\">"
+        "  <use y = \"60\" xlink:href = \"#usedPolyline\" fill = \" red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\"/>"
+        " </g>"
+        "</svg>",
+        //Use refering to non group node (2)
+        "<svg viewBox = \"0 0 200 200\">"
+        " <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\"/>"
+        " <polygon points=\"20,80 50,180 100,70 40,140 50,140\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\" stroke-dasharray = \"1,1,1,1\" stroke-offset = \"5\" stroke-miterlimit = \"3\" stroke-linecap = \"butt\" stroke-linejoin = \"square\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <g fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\">"
+        "  <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\" />"
+        " </g>"
+        " <g stroke = \"blue\" stroke-width = \"3\" stroke-dasharray = \"1,1,1,1\" stroke-offset = \"5\" stroke-miterlimit = \"3\" stroke-linecap = \"butt\" stroke-linejoin = \"square\">"
+        "  <use y = \"60\" xlink:href = \"#usedPolyline\"  fill-opacity = \"0.7\" fill= \"red\" stroke = \"blue\" fill-rule = \"evenodd\"/>"
+        " </g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <g fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\">"
+        "  <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\" />"
+        " </g>"
+        " <g stroke-width = \"3\" stroke-dasharray = \"1,1,1,1\" stroke-offset = \"5\" stroke-miterlimit = \"3\" stroke-linecap = \"butt\" stroke-linejoin = \"square\" >"
+        "  <use y = \"60\" xlink:href = \"#usedPolyline\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" />"
+        " </g>"
+        "</svg>",
+        //Use refering to group node
+        "<svg viewBox = \"0 0 200 200\">"
+        " <g>"
+        "  <circle cx=\"0\" cy=\"0\" r=\"100\" fill = \"red\" fill-opacity = \"0.6\"/>"
+        "  <rect x = \"10\" y = \"10\" width = \"30\" height = \"30\" fill = \"red\" fill-opacity = \"0.5\"/>"
+        "  <circle fill=\"#a6ce39\" cx=\"0\" cy=\"0\" r=\"33\" fill-opacity = \"0.5\"/>"
+        " </g>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <defs>"
+        "  <g id=\"usedG\">"
+        "   <circle cx=\"0\" cy=\"0\" r=\"100\" fill-opacity = \"0.6\"/>"
+        "   <rect x = \"10\" y = \"10\" width = \"30\" height = \"30\"/>"
+        "   <circle fill=\"#a6ce39\" cx=\"0\" cy=\"0\" r=\"33\" />"
+        "  </g>"
+        " </defs>"
+        " <use xlink:href =\"#usedG\" fill = \"red\" fill-opacity =\"0.5\"/>"
+        "</svg>",
+        "<svg viewBox = \"0 0 200 200\">"
+        " <defs>"
+        "  <g fill = \"blue\" fill-opacity = \"0.3\">"
+        "   <g id=\"usedG\">"
+        "    <circle cx=\"0\" cy=\"0\" r=\"100\" fill-opacity = \"0.6\"/>"
+        "    <rect x = \"10\" y = \"10\" width = \"30\" height = \"30\"/>"
+        "    <circle fill=\"#a6ce39\" cx=\"0\" cy=\"0\" r=\"33\" />"
+        "   </g>"
+        "  </g>"
+        " </defs>"
+        " <g fill = \"red\" fill-opacity =\"0.5\">"
+        "  <use xlink:href =\"#usedG\" />"
+        " </g>"
+        "</svg>"
+    };
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        images[i] = QImage(200, 200, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+        if (i < 4 && i != 0) {
+            QCOMPARE(images[0], images[i]);
+        } else if (i > 4 && i < 7) {
+            QCOMPARE(images[4], images[i]);
+        } else if (i > 7) {
+            QCOMPARE(images[8], images[i]);
+        }
+    }
 }
 
 QTEST_MAIN(tst_QSvgRenderer)
