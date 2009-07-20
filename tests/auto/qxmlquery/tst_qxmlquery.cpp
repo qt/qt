@@ -219,6 +219,7 @@ private Q_SLOTS:
     void bindVariableQXmlNameQXmlQuerySignature() const;
     void bindVariableQXmlNameQXmlQuery() const;
     void bindVariableQXmlQueryInvalidate() const;
+    void unknownSourceLocation() const;
 
     // TODO call all URI resolving functions where 1) the URI resolver return a null QUrl(); 2) resolves into valid, existing URI, 3) invalid, non-existing URI.
     // TODO bind stringlists, variant lists, both ways.
@@ -3220,6 +3221,23 @@ void tst_QXmlQuery::bindVariableQXmlQueryInvalidate() const
 
     query.bindVariable(QLatin1String("name"), query);
     QVERIFY(!query.isValid());
+}
+
+void tst_QXmlQuery::unknownSourceLocation() const
+{
+    QBuffer b;
+    b.setData("<a><b/><b/></a>");
+    b.open(QIODevice::ReadOnly);
+
+    MessageSilencer silencer;
+    QXmlQuery query;
+    query.bindVariable(QLatin1String("inputDocument"), &b);
+    query.setMessageHandler(&silencer);
+
+    query.setQuery(QLatin1String("doc($inputDocument)/a/(let $v := b/string() return if ($v) then $v else ())"));
+
+    QString output;
+    query.evaluateTo(&output);
 }
 
 QTEST_MAIN(tst_QXmlQuery)
