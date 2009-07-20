@@ -1,7 +1,3 @@
-// The Image primitive does not have any special handling for maintaining
-// aspect ratio. This example shows that you can provide whatever specific
-// behaviour you like.
-//
 // Here, we extend the "face_fit" example with animation to show how truly
 // diverse and usage-specific behaviours are made possible by NOT putting a
 // hard-coded aspect ratio feature into the Image primitive.

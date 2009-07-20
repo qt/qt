@@ -56,7 +56,7 @@ class QmlFollowPrivate : public QObjectPrivate
 public:
     QmlFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
-        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.005), modulus(0.0), enabled(true), mode(Track), clock(this) {}
+        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.01), modulus(0.0), enabled(true), mode(Track), clock(this) {}
 
     QmlMetaProperty property;
     qreal currentValue;
@@ -164,8 +164,10 @@ void QmlFollowPrivate::tick(int time)
         }
         lastTime = time;
     }
-    emit q->valueChanged(currentValue);
     property.write(currentValue);
+    emit q->valueChanged(currentValue);
+    if (clock.state() != QAbstractAnimation::Running)
+        emit q->syncChanged();
 }
 
 void QmlFollowPrivate::updateMode()
@@ -183,12 +185,15 @@ void QmlFollowPrivate::start()
     if (!enabled)
         return;
 
+    Q_Q(QmlFollow);
     if (mode == QmlFollowPrivate::Track) {
         currentValue = sourceValue;
         property.write(currentValue);
     } else if (sourceValue != currentValue && clock.state() != QAbstractAnimation::Running) {
         lastTime = 0;
+        currentValue = property.read().toDouble();
         clock.start(); // infinity??
+        emit q->syncChanged();
     }
 }
 
@@ -261,8 +266,10 @@ qreal QmlFollow::sourceValue() const
 void QmlFollow::setSourceValue(qreal value)
 {
     Q_D(QmlFollow);
-    d->sourceValue = value;
-    d->start();
+    if (d->sourceValue != value) {
+        d->sourceValue = value;
+        d->start();
+    }
 }
 
 /*!
@@ -338,7 +345,7 @@ void QmlFollow::setDamping(qreal damping)
     to 0 to be considered equal to zero. This will depend on the usage of the value.
     For pixel positions, 0.25 would suffice. For scale, 0.005 will suffice.
 
-    The default is 0.005. Small performance improvements can result in tuning this
+    The default is 0.01. Small performance improvements can result in tuning this
     value.
 */
 qreal QmlFollow::epsilon() const
@@ -395,6 +402,19 @@ void QmlFollow::setEnabled(bool enabled)
         d->start();
     else
         d->stop();
+}
+
+/*!
+    \qmlproperty bool Follow::inSync
+    This property is true when target is equal to the source; otherwise
+    false.  If inSync is true the target is not being animated.
+
+    If \l enabled is false then inSync will also be false.
+*/
+bool QmlFollow::inSync() const
+{
+    Q_D(const QmlFollow);
+    return d->enabled && d->clock.state() != QAbstractAnimation::Running;
 }
 
 qreal QmlFollow::value() const

@@ -160,7 +160,7 @@ Q_OBJECT
 public:
     QFxVisualItemModelData(int index, QFxVisualItemModelPrivate *model);
 
-    Q_PROPERTY(int index READ index NOTIFY indexChanged);
+    Q_PROPERTY(int index READ index NOTIFY indexChanged)
     int index() const;
     void setIndex(int index);
 

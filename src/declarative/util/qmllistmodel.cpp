@@ -330,6 +330,10 @@ QHash<int,QVariant> QmlListModel::data(int index, const QList<int> &roles) const
     return rv;
 }
 
+/*!
+    \qmlproperty int ListModel::count
+    The number of data entries in the model.
+*/
 int QmlListModel::count() const
 {
     if (!_root) return 0;

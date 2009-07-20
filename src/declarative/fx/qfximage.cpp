@@ -464,6 +464,12 @@ QUrl QFxImage::source() const
     return d->url;
 }
 
+/*!
+    \qmlproperty bool Image::preserveAspect
+
+    Whether the image's aspect ratio should be preserved when resizing. By default this
+    is false.
+*/
 bool QFxImage::preserveAspect() const
 {
     Q_D(const QFxImage);

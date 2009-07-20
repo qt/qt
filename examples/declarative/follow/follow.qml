@@ -40,11 +40,24 @@ Rect {
         id: Mouse
         anchors.fill: parent
         Rect {
+            id: "Ball"
             width: 20; height: 20
             radius: 10
             color: "#0000ff"
-            x: Follow { source: Mouse.mouseX-10; spring: 1.0; damping: 0.05 }
-            y: Follow { source: Mouse.mouseY-10; spring: 1.0; damping: 0.05 }
+            x: Follow { id: "F1"; source: Mouse.mouseX-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
+            y: Follow { id: "F2"; source: Mouse.mouseY-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
+            states: [
+                State {
+                    name: "following"
+                    when: !F1.inSync || !F2.inSync
+                    SetProperties { target: Ball; color: "#ff0000" }
+                }
+            ]
+            transitions: [
+                Transition {
+                    ColorAnimation { duration: 200 }
+                }
+            ]
         }
     }
 }
