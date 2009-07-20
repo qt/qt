@@ -915,15 +915,13 @@ QString QAction::whatsThis() const
 
     This enum defines priorities for actions in user interface.
 
-    \value LowPriority The action will not be prioritized in
-    collapsible layouts when not enough space for all actions is
-    available.
+    \value LowPriority The action should not be prioritized in
+    the user interface.
 
     \value NormalPriority
 
-    \value HighPriority The action will be prioritized by
-    collapsible layouts when not enough space for all actions is
-    available.
+    \value HighPriority The action should be prioritized in
+    the user interface.
 
     \sa priority
 */
@@ -936,9 +934,11 @@ QString QAction::whatsThis() const
     \brief the actions's priority in the user interface.
 
     This property can be set to indicate how the action should be prioritized
-    in a collapsible layout. For instance, when toolbars have the Qt::ToolButtonTextBesideIcon
-    mode set, then lower priority actions will hide text labels to preserve 
-    horizontal space if necessary.
+    in the user interface.
+
+    For instance, when toolbars have the Qt::ToolButtonTextBesideIcon
+    mode set, then actions with LowPriority will not show the text
+    labels.
 */
 void QAction::setPriority(Priority priority)
 {
