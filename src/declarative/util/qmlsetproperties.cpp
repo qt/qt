@@ -47,7 +47,7 @@
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
 #include <QtDeclarative/qmlexpression.h>
-#include <QtDeclarative/qmlbindablevalue.h>
+#include <QtDeclarative/qmlbinding.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -334,7 +334,7 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->value();
             } else {
-                a.toBinding = new QmlBindableValue(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                a.toBinding = new QmlBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
                 a.toBinding->setTarget(prop);
             }
 

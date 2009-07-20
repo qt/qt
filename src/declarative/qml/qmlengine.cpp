@@ -72,7 +72,7 @@
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
-#include <private/qmlbindablevalue_p.h>
+#include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
 #include <private/qmlenginedebug_p.h>
 
@@ -118,13 +118,13 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(parserStatus[ii]);
 }
 
-void QmlEnginePrivate::clear(SimpleList<QmlBindableValue> &bvs)
+void QmlEnginePrivate::clear(SimpleList<QmlBinding> &bvs)
 {
     for (int ii = 0; ii < bvs.count; ++ii) {
-        QmlBindableValue *bv = bvs.at(ii);
+        QmlBinding *bv = bvs.at(ii);
         if(bv) {
-            QmlBindableValuePrivate *p = 
-                static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bv));
+            QmlBindingPrivate *p = 
+                static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bv));
             p->mePtr = 0;
         }
     }

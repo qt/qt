@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <qmlbindablevalue.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <private/qobject_p.h>

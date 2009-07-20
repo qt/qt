@@ -42,7 +42,6 @@
 #include "qmlstate.h"
 #include "qmlstategroup.h"
 #include "qmlstate_p.h"
-#include "qmlbindablevalue.h"
 #include "qmlstateoperations.h"
 #include "qmlanimation.h"
 #include "qmlanimation_p.h"

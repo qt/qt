@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlbindablevalue.h"
 #include "qmlstategroup.h"
 #include "qmltransition.h"
+#include <QtDeclarative/qmlbinding.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE

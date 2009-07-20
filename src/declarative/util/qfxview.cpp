@@ -51,7 +51,6 @@
 #include "qboxlayout.h"
 #include "qbasictimer.h"
 
-#include "qmlbindablevalue.h"
 #include "qml.h"
 #include "qfxitem.h"
 #include "private/qperformancelog_p.h"

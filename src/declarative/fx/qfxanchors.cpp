@@ -44,7 +44,6 @@
 #include "qfxitem_p.h"
 #include <QDebug>
 #include <QtDeclarative/qmlinfo.h>
-#include <QtDeclarative/qmlbindablevalue.h>
 
 QT_BEGIN_NAMESPACE
 

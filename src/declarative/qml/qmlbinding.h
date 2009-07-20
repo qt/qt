@@ -39,41 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLEVALUE_P_H
-#define QMLBINDABLEVALUE_P_H
+#ifndef QMLBINDING_H
+#define QMLBINDING_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/QObject>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtDeclarative/qmlexpression.h>
 
-#include <private/qobject_p.h>
-#include <QtDeclarative/qmlbindablevalue.h>
-#include <QtDeclarative/qmlmetaproperty.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlBindableValuePrivate : public QObjectPrivate
+QT_MODULE(Declarative)
+
+class QmlExpression;
+class QmlContext;
+class QmlBindingPrivate;
+class Q_DECLARATIVE_EXPORT QmlBinding : public QmlPropertyValueSource, 
+                                        public QmlExpression
 {
-    Q_DECLARE_PUBLIC(QmlBindableValue)
+Q_OBJECT
 public:
-    QmlBindableValuePrivate();
+    QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
+    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
+    ~QmlBinding();
 
-    bool inited:1;
-    bool updating:1;
-    bool enabled:1;
+    virtual void setTarget(const QmlMetaProperty &);
+    QmlMetaProperty property() const;
 
-    QmlMetaProperty property;
+    Q_CLASSINFO("DefaultProperty", "expression")
+    Q_PROPERTY(QString expression READ expression WRITE setExpression)
+    virtual void setExpression(const QString &);
 
-    QmlBindableValue **mePtr;
+    void init();
+    void forceUpdate();
+
+    void setEnabled(bool);
+    bool enabled() const;
+
+public Q_SLOTS:
+    void update();
+
+protected:
+    virtual void valueChanged();
+
+private:
+    Q_DECLARE_PRIVATE(QmlBinding)
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLBINDABLEVALUE_P_H
+QML_DECLARE_TYPE(QmlBinding)
+
+QT_END_HEADER
+
+#endif // QMLBINDING_H

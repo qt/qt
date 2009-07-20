@@ -151,10 +151,10 @@ public:
         }
     };
 
-    static void clear(SimpleList<QmlBindableValue> &);
+    static void clear(SimpleList<QmlBinding> &);
     static void clear(SimpleList<QmlParserStatus> &);
 
-    QList<SimpleList<QmlBindableValue> > bindValues;
+    QList<SimpleList<QmlBinding> > bindValues;
     QList<SimpleList<QmlParserStatus> > parserStatus;
 
     QmlComponent *rootComponent;

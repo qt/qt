@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlbindablevalue.h>
+#include <QtDeclarative/qmlbinding.h>
 #include <private/qmltransitionmanager_p.h>
 #include <private/qmlstate_p.h>
 
