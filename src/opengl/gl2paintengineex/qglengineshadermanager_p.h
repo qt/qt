@@ -220,6 +220,7 @@
 #include <QGLShader>
 #include <QGLShaderProgram>
 #include <QPainter>
+#include <private/qgl_p.h>
 
 QT_BEGIN_HEADER
 
@@ -313,6 +314,8 @@ public:
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
     QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
+
+    static QGLEngineShaderManager *managerForContext(const QGLContext *context);
 
     enum ShaderName {
         MainVertexShader,

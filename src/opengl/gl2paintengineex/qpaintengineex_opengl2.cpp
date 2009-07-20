@@ -266,10 +266,6 @@ extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 {
-    if (shaderManager) {
-        delete shaderManager;
-        shaderManager = 0;
-    }
 }
 
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
@@ -1209,11 +1205,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
 
-    if (d->shaderManager) {
-        d->shaderManager->setDirty();
-    } else {
-        d->shaderManager = new QGLEngineShaderManager(d->ctx);
-    }
+    d->shaderManager = QGLEngineShaderManager::managerForContext(d->ctx);
+    d->shaderManager->setDirty();
 
     glViewport(0, 0, d->width, d->height);
 

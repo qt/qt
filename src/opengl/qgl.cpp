@@ -3363,8 +3363,13 @@ bool QGLWidget::event(QEvent *e)
 #elif defined(Q_WS_WIN)
     if (e->type() == QEvent::ParentChange) {
         QGLContext *newContext = new QGLContext(d->glcx->requestedFormat(), this);
-        qgl_share_reg()->replaceShare(d->glcx, newContext);
+        QList<const QGLContext *> shares = qgl_share_reg()->shares(d->glcx);
         setContext(newContext);
+        for (int i = 0; i < shares.size(); ++i) {
+            if (newContext != shares.at(i))
+                qgl_share_reg()->addShare(newContext, shares.at(i));
+        }
+
         // the overlay needs to be recreated as well
         delete d->olcx;
         if (isValid() && context()->format().hasOverlay()) {
@@ -4610,6 +4615,158 @@ bool QGLDrawable::autoFillBackground() const
 #endif
     else
         return false;
+}
+
+
+bool QGLShareRegister::checkSharing(const QGLContext *context1, const QGLContext *context2) {
+    bool sharing = (context1 && context2 && context1->d_ptr->groupResources == context2->d_ptr->groupResources);
+    return sharing;
+}
+
+void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *share) {
+    Q_ASSERT(context && share);
+    if (context->d_ptr->groupResources == share->d_ptr->groupResources)
+        return;
+
+    // Make sure 'context' is not already shared with another group of contexts.
+    Q_ASSERT(reg.find(context->d_ptr->groupResources) == reg.end());
+    Q_ASSERT(context->d_ptr->groupResources->refs == 1);
+
+    // Free 'context' group resources and make it use the same resources as 'share'.
+    delete context->d_ptr->groupResources;
+    context->d_ptr->groupResources = share->d_ptr->groupResources;
+    context->d_ptr->groupResources->refs.ref();
+
+    // Maintain a list of all the contexts in each group of sharing contexts.
+    SharingHash::iterator it = reg.find(share->d_ptr->groupResources);
+    if (it == reg.end())
+        it = reg.insert(share->d_ptr->groupResources, ContextList() << share);
+    it.value() << context;
+}
+
+QList<const QGLContext *> QGLShareRegister::shares(const QGLContext *context) {
+    SharingHash::const_iterator it = reg.find(context->d_ptr->groupResources);
+    if (it == reg.end())
+        return ContextList();
+    return it.value();
+}
+
+void QGLShareRegister::removeShare(const QGLContext *context) {
+    SharingHash::iterator it = reg.find(context->d_ptr->groupResources);
+    if (it == reg.end())
+        return;
+
+    int count = it.value().removeAll(context);
+    Q_ASSERT(count == 1);
+
+    Q_ASSERT(it.value().size() != 0);
+    if (it.value().size() == 1)
+        reg.erase(it);
+}
+
+QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
+    : QObject(parent), free(f)
+{
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(aboutToDestroyContext(const QGLContext *)));
+}
+
+QGLContextResource::~QGLContextResource()
+{
+    while (!m_resources.empty())
+        remove(m_resources.begin().key());
+}
+
+void QGLContextResource::insert(const QGLContext *key, void *value)
+{
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
+    if (shares.size() == 0)
+        shares.append(key);
+    void *oldValue = 0;
+    for (int i = 0; i < shares.size(); ++i) {
+        ResourceHash::iterator it = m_resources.find(shares.at(i));
+        if (it != m_resources.end()) {
+            Q_ASSERT(oldValue == 0 || oldValue == it.value());
+            oldValue = it.value();
+            it.value() = value;
+        } else {
+            m_resources.insert(shares.at(i), value);
+        }
+    }
+    if (oldValue != 0 && oldValue != value) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != key)
+            const_cast<QGLContext *>(key)->makeCurrent();
+        free(oldValue);
+        if (oldContext && oldContext != key)
+            oldContext->makeCurrent();
+    }
+}
+
+void *QGLContextResource::value(const QGLContext *key)
+{
+    ResourceHash::const_iterator it = m_resources.find(key);
+    // Check if there is a value associated with 'key'.
+    if (it != m_resources.end())
+        return it.value();
+    // Check if there is a value associated with sharing contexts.
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
+    for (int i = 0; i < shares.size() && it == m_resources.end(); ++i)
+        it = m_resources.find(shares.at(i));
+    if (it == m_resources.end())
+        return 0; // Didn't find anything.
+
+    // Found something! Share this info with all the buddies.
+    for (int i = 0; i < shares.size(); ++i)
+        m_resources.insert(shares.at(i), it.value());
+    return it.value();
+}
+
+void QGLContextResource::remove(const QGLContext *key)
+{
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
+    if (shares.size() == 0)
+        shares.append(key);
+    void *oldValue = 0;
+    for (int i = 0; i < shares.size(); ++i) {
+        ResourceHash::iterator it = m_resources.find(shares.at(i));
+        if (it != m_resources.end()) {
+            Q_ASSERT(oldValue == 0 || oldValue == it.value());
+            oldValue = it.value();
+            m_resources.erase(it);
+        }
+    }
+    if (oldValue != 0) {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != key)
+            const_cast<QGLContext *>(key)->makeCurrent();
+        free(oldValue);
+        if (oldContext && oldContext != key)
+            oldContext->makeCurrent();
+    }
+}
+
+void QGLContextResource::aboutToDestroyContext(const QGLContext *key)
+{
+    ResourceHash::iterator it = m_resources.find(key);
+    if (it == m_resources.end())
+        return;
+
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
+    if (shares.size() > 1) {
+        Q_ASSERT(key->isSharing());
+        // At least one of the shared contexts must stay in the cache.
+        // Otherwise, the value pointer is lost.
+        for (int i = 0; i < 2/*shares.size()*/; ++i)
+            m_resources.insert(shares.at(i), it.value());
+    } else {
+        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (oldContext != key)
+            const_cast<QGLContext *>(key)->makeCurrent();
+        free(it.value());
+        if (oldContext && oldContext != key)
+            oldContext->makeCurrent();
+    }
+    m_resources.erase(it);
 }
 
 QT_END_NAMESPACE
