@@ -65,11 +65,12 @@ class QFxAnimatedImageItemPrivate : public QFxImagePrivate
 
 public:
     QFxAnimatedImageItemPrivate()
-      : playing(true), _movie(0)
+      : playing(true), paused(false), _movie(0)
     {
     }
 
     bool playing;
+    bool paused;
     QMovie *_movie;
 };
 

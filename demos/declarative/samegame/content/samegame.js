@@ -49,7 +49,7 @@ function initBoard()
 var fillFound;
 var floodBoard;
 
-var lastHoveredIdx = -1
+var lastHoveredIdx = -2
 function handleHover(x,y, btn)
 {
     xIdx = Math.floor(x/tileSize);
