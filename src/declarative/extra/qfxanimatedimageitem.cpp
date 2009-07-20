@@ -120,7 +120,7 @@ void QFxAnimatedImageItem::setPlaying(bool play)
     if (play)
         d->_movie->start();
     else
-        d->_movie->stop();
+        d->_movie->setPaused(true);
 }
 
 /*!
