@@ -103,32 +103,6 @@ void QFxLineEdit::setColor(const QColor &c)
     d->color = c;
 }
 
-/*
-QFxText::TextStyle QFxLineEdit::style() const
-{
-    Q_D(const QFxLineEdit);
-    return d->style;
-}
-
-void QFxLineEdit::setStyle(QFxText::TextStyle style)
-{
-    Q_D(QFxLineEdit);
-    d->style = style;
-}
-
-QColor QFxLineEdit::styleColor() const
-{
-    Q_D(const QFxLineEdit);
-    return d->styleColor;
-}
-
-void QFxLineEdit::setStyleColor(const QColor &c)
-{
-    Q_D(QFxLineEdit);
-    d->styleColor = c;
-}
-*/
-
 QFxText::HAlignment QFxLineEdit::hAlign() const
 {
     Q_D(const QFxLineEdit);
@@ -141,19 +115,6 @@ void QFxLineEdit::setHAlign(QFxText::HAlignment align)
     d->hAlign = align;
 }
 
-QFxText::VAlignment QFxLineEdit::vAlign() const
-{
-    Q_D(const QFxLineEdit);
-    return d->vAlign;
-}
-
-void QFxLineEdit::setVAlign(QFxText::VAlignment align)
-{
-    Q_D(QFxLineEdit);
-    d->vAlign = align;
-}
-
-//### Should this also toggle cursor visibility?
 bool QFxLineEdit::isReadOnly() const
 {
     Q_D(const QFxLineEdit);
@@ -189,16 +150,60 @@ void QFxLineEdit::setCursorPosition(int cp)
     d->control->moveCursor(cp);
 }
 
-int QFxLineEdit::selectionLength() const
+/*!
+    \qmlproperty int LineEdit::selectionStart
+
+    The cursor position before the first character in the current selection.
+    Setting this and selectionEnd allows you to specify a selection in the
+    text edit.
+
+    Note that if selectionStart == selectionEnd then there is no current
+    selection. If you attempt to set selectionStart to a value outside of
+    the current text, selectionStart will not be changed.
+
+    \sa selectionEnd, cursorPosition, selectedText
+*/
+int QFxLineEdit::selectionStart() const
 {
     Q_D(const QFxLineEdit);
-    return d->control->selectionEnd() - d->control->selectionStart();
+    return d->lastSelectionStart;
 }
 
-void QFxLineEdit::setSelectionLength(int len)
+void QFxLineEdit::setSelectionStart(int s)
 {
     Q_D(QFxLineEdit);
-    d->control->setSelection(d->control->cursor(), len);
+    if(d->lastSelectionStart == s || s < 0 || s > text().length())
+        return;
+    d->lastSelectionStart = s;
+    d->control->setSelection(s, d->lastSelectionEnd - s);
+}
+
+/*!
+    \qmlproperty int LineEdit::selectionEnd
+
+    The cursor position after the last character in the current selection.
+    Setting this and selectionStart allows you to specify a selection in the
+    text edit.
+
+    Note that if selectionStart == selectionEnd then there is no current
+    selection. If you attempt to set selectionEnd to a value outside of
+    the current text, selectionEnd will not be changed.
+
+    \sa selectionStart, cursorPosition, selectedText
+*/
+int QFxLineEdit::selectionEnd() const
+{
+    Q_D(const QFxLineEdit);
+    return d->lastSelectionEnd;
+}
+
+void QFxLineEdit::setSelectionEnd(int s)
+{
+    Q_D(QFxLineEdit);
+    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
+        return;
+    d->lastSelectionEnd = s;
+    d->control->setSelection(d->lastSelectionStart, s - d->lastSelectionStart);
 }
 
 QString QFxLineEdit::selectedText() const
@@ -403,41 +408,8 @@ void QFxLineEdit::drawContents(QPainter *p, const QRect &r)
     if (d->control->hasSelectedText())
             flags |= QLineControl::DrawSelections;
 
-    //TODO: Clean up this cut'n'pasted section from QLineEdit
-    QRect lineRect(r);
+    d->control->draw(p, QPoint(0,0), r, flags);
 
-    int cix = qRound(d->control->cursorToX());
-
-    // horizontal scrolling. d->hscroll is the left indent from the beginning
-    // of the text line to the left edge of lineRect. we update this value
-    // depending on the delta from the last paint event; in effect this means
-    // the below code handles all scrolling based on the textline (widthUsed,
-    // minLB, minRB), the line edit rect (lineRect) and the cursor position
-    // (cix).
-    QFontMetrics fm = QApplication::fontMetrics();
-    int minLB = qMax(0, -fm.minLeftBearing());
-    int minRB = qMax(0, -fm.minRightBearing());
-    int widthUsed = d->control->width() + minRB;
-    if ((minLB + widthUsed) <=  lineRect.width()) {
-        // text fits in lineRect; use hscroll for alignment
-        d->hscroll = 0;
-        d->hscroll -= minLB;
-    } else if (cix - d->hscroll >= lineRect.width()) {
-        // text doesn't fit, cursor is to the right of lineRect (scroll right)
-        d->hscroll = cix - lineRect.width() + 1;
-    } else if (cix - d->hscroll < 0 && d->hscroll < widthUsed) {
-        // text doesn't fit, cursor is to the left of lineRect (scroll left)
-        d->hscroll = cix;
-    }
-    // the y offset is there to keep the baseline constant in case we have script changes in the text.
-    QPoint topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
-
-    if(d->hscroll != d->oldScroll)
-        moveCursor();
-
-    d->control->draw(p, topLeft, r, flags);
-
-    d->oldScroll = d->hscroll;
     p->restore();
 }
 
@@ -447,13 +419,12 @@ void QFxLineEditPrivate::init()
         control->setCursorWidth(1);
         control->setPasswordCharacter(QLatin1Char('*'));
         control->setLayoutDirection(Qt::LeftToRight);
-        control->setSelection(0,0);
         q->setSmooth(true);
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setOptions(QFxLineEdit::AcceptsInputMethods | QFxLineEdit::SimpleItem
             | QFxLineEdit::HasContents | QFxLineEdit::MouseEvents);
         q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-                q, SIGNAL(cursorPositionChanged()));
+                q, SLOT(cursorPosChanged()));
         q->connect(control, SIGNAL(selectionChanged()),
                 q, SLOT(selectionChanged()));
         q->connect(control, SIGNAL(textChanged(const QString &)),
@@ -471,16 +442,43 @@ void QFxLineEditPrivate::init()
             font = new QmlFont();
         q->updateSize();
         oldValidity = control->hasAcceptableInput();
-        oldSelectLength = q->selectionLength();
+        lastSelectionStart = 0;
+        lastSelectionEnd = 0;
+}
+
+void QFxLineEdit::cursorPosChanged()
+{
+    Q_D(QFxLineEdit);
+    emit cursorPositionChanged();
+
+    if(!d->control->hasSelectedText()){
+        if(d->lastSelectionStart != d->control->cursor()){
+            d->lastSelectionStart = d->control->cursor();
+            emit selectionStartChanged();
+        }
+        if(d->lastSelectionEnd != d->control->cursor()){
+            d->lastSelectionEnd = d->control->cursor();
+            emit selectionEndChanged();
+        }
+    }
 }
 
 void QFxLineEdit::selectionChanged()
 {
     Q_D(QFxLineEdit);
     emit selectedTextChanged();
-    if(selectionLength() != d->oldSelectLength){
-        d->oldSelectLength = selectionLength();
-        emit selectionLengthChanged();
+
+    if(d->lastSelectionStart != d->control->selectionStart()){
+        d->lastSelectionStart = d->control->selectionStart();
+        if(d->lastSelectionStart == -1)
+            d->lastSelectionStart = d->control->cursor();
+        emit selectionStartChanged();
+    }
+    if(d->lastSelectionEnd != d->control->selectionEnd()){
+        d->lastSelectionEnd = d->control->selectionEnd();
+        if(d->lastSelectionEnd == -1)
+            d->lastSelectionEnd = d->control->cursor();
+        emit selectionEndChanged();
     }
 }
 
