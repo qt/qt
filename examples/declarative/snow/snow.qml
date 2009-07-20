@@ -27,11 +27,12 @@ Rect {
             property real targetDeform: 0
             property bool slowDeform: true
 
-            property real deform
-            deform: Follow { source: MyLayout.targetDeform; velocity: MyLayout.slowDeform?0.1:2 }
+            property real deform: 0
+            deform: Follow {
+                id: "DeformFollow"; source: MyLayout.targetDeform; velocity: MyLayout.slowDeform?0.1:2
+                onSyncChanged: if(inSync) { MyLayout.slowDeform = true; MyLayout.targetDeform = 0; }
+            }
                 
-            onDeformChanged: if(deform == targetDeform) { slowDeform = true; targetDeform = 0; }
-
             ImageBatch { offset: 0; ref: ImagePanel }
 
             x: Follow { source: MyLayout.targetX; velocity: 1000 }
