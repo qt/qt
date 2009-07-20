@@ -42,12 +42,12 @@
 #ifndef QGESTURE_H
 #define QGESTURE_H
 
-#include "qobject.h"
-#include "qlist.h"
-#include "qdatetime.h"
-#include "qpoint.h"
-#include "qrect.h"
-#include "qmetatype.h"
+#include <QtCore/qobject.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
