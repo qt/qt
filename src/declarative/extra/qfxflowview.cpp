@@ -49,8 +49,8 @@ QT_BEGIN_NAMESPACE
 class QFxFlowViewAttached : public QObject
 {
 Q_OBJECT
-Q_PROPERTY(int row READ row NOTIFY posChanged);
-Q_PROPERTY(int column READ column NOTIFY posChanged);
+Q_PROPERTY(int row READ row NOTIFY posChanged)
+Q_PROPERTY(int column READ column NOTIFY posChanged)
 public:
     QFxFlowViewAttached(QObject *parent);
 
