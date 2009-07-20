@@ -112,6 +112,9 @@ bool QFxAnimatedImageItem::isPlaying() const
 void QFxAnimatedImageItem::setPlaying(bool play)
 {
     Q_D(QFxAnimatedImageItem);
+    if(play == d->playing)
+        return;
+    d->playing = play;
     if (!d->_movie)
         return;
     if (play)
@@ -166,7 +169,7 @@ void QFxAnimatedImageItem::setSource(const QUrl &url)
         d->reply = 0;
     }
 
-    d->url = url;
+    d->url = qmlContext(this)->resolvedUrl(url);
 
     if (url.isEmpty()) {
         delete d->_movie;
@@ -188,7 +191,7 @@ void QFxAnimatedImageItem::movieRequestFinished()
     Q_D(QFxAnimatedImageItem);
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
-        qWarning() << "Error Reading File " << d->url;
+        qWarning() << "Error Reading Animated Image File " << d->url;
         delete d->_movie;
         d->_movie = 0;
         return;
@@ -198,7 +201,10 @@ void QFxAnimatedImageItem::movieRequestFinished()
     connect(d->_movie, SIGNAL(frameChanged(int)),
             this, SLOT(movieUpdate()));
     d->_movie->setCacheMode(QMovie::CacheAll);
-    d->_movie->start();
+    if(d->playing)
+        d->_movie->start();
+    else
+        d->_movie->jumpToFrame(0);
     setPixmap(d->_movie->currentPixmap());
 }
 
