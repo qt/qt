@@ -3,7 +3,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlvmemetaobject.cpp \
     qml/qmlengine.cpp \
     qml/qmlexpression.cpp \
-    qml/qmlbindablevalue.cpp \
+    qml/qmlbinding.cpp \
     qml/qmlmetaproperty.cpp \
     qml/qmlcomponent.cpp \
     qml/qmlcontext.cpp \
@@ -33,8 +33,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
     qml/qmlvmemetaobject_p.h \
     qml/qml.h \
-    qml/qmlbindablevalue.h \
-    qml/qmlbindablevalue_p.h \
+    qml/qmlbinding.h \
+    qml/qmlbinding_p.h \
     qml/qmlmetaproperty.h \
     qml/qmlcomponent.h \
     qml/qmlcomponent_p.h \

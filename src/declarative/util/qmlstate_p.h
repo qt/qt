@@ -80,7 +80,7 @@ public:
 
     QmlMetaProperty property;
     QVariant value;
-    QmlBindableValue *binding;
+    QmlBinding *binding;
     QObject *specifiedObject;
     QString specifiedProperty;
 };
@@ -96,7 +96,7 @@ public:
     typedef QList<SimpleAction> SimpleActionList;
 
     QString name;
-    QmlBindableValue *when;
+    QmlBinding *when;
     QmlConcreteList<QmlStateOperation *> operations;
 
     QmlTransitionManager transitionManager;

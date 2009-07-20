@@ -1,0 +1,3 @@
+MyQmlObject { 
+    result: ###
+}

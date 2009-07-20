@@ -42,7 +42,7 @@
 #include <private/qobject_p.h>
 #include <qml.h>
 #include <QtDeclarative/qmlcontext.h>
-#include "qmlbindablevalue.h"
+#include <QtDeclarative/qmlexpression.h>
 #include "qmlstateoperations.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>

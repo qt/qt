@@ -1,0 +1,7 @@
+MyQmlObject {
+    id: MyObject
+
+    MyQmlObject {
+        result: ###
+    }
+}

@@ -57,12 +57,12 @@ class QmlEngine;
 class QmlContext;
 class QmlExpressionPrivate;
 class QmlBasicScript;
-class Q_DECLARATIVE_EXPORT QmlExpression 
+class Q_DECLARATIVE_EXPORT QmlExpression : public QObject
 {
+    Q_OBJECT
 public:
     QmlExpression();
     QmlExpression(QmlContext *, const QString &, QObject *);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me);
     virtual ~QmlExpression();
 
     QmlEngine *engine() const;
@@ -71,7 +71,6 @@ public:
     QString expression() const;
     void clearExpression();
     virtual void setExpression(const QString &);
-    QVariant value();
     bool isConstant() const;
 
     bool trackChange() const;
@@ -82,31 +81,27 @@ public:
     QObject *scopeObject() const;
 
     quint32 id() const;
-protected:
-    virtual void valueChanged();
-
-private:
-    friend class QmlExpressionBindProxy;
-    friend class QmlDebugger;
-    friend class QmlContext;
-    QmlExpressionPrivate *d;
-};
-
-// LK: can't we merge with QmlExpression????
-class Q_DECLARATIVE_EXPORT QmlExpressionObject : public QObject, 
-                                                 public QmlExpression
-{
-    Q_OBJECT
-public:
-    QmlExpressionObject(QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, const QString &, QObject *scope, QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, void *, QmlRefCount *, QObject *);
 
 public Q_SLOTS:
     QVariant value();
 
 Q_SIGNALS:
-    void valueChanged();
+    virtual void valueChanged();
+
+protected:
+    QmlExpression(QmlContext *, const QString &, QObject *, 
+                  QmlExpressionPrivate &dd);
+    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, 
+                  QmlExpressionPrivate &dd);
+
+private Q_SLOTS:
+    void __q_notify();
+
+private:
+    Q_DECLARE_PRIVATE(QmlExpression)
+    friend class QmlExpressionBindProxy;
+    friend class QmlDebugger;
+    friend class QmlContext;
 };
 
 QT_END_NAMESPACE

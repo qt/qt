@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLEVALUE_P_H
-#define QMLBINDABLEVALUE_P_H
+#ifndef QMLBINDING_P_H
+#define QMLBINDING_P_H
 
 //
 //  W A R N I N G
@@ -53,17 +53,17 @@
 // We mean it.
 //
 
-#include <private/qobject_p.h>
-#include <QtDeclarative/qmlbindablevalue.h>
+#include <QtDeclarative/qmlbinding.h>
 #include <QtDeclarative/qmlmetaproperty.h>
+#include "qmlexpression_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlBindableValuePrivate : public QObjectPrivate
+class QmlBindingPrivate : public QmlExpressionPrivate
 {
-    Q_DECLARE_PUBLIC(QmlBindableValue)
+    Q_DECLARE_PUBLIC(QmlBinding)
 public:
-    QmlBindableValuePrivate();
+    QmlBindingPrivate();
 
     bool inited:1;
     bool updating:1;
@@ -71,9 +71,9 @@ public:
 
     QmlMetaProperty property;
 
-    QmlBindableValue **mePtr;
+    QmlBinding **mePtr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLBINDABLEVALUE_P_H
+#endif // QMLBINDING_P_H

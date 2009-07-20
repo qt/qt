@@ -51,7 +51,7 @@ Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(BindValue, "BindValue execution")
     Q_DEFINE_PERFORMANCE_METRIC(BindValueSSE, "BindValue execution SSE")
     Q_DEFINE_PERFORMANCE_METRIC(BindValueQt, "BindValue execution QtScript")
-    Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBindableValue::update")
+    Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBinding::update")
     Q_DEFINE_PERFORMANCE_METRIC(PixmapLoad, "Pixmap loading")
     Q_DEFINE_PERFORMANCE_METRIC(FontDatabase, "Font database creation")
     Q_DEFINE_PERFORMANCE_METRIC(QFxPathViewPathCache, "FX Items:    QFxPathView: Path cache")

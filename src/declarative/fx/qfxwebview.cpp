@@ -53,7 +53,6 @@
 #include <QtWebKit/QWebElement>
 
 #include "qml.h"
-#include "qmlbindablevalue.h"
 #include "qmlengine.h"
 #include "qmlstate.h"
 #include "qfxtransform.h"

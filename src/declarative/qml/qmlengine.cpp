@@ -72,7 +72,7 @@
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
-#include <private/qmlbindablevalue_p.h>
+#include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
 #include <private/qmlenginedebug_p.h>
 
@@ -118,13 +118,13 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(parserStatus[ii]);
 }
 
-void QmlEnginePrivate::clear(SimpleList<QmlBindableValue> &bvs)
+void QmlEnginePrivate::clear(SimpleList<QmlBinding> &bvs)
 {
     for (int ii = 0; ii < bvs.count; ++ii) {
-        QmlBindableValue *bv = bvs.at(ii);
+        QmlBinding *bv = bvs.at(ii);
         if(bv) {
-            QmlBindableValuePrivate *p = 
-                static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bv));
+            QmlBindingPrivate *p = 
+                static_cast<QmlBindingPrivate *>(QObjectPrivate::get(bv));
             p->mePtr = 0;
         }
     }
@@ -253,74 +253,6 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
 
     return QScriptValue();
 }
-
-////////////////////////////////////////////////////////////////////
-
-bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString &propName, QObject *obj)
-{
-    QmlMetaProperty prop(obj, propName);
-
-    if (!prop.isValid())
-        return false;
-
-    if (prop.needsChangedNotifier())
-        capturedProperties << CapturedProperty(prop);
-
-    if (prop.type() & QmlMetaProperty::Attached) {
-
-        cache.object = obj;
-        cache.type = QmlBasicScriptNodeCache::Attached;
-        cache.attached = prop.d->attachedObject();
-        return true;
-
-    } else if (prop.type() & QmlMetaProperty::Property) {
-
-        cache.object = obj;
-        cache.type = QmlBasicScriptNodeCache::Core;
-        cache.core = prop.property().propertyIndex();
-        cache.coreType = prop.propertyType();
-        return true;
-
-    } else if (prop.type() & QmlMetaProperty::SignalProperty) {
-
-        cache.object = obj;
-        cache.type = QmlBasicScriptNodeCache::SignalProperty;
-        cache.core = prop.coreIndex();
-        return true;
-
-    }
-
-    return false;
-}
-
-bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &propName, QmlContextPrivate *context)
-{
-    while(context) {
-
-        QHash<QString, int>::ConstIterator iter = 
-            context->propertyNames.find(propName);
-        if (iter != context->propertyNames.end()) {
-            cache.object = 0;
-            cache.type = QmlBasicScriptNodeCache::Variant;
-            cache.context = context;
-            cache.contextIndex = *iter;
-            capturedProperties << CapturedProperty(context->q_ptr, -1, *iter + context->notifyIndex);
-            return true;
-        }
-
-        foreach(QObject *obj, context->defaultObjects) {
-            if (fetchCache(cache, propName, obj))
-                return true;
-        }
-
-        if (context->parent)
-            context = context->parent->d_func();
-        else
-            context = 0;
-    }
-    return false;
-}
-
 
 /*!
     \class QmlEngine

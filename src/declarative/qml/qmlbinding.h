@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLEVALUE_H
-#define QMLBINDABLEVALUE_H
+#ifndef QMLBINDING_H
+#define QMLBINDING_H
 
 #include <QtCore/QObject>
 #include <QtDeclarative/qfxglobal.h>
@@ -56,22 +56,17 @@ QT_MODULE(Declarative)
 
 class QmlExpression;
 class QmlContext;
-class QmlBindableValuePrivate;
-class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource, 
-                                              public QmlExpression
+class QmlBindingPrivate;
+class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression
 {
 Q_OBJECT
 public:
-    QmlBindableValue(const QString &, QObject *, QmlContext *, QObject *parent=0);
-    QmlBindableValue(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
-    ~QmlBindableValue();
+    QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
+    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
+    ~QmlBinding();
 
-    virtual void setTarget(const QmlMetaProperty &);
+    void setTarget(const QmlMetaProperty &);
     QmlMetaProperty property() const;
-
-    Q_CLASSINFO("DefaultProperty", "expression")
-    Q_PROPERTY(QString expression READ expression WRITE setExpression)
-    virtual void setExpression(const QString &);
 
     void init();
     void forceUpdate();
@@ -86,13 +81,13 @@ protected:
     virtual void valueChanged();
 
 private:
-    Q_DECLARE_PRIVATE(QmlBindableValue)
+    Q_DECLARE_PRIVATE(QmlBinding)
 };
+
+Q_DECLARE_METATYPE(QmlBinding*);
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlBindableValue)
-
 QT_END_HEADER
 
-#endif // QMLBINDABLEVALUE_H
+#endif // QMLBINDING_H

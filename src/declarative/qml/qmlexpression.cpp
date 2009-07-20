@@ -50,30 +50,52 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
-
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
+QmlExpressionPrivate::QmlExpressionPrivate()
+: ctxt(0), expressionFunctionValid(false), sseData(0), me(0), trackChange(true), line(-1), id(0), guardList(0), guardListLength(0)
 {
 }
 
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), expressionFunctionValid(false), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
+void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr, 
+                                QObject *me)
 {
+    Q_Q(QmlExpression);
+
+    expression = expr;
+
+    this->ctxt = ctxt;
+    if (ctxt && ctxt->engine()) 
+        id = ctxt->engine()->d_func()->getUniqueId();
+    if (ctxt)
+        ctxt->d_func()->childExpressions.insert(q);
+    this->me = me;
 }
 
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr)
-: q(b), ctxt(0), expression(expr), expressionFunctionValid(false), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
+void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc, 
+                                QObject *me)
 {
+    Q_Q(QmlExpression);
+
+    sse.load((const char *)expr, rc);
+
+    this->ctxt = ctxt;
+    if (ctxt && ctxt->engine()) 
+        id = ctxt->engine()->d_func()->getUniqueId();
+    if (ctxt)
+        ctxt->d_func()->childExpressions.insert(q);
+    this->me = me;
 }
 
 QmlExpressionPrivate::~QmlExpressionPrivate()
 {
     sse.deleteScriptState(sseData);
     sseData = 0;
-    delete proxy;
-    delete log;
+    if (guardList) { delete [] guardList; guardList = 0; }
 }
+
+/*!
+    \class QmlExpression
+    \brief The QmlExpression class evaluates ECMAScript in a QML context.
+*/
 
 /*!
     Create an invalid QmlExpression.
@@ -82,21 +104,18 @@ QmlExpressionPrivate::~QmlExpressionPrivate()
     null expression object and its value will always be an invalid QVariant.
  */
 QmlExpression::QmlExpression()
-: d(new QmlExpressionPrivate(this))
+: QObject(*new QmlExpressionPrivate, 0)
 {
 }
 
-/*! \internal */
+/*!  \internal */
 QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
-                             QmlRefCount *rc, QObject *me)
-: d(new QmlExpressionPrivate(this, expr, rc))
+                             QmlRefCount *rc, QObject *me, 
+                             QmlExpressionPrivate &dd)
+: QObject(dd, 0)
 {
-    d->ctxt = ctxt;
-    if(ctxt && ctxt->engine())
-        d->id = ctxt->engine()->d_func()->getUniqueId();
-    if(ctxt)
-        ctxt->d_func()->childExpressions.insert(this);
-    d->me = me;
+    Q_D(QmlExpression);
+    d->init(ctxt, expr, rc, me);
 }
 
 /*!
@@ -108,14 +127,19 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
 */
 QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
                              QObject *scope)
-: d(new QmlExpressionPrivate(this, expression))
+: QObject(*new QmlExpressionPrivate, 0)
 {
-    d->ctxt = ctxt;
-    if(ctxt && ctxt->engine())
-        d->id = ctxt->engine()->d_func()->getUniqueId();
-    if(ctxt)
-        ctxt->d_func()->childExpressions.insert(this);
-    d->me = scope;
+    Q_D(QmlExpression);
+    d->init(ctxt, expression, scope);
+}
+
+/*!  \internal */
+QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
+                             QObject *scope, QmlExpressionPrivate &dd)
+: QObject(dd, 0)
+{
+    Q_D(QmlExpression);
+    d->init(ctxt, expression, scope);
 }
 
 /*!
@@ -123,9 +147,9 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 */
 QmlExpression::~QmlExpression()
 {
+    Q_D(QmlExpression);
     if (d->ctxt)
         d->ctxt->d_func()->childExpressions.remove(this);
-    delete d; d = 0;
 }
 
 /*!
@@ -134,6 +158,7 @@ QmlExpression::~QmlExpression()
 */
 QmlEngine *QmlExpression::engine() const
 {
+    Q_D(const QmlExpression);
     return d->ctxt?d->ctxt->engine():0;
 }
 
@@ -143,6 +168,7 @@ QmlEngine *QmlExpression::engine() const
 */
 QmlContext *QmlExpression::context() const
 {
+    Q_D(const QmlExpression);
     return d->ctxt;
 }
 
@@ -151,6 +177,7 @@ QmlContext *QmlExpression::context() const
 */
 QString QmlExpression::expression() const
 {
+    Q_D(const QmlExpression);
     if (d->sse.isValid())
         return QLatin1String(d->sse.expression());
     else
@@ -170,30 +197,19 @@ void QmlExpression::clearExpression()
 */
 void QmlExpression::setExpression(const QString &expression)
 {
+    Q_D(QmlExpression);
     if (d->sseData) {
         d->sse.deleteScriptState(d->sseData);
         d->sseData = 0;
     }
 
-    delete d->proxy; d->proxy = 0;
+    d->clearGuards();
 
     d->expression = expression;
     d->expressionFunctionValid = false;
     d->expressionFunction = QScriptValue();
 
     d->sse.clear();
-}
-
-/*!
-    Called by QmlExpression each time the expression value changes from the
-    last time it was evaluated.  The expression must have been evaluated at
-    least once (by calling QmlExpression::value()) before this callback will
-    be made.
-
-    The default implementation does nothing.
-*/
-void QmlExpression::valueChanged()
-{
 }
 
 QVariant QmlExpressionPrivate::evalSSE(QmlBasicScript::CacheState &cacheState)
@@ -318,6 +334,8 @@ QVariant QmlExpressionPrivate::evalQtScript()
 */
 QVariant QmlExpression::value()
 {
+    Q_D(QmlExpression);
+
     QVariant rv;
     if (!d->ctxt || !engine() || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
@@ -329,7 +347,11 @@ QVariant QmlExpression::value()
     QmlBasicScript::CacheState cacheState = QmlBasicScript::Reset;
 
     QmlEnginePrivate *ep = engine()->d_func();
+
     QmlExpression *lastCurrentExpression = ep->currentExpression;
+    QPODVector<QmlEnginePrivate::CapturedProperty> lastCapturedProperties;
+    ep->capturedProperties.copyAndClear(lastCapturedProperties);
+
     ep->currentExpression = this;
 
     if (d->sse.isValid()) {
@@ -340,90 +362,13 @@ QVariant QmlExpression::value()
 
     ep->currentExpression = lastCurrentExpression;
 
-    if (cacheState != QmlBasicScript::NoChange) {
-        if (cacheState != QmlBasicScript::Incremental && d->proxy) {
-            delete d->proxy;
-            d->proxy = 0;
-        }
-
-        if (trackChange() && ep->capturedProperties.count()) {
-            if (!d->proxy)
-                d->proxy = new QmlExpressionBindProxy(this);
-
-            static int changedIndex = -1;
-            if (changedIndex == -1)
-                changedIndex = QmlExpressionBindProxy::staticMetaObject.indexOfSlot("changed()");
-
-            if(qmlDebugger()) {
-                QmlExpressionLog log;
-                log.setTime(engine()->d_func()->getUniqueId());
-                log.setExpression(expression());
-                log.setResult(rv);
-
-                for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                    const QmlEnginePrivate::CapturedProperty &prop =
-                        ep->capturedProperties.at(ii);
-
-                    if (prop.notifyIndex != -1) {
-                        QMetaObject::connect(prop.object, prop.notifyIndex,
-                                             d->proxy, changedIndex);
-                    } else {
-                        const QMetaObject *metaObj = prop.object->metaObject();
-                        QMetaProperty metaProp =
-                            metaObj->property(prop.coreIndex);
-
-                        QString warn = QLatin1String("Expression depends on non-NOTIFYable property: ") +
-                                       QLatin1String(metaObj->className()) +
-                                       QLatin1String("::") +
-                                       QLatin1String(metaProp.name());
-                        log.addWarning(warn);
-                    }
-                }
-                d->addLog(log);
-
-            } else {
-                bool outputWarningHeader = false;
-                for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                    const QmlEnginePrivate::CapturedProperty &prop =
-                        ep->capturedProperties.at(ii);
-
-                    if (prop.notifyIndex != -1) {
-                        QMetaObject::connect(prop.object, prop.notifyIndex,
-                                             d->proxy, changedIndex);
-                    } else {
-                        if (!outputWarningHeader) {
-                            outputWarningHeader = true;
-                            qWarning() << "QmlExpression: Expression" << expression() << "depends on non-NOTIFYable properties:";
-                        }
-
-                        const QMetaObject *metaObj = prop.object->metaObject();
-                        QMetaProperty metaProp =
-                            metaObj->property(prop.coreIndex);
-
-                        qWarning().nospace() << "    " << metaObj->className()
-                                             << "::" << metaProp.name();
-                    }
-                }
-            }
-        } else {
-            QmlExpressionLog log;
-            log.setTime(engine()->d_func()->getUniqueId());
-            log.setExpression(expression());
-            log.setResult(rv);
-            d->addLog(log);
-        }
-
-    } else {
-        if(qmlDebugger()) {
-            QmlExpressionLog log;
-            log.setTime(engine()->d_func()->getUniqueId());
-            log.setExpression(expression());
-            log.setResult(rv);
-            d->addLog(log);
-        }
+    if ((!trackChange() || !ep->capturedProperties.count()) && d->guardList) {
+        d->clearGuards();
+    } else if(trackChange()) {
+        d->updateGuards(ep->capturedProperties);
     }
 
-    ep->capturedProperties.clear();
+    lastCapturedProperties.copyAndClear(ep->capturedProperties);
 
     return rv;
 }
@@ -435,7 +380,8 @@ QVariant QmlExpression::value()
  */
 bool QmlExpression::isConstant() const
 {
-    return d->proxy == 0;
+    Q_D(const QmlExpression);
+    return !d->guardList;
 }
 
 /*!
@@ -443,6 +389,7 @@ bool QmlExpression::isConstant() const
 */
 bool QmlExpression::trackChange() const
 {
+    Q_D(const QmlExpression);
     return d->trackChange;
 }
 
@@ -463,6 +410,7 @@ bool QmlExpression::trackChange() const
 */
 void QmlExpression::setTrackChange(bool trackChange)
 {
+    Q_D(QmlExpression);
     d->trackChange = trackChange;
 }
 
@@ -472,6 +420,7 @@ void QmlExpression::setTrackChange(bool trackChange)
 */
 void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 {
+    Q_D(QmlExpression);
     d->fileName = fileName;
     d->line = line;
 }
@@ -484,6 +433,7 @@ void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 */
 QObject *QmlExpression::scopeObject() const
 {
+    Q_D(const QmlExpression);
     return d->me;
 }
 
@@ -492,144 +442,138 @@ QObject *QmlExpression::scopeObject() const
 */
 quint32 QmlExpression::id() const
 {
+    Q_D(const QmlExpression);
     return d->id;
 }
 
-/*!
-    \class QmlExpression
-    \brief The QmlExpression class evaluates ECMAScript in a QML context.
-*/
-
-/*!
-    \class QmlExpressionObject
-    \brief The QmlExpressionObject class extends QmlExpression with signals and slots.
-
-    To remain as lightweight as possible, QmlExpression does not inherit QObject
-    and consequently cannot use signals or slots.  For the cases where this is
-    more convenient in an application, QmlExpressionObject can be used instead.
-
-    QmlExpressionObject behaves identically to QmlExpression, except that the
-    QmlExpressionObject::value() method is a slot, and the
-    QmlExpressionObject::valueChanged() callback is a signal.
-*/
-/*!
-    Create a QmlExpression with the specified \a parent.
-
-    As the expression will not have an associated QmlContext, this will be a
-    null expression object and its value will always be an invalid QVariant.
-*/
-QmlExpressionObject::QmlExpressionObject(QObject *parent)
-: QObject(parent)
+/*! \internal */
+void QmlExpression::__q_notify()
 {
+    valueChanged();
+}
+
+void QmlExpressionPrivate::clearGuards()
+{
+    Q_Q(QmlExpression);
+
+    static int notifyIdx = -1;
+    if (notifyIdx == -1) 
+        notifyIdx = 
+            QmlExpression::staticMetaObject.indexOfMethod("__q_notify()");
+
+    for (int ii = 0; ii < guardListLength; ++ii) {
+        if (guardList[ii].data()) {
+            QMetaObject::disconnect(guardList[ii].data(), 
+                                    guardList[ii].notifyIndex, 
+                                    q, notifyIdx);
+        }
+    }
+
+    delete [] guardList; guardList = 0; 
+    guardListLength = 0;
+}
+
+void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties)
+{
+    //clearGuards();
+    Q_Q(QmlExpression);
+
+    static int notifyIdx = -1;
+    if (notifyIdx == -1) 
+        notifyIdx = 
+            QmlExpression::staticMetaObject.indexOfMethod("__q_notify()");
+
+    SignalGuard *newGuardList = 0;
+    
+    if (properties.count() != guardListLength)
+        newGuardList = new SignalGuard[properties.count()];
+
+    bool outputWarningHeader = false;
+    int hit = 0;
+    for (int ii = 0; ii < properties.count(); ++ii) {
+        const QmlEnginePrivate::CapturedProperty &property = properties.at(ii);
+
+        bool needGuard = true;
+        if (ii >= guardListLength) {
+            // New guard
+        } else if(guardList[ii].data() == property.object && 
+                  guardList[ii].notifyIndex == property.notifyIndex) {
+            // Cache hit
+            if (!guardList[ii].isDuplicate || 
+                (guardList[ii].isDuplicate && hit == ii)) {
+                needGuard = false;
+                ++hit;
+            }
+        } else if(guardList[ii].data() && !guardList[ii].isDuplicate) {
+            // Cache miss
+            QMetaObject::disconnect(guardList[ii].data(), 
+                                    guardList[ii].notifyIndex, 
+                                    q, notifyIdx);
+        } 
+        /* else {
+            // Cache miss, but nothing to do
+        } */
+
+        if (needGuard) {
+            if (!newGuardList) {
+                newGuardList = new SignalGuard[properties.count()];
+                for (int jj = 0; jj < ii; ++jj)
+                    newGuardList[jj] = guardList[jj];
+            }
+
+            if (property.notifyIndex != -1) {
+                bool existing = false;
+                for (int jj = 0; !existing && jj < ii; ++jj) 
+                    existing = newGuardList[jj].data() == property.object &&
+                        newGuardList[jj].notifyIndex == property.notifyIndex;
+
+                newGuardList[ii] = property.object;
+                newGuardList[ii].notifyIndex = property.notifyIndex;
+                if (existing)
+                    newGuardList[ii].isDuplicate = true;
+                else
+                    QMetaObject::connect(property.object, property.notifyIndex,
+                                         q, notifyIdx);
+            } else {
+                if (!outputWarningHeader) {
+                    outputWarningHeader = true;
+                    qWarning() << "QmlExpression: Expression" << q->expression()
+                               << "depends on non-NOTIFYable properties:";
+                }
+
+                const QMetaObject *metaObj = property.object->metaObject();
+                QMetaProperty metaProp = metaObj->property(property.coreIndex);
+
+                qWarning().nospace() << "    " << metaObj->className()
+                                     << "::" << metaProp.name();
+            }
+        } else if (newGuardList) {
+            newGuardList[ii] = guardList[ii];
+        }
+    }
+
+    for (int ii = properties.count(); ii < guardListLength; ++ii) {
+        if (guardList[ii].data() && !guardList[ii].isDuplicate) {
+            QMetaObject::disconnect(guardList[ii].data(), 
+                                    guardList[ii].notifyIndex, 
+                                    q, notifyIdx);
+        }
+    }
+
+    if (newGuardList) {
+        if (guardList) delete [] guardList;
+        guardList = newGuardList;
+        guardListLength = properties.count();
+    }
 }
 
 /*!
-    Create a QmlExpressionObject with the specified \a parent.
-
-    The \a expression ECMAScript will be executed in the \a ctxt QmlContext.
-    If specified, the \a scope object's properties will also be in scope during
-    the expression's execution.
-*/
-QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, const QString &expression, QObject *scope, QObject *parent)
-: QObject(parent), QmlExpression(ctxt, expression, scope)
-{
-}
-
-/*!  \internal */
-QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, void *d, QmlRefCount *rc, QObject *me)
-: QmlExpression(ctxt, d, rc, me)
-{
-}
-
-/*!
-    Returns the value of the expression, or an invalid QVariant if the
-    expression is invalid or has an error.
-*/
-QVariant QmlExpressionObject::value()
-{
-    return QmlExpression::value();
-}
-
-/*!
-    \fn void QmlExpressionObject::valueChanged()
+    \fn void QmlExpression::valueChanged()
 
     Emitted each time the expression value changes from the last time it was
     evaluated.  The expression must have been evaluated at least once (by
-    calling QmlExpressionObject::value()) before this signal will be emitted.
+    calling QmlExpression::value()) before this signal will be emitted.
 */
-
-void QmlExpressionPrivate::addLog(const QmlExpressionLog &l)
-{
-    if (!log)
-        log = new QList<QmlExpressionLog>();
-    log->append(l);
-}
-
-QmlExpressionLog::QmlExpressionLog()
-{
-}
-
-QmlExpressionLog::QmlExpressionLog(const QmlExpressionLog &o)
-: m_time(o.m_time),
-  m_expression(o.m_expression),
-  m_result(o.m_result),
-  m_warnings(o.m_warnings)
-{
-}
-
-QmlExpressionLog::~QmlExpressionLog()
-{
-}
-
-QmlExpressionLog &QmlExpressionLog::operator=(const QmlExpressionLog &o)
-{
-    m_time = o.m_time;
-    m_expression = o.m_expression;
-    m_result = o.m_result;
-    m_warnings = o.m_warnings;
-    return *this;
-}
-
-void QmlExpressionLog::setTime(quint32 time)
-{
-    m_time = time;
-}
-
-quint32 QmlExpressionLog::time() const
-{
-    return m_time;
-}
-
-QString QmlExpressionLog::expression() const
-{
-    return m_expression;
-}
-
-void QmlExpressionLog::setExpression(const QString &e)
-{
-    m_expression = e;
-}
-
-QStringList QmlExpressionLog::warnings() const
-{
-    return m_warnings;
-}
-
-void QmlExpressionLog::addWarning(const QString &w)
-{
-    m_warnings << w;
-}
-
-QVariant QmlExpressionLog::result() const
-{
-    return m_result;
-}
-
-void QmlExpressionLog::setResult(const QVariant &r)
-{
-    m_result = r;
-}
-
 
 QT_END_NAMESPACE
 

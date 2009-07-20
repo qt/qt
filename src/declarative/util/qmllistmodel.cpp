@@ -46,7 +46,6 @@
 #include <private/qmlparser_p.h>
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
-#include <qmlbindablevalue.h>
 #include "qmllistmodel.h"
 
 Q_DECLARE_METATYPE(QListModelInterface *)

@@ -93,11 +93,10 @@ public:
 
     void init();
 
-    bool fetchCache(QmlBasicScriptNodeCache &cache, const QString &propName, QObject *);
-    bool loadCache(QmlBasicScriptNodeCache &cache, const QString &propName, QmlContextPrivate *context);
-
-    QScriptClass::QueryFlags queryObject(const QString &name, uint *id, QObject *);
-    QScriptValue propertyObject(const QScriptString &propName, QObject *, uint id = 0);
+    QScriptClass::QueryFlags queryObject(const QString &name, uint *id, 
+                                         QObject *);
+    QScriptValue propertyObject(const QScriptString &propName, QObject *, 
+                                uint id = 0);
 
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
@@ -152,10 +151,10 @@ public:
         }
     };
 
-    static void clear(SimpleList<QmlBindableValue> &);
+    static void clear(SimpleList<QmlBinding> &);
     static void clear(SimpleList<QmlParserStatus> &);
 
-    QList<SimpleList<QmlBindableValue> > bindValues;
+    QList<SimpleList<QmlBinding> > bindValues;
     QList<SimpleList<QmlParserStatus> > parserStatus;
 
     QmlComponent *rootComponent;

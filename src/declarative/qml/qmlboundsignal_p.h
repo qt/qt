@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlBoundSignal : public QmlExpressionObject
+class QmlBoundSignal : public QmlExpression
 {
 Q_OBJECT
 public:
