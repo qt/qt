@@ -36,6 +36,8 @@ HEADERS += \
 SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
+           $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec.cpp \
+           $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.cpp \
