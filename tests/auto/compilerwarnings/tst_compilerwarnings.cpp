@@ -47,6 +47,10 @@
 
 #include <QtTest/QtTest>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #include <stdlib.h>
 
 QT_USE_NAMESPACE
@@ -248,4 +252,4 @@ void tst_CompilerWarnings::warnings()
 QTEST_APPLESS_MAIN(tst_CompilerWarnings)
 
 #include "tst_compilerwarnings.moc"
-
+#endif // QT_NO_PROCESS
