@@ -59,10 +59,10 @@ public:
         attachedProperties.remove(parent());
     }
 
-    Q_PROPERTY(QFxListView *view READ view);
+    Q_PROPERTY(QFxListView *view READ view)
     QFxListView *view() { return m_view; }
 
-    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged);
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
     bool isCurrentItem() const { return m_isCurrent; }
     void setIsCurrentItem(bool c) {
         if (m_isCurrent != c) {
@@ -71,7 +71,7 @@ public:
         }
     }
 
-    Q_PROPERTY(QString prevSection READ prevSection NOTIFY prevSectionChanged);
+    Q_PROPERTY(QString prevSection READ prevSection NOTIFY prevSectionChanged)
     QString prevSection() const { return m_prevSection; }
     void setPrevSection(const QString &sect) {
         if (m_prevSection != sect) {
@@ -80,7 +80,7 @@ public:
         }
     }
 
-    Q_PROPERTY(QString section READ section NOTIFY sectionChanged);
+    Q_PROPERTY(QString section READ section NOTIFY sectionChanged)
     QString section() const { return m_section; }
     void setSection(const QString &sect) {
         if (m_section != sect) {
@@ -89,7 +89,7 @@ public:
         }
     }
 
-    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged);
+    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
     bool delayRemove() const { return m_delayRemove; }
     void setDelayRemove(bool delay) {
         if (m_delayRemove != delay) {

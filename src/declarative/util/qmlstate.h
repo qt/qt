@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class ActionEvent;
-class QmlBindableValue;
+class QmlBinding;
 class Action
 {
 public:
@@ -68,8 +68,8 @@ public:
     QVariant fromValue;
     QVariant toValue;
 
-    QmlBindableValue *fromBinding;
-    QmlBindableValue *toBinding;
+    QmlBinding *fromBinding;
+    QmlBinding *toBinding;
     ActionEvent *event;
 
     QObject *specifiedObject;
@@ -111,7 +111,7 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QmlBindableValue *when READ when WRITE setWhen)
+    Q_PROPERTY(QmlBinding *when READ when WRITE setWhen)
     Q_PROPERTY(QString extends READ extends WRITE setExtends)
     Q_PROPERTY(QmlList<QmlStateOperation *>* operations READ operations)
     Q_CLASSINFO("DefaultProperty", "operations")
@@ -123,11 +123,11 @@ public:
     QString name() const;
     void setName(const QString &);
 
-    /*'when' is a QmlBindableValue to limit state changes oscillation 
+    /*'when' is a QmlBinding to limit state changes oscillation 
      due to the unpredictable order of evaluation of bound expressions*/
     bool isWhenKnown() const;
-    QmlBindableValue *when() const;
-    void setWhen(QmlBindableValue *);
+    QmlBinding *when() const;
+    void setWhen(QmlBinding *);
 
     QString extends() const;
     void setExtends(const QString &);

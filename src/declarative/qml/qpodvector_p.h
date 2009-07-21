@@ -63,8 +63,9 @@ class QPODVector
 public:
     QPODVector()
     : m_count(0), m_capacity(0), m_data(0) {}
+    ~QPODVector() { if (m_data) ::free(m_data); } 
 
-    const T &at(int idx) {
+    const T &at(int idx) const {
         return m_data[idx];
     }
 
@@ -120,6 +121,16 @@ public:
     
     int count() const {
         return m_count;
+    }
+
+    void copyAndClear(QPODVector<T> &other) {
+        if (other.m_data) ::free(other.m_data);
+        other.m_count = m_count;
+        other.m_capacity = m_capacity;
+        other.m_data = m_data;
+        m_count = 0;
+        m_capacity = 0;
+        m_data = 0;
     }
 
     QPODVector<T> &operator<<(const T &v) { append(v); return *this; }

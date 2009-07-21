@@ -900,6 +900,7 @@ void QFxKeyActions::keyPressEvent(QKeyEvent *event)
     Qt::Key key = (Qt::Key)event->key();
     if (d->enabled && d->key(key)) {
         QmlExpression b(qmlContext(this), d->action(key), this);
+        b.setTrackChange(false);
         b.value();
         event->accept();
     } else {

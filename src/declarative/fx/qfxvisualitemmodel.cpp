@@ -51,6 +51,7 @@
 #include "qmlopenmetaobject.h"
 #include "qmllistaccessor.h"
 #include "qfxvisualitemmodel.h"
+#include "private/qguard_p.h"
 #include <QtCore/qdebug.h>
 
 QML_DECLARE_TYPE(QListModelInterface)
@@ -64,9 +65,9 @@ class QFxVisualItemModelPrivate : public QObjectPrivate
 public:
     QFxVisualItemModelPrivate(QmlContext *);
 
-    QListModelInterface *m_listModelInterface;
-    QAbstractItemModel *m_abstractItemModel;
-    QFxVisualItemModel *m_visualItemModel;
+    QGuard<QListModelInterface> m_listModelInterface;
+    QGuard<QAbstractItemModel> m_abstractItemModel;
+    QGuard<QFxVisualItemModel> m_visualItemModel;
     QString m_part;
 
     QmlComponent *m_delegate;
@@ -160,7 +161,7 @@ Q_OBJECT
 public:
     QFxVisualItemModelData(int index, QFxVisualItemModelPrivate *model);
 
-    Q_PROPERTY(int index READ index NOTIFY indexChanged);
+    Q_PROPERTY(int index READ index NOTIFY indexChanged)
     int index() const;
     void setIndex(int index);
 

@@ -68,6 +68,7 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource,
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged)
     Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
+    Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)
 
 public:
     QmlFollow(QObject *parent=0);
@@ -89,11 +90,13 @@ public:
     void setModulus(qreal modulus);
     bool enabled() const;
     void setEnabled(bool enabled);
+    bool inSync() const;
 
     qreal value() const;
 
 Q_SIGNALS:
     void valueChanged(qreal);
+    void syncChanged();
 };
 
 QT_END_NAMESPACE

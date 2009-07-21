@@ -58,8 +58,8 @@ class Q_DECLARATIVE_EXPORT QFxFlowView : public QFxItem
 {
     Q_OBJECT
     Q_PROPERTY(QFxVisualItemModel *model READ model WRITE setModel)
-    Q_PROPERTY(int column READ columns WRITE setColumns);
-    Q_PROPERTY(bool vertical READ vertical WRITE setVertical);
+    Q_PROPERTY(int column READ columns WRITE setColumns)
+    Q_PROPERTY(bool vertical READ vertical WRITE setVertical)
 
 public:
     QFxFlowView();
@@ -101,7 +101,7 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFlowView);
+QML_DECLARE_TYPE(QFxFlowView)
 
 QT_END_HEADER
 

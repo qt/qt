@@ -2097,8 +2097,9 @@ void QFxItem::childrenChanged()
 void QFxItem::setPaintMargin(qreal margin)
 {
     Q_D(QFxItem);
-    if (margin < d->paintmargin)
-        update(); // schedule repaint of old boundingRect
+    if (margin == d->paintmargin)
+        return;
+    prepareGeometryChange();
     d->paintmargin = margin;
 }
 
@@ -2235,6 +2236,7 @@ void QFxItem::setWidth(qreal w)
 
     qreal oldWidth = d->width;
 
+    prepareGeometryChange();
     d->width = w;
     update();
 
@@ -2250,6 +2252,7 @@ void QFxItem::setImplicitWidth(qreal w)
 
     qreal oldWidth = d->width;
 
+    prepareGeometryChange();
     d->width = w;
     update();
 
@@ -2278,6 +2281,7 @@ void QFxItem::setHeight(qreal h)
 
     qreal oldHeight = d->height;
 
+    prepareGeometryChange();
     d->height = h;
     update();
 
@@ -2293,6 +2297,7 @@ void QFxItem::setImplicitHeight(qreal h)
 
     qreal oldHeight = d->height;
 
+    prepareGeometryChange();
     d->height = h;
     update();
 

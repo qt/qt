@@ -96,6 +96,30 @@ QFxAnimatedImageItem::~QFxAnimatedImageItem()
 }
 
 /*!
+  \qmlproperty bool AnimatedImage::paused
+  This property holds whether the animated image is paused or not
+
+  Defaults to false, and can be set to true when you want to pause.
+*/
+bool QFxAnimatedImageItem::isPaused() const
+{
+    Q_D(const QFxAnimatedImageItem);
+    if(!d->_movie)
+        return false;
+    return d->_movie->state()==QMovie::Paused;
+}
+
+void QFxAnimatedImageItem::setPaused(bool pause)
+{
+    Q_D(QFxAnimatedImageItem);
+    if(pause == d->paused)
+        return;
+    d->paused = pause;
+    if(!d->_movie)
+        return;
+    d->_movie->setPaused(pause);
+}
+/*!
   \qmlproperty bool AnimatedImage::playing
   This property holds whether the animated image is playing or not
 
@@ -106,12 +130,15 @@ bool QFxAnimatedImageItem::isPlaying() const
     Q_D(const QFxAnimatedImageItem);
     if (!d->_movie)
         return false;
-    return d->_movie->state()==QMovie::Running;
+    return d->_movie->state()!=QMovie::NotRunning;
 }
 
 void QFxAnimatedImageItem::setPlaying(bool play)
 {
     Q_D(QFxAnimatedImageItem);
+    if(play == d->playing)
+        return;
+    d->playing = play;
     if (!d->_movie)
         return;
     if (play)
@@ -166,7 +193,7 @@ void QFxAnimatedImageItem::setSource(const QUrl &url)
         d->reply = 0;
     }
 
-    d->url = url;
+    d->url = qmlContext(this)->resolvedUrl(url);
 
     if (url.isEmpty()) {
         delete d->_movie;
@@ -188,17 +215,22 @@ void QFxAnimatedImageItem::movieRequestFinished()
     Q_D(QFxAnimatedImageItem);
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
-        qWarning() << "Error Reading File " << d->url;
+        qWarning() << "Error Reading Animated Image File " << d->url;
         delete d->_movie;
         d->_movie = 0;
         return;
     }
     connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
-            this, SIGNAL(playingChanged()));
+            this, SLOT(playingStatusChanged()));
     connect(d->_movie, SIGNAL(frameChanged(int)),
             this, SLOT(movieUpdate()));
     d->_movie->setCacheMode(QMovie::CacheAll);
-    d->_movie->start();
+    if(d->playing)
+        d->_movie->start();
+    else
+        d->_movie->jumpToFrame(0);
+    if(d->paused)
+        d->_movie->setPaused(true);
     setPixmap(d->_movie->currentPixmap());
 }
 
@@ -207,6 +239,19 @@ void QFxAnimatedImageItem::movieUpdate()
     Q_D(QFxAnimatedImageItem);
     setPixmap(d->_movie->currentPixmap());
     emit frameChanged();
+}
+
+void QFxAnimatedImageItem::playingStatusChanged()
+{
+    Q_D(QFxAnimatedImageItem);
+    if((d->_movie->state() != QMovie::NotRunning) != d->playing){
+        d->playing = (d->_movie->state() != QMovie::NotRunning);
+        emit playingChanged();
+    }
+    if((d->_movie->state() == QMovie::Paused) != d->paused){
+        d->playing = (d->_movie->state() == QMovie::Paused);
+        emit pausedChanged();
+    }
 }
 
 QT_END_NAMESPACE

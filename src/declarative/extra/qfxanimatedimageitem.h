@@ -58,6 +58,7 @@ class Q_DECLARATIVE_EXPORT QFxAnimatedImageItem : public QFxImage
     Q_OBJECT
 
     Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
+    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
     Q_PROPERTY(int frameCount READ frameCount)
 public:
@@ -66,6 +67,9 @@ public:
 
     bool isPlaying() const;
     void setPlaying(bool play);
+
+    bool isPaused() const;
+    void setPaused(bool pause);
 
     int currentFrame() const;
     void setCurrentFrame(int frame);
@@ -77,11 +81,13 @@ public:
 
 Q_SIGNALS:
     void playingChanged();
+    void pausedChanged();
     void frameChanged();
 
 private Q_SLOTS:
     void movieUpdate();
     void movieRequestFinished();
+    void playingStatusChanged();
 
 protected:
     QFxAnimatedImageItem(QFxAnimatedImageItemPrivate &dd, QFxItem *parent);

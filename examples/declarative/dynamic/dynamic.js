@@ -28,10 +28,10 @@ function instantCreateWithComponent() {//Like create, but assumes instant readyn
 }
 
 function finishCreation(){
-    if(component.isReady() && dynamicObject == null){
+    if(component.isReady && dynamicObject == null){
         dynamicObject = component.createObject();
         dynamicObject.parent = targetItem;
-    }else if(component.isError()){
+    }else if(component.isError){
         dynamicObject = null;
         print("error creating component");
         print(component.errorsString());

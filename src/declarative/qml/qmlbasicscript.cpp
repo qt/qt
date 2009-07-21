@@ -56,13 +56,10 @@ using namespace QmlJS;
 
 struct ScriptInstruction {
     enum {
-        Load,       // fetch
-        Fetch,       // fetch
-
         LoadIdObject,    // fetch
         FetchConstant,   // constant
-        FetchD0Constant, // constant
-        FetchD1Constant, // constant
+        FetchContextConstant, // constant
+        FetchRootConstant, // constant
 
         Equals,      // NA
 
@@ -87,8 +84,6 @@ struct ScriptInstruction {
         } constant;
     };
 };
-
-DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
 class QmlBasicScriptPrivate
 {
@@ -119,60 +114,6 @@ public:
         return s;
     }
 };
-
-QDebug operator<<(QDebug lhs, const QmlBasicScriptNodeCache &rhs)
-{
-    switch(rhs.type) {
-    case QmlBasicScriptNodeCache::Invalid:
-        lhs << "Invalid";
-        break;
-    case QmlBasicScriptNodeCache::Core:
-        lhs << "Core" << rhs.object << rhs.core;
-        break;
-    case QmlBasicScriptNodeCache::Attached: 
-        lhs << "Attached" << rhs.object << rhs.attached;
-        break;
-    case QmlBasicScriptNodeCache::SignalProperty: 
-        lhs << "SignalProperty" << rhs.object << rhs.core;
-        break;
-    case QmlBasicScriptNodeCache::Variant: 
-        lhs << "Variant" << rhs.context;
-        break;
-    }
-
-    return lhs;
-}
-
-void QmlBasicScriptNodeCache::clear()
-{
-    object = 0;
-    metaObject = 0;
-    type = Invalid;
-}
-
-static QVariant toObjectOrVariant(const QVariant &v)
-{
-    switch(v.userType()) {
-        case QVariant::String:
-        case QVariant::UInt:
-        case QVariant::Int:
-        case QMetaType::Float:
-        case QVariant::Double:
-        case QVariant::Color:
-        case QVariant::Bool:
-        default:
-        {
-            if (v.type() == QVariant::UserType) {
-                QObject *o = QmlMetaType::toQObject(v);
-                if (o)
-                    return qVariantFromValue(o);
-                else
-                    return v;
-            }
-            return v;
-        }
-    }
-}
 
 static QVariant fetch_value(QObject *o, int idx, int type)
 {
@@ -259,26 +200,6 @@ static QVariant fetch_value(QObject *o, int idx, int type)
     };
 }
 
-QVariant QmlBasicScriptNodeCache::value(const char *) const
-{
-    //QFxPerfTimer<QFxPerf::BasicScriptValue> pt;
-    switch(type) {
-    case Invalid:
-        break;
-    case Core:
-        return fetch_value(object, core, coreType);
-        break;
-    case Attached:
-        return qVariantFromValue(static_cast<QObject *>(attached));
-        break;
-    case SignalProperty:
-        break;
-    case Variant:
-        return context->propertyValues[contextIndex];
-    };
-    return QVariant();
-}
-
 struct QmlBasicScriptCompiler
 {
     QmlBasicScriptCompiler()
@@ -298,7 +219,11 @@ struct QmlBasicScriptCompiler
     bool tryConstant(QmlJS::AST::Node *);
     bool parseConstant(QmlJS::AST::Node *);
     bool tryName(QmlJS::AST::Node *);
-    bool parseName(QmlJS::AST::Node *, QmlParser::Object ** = 0);
+    bool parseName(QmlJS::AST::Node *);
+
+    bool buildName(QStringList &, QmlJS::AST::Node *);
+    const QMetaObject *fetch(int type, const QMetaObject *, int idx);
+
     bool tryBinaryExpression(QmlJS::AST::Node *);
     bool compileBinaryExpression(QmlJS::AST::Node *);
 
@@ -340,7 +265,7 @@ QmlBasicScript::QmlBasicScript()
 }
 
 /*!
-    Create a new QmlBasicScript instance from saved \a data.
+    Load the QmlBasicScript instance with saved \a data.
 
     \a data \b must be data previously acquired from calling compileData() on a
     previously created QmlBasicScript instance.  Any other data will almost
@@ -352,9 +277,12 @@ QmlBasicScript::QmlBasicScript()
     If \a owner is set, it is referenced on creation and dereferenced on 
     destruction of this instance.
 */
-QmlBasicScript::QmlBasicScript(const char *data, QmlRefCount *owner)
-: flags(0), d((QmlBasicScriptPrivate *)data), rc(owner)
+
+void QmlBasicScript::load(const char *data, QmlRefCount *owner)
 {
+    clear();
+    d = (QmlBasicScriptPrivate *)data;
+    rc = owner;
     if (rc) rc->addref();
 }
 
@@ -374,11 +302,7 @@ QByteArray QmlBasicScript::expression() const
 */
 QmlBasicScript::~QmlBasicScript()
 {
-    if (flags & QmlBasicScriptPrivate::OwnData)
-        free(d);
-    if (rc) rc->release();
-    d = 0;
-    rc = 0;
+    clear();
 }
 
 /*!
@@ -401,24 +325,14 @@ void QmlBasicScript::clear()
  */
 void *QmlBasicScript::newScriptState()
 {
-    if (!d) {
-        return 0;
-    } else  {
-        void *rv = ::malloc(d->stateSize * sizeof(QmlBasicScriptNodeCache));
-        ::memset(rv, 0, d->stateSize * sizeof(QmlBasicScriptNodeCache));
-        return rv;
-    }
+    return 0;
 }
 
 /*!
     Delete the \a data previously allocated by newScriptState().
  */
-void QmlBasicScript::deleteScriptState(void *data)
+void QmlBasicScript::deleteScriptState(void *)
 {
-    if (!data) return;
-    Q_ASSERT(d);
-    clearCache(data);
-    free(data);
 }
 
 /*!
@@ -430,18 +344,21 @@ void QmlBasicScript::dump()
         return;
 
     qWarning() << d->instructionCount << "instructions:";
-    const char *data = d->data();
     for (int ii = 0; ii < d->instructionCount; ++ii) {
         const ScriptInstruction &instr = d->instructions()[ii];
 
         switch(instr.type) {
-        case ScriptInstruction::Load:
-            qWarning().nospace() << "LOAD\t\t" << instr.fetch.idx << "\t\t" 
-                                 << QByteArray(data + instr.fetch.idx);
+        case ScriptInstruction::LoadIdObject:
+            qWarning().nospace() << "LOAD_ID_OBJECT";
             break;
-        case ScriptInstruction::Fetch:
-            qWarning().nospace() << "FETCH\t\t" << instr.fetch.idx << "\t\t" 
-                                 << QByteArray(data + instr.fetch.idx);
+        case ScriptInstruction::FetchConstant:
+            qWarning().nospace() << "FETCH_CONSTANT";
+            break;
+        case ScriptInstruction::FetchContextConstant:
+            qWarning().nospace() << "FETCH_CONTEXT_CONSTANT";
+            break;
+        case ScriptInstruction::FetchRootConstant:
+            qWarning().nospace() << "FETCH_ROOT_CONSTANT";
             break;
         case ScriptInstruction::Equals:
             qWarning().nospace() << "EQUALS";
@@ -552,101 +469,121 @@ bool QmlBasicScriptCompiler::tryName(QmlJS::AST::Node *node)
            node->kind == AST::Node::Kind_FieldMemberExpression;
 }
 
-bool QmlBasicScriptCompiler::parseName(AST::Node *node, 
-                                       QmlParser::Object **type)
+bool QmlBasicScriptCompiler::buildName(QStringList &name, 
+                                       QmlJS::AST::Node *node)
 {
-    bool load = false;
-    QmlParser::Object *loadedType = 0;
-    QString name;
     if (node->kind == AST::Node::Kind_IdentifierExpression) {
-        name = static_cast<AST::IdentifierExpression *>(node)->name->asString();
-        load = true;
+        name << static_cast<AST::IdentifierExpression*>(node)->name->asString();
     } else if (node->kind == AST::Node::Kind_FieldMemberExpression) {
-        AST::FieldMemberExpression *expr = static_cast<AST::FieldMemberExpression *>(node);
+        AST::FieldMemberExpression *expr = 
+            static_cast<AST::FieldMemberExpression *>(node);
 
-        if (!parseName(expr->base, &loadedType))
+        if (!buildName(name, expr->base))
             return false;
 
-        name = expr->name->asString();
+        name << expr->name->asString();
     } else {
         return false;
     }
 
+    return true;
+}
+
+const QMetaObject *
+QmlBasicScriptCompiler::fetch(int type, const QMetaObject *mo, int idx)
+{
     ScriptInstruction instr;
-    if (load) {
+    (int &)instr.type = type;
+    instr.constant.idx = idx;
+    QMetaProperty prop = mo->property(idx);
+    if (prop.isConstant())
+        instr.constant.notify = 0;
+    else
+        instr.constant.notify = prop.notifySignalIndex(); 
+    instr.constant.type = prop.userType();
+    bytecode << instr;
+    return QmlMetaType::metaObjectForType(prop.userType());
+}
 
-        if (ids.contains(name)) {
-            instr.type = ScriptInstruction::LoadIdObject;
-            instr.fetch.idx = ids.value(name)->idIndex;
+bool QmlBasicScriptCompiler::parseName(AST::Node *node)
+{
+    QStringList nameParts;
+    if (!buildName(nameParts, node))
+        return false;
 
-            if (type)
-                *type = ids.value(name);
+    QmlParser::Object *absType = 0;
+    const QMetaObject *metaType = 0;
 
-        } else {
-            int d0Idx = context->metaObject()->indexOfProperty(name.toUtf8().constData());
-            int d1Idx = -1;
-            if (d0Idx == -1)
-                d1Idx = component->metaObject()->indexOfProperty(name.toUtf8().constData());
-            if (d0Idx != -1) {
+    for (int ii = 0; ii < nameParts.count(); ++ii) {
+        const QString &name = nameParts.at(ii);
 
-                instr.type = ScriptInstruction::FetchD0Constant;
-                instr.constant.idx = d0Idx;
-                QMetaProperty prop = context->metaObject()->property(d0Idx);
-                if (prop.isConstant())
-                    instr.constant.notify = 0;
-                else
-                    instr.constant.notify = prop.notifySignalIndex(); 
-                instr.constant.type = prop.userType();
+        // We don't handle signal properties
+        if (name.length() > 2 && name.startsWith(QLatin1String("on")) && 
+            name.at(2).isUpper())
+            return false;
 
-            } else if (d1Idx != -1) {
+        if (ii == 0) {
 
-                instr.type = ScriptInstruction::FetchD1Constant;
-                instr.constant.idx = d1Idx;
-                QMetaProperty prop = component->metaObject()->property(d1Idx);
-                if (prop.isConstant())
-                    instr.constant.notify = 0;
-                else
-                    instr.constant.notify = prop.notifySignalIndex(); 
-                instr.constant.type = prop.userType();
+            if (0) {
+                // ### - Must test for an attached type name
+            } else if (ids.contains(name)) {
+                ScriptInstruction instr;
+                instr.type = ScriptInstruction::LoadIdObject;
+                instr.fetch.idx = ids.value(name)->idIndex;
+                bytecode << instr;
+                absType = ids.value(name);
+            } else if(name.at(0).isLower()) {
 
-            }  else {
+                QByteArray utf8Name = name.toUtf8();
+                const char *cname = utf8Name.constData();
 
-                int nref = data.count();
-                data.append(name.toUtf8());
-                data.append('\0');
-                instr.type = ScriptInstruction::Load;
-                instr.fetch.idx = nref;
-                ++stateSize;
+                int d0Idx = context->metaObject()->indexOfProperty(cname);
+                int d1Idx = -1;
+                if (d0Idx == -1)
+                    d1Idx = component->metaObject()->indexOfProperty(cname);
 
+                if (d0Idx != -1) {
+                    metaType = fetch(ScriptInstruction::FetchContextConstant, 
+                                     context->metaObject(), d0Idx);
+                } else if(d1Idx != -1) {
+                    metaType = fetch(ScriptInstruction::FetchRootConstant, 
+                                     component->metaObject(), d1Idx);
+                } else {
+                    return false;
+                }
+
+            } else {
+                return false;
             }
-        }
-
-    } else {
-
-        int idx = -1;
-        if (loadedType)
-            idx = loadedType->metaObject()->indexOfProperty(name.toUtf8().constData());
-        if (idx != -1) {
-            instr.type = ScriptInstruction::FetchConstant;
-            instr.constant.idx = idx;
-            QMetaProperty prop = loadedType->metaObject()->property(idx);
-            if (prop.isConstant())
-                instr.constant.notify = 0;
-            else
-                instr.constant.notify = prop.notifySignalIndex(); 
-            instr.constant.type = prop.userType();
         } else {
-            int nref = data.count();
-            data.append(name.toUtf8());
-            data.append('\0');
-            instr.type = ScriptInstruction::Fetch;
-            instr.fetch.idx = nref;
-            ++stateSize;
-        }
 
+            if (!name.at(0).isLower())
+                return false;
+
+            const QMetaObject *mo = 0;
+            if (absType)
+                mo = absType->metaObject();
+            else if(metaType)
+                mo = metaType;
+            else
+                return false;
+
+            QByteArray utf8Name = name.toUtf8();
+            const char *cname = utf8Name.constData();
+            int idx = mo->indexOfProperty(cname);
+            if (idx == -1)
+                return false;
+
+            if (absType || mo->property(idx).isFinal()) {
+                absType = 0; metaType = 0;
+                metaType = fetch(ScriptInstruction::FetchConstant, mo, idx);
+            } else {
+                return false;
+            }
+
+        }
     }
 
-    bytecode.append(instr);
     return true;
 }
 
@@ -699,44 +636,6 @@ bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
 }
 
 /*!
-    \internal
-*/
-void QmlBasicScript::clearCache(void *voidCache)
-{
-    QmlBasicScriptNodeCache *dataCache =
-        reinterpret_cast<QmlBasicScriptNodeCache *>(voidCache);
-
-    for (int ii = 0; ii < d->stateSize; ++ii) {
-        if (!dataCache[ii].isCore() && !dataCache[ii].isVariant() && 
-            dataCache[ii].object) {
-            QMetaObject::removeGuard(&dataCache[ii].object);
-            dataCache[ii].object = 0;
-        }
-        dataCache[ii].clear();
-    }
-}
-
-void QmlBasicScript::guard(QmlBasicScriptNodeCache &n)
-{
-    if (n.object) {
-        if (n.isVariant()) {
-        } else if (n.isCore()) {
-            n.metaObject = 
-                n.object->metaObject();
-        } else {
-            QMetaObject::addGuard(&n.object);
-        }
-    }
-}
-
-bool QmlBasicScript::valid(QmlBasicScriptNodeCache &n, QObject *obj)
-{
-    return n.object == obj && 
-                       (!n.isCore() || obj->metaObject() == n.metaObject); 
-}
-
-
-/*!
     \enum QmlBasicScript::CacheState
     \value NoChange The query has not change.  Any previous monitoring is still
     valid.
@@ -753,31 +652,17 @@ bool QmlBasicScript::valid(QmlBasicScriptNodeCache &n, QObject *obj)
  */
 QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *cached)
 {
+    Q_UNUSED(voidCache);
     if (!isValid())
         return QVariant();
     
     QmlContextPrivate *contextPrivate = context->d_func();
     QmlEnginePrivate *enginePrivate = context->engine()->d_func();
 
-    QmlBasicScriptNodeCache *dataCache =
-        reinterpret_cast<QmlBasicScriptNodeCache *>(voidCache);
-    int dataCacheItem; 
-
     QStack<QVariant> stack;
     
-    bool resetting = false;
-    bool hasReset = false;
-
-    const char *data = d->data();
-
-    if (dataCache[0].type == QmlBasicScriptNodeCache::Invalid) {
-        resetting = true;
-        hasReset = true;
-    }
-
     CacheState state = NoChange;
 
-    dataCacheItem = 0;
     for (int idx = 0; idx < d->instructionCount; ++idx) {
         const ScriptInstruction &instr = d->instructions()[idx];
 
@@ -791,7 +676,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
             }
                 break;
 
-            case ScriptInstruction::FetchD0Constant: 
+            case ScriptInstruction::FetchContextConstant: 
             {
                 QObject *obj = contextPrivate->defaultObjects.at(0);
 
@@ -803,7 +688,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
             }
                 break;
 
-            case ScriptInstruction::FetchD1Constant: 
+            case ScriptInstruction::FetchRootConstant: 
             {
                 QObject *obj = contextPrivate->defaultObjects.at(1);
 
@@ -828,64 +713,14 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
             }
                 break;
 
-            case ScriptInstruction::Load: // either an object or a property
-            case ScriptInstruction::Fetch: // can only be a property
-            {
-                const char *id = data + instr.fetch.idx;
-                QmlBasicScriptNodeCache &n = dataCache[dataCacheItem];
-
-                if (instr.type == ScriptInstruction::Load) {
-
-                    if (n.type == QmlBasicScriptNodeCache::Invalid || state == Reset) {
-                        context->engine()->d_func()->loadCache(n, QLatin1String(id), static_cast<QmlContextPrivate*>(context->d_ptr));
-                        if (state != Reset)
-                            state = Incremental;
-                    }
-
-                    if(!n.isValid())
-                        qWarning("ReferenceError: %s is not defined", id);
-
-                } else { // instr.type == ScriptInstruction::Fetch
-
-                    QVariant o = stack.pop();
-                    QObject *obj = qvariant_cast<QObject *>(o);
-                    if (!obj) {
-                        if (n.type == QmlBasicScriptNodeCache::Invalid) {
-                            if (scriptWarnings())
-                                qWarning() << "QmlBasicScript: Unable to convert" << o;
-                            *cached = state;
-                            return QVariant();
-                        } else {
-                            clearCache(dataCache);
-                            *cached = Reset;
-                            CacheState dummy;
-                            return run(context, voidCache, &dummy);
-                        }
-                    } else if (n.type == QmlBasicScriptNodeCache::Invalid || state == Reset) {
-                        context->engine()->d_func()->fetchCache(n, QLatin1String(id), obj);
-                        guard(n);
-                        if (state != Reset)
-                            state = Incremental;
-                    } else if (!valid(n, obj)) {
-                        clearCache(dataCache);
-                        *cached = Reset;
-                        CacheState dummy;
-                        return run(context, voidCache, &dummy);
-                    }
-
-                }
-
-                QVariant var = n.value(id);
-                stack.push(var);
-                ++dataCacheItem;
-            }
-                break;
             case ScriptInstruction::Int:
                 stack.push(QVariant(instr.integer.value));
                 break;
+
             case ScriptInstruction::Bool:
                 stack.push(QVariant(instr.boolean.value));
                 break;
+
             case ScriptInstruction::Equals:
                 {
                     QVariant rhs = stack.pop();
@@ -899,7 +734,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
         }
     }
 
-    *cached = state;
+    *cached = Reset;
 
     if (stack.isEmpty())
         return QVariant();
@@ -926,24 +761,5 @@ unsigned int QmlBasicScript::compileDataSize() const
     else
         return 0;
 }
-
-bool QmlBasicScript::isSingleLoad() const
-{
-    if (!d)
-        return false;
-
-    return d->instructionCount == 1 &&
-           d->instructions()[0].type == ScriptInstruction::Load;
-}
-
-QByteArray QmlBasicScript::singleLoadTarget() const
-{
-    if (!isSingleLoad())
-        return QByteArray();
-
-    // We know there is one instruction and it is a load
-    return QByteArray(d->data() + d->instructions()[0].fetch.idx);
-}
-
 
 QT_END_NAMESPACE

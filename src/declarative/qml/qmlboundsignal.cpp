@@ -53,14 +53,14 @@ QT_BEGIN_NAMESPACE
 
 int QmlBoundSignal::evaluateIdx = -1;
 QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val, QObject *me, int idx, QObject *parent)
-: QmlExpressionObject(ctxt, val, me, false), _idx(idx)
+: QmlExpression(ctxt, val, me), _idx(idx)
 {
-    // A cached evaluation of the QmlExpressionObject::value() slot index.
+    // A cached evaluation of the QmlExpression::value() slot index.
     //
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
-    if (evaluateIdx == -1) evaluateIdx = QmlExpressionObject::staticMetaObject.indexOfMethod("value()");
+    if (evaluateIdx == -1) evaluateIdx = QmlExpression::staticMetaObject.indexOfMethod("value()");
 
     setTrackChange(false);
     QFx_setParent_noEvent(this, parent);

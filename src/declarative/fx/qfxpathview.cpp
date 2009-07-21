@@ -42,7 +42,6 @@
 #include <math.h>
 #include <QDebug>
 #include <QEvent>
-#include "qmlbindablevalue.h"
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
 #include "qmlopenmetaobject.h"

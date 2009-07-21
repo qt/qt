@@ -42,7 +42,7 @@
 #include "qmltransition.h"
 #include "qmlstategroup.h"
 #include "qmlstate_p.h"
-#include "qmlbindablevalue.h"
+#include "qmlbinding.h"
 #include "qmlstateoperations.h"
 #include "qmlanimation.h"
 #include "qmlanimation_p.h"
@@ -175,13 +175,13 @@ bool QmlState::isWhenKnown() const
     This should be set to an expression that evaluates to true when you want the state to
     be applied.
 */
-QmlBindableValue *QmlState::when() const
+QmlBinding *QmlState::when() const
 {
     Q_D(const QmlState);
     return d->when;
 }
 
-void QmlState::setWhen(QmlBindableValue *when) 
+void QmlState::setWhen(QmlBinding *when) 
 {
     Q_D(QmlState);
     d->when = when;
