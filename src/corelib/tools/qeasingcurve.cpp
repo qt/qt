@@ -60,8 +60,8 @@
     Easing curves describe a function that controls how the speed of the interpolation
     between 0 and 1 should be. Easing curves allow transitions from
     one value to another to appear more natural than a simple constant speed would allow.
-    The QEasingCurve class is usually used in conjunction with the QAnimation class,
-    but can be used on its own.
+    The QEasingCurve class is usually used in conjunction with the QVariantAnimation and
+    QPropertyAnimation classes but can be used on its own.
 
     To calculate the speed of the interpolation, the easing curve provides the function
     valueForProgress(), where the \a progress argument specifies the progress of the
@@ -80,10 +80,10 @@
     \endcode
     will print the effective progress of the interpolation between 0 and 1.
 
-    When using a QAnimation, the easing curve will be used to control the
+    When using a QPropertyAnimation, the associated easing curve will be used to control the
     progress of the interpolation between startValue and endValue:
     \code
-    QAnimation animation;
+    QPropertyAnimation animation;
     animation.setStartValue(0);
     animation.setEndValue(1000);
     animation.setDuration(1000);
@@ -98,8 +98,7 @@
 
     \value Linear       \inlineimage qeasingcurve-linear.png
                         \br
-                        Easing equation function for a simple linear tweening,
-                        with no easing.
+                        Easing equation function for a linear (t) easing curve.
     \value InQuad       \inlineimage qeasingcurve-inquad.png
                         \br
                         Easing equation function for a quadratic (t^2) easing
@@ -280,7 +279,9 @@
     \omitvalue OutCurve
     \omitvalue SineCurve
     \omitvalue CosineCurve
-    \value Custom       This is returned if the user have specified a custom curve type with setCustomType(). Note that you cannot call setType() with this value, but type() can return it.
+    \value Custom       This is returned if the user specified a custom curve type with
+                        setCustomType(). Note that you cannot call setType() with this value,
+                        but type() can return it.
     \omitvalue NCurveTypes
 */
 
