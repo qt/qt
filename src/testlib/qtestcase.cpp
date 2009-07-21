@@ -1480,7 +1480,7 @@ FatalSignalHandler::~FatalSignalHandler()
 
     struct sigaction oldact;
 
-    for (int i = 0; i < 32; ++i) {
+    for (int i = 1; i < 32; ++i) {
         if (!sigismember(&handledSignals, i))
             continue;
         sigaction(i, &act, &oldact);
