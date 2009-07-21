@@ -39,68 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QFXANIMATEDIMAGEITEM_H
-#define QFXANIMATEDIMAGEITEM_H
+#ifndef QMLBINDABLECOMPONENT_P_H
+#define QMLBINDABLECOMPONENT_P_H
 
-#include <QtDeclarative/qfximage.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qmlcomponent.h"
+#include "qmlbindablecomponent.h"
+#include "qmlcomponent_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QMovie;
-class QFxAnimatedImageItemPrivate;
-
-class Q_DECLARATIVE_EXPORT QFxAnimatedImageItem : public QFxImage
+class QmlContext;
+class QmlBindableComponentPrivate : public QmlComponentPrivate
 {
-    Q_OBJECT
-
-    Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
-    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
-    Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
-    Q_PROPERTY(int frameCount READ frameCount)
+    Q_DECLARE_PUBLIC(QmlBindableComponent)
 public:
-    QFxAnimatedImageItem(QFxItem *parent=0);
-    ~QFxAnimatedImageItem();
+    QmlBindableComponentPrivate() : QmlComponentPrivate(),
+        prevStatus(QmlBindableComponent::Null), ctxt(0)
+    { }
 
-    bool isPlaying() const;
-    void setPlaying(bool play);
-
-    bool isPaused() const;
-    void setPaused(bool pause);
-
-    int currentFrame() const;
-    void setCurrentFrame(int frame);
-
-    int frameCount() const;
-
-    // Extends QFxImage's src property*/
-    virtual void setSource(const QUrl&);
-
-Q_SIGNALS:
-    void playingChanged();
-    void pausedChanged();
-    void frameChanged();
-
-private Q_SLOTS:
-    void movieUpdate();
-    void movieRequestFinished();
-    void playingStatusChanged();
-
-protected:
-    QFxAnimatedImageItem(QFxAnimatedImageItemPrivate &dd, QFxItem *parent);
-
-private:
-    Q_DISABLE_COPY(QFxAnimatedImageItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxAnimatedImageItem)
+    QmlComponent::Status prevStatus;
+    QmlContext* ctxt;
 };
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QFxAnimatedImageItem)
-
-QT_END_HEADER
 
 #endif

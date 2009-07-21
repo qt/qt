@@ -39,10 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QFXANIMATEDIMAGEITEM_H
-#define QFXANIMATEDIMAGEITEM_H
+#ifndef QMLBINDABLECOMPONENT_H
+#define QMLBINDABLECOMPONENT_H
 
-#include <QtDeclarative/qfximage.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -50,57 +55,37 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QMovie;
-class QFxAnimatedImageItemPrivate;
-
-class Q_DECLARATIVE_EXPORT QFxAnimatedImageItem : public QFxImage
+class QmlBindableComponentPrivate;
+class QmlEngine;
+class QmlContext;
+class Q_DECLARATIVE_EXPORT QmlBindableComponent : public QmlComponent
 {
     Q_OBJECT
-
-    Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
-    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
-    Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
-    Q_PROPERTY(int frameCount READ frameCount)
+    Q_DECLARE_PRIVATE(QmlBindableComponent)
+    friend class QmlEngine;
 public:
-    QFxAnimatedImageItem(QFxItem *parent=0);
-    ~QFxAnimatedImageItem();
+    QmlBindableComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
+    QmlBindableComponent(QmlEngine *, QObject *parent=0);
+    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
+    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
+    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
+    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
 
-    bool isPlaying() const;
-    void setPlaying(bool play);
+    Q_INVOKABLE QScriptValue createObject();
 
-    bool isPaused() const;
-    void setPaused(bool pause);
-
-    int currentFrame() const;
-    void setCurrentFrame(int frame);
-
-    int frameCount() const;
-
-    // Extends QFxImage's src property*/
-    virtual void setSource(const QUrl&);
-
+    void setContext(QmlContext* c);
 Q_SIGNALS:
-    void playingChanged();
-    void pausedChanged();
-    void frameChanged();
-
-private Q_SLOTS:
-    void movieUpdate();
-    void movieRequestFinished();
-    void playingStatusChanged();
-
-protected:
-    QFxAnimatedImageItem(QFxAnimatedImageItemPrivate &dd, QFxItem *parent);
-
-private:
-    Q_DISABLE_COPY(QFxAnimatedImageItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxAnimatedImageItem)
+    void isNullChanged();
+    void isErrorChanged();
+    void isReadyChanged();
+    void isLoadingChanged();
+private slots:
+    void statusChange(QmlComponent::Status newStatus);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxAnimatedImageItem)
+QML_DECLARE_TYPE(QmlBindableComponent)
 
 QT_END_HEADER
-
 #endif
