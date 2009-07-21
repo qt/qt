@@ -937,7 +937,7 @@ static void qParseArgs(int argc, char *argv[])
         " -iterations  n  : Sets the number of accumulation iterations.\n"
         " -median  n      : Sets the number of median iterations.\n"
         " -vb             : Print out verbose benchmarking information.\n"
-#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
         " -chart          : Create chart based on the benchmark result.\n"
 #endif
          "\n"
@@ -1053,7 +1053,7 @@ static void qParseArgs(int argc, char *argv[])
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
         } else if (strcmp(argv[i], "-chart") == 0) {
             QBenchmarkGlobalData::current->createChart = true;
             QTestLog::setLogMode(QTestLog::XML);
@@ -1627,7 +1627,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 
-#if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
+#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
     if (QBenchmarkGlobalData::current->createChart) {
         QString chartLocation = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 #ifdef Q_OS_WIN
