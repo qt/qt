@@ -228,7 +228,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 #ifndef QT_NO_NETWORKPROXY
     }
 #endif
-    // set the gzip header
+
+    // If the request had a accept-encoding set, we better not mess
+    // with it. If it was not set, we announce that we understand gzip
+    // and remember this fact in request.d->autoDecompress so that
+    // we can later decompress the HTTP reply if it has such an
+    // encoding.
     value = request.headerField("accept-encoding");
     if (value.isEmpty()) {
 #ifndef QT_NO_COMPRESS
