@@ -3,6 +3,7 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicsitem.h \
     graphicsview/qgraphicsitem_p.h \
     graphicsview/qgraphicsitemanimation.h \
+    graphicsview/qgraphicslayout.h \
     graphicsview/qgraphicslayout_p.h \
     graphicsview/qgraphicslayoutitem.h \
     graphicsview/qgraphicslayoutitem_p.h \

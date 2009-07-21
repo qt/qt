@@ -254,33 +254,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// QRectF::intersects() returns false always if either the source or target
-// rectangle's width or height are 0. This works around that problem.
-static inline void _q_adjustRect(QRectF *rect)
-{
-    Q_ASSERT(rect);
-    if (!rect->width())
-        rect->adjust(-0.00001, 0, 0.00001, 0);
-    if (!rect->height())
-        rect->adjust(0, -0.00001, 0, 0.00001);
-}
-
-static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
-{
-    Q_ASSERT(item);
-    QRectF boundingRect(item->boundingRect());
-    _q_adjustRect(&boundingRect);
-    return boundingRect;
-}
-
-static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item)
-{
-    Q_ASSERT(item);
-    QRectF boundingRect(item->effectiveBoundingRect());
-    _q_adjustRect(&boundingRect);
-    return boundingRect;
-}
-
 static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraphicsSceneMouseEvent *mouseEvent)
 {
     hover->setWidget(mouseEvent->widget());
@@ -4309,6 +4282,20 @@ QPixmap* QGraphicsScene::drawItemOnPixmap(QPainter *painter,
                       &fxOption, false);
 
     return targetPixmap;
+}
+
+void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const viewTransform,
+                                      QRegion *exposedRegion, QWidget *widget)
+{
+    QRectF exposedSceneRect;
+    if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
+        exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
+        if (viewTransform)
+            exposedSceneRect = viewTransform->inverted().mapRect(exposedSceneRect);
+    }
+    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::DescendingOrder);
+    for (int i = 0; i < tli.size(); ++i)
+        drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
 }
 
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,

@@ -278,6 +278,14 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
     return boundingRect;
 }
 
+static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(item->effectiveBoundingRect());
+    _q_adjustRect(&boundingRect);
+    return boundingRect;
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_GRAPHICSVIEW
